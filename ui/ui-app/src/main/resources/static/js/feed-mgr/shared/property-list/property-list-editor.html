@@ -1,0 +1,59 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="feed-user-property" layout="row" ng-repeat="property in propertyList"  style="margin-top:-10px">
+
+<!--
+    <div ng-if="property.locked" layout="column" flex="50">
+        <span>{{property.displayName}}</span>
+        <span class="hint">{{property.description}}</span>
+    </div>
+-->
+  <md-input-container class="md-block" flex-gt-sm ng-if="property.locked">
+    <label>{{property.displayName}}</label>
+    <input ng-model="property.value" ng-required="property.required"/>
+    <div class="hint" ng-if="property.description">{{property.description}}</div>
+    <div ng-messages="property.$error" md-auto-hide="false">
+      <div ng-message="missingValue">A value is required.</div>
+    </div>
+  </md-input-container>
+
+    <md-input-container ng-if="!property.locked" flex="50">
+        <label>Property</label>
+        <input ng-model="property.systemName">
+        <div ng-messages="property.$error" md-auto-hide="false">
+            <div ng-message="duplicate">Properties must be unique.</div>
+            <div ng-message="missingName">A name is required.</div>
+        </div>
+    </md-input-container>
+
+    <md-input-container flex="45" ng-if="!property.locked">
+        <label>Value</label>
+        <input ng-model="property.value">
+        <div ng-messages="property.$error" md-auto-hide="false">
+            <div ng-message="missingValue">A value is required.</div>
+        </div>
+    </md-input-container>
+
+    <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)" ng-hide="property.locked">
+        <md-icon>delete</md-icon>
+    </md-button>
+</div>
+
+<md-button class="md-raised" ng-click="vm.addProperty()">Add Property</md-button>

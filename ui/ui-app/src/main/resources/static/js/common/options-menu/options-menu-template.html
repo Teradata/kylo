@@ -1,0 +1,43 @@
+<md-menu >
+    <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px" ng-click="openMenu($mdOpenMenu, $event)">
+        <ng-md-icon icon="{{menuIcon}}"></ng-md-icon>
+    </md-button>
+    <md-menu-content width="3" >
+        <md-menu-item ng-if="showPagination" >
+            <md-input-container>
+                <label>Rows per page</label>
+                <md-select class="" ng-model="paginationData.rowsPerPage" >
+                    <md-option ng-repeat="x in paginationData.rowsPerPageOptions" value="{{x}}">
+                        {{x}}
+                    </md-option>
+                </md-select>
+            </md-input-container >
+        </md-menu-item>
+        <md-menu-item  class="md-menu-item-header" ng-if="showViewType == true">
+            <span md-menu-align-target  class="md-subheader md-menu-item-header">View Options</span>
+        </md-menu-item>
+        <md-menu-item layout="column" ng-if="showViewType == true">
+            <md-button ng-click="selectOption(viewType)" md-prevent-menu-close="md-prevent-menu-close">
+                <span style="float:left;">{{viewType.label}}</span>
+                <span style="float:right;"><ng-md-icon icon="{{viewType.icon}}"></ng-md-icon></span>
+            </md-button>
+        </md-menu-item>
+        <md-menu-item class="md-menu-item-header">
+            <span md-menu-align-target  class="md-subheader md-menu-item-header">Sort Options</span>
+         </md-menu-item>
+        <md-menu-item ng-repeat="item in sortOptions" layout="column">
+            <md-button ng-click="selectOption(item)" md-prevent-menu-close="md-prevent-menu-close">
+                <span style="float:left;">{{item.label}}</span>
+                <span  ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
+            </md-button>
+        </md-menu-item>
+        <md-menu-divider ng-if="additionalOptions && additionalOptions.length >0"></md-menu-divider>
+        <md-menu-item ng-if="additionalOptions && additionalOptions.length >0" ng-repeat="item in additionalOptions" ng-class="{'md-menu-item-header': item.header}">
+            <span md-menu-align-target class="md-subheader md-menu-item-header" ng-if="item.header">{{item.label}}</span>
+            <md-button ng-click="selectAdditionalOption(item)" md-prevent-menu-close="md-prevent-menu-close" ng-if="!item.header" ng-disabled="item.disabled">
+                <span style="float:left;">{{item.label}}</span>
+                <span ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
+            </md-button>
+        </md-menu-item>
+    </md-menu-content>
+</md-menu>

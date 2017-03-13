@@ -59,10 +59,12 @@ import io.swagger.annotations.Tag;
  * REST API for managing categories within the Feed Manager.
  */
 @Api(tags = "Feed Manager - Categories", produces = "application/json")
-@Path("/v1/feedmgr/categories")
+@Path(FeedCategoryRestController.BASE)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Categories", description = "manages categories"))
 public class FeedCategoryRestController {
+
+    public static final String BASE = "/v1/feedmgr/categories";
 
     @Autowired
     MetadataService metadataService;

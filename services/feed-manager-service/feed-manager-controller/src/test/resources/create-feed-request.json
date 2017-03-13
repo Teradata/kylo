@@ -1,0 +1,3868 @@
+{
+  "id": null,
+  "versionName": null,
+  "templateId": "19fd498d-e256-4f4b-a499-a531a54aa35b",
+  "feedName": "test1",
+  "description": "test feed description",
+  "systemFeedName": "test1",
+  "inputProcessorType": "org.apache.nifi.processors.standard.GetFile",
+  "inputProcessor": {
+    "properties": [
+      {
+        "processGroupName": "NiFi Flow",
+        "processorName": "Filesystem",
+        "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+        "processGroupId": "305363d8-015a-1000-0000-000000000000",
+        "processorType": "org.apache.nifi.processors.standard.GetFile",
+        "key": "File Filter",
+        "value": "test1.csv",
+        "expressionProperties": null,
+        "propertyDescriptor": {
+          "name": "File Filter",
+          "displayName": null,
+          "description": null,
+          "defaultValue": null,
+          "allowableValues": null,
+          "required": null,
+          "sensitive": null,
+          "dynamic": null,
+          "supportsEl": null,
+          "identifiesControllerService": null
+        },
+        "templateValue": "mydata\\d{1,3}.csv",
+        "userEditable": true,
+        "renderType": "text",
+        "renderOptions": {},
+        "selected": false,
+        "inputProperty": true,
+        "templateProperty": null,
+        "nameKey": "NiFi Flow-Filesystem-File Filter",
+        "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-File Filter",
+        "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-File Filter",
+        "renderWithCodeMirror": false,
+        "displayValue": "mydata\\d{1,3}.csv"
+      },
+      {
+        "processGroupName": "NiFi Flow",
+        "processorName": "Filesystem",
+        "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+        "processGroupId": "305363d8-015a-1000-0000-000000000000",
+        "processorType": "org.apache.nifi.processors.standard.GetFile",
+        "key": "Input Directory",
+        "value": "/var/dropzone",
+        "expressionProperties": null,
+        "propertyDescriptor": {
+          "name": "Input Directory",
+          "displayName": null,
+          "description": null,
+          "defaultValue": null,
+          "allowableValues": null,
+          "required": null,
+          "sensitive": null,
+          "dynamic": null,
+          "supportsEl": null,
+          "identifiesControllerService": null
+        },
+        "templateValue": "/var/dropzone",
+        "userEditable": true,
+        "renderType": "text",
+        "renderOptions": {},
+        "selected": false,
+        "inputProperty": true,
+        "templateProperty": null,
+        "nameKey": "NiFi Flow-Filesystem-Input Directory",
+        "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-Input Directory",
+        "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-Input Directory",
+        "renderWithCodeMirror": false,
+        "displayValue": "/var/dropzone"
+      }
+    ],
+    "type": "org.apache.nifi.processors.standard.GetFile",
+    "name": "Filesystem",
+    "id": "1f67e296-2ff8-4b5d-0000-000000000000",
+    "groupName": "NiFi Flow",
+    "groupId": "305363d8-015a-1000-0000-000000000000",
+    "inputProcessor": true,
+    "userDefinedInputProcessor": false,
+    "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+    "userEditable": true,
+    "feedPropertiesUrl": null,
+    "allProperties": [
+      {
+        "processGroupName": "NiFi Flow",
+        "processorName": "Filesystem",
+        "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+        "processGroupId": "305363d8-015a-1000-0000-000000000000",
+        "processorType": "org.apache.nifi.processors.standard.GetFile",
+        "key": "File Filter",
+        "value": "test1.csv",
+        "expressionProperties": null,
+        "propertyDescriptor": {
+          "name": "File Filter",
+          "displayName": null,
+          "description": null,
+          "defaultValue": null,
+          "allowableValues": null,
+          "required": null,
+          "sensitive": null,
+          "dynamic": null,
+          "supportsEl": null,
+          "identifiesControllerService": null
+        },
+        "templateValue": "mydata\\d{1,3}.csv",
+        "userEditable": true,
+        "renderType": "text",
+        "renderOptions": {},
+        "selected": false,
+        "inputProperty": true,
+        "templateProperty": null,
+        "nameKey": "NiFi Flow-Filesystem-File Filter",
+        "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-File Filter",
+        "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-File Filter",
+        "renderWithCodeMirror": false,
+        "displayValue": "mydata\\d{1,3}.csv"
+      },
+      {
+        "processGroupName": "NiFi Flow",
+        "processorName": "Filesystem",
+        "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+        "processGroupId": "305363d8-015a-1000-0000-000000000000",
+        "processorType": "org.apache.nifi.processors.standard.GetFile",
+        "key": "Input Directory",
+        "value": "/var/dropzone",
+        "expressionProperties": null,
+        "propertyDescriptor": {
+          "name": "Input Directory",
+          "displayName": null,
+          "description": null,
+          "defaultValue": null,
+          "allowableValues": null,
+          "required": null,
+          "sensitive": null,
+          "dynamic": null,
+          "supportsEl": null,
+          "identifiesControllerService": null
+        },
+        "templateValue": "/var/dropzone",
+        "userEditable": true,
+        "renderType": "text",
+        "renderOptions": {},
+        "selected": false,
+        "inputProperty": true,
+        "templateProperty": null,
+        "nameKey": "NiFi Flow-Filesystem-Input Directory",
+        "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-Input Directory",
+        "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-Input Directory",
+        "renderWithCodeMirror": false,
+        "displayValue": "/var/dropzone"
+      }
+    ],
+    "sortIndex": 1
+  },
+  "nonInputProcessors": [
+    {
+      "properties": [
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Date Field",
+          "value": null,
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Date Field",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": null,
+          "userEditable": true,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Date Field",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Date Field",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Date Field",
+          "renderWithCodeMirror": false,
+          "displayValue": null
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Load Strategy",
+          "value": "FULL_LOAD",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Load Strategy",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "FULL_LOAD",
+          "userEditable": true,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Load Strategy",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Load Strategy",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Load Strategy",
+          "renderWithCodeMirror": false,
+          "displayValue": "FULL_LOAD"
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Source Database Connection",
+          "value": "",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Source Database Connection",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": [
+              {
+                "displayName": "MySQL",
+                "value": "3ea7ee2b-015a-1000-5de6-e1af485e7fd4"
+              }
+            ],
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": "org.apache.nifi.dbcp.DBCPService"
+          },
+          "templateValue": "",
+          "userEditable": true,
+          "renderType": "select",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Source Database Connection",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Source Database Connection",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Source Database Connection",
+          "renderWithCodeMirror": false,
+          "displayValue": "",
+          "isLoading": false
+        }
+      ],
+      "type": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+      "name": "Fetch RDBMS Data",
+      "id": "6aeabec7-ec36-4ed5-0000-000000000000",
+      "groupName": "NiFi Flow",
+      "groupId": "305363d8-015a-1000-0000-000000000000",
+      "inputProcessor": false,
+      "userDefinedInputProcessor": false,
+      "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+      "userEditable": false,
+      "feedPropertiesUrl": "js/define-feed/get-table-data-properties/get-table-data-create.html",
+      "allProperties": [
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Date Field",
+          "value": null,
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Date Field",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": null,
+          "userEditable": true,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Date Field",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Date Field",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Date Field",
+          "renderWithCodeMirror": false,
+          "displayValue": null
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Load Strategy",
+          "value": "FULL_LOAD",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Load Strategy",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "FULL_LOAD",
+          "userEditable": true,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Load Strategy",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Load Strategy",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Load Strategy",
+          "renderWithCodeMirror": false,
+          "displayValue": "FULL_LOAD"
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Source Database Connection",
+          "value": "",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Source Database Connection",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": [
+              {
+                "displayName": "MySQL",
+                "value": "3ea7ee2b-015a-1000-5de6-e1af485e7fd4"
+              }
+            ],
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": "org.apache.nifi.dbcp.DBCPService"
+          },
+          "templateValue": "",
+          "userEditable": true,
+          "renderType": "select",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Source Database Connection",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Source Database Connection",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Source Database Connection",
+          "renderWithCodeMirror": false,
+          "displayValue": "",
+          "isLoading": false
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Source Fields",
+          "value": "${metadata.table.sourceFields}",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Source Fields",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "${metadata.table.sourceFields}",
+          "userEditable": false,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Source Fields",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Source Fields",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Source Fields",
+          "renderWithCodeMirror": false,
+          "displayValue": "${metadata.table.sourceFields}"
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "Source Table",
+          "value": "${metadata.table.sourceTableSchema.name}",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "Source Table",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "${metadata.table.sourceTableSchema.name}",
+          "userEditable": false,
+          "renderType": "select",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-Source Table",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Source Table",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Source Table",
+          "renderWithCodeMirror": false,
+          "displayValue": "${metadata.table.sourceTableSchema.name}"
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "System feed category",
+          "value": "${metadata.category.systemName}",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "System feed category",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "${metadata.category.systemName}",
+          "userEditable": false,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-System feed category",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-System feed category",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-System feed category",
+          "renderWithCodeMirror": false,
+          "displayValue": "${metadata.category.systemName}"
+        },
+        {
+          "processGroupName": "NiFi Flow",
+          "processorName": "Fetch RDBMS Data",
+          "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+          "processGroupId": "305363d8-015a-1000-0000-000000000000",
+          "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+          "key": "System feed name",
+          "value": "${metadata.systemFeedName}",
+          "expressionProperties": null,
+          "propertyDescriptor": {
+            "name": "System feed name",
+            "displayName": null,
+            "description": null,
+            "defaultValue": null,
+            "allowableValues": null,
+            "required": null,
+            "sensitive": null,
+            "dynamic": null,
+            "supportsEl": null,
+            "identifiesControllerService": null
+          },
+          "templateValue": "${metadata.systemFeedName}",
+          "userEditable": false,
+          "renderType": "text",
+          "renderOptions": {},
+          "selected": false,
+          "inputProperty": false,
+          "templateProperty": null,
+          "nameKey": "NiFi Flow-Fetch RDBMS Data-System feed name",
+          "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-System feed name",
+          "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-System feed name",
+          "renderWithCodeMirror": false,
+          "displayValue": "${metadata.systemFeedName}"
+        }
+      ],
+      "sortIndex": 0
+    }
+  ],
+  "properties": [
+    {
+      "processGroupName": "NiFi Flow",
+      "processorName": "Filesystem",
+      "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+      "processGroupId": "305363d8-015a-1000-0000-000000000000",
+      "processorType": "org.apache.nifi.processors.standard.GetFile",
+      "key": "File Filter",
+      "value": "test1.csv",
+      "expressionProperties": null,
+      "propertyDescriptor": {
+        "name": "File Filter",
+        "displayName": null,
+        "description": null,
+        "defaultValue": null,
+        "allowableValues": null,
+        "required": null,
+        "sensitive": null,
+        "dynamic": null,
+        "supportsEl": null,
+        "identifiesControllerService": null
+      },
+      "templateValue": "mydata\\d{1,3}.csv",
+      "userEditable": true,
+      "renderType": "text",
+      "renderOptions": {},
+      "selected": false,
+      "inputProperty": true,
+      "templateProperty": null,
+      "nameKey": "NiFi Flow-Filesystem-File Filter",
+      "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-File Filter",
+      "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-File Filter",
+      "renderWithCodeMirror": false,
+      "displayValue": "mydata\\d{1,3}.csv"
+    },
+    {
+      "processGroupName": "NiFi Flow",
+      "processorName": "Filesystem",
+      "processorId": "1f67e296-2ff8-4b5d-0000-000000000000",
+      "processGroupId": "305363d8-015a-1000-0000-000000000000",
+      "processorType": "org.apache.nifi.processors.standard.GetFile",
+      "key": "Input Directory",
+      "value": "/var/dropzone",
+      "expressionProperties": null,
+      "propertyDescriptor": {
+        "name": "Input Directory",
+        "displayName": null,
+        "description": null,
+        "defaultValue": null,
+        "allowableValues": null,
+        "required": null,
+        "sensitive": null,
+        "dynamic": null,
+        "supportsEl": null,
+        "identifiesControllerService": null
+      },
+      "templateValue": "/var/dropzone",
+      "userEditable": true,
+      "renderType": "text",
+      "renderOptions": {},
+      "selected": false,
+      "inputProperty": true,
+      "templateProperty": null,
+      "nameKey": "NiFi Flow-Filesystem-Input Directory",
+      "idKey": "305363d8-015a-1000-0000-000000000000-1f67e296-2ff8-4b5d-0000-000000000000-Input Directory",
+      "processorNameTypeKey": "Filesystem-org.apache.nifi.processors.standard.GetFile-Input Directory",
+      "renderWithCodeMirror": false,
+      "displayValue": "/var/dropzone"
+    },
+    {
+      "processGroupName": "NiFi Flow",
+      "processorName": "Fetch RDBMS Data",
+      "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+      "processGroupId": "305363d8-015a-1000-0000-000000000000",
+      "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+      "key": "Date Field",
+      "value": null,
+      "expressionProperties": null,
+      "propertyDescriptor": {
+        "name": "Date Field",
+        "displayName": null,
+        "description": null,
+        "defaultValue": null,
+        "allowableValues": null,
+        "required": null,
+        "sensitive": null,
+        "dynamic": null,
+        "supportsEl": null,
+        "identifiesControllerService": null
+      },
+      "templateValue": null,
+      "userEditable": true,
+      "renderType": "text",
+      "renderOptions": {},
+      "selected": false,
+      "inputProperty": false,
+      "templateProperty": null,
+      "nameKey": "NiFi Flow-Fetch RDBMS Data-Date Field",
+      "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Date Field",
+      "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Date Field",
+      "renderWithCodeMirror": false,
+      "displayValue": null
+    },
+    {
+      "processGroupName": "NiFi Flow",
+      "processorName": "Fetch RDBMS Data",
+      "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+      "processGroupId": "305363d8-015a-1000-0000-000000000000",
+      "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+      "key": "Load Strategy",
+      "value": "FULL_LOAD",
+      "expressionProperties": null,
+      "propertyDescriptor": {
+        "name": "Load Strategy",
+        "displayName": null,
+        "description": null,
+        "defaultValue": null,
+        "allowableValues": null,
+        "required": null,
+        "sensitive": null,
+        "dynamic": null,
+        "supportsEl": null,
+        "identifiesControllerService": null
+      },
+      "templateValue": "FULL_LOAD",
+      "userEditable": true,
+      "renderType": "text",
+      "renderOptions": {},
+      "selected": false,
+      "inputProperty": false,
+      "templateProperty": null,
+      "nameKey": "NiFi Flow-Fetch RDBMS Data-Load Strategy",
+      "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Load Strategy",
+      "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Load Strategy",
+      "renderWithCodeMirror": false,
+      "displayValue": "FULL_LOAD"
+    },
+    {
+      "processGroupName": "NiFi Flow",
+      "processorName": "Fetch RDBMS Data",
+      "processorId": "6aeabec7-ec36-4ed5-0000-000000000000",
+      "processGroupId": "305363d8-015a-1000-0000-000000000000",
+      "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+      "key": "Source Database Connection",
+      "value": "",
+      "expressionProperties": null,
+      "propertyDescriptor": {
+        "name": "Source Database Connection",
+        "displayName": null,
+        "description": null,
+        "defaultValue": null,
+        "allowableValues": [
+          {
+            "displayName": "MySQL",
+            "value": "3ea7ee2b-015a-1000-5de6-e1af485e7fd4"
+          }
+        ],
+        "required": null,
+        "sensitive": null,
+        "dynamic": null,
+        "supportsEl": null,
+        "identifiesControllerService": "org.apache.nifi.dbcp.DBCPService"
+      },
+      "templateValue": "",
+      "userEditable": true,
+      "renderType": "select",
+      "renderOptions": {},
+      "selected": false,
+      "inputProperty": false,
+      "templateProperty": null,
+      "nameKey": "NiFi Flow-Fetch RDBMS Data-Source Database Connection",
+      "idKey": "305363d8-015a-1000-0000-000000000000-6aeabec7-ec36-4ed5-0000-000000000000-Source Database Connection",
+      "processorNameTypeKey": "Fetch RDBMS Data-com.thinkbiganalytics.nifi.v2.ingest.GetTableData-Source Database Connection",
+      "renderWithCodeMirror": false,
+      "displayValue": "",
+      "isLoading": false
+    }
+  ],
+  "securityGroups": [],
+  "schedule": {
+    "schedulingPeriod": "15 sec",
+    "schedulingStrategy": "TIMER_DRIVEN",
+    "concurrentTasks": 1,
+    "schedulingStrategyTouched": true
+  },
+  "defineTable": true,
+  "allowPreconditions": false,
+  "dataTransformationFeed": false,
+  "table": {
+    "tableSchema": {
+      "name": "test1",
+      "fields": [
+        {
+          "name": "registration_dttm",
+          "description": "",
+          "derivedDataType": "timestamp",
+          "precisionScale": null,
+          "dataTypeDisplay": "timestamp",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "2016-02-03T07:55:29Z",
+            "2016-02-03T17:04:03Z",
+            "2016-02-03T01:09:31Z",
+            "2016-02-03T12:36:21Z",
+            "2016-02-03T05:05:31Z",
+            "2016-02-03T07:22:34Z",
+            "2016-02-03T08:33:08Z",
+            "2016-02-03T06:47:06Z",
+            "2016-02-03T03:52:53Z"
+          ],
+          "selectedSampleValue": "2016-02-03T07:55:29Z",
+          "_id": "27",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "registration_dttm",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "timestamp",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "id",
+          "description": "",
+          "derivedDataType": "bigint",
+          "precisionScale": null,
+          "dataTypeDisplay": "bigint",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "selectedSampleValue": "1",
+          "_id": "29",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "int",
+          "origName": "id",
+          "origDataType": "int",
+          "deleted": false,
+          "history": [
+            {
+              "name": "id",
+              "derivedDataType": "int",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "id",
+              "derivedDataType": "bigint",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "first_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Amanda",
+            "Albert",
+            "Evelyn",
+            "Denise",
+            "Carlos",
+            "Kathryn",
+            "Samuel",
+            "Harry",
+            "Jose"
+          ],
+          "selectedSampleValue": "Amanda",
+          "_id": "31",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "first_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "first_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "last_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Jordan",
+            "Freeman",
+            "Morgan",
+            "Riley",
+            "Burns",
+            "White",
+            "Holmes",
+            "Howell",
+            "Foster"
+          ],
+          "selectedSampleValue": "Jordan",
+          "_id": "33",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "last_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "last_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "ajordan0@com.com",
+            "afreeman1@is.gd",
+            "emorgan2@altervista.org",
+            "driley3@gmpg.org",
+            "cburns4@miitbeian.gov.cn",
+            "kwhite5@google.com",
+            "sholmes6@foxnews.com",
+            "hhowell7@eepurl.com",
+            "jfoster8@yelp.com"
+          ],
+          "selectedSampleValue": "ajordan0@com.com",
+          "_id": "35",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "email",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "email",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "gender",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Female",
+            "Male",
+            "Female",
+            "Female",
+            "",
+            "Female",
+            "Male",
+            "Male",
+            "Male"
+          ],
+          "selectedSampleValue": "Female",
+          "_id": "37",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "gender",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "gender",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "ip_address",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1.197.201.2",
+            "218.111.175.34",
+            "7.161.136.94",
+            "140.35.109.83",
+            "169.113.235.40",
+            "195.131.81.179",
+            "232.234.81.197",
+            "91.235.51.73",
+            "132.31.53.61"
+          ],
+          "selectedSampleValue": "1.197.201.2",
+          "_id": "39",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "ip_address",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "ip_address",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "cc",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "6759521864920116",
+            "",
+            "6767119071901597",
+            "3576031598965625",
+            "5602256255204850",
+            "3583136326049310",
+            "3582641366974690",
+            "",
+            ""
+          ],
+          "selectedSampleValue": "6759521864920116",
+          "_id": "41",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "cc",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "cc",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "cc",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "country",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Indonesia",
+            "Canada",
+            "Russia",
+            "China",
+            "South Africa",
+            "Indonesia",
+            "Portugal",
+            "Bosnia and Herzegovina",
+            "South Korea"
+          ],
+          "selectedSampleValue": "Indonesia",
+          "_id": "43",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "country",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "country",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "birthdate",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "3/8/1971",
+            "1/16/1968",
+            "2/1/1960",
+            "4/8/1997",
+            "",
+            "2/25/1983",
+            "12/18/1987",
+            "3/1/1962",
+            "3/27/1992"
+          ],
+          "selectedSampleValue": "3/8/1971",
+          "_id": "45",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "birthdate",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "birthdate",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "salary",
+          "description": "",
+          "derivedDataType": "double",
+          "precisionScale": null,
+          "dataTypeDisplay": "double",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "49756.53",
+            "150280.17",
+            "144972.51",
+            "90263.05",
+            "",
+            "69227.11",
+            "14247.62",
+            "186469.43",
+            "231067.84"
+          ],
+          "selectedSampleValue": "49756.53",
+          "_id": "47",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "salary",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "salary",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "title",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Internal Auditor",
+            "Accountant IV",
+            "Structural Engineer",
+            "Senior Cost Accountant",
+            "",
+            "Account Executive",
+            "Senior Financial Analyst",
+            "Web Developer IV",
+            "Software Test Engineer I"
+          ],
+          "selectedSampleValue": "Internal Auditor",
+          "_id": "49",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "title",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "title",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "comments",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1E+02",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "1E+02"
+          ],
+          "selectedSampleValue": "1E+02",
+          "_id": "51",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "comments",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "comments",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "comments",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        }
+      ]
+    },
+    "sourceTableSchema": {
+      "name": null,
+      "tableSchema": null,
+      "fields": [
+        {
+          "name": "registration_dttm",
+          "description": "",
+          "derivedDataType": "timestamp",
+          "precisionScale": null,
+          "dataTypeDisplay": "timestamp",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "2016-02-03T07:55:29Z",
+            "2016-02-03T17:04:03Z",
+            "2016-02-03T01:09:31Z",
+            "2016-02-03T12:36:21Z",
+            "2016-02-03T05:05:31Z",
+            "2016-02-03T07:22:34Z",
+            "2016-02-03T08:33:08Z",
+            "2016-02-03T06:47:06Z",
+            "2016-02-03T03:52:53Z"
+          ],
+          "selectedSampleValue": "2016-02-03T07:55:29Z",
+          "_id": "27",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "registration_dttm",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "timestamp",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "id",
+          "description": "",
+          "derivedDataType": "bigint",
+          "precisionScale": null,
+          "dataTypeDisplay": "bigint",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "selectedSampleValue": "1",
+          "_id": "29",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "int",
+          "origName": "id",
+          "origDataType": "int",
+          "deleted": false,
+          "history": [
+            {
+              "name": "id",
+              "derivedDataType": "int",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "id",
+              "derivedDataType": "bigint",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "first_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Amanda",
+            "Albert",
+            "Evelyn",
+            "Denise",
+            "Carlos",
+            "Kathryn",
+            "Samuel",
+            "Harry",
+            "Jose"
+          ],
+          "selectedSampleValue": "Amanda",
+          "_id": "31",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "first_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "first_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "last_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Jordan",
+            "Freeman",
+            "Morgan",
+            "Riley",
+            "Burns",
+            "White",
+            "Holmes",
+            "Howell",
+            "Foster"
+          ],
+          "selectedSampleValue": "Jordan",
+          "_id": "33",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "last_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "last_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "ajordan0@com.com",
+            "afreeman1@is.gd",
+            "emorgan2@altervista.org",
+            "driley3@gmpg.org",
+            "cburns4@miitbeian.gov.cn",
+            "kwhite5@google.com",
+            "sholmes6@foxnews.com",
+            "hhowell7@eepurl.com",
+            "jfoster8@yelp.com"
+          ],
+          "selectedSampleValue": "ajordan0@com.com",
+          "_id": "35",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "email",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "email",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "gender",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Female",
+            "Male",
+            "Female",
+            "Female",
+            "",
+            "Female",
+            "Male",
+            "Male",
+            "Male"
+          ],
+          "selectedSampleValue": "Female",
+          "_id": "37",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "gender",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "gender",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "ip_address",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1.197.201.2",
+            "218.111.175.34",
+            "7.161.136.94",
+            "140.35.109.83",
+            "169.113.235.40",
+            "195.131.81.179",
+            "232.234.81.197",
+            "91.235.51.73",
+            "132.31.53.61"
+          ],
+          "selectedSampleValue": "1.197.201.2",
+          "_id": "39",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "ip_address",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "ip_address",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "cc",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "6759521864920116",
+            "",
+            "6767119071901597",
+            "3576031598965625",
+            "5602256255204850",
+            "3583136326049310",
+            "3582641366974690",
+            "",
+            ""
+          ],
+          "selectedSampleValue": "6759521864920116",
+          "_id": "41",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "cc",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "cc",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "cc",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "country",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Indonesia",
+            "Canada",
+            "Russia",
+            "China",
+            "South Africa",
+            "Indonesia",
+            "Portugal",
+            "Bosnia and Herzegovina",
+            "South Korea"
+          ],
+          "selectedSampleValue": "Indonesia",
+          "_id": "43",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "country",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "country",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "birthdate",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "3/8/1971",
+            "1/16/1968",
+            "2/1/1960",
+            "4/8/1997",
+            "",
+            "2/25/1983",
+            "12/18/1987",
+            "3/1/1962",
+            "3/27/1992"
+          ],
+          "selectedSampleValue": "3/8/1971",
+          "_id": "45",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "birthdate",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "birthdate",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "salary",
+          "description": "",
+          "derivedDataType": "double",
+          "precisionScale": null,
+          "dataTypeDisplay": "double",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "49756.53",
+            "150280.17",
+            "144972.51",
+            "90263.05",
+            "",
+            "69227.11",
+            "14247.62",
+            "186469.43",
+            "231067.84"
+          ],
+          "selectedSampleValue": "49756.53",
+          "_id": "47",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "salary",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "salary",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "title",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Internal Auditor",
+            "Accountant IV",
+            "Structural Engineer",
+            "Senior Cost Accountant",
+            "",
+            "Account Executive",
+            "Senior Financial Analyst",
+            "Web Developer IV",
+            "Software Test Engineer I"
+          ],
+          "selectedSampleValue": "Internal Auditor",
+          "_id": "49",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "title",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "title",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "comments",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1E+02",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "1E+02"
+          ],
+          "selectedSampleValue": "1E+02",
+          "_id": "51",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "comments",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "comments",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "comments",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        }
+      ]
+    },
+    "feedTableSchema": {
+      "name": null,
+      "fields": [
+        {
+          "name": "registration_dttm",
+          "description": "",
+          "derivedDataType": "timestamp",
+          "precisionScale": null,
+          "dataTypeDisplay": "timestamp",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "2016-02-03T07:55:29Z",
+            "2016-02-03T17:04:03Z",
+            "2016-02-03T01:09:31Z",
+            "2016-02-03T12:36:21Z",
+            "2016-02-03T05:05:31Z",
+            "2016-02-03T07:22:34Z",
+            "2016-02-03T08:33:08Z",
+            "2016-02-03T06:47:06Z",
+            "2016-02-03T03:52:53Z"
+          ],
+          "selectedSampleValue": "2016-02-03T07:55:29Z",
+          "_id": "27",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "registration_dttm",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "timestamp",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "id",
+          "description": "",
+          "derivedDataType": "bigint",
+          "precisionScale": null,
+          "dataTypeDisplay": "bigint",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "selectedSampleValue": "1",
+          "_id": "29",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "int",
+          "origName": "id",
+          "origDataType": "int",
+          "deleted": false,
+          "history": [
+            {
+              "name": "id",
+              "derivedDataType": "int",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "id",
+              "derivedDataType": "bigint",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "first_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Amanda",
+            "Albert",
+            "Evelyn",
+            "Denise",
+            "Carlos",
+            "Kathryn",
+            "Samuel",
+            "Harry",
+            "Jose"
+          ],
+          "selectedSampleValue": "Amanda",
+          "_id": "31",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "first_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "first_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "last_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Jordan",
+            "Freeman",
+            "Morgan",
+            "Riley",
+            "Burns",
+            "White",
+            "Holmes",
+            "Howell",
+            "Foster"
+          ],
+          "selectedSampleValue": "Jordan",
+          "_id": "33",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "last_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "last_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "email",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "ajordan0@com.com",
+            "afreeman1@is.gd",
+            "emorgan2@altervista.org",
+            "driley3@gmpg.org",
+            "cburns4@miitbeian.gov.cn",
+            "kwhite5@google.com",
+            "sholmes6@foxnews.com",
+            "hhowell7@eepurl.com",
+            "jfoster8@yelp.com"
+          ],
+          "selectedSampleValue": "ajordan0@com.com",
+          "_id": "35",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "email",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "email",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "gender",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Female",
+            "Male",
+            "Female",
+            "Female",
+            "",
+            "Female",
+            "Male",
+            "Male",
+            "Male"
+          ],
+          "selectedSampleValue": "Female",
+          "_id": "37",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "gender",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "gender",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "ip_address",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1.197.201.2",
+            "218.111.175.34",
+            "7.161.136.94",
+            "140.35.109.83",
+            "169.113.235.40",
+            "195.131.81.179",
+            "232.234.81.197",
+            "91.235.51.73",
+            "132.31.53.61"
+          ],
+          "selectedSampleValue": "1.197.201.2",
+          "_id": "39",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "ip_address",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "ip_address",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "cc",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "6759521864920116",
+            "",
+            "6767119071901597",
+            "3576031598965625",
+            "5602256255204850",
+            "3583136326049310",
+            "3582641366974690",
+            "",
+            ""
+          ],
+          "selectedSampleValue": "6759521864920116",
+          "_id": "41",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "cc",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "cc",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "cc",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "country",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Indonesia",
+            "Canada",
+            "Russia",
+            "China",
+            "South Africa",
+            "Indonesia",
+            "Portugal",
+            "Bosnia and Herzegovina",
+            "South Korea"
+          ],
+          "selectedSampleValue": "Indonesia",
+          "_id": "43",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "country",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "country",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "birthdate",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "3/8/1971",
+            "1/16/1968",
+            "2/1/1960",
+            "4/8/1997",
+            "",
+            "2/25/1983",
+            "12/18/1987",
+            "3/1/1962",
+            "3/27/1992"
+          ],
+          "selectedSampleValue": "3/8/1971",
+          "_id": "45",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "birthdate",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "birthdate",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "salary",
+          "description": "",
+          "derivedDataType": "double",
+          "precisionScale": null,
+          "dataTypeDisplay": "double",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "49756.53",
+            "150280.17",
+            "144972.51",
+            "90263.05",
+            "",
+            "69227.11",
+            "14247.62",
+            "186469.43",
+            "231067.84"
+          ],
+          "selectedSampleValue": "49756.53",
+          "_id": "47",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "salary",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "salary",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "title",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Internal Auditor",
+            "Accountant IV",
+            "Structural Engineer",
+            "Senior Cost Accountant",
+            "",
+            "Account Executive",
+            "Senior Financial Analyst",
+            "Web Developer IV",
+            "Software Test Engineer I"
+          ],
+          "selectedSampleValue": "Internal Auditor",
+          "_id": "49",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "title",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "title",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        {
+          "name": "comments",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1E+02",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "1E+02"
+          ],
+          "selectedSampleValue": "1E+02",
+          "_id": "51",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "comments",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "comments",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "comments",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        }
+      ]
+    },
+    "method": "SAMPLE_FILE",
+    "existingTableName": null,
+    "structured": false,
+    "targetMergeStrategy": "DEDUPE_AND_MERGE",
+    "feedFormat": "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES ( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE",
+    "targetFormat": "STORED AS ORC",
+    "fieldPolicies": [
+      {
+        "name": "registration_dttm",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "registration_dttm",
+          "description": "",
+          "derivedDataType": "timestamp",
+          "precisionScale": null,
+          "dataTypeDisplay": "timestamp",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "2016-02-03T07:55:29Z",
+            "2016-02-03T17:04:03Z",
+            "2016-02-03T01:09:31Z",
+            "2016-02-03T12:36:21Z",
+            "2016-02-03T05:05:31Z",
+            "2016-02-03T07:22:34Z",
+            "2016-02-03T08:33:08Z",
+            "2016-02-03T06:47:06Z",
+            "2016-02-03T03:52:53Z"
+          ],
+          "selectedSampleValue": "2016-02-03T07:55:29Z",
+          "_id": "27",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "registration_dttm",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "timestamp",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "registration_dttm"
+      },
+      {
+        "name": "id",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "id",
+          "description": "",
+          "derivedDataType": "bigint",
+          "precisionScale": null,
+          "dataTypeDisplay": "bigint",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "selectedSampleValue": "1",
+          "_id": "29",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "int",
+          "origName": "id",
+          "origDataType": "int",
+          "deleted": false,
+          "history": [
+            {
+              "name": "id",
+              "derivedDataType": "int",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "id",
+              "derivedDataType": "bigint",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "id"
+      },
+      {
+        "name": "first_name",
+        "partition": null,
+        "profile": true,
+        "standardization": [
+          {
+            "name": "Uppercase",
+            "displayName": "Uppercase",
+            "description": "Convert string to uppercase",
+            "shortDescription": null,
+            "properties": [],
+            "objectClassType": "com.thinkbiganalytics.policy.standardization.UppercaseStandardizer",
+            "objectShortClassType": "UppercaseStandardizer",
+            "propertyValuesDisplayString": null,
+            "groups": [],
+            "editable": true,
+            "ruleType": {
+              "name": "Uppercase",
+              "displayName": "Uppercase",
+              "description": "Convert string to uppercase",
+              "shortDescription": null,
+              "properties": [],
+              "objectClassType": "com.thinkbiganalytics.policy.standardization.UppercaseStandardizer",
+              "objectShortClassType": "UppercaseStandardizer",
+              "propertyValuesDisplayString": null,
+              "groups": []
+            }
+          }
+        ],
+        "validation": null,
+        "field": {
+          "name": "first_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Amanda",
+            "Albert",
+            "Evelyn",
+            "Denise",
+            "Carlos",
+            "Kathryn",
+            "Samuel",
+            "Harry",
+            "Jose"
+          ],
+          "selectedSampleValue": "Amanda",
+          "_id": "31",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "first_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "first_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "index": true,
+        "feedFieldName": "first_name"
+      },
+      {
+        "name": "last_name",
+        "partition": null,
+        "profile": true,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "last_name",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Jordan",
+            "Freeman",
+            "Morgan",
+            "Riley",
+            "Burns",
+            "White",
+            "Holmes",
+            "Howell",
+            "Foster"
+          ],
+          "selectedSampleValue": "Jordan",
+          "_id": "33",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "last_name",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "last_name",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "index": true,
+        "feedFieldName": "last_name"
+      },
+      {
+        "name": "email",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": [
+          {
+            "name": "Email",
+            "displayName": "Email",
+            "description": "Valid email address",
+            "shortDescription": null,
+            "properties": [],
+            "objectClassType": "com.thinkbiganalytics.policy.validation.EmailValidator",
+            "objectShortClassType": "EmailValidator",
+            "propertyValuesDisplayString": null,
+            "groups": [],
+            "editable": true,
+            "ruleType": {
+              "name": "Email",
+              "displayName": "Email",
+              "description": "Valid email address",
+              "shortDescription": null,
+              "properties": [],
+              "objectClassType": "com.thinkbiganalytics.policy.validation.EmailValidator",
+              "objectShortClassType": "EmailValidator",
+              "propertyValuesDisplayString": null,
+              "groups": []
+            }
+          }
+        ],
+        "field": {
+          "name": "email",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "ajordan0@com.com",
+            "afreeman1@is.gd",
+            "emorgan2@altervista.org",
+            "driley3@gmpg.org",
+            "cburns4@miitbeian.gov.cn",
+            "kwhite5@google.com",
+            "sholmes6@foxnews.com",
+            "hhowell7@eepurl.com",
+            "jfoster8@yelp.com"
+          ],
+          "selectedSampleValue": "ajordan0@com.com",
+          "_id": "35",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "email",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "email",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "email"
+      },
+      {
+        "name": "gender",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": [
+          {
+            "name": "Not Null",
+            "displayName": "Not Null",
+            "description": "Validate a value is not null",
+            "shortDescription": null,
+            "properties": [
+              {
+                "name": "EMPTY_STRING",
+                "displayName": "Allow Empty String Values",
+                "value": "false",
+                "values": null,
+                "placeholder": "",
+                "type": "select",
+                "hint": "If the value is a String, are empty strings not null?",
+                "objectProperty": "allowEmptyString",
+                "selectableValues": [
+                  {
+                    "label": "Yes",
+                    "value": "true",
+                    "hint": null
+                  },
+                  {
+                    "label": "No",
+                    "value": "false",
+                    "hint": null
+                  }
+                ],
+                "required": false,
+                "group": "",
+                "groupOrder": 1,
+                "layout": "column",
+                "hidden": false,
+                "pattern": "",
+                "patternInvalidMessage": "Invalid Input",
+                "formKey": "property_10",
+                "invalid": false
+              },
+              {
+                "name": "TRIM_STRING",
+                "displayName": "Trim String Values",
+                "value": "true",
+                "values": null,
+                "placeholder": "",
+                "type": "select",
+                "hint": " If the value is a String, should it be trimmed before checking for null?",
+                "objectProperty": "trimString",
+                "selectableValues": [
+                  {
+                    "label": "Yes",
+                    "value": "true",
+                    "hint": null
+                  },
+                  {
+                    "label": "No",
+                    "value": "false",
+                    "hint": null
+                  }
+                ],
+                "required": false,
+                "group": "",
+                "groupOrder": 2,
+                "layout": "column",
+                "hidden": false,
+                "pattern": "",
+                "patternInvalidMessage": "Invalid Input",
+                "formKey": "property_11",
+                "invalid": false
+              }
+            ],
+            "objectClassType": "com.thinkbiganalytics.policy.validation.NotNullValidator",
+            "objectShortClassType": "NotNullValidator",
+            "propertyValuesDisplayString": null,
+            "groups": [
+              {
+                "group": "",
+                "layout": "column",
+                "properties": [
+                  {
+                    "name": "EMPTY_STRING",
+                    "displayName": "Allow Empty String Values",
+                    "value": "false",
+                    "values": null,
+                    "placeholder": "",
+                    "type": "select",
+                    "hint": "If the value is a String, are empty strings not null?",
+                    "objectProperty": "allowEmptyString",
+                    "selectableValues": [
+                      {
+                        "label": "Yes",
+                        "value": "true",
+                        "hint": null
+                      },
+                      {
+                        "label": "No",
+                        "value": "false",
+                        "hint": null
+                      }
+                    ],
+                    "required": false,
+                    "group": "",
+                    "groupOrder": 1,
+                    "layout": "column",
+                    "hidden": false,
+                    "pattern": "",
+                    "patternInvalidMessage": "Invalid Input",
+                    "formKey": "property_10",
+                    "invalid": false
+                  },
+                  {
+                    "name": "TRIM_STRING",
+                    "displayName": "Trim String Values",
+                    "value": "true",
+                    "values": null,
+                    "placeholder": "",
+                    "type": "select",
+                    "hint": " If the value is a String, should it be trimmed before checking for null?",
+                    "objectProperty": "trimString",
+                    "selectableValues": [
+                      {
+                        "label": "Yes",
+                        "value": "true",
+                        "hint": null
+                      },
+                      {
+                        "label": "No",
+                        "value": "false",
+                        "hint": null
+                      }
+                    ],
+                    "required": false,
+                    "group": "",
+                    "groupOrder": 2,
+                    "layout": "column",
+                    "hidden": false,
+                    "pattern": "",
+                    "patternInvalidMessage": "Invalid Input",
+                    "formKey": "property_11",
+                    "invalid": false
+                  }
+                ]
+              }
+            ],
+            "editable": true,
+            "ruleType": {
+              "name": "Not Null",
+              "displayName": "Not Null",
+              "description": "Validate a value is not null",
+              "shortDescription": null,
+              "properties": [
+                {
+                  "name": "EMPTY_STRING",
+                  "displayName": "Allow Empty String Values",
+                  "value": "false",
+                  "values": null,
+                  "placeholder": "",
+                  "type": "select",
+                  "hint": "If the value is a String, are empty strings not null?",
+                  "objectProperty": "allowEmptyString",
+                  "selectableValues": [
+                    {
+                      "label": "Yes",
+                      "value": "true",
+                      "hint": null
+                    },
+                    {
+                      "label": "No",
+                      "value": "false",
+                      "hint": null
+                    }
+                  ],
+                  "required": false,
+                  "group": "",
+                  "groupOrder": 1,
+                  "layout": "column",
+                  "hidden": false,
+                  "pattern": "",
+                  "patternInvalidMessage": "Invalid Input"
+                },
+                {
+                  "name": "TRIM_STRING",
+                  "displayName": "Trim String Values",
+                  "value": "true",
+                  "values": null,
+                  "placeholder": "",
+                  "type": "select",
+                  "hint": " If the value is a String, should it be trimmed before checking for null?",
+                  "objectProperty": "trimString",
+                  "selectableValues": [
+                    {
+                      "label": "Yes",
+                      "value": "true",
+                      "hint": null
+                    },
+                    {
+                      "label": "No",
+                      "value": "false",
+                      "hint": null
+                    }
+                  ],
+                  "required": false,
+                  "group": "",
+                  "groupOrder": 2,
+                  "layout": "column",
+                  "hidden": false,
+                  "pattern": "",
+                  "patternInvalidMessage": "Invalid Input"
+                }
+              ],
+              "objectClassType": "com.thinkbiganalytics.policy.validation.NotNullValidator",
+              "objectShortClassType": "NotNullValidator",
+              "propertyValuesDisplayString": null,
+              "groups": [
+                {
+                  "group": "",
+                  "layout": "column",
+                  "properties": [
+                    {
+                      "name": "EMPTY_STRING",
+                      "displayName": "Allow Empty String Values",
+                      "value": "false",
+                      "values": null,
+                      "placeholder": "",
+                      "type": "select",
+                      "hint": "If the value is a String, are empty strings not null?",
+                      "objectProperty": "allowEmptyString",
+                      "selectableValues": [
+                        {
+                          "label": "Yes",
+                          "value": "true",
+                          "hint": null
+                        },
+                        {
+                          "label": "No",
+                          "value": "false",
+                          "hint": null
+                        }
+                      ],
+                      "required": false,
+                      "group": "",
+                      "groupOrder": 1,
+                      "layout": "column",
+                      "hidden": false,
+                      "pattern": "",
+                      "patternInvalidMessage": "Invalid Input"
+                    },
+                    {
+                      "name": "TRIM_STRING",
+                      "displayName": "Trim String Values",
+                      "value": "true",
+                      "values": null,
+                      "placeholder": "",
+                      "type": "select",
+                      "hint": " If the value is a String, should it be trimmed before checking for null?",
+                      "objectProperty": "trimString",
+                      "selectableValues": [
+                        {
+                          "label": "Yes",
+                          "value": "true",
+                          "hint": null
+                        },
+                        {
+                          "label": "No",
+                          "value": "false",
+                          "hint": null
+                        }
+                      ],
+                      "required": false,
+                      "group": "",
+                      "groupOrder": 2,
+                      "layout": "column",
+                      "hidden": false,
+                      "pattern": "",
+                      "patternInvalidMessage": "Invalid Input"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "field": {
+          "name": "gender",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Female",
+            "Male",
+            "Female",
+            "Female",
+            "",
+            "Female",
+            "Male",
+            "Male",
+            "Male"
+          ],
+          "selectedSampleValue": "Female",
+          "_id": "37",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "gender",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "gender",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "gender"
+      },
+      {
+        "name": "ip_address",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": [
+          {
+            "name": "IP Address",
+            "displayName": "IP Address",
+            "description": "Valid IP Address",
+            "shortDescription": null,
+            "properties": [],
+            "objectClassType": "com.thinkbiganalytics.policy.validation.IPAddressValidator",
+            "objectShortClassType": "IPAddressValidator",
+            "propertyValuesDisplayString": null,
+            "groups": [],
+            "editable": true,
+            "ruleType": {
+              "name": "IP Address",
+              "displayName": "IP Address",
+              "description": "Valid IP Address",
+              "shortDescription": null,
+              "properties": [],
+              "objectClassType": "com.thinkbiganalytics.policy.validation.IPAddressValidator",
+              "objectShortClassType": "IPAddressValidator",
+              "propertyValuesDisplayString": null,
+              "groups": []
+            }
+          }
+        ],
+        "field": {
+          "name": "ip_address",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1.197.201.2",
+            "218.111.175.34",
+            "7.161.136.94",
+            "140.35.109.83",
+            "169.113.235.40",
+            "195.131.81.179",
+            "232.234.81.197",
+            "91.235.51.73",
+            "132.31.53.61"
+          ],
+          "selectedSampleValue": "1.197.201.2",
+          "_id": "39",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "ip_address",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "ip_address",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "ip_address"
+      },
+      {
+        "name": "cc",
+        "partition": null,
+        "profile": false,
+        "standardization": [
+          {
+            "name": "Mask Credit Card",
+            "displayName": "Mask Credit Card",
+            "description": "Preserves last 4 digits",
+            "shortDescription": null,
+            "properties": [],
+            "objectClassType": "com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer",
+            "objectShortClassType": "MaskLeavingLastFourDigitStandardizer",
+            "propertyValuesDisplayString": null,
+            "groups": [],
+            "editable": true,
+            "ruleType": {
+              "name": "Mask Credit Card",
+              "displayName": "Mask Credit Card",
+              "description": "Preserves last 4 digits",
+              "shortDescription": null,
+              "properties": [],
+              "objectClassType": "com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer",
+              "objectShortClassType": "MaskLeavingLastFourDigitStandardizer",
+              "propertyValuesDisplayString": null,
+              "groups": []
+            }
+          }
+        ],
+        "validation": null,
+        "field": {
+          "name": "cc",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "6759521864920116",
+            "",
+            "6767119071901597",
+            "3576031598965625",
+            "5602256255204850",
+            "3583136326049310",
+            "3582641366974690",
+            "",
+            ""
+          ],
+          "selectedSampleValue": "6759521864920116",
+          "_id": "41",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "cc",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "cc",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "cc",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "cc"
+      },
+      {
+        "name": "country",
+        "partition": null,
+        "profile": true,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "country",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Indonesia",
+            "Canada",
+            "Russia",
+            "China",
+            "South Africa",
+            "Indonesia",
+            "Portugal",
+            "Bosnia and Herzegovina",
+            "South Korea"
+          ],
+          "selectedSampleValue": "Indonesia",
+          "_id": "43",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "country",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "country",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "country"
+      },
+      {
+        "name": "birthdate",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "birthdate",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "3/8/1971",
+            "1/16/1968",
+            "2/1/1960",
+            "4/8/1997",
+            "",
+            "2/25/1983",
+            "12/18/1987",
+            "3/1/1962",
+            "3/27/1992"
+          ],
+          "selectedSampleValue": "3/8/1971",
+          "_id": "45",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "birthdate",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "birthdate",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "birthdate"
+      },
+      {
+        "name": "salary",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "salary",
+          "description": "",
+          "derivedDataType": "double",
+          "precisionScale": null,
+          "dataTypeDisplay": "double",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "49756.53",
+            "150280.17",
+            "144972.51",
+            "90263.05",
+            "",
+            "69227.11",
+            "14247.62",
+            "186469.43",
+            "231067.84"
+          ],
+          "selectedSampleValue": "49756.53",
+          "_id": "47",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "salary",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "salary",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "salary"
+      },
+      {
+        "name": "title",
+        "partition": null,
+        "profile": false,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "title",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "Internal Auditor",
+            "Accountant IV",
+            "Structural Engineer",
+            "Senior Cost Accountant",
+            "",
+            "Account Executive",
+            "Senior Financial Analyst",
+            "Web Developer IV",
+            "Software Test Engineer I"
+          ],
+          "selectedSampleValue": "Internal Auditor",
+          "_id": "49",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "title",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "title",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "title"
+      },
+      {
+        "name": "comments",
+        "partition": null,
+        "profile": true,
+        "standardization": null,
+        "validation": null,
+        "field": {
+          "name": "comments",
+          "description": "",
+          "derivedDataType": "string",
+          "precisionScale": null,
+          "dataTypeDisplay": "string",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "1E+02",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "1E+02"
+          ],
+          "selectedSampleValue": "1E+02",
+          "_id": "51",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": true,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "double",
+          "origName": "comments",
+          "origDataType": "double",
+          "deleted": false,
+          "history": [
+            {
+              "name": "comments",
+              "derivedDataType": "double",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "comments",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        },
+        "feedFieldName": "comments"
+      }
+    ],
+    "partitions": [
+      {
+        "position": 0,
+        "field": "registration_dttm_year",
+        "sourceField": "registration_dttm",
+        "formula": "year",
+        "sourceDataType": "timestamp",
+        "_id": "53",
+        "columnDef": {
+          "name": "registration_dttm",
+          "description": "",
+          "derivedDataType": "timestamp",
+          "precisionScale": null,
+          "dataTypeDisplay": "timestamp",
+          "primaryKey": false,
+          "nullable": true,
+          "createdTracker": false,
+          "updatedTracker": false,
+          "sampleValues": [
+            "2016-02-03T07:55:29Z",
+            "2016-02-03T17:04:03Z",
+            "2016-02-03T01:09:31Z",
+            "2016-02-03T12:36:21Z",
+            "2016-02-03T05:05:31Z",
+            "2016-02-03T07:22:34Z",
+            "2016-02-03T08:33:08Z",
+            "2016-02-03T06:47:06Z",
+            "2016-02-03T03:52:53Z"
+          ],
+          "selectedSampleValue": "2016-02-03T07:55:29Z",
+          "_id": "27",
+          "nativeDataType": null,
+          "modifiable": true,
+          "dataTypeDescriptor": {
+            "numeric": false,
+            "date": false,
+            "complex": false
+          },
+          "dataTypeWithPrecisionAndScale": "string",
+          "origName": "registration_dttm",
+          "origDataType": "string",
+          "deleted": false,
+          "history": [
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "string",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            },
+            {
+              "name": "registration_dttm",
+              "derivedDataType": "timestamp",
+              "precisionScale": null,
+              "deleted": false,
+              "primaryKey": false,
+              "updatedTracker": false,
+              "createdTracker": false
+            }
+          ]
+        }
+      }
+    ],
+    "options": {
+      "compress": false,
+      "compressionFormat": "SNAPPY",
+      "auditLogging": true,
+      "encrypt": false,
+      "trackHistory": false
+    },
+    "sourceTableIncrementalDateField": null,
+    "tableType": "SNAPSHOT"
+  },
+  "category": {
+    "id": "2f8dee72-b514-44b7-ab7a-8d20a88de6fa",
+    "name": "Website",
+    "systemName": "website"
+  },
+  "dataOwner": "Marketing",
+  "tags": [
+    {
+      "name": "users"
+    },
+    {
+      "name": "registrations"
+    }
+  ],
+  "reusableFeed": false,
+  "dataTransformation": {
+    "chartViewModel": null,
+    "dataTransformScript": null,
+    "sql": null,
+    "states": []
+  },
+  "userProperties": [],
+  "options": {
+    "skipHeader": true
+  },
+  "active": true,
+  "templateName": "Data Ingest",
+  "allowSkipHeaderOption": true,
+  "skipHeader": true
+}

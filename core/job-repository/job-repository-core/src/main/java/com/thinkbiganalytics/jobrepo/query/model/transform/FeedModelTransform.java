@@ -140,6 +140,7 @@ public class FeedModelTransform {
         feedHealth.setUnhealthyCount(domain.getFailedCount());
         feedHealth.setHealthyCount(domain.getCompletedCount());
         feedHealth.setFeed(domain.getFeedName());
+        feedHealth.setFeedId(domain.getFeedId() != null ? domain.getFeedId().toString() : null);
         feedHealth.setLastOpFeed(executedFeed(domain));
         return feedHealth;
     }

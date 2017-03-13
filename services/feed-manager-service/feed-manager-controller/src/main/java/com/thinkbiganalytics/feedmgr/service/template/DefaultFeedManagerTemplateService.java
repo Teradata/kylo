@@ -25,15 +25,22 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,6 +69,10 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     @Inject
     NifiFlowCache nifiFlowCache;
+
+    @Inject
+    private MetadataEventService metadataEventService;
+
 
     @Inject
     private AccessController accessController;
@@ -201,10 +212,16 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     }
 
     @Override
-    //@Transactional(transactionManager = "metadataTransactionManager")
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
+        boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
         nifiFlowCache.updateRegisteredTemplate(template);
+        //notify audit of the change
+
+        FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(template.getState());
+        FeedManagerTemplate.ID id = templateProvider.resolveId(registeredTemplate.getId());
+        MetadataChange.ChangeType changeType = isNew ? MetadataChange.ChangeType.CREATE : MetadataChange.ChangeType.UPDATE;
+        notifyTemplateStateChange(registeredTemplate,id,state,changeType);
         return template;
     }
 
@@ -332,6 +349,22 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             }
             return null;
         });
+    }
+
+    /**
+     * update audit information for template changes
+     * @param template the template
+     * @param templateId the template id
+     * @param state the new state
+     * @param changeType the type of change
+     */
+    private void notifyTemplateStateChange(RegisteredTemplate template, FeedManagerTemplate.ID templateId,  FeedManagerTemplate.State state, MetadataChange.ChangeType changeType) {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
+        TemplateChange change = new TemplateChange(changeType, template != null ? template.getTemplateName() : "", templateId, state);
+        TemplateChangeEvent event = new TemplateChangeEvent(change, DateTime.now(), principal);
+        metadataEventService.notify(event);
     }
 
 

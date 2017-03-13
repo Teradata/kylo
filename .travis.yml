@@ -1,0 +1,31 @@
+language: java
+jdk:
+- oraclejdk8
+
+# Use Ubuntu Trusty with latest JDK 8
+dist: trusty
+sudo: required
+
+# Set build lifecycle options
+env:
+  global:
+  - MAVEN_OPTS="-Xms2g -Xmx4g"
+  - MAVEN_SKIP_RC=true
+
+addons:
+  apt:
+    packages:
+    - rpm
+
+install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
+script: mvn clean install -B -V
+
+# Cache .m2 directory for next run
+before_cache: "rm -rf $HOME/.m2/repository/com/thinkbiganalytics"
+cache:
+  directories:
+  - $HOME/.m2
+
+# Notifications will come from Jenkins so are disabled in Travis CI
+notifications:
+  email: false

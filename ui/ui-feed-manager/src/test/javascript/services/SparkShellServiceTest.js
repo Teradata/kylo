@@ -34,7 +34,10 @@ describe("SparkShellService", function() {
     // constructor
     it("should construct with a SQL statement", function() {
         var service = new SparkShellService("SELECT * FROM invalid");
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df\n");
     });
 
     // canRedo
@@ -106,10 +109,11 @@ describe("SparkShellService", function() {
         // Test script
         var formula = "(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")";
         service.push(tern.parse(formula), {});
-        expect(service.getFeedScript()).toBe("import org.apache.spark.sql._\n" +
-                                         "sqlContext.sql(\"SELECT * FROM invalid\")" +
-                                         ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
-                                         ".divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))");
+        expect(service.getFeedScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
+            + "df = df.select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\")).divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
+            + "df\n");
     });
 
     // getFields
@@ -134,6 +138,39 @@ describe("SparkShellService", function() {
 
     // getScript
     describe("get script", function() {
+        it("from an array expression", function() {
+            // Create service
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.setFunctionDefs({
+                "vectorAssembler": {"!spark": "new VectorAssembler().setInputCols(%@s).setOutputCol(%s).transform", "!sparkType": "transform"}
+            });
+
+            // Test empty array
+            service.push(tern.parse("vectorAssembler([], \"out\")"), {});
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.transform(new VectorAssembler().setInputCols(Array()).setOutputCol(\"out\").transform)\n"
+                + "df\n");
+
+            // Test array of one element
+            service.pop();
+            service.push(tern.parse("vectorAssembler([\"in\"], \"out\")"), {});
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.transform(new VectorAssembler().setInputCols(Array(\"in\")).setOutputCol(\"out\").transform)\n"
+                + "df\n");
+
+            // Test array of multiple elements
+            service.pop();
+            service.push(tern.parse("vectorAssembler([\"in1\", \"in2\"], \"out\")"), {});
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.transform(new VectorAssembler().setInputCols(Array(\"in1\", \"in2\")).setOutputCol(\"out\").transform)\n"
+                + "df\n");
+        });
         it("from a column expression", function() {
             // Create service
             var service = new SparkShellService("SELECT * FROM invalid");
@@ -151,10 +188,41 @@ describe("SparkShellService", function() {
             // Test script
             var formula = "(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")";
             service.push(tern.parse(formula), {});
-            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                    ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
-                    ".divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))");
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\")).divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
+                + "df\n");
+        });
+        it("from a DataFrame expression", function() {
+            // Create service
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.states_[0].columns = [
+                {field: "pricepaid", hiveColumnLabel: "pricepaid"},
+                {field: "label", hiveColumnLabel: "label"}
+            ];
+            service.setFunctionDefs({
+                "!define": {
+                    "LogisticRegression": {
+                        "run": {"!spark": ".fit(%r).transform", "!sparkType": "transform"},
+                        "setMaxIter": {"!spark": ".setMaxIter(%d)", "!sparkType": "LogisticRegression"},
+                        "setRegParam": {"!spark": ".setRegParam(%f)", "!sparkType": "LogisticRegression"}
+                    }
+                },
+                "LogisticRegression": {"!spark": "new LogisticRegression()", "!sparkType": "LogisticRegression"},
+                "sample": {"!spark": ".sample(false, %f)", "!sparkType": "dataframe"},
+                "vectorAssembler": {"!spark": "new VectorAssembler().setInputCols(%@s).setOutputCol(%s).transform", "!sparkType": "transform"}
+            });
+
+            // Test script
+            service.push(tern.parse("vectorAssembler([\"pricepaid\"], \"features\")"), {});
+            service.push(tern.parse("LogisticRegression().setMaxIter(10).setRegParam(0.01).run(sample(0.1))"), {});
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.transform(new VectorAssembler().setInputCols(Array(\"pricepaid\")).setOutputCol(\"features\").transform)\n"
+                + "df = df.transform(new LogisticRegression().setMaxIter(10).setRegParam(0.01).fit(df.sample(false, 0.1)).transform)\n"
+                + "df\n");
         });
         it("from a filter expression", function() {
             // Create service
@@ -175,10 +243,31 @@ describe("SparkShellService", function() {
             // Test script
             var formula = "filter(qtysold == 2 && pricepaid - commission > 200)";
             service.push(tern.parse(formula), {});
-            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                    ".filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(new Column(\"pricepaid\")" +
-                    ".minus(new Column(\"commission\")).gt(functions.lit(200))))");
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(new Column(\"pricepaid\").minus(new Column(\"commission\")).gt(functions.lit(200))))\n"
+                + "df\n");
+        });
+        it("from an object expression", function() {
+            // Create service
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.states_[0].columns = [
+                {field: "eventname", hiveColumnLabel: "eventname"},
+                {field: "venuecity", hiveColumnLabel: "venuecity"}
+            ];
+            service.setFunctionDefs({
+                "!define": {"Column": {"over": {"!spark": ".over(%o)", "!sparkType": "column"}}},
+                "partitionBy": {"!spark": "Window.partitionBy(%*c)", "!sparkType": "WindowSpec"}
+            });
+
+            // Test script
+            service.push(tern.parse("eventname.over(partitionBy(venuecity))"), {});
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.select(new Column(\"*\"), new Column(\"eventname\").over(Window.partitionBy(new Column(\"venuecity\"))))\n"
+                + "df\n");
         });
         it("from an optional expression", function() {
             // Create service
@@ -190,9 +279,11 @@ describe("SparkShellService", function() {
             // Test script
             var formula = "rand()";
             service.push(tern.parse(formula), {});
-            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                    ".select(new Column(\"*\"), functions.rand())");
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.select(new Column(\"*\"), functions.rand())\n"
+                + "df\n");
         });
         it("from a vararg expression", function() {
             // Create service
@@ -209,15 +300,17 @@ describe("SparkShellService", function() {
                         "sum": {"!spark": ".sum(%s%,*s)", "!sparkType": "dataframe"}
                     }
                 },
-                "groupBy": {"!spark": ".groupBy(%*c)", "!sparkType": "groupeddata"}
+                "groupBy": {"!spark": ".groupBy(%*c)", "!sparkType": "GroupedData"}
             });
 
             // Test script
             var formula = "groupBy(username, eventname).sum(\"qtysold\", \"pricepaid\")";
             service.push(tern.parse(formula), {});
-            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                    ".groupBy(new Column(\"username\"), new Column(\"eventname\")).sum(\"qtysold\", \"pricepaid\")");
+            expect(service.getScript()).toBe(
+                "import org.apache.spark.sql._\n"
+                + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+                + "df = df.groupBy(new Column(\"username\"), new Column(\"eventname\")).sum(\"qtysold\", \"pricepaid\")\n"
+                + "df\n");
         });
     });
 
@@ -228,7 +321,7 @@ describe("SparkShellService", function() {
 
         service.limit(5000);
         expect(service.limit()).toBe(5000);
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(5000)");
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\nvar df = sqlContext.sql(\"SELECT * FROM invalid\").limit(5000)\ndf\n");
     });
 
     // redo
@@ -242,11 +335,17 @@ describe("SparkShellService", function() {
         service.redo_.push(state);
 
         // Test redo
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df\n");
 
         expect(service.redo()).toEqual({formula: "42", icon: "code", name: "answer"});
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                                         ".withColumn(\"col1\", functions.lit(42))");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df = df.withColumn(\"col1\", functions.lit(42))\n"
+            + "df\n");
     });
 
     // sample
@@ -256,8 +355,10 @@ describe("SparkShellService", function() {
 
         service.sample(0.01);
         expect(service.sample()).toBe(0.01);
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\")" +
-                                         ".sample(false, 0.01).limit(1000)");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").sample(false, 0.01).limit(1000)\n"
+            + "df\n");
     });
 
     // shouldLimitBeforeSample
@@ -268,8 +369,10 @@ describe("SparkShellService", function() {
         service.sample(0.01);
         service.shouldLimitBeforeSample(true);
         expect(service.shouldLimitBeforeSample()).toBe(true);
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                                         ".sample(false, 0.01)");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000).sample(false, 0.01)\n"
+            + "df\n");
     });
 
     // splice
@@ -278,16 +381,20 @@ describe("SparkShellService", function() {
         var service = new SparkShellService("SELECT * FROM invalid");
         service.push(tern.parse("42"), {});
         service.push(tern.parse("\"thinkbig\""), {});
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                                         "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                                         ".select(new Column(\"*\"), functions.lit(42))" +
-                                         ".select(new Column(\"*\"), functions.lit(\"thinkbig\"))");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df = df.select(new Column(\"*\"), functions.lit(42))\n"
+            + "df = df.select(new Column(\"*\"), functions.lit(\"thinkbig\"))\n"
+            + "df\n");
 
         // Delete first formula
         service.splice(1, 1);
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
-                                         "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                                         ".select(new Column(\"*\"), functions.lit(\"thinkbig\"))");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df = df.select(new Column(\"*\"), functions.lit(\"thinkbig\"))\n"
+            + "df\n");
     });
 
     // undo
@@ -301,10 +408,16 @@ describe("SparkShellService", function() {
         service.states_.push(state);
 
         // Test redo
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
-                                         ".withColumn(\"col1\", functions.lit(42))");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df = df.withColumn(\"col1\", functions.lit(42))\n"
+            + "df\n");
 
         expect(service.undo()).toEqual({formula: "42", icon: "code", name: "answer"});
-        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
+        expect(service.getScript()).toBe(
+            "import org.apache.spark.sql._\n"
+            + "var df = sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)\n"
+            + "df\n");
     });
 });

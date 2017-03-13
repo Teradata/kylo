@@ -69,6 +69,8 @@ public class RestResponseStatus {
      */
     private List<ValidationError> validationErrors;
 
+    private RestResponseStatus() {}
+
     private RestResponseStatus(ResponseStatusBuilder builder) {
         this.status = builder.status;
         this.message = builder.message;

@@ -1,0 +1,43 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<md-card layout-align="center center">
+    <span class="card-title kpi-header">Services Health</span>
+    <span class="md-caption kpi-subtitle ">Monitors All Service Health</span>
+    <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+        <div ng-if="vm.dataLoaded">
+            <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
+            <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
+            <span layout="column">
+                <span class="kpi-health-count" ng-class="{'healthy':vm.indicator.counts.upCount >0}">{{vm.indicator.counts.upCount}}</span>
+                <span class="md-caption kpi-health-label">Healthy</span>
+            </span>
+            <span layout="column">
+                <span class="kpi-health-count" ng-class="{'unhealthy':vm.indicator.counts.errorCount >0}">{{vm.indicator.counts.errorCount}}</span>
+                <span class="md-caption kpi-health-label">Unhealthy</span>
+            </span>
+            </div>
+        </div>
+        <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        </div>
+
+    </md-card-content>
+
+
+</md-card>

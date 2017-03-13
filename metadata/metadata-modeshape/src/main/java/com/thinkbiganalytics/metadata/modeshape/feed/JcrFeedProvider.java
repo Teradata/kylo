@@ -124,6 +124,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Inject
     private MetadataEventService metadataEventService;
 
+    @Inject
+    private JcrFeedUtil jcrFeedUtil;
+
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
@@ -304,33 +307,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
-            addPostFeedChangeAction(feed, ChangeType.CREATE);
+            jcrFeedUtil.addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 
         return feed;
-    }
-
-    /**
-     * Registers an action that produces a feed change event upon a successful transaction commit.
-     *
-     * @param feed the feed to being created
-     */
-    private void addPostFeedChangeAction(Feed<?> feed, ChangeType changeType) {
-        Feed.State state = feed.getState();
-        Feed.ID id = feed.getId();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
-                                    ? SecurityContextHolder.getContext().getAuthentication()
-                                    : null;
-
-        Consumer<Boolean> action = (success) -> {
-            if (success) {
-                FeedChange change = new FeedChange(changeType, id, state);
-                FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
-                metadataEventService.notify(event);
-            }
-        };
-
-        JcrMetadataAccess.addPostTransactionAction(action);
     }
 
     @Override
@@ -575,7 +555,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed<?> feed = (JcrFeed<?>) getFeed(feedId);
 
         if (feed != null) {
-            addPostFeedChangeAction(feed, ChangeType.DELETE);
+            jcrFeedUtil.addPostFeedChangeAction(feed, ChangeType.DELETE);
             deleteById(feedId);
         }
     }

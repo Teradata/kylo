@@ -902,5 +902,35 @@
     </pluginManagement>
   </build>
 
+  <profiles>
+    <profile>
+      <!--* Run Functional Tests (*FT.java) by selecting `integration-tests` Maven profile-->
+      <!--* Integration Tests are not run if profile is not selected-->
+      <!--mvn clean -Pfunctional-tests integration-test-->
+
+      <id>functional-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <includes>
+                    <include>**/*FT.class</include>
+                  </includes>
+                </configuration>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

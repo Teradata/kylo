@@ -545,7 +545,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (feedFilter != null && feedFilter.getPreviousSearchCriteria() != null && !feedFilter.isValueCollection()) {
             //remove the feed filter from the list and filter by this feed
             searchCriterias.remove(feedFilter.getPreviousSearchCriteria());
-            return findAllForFeed(feedFilter.getValue().toString(), searchCriterias, pageable);
+            String feedValue = feedFilter.getValue().toString();
+            //remove any quotes around the feedValue
+            feedValue =  feedValue.replaceAll("^\"|\"$", "");
+            return findAllForFeed(feedValue, searchCriterias, pageable);
         } else {
             pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
             QJpaBatchJobInstance jobInstancePath = new QJpaBatchJobInstance("jobInstance");

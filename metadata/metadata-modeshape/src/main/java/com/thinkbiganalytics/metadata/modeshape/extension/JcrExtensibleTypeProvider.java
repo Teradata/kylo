@@ -114,7 +114,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             session.getWorkspace().getNodeTypeManager().unregisterNodeType(typeNode.getName());
             session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeNode.getName()).remove();
             return true;
-        } catch (ItemNotFoundException | NoSuchNodeTypeException e) {
+        } catch (ItemNotFoundException | NoSuchNodeTypeException | NullPointerException e) {  // KYLO-8: Ignore NPE caused by unregistering a node type
             return true;
         } catch (UnsupportedRepositoryOperationException e) {
             return false;

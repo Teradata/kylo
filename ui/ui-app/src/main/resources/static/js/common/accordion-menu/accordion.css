@@ -1,0 +1,35 @@
+
+.collapsible-item .title {
+  padding: 10px;
+  color: #3483BA;
+  background-color: #F9F9F9;
+  cursor: pointer;
+}
+
+.collapsed-menu .collapsible-item .title {
+  padding: 5px !important;
+}
+
+.collapsible-item .title.disabled {
+  background: #eee;
+  color: #999;
+  cursor: text;
+}
+
+.collapsible-item > .accordion-body {
+  position: relative;
+  top: -4px;
+  max-height: 0;
+  overflow: hidden;
+  z-index: -1;
+  -moz-transition: all .5s ease-in-out;
+  -o-transition: all .5s ease-in-out;
+  -webkit-transition: all .5s ease-in-out;
+  transition: all .5s ease-in-out;
+}
+
+
+.collapsible-item.open > .accordion-body {
+  max-height: 1000px;
+  z-index: 1;
+}

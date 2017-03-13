@@ -1,0 +1,41 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<card-layout>
+    <header-section transclude-to="head" layout="row" style="width:100%;">
+        <div class="card-title" style="white-space:nowrap" flex>Job Activity</div>
+        <span flex  layout-align="end top" class="md-button-group">
+              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-D'}" ng-click="vm.dateSelection = '3-D'">3 Days</md-button>
+          <!--  <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '10-day'}" ng-click="vm.dateSelection = '10-day'">10 Days</md-button> -->
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-M'}" ng-click="vm.dateSelection = '1-M'">1 Month</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-M'}" ng-click="vm.dateSelection = '3-M'">3 Months</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-Y'}" ng-click="vm.dateSelection = '1-Y'">1 Year</md-button>
+        </span>
+    </header-section>
+    <body-section transclude-to="body" id="feed-activity-chart" ng-cloak>
+        <div ng-if="vm.dataLoaded">
+            <nvd3 options="vm.chartOptions" data="vm.chartData"  api="vm.chartApi"></nvd3>
+
+        </div>
+        <div ng-if="!vm.dataLoaded" layout-align="center center" layout="column">
+            <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        </div>
+
+    </body-section>
+</card-layout>

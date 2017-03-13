@@ -94,12 +94,16 @@ public class FeedModelTransform {
      *
      * @param feedMetadata
      */
-    private void simplifyFeedMetadataForSerialization(FeedMetadata feedMetadata) {
+    private void prepareForSave(FeedMetadata feedMetadata) {
 
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().simplifyFieldPoliciesForSerialization();
         }
         feedMetadata.setRegisteredTemplate(null);
+
+        //reset all those properties that contain config variables back to the string with the config options
+        feedMetadata.getProperties().stream().filter(property -> property.isContainsConfigurationVariables()).forEach(property -> property.resetToTemplateValue());
+
 
     }
 
@@ -149,7 +153,7 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
-        simplifyFeedMetadataForSerialization(feedMetadata);
+        prepareForSave(feedMetadata);
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
 

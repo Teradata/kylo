@@ -1,0 +1,9 @@
+<div ng-if="lastBreadcrumbs.length == 2" layout-align="center" style="white-space: nowrap">
+<md-button class="icon-btn" ng-click="navigate( lastBreadcrumbs[0])">
+    <ng-md-icon md-icon icon="keyboard_arrow_left"></ng-md-icon>
+</md-button>
+  <span>  {{ lastBreadcrumbs[0].displayName }}</span>
+</div>
+<div ng-if="lastBreadcrumbs.length == 1" style="white-space: nowrap">
+{{ lastBreadcrumbs[0].displayName }}
+</div>

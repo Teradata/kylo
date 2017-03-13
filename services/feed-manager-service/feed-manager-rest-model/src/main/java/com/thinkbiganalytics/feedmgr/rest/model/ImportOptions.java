@@ -29,6 +29,12 @@ public class ImportOptions {
     private boolean overwrite;
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
 
+    /**
+     * if true it will not throw the exception, but continue on the import path skipping the import
+     * if false it will throw the exception unless the {@link this#overwrite} flag is set to true
+     */
+    private boolean continueIfExists;
+
     public String getCategorySystemName() {
         return categorySystemName;
     }
@@ -63,5 +69,13 @@ public class ImportOptions {
 
     public enum IMPORT_CONNECTING_FLOW {
         YES, NO, NOT_SET
+    }
+
+    public boolean isContinueIfExists() {
+        return continueIfExists;
+    }
+
+    public void setContinueIfExists(boolean continueIfExists) {
+        this.continueIfExists = continueIfExists;
     }
 }

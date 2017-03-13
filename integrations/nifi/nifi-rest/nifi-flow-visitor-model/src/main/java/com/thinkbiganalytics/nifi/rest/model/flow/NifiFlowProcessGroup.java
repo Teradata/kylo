@@ -139,13 +139,8 @@ public class NifiFlowProcessGroup {
 
     public void assignFlowIds() {
         Integer flowId = 0;
-        Integer maxCount = 0;
         for (NifiFlowProcessor processor : getSortedStartingProcessors()) {
             flowId = processor.assignFlowIds(flowId);
-            Integer count = processor.countNodes();
-            if (count > maxCount) {
-                maxCount = count;
-            }
         }
     }
 

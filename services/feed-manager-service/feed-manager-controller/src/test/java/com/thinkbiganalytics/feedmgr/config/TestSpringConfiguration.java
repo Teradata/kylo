@@ -46,7 +46,6 @@ import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
@@ -109,11 +108,6 @@ public class TestSpringConfiguration {
     @Bean
     public NifiFlowCache nifiFlowCache() {
         return new NifiFlowCache();
-    }
-
-    @Bean
-    public ModeShapeAvailability modeShapeAvailability() {
-        return Mockito.mock(ModeShapeAvailability.class);
     }
 
     @Bean

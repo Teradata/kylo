@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -133,7 +134,7 @@ public class ExportImportFeedService {
         return content;
     }
 
-    public ImportFeed importFeed(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
+    public ImportFeed importFeed(String fileName, InputStream inputStream, ImportFeedOptions importOptions) throws IOException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
 
         byte[] content = streamToByteArray(inputStream);
@@ -171,7 +172,10 @@ public class ExportImportFeedService {
             return feed;
         }
         //if we get here set the import overwrite to be true to allow for the template to be overwritten
-        importOptions.setOverwrite(true);
+        //set this so we will overwrite the template, if specified.
+        //and otherwise skip and continue if it exists
+        importOptions.setOverwrite(importOptions.isOverwriteFeedTemplate());
+        importOptions.setContinueIfExists(true);
         ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
         if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
             //if we dont have the permission to replace the reusable template, then return and ask for it.
@@ -235,7 +239,7 @@ public class ExportImportFeedService {
         }
     }
 
-    public class ImportFeed {
+    public static class ImportFeed {
 
         private boolean success;
         private String fileName;
@@ -243,6 +247,8 @@ public class ExportImportFeedService {
         private ExportImportTemplateService.ImportTemplate template;
         private NifiFeed nifiFeed;
         private String feedJson;
+
+        public ImportFeed() {}
 
         public ImportFeed(String fileName) {
             this.fileName = fileName;

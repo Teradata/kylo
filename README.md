@@ -1,6 +1,6 @@
 [![alt Kylo](https://cloud.githubusercontent.com/assets/5693584/22863033/4976d7d2-f0ee-11e6-95ec-3a30e2162a3c.png)](http://kylo.io/)
 
-Kylo offers a turn-key, enterprise-ready data lake solution on Hadoop and Spark that integrates best practices around metadata management, governance, and security gleaned from over Think Big's 150+ successful big data projects.
+Kylo is an enterprise-ready data lake management software platform for Hadoop and Spark integrating best practices around metadata management, governance, and security learned from over Think Big's 150+ successful big data projects.
 
 Visit [http://kylo.io](http://kylo.io) and unlock the power of Kylo today!
 

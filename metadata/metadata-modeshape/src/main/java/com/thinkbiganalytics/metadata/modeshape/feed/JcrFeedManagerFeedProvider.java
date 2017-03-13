@@ -63,6 +63,8 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     private FeedProvider feedProvider;
     @Inject
     private MetadataEventService metadataEventService;
+    @Inject
+    private JcrFeedUtil jcrFeedUtil;
 
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
@@ -142,7 +144,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
     @Override
     public void delete(FeedManagerFeed feedManagerFeed) {
-        addPostFeedChangeAction(feedManagerFeed, ChangeType.DELETE);
+        jcrFeedUtil.addPostFeedChangeAction(feedManagerFeed, ChangeType.DELETE);
 
         // Remove dependent feeds
         final Node node = ((JcrFeedManagerFeed) feedManagerFeed).getNode();
@@ -154,22 +156,5 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         super.delete(feedManagerFeed);
     }
 
-    private void addPostFeedChangeAction(FeedManagerFeed feed, ChangeType changeType) {
-        Feed.State state = feed.getState();
-        Feed.ID id = feed.getId();
-        String desc = feed.getQualifiedName();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
-                                    ? SecurityContextHolder.getContext().getAuthentication()
-                                    : null;
 
-        Consumer<Boolean> action = (success) -> {
-            if (success) {
-                FeedChange change = new FeedChange(changeType, desc,id, state);
-                FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
-                metadataEventService.notify(event);
-            }
-        };
-
-        JcrMetadataAccess.addPostTransactionAction(action);
-    }
 }

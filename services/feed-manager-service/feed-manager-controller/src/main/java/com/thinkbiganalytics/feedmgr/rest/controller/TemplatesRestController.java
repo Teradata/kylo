@@ -82,11 +82,13 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - Templates", produces = "application/json")
-@Path("/v1/feedmgr/templates")
+@Path(TemplatesRestController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Templates", description = "manages templates"))
 public class TemplatesRestController {
 
     private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
+    public static final String BASE = "/v1/feedmgr/templates";
+    public static final String REGISTERED = "/registered";
 
     @Autowired
     LegacyNifiRestClient nifiRestClient;
@@ -347,7 +349,7 @@ public class TemplatesRestController {
      * @
      */
     @GET
-    @Path("/registered")
+    @Path(REGISTERED)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of registered templates.")
     @ApiResponses(

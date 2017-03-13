@@ -1,0 +1,102 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div>
+    <div ng-if="vm.showSummary">
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading == true"></md-progress-linear>
+      <md-list flex layout-fill class="list-item-table">
+        <md-list-item   ng-repeat="row in vm.profileSummary">
+            <div layout="row" layout-fill>
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
+                                     <span class="item-title" title="{{row.TOTAL_COUNT}}">
+                                         {{row.TOTAL_COUNT}}
+                                   </span>
+                                   <span class="column-title column-title-bottom">
+                                   # Rows
+                                   </span>
+
+                </div>
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
+
+                                   <a ng-click="vm.onValidCountClick(row)" class="item-title primary-color-1" title="{{row.VALID_COUNT}}"  >
+                                 {{row.VALID_COUNT}}
+                                   </a>
+                                     <span class="column-title column-title-bottom">
+                                     # Valid
+                                   </span>
+                </div>
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
+
+                                   <span  ng-click="vm.onInvalidCountClick(row)" class="item-title primary-color-1" title="{{row.INVALID_COUNT}}"  >
+                                 {{row.INVALID_COUNT}}
+                                   </span>
+                                     <span class="column-title column-title-bottom">
+                                     # Invalid
+                                   </span>
+                </div>
+                <div flex="20" layout="column" class="item-column md-list-item-text ">
+                                     <span class="item-title" title="{{row.DATE_TIME}}">
+                                         {{row.DATE_TIME | moment}}
+                                   </span>
+                                   <span class="column-title column-title-bottom">
+                                   Processing Date
+                                   </span>
+
+                </div>
+                <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="row.MIN_TIMESTAMP">
+
+                   <span class="item-title"  title="{{row.MIN_TIMESTAMP}} - {{row.MAX_TIMESTAMP}}">
+                        {{row.MIN_TIMESTAMP}} to {{row.MAX_TIMESTAMP}}
+                    </span>
+                                     <span class="column-title column-title-bottom">
+                                    Dates Processed
+                                   </span>
+                </div>
+                <div class="item-column md-list-item-text ">
+                                    <md-button class="md-accent" ng-click="vm.viewProfileStats(row)">
+                                      View
+                                    </md-button>
+
+                </div>
+                </div>
+            </md-list-item>
+        </md-list>
+    </div>
+  <div ng-if="vm.showNoResults" class="layout-padding-left-right layout-padding-top-bottom">
+    No profile data for this feed.
+  </div>
+
+
+
+
+  <!--  <table style="border: 1px solid #EEEEEE;" cellpadding="2" cellspacing="2">
+        <tr>
+            <th ng-repeat="column in vm.profileSummary.columns" style="border-bottom: 1px solid #EEEEEE;">
+                {{column}}
+            </th>
+        </tr>
+        <tr ng-repeat="row in vm.profileSummary.rows" >
+            <td ng-repeat="field in vm.profileSummary.columns" style="border-bottom: 1px solid #EEEEEE;">
+                {{row[field]}}
+            </td>
+        </tr>
+    </table>
+
+-->
+</div>

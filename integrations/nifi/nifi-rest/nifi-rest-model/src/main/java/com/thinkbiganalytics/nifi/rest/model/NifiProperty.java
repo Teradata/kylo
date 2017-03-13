@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
@@ -79,6 +80,11 @@ public class NifiProperty {
     private boolean inputProperty;
 
     /**
+     * flag indicating the value of the template has ${config.} properties that need to be substituted
+     */
+    private boolean containsConfigurationVariables;
+
+    /**
      * a copy of the Template Property so it can be referenced back to when displaying data between the Feed and the template used
      **/
     private NifiProperty templateProperty;
@@ -102,6 +108,7 @@ public class NifiProperty {
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
         this.processorName = property.getProcessorType();
+        this.containsConfigurationVariables = property.isContainsConfigurationVariables();
     }
 
     public NifiProperty(String processGroupId, String processorId, String key, String value) {
@@ -268,6 +275,19 @@ public class NifiProperty {
 
     public void setInputProperty(boolean inputProperty) {
         this.inputProperty = inputProperty;
+    }
+
+    public boolean isContainsConfigurationVariables() {
+        return containsConfigurationVariables;
+    }
+
+    public void setContainsConfigurationVariables(boolean containsConfigurationVariables) {
+        this.containsConfigurationVariables = containsConfigurationVariables;
+    }
+
+    @JsonIgnore
+    public void resetToTemplateValue(){
+        setValue(getTemplateValue());
     }
 
 }

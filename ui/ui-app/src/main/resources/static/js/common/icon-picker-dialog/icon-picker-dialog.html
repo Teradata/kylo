@@ -1,0 +1,65 @@
+<md-dialog aria-label="Category"  ng-cloak >
+    <form>
+        <div  class="md-toolbar-tools">
+                <span> Icon for {{iconModel.name}}</span>
+        </div>
+        <md-dialog-content layout="column" flex layout-fill  layout-padding style="min-width:700px;min-height:400px;height:400px;max-height:400px;">
+            <div layout="row" flex layout-fill>
+                <div layout="column"  style="width:250px;">
+                    <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">Select your icon</span>
+                    <div  ng-if="loadingIcons"  layout-fill layout="row" layout-align="center center">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+                    </div>
+
+                    <div style="overflow-y:auto;overflow-x:hidden">
+                    <md-grid-list
+                            md-cols="3"
+                            md-row-height="1:1"
+                            md-gutter="16px" >
+                        <md-grid-tile ng-repeat="tile in iconTiles"
+                                      md-rowspan="1"
+                                      md-colspan="1"
+                                      ng-click="selectIcon(tile)"
+                                style=" outline: none;cursor:pointer;">
+                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;padding-right:30px;padding-bottom:30px;"></ng-md-icon>
+                        </md-grid-tile>
+                    </md-grid-list>
+                    </div>
+                </div>
+                <div layout="column"  style="width:250px;padding-left:20px;">
+                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Select your color</span>
+                    <div ng-if="loadingColors" layout-fill layout="row" layout-align="center center">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+                    </div>
+
+                    <div style="overflow-y:hidden">
+                    <md-grid-list
+                            md-cols="3"
+                            md-row-height="1:1"
+                            md-gutter="16px">
+                        <md-grid-tile ng-repeat="tile in colorTiles"
+                                      md-rowspan="1"
+                                      md-colspan="1"
+                                      ng-click="selectColor(tile)"
+                                      style="background-color:{{tile.background}}; outline: none;cursor:pointer;">
+                        </md-grid-tile>
+                    </md-grid-list>
+                    </div>
+                </div>
+                <div layout="column"  flex>
+                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Your icon</span>
+                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" style="fill:{{selectedColorTile.background}};padding-bottom:120px;padding-right:40px;"></ng-md-icon>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="cancel()">
+                Cancel
+            </md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="save()">
+                Save
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
