@@ -53,6 +53,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploading = false;
         this.uploadAllowed = false;
 
+
+
         /** flag to indicate if we get a valid connection back from NiFi.  Initially to true. it will be rechecked on load **/
         this.isNiFiRunning = true;
 
@@ -86,6 +88,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         var init = function() {
             self.feedId = $transition$.params().feedId;
+
+            self.exportFeedUrl = RestUrlService.ADMIN_EXPORT_FEED_URL+"/"+self.feedId
 
             loadFeed(requestedTabIndex);
             nifiRunningCheck();
@@ -243,6 +247,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
             }
         };
+
 
         function mergeTemplateProperties(feed) {
             var successFn = function(response) {
