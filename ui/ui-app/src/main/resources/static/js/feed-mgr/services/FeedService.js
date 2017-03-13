@@ -490,10 +490,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             var feedField = angular.copy(columnDef);
 
                             sourceField.name = columnDef.origName;
-                            if (angular.isDefined(policy)) {
-                                policy.feedFieldName = feedField.name;
-                                policy.name = columnDef.name;
-                            }
 
                             // structured files must use the original names
                             if (model.table.structured == true) {
@@ -501,6 +497,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                                 feedField.derivedDataType = columnDef.origDataType;
                             } else if (model.table.method == 'EXISTING_TABLE') {
                                 sourceField.name = columnDef.origName;
+                            }
+                            if (angular.isDefined(policy)) {
+                                policy.feedFieldName = feedField.name;
+                                policy.name = columnDef.name;
                             }
 
                             if (!columnDef.deleted) {
