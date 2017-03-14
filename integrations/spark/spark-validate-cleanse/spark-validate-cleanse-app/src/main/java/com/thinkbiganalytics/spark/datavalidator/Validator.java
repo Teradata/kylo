@@ -248,7 +248,7 @@ public class Validator implements Serializable {
         log.info("Building select statement for # of policies {}", policies1.length);
         for (int i = 0; i < policies1.length; i++) {
             if (policies1[i].getField() != null) {
-                log.info("policy [{}] name {} feedName", i, policies1[i].getField(), policies1[i].getFeedField());
+                log.info("policy [{}] name {} feedName {}", i, policies1[i].getField(), policies1[i].getFeedField());
                 String feedField = StringUtils.defaultIfEmpty(policies1[i].getFeedField(), policies1[i].getField());
                 fields.add("`" + feedField + "` as `" + policies1[i].getField() + "`");
             }
@@ -321,9 +321,19 @@ public class Validator implements Serializable {
         StructField[] fields = schema.fields();
         List<StructField> fieldsList = new Vector<>();
         for (int i = 0; i < fields.length; i++) {
-            if (policyMap.containsKey(fields[i].name().toLowerCase())) {
+            //Build a list of feed field names using the policy map
+            List<String> policyMapFeedFieldNames = new ArrayList<>();
+
+            for (Map.Entry<String, FieldPolicy> policyMapItem: policyMap.entrySet()) {
+                policyMapFeedFieldNames.add(policyMapItem.getValue().getFeedField().toLowerCase());
+            }
+
+            if (policyMapFeedFieldNames.contains(fields[i].name().toLowerCase())) {
                 log.info("Adding field {}", fields[i].name());
                 fieldsList.add(fields[i]);
+            }
+            else {
+                log.warn("Feed table field {} is not present in policy map", fields[i].name().toLowerCase());
             }
         }
 
