@@ -99,7 +99,7 @@ public class PartitionField {
     }
 
     public static enum PARTITON_FORMULA {
-        YEAR("int"), MONTH("int"), DAY("int"), HOUR("int"), MIN("int"), SEC("int"), VAL("string", true);
+        TO_DATE("date"), YEAR("int"), MONTH("int"), DAY("int"), HOUR("int"), MIN("int"), SEC("int"), VAL("string", true);
 
 
         private boolean useColumnDataType;

@@ -204,7 +204,7 @@ public class UtilityRestController {
     )
     @Nonnull
     public Response partitionFunctions() {
-        final Stream<String> kyloFunctions = Stream.of("val", "year", "month", "day", "hour", "minute");
+        final Stream<String> kyloFunctions = Stream.of("val", "to_date", "year", "month", "day", "hour", "minute");
         final Stream<String> userFunctions = Arrays.stream(env.getProperty("kylo.metadata.udfs", "").split(",")).map(String::trim).filter(StringUtils::isNotEmpty);
         return Response.ok(Stream.concat(kyloFunctions, userFunctions).collect(Collectors.toSet())).build();
     }

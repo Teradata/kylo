@@ -705,7 +705,7 @@
 
             // Filter formulas based on column type
             if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-                return _.without(formulas, "year", "month", "day", "hour", "minute");
+                return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
             } else {
                return formulas;
             }
