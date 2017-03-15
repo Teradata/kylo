@@ -22,8 +22,6 @@ package com.thinkbiganalytics.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.internal.mapping.Jackson2Mapper;
@@ -46,9 +44,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {FunctionalTestConfig.class})
-public class FunctionalTest {
+public class IntegrationTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FunctionalTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IntegrationTest.class);
 
     @Autowired
     private KyloConfig kyloConfig;

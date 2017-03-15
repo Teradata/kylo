@@ -58,7 +58,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
-import com.thinkbiganalytics.test.FunctionalTest;
+import com.thinkbiganalytics.test.IntegrationTest;
 
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.junit.Assert;
@@ -79,9 +79,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Functional Test for Feed Manager
  */
-public class FeedManagerFT extends FunctionalTest {
+public class FeedManagerIT extends IntegrationTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeedManagerFT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FeedManagerIT.class);
 
     private static final String SAMPLES_DIR = "/samples";
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/";
@@ -124,6 +124,17 @@ public class FeedManagerFT extends FunctionalTest {
         email.setDescription("Valid email address");
         email.setObjectClassType("com.thinkbiganalytics.policy.validation.EmailValidator");
         email.setObjectShortClassType("EmailValidator");
+
+
+        //TODO assert validator has ran by verifying all first names are in upper case
+
+
+        //TODO assert standardiser has ran by verifying there are 16 known empty names
+
+
+        //TODO assert data is in Hive table by looking at Table tab preview or maybe even executing count all query
+
+
     }
 
     @Test

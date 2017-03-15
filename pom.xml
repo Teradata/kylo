@@ -918,7 +918,7 @@
               <execution>
                 <configuration>
                   <includes>
-                    <include>**/*FT.class</include>
+                    <include>**/*IT.class</include>
                   </includes>
                 </configuration>
                 <goals>
