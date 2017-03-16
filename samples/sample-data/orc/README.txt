@@ -1,6 +1,6 @@
-userdata1_orc: This is a sample file containing data in ORC format.
+userdata[1-5]_orc: These are sample files containing data in ORC format.
 
--> Number of rows: 1000
+-> Number of rows in each file: 1000
 -> Column details:
 column#		column_name		hive_datatype
 =====================================================
