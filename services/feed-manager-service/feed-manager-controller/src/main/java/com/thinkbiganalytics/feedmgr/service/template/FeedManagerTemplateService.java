@@ -33,7 +33,6 @@ import java.util.Set;
  */
 public interface FeedManagerTemplateService {
 
-    String nifiTemplateIdForTemplateName(String templateName);
 
     /**
      * Register a template, save it, and return

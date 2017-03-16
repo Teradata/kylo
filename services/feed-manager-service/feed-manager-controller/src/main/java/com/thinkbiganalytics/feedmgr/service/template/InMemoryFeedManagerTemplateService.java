@@ -176,11 +176,6 @@ public class InMemoryFeedManagerTemplateService implements FeedManagerTemplateSe
     }
 
     @Override
-    public String nifiTemplateIdForTemplateName(String templateName) {
-        return null;
-    }
-
-    @Override
     public List<NifiProperty> getTemplateProperties(String templateId) {
         return null;
     }
