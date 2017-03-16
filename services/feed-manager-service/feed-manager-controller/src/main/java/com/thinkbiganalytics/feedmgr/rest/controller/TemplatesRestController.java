@@ -115,6 +115,11 @@ public class TemplatesRestController {
     }
 
 
+    /**
+     * This will list all the templates registered in Kylo
+     * @param includeDetails
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of all templates.")
@@ -127,7 +132,7 @@ public class TemplatesRestController {
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
         for (final TemplateDTO dto : nifiTemplates) {
 
-            RegisteredTemplate match = registeredTemplateService.getRegisteredTemplate(
+            RegisteredTemplate match = registeredTemplateService.findRegisteredTemplate(
                 RegisteredTemplateRequest.requestByNiFiTemplateProperties(dto.getId(), dto.getName()));
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
@@ -138,6 +143,12 @@ public class TemplatesRestController {
         return Response.ok(dtos).build();
     }
 
+    /**
+     * This will populate the select drop down when a user asks to register a new template
+     *
+     * @param includeDetails
+     * @return
+     */
     @GET
     @Path("/unregistered")
     @Produces(MediaType.APPLICATION_JSON)
@@ -152,7 +163,7 @@ public class TemplatesRestController {
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
         for (final TemplateDTO dto : nifiTemplates) {
-            RegisteredTemplate match = registeredTemplateService.getRegisteredTemplate(
+            RegisteredTemplate match = registeredTemplateService.findRegisteredTemplate(
                 RegisteredTemplateRequest.requestByNiFiTemplateProperties(dto.getId(), dto.getName()));
             if (match == null) {
                 dtos.add(new TemplateDtoWrapper(dto));
@@ -421,77 +432,58 @@ public class TemplatesRestController {
                   })
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
                                           @QueryParam("templateName") String templateName) {
-        RegisteredTemplate registeredTemplate = null;
-        if (allProperties) {
-            registeredTemplate = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestForTemplateCreation(templateId,templateName));
-        } else {
-            registeredTemplate = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
-        }
 
-        log.info("Returning Registered template for id {} as {} ", templateId, (registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
+        RegisteredTemplateRequest registeredTemplateRequest = new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).build();
+        RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
 
-        //if savedFeedId is passed in merge the properties with the saved values
-        /*
-        if (feedName != null) {
-            //TODO pass in the Category to this method
-            FeedMetadata feedMetadata = getMetadataService().getFeedByName("", feedName);
-            if (feedMetadata != null) {
-                List<NifiProperty> list = new ArrayList<>();
-                for (NifiProperty p : registeredTemplate.getProperties()) {
-                    list.add(new NifiProperty(p));
+        if(registeredTemplate != null) {
+            Set<PortDTO> ports = null;
+            // fetch ports for this template
+            try {
+                if (registeredTemplate.getNifiTemplate() != null) {
+                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
+                } else {
+                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
                 }
-                registeredTemplate.setProperties(list);
-                NifiPropertyUtil.matchAndSetTemplatePropertiesWithSavedProperties(registeredTemplate.getProperties(),
-                                                                                  feedMetadata.getProperties());
-            }
-        }
-        */
-        Set<PortDTO> ports = null;
-        // fetch ports for this template
-        try {
-            if (registeredTemplate.getNifiTemplate() != null) {
-                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
-            } else {
+            } catch (NifiComponentNotFoundException notFoundException) {
+                feedManagerTemplateService.syncNiFiTemplateId(registeredTemplate);
                 ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
             }
-        } catch (NifiComponentNotFoundException notFoundException) {
-            feedManagerTemplateService.syncTemplateId(registeredTemplate);
-            ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
-        }
-        if (ports == null) {
-            ports = new HashSet<>();
-        }
-        List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
-            return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-        }));
-
-        List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
-            return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
-        }));
-        registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
-        List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
-        List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
-
-        for (final PortDTO port : outputPorts) {
-
-            ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
-            if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
-                reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
-                                                                   reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
-                                                                       .getFeedOutputPortName()
-                                                                       .equalsIgnoreCase(port.getName())).orNull();
+            if (ports == null) {
+                ports = new HashSet<>();
             }
-            if (reusableTemplateConnectionInfo == null) {
-                reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
-                reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+            List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+            }));
+
+            List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+            }));
+            registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
+            List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
+            List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
+
+            for (final PortDTO port : outputPorts) {
+
+                ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
+                if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                    reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
+                                                                       reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
+                                                                           .getFeedOutputPortName()
+                                                                           .equalsIgnoreCase(port.getName())).orNull();
+                }
+                if (reusableTemplateConnectionInfo == null) {
+                    reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
+                    reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+                }
+                updatedConnectionInfo.add(reusableTemplateConnectionInfo);
+
             }
-            updatedConnectionInfo.add(reusableTemplateConnectionInfo);
 
+            registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+            registeredTemplate.initializeProcessors();
+            feedManagerTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
         }
-
-        registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
-        registeredTemplate.initializeProcessors();
-        feedManagerTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
         return Response.ok(registeredTemplate).build();
     }
