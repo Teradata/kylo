@@ -28,13 +28,7 @@
 
   </dependencies>
   <modules>
-    <module>ui-common</module>
-    <module>ui-operations-manager</module>
-    <module>ui-feed-manager</module>
     <module>ui-app</module>
     <module>swagger-ui</module>
-
   </modules>
-
-
 </project>
