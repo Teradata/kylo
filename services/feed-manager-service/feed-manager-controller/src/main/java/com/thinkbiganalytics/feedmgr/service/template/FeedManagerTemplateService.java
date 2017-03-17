@@ -99,13 +99,6 @@ public interface FeedManagerTemplateService {
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
 
-    /**
-     * Synchronize the Nifi template Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
-     *
-     * @param template the template to sync
-     * @return the updated template
-     */
-    RegisteredTemplate syncTemplateId(RegisteredTemplate template);
 
 
     /**

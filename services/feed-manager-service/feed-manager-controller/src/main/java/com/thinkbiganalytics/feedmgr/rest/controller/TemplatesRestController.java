@@ -237,53 +237,6 @@ public class TemplatesRestController {
         return Response.ok(processorProperties).build();
     }
 
-    /**
-     * Gets a templates datasource definitions
-     * This is now all done in the {@link #getNiFiTemplateFlowInfo}
-     */
-    @Deprecated
-    @GET
-    @Path("/nifi/{templateId}/datasource-definitions")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the datasource definitions for the specified template.")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the datasource definitions.", response = TemplateProcessorDatasourceDefinition.class, responseContainer = "List"),
-                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-                  })
-    public Response getDatasourceDefinitionsForProcessors(@PathParam("templateId") String templateId, @QueryParam("inputPorts") String inputPortIds) {
-        List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
-
-        if (StringUtils.isNotBlank(templateId)) {
-            List<RegisteredTemplate.Processor> processors = new ArrayList<>();
-            List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(inputPortIds);
-
-            List<RegisteredTemplate.FlowProcessor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateFlowProcessors(templateId, null);
-
-            Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
-            Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
-            if (defs != null) {
-                defs.stream().forEach(def -> datasourceDefinitionMap.put(def.getProcessorType(), def));
-            }
-
-            //join the two lists
-            processors.addAll(thisTemplateProcessors);
-            processors.addAll(reusableProcessors);
-
-            templateProcessorDatasourceDefinitions = processors.stream().filter(processor -> datasourceDefinitionMap.containsKey(processor.getType())).map(p -> {
-                TemplateProcessorDatasourceDefinition definition = new TemplateProcessorDatasourceDefinition();
-                definition.setProcessorType(p.getType());
-                definition.setProcessorName(p.getName());
-                definition.setProcessorId(p.getId());
-                definition.setDatasourceDefinition(datasourceDefinitionMap.get(p.getType()));
-                return definition;
-            }).collect(Collectors.toList());
-        }
-
-        return Response.ok(templateProcessorDatasourceDefinitions).build();
-
-
-    }
-
 
     /**
      * Returns data about the NiFiTemplate and its processors related to the input connections, along with the Datasources in the flow
@@ -393,9 +346,7 @@ public class TemplatesRestController {
     )
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@PathParam("templateId") String templateId,
                                                                                          @QueryParam("includeReusableTemplates") boolean includeReusableTemplates) {
-        List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
-
-        processorProperties = feedManagerTemplateService.getRegisteredTemplateProcessors(templateId, includeReusableTemplates);
+        List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getRegisteredTemplateProcessors(templateId, includeReusableTemplates);
 
         return processorProperties;
     }
@@ -435,56 +386,6 @@ public class TemplatesRestController {
 
         RegisteredTemplateRequest registeredTemplateRequest = new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).build();
         RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
-
-        if(registeredTemplate != null) {
-            Set<PortDTO> ports = null;
-            // fetch ports for this template
-            try {
-                if (registeredTemplate.getNifiTemplate() != null) {
-                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
-                } else {
-                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
-                }
-            } catch (NifiComponentNotFoundException notFoundException) {
-                feedManagerTemplateService.syncNiFiTemplateId(registeredTemplate);
-                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
-            }
-            if (ports == null) {
-                ports = new HashSet<>();
-            }
-            List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
-                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-            }));
-
-            List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
-                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
-            }));
-            registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
-            List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
-            List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
-
-            for (final PortDTO port : outputPorts) {
-
-                ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
-                if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
-                    reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
-                                                                       reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
-                                                                           .getFeedOutputPortName()
-                                                                           .equalsIgnoreCase(port.getName())).orNull();
-                }
-                if (reusableTemplateConnectionInfo == null) {
-                    reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
-                    reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
-                }
-                updatedConnectionInfo.add(reusableTemplateConnectionInfo);
-
-            }
-
-            registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
-            registeredTemplate.initializeProcessors();
-            feedManagerTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
-        }
-
         return Response.ok(registeredTemplate).build();
     }
 
@@ -554,27 +455,7 @@ public class TemplatesRestController {
     )
     public Response registerTemplate(RegisteredTemplate registeredTemplate) {
 
-        RegisteredTemplate saved = getMetadataService().registerTemplate(registeredTemplate);
-
-        if (saved.isReusableTemplate()) {
-            //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(TemplateCreationHelper.REUSABLE_TEMPLATES_CATEGORY_NAME, saved.getTemplateName());
-            if (metadata == null) {
-                metadata = new FeedMetadata();
-                FeedCategory category = metadataService.getCategoryBySystemName(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
-                if (category == null) {
-                    category = new FeedCategory();
-                    category.setName(TemplateCreationHelper.REUSABLE_TEMPLATES_CATEGORY_NAME);
-                    metadataService.saveCategory(category);
-                }
-                metadata.setCategory(category);
-                metadata.setTemplateId(saved.getId());
-                metadata.setFeedName(saved.getTemplateName());
-                metadata.setSystemFeedName(SystemNamingService.generateSystemName(saved.getTemplateName()));
-            }
-            metadata.setRegisteredTemplate(saved);
-            getMetadataService().createFeed(metadata);
-        }
+        RegisteredTemplate saved = feedManagerTemplateService.registerTemplate(registeredTemplate);
         return Response.ok(saved).build();
     }
 }

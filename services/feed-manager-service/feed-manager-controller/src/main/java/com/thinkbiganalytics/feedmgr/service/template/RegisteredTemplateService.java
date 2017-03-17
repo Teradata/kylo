@@ -1,9 +1,12 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -14,12 +17,14 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
@@ -28,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -184,7 +190,73 @@ public class RegisteredTemplateService {
         if(registeredTemplate == null){
             //throw exception
         }
+        else {
+                Set<PortDTO> ports = null;
+                // fetch ports for this template
+                try {
+                    if (registeredTemplate.getNifiTemplate() != null) {
+                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
+                    } else {
+                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+                    }
+                } catch (NifiComponentNotFoundException notFoundException) {
+                    syncNiFiTemplateId(registeredTemplate);
+                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+                }
+                if (ports == null) {
+                    ports = new HashSet<>();
+                }
+                List<PortDTO> outputPorts = ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+
+                List<PortDTO> inputPorts = ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+                registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
+                List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
+                List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
+
+                for (final PortDTO port : outputPorts) {
+
+                    ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
+                    if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                        reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
+                                                                           reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
+                                                                               .getFeedOutputPortName()
+                                                                               .equalsIgnoreCase(port.getName())).orNull();
+                    }
+                    if (reusableTemplateConnectionInfo == null) {
+                        reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
+                        reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+                    }
+                    updatedConnectionInfo.add(reusableTemplateConnectionInfo);
+
+                }
+
+                registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+                registeredTemplate.initializeProcessors();
+                ensureRegisteredTemplateInputProcessors(registeredTemplate);
+
+        }
+
         return registeredTemplate;
+    }
+
+
+    public List<RegisteredTemplate> getRegisteredTemplates() {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+
+            List<RegisteredTemplate> registeredTemplates = null;
+            List<FeedManagerTemplate> templates = templateProvider.findAll();
+            if (templates != null) {
+                templates.stream().filter(t -> t.getNifiTemplateId() == null).forEach(t -> {
+                    ensureNifiTemplateId(t);
+                });
+
+                registeredTemplates = templateModelTransform.domainToRegisteredTemplateWithFeedNames(templates);
+
+            }
+            return registeredTemplates;
+        });
+
     }
 
 
@@ -278,19 +350,18 @@ public class RegisteredTemplateService {
         RegisteredTemplate registeredTemplate = findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
            if (registeredTemplate != null) {
                feedMetadata.setTemplateId(registeredTemplate.getId());
-            }
 
-        if (registeredTemplate != null) {
             NifiPropertyUtil
                 .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
 
             //detect template properties that dont match the feed.properties from the registeredtemplate
             ensureFeedPropertiesExistInTemplate(feedMetadata, registeredTemplate);
             feedMetadata.setProperties(registeredTemplate.getProperties());
+               registeredTemplate.initializeProcessors();
+               feedMetadata.setRegisteredTemplate(registeredTemplate);
 
         }
-        registeredTemplate.initializeProcessors();
-        feedMetadata.setRegisteredTemplate(registeredTemplate);
+
         return feedMetadata;
 
     }
@@ -298,7 +369,8 @@ public class RegisteredTemplateService {
 
 
     /**
-     * If a Template changes the Processor Names the Feed Properties will no longer be associated to the correct processors This will match any feed properties to a whose processor name has changed in
+     * If a Template changes the Processor Names the Feed Properties will no longer be associated to the correct processors
+     * This will match any feed properties to a whose processor name has changed in
      * the template to the template processor/property based upon the template processor type.
      */
     private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, RegisteredTemplate registeredTemplate) {

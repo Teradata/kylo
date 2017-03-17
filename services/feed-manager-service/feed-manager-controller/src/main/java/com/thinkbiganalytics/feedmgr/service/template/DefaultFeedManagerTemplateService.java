@@ -201,32 +201,9 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
 
 
 
-    private FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
-        if (feedManagerTemplate.getNifiTemplateId() == null) {
-            String nifiTemplateId = nifiTemplateIdForTemplateName(feedManagerTemplate.getName());
-            feedManagerTemplate.setNifiTemplateId(nifiTemplateId);
-        }
-        return feedManagerTemplate;
-    }
-
     @Override
     public List<RegisteredTemplate> getRegisteredTemplates() {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
-
-            List<RegisteredTemplate> registeredTemplates = null;
-            List<FeedManagerTemplate> templates = templateProvider.findAll();
-            if (templates != null) {
-                templates.stream().filter(t -> t.getNifiTemplateId() == null).forEach(t -> {
-                    ensureNifiTemplateId(t);
-                });
-
-                registeredTemplates = templateModelTransform.domainToRegisteredTemplateWithFeedNames(templates);
-
-            }
-            return registeredTemplates;
-        });
-
+      return registeredTemplateService.getRegisteredTemplates();
     }
 
     @Override
