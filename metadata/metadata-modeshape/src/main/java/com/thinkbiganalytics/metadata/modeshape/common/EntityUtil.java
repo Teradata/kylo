@@ -47,6 +47,10 @@ public class EntityUtil {
     public static String pathForCategory(String categorySystemName) {
         return JcrUtil.path("/metadata", "feeds", categorySystemName).toString();
     }
+    
+    public static String pathForCategoryDetails(String categorySystemName) {
+        return JcrUtil.path("/metadata", "feeds", categorySystemName, "tba:details").toString();
+    }
 
     public static String pathForDatasourceDefinition() {
         return JcrUtil.path("/metadata", "datasourceDefinitions").toString();

@@ -25,6 +25,11 @@ package com.thinkbiganalytics.metadata.modeshape.category.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 import org.junit.After;
@@ -34,9 +39,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.google.common.base.Functions;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
@@ -68,7 +76,7 @@ public class JcrCategoryAllowedActionsTest {
     private Category.ID idC;
     
     @Before
-    public void createFeeds() {
+    public void createCategories() {
         metadata.commit(() -> {
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
@@ -76,16 +84,25 @@ public class JcrCategoryAllowedActionsTest {
         
         idA = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testA");
+            cat.setDisplayName("Test A");
+            cat.setDescription("Test A descr");
+            cat.setUserProperties(Arrays.asList("a1", "a2", "a3").stream().collect(Collectors.toMap(Object::toString, s -> s + " value")), Collections.emptySet());
             return cat.getId();
         }, TEST_USER1);
         
         idB = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testB");
+            cat.setDisplayName("Test B");
+            cat.setDescription("Test B descr");
+            cat.setUserProperties(Arrays.asList("b1", "b2", "b3").stream().collect(Collectors.toMap(Object::toString, s -> s + " value")), Collections.emptySet());
             return cat.getId();
         }, TEST_USER2);
         
         idC = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testC");
+            cat.setDisplayName("Test C");
+            cat.setDescription("Test C descr");
+            cat.setUserProperties(Arrays.asList("c1", "c2", "c3").stream().collect(Collectors.toMap(Object::toString, s -> s + " value")), Collections.emptySet());
             return cat.getId();
         }, TEST_USER2);
     }
@@ -106,21 +123,39 @@ public class JcrCategoryAllowedActionsTest {
         
         assertThat(catCnt2).isEqualTo(2);
     }
-//    
-//    @Test
-//    public void testSeeOwnFeedContentOnly() {
-//        metadata.read(() -> {
-//            Feed feedA = this.feedProvider.getFeed(idA);
-//            
-//            assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
-//            assertThat(feedA.getJson()).isNotNull();
-//            assertThat(feedA.getState()).isNotNull();
-//            
-//            Feed feedB = this.feedProvider.getFeed(idB);
-//            
-//            assertThat(feedB).isNull();
-//        }, TEST_USER1);
-//    }
+    
+    @Test
+    public void testSeeOwnContentOnly() {
+        metadata.read(() -> {
+            Category catA = this.categoryProvider.findById(idA);
+            
+            assertThat(catA.getDisplayName()).isNotNull().isEqualTo("Test A");
+            assertThat(catA.getDescription()).isNotNull().isEqualTo("Test A descr");
+            assertThat(catA.getSecurityGroups()).isNotNull();
+            assertThat(catA.getUserProperties()).isNotNull();
+            
+            Category catB = this.categoryProvider.findById(idB);
+            
+            assertThat(catB).isNull();
+        }, TEST_USER1);
+    }
+    
+    @Test
+    public void testSummaryOnlyRead() {
+        Object[] nameDescr = metadata.commit(() -> {
+            Category cat = this.categoryProvider.findById(idB);
+            cat.getAllowedActions().enable(TEST_USER1, CategoryAccessControl.ACCESS_CATEGORY);
+            return new String[] { cat.getName(), cat.getDescription() };
+        }, TEST_USER2);
+        
+        metadata.read(() -> {
+            Category cat = this.categoryProvider.findById(idB);
+            
+            assertThat(cat).extracting("name", "description").contains(nameDescr);
+            
+            assertThat(cat.getUserProperties()).isEmpty();
+        }, TEST_USER1);
+    }
 //    
 //    @Test
 //    public void testLimitRelationshipResults() {
@@ -139,23 +174,5 @@ public class JcrCategoryAllowedActionsTest {
 //                            
 //            assertThat(deps).hasSize(1).extracting("id").contains(this.idB);
 //        }, TEST_USER2);
-//    }
-//    
-//    @Test
-//    public void testSummaryOnlyRead() {
-//        metadata.commit(() -> {
-//            Feed feed = this.feedProvider.findById(idB);
-//            feed.getAllowedActions().enable(TEST_USER1, FeedAccessControl.ACCESS_FEED);
-//        }, TEST_USER2);
-//        
-//        metadata.read(() -> {
-//            Feed feed = this.feedProvider.findById(idB);
-//            
-//            assertThat(feed.getName()).isNotNull().isEqualTo("FeedB");
-//            assertThat(feed.getCategory()).isNotNull().hasFieldOrPropertyWithValue("name", this.categoryName);
-//            
-//            assertThat(feed.getJson()).isNull();
-//            assertThat(feed.getState()).isNull();
-//        }, TEST_USER1);
 //    }
 }

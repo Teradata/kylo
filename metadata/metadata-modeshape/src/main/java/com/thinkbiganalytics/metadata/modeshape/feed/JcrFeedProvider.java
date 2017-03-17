@@ -235,9 +235,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
      */
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
-        String categoryPath = EntityUtil.pathForCategory(categorySystemName);
         JcrCategory category = null;
         try {
+            String categoryPath = EntityUtil.pathForCategory(categorySystemName);
             Node categoryNode = getSession().getNode(categoryPath);
             if (categoryNode != null) {
                 category = JcrUtil.createJcrObject(categoryNode, JcrCategory.class);
@@ -248,8 +248,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
-        boolean newFeed = ! hasEntityNode(categoryPath, feedSystemName);
-        Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
+        String feedParentPath = category.getFeedParentPath();
+        boolean newFeed = ! hasEntityNode(feedParentPath, feedSystemName);
+        Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
 
         JcrFeed feed = new JcrFeed(feedNode, category);

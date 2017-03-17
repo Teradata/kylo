@@ -36,12 +36,15 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  */
-public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate {
+public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate, AccessControlledMixin {
 
     public static String NODE_TYPE = "tba:feedTemplate";
 
@@ -231,6 +234,11 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public RoleAssignments getRoleAssignments() {
         return this.accessControlled.getRoleAssignments();
+    }
+    
+    @Override
+    public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
+        return JcrTemplateAllowedActions.class;
     }
 
     public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {

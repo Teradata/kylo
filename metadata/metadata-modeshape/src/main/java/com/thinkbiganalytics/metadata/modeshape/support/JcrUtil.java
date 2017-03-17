@@ -69,6 +69,21 @@ public class JcrUtil {
     public static Path path(String first, String... more) {
         return JcrPath.get(first, more);
     }
+    
+    /**
+     * Creates a path out of the arguments appropriate for JCR.
+     *
+     * @param parent the parent node on whose path will be appended the additional elements
+     * @param elements the remaining elements to form the path
+     * @return a path string
+     */
+    public static Path path(Node parent, String... elements) {
+        try {
+            return JcrPath.get(parent.getPath(), elements);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get the path of the node: " + parent, e);
+        }
+    }
 
     /**
      * Checks whether the given mixin node type is in effect for the given node.

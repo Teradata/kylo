@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;

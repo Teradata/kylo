@@ -3,27 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.Feed.State;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -43,11 +22,32 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
  * limitations under the License.
  * #L%
  */
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.State;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
-import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
@@ -61,9 +61,6 @@ public class JcrFeedAllowedActionsTest {
     
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");
-    private static final GroupPrincipal READERS = new GroupPrincipal("testers");
-    private static final GroupPrincipal EDITORS = new GroupPrincipal("testers");
-    private static final GroupPrincipal EXPORTERS = new GroupPrincipal("testers");
 
     @Inject
     private MetadataAccess metadata;
@@ -88,10 +85,8 @@ public class JcrFeedAllowedActionsTest {
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
             Category cat = categoryProvider.ensureCategory("test");
-            cat.getAllowedActions().enable(TEST_USER1, CategoryAccessControl.EDIT_DETAILS);
+            cat.getAllowedActions().enableAll(TEST_USER1);
             cat.getAllowedActions().enableAll(TEST_USER2);
-//            cat.getAllowedActions().enableAll(TEST_USER1);
-//            cat.getAllowedActions().enableAll(TEST_USER2);
             return cat.getName();
         }, JcrMetadataAccess.SERVICE);
         
@@ -140,7 +135,7 @@ public class JcrFeedAllowedActionsTest {
         assertThat(feedCnt2).isEqualTo(2);
     }
     
-//    @Test
+    @Test
     public void testSeeOwnFeedContentOnly() {
         metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
@@ -155,7 +150,7 @@ public class JcrFeedAllowedActionsTest {
         }, TEST_USER1);
     }
     
-//    @Test
+    @Test
     public void testLimitRelationshipResults() {
         metadata.commit(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
@@ -174,7 +169,7 @@ public class JcrFeedAllowedActionsTest {
         }, TEST_USER2);
     }
     
-//    @Test
+    @Test
     public void testSummaryOnlyRead() {
         metadata.commit(() -> {
             Feed feed = this.feedProvider.findById(idB);

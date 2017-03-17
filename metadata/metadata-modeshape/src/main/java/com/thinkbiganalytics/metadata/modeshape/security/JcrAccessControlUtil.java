@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 import java.security.Principal;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -131,28 +132,27 @@ public final class JcrAccessControlUtil {
      * @param principal the principal being given the privilege
      * @param toNode the ending parent node 
      * @param privilegeNames the privilege being assigned
-     * @return true if any of the nodes had their privilege change for the principle (i.e. the priviledge had not already existed)
+     * @return true if any of the nodes had their privilege change for the principle (i.e. the privilege had not already existed)
      */
     public static boolean addHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
-            Node endNode = toNode;
             Node current = node;
             Node rootNode = toNode.getSession().getRootNode();
-            Deque<Node> stack = new ArrayDeque<>();
             AtomicBoolean added = new AtomicBoolean(false);
+            Deque<Node> stack = new ArrayDeque<>();
 
-            do {
+            while (! current.equals(toNode) && ! current.equals(rootNode)) {
                 stack.push(current);
                 current = current.getParent();
-            } while (!current.equals(endNode) && !current.equals(rootNode));
-            
+            }
+
             if (current.equals(rootNode) && ! toNode.equals(rootNode)) {
                 throw new IllegalArgumentException("addHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
             } else {
                 stack.push(current);
             }
 
-            stack.stream().forEach((n) -> added.set(addPermissions(n, principal, privilegeNames) || added.get()));
+            stack.stream().forEach((n) -> added.compareAndSet(false, addPermissions(n, principal, privilegeNames)));
 
             return added.get();
         } catch (RepositoryException e) {

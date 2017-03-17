@@ -205,7 +205,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     
 
     public Category getCategory() {
-        return getFeedSummary().map(d -> d.getCategory(JcrCategory.class)).orElse(null);
+        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
     }
 
     public FeedManagerTemplate getTemplate() {

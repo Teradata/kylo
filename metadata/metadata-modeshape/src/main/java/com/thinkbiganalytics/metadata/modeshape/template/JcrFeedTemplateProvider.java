@@ -44,8 +44,11 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  */
@@ -53,6 +56,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     @Inject
     private MetadataEventService metadataEventService;
+    
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
@@ -78,6 +84,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
 
         if (newTemplate) {
+            this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
+                    .ifPresent(actions -> template.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
             addPostFeedChangeAction(template, ChangeType.CREATE);
         }
 

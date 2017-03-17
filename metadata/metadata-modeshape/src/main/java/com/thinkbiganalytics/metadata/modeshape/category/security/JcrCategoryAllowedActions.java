@@ -101,11 +101,11 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
-                this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
-                this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, category.getNode(), Privilege.JCR_READ));
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.ACCESS_CATEGORY)) {
                 JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_READ);
             }
@@ -126,9 +126,9 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         });
         
         if (detailsEdit.get()) {
-            this.category.getDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+            this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         } else {
-            this.category.getDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+            this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         }
         
         if (summaryEdit.get()) {
@@ -138,9 +138,9 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         }
         
         if (detailsAccess.get()) {
-            this.category.getDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, category.getNode(), Privilege.JCR_READ));
+            this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         } else {
-            this.category.getDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, category.getNode(), Privilege.JCR_READ));
+            this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         }
         
         if (summaryAccess.get()) {
@@ -153,11 +153,11 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
-                this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL);
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
-                this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.ACCESS_CATEGORY)) {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             }

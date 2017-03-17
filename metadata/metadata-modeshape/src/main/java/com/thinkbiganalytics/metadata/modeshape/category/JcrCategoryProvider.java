@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
@@ -96,11 +97,14 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         Map<String, Object> props = new HashMap<>();
         props.put(JcrCategory.SYSTEM_NAME, systemName);
         boolean isNew = ! hasEntityNode(path, systemName);
-        Category category = findOrCreateEntity(path, systemName, props);
+        JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
         
         if (isNew) {
-            this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY).
+            this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
+                    .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
         }
+        
+        return category;
     }
 
     @Override

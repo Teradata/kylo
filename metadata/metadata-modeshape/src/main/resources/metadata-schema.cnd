@@ -213,7 +213,7 @@
 	- tba:state (LONG)
 	+ tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
 
-[tba:categoryDetails] > tba:propertied
+[tba:categoryDetails] > tba:extensibleEntity, tba:propertied
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
 	+ * (tba:feed) sns

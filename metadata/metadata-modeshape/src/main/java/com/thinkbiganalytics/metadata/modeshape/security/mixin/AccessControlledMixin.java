@@ -38,7 +38,7 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
 
     default void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner) {
         JcrAllowedActions allowed = getJcrAllowedActions();
-        allowed = prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
+        prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);
     }
 

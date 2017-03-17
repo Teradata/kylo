@@ -28,9 +28,11 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -48,7 +50,7 @@ import javax.jcr.RepositoryException;
  */
 public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category, AccessControlledMixin {
 
-    public static final String DETAILS = "tba:categoryDetails";
+    public static final String DETAILS = "tba:details";
 
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
@@ -132,6 +134,12 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
         getDetails().ifPresent(d -> d.setSecurityGroups(hadoopSecurityGroups));
     }
+    
+//    @Override
+//    public void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner) {
+//        JcrAccessControlUtil.
+//        AccessControlledMixin.super.setupAccessControl(prototype, owner);
+//    }
 
     @Override
     public CategoryId getId() {
@@ -162,6 +170,30 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         if (!getName().equals(name)) {
             throw new UnsupportedOperationException();
         }
+    }
+
+    public String getDescription() {
+        return super.getProperty(DESCRIPTION, String.class);
+    }
+
+    public void setDescription(String description) {
+        super.setProperty(DESCRIPTION, description);
+    }
+
+    public String getSystemName() {
+        return super.getProperty(SYSTEM_NAME, String.class);
+    }
+
+    public void setSystemName(String systemName) {
+        super.setProperty(SYSTEM_NAME, systemName);
+    }
+
+    public String getTitle() {
+        return super.getProperty(TITLE, String.class);
+    }
+
+    public void setTitle(String title) {
+        super.setProperty(TITLE, title);
     }
 
     @Override
@@ -197,5 +229,9 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         public CategoryId(Serializable ser) {
             super(ser);
         }
+    }
+
+    public String getFeedParentPath() {
+        return JcrUtil.path(getNode(), DETAILS).toString();
     }
 }
