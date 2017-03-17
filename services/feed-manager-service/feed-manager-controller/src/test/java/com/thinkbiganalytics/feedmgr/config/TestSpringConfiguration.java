@@ -24,6 +24,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.feedmgr.service.template.InMemoryFeedManagerTemplat
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
@@ -351,59 +353,62 @@ public class TestSpringConfiguration {
 
 
     @Bean
-    RegisteredTemplateUtil registeredTemplateUtil(){
+    RegisteredTemplateUtil registeredTemplateUtil() {
         return new RegisteredTemplateUtil();
     }
+
     @Bean
     RegisteredTemplateService registeredTemplateService() {
         return new RegisteredTemplateService();
     }
 
     @Bean
-    FeedModelTransform feedModelTransform(){
+    FeedModelTransform feedModelTransform() {
         return new FeedModelTransform();
     }
 
     @Bean
-    CategoryModelTransform categoryModelTransform(){
+    CategoryModelTransform categoryModelTransform() {
         return new CategoryModelTransform();
     }
 
     @Bean
-    FeedManagerCategoryProvider feedManagerCategoryProvider(){
+    FeedManagerCategoryProvider feedManagerCategoryProvider() {
         return new Mockito().mock(FeedManagerCategoryProvider.class);
     }
+
     @Bean
-    FeedManagerTemplateProvider feedManagerTemplateProvider(){
+    FeedManagerTemplateProvider feedManagerTemplateProvider() {
         return new Mockito().mock(FeedManagerTemplateProvider.class);
     }
 
     @Bean(name = "hiveJdbcTemplate")
-    JdbcTemplate hiveJdbcTemplate(){
+    JdbcTemplate hiveJdbcTemplate() {
         return new Mockito().mock(JdbcTemplate.class);
     }
-    @Bean(name="kerberosHiveConfiguration")
-    KerberosTicketConfiguration kerberosHiveConfiguration(){
+
+    @Bean(name = "kerberosHiveConfiguration")
+    KerberosTicketConfiguration kerberosHiveConfiguration() {
         return new KerberosTicketConfiguration();
     }
 
     @Bean
-    HadoopSecurityGroupProvider hadoopSecurityGroupProvider(){
+    HadoopSecurityGroupProvider hadoopSecurityGroupProvider() {
         return new Mockito().mock(HadoopSecurityGroupProvider.class);
     }
 
     @Bean
-    HiveService hiveService(){
+    HiveService hiveService() {
         return new Mockito().mock(HiveService.class);
     }
 
     @Bean
-    TemplateModelTransform templateModelTransform(){
+    TemplateModelTransform templateModelTransform() {
         return new TemplateModelTransform();
     }
 
     @Bean
-    EncryptionService encryptionService(){
+    EncryptionService encryptionService() {
         return new EncryptionService();
     }
 
@@ -413,7 +418,12 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    EncryptionController encryptionController(){
+    EncryptionController encryptionController() {
         return new EncryptionController(textEncryptorLocator());
+    }
+
+    @Bean
+    ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform() {
+        return new ServiceLevelAgreementModelTransform(Mockito.mock(Model.class));
     }
 }

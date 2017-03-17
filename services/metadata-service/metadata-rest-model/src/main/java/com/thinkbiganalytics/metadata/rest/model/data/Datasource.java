@@ -48,9 +48,10 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
 @JsonSubTypes({
-                  @JsonSubTypes.Type(value = DirectoryDatasource.class),
-                  @JsonSubTypes.Type(value = HiveTableDatasource.class),
-                  @JsonSubTypes.Type(value = DerivedDatasource.class)
+                  @JsonSubTypes.Type(DirectoryDatasource.class),
+                  @JsonSubTypes.Type(HiveTableDatasource.class),
+                  @JsonSubTypes.Type(DerivedDatasource.class),
+                  @JsonSubTypes.Type(JdbcDatasource.class)
               }
 )
 public class Datasource implements Serializable {

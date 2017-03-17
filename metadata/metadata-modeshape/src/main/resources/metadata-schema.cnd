@@ -8,12 +8,14 @@
  *          "datasources"
  *              "hive"
  *                  HiveTableDatasource*
-                "directory"
-                    DirectoryDatasource*
-                "derived"
-
-            "datasourceDefinitions"
-                   datasourceDefinition
+ *              "directory"
+ *                  DirectoryDatasource*
+ *              "derived"
+ *                  derivedDatasource
+ *              "user"
+ *                  userDatasource
+ *          "datasourceDefinitions"
+ *                 datasourceDefinition
  *          "prototypes"
  *             template
  *          "sla"
@@ -259,6 +261,13 @@
 
 [tba:slaActionConfiguration] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
+
+[tba:userDatasource] > tba:datasource
+    - tba:type (STRING)
+
+[tba:jdbcDatasource] > tba:userDatasource
+    - tba:controlerServiceId (STRING)
+    - tba:password (STRING)
 
 /**
 * [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable

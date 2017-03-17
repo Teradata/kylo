@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.rest;
+package com.thinkbiganalytics.feedmgr.rest;
 
 /*-
  * #%L
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.rest;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
@@ -32,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- */
+import javax.annotation.Nonnull;
+
 public class FeedLineageBuilder {
 
     Map<String, Feed> processedDomainFeeds = new HashMap<>();
@@ -41,11 +42,31 @@ public class FeedLineageBuilder {
 
     Map<String, Datasource> restDatasources = new HashMap<>();
 
+    /**
+     * The {@code Datasource} transformer
+     */
+    @Nonnull
+    private final DatasourceModelTransform datasourceTransform;
 
     private Feed domainFeed;
 
-    public FeedLineageBuilder(Feed domainFeed) {
+    /**
+     * The feed model transformer
+     */
+    @Nonnull
+    private final Model model;
+
+    /**
+     * Constructs a {@code FeedLineageBuilder} for the specified feed.
+     *
+     * @param domainFeed          the feed
+     * @param model               the feed model transformer
+     * @param datasourceTransform the datasource transformer
+     */
+    public FeedLineageBuilder(Feed domainFeed, @Nonnull final Model model, @Nonnull final DatasourceModelTransform datasourceTransform) {
         this.domainFeed = domainFeed;
+        this.model = model;
+        this.datasourceTransform = datasourceTransform;
         build(this.domainFeed);
     }
 
@@ -58,7 +79,7 @@ public class FeedLineageBuilder {
         Datasource ds = restDatasources.get(domainDatasource.getId().toString());
         if (ds == null) {
             // build the data source
-            ds = Model.DOMAIN_TO_DS(false).apply(domainDatasource);
+            ds = datasourceTransform.toDatasource(domainDatasource, DatasourceModelTransform.Level.BASIC);
 
             restDatasources.put(ds.getId(), ds);
             //populate the Feed relationships
@@ -87,7 +108,7 @@ public class FeedLineageBuilder {
     private com.thinkbiganalytics.metadata.rest.model.feed.Feed build(Feed domainFeed) {
         com.thinkbiganalytics.metadata.rest.model.feed.Feed
             feed =
-            restFeeds.containsKey(domainFeed.getId().toString()) ? restFeeds.get(domainFeed.getId().toString()) : Model.DOMAIN_TO_FEED.apply(domainFeed);
+            restFeeds.containsKey(domainFeed.getId().toString()) ? restFeeds.get(domainFeed.getId().toString()) : model.domainToFeed(domainFeed);
         restFeeds.put(feed.getId(), feed);
 
         @SuppressWarnings("unchecked")
@@ -120,7 +141,7 @@ public class FeedLineageBuilder {
             depFeeds.stream().forEach(depFeed -> {
                 com.thinkbiganalytics.metadata.rest.model.feed.Feed restFeed = restFeeds.get(depFeed.getId().toString());
                 if (restFeed == null) {
-                    com.thinkbiganalytics.metadata.rest.model.feed.Feed depRestFeed = Model.DOMAIN_TO_FEED(false).apply(depFeed);
+                    com.thinkbiganalytics.metadata.rest.model.feed.Feed depRestFeed = model.domainToFeed(depFeed);
                     restFeeds.put(depRestFeed.getId(), depRestFeed);
                     feed.getDependentFeeds().add(depRestFeed);
                     build(depFeed);
@@ -135,7 +156,7 @@ public class FeedLineageBuilder {
             usedByFeeds.stream().forEach(usedByFeed -> {
                 com.thinkbiganalytics.metadata.rest.model.feed.Feed restFeed = restFeeds.get(usedByFeed.getId().toString());
                 if (restFeed == null) {
-                    com.thinkbiganalytics.metadata.rest.model.feed.Feed usedByRestFeed = Model.DOMAIN_TO_FEED(false).apply(usedByFeed);
+                    com.thinkbiganalytics.metadata.rest.model.feed.Feed usedByRestFeed = model.domainToFeed(usedByFeed);
                     restFeeds.put(usedByRestFeed.getId(), usedByRestFeed);
                     feed.getUsedByFeeds().add(usedByRestFeed);
                     build(usedByFeed);

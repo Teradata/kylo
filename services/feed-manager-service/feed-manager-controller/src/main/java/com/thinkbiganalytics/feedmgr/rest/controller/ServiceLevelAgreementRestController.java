@@ -85,6 +85,8 @@ public class ServiceLevelAgreementRestController {
     private JcrMetadataAccess metadata;
     @Inject
     private MetadataAccess metadataAccess;
+    @Inject
+    private ServiceLevelAgreementModelTransform serviceLevelAgreementTransform;
 
     @GET
     @Path("/available-metrics")
@@ -234,7 +236,7 @@ public class ServiceLevelAgreementRestController {
         return this.metadata.commit(() -> {
             List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
             if (agreements != null) {
-                return ServiceLevelAgreementModelTransform.transformFeedServiceLevelAgreements(agreements);
+                return serviceLevelAgreementTransform.transformFeedServiceLevelAgreements(agreements);
             }
 
             return new ArrayList<>(0);

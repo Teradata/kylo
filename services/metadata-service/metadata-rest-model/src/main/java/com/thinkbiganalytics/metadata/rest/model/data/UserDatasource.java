@@ -2,7 +2,7 @@ package com.thinkbiganalytics.metadata.rest.model.data;
 
 /*-
  * #%L
- * thinkbig-metadata-rest-model
+ * kylo-metadata-rest-model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,26 +20,26 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  * #L%
  */
 
-import org.joda.time.DateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 
-public interface DatasourceCriteria {
+/**
+ * Defines a data source managed through Kylo by a user.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSubTypes(@JsonSubTypes.Type(JdbcDatasource.class))
+public class UserDatasource extends Datasource {
 
-    String NAME = "name";
-    String OWNER = "owner";
-    String ON = "on";
-    String AFTER = "after";
-    String BEFORE = "before";
-    String TYPE = "type";
+    /**
+     * Type name of this data source
+     */
+    private String type;
 
-    DatasourceCriteria name(String name);
+    public String getType() {
+        return type;
+    }
 
-    DatasourceCriteria createdOn(DateTime time);
-
-    DatasourceCriteria createdAfter(DateTime time);
-
-    DatasourceCriteria createdBefore(DateTime time);
-
-    DatasourceCriteria owner(String owner);
-
-    DatasourceCriteria type(Class<? extends Datasource> type, Class<? extends Datasource>... others);
+    public void setType(String type) {
+        this.type = type;
+    }
 }

@@ -53,17 +53,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>kylo-metadata-rest-controller</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>ant</groupId>
-          <artifactId>ant</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
