@@ -262,5 +262,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @type {string}
          */
         this.IS_NIFI_RUNNING_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/running";
+
+        /**
+         * The endpoint for retrieving data sources.
+         * @type {string}
+         */
+        this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
     });
 });

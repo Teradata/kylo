@@ -83,6 +83,18 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             CATEGORIES_EDIT: "editCategories",
 
             /**
+             * Allows access to data sources.
+             * @type {string}
+             */
+            DATASOURCE_ACCESS: "accessDatasources",
+
+            /**
+             * Allows creating and editing new data sources.
+             * @type {string}
+             */
+            DATASOURCE_EDIT: "editDatasources",
+
+            /**
              * Allows access to feeds.
              * @type {string}
              */

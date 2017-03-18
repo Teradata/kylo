@@ -487,6 +487,33 @@ define(['angular', 'kylo-common','kylo-services',
            }
        });
 
+       $stateProvider.state({
+           name: "datasources.**",
+           url: "/datasources",
+           lazyLoad: function(transition) {
+               transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
+                   //upon success go back to the state
+                   $stateProvider.stateService.go("datasources", transition.params());
+                   return args;
+               }, function error(err) {
+                   console.log("Error loading datasources.", err);
+                   return err;
+               });
+           }
+       }).state({
+           name: "datasource-details.**",
+           url: "/datasource-details",
+           lazyLoad: function(transition) {
+               transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
+                   //upon success go back to the state
+                   $stateProvider.stateService.go("datasource-details", transition.params());
+                   return args;
+               }, function error(err) {
+                   console.log("Error loading datasource-details.", err);
+                   return err;
+               });
+           }
+       });
    }]);
 
 
