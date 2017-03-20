@@ -47,13 +47,18 @@ import javax.jcr.security.Privilege;
 /**
  *
  */
-public class JcrAccessControlUtil {
+public final class JcrAccessControlUtil {
+
+    private JcrAccessControlUtil() {
+        throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
+    }
 
     public static boolean addPermissions(Node node, Principal principal, String... privilegeNames) {
         try {
             return addPermissions(node.getSession(), node.getPath(), principal, privilegeNames);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": "
+                    + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -61,7 +66,8 @@ public class JcrAccessControlUtil {
         try {
             return addPermissions(node.getSession(), node.getPath(), principal, privileges);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": " + privileges, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": "
+                    + Arrays.toString(privileges), e);
         }
 
     }
@@ -70,7 +76,8 @@ public class JcrAccessControlUtil {
         try {
             return addPermissions(session, path, principal, asPrivileges(session, privilegeNames));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
+                    + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -91,7 +98,8 @@ public class JcrAccessControlUtil {
 
             return added;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privileges, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
+                    + Arrays.toString(privileges), e);
         }
 
     }
@@ -120,7 +128,8 @@ public class JcrAccessControlUtil {
         try {
             return removePermissions(session, path, principal, asPrivileges(session, privilegeNames));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
+                    + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -168,7 +177,8 @@ public class JcrAccessControlUtil {
                 return false;
             }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + removes, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
+                    + Arrays.toString(removes), e);
         }
 
     }
