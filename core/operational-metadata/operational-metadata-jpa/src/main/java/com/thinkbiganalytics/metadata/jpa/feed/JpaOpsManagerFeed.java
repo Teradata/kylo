@@ -55,7 +55,8 @@ import javax.persistence.Table;
                                      @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
                                      @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)}),
                                  @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
-                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)})
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "exitMessage", type = String.class)})
                              })
 public class JpaOpsManagerFeed implements OpsManagerFeed {
 
