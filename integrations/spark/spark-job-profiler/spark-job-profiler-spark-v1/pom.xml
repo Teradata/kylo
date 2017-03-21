@@ -68,6 +68,7 @@
               <mainClass>${mainClass.name}</mainClass>
             </manifest>
           </archive>
+	  <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
           <execution>

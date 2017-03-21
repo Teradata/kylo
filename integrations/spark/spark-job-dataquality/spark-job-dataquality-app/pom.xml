@@ -105,7 +105,8 @@
               <mainClass>${mainClass.name}</mainClass>
             </manifest>
           </archive>
-        </configuration>
+          <tarLongFileMode>posix</tarLongFileMode>
+	</configuration>
         <executions>
           <execution>
             <id>make-assembly</id>

@@ -59,6 +59,7 @@
           <descriptors>
             <descriptor>src/main/assembly/descriptor.xml</descriptor>
           </descriptors>
+	  <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
           <execution>
