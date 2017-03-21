@@ -16,7 +16,15 @@ public class RegisteredTemplateRequest {
     private String nifiTemplateId;
     private boolean includeAllProperties;
 
+    /**
+     * Is request coming from a Feed Details
+     */
     private boolean isFeedEdit;
+
+    /**
+     * Is the request coming from editing a template
+     */
+    private boolean isTemplateEdit;
 
     public RegisteredTemplateRequest(){
 
@@ -48,7 +56,7 @@ public class RegisteredTemplateRequest {
 
 
 
-    public RegisteredTemplateRequest(String templateId, String templateName, boolean includePropertyDescriptors, boolean includeSensitiveProperties, boolean includeAllProperties, String nifiTemplateId, boolean isFeedEdit) {
+    public RegisteredTemplateRequest(String templateId, String templateName, boolean includePropertyDescriptors, boolean includeSensitiveProperties, boolean includeAllProperties, String nifiTemplateId, boolean isFeedEdit, boolean isTemplateEdit) {
         this.templateId = templateId;
         this.templateName = templateName;
         this.includePropertyDescriptors = includePropertyDescriptors;
@@ -56,6 +64,7 @@ public class RegisteredTemplateRequest {
         this.includeAllProperties = includeAllProperties;
         this.nifiTemplateId = nifiTemplateId;
         this.isFeedEdit = isFeedEdit;
+        this.isTemplateEdit = isTemplateEdit;
     }
 
     public String getTemplateId() {
@@ -106,6 +115,14 @@ public class RegisteredTemplateRequest {
         this.includeAllProperties = includeAllProperties;
     }
 
+    public boolean isFeedEdit() {
+        return isFeedEdit;
+    }
+
+    public boolean isTemplateEdit() {
+        return isTemplateEdit;
+    }
+
     public static class Builder {
 
         private String templateId;
@@ -116,6 +133,11 @@ public class RegisteredTemplateRequest {
         private boolean includeAllProperties;
 
         private boolean isFeedEdit;
+
+        /**
+         * Is the request coming from editing a template
+         */
+        private boolean isTemplateEdit;
 
         public Builder() {
 
@@ -154,8 +176,13 @@ public class RegisteredTemplateRequest {
             return this;
         }
 
+        public Builder isTemplateEdit(boolean isTemplateEdit){
+            this.isTemplateEdit = isTemplateEdit;
+            return this;
+        }
+
         public RegisteredTemplateRequest build(){
-            return new RegisteredTemplateRequest(templateId,templateName,includePropertyDescriptors,includeSensitiveProperties,includeAllProperties, nifiTemplateId,isFeedEdit);
+            return new RegisteredTemplateRequest(templateId,templateName,includePropertyDescriptors,includeSensitiveProperties,includeAllProperties, nifiTemplateId,isFeedEdit, isTemplateEdit);
         }
 
     }

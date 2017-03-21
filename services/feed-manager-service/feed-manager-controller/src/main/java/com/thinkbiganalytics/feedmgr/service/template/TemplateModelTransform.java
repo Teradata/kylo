@@ -46,8 +46,14 @@ public class TemplateModelTransform {
     @Inject
     private EncryptionService encryptionService;
 
+    public enum TEMPLATE_TRANSFORMATION_TYPE {
+        WITH_FEED_NAMES, WITHOUT_FEED_NAMES,WITH_SENSITIVE_DATA
+    }
+
 
     private void prepareForSave(RegisteredTemplate registeredTemplate){
+        //mark password rendertypes as sensitive
+        registeredTemplate.getProperties().stream().filter(p -> "password".equalsIgnoreCase(p.getRenderType())).forEach(p -> p.setSensitive(true));
         encryptSensitivePropertyValues(registeredTemplate);
     }
 
@@ -64,6 +70,20 @@ public class TemplateModelTransform {
 
     public final Function<FeedManagerTemplate, RegisteredTemplate>
         DOMAIN_TO_REGISTERED_TEMPLATE_WITH_SENSITIVE_DATA = DOMAIN_TO_REGISTERED_TEMPLATE(true, true);
+
+
+    public  Function<FeedManagerTemplate, RegisteredTemplate> getTransformationFunction(TEMPLATE_TRANSFORMATION_TYPE transformationType){
+        switch (transformationType){
+            case WITH_FEED_NAMES:
+                return DOMAIN_TO_REGISTERED_TEMPLATE;
+            case WITH_SENSITIVE_DATA:
+                return DOMAIN_TO_REGISTERED_TEMPLATE_WITH_SENSITIVE_DATA;
+            case WITHOUT_FEED_NAMES:
+                return DOMAIN_TO_REGISTERED_TEMPLATE_WITHOUT_FEED_NAMES;
+                default:
+                    return DOMAIN_TO_REGISTERED_TEMPLATE;
+        }
+    }
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
@@ -126,6 +146,11 @@ public class TemplateModelTransform {
             template.getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).forEach(nifiProperty -> {
                 if(!includeEncryptedProperties){
                     nifiProperty.setValue("");
+                }
+                else {
+                    String val = encryptionService.decrypt(nifiProperty.getValue());
+                    nifiProperty.setValue(val);
+
                 }
             });
         return template;

@@ -181,11 +181,6 @@ public class InMemoryFeedManagerTemplateService implements FeedManagerTemplateSe
     }
 
     @Override
-    public RegisteredTemplate syncTemplateId(RegisteredTemplate template) {
-        return null;
-    }
-
-    @Override
     public Set<PortDTO> getReusableFeedInputPorts() {
         return null;
     }

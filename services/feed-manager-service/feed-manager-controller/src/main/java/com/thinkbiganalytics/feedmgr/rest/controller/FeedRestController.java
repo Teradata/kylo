@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Lists;
 import com.mifmif.common.regex.Generex;
+import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
+import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -29,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.EditFeedAction;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -39,6 +42,8 @@ import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.thinkbiganalytics.metadata.FeedPropertySection;
+import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
@@ -47,10 +52,13 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
@@ -59,11 +67,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -166,7 +176,56 @@ public class FeedRestController {
     )
     @Nonnull
     public Response editFeed(@Nonnull final EditFeedEntity editFeedEntity) {
-return createFeed(editFeedEntity.getFeedMetadata());
+
+
+
+        return createFeed(editFeedEntity.getFeedMetadata());
+    }
+
+    private void populateFeed(EditFeedEntity editFeedEntity){
+        //fetch the feed
+        FeedMetadata feed = getMetadataService().getFeedById(editFeedEntity.getFeedMetadata().getFeedId());
+        FeedMetadata editFeed = editFeedEntity.getFeedMetadata();
+        switch (editFeedEntity.getAction()) {
+            case SUMMARY:
+                updateFeedMetadata(feed,editFeed,FeedPropertySection.SUMMARY);
+                break;
+            case NIFI_PROPERTIES:
+                updateFeedMetadata(feed,editFeed,FeedPropertySection.NIFI_PROPERTIES);
+                break;
+            case PROPERTIES:
+                updateFeedMetadata(feed,editFeed,FeedPropertySection.PROPERTIES);
+                break;
+            case TABLE_DATA:
+                updateFeedMetadata(feed,editFeed,FeedPropertySection.TABLE_DATA);
+                break;
+            case SCHEDULE:
+                updateFeedMetadata(feed,editFeed,FeedPropertySection.SCHEDULE);
+                break;
+            default:
+                break;
+        }
+
+        createFeed(feed);
+    }
+
+    private void updateFeedMetadata(FeedMetadata targetFeedMetadata, FeedMetadata modifiedFeedMetadata, FeedPropertySection feedPropertySection){
+
+        AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(FeedPropertyType.class);
+        List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(FeedMetadata.class);
+        List<AnnotatedFieldProperty> sectionList =  list.stream().filter(annotatedFieldProperty -> feedPropertySection.equals(((FeedPropertyType)annotatedFieldProperty.getAnnotation()).section())).collect(Collectors.toList());
+        sectionList.forEach(annotatedFieldProperty -> {
+            try {
+                Object value = FieldUtils.readField(annotatedFieldProperty.getField(), modifiedFeedMetadata);
+                FieldUtils.writeField(annotatedFieldProperty.getField(), targetFeedMetadata, value);
+            }
+            catch(IllegalAccessException e){
+                e.printStackTrace();
+            }
+        });
+
+
+
 
     }
 

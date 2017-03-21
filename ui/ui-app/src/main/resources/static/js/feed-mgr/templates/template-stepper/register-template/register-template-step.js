@@ -390,7 +390,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             $mdDialog.show({
                 controller: ["$scope","$mdDialog","nifiTemplateId","templateName","message",RegistrationErrorDialogController],
-                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template-error-dialog.html',
+                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true,
                 fullscreen: true,

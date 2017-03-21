@@ -83,6 +83,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
 
 
+                self.userSuppliedProperties = responseData.importOptions.properties;
+
 
                 var count = 0;
                 var errorMap = {"FATAL": [], "WARN": []};
@@ -180,12 +182,19 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
             }
 
-            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, {
+
+            var params = {
                 overwrite: self.overwrite,
                 overwriteFeedTemplate: self.overwriteFeedTemplate,
                 categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
                 importConnectingReusableFlow: createConnectingReusableFlow
-            });
+            };
+            if(self.userSuppliedProperties != undefined && ! _.isEmpty(self.userSuppliedProperties)  ) {
+                params.properties = angular.toJson(self.userSuppliedProperties);
+            }
+
+            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+
         };
 
         function showProgress() {

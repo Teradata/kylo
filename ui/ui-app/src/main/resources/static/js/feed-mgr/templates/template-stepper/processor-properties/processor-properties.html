@@ -151,7 +151,30 @@
                                                           ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
                                                 </md-chips>
                                               </div>
+                                                <div>
+                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                                        class="md-block">
+                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                                                            <md-checkbox aria-label="Sensitive"
+                                                                         ng-model="property.sensitive">
+                                                                Sensitive
+                                                            </md-checkbox>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
+                                                <div ng-if="property.userEditable">
+                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                                        class="md-block">
+                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                                                            <md-checkbox aria-label="Required"
+                                                                         ng-model="property.required">
+                                                                Required
+                                                            </md-checkbox>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
                                             </div>
+
                                         </ng-form>
 
                                     </div>

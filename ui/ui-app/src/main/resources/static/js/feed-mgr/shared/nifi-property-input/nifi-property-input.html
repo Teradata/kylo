@@ -19,6 +19,9 @@
   -->
 <label ng-class="{'label-small md-container-ignore':property.renderWithCodeMirror || property.renderType =='radio'}"
        ng-if="property.renderType == null || !( property.renderType == 'checkbox-true-false' || property.renderType == 'checkbox-custom')">{{property.key}}</label>
+<md-tooltip md-direction="bottom" ng-if="property.sensitive">
+  This is a sensitive property.
+</md-tooltip>
 
 <div ng-if="property.renderWithCodeMirror && property.renderType != 'text/x-hive' " ng-model="property.value" ui-codemirror="{
         lineWrapping : true,
@@ -35,19 +38,21 @@
                      allow-execute-query="false"></thinkbig-hql-editor>
 
 <div ng-if="!property.renderWithCodeMirror && !property.isLoading">
-    <input ng-model="property.value" ng-if="property.renderType == 'text' || property.renderType == null" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input ng-model="property.value" ng-if="!property.sensitive && (property.renderType == 'text' || property.renderType == null)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
 
-    <input ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
 
-    <textarea ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)">
+    <input ng-model="property.value" type="password" ng-if="property.renderType == 'password' || (property.renderType == 'text' && property.sensitive)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" />
+
+    <textarea ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)">
         {{property.value}}
     </textarea>
 
-    <md-checkbox ng-if="property.renderType == 'checkbox-true-false'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
+    <md-checkbox ng-if="property.renderType == 'checkbox-true-false'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
                  ng-true-value="'true'" ng-false-value="'false'">{{property.key}}
     </md-checkbox>
 
-    <md-checkbox ng-if="property.renderType == 'checkbox-custom'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
+    <md-checkbox ng-if="property.renderType == 'checkbox-custom'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
                  ng-true-value="'{{property.renderOptions['trueValue']}}'" ng-false-value="'{{property.renderOptions['falseValue']}}'">{{property.key}}
     </md-checkbox>
 
@@ -60,7 +65,8 @@
   <md-select ng-model="property.value"
              ng-if="property.renderType == 'select' && ((property.selectOptions != null && property.selectOptions.length >0) && ( property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0))"
              ng-disabled="propertyDisabled"
-             ng-change="onPropertyChanged(property)">
+             ng-change="onPropertyChanged(property)"
+             ng-required="property.required">
     <md-option ng-repeat="allowableValue in property.selectOptions" value="{{allowableValue}}">
       {{allowableValue}}
     </md-option>
@@ -68,7 +74,8 @@
 
   <md-select ng-model="property.value" ng-if="property.renderType == 'select' &&  (property.propertyDescriptor.allowableValues != null && property.propertyDescriptor.allowableValues.length > 0)"
              ng-disabled="propertyDisabled"
-             ng-change="onPropertyChanged(property)">
+             ng-change="onPropertyChanged(property)"
+             ng-required="property.required">
         <md-option ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}">
             {{allowableValue.displayName}}
         </md-option>
