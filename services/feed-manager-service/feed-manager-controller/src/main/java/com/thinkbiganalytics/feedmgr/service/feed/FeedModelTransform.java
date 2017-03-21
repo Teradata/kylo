@@ -119,11 +119,26 @@ public class FeedModelTransform {
     }
 
     private void encryptSensitivePropertyValues(FeedMetadata feedMetadata){
-        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue())));
+        List<String> encrypted = new ArrayList<>();
+        feedMetadata.getSensitiveProperties().stream().forEach(nifiProperty -> {
+            nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue()));
+            encrypted.add(nifiProperty.getValue());
+        });
+        int i =0;
     }
 
     public void decryptSensitivePropertyValues(FeedMetadata feedMetadata){
-        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(encryptionService.decrypt(nifiProperty.getValue())));
+        List<String> decrypted = new ArrayList<>();
+        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> {
+            try {
+                String decryptedValue = encryptionService.decrypt(nifiProperty.getValue());
+                nifiProperty.setValue(decryptedValue);
+                decrypted.add(decryptedValue);
+            }catch (Exception e){
+
+            }
+        });
+        int i =0;
     }
 
     /**

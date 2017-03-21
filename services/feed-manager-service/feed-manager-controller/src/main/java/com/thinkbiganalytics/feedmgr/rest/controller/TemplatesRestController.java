@@ -130,10 +130,11 @@ public class TemplatesRestController {
     public Response getTemplates(@QueryParam("includeDetails") boolean includeDetails) {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
+        List<RegisteredTemplate> registeredTemplates = registeredTemplateService.getRegisteredTemplates();
         for (final TemplateDTO dto : nifiTemplates) {
 
-            RegisteredTemplate match = registeredTemplateService.findRegisteredTemplate(
-                RegisteredTemplateRequest.requestByNiFiTemplateProperties(dto.getId(), dto.getName()));
+            RegisteredTemplate match =registeredTemplates.stream().filter(template -> template.getNifiTemplateId().equalsIgnoreCase(dto.getId()) || template.getTemplateName().equalsIgnoreCase(dto.getName())).findFirst().orElse(null);
+
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
                 wrapper.setRegisteredTemplateId(match.getId());
@@ -369,7 +370,7 @@ public class TemplatesRestController {
     }
 
     /**
-     * get a registeredTemplate
+     * get a registeredTemplate for updating
      *
      * 
      */
@@ -384,7 +385,7 @@ public class TemplatesRestController {
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
                                           @QueryParam("templateName") String templateName) {
 
-        RegisteredTemplateRequest registeredTemplateRequest = new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).build();
+        RegisteredTemplateRequest registeredTemplateRequest = new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).includePropertyDescriptors(true).isTemplateEdit(true).build();
         RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
         return Response.ok(registeredTemplate).build();
     }

@@ -132,30 +132,33 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
 
         RegisteredTemplate template = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeAllProperties(true).build());
-        if (template != null) {
-            template.initializeProcessors();
-            processorProperties.addAll(template.getInputProcessors());
-            processorProperties.addAll(template.getNonInputProcessors());
-        }
-        if (includeReusableProcessors && template.getReusableTemplateConnections() != null && !template.getReusableTemplateConnections().isEmpty()) {
+       if(template != null){
+               template.initializeProcessors();
+               processorProperties.addAll(template.getInputProcessors());
+               processorProperties.addAll(template.getNonInputProcessors());
 
-            //1 fetch ports in reusable templates
-            Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
-            Set<PortDTO> ports = getReusableFeedInputPorts();
-            if (ports != null) {
-                ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
-            }
+               if (includeReusableProcessors && template.getReusableTemplateConnections() != null && !template.getReusableTemplateConnections().isEmpty()) {
 
-            //match to the name
-            List<String>
-                matchingPortIds =
-                template.getReusableTemplateConnections().stream().filter(conn -> reusableTemplateInputPorts.containsKey(conn.getReusableTemplateInputPortName()))
-                    .map(reusableTemplateConnectionInfo -> reusableTemplateInputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName()).getId()).collect(Collectors.toList());
+                   //1 fetch ports in reusable templates
+                   Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
+                   Set<PortDTO> ports = getReusableFeedInputPorts();
+                   if (ports != null) {
+                       ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
+                   }
 
-            List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(matchingPortIds);
-            processorProperties.addAll(reusableProcessors);
-        }
-        return processorProperties;
+                   //match to the name
+                   List<String>
+                       matchingPortIds =
+                       template.getReusableTemplateConnections().stream().filter(conn -> reusableTemplateInputPorts.containsKey(conn.getReusableTemplateInputPortName()))
+                           .map(reusableTemplateConnectionInfo -> reusableTemplateInputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName()).getId())
+                           .collect(Collectors.toList());
+
+                   List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(matchingPortIds);
+                   processorProperties.addAll(reusableProcessors);
+               }
+           }
+           return processorProperties;
+
     }
 
     /**

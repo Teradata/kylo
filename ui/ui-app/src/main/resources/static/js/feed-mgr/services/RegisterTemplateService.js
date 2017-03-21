@@ -32,7 +32,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             customPropertyRendering: ["metadata.table.targetFormat", "metadata.table.feedFormat"],
 
             codemirrorTypes: null,
-            propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'number', 'label': 'Number', codemirror: false},
+            propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'password', 'label': 'Password'},{type: 'number', 'label': 'Number', codemirror: false},
                 {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
                 {type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false}],
             trueFalseRenderTypes: [{type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false},

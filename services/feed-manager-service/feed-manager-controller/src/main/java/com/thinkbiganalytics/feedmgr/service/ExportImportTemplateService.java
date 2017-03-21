@@ -121,7 +121,7 @@ public class ExportImportTemplateService {
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
 
-        RegisteredTemplate template = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
+        RegisteredTemplate template = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
@@ -234,7 +234,7 @@ public class ExportImportTemplateService {
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
 
-        RegisteredTemplate existingTemplate =  registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(template.getTemplateName()));
+        RegisteredTemplate existingTemplate =  registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(template.getTemplateName()));
         if (existingTemplate != null) {
             if (!importOptions.isOverwrite() && !importOptions.isContinueIfExists()) {
                 throw new UnsupportedOperationException(
@@ -289,8 +289,7 @@ public class ExportImportTemplateService {
                 //register it in the system
                 metadataService.registerTemplate(template);
                 //get the new template
-
-                template = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(template.getId()).templateName(template.getTemplateName()).build());
+                template = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(template.getId()).templateName(template.getTemplateName()).build());
                 importTemplate.setTemplateId(template.getId());
 
 

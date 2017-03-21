@@ -20,6 +20,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  */
 public class ImportOptions {
@@ -28,6 +31,8 @@ public class ImportOptions {
     private boolean createReusableFlow;
     private boolean overwrite;
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
+
+    private List<ImportFeedProperty> properties;
 
 
 
@@ -81,5 +86,14 @@ public class ImportOptions {
         this.continueIfExists = continueIfExists;
     }
 
+    public List<ImportFeedProperty> getProperties() {
+        if(properties == null){
+            properties = Collections.emptyList();
+        }
+        return properties;
+    }
 
+    public void setProperties(List<ImportFeedProperty> properties) {
+        this.properties = properties;
+    }
 }

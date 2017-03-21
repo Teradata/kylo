@@ -142,10 +142,4 @@ public interface NiFiRestClient {
     NiFiReportingTaskRestClient reportingTasks();
 
 
-    /**
-     * Get the client to manage NiFi snippets
-     * @return the snippet rest client
-     */
-    @Nonnull
-    NiFiSnippetsRestClient snippets();
 }

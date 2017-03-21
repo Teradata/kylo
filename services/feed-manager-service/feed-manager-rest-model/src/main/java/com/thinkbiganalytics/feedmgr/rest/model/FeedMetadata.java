@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
+import com.thinkbiganalytics.metadata.FeedPropertySection;
+import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -59,26 +61,39 @@ public class FeedMetadata implements UIFeed {
     private String templateName;
     private List<NifiProperty> properties;
 
+    @FeedPropertyType(section = FeedPropertySection.SCHEDULE)
     private FeedSchedule schedule;
 
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField
     private String feedName;
+
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField(description = "The system feed name")
     private String systemFeedName;
+
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField
     private String description;
 
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     private List<Tag> tags;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField
     private String dataOwner;
 
     private FeedCategory category;
+
+    @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private TableSetup table;
+
     @MetadataField
     private Date createDate;
     @MetadataField
     private Date updateDate;
 
+    @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private FeedDataTransformation dataTransformation;
 
     private boolean active = true;
@@ -100,9 +115,14 @@ public class FeedMetadata implements UIFeed {
     /**
      * User-defined business metadata
      */
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     private Set<UserProperty> userProperties;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField(description = "List of Ranger/Sentry groups that you want to grant access for this feed")
     private String hadoopSecurityGroups;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField(description = "Type of authorization system used. NONE, RANGER, or SENTRY")
     private String hadoopAuthorizationType;
     private List<HadoopSecurityGroup> securityGroups;
@@ -454,5 +474,13 @@ public class FeedMetadata implements UIFeed {
 
     public static enum STATE {
         NEW, ENABLED, DISABLED
+    }
+
+    public List<NifiProperty> getConfigurationProperties(){
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
+    }
+
+    public List<NifiProperty> getSensitiveProperties(){
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
     }
 }

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform.TEMPLATE_TRANSFORMATION_TYPE;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
@@ -30,6 +31,7 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,20 +77,38 @@ public class RegisteredTemplateService {
      * @param registeredTemplateRequest a request to get a registered template
      * @return the RegisteredTemplate or null if not found
      */
-    public RegisteredTemplate findRegisteredTemplate(RegisteredTemplateRequest registeredTemplateRequest){
+    public RegisteredTemplate findRegisteredTemplate(RegisteredTemplateRequest registeredTemplateRequest) {
 
         String templateId = registeredTemplateRequest.getTemplateId();
         String templateName = registeredTemplateRequest.getTemplateName();
 
-        RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId);
+        //if we are looking for a given template as a request from a Feed, we need to query and access it via a service account.
+        //otherwise we will access it as the user
+        Principal[] principals = null;
+        if (registeredTemplateRequest.isFeedEdit()) {
+            principals = new Principal[1];
+            principals[0] = MetadataAccess.SERVICE;
+
+        }
+        else {
+            principals = new Principal[0];
+        }
+        //The default transformation type will not include sensitive property values.
+        //if requested as a template edit, it will include the sensitive property values
+        TEMPLATE_TRANSFORMATION_TYPE transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_FEED_NAMES;
+        if(registeredTemplateRequest.isTemplateEdit()) {
+            transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_SENSITIVE_DATA;
+        }
+
+        RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId,transformationType ,principals);
         //if it is null check to see if the template exists in nifi and is already registered
         if (registeredTemplate == null) {
             log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
-            registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId);
+            registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId,transformationType,principals);
         }
         if(registeredTemplate == null) {
             //attempt to look by name
-            registeredTemplate = findRegisteredTemplateByName(templateName);
+            registeredTemplate = findRegisteredTemplateByName(templateName,transformationType,principals);
 
         }
         if (registeredTemplate != null){
@@ -106,39 +126,66 @@ public class RegisteredTemplateService {
 
 
 
+
+
     /**
      * Find a template by the Kylo Id
      * @param templateId The Kylo {@link RegisteredTemplate#id}
      * @return the RegisteredTemplate matching the id or null if not found
      */
     public RegisteredTemplate findRegisteredTemplateById(final String templateId) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+        return findRegisteredTemplateById(templateId,null);
+    }
+    /**
+     * Find a template by the Kylo Id
+     * @param templateId The Kylo {@link RegisteredTemplate#id}
+     * @param principals list or principals required to access
+     * @return the RegisteredTemplate matching the id or null if not found
+     */
+    private RegisteredTemplate findRegisteredTemplateById(final String templateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal ... principals) {
+        if(StringUtils.isBlank(templateId)){
+            return null;
+        }
+        else {
+            return metadataAccess.read(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
 
-            RegisteredTemplate registeredTemplate = null;
-            FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-            FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-            if (domainTemplate != null) {
-                //transform it
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
-            }
-            if (registeredTemplate != null) {
-                registeredTemplate.initializeProcessors();
-                ensureNifiTemplate(registeredTemplate);
-            }
+                RegisteredTemplate registeredTemplate = null;
+                FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+                FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+                if (domainTemplate != null) {
+                    //transform it
+                    registeredTemplate = templateModelTransform.getTransformationFunction(transformationType).apply(domainTemplate);
+                }
+                if (registeredTemplate != null) {
+                    registeredTemplate.initializeProcessors();
+                    ensureNifiTemplate(registeredTemplate);
+                }
 
-            return registeredTemplate;
-        });
+                return registeredTemplate;
+            },principals);
+        }
 
+    }
+
+    /**
+     * Find a template by the nifi id
+     * @param nifiTemplateId the nifi id
+     *
+     * @return the RegisteredTemplate matching the passed in nifiTemplateId, or null if not found
+     */
+    public RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId) {
+     return findRegisteredTemplateByNiFiIdentifier(nifiTemplateId,null);
     }
 
 
     /**
      * Find a template by the nifi id
      * @param nifiTemplateId the nifi id
+     * @param principals list of principals required to access
      * @return the RegisteredTemplate matching the passed in nifiTemplateId, or null if not found
      */
-    public RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId) {
+    private RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId, TEMPLATE_TRANSFORMATION_TYPE transformationType,Principal ... principals) {
         if(StringUtils.isBlank(nifiTemplateId)){
             return null;
         }
@@ -148,14 +195,13 @@ public class RegisteredTemplateService {
             RegisteredTemplate registeredTemplate = null;
             FeedManagerTemplate template = templateProvider.findByNifiTemplateId(nifiTemplateId);
             if (template != null) {
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+                registeredTemplate = templateModelTransform.getTransformationFunction(transformationType).apply(template);
             }
             return registeredTemplate;
-        });
+        },principals);
 
 
     }
-
 
     /**
      * Find a template by the name
@@ -163,16 +209,26 @@ public class RegisteredTemplateService {
      * @return the RegisteredTemplate matching the passed in name or null if not found
      */
     public RegisteredTemplate findRegisteredTemplateByName(final String templateName) {
+        return findRegisteredTemplateByName(templateName,null);
+    }
+
+    /**
+     * Find a template by the name
+     * @param templateName the name of the template
+     *                     @param principals list of principals required to access
+     * @return the RegisteredTemplate matching the passed in name or null if not found
+     */
+    public RegisteredTemplate findRegisteredTemplateByName(final String templateName, TEMPLATE_TRANSFORMATION_TYPE transformationType,Principal ... principals) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
 
             RegisteredTemplate registeredTemplate = null;
                 FeedManagerTemplate   template = templateProvider.findByName(templateName);
             if (template != null) {
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+                registeredTemplate = templateModelTransform.getTransformationFunction(transformationType).apply(template);
             }
             return registeredTemplate;
-        });
+        }, principals);
 
 
     }
@@ -347,12 +403,12 @@ public class RegisteredTemplateService {
     public FeedMetadata mergeTemplatePropertiesWithFeed(FeedMetadata feedMetadata){
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
 
-        RegisteredTemplate registeredTemplate = findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
+        RegisteredTemplate registeredTemplate = findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).isFeedEdit(true).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
            if (registeredTemplate != null) {
                feedMetadata.setTemplateId(registeredTemplate.getId());
 
             NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
 
             //detect template properties that dont match the feed.properties from the registeredtemplate
             ensureFeedPropertiesExistInTemplate(feedMetadata, registeredTemplate);

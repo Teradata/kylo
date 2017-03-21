@@ -39,11 +39,17 @@
             </div>
 
             <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}}</span>
+                <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
+                 <md-tooltip md-direction="right" ng-if="property.sensitive">
+                   This is a sensitive property.
+                </md-tooltip>
+                </div>
+
                 <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
 
                 <div flex>
-                    <span ng-if="property.key != 'Backoff Period'">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
                     <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
                 </div>
             </div>

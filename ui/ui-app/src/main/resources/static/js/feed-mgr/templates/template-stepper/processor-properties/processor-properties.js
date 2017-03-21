@@ -82,6 +82,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             else {
                 property.renderOptions['selectCustom'] ='false';
                 property.selectOptions = undefined;
+                if(property.renderType =='password'){
+                    property.sensitive = true;
+                }
             }
         }
 

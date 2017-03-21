@@ -85,9 +85,14 @@ public class NifiProperty {
     private boolean containsConfigurationVariables;
 
     /**
-     * flag to indicate the property is sensitive.  Kylo will not store any sensitive properties
+     * flag to indicate the property is sensitive.  Kylo will encrypt the sensitive properties before saving in the metadata.
      */
     private boolean sensitive;
+
+    /**
+     * Flag to indicate the property is required.
+     */
+    private boolean required;
 
     /**
      * a copy of the Template Property so it can be referenced back to when displaying data between the Feed and the template used
@@ -115,6 +120,7 @@ public class NifiProperty {
         this.processorName = property.getProcessorType();
         this.containsConfigurationVariables = property.isContainsConfigurationVariables();
         this.sensitive = property.isSensitive();
+        this.required = property.isRequired();
     }
 
     public NifiProperty(String processGroupId, String processorId, String key, String value) {
@@ -302,5 +308,13 @@ public class NifiProperty {
 
     public void setSensitive(boolean sensitive) {
         this.sensitive = sensitive;
+    }
+
+    public boolean isRequired() {
+        return required  || (getPropertyDescriptor() != null && getPropertyDescriptor().isRequired() != null && getPropertyDescriptor().isRequired());
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 }
