@@ -47,14 +47,14 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  */
 public class JcrTemplateAllowedActions extends JcrAllowedActions {
     
-    private JcrFeedTemplate category;
+    private JcrFeedTemplate template;
 
     /**
      * @param allowedActionsNode
      */
     public JcrTemplateAllowedActions(Node allowedActionsNode) {
         super(allowedActionsNode);
-        this.category = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeedTemplate.class);
+        this.template = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeedTemplate.class);
     }
 
     @Override
@@ -101,9 +101,9 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
-                JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
+                JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
-                JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_READ);
+                JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_READ);
             }
         });
     }
@@ -118,24 +118,24 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
         });
         
         if (edit.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
+            JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
+            JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         }
         
         if (access.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
+            JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
         } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
+            JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
         }
     }
     
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
-                JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL);
+                JcrAccessControlUtil.removePermissions(template.getNode(), principal, Privilege.JCR_ALL);
             } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
-                JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
+                JcrAccessControlUtil.removePermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             }
         });
     }

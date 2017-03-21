@@ -28,6 +28,8 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import java.util.ArrayList;
@@ -86,6 +88,13 @@ public class TemplateModelTransform {
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
+
+    @Inject
+    private ActionsModelTransform actionsTransform;
+
+    public final Function<FeedManagerTemplate, RegisteredTemplate>
+        DOMAIN_TO_REGISTERED_TEMPLATE = DOMAIN_TO_REGISTERED_TEMPLATE(true);
+
     public final Function<RegisteredTemplate, FeedManagerTemplate>
         REGISTERED_TEMPLATE_TO_DOMAIN =
         new Function<RegisteredTemplate, FeedManagerTemplate>() {
@@ -180,6 +189,10 @@ public class TemplateModelTransform {
                     template.setUpdateDate(domain.getModifiedTime().toDate());
                 }
                 template.setOrder(domain.getOrder());
+
+                ActionGroup group = actionsTransform.allowedActionsToActionSet(null).apply(domain.getAllowedActions());
+                template.setAllowedActions(group);
+
                 return template;
             }
         };

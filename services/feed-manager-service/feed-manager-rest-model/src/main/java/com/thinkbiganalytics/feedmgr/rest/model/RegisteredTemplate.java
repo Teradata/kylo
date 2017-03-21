@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -76,6 +77,8 @@ public class RegisteredTemplate {
     private Long order;
 
     private List<String> templateOrder;
+    
+    private ActionGroup allowedActions;
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -139,6 +142,14 @@ public class RegisteredTemplate {
                                                       || (property.getValue() != null && !property.getValue().equalsIgnoreCase(property.getTemplateValue()))
         ));
 
+    }
+
+    public ActionGroup getAllowedActions() {
+        return allowedActions;
+    }
+    
+    public void setAllowedActions(ActionGroup allowedActions) {
+        this.allowedActions = allowedActions;
     }
 
     public List<NifiProperty> getProperties() {

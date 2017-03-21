@@ -44,6 +44,8 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.security.DefaultSecurityService;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -134,6 +136,11 @@ public class FeedManagerConfiguration {
     @Bean
     public MetadataService metadataService() {
         return new FeedManagerMetadataService();
+    }
+
+    @Bean
+    public SecurityService securityService() {
+        return new DefaultSecurityService();
     }
 
     @Bean

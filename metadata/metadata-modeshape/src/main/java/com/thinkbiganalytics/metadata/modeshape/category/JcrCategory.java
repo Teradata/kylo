@@ -195,6 +195,15 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void setTitle(String title) {
         super.setProperty(TITLE, title);
     }
+    
+    @Override
+    public String getIconColor() {
+        return super.getProperty(ICON_COLOR, String.class, true);
+    }
+    
+    public void setIconColor(String iconColor) {
+        super.setProperty(ICON_COLOR, iconColor);
+    }
 
     @Override
     public Integer getVersion() {
@@ -208,15 +217,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     public void setIcon(String icon) {
         setProperty(ICON, icon);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class, true);
-    }
-
-    public void setIconColor(String iconColor) {
-        setProperty(ICON_COLOR, iconColor);
     }
 
     @Override

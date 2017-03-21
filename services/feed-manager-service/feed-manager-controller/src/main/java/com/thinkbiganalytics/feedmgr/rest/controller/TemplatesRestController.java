@@ -33,6 +33,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -40,6 +41,10 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -48,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -66,8 +73,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -96,6 +105,12 @@ public class TemplatesRestController {
 
     @Autowired
     DatasourceService datasourceService;
+
+    @Inject
+    private SecurityService securityService;
+
+    @Inject
+    private ActionsModelTransform actionsTransform;
 
     @Inject
     RegisteredTemplateService registeredTemplateService;
@@ -450,5 +465,87 @@ public class TemplatesRestController {
 
         RegisteredTemplate saved = feedManagerTemplateService.registerTemplate(registeredTemplate);
         return Response.ok(saved).build();
+    }
+
+    @GET
+    @Path("/registered/{templateId}/actions/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available actions that may be permitted or revoked on a template.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A template with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAvailableActions(@PathParam("templateId") String templateIdStr) {
+        log.debug("Get available actions for template: {}", templateIdStr);
+
+        return this.securityService.getAvailableTemplateActions(templateIdStr)
+                        .map(g -> Response.ok(g).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("/registered/{templateId}/actions/allowed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of actions permitted for the given username and/or groups.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A template with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedActions(@PathParam("templateId") String templateIdStr,
+                                         @QueryParam("user") Set<String> userNames,
+                                         @QueryParam("group") Set<String> groupNames) {
+        log.debug("Get allowed actions for template: {}", templateIdStr);
+
+        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
+        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+
+        return this.securityService.getAllowedTemplateActions(templateIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+                        .map(g -> Response.ok(g).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
+    }
+
+    @POST
+    @Path("/registered/{templateId}/actions/allowed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the permissions for a template using the supplied permission change request.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No template exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("templateId") String templateIdStr,
+                                             PermissionsChange changes) {
+
+        return this.securityService.changeTemplatePermissions(templateIdStr, changes)
+                        .map(g -> Response.ok(g).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("/registered/{templateId}/actions/change")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Constructs and returns a permission change request for a set of users/groups containing the actions that the requester may permit or revoke.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the change request that may be modified by the client and re-posted.", response = PermissionsChange.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No template exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedPermissionsChange(@PathParam("templateId") String templateIdStr,
+                                                         @QueryParam("type") String changeType,
+                                                         @QueryParam("user") Set<String> userNames,
+                                                         @QueryParam("group") Set<String> groupNames) {
+        if (StringUtils.isBlank(changeType)) {
+            throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
+        }
+
+        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
+        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+
+        return this.securityService.createTemplatePermissionChange(templateIdStr,
+                                                               ChangeType.valueOf(changeType.toUpperCase()),
+                                                               Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+                        .map(p -> Response.ok(p).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
     }
 }
