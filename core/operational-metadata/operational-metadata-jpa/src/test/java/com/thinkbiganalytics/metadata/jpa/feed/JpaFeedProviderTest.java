@@ -31,7 +31,9 @@ import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
+import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.joda.time.format.DateTimeFormat;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,6 +99,36 @@ public class JpaFeedProviderTest {
             return counts;
         });
 
+    }
+
+    @Test
+    public void testAbandonFeedJobs() {
+
+        try (AbandonFeedJobsStoredProcedureMock storedProcedureMock = new AbandonFeedJobsStoredProcedureMock()) {
+
+            Assert.assertTrue(storedProcedureMock.getInvocationParameters().isEmpty());
+
+            String feedName = "movies.new_releases";
+            metadataAccess.commit(() -> {
+                feedProvider.abandonFeedJobs(feedName);
+            });
+
+            Assert.assertFalse(storedProcedureMock.getInvocationParameters().isEmpty());
+
+            Assert.assertEquals(1, storedProcedureMock.getInvocationParameters().size());
+
+            AbandonFeedJobsStoredProcedureMock.InvocationParameters parameters =
+                    storedProcedureMock.getInvocationParameters().get(0);
+
+            Assert.assertEquals(feedName, parameters.feed);
+
+            String expectedExitMessagePrefix = String.format("Job manually abandoned @ %s",
+                    DateTimeFormat.forPattern("yyyy-MM-dd").print(DateTime.now()));
+
+            Assert.assertTrue(parameters.exitMessage.startsWith(expectedExitMessagePrefix));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
