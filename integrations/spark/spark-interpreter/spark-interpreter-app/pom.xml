@@ -34,13 +34,19 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Think Big dependencies -->
+    <!-- Kylo dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-commons-spark-repl</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-spark-shell</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
+    <!-- Spring dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-autoconfigure</artifactId>

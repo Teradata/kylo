@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.rest.model.data;
+package com.thinkbiganalytics.spark.rest.model;
 
 /*-
  * #%L
- * kylo-metadata-rest-model
+ * Spark Shell Service REST Model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,42 +20,16 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
- * Defines a connection to a JDBC data source.
+ * A JDBC data source that is accessible from Spark.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class JdbcDatasource extends UserDatasource implements com.thinkbiganalytics.metadata.datasource.JdbcDatasource {
 
-    /**
-     * Id of the NiFi DBCPConnectionPool controller service
-     */
     private String controllerServiceId;
-
-    /**
-     * A database URL of the form jdbc:<i>subprotocol:subname</i>
-     */
     private String databaseConnectionUrl;
-
-    /**
-     * Database driver class name
-     */
     private String databaseDriverClassName;
-
-    /**
-     * Comma-separated list of files/folders and/or URLs containing the driver JAR and its dependencies (if any)
-     */
     private String databaseDriverLocation;
-
-    /**
-     * Database user name
-     */
     private String databaseUser;
-
-    /**
-     * Password to use when connecting to this data source
-     */
     private String password;
 
     @Override

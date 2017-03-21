@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.rest.model.data;
+package com.thinkbiganalytics.spark.rest.model;
 
 /*-
  * #%L
- * kylo-metadata-rest-model
+ * Spark Shell Service REST Model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,19 +20,11 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-
 /**
- * Defines a data source managed through Kylo by a user.
+ * A user-created data source that is accessible in Spark.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonSubTypes(@JsonSubTypes.Type(JdbcDatasource.class))
 public class UserDatasource extends Datasource implements com.thinkbiganalytics.metadata.datasource.UserDatasource {
 
-    /**
-     * Type name of this data source
-     */
     private String type;
 
     @Override

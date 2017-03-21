@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.rest.model.data;
+package com.thinkbiganalytics.spark.rest.model;
 
 /*-
  * #%L
- * kylo-metadata-rest-model
+ * Spark Shell Service REST Model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -22,26 +22,47 @@ package com.thinkbiganalytics.metadata.rest.model.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Defines a data source managed through Kylo by a user.
+ * A data source that is accessible from Spark.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(@JsonSubTypes.Type(JdbcDatasource.class))
-public class UserDatasource extends Datasource implements com.thinkbiganalytics.metadata.datasource.UserDatasource {
+public class Datasource implements com.thinkbiganalytics.metadata.datasource.Datasource {
 
-    /**
-     * Type name of this data source
-     */
-    private String type;
+    private String id;
+    private String name;
+    private String description;
 
     @Override
-    public String getType() {
-        return type;
+    public String getId() {
+        return id;
     }
 
     @Override
-    public void setType(String type) {
-        this.type = type;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
