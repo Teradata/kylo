@@ -152,8 +152,7 @@ public class TableRegisterSupport {
     }
 
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs,
-                                          String tblProperties) {
+        columnSpecs, String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
