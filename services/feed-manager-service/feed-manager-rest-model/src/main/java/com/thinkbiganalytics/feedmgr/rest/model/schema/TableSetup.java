@@ -221,7 +221,7 @@ public class TableSetup {
      * ensure the source names are set to some value
      */
     private void ensureSourceTableSchemaFieldNames() {
-        if (sourceTableSchema != null & sourceTableSchema.getFields() != null) {
+        if (sourceTableSchema != null && sourceTableSchema.getFields() != null) {
             long nullFields = sourceTableSchema.getFields().stream().filter(field -> StringUtils.isBlank(field.getName())).count();
             //if the source fields are all null and the counts match that from the dest table, reset the source to the dest names
             if (nullFields == sourceTableSchema.getFields().size() && tableSchema.getFields() != null && tableSchema.getFields().size() == sourceTableSchema.getFields().size()) {
