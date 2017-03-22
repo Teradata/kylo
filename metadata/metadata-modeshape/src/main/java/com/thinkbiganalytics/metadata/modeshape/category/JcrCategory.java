@@ -223,15 +223,15 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrCategoryAllowedActions.class;
     }
+    
+    public String getFeedParentPath() {
+        return JcrUtil.path(getNode(), DETAILS).toString();
+    }
 
     public static class CategoryId extends JcrEntity.EntityId implements Category.ID {
 
         public CategoryId(Serializable ser) {
             super(ser);
         }
-    }
-
-    public String getFeedParentPath() {
-        return JcrUtil.path(getNode(), DETAILS).toString();
     }
 }

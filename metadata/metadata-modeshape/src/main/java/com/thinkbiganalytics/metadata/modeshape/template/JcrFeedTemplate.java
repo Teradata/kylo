@@ -29,9 +29,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -40,7 +38,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
-import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  */
@@ -62,11 +59,9 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     public static String IS_STREAM = "tba:isStream";
 
-    private JcrAccessControlledSupport accessControlled;
 
     public JcrFeedTemplate(Node node) {
         super(node);
-        this.accessControlled = new JcrAccessControlledSupport(node);
     }
 
     @Override
@@ -224,16 +219,6 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public void setStream(boolean isStream) {
         setProperty(IS_STREAM, isStream);
-    }
-
-    @Override
-    public AllowedActions getAllowedActions() {
-        return this.accessControlled.getAllowedActions();
-    }
-
-    @Override
-    public RoleAssignments getRoleAssignments() {
-        return this.accessControlled.getRoleAssignments();
     }
     
     @Override

@@ -209,7 +209,7 @@ public final class JcrAccessControlUtil {
                 for (AccessControlEntry entry : acl.getAccessControlEntries()) {
                     if (entry.getPrincipal().getName().equals(principal.getName())) {
                         Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
-                            .filter(p -> Arrays.stream(removes).anyMatch(r -> !r.equals(p)))
+                            .filter(p -> ! Arrays.stream(removes).anyMatch(r -> r.equals(p)))
                             .toArray(Privilege[]::new);
 
                         if (entry.getPrivileges().length != newPrivs.length) {
@@ -238,14 +238,20 @@ public final class JcrAccessControlUtil {
 
     public static boolean removeHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
-            Node endNode = toNode;
             Node current = node;
+            Node rootNode = toNode.getSession().getRootNode();
             boolean removed = false;
 
-            do {
-                removed |= removePermissions(node.getSession(), node.getPath(), principal, privilegeNames);
+            while (! current.equals(toNode) && ! current.equals(rootNode)) {
+                removed |= removePermissions(node.getSession(), current.getPath(), principal, privilegeNames);
                 current = current.getParent();
-            } while (!current.equals(endNode) && !current.equals(toNode.getSession().getRootNode()));
+            }
+
+            if (current.equals(rootNode) && ! toNode.equals(rootNode)) {
+                throw new IllegalArgumentException("addHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
+            } else {
+                removed |= removePermissions(node.getSession(), current.getPath(), principal, privilegeNames);
+            }
 
             return removed;
         } catch (RepositoryException e) {
