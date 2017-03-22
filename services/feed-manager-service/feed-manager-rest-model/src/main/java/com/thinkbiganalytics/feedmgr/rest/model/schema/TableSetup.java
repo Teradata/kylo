@@ -188,6 +188,9 @@ public class TableSetup {
                 if (fieldPolicy.getValidation() != null) {
                     fieldPolicy.getValidation().stream().forEach(policy -> policy.simplifyForSerialization());
                 }
+
+                boolean isPartitionColumn = getPartitions().stream().anyMatch(partitionArrayItem -> partitionArrayItem.getSourceField().equalsIgnoreCase(fieldPolicy.getFieldName()));
+                fieldPolicy.setPartitionColumn(isPartitionColumn);
             });
         }
     }

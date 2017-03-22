@@ -97,7 +97,7 @@ public class FieldPolicyTransformer {
         List<StandardizationPolicy> standardizationPolicies = getStandardizationPolicies();
         List<ValidationPolicy> validators = getValidationPolicies();
         return FieldPolicyBuilder.newBuilder().fieldName(uiFieldPolicy.getFieldName()).feedFieldName(uiFieldPolicy.getFeedFieldName()).setProfile(uiFieldPolicy.isProfile()).addValidators(validators)
-            .addStandardizers(standardizationPolicies).build();
+            .addStandardizers(standardizationPolicies).setPartitionColumn(uiFieldPolicy.isPartitionColumn()).build();
 
     }
 

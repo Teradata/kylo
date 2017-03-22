@@ -39,6 +39,7 @@ public class FieldPolicyBuilder {
     private List<ValidationPolicy> validators = new Vector<>();
     private List<StandardizationPolicy> standardizationPolicies = new Vector<>();
     private boolean profile;
+    private boolean isPartitionColumn;
 
     private FieldPolicyBuilder() {
         super();
@@ -103,6 +104,11 @@ public class FieldPolicyBuilder {
         return this;
     }
 
+    public FieldPolicyBuilder setPartitionColumn(boolean isPartitionColumn) {
+        this.isPartitionColumn = isPartitionColumn;
+        return this;
+    }
+
     public FieldPolicy build() {
         FieldPolicy newPolicy = this.policy;
         if (StringUtils.isEmpty(newPolicy.getFeedField())) {
@@ -111,6 +117,7 @@ public class FieldPolicyBuilder {
         newPolicy.setValidators(validators);
         newPolicy.setStandardizationPolicies(standardizationPolicies);
         newPolicy.setProfile(profile);
+        newPolicy.setPartitionColumn(isPartitionColumn);
         return newPolicy;
     }
 
