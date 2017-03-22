@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import javax.annotation.Nonnull;
+
 /**
  * A JDBC data source that is accessible from Spark.
  */
@@ -31,6 +33,28 @@ public class JdbcDatasource extends UserDatasource implements com.thinkbiganalyt
     private String databaseDriverLocation;
     private String databaseUser;
     private String password;
+
+    /**
+     * Constructs a {@code JdbcDatasource} with null values.
+     */
+    @SuppressWarnings("unused")
+    public JdbcDatasource() {
+    }
+
+    /**
+     * Constructs a {@code JdbcDatasource} by copying another data source.
+     *
+     * @param other the other data source
+     */
+    public JdbcDatasource(@Nonnull final com.thinkbiganalytics.metadata.datasource.JdbcDatasource other) {
+        super(other);
+        setControllerServiceId(other.getControllerServiceId());
+        setDatabaseConnectionUrl(other.getDatabaseConnectionUrl());
+        setDatabaseDriverClassName(other.getDatabaseDriverClassName());
+        setDatabaseDriverLocation(other.getDatabaseDriverLocation());
+        setDatabaseUser(other.getDatabaseUser());
+        setPassword(other.getPassword());
+    }
 
     @Override
     public String getControllerServiceId() {

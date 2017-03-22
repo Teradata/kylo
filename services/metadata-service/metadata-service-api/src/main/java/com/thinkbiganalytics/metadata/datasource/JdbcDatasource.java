@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.datasource;
 /**
  * Defines a connection to a JDBC data source.
  */
-public interface JdbcDatasource {
+public interface JdbcDatasource extends UserDatasource {
 
     /**
      * Gets the id of the NiFi DBCPConnectionPool controller service for this data source.

@@ -26,7 +26,6 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.AbstractScheduledService;
@@ -38,6 +37,7 @@ import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
@@ -162,8 +163,17 @@ public class TransformService extends AbstractScheduledService {
         String table = newTableName();
         this.cache.put(table, MIN_BYTES);
 
+        // Build bindings list
+        final List<NamedParam> bindings = new ArrayList<>();
+        bindings.add(new NamedParamClass("database", "String", DATABASE));
+        bindings.add(new NamedParamClass("tableName", "String", table));
+
+        if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
+            final DatasourceProvider datasourceProvider = new DatasourceProvider(request.getDatasources());
+            bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), datasourceProvider));
+        }
+
         // Execute script
-        List<NamedParam> bindings = ImmutableList.of((NamedParam) new NamedParamClass("database", "String", DATABASE), new NamedParamClass("tableName", "String", table));
         Object result = this.engine.eval(toScript(request), bindings);
 
         TransformJob job;

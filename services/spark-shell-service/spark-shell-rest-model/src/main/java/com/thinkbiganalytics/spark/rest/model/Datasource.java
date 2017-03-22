@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import javax.annotation.Nonnull;
+
 /**
  * A data source that is accessible from Spark.
  */
@@ -35,6 +37,24 @@ public class Datasource implements com.thinkbiganalytics.metadata.datasource.Dat
     private String id;
     private String name;
     private String description;
+
+    /**
+     * Constructs a {@code Datasource} with null values.
+     */
+    @SuppressWarnings("unused")
+    public Datasource() {
+    }
+
+    /**
+     * Constructs a {@code Datasource} by copying another data source.
+     *
+     * @param other the other data source
+     */
+    public Datasource(@Nonnull final com.thinkbiganalytics.metadata.datasource.Datasource other) {
+        setId(other.getId());
+        setName(other.getName());
+        setDescription(other.getDescription());
+    }
 
     @Override
     public String getId() {

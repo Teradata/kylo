@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.datasource;
 /**
  * A data source created and managed by a Kylo user.
  */
-public interface UserDatasource {
+public interface UserDatasource extends Datasource {
 
     /**
      * Gets the type name of this data source.

@@ -20,12 +20,31 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import javax.annotation.Nonnull;
+
 /**
  * A user-created data source that is accessible in Spark.
  */
 public class UserDatasource extends Datasource implements com.thinkbiganalytics.metadata.datasource.UserDatasource {
 
     private String type;
+
+    /**
+     * Constructs a {@code UserDatasource} with null values.
+     */
+    @SuppressWarnings("unused")
+    public UserDatasource() {
+    }
+
+    /**
+     * Constructs a {@code UserDatasource} by copying another data source.
+     *
+     * @param other the other data source
+     */
+    public UserDatasource(@Nonnull final com.thinkbiganalytics.metadata.datasource.UserDatasource other) {
+        super(other);
+        setType(other.getType());
+    }
 
     @Override
     public String getType() {
