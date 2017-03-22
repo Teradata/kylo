@@ -18,7 +18,7 @@
  * #L%
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -125,6 +125,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         if (property.processorOrigName != undefined && property.processorOrigName != null) {
                             property.processorName = property.processorOrigName;
                         }
+
+                        FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
 
@@ -137,6 +139,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         if (property.processorOrigName != undefined && property.processorOrigName != null) {
                             property.processorName = property.processorOrigName;
                         }
+                        FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
 
@@ -369,6 +372,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return _.sortBy(arr, 'sortIndex');
 
             },
+
             /**
              * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
              * used in Feed creation and feed details to render the nifi input fields
@@ -418,15 +422,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         } else if (property.userEditable == true) {
                             processor.userEditable = true;
                         }
-                        property.displayValue = property.value;
-                        if (property.key == "Source Database Connection" && property.propertyDescriptor != undefined && property.propertyDescriptor.allowableValues) {
-                            var descriptorOption = _.find(property.propertyDescriptor.allowableValues, function (option) {
-                                return option.value == property.value;
-                            });
-                            if (descriptorOption != undefined && descriptorOption != null) {
-                                property.displayValue = descriptorOption.displayName;
-                            }
-                        }
+
+                        //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
+                        FeedPropertyService.initSensitivePropertyForEditing(property);
+
+                        FeedPropertyService.updateDisplayValue(property);
 
                     })
 
@@ -624,6 +624,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         }
 
                         assignPropertyRenderType(property)
+
+                        FeedPropertyService.initSensitivePropertyForEditing(property);
 
                         property.templateValue = property.value;
                         property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;

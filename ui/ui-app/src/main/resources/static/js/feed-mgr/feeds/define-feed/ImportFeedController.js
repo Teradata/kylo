@@ -26,6 +26,43 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         self.categorySearchTextChanged = searchTextChange;
         self.categoriesService = CategoriesService;
 
+        /**
+         * User supplied properties required before the feed is imported
+         * @type {undefined}
+         */
+        self.userSuppliedFeedProperties = undefined;
+        /**
+         * The input type, either password or text.  Changed via the checkbox in the UI
+         * @type {string}
+         */
+        self.userSuppliedFeedPropertyInputType = 'password';
+        /**
+         * Show the text string, or keep it as a password showing asterisks
+         * @type {boolean}
+         */
+        self.showUserSuppliedFeedPropertyValues = false;
+
+
+
+
+        /**
+         * User supplied properties required before the feed is imported
+         * @type {undefined}
+         */
+        self.userSuppliedTemplateProperties = undefined;
+        /**
+         * The input type, either password or text.  Changed via the checkbox in the UI
+         * @type {string}
+         */
+        self.userSuppliedTemplatePropertyInputType = 'password';
+        /**
+         * Show the text string, or keep it as a password showing asterisks
+         * @type {boolean}
+         */
+        self.showUserSuppliedTemplatePropertyValues = false;
+
+
+
         self.model = {
             category: {}
         };
@@ -66,8 +103,20 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             });
         };
 
+        self.showHideFeedPassword = function(){
+            if (self.userSuppliedFeedPropertyInputType == 'password')
+                self.userSuppliedFeedPropertyInputType= 'text';
+            else
+                self.userSuppliedFeedPropertyInputType = 'password';
+        };
 
 
+        self.showHideTemplatePassword = function(){
+            if (self.userSuppliedTemplatePropertyInputType == 'password')
+                self.userSuppliedTemplatePropertyInputType= 'text';
+            else
+                self.userSuppliedTemplatePropertyInputType = 'password';
+        };
 
         this.importFeed = function () {
             self.importBtnDisabled = true;
@@ -82,8 +131,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     return;
                 }
 
+                if(responseData.importOptions.properties){
+                    _.each(responseData.importOptions.properties,function(prop){
+                      var inputName = prop.processorName.split(' ').join('_')+prop.propertyKey.split(' ').join('_');
+                        prop.inputName = inputName.toLowerCase();
+                    });
+                }
+                self.userSuppliedFeedProperties = responseData.importOptions.feedProperties;
 
-                self.userSuppliedProperties = responseData.importOptions.properties;
+                self.userSuppliedTemplateProperties = responseData.importOptions.templateProperties;
 
 
                 var count = 0;
@@ -189,13 +245,30 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
                 importConnectingReusableFlow: createConnectingReusableFlow
             };
-            if(self.userSuppliedProperties != undefined && ! _.isEmpty(self.userSuppliedProperties)  ) {
-                params.properties = angular.toJson(self.userSuppliedProperties);
+            if(self.userSuppliedFeedProperties != undefined && ! _.isEmpty(self.userSuppliedFeedProperties)  ) {
+                params.feedProperties = angular.toJson(self.userSuppliedFeedProperties);
+            }
+
+            if(self.userSuppliedTemplateProperties != undefined && ! _.isEmpty(self.userSuppliedTemplateProperties)  ) {
+                params.templateProperties = angular.toJson(self.userSuppliedTemplateProperties);
             }
 
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
 
         };
+
+
+        function resetUserSuppliedValues(){
+
+            self.userSuppliedFeedProperties = undefined;
+            self.userSuppliedFeedPropertyInputType = 'password';
+            self.showUserSuppliedFeedPropertyValues = false;
+
+            self.userSuppliedTemplateProperties = undefined;
+            self.userSuppliedTemplatePropertyInputType = 'password';
+            self.showUserSuppliedTemplatePropertyValues = false;
+
+        }
 
         function showProgress() {
 
@@ -214,6 +287,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             else {
                 self.fileName = null;
             }
+            resetUserSuppliedValues();
         })
 
     };

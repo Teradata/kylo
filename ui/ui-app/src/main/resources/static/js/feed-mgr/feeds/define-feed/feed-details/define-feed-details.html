@@ -50,7 +50,7 @@
 
             <div flex ng-if="vm.model.inputProcessor != null && (vm.model.inputProcessor.feedPropertiesUrl == null || vm.model.inputProcessor.feedPropertiesUrl == undefined)">
                 <div class="layout-padding-indent">
-                        <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input class="md-block layout-padding-top-bottom" property="property"  flex-gt-sm  ng-repeat="property in vm.model.inputProcessor.properties | filter:{userEditable:true}" track by property.key/>
+                        <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom" property="property"  flex-gt-sm  ng-repeat="property in vm.model.inputProcessor.properties | filter:{userEditable:true}" track by property.key/>
                     </div>
             </div>
         <div ng-if="vm.model.inputProcessor != null && vm.model.inputProcessor.feedPropertiesUrl != null">
@@ -62,7 +62,7 @@
               <div class="md-subhead" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">{{processor.name}}</div>
                 <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
                     <div ng-repeat="property in processor.properties | filter:{userEditable:true} track by property.key">
-                         <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input property="property" class="md-block layout-padding-top-bottom" flex-gt-sm />
+                         <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" property="property" class="md-block layout-padding-top-bottom" flex-gt-sm />
                     </div>
                 </div>
               <div ng-if="processor.feedPropertiesUrl != null">

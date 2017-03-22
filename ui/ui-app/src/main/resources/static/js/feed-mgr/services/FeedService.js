@@ -21,8 +21,8 @@
  *
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService",
-        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService) {
+    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService",
+        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService) {
 
             function trim(str) {
                 return str.replace(/^\s+|\s+$/g, "");
@@ -466,12 +466,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
                     if (model.inputProcessor != null) {
                         angular.forEach(model.inputProcessor.properties, function (property) {
+                            FeedPropertyService.initSensitivePropertyForSaving(property)
                             properties.push(property);
                         });
                     }
 
                     angular.forEach(model.nonInputProcessors, function (processor) {
                         angular.forEach(processor.properties, function (property) {
+                            FeedPropertyService.initSensitivePropertyForSaving(property)
                             properties.push(property);
                         });
                     });
@@ -593,6 +595,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             model.id = response.data.feedMetadata.id;
                             model.versionName = response.data.feedMetadata.versionName;
 
+
                             $mdToast.show(
                                 $mdToast.simple()
                                     .textContent('Feed successfully saved')
@@ -612,6 +615,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     if (copy.registeredTemplate) {
                         copy.registeredTemplate = undefined;
                     }
+                    //reset the sensitive properties
+                    FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
                     var promise = $http({
                         url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,

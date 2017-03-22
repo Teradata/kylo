@@ -20,9 +20,14 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.List;
+
 public class ImportFeedOptions extends ImportOptions {
 
     private boolean overwriteFeedTemplate;
+
+    private List<ImportProperty> feedProperties;
 
     public boolean isOverwriteFeedTemplate() {
         return overwriteFeedTemplate;
@@ -30,5 +35,17 @@ public class ImportFeedOptions extends ImportOptions {
 
     public void setOverwriteFeedTemplate(boolean overwriteFeedTemplate) {
         this.overwriteFeedTemplate = overwriteFeedTemplate;
+    }
+
+
+    public List<ImportProperty> getFeedProperties() {
+        if(feedProperties == null){
+            feedProperties = Collections.emptyList();
+        }
+        return feedProperties;
+    }
+
+    public void setFeedProperties(List<ImportProperty> feedProperties) {
+        this.feedProperties = feedProperties;
     }
 }

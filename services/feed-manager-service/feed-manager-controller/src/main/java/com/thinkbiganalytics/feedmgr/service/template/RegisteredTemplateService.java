@@ -94,9 +94,9 @@ public class RegisteredTemplateService {
             principals = new Principal[0];
         }
         //The default transformation type will not include sensitive property values.
-        //if requested as a template edit, it will include the sensitive property values
+        //if requested as a template or feed edit, it will include the encrypted sensitive property values
         TEMPLATE_TRANSFORMATION_TYPE transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_FEED_NAMES;
-        if(registeredTemplateRequest.isTemplateEdit()) {
+        if(registeredTemplateRequest.isTemplateEdit() || registeredTemplateRequest.isFeedEdit() || registeredTemplateRequest.isIncludeSensitiveProperties()) {
             transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_SENSITIVE_DATA;
         }
 

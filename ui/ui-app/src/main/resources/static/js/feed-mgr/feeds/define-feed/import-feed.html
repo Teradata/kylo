@@ -129,25 +129,41 @@
 
 
           </div>
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom"
-                              ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
-            <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Connecting Reusable Flow">
-              Import Connecting Reusable Flow
-            </md-checkbox>
-            <div class="hint" style="margin-top:-10px">
-              The Feed you are importing also contains its reusable flow. Do you want to also import the reusable flow and version that as well?
-            </div>
-          </md-input-container>
 
-          <div ng-if="vm.userSuppliedProperties">
-            <div ng-repeat="prop in vm.userSuppliedProperties" layout="column" layout-align="start start">
+          <div ng-if="vm.userSuppliedFeedProperties" flex layout="column">
+            <div class="layout-padding-bottom">The following feed properties below are sensitive templateProperties that need to be supplied before importing this feed</div>
+
+            <div ng-repeat="prop in vm.userSuppliedFeedProperties" layout="column" layout-align="start start">
               <span>{{prop.processorName}}</span>
-              <md-input-container>
-                <label>{{prop.propertyKey}}</label>
-                <input type="password" ng-model="prop.propertyValue">
-              </md-input-container>
+              <div layout="row" flex layout-fill>
+                <md-input-container>
+                  <label>{{prop.propertyKey}}</label>
+                  <input type="{{vm.userSuppliedFeedPropertyInputType}}" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                </md-input-container>
+                <md-input-container flex >
+                  <label>Show value</label>
+                  <input type="checkbox" ng-model="vm.showUserSuppliedFeedPropertyValues" ng-click="vm.showHideFeedPassword()" name="">
+                </md-input-container>
+              </div>
             </div>
+          </div>
 
+          <div ng-if="vm.userSuppliedTemplateProperties" flex layout="column">
+            <div class="layout-padding-bottom">The following template properties below are sensitive templateProperties that need to be supplied before importing this feed</div>
+
+            <div ng-repeat="prop in vm.userSuppliedTemplateProperties" layout="column" layout-align="start start">
+              <span>{{prop.processorName}}</span>
+              <div layout="row" flex layout-fill>
+                <md-input-container>
+                  <label>{{prop.propertyKey}}</label>
+                  <input type="{{vm.userSuppliedTemplatePropertyInputType}}" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                </md-input-container>
+                <md-input-container flex >
+                  <label>Show value</label>
+                  <input type="checkbox" ng-model="vm.showUserSuppliedTemplatePropertyValues" ng-click="vm.showHideTemplatePassword()" name="">
+                </md-input-container>
+              </div>
+            </div>
           </div>
 
 

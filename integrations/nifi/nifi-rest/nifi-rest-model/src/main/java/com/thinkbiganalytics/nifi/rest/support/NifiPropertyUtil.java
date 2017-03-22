@@ -452,6 +452,7 @@ public class NifiPropertyUtil {
             propertyToUpdate.setSelected(nifiProperty.isSelected());
             propertyToUpdate.setRenderType(nifiProperty.getRenderType());
             propertyToUpdate.setSensitive(nifiProperty.isSensitive());
+            propertyToUpdate.setRequired(nifiProperty.isRequired());
             if(nifiProperty.getPropertyDescriptor() != null) {
                 propertyToUpdate.setPropertyDescriptor(nifiProperty.getPropertyDescriptor());
             }

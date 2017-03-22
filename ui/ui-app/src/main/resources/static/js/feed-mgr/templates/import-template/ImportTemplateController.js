@@ -22,6 +22,22 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         self.showReorderList = false;
 
+        /**
+         * User supplied properties required before the feed is imported
+         * @type {undefined}
+         */
+        self.userSuppliedTemplateProperties = undefined;
+        /**
+         * The input type, either password or text.  Changed via the checkbox in the UI
+         * @type {string}
+         */
+        self.userSuppliedTemplatePropertyInputType = 'password';
+        /**
+         * Show the text string, or keep it as a password showing asterisks
+         * @type {boolean}
+         */
+        self.showUserSuppliedTemplatePropertyValues = false;
+
 
         function showVerifyReplaceReusableTemplateDialog(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -44,6 +60,12 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             });
         };
 
+        self.showHidePassword = function(){
+            if (self.userSuppliedPropertyInputType == 'password')
+                self.userSuppliedPropertyInputType= 'text';
+            else
+                self.userSuppliedPropertyInputType = 'password';
+        };
 
 
         this.importTemplate = function () {
@@ -60,14 +82,23 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     return;
                 }
 
+                if(responseData.importOptions.properties){
+                    _.each(responseData.importOptions.properties,function(prop){
+                        var inputName = prop.processorName.split(' ').join('_')+prop.propertyKey.split(' ').join('_');
+                        prop.inputName = inputName.toLowerCase();
+                    });
+                }
+                self.userSuppliedTemplateProperties = responseData.importOptions.templateProperties;
+
+
 
                 var count = 0;
                 var errorMap = {"FATAL": [], "WARN": []};
                 self.importResult = responseData;
                 //if(responseData.templateResults.errors) {
-                if (responseData.controllerServiceErrors) {
+                if (responseData.templateResults.errors) {
                     //angular.forEach(responseData.templateResults.errors, function (processor) {
-                    angular.forEach(responseData.controllerServiceErrors, function (processor) {
+                    angular.forEach(responseData.templateResults.errors, function (processor) {
                         if (processor.validationErrors) {
                             angular.forEach(processor.validationErrors, function (error) {
                                 var copy = {};
@@ -82,6 +113,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     self.errorMap = errorMap;
                     self.errorCount = count;
                 }
+
                 hideProgress();
 
                 if (count == 0) {
@@ -140,11 +172,18 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 createConnectingReusableFlow = 'NO';
             }
 
-            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, {
+
+
+            var params = {
                 overwrite: self.overwrite,
                 createReusableFlow: self.createReusableFlow,
-                importConnectingReusableFlow:createConnectingReusableFlow
-            });
+                importConnectingReusableFlow: createConnectingReusableFlow
+            };
+            if(self.userSuppliedTemplateProperties != undefined && ! _.isEmpty(self.userSuppliedTemplateProperties)  ) {
+                params.templateProperties = angular.toJson(self.userSuppliedTemplateProperties);
+            }
+
+            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
         function showProgress() {
@@ -152,6 +191,14 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         }
 
         function hideProgress() {
+
+        }
+
+        function resetUserSuppliedValues(){
+
+            self.userSuppliedTemplateProperties = undefined;
+            self.userSuppliedTemplatePropertyInputType = 'password';
+            self.showUserSuppliedTemplatePropertyValues = false;
 
         }
 
@@ -172,6 +219,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             if (!self.xmlType) {
                 self.createReusableFlow = false;
             }
+            resetUserSuppliedValues();
         })
 
     };

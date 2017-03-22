@@ -32,7 +32,11 @@ public class ImportOptions {
     private boolean overwrite;
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
 
-    private List<ImportFeedProperty> properties;
+    private List<ImportProperty> templateProperties;
+
+    public enum IMPORT_CONNECTING_FLOW {
+        YES, NO, NOT_SET
+    }
 
 
 
@@ -74,9 +78,7 @@ public class ImportOptions {
         this.importConnectingFlow = importConnectingFlow;
     }
 
-    public enum IMPORT_CONNECTING_FLOW {
-        YES, NO, NOT_SET
-    }
+
 
     public boolean isContinueIfExists() {
         return continueIfExists;
@@ -86,14 +88,14 @@ public class ImportOptions {
         this.continueIfExists = continueIfExists;
     }
 
-    public List<ImportFeedProperty> getProperties() {
-        if(properties == null){
-            properties = Collections.emptyList();
+    public List<ImportProperty> getTemplateProperties() {
+        if(templateProperties == null){
+            templateProperties = Collections.emptyList();
         }
-        return properties;
+        return templateProperties;
     }
 
-    public void setProperties(List<ImportFeedProperty> properties) {
-        this.properties = properties;
+    public void setTemplateProperties(List<ImportProperty> properties) {
+        this.templateProperties = properties;
     }
 }

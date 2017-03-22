@@ -40,10 +40,19 @@ public class EncryptionService {
     private String encryptedPrefix = "{cipher}";
 
 
+    private boolean isEncrypted(String str){
+        return StringUtils.startsWith(str,encryptedPrefix);
+    }
     public String encrypt(String str) {
-        String encrypted = encryptionController.encrypt(str, MediaType.TEXT_PLAIN);
-        if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
-            encrypted = encryptedPrefix + encrypted;
+        String encrypted = null;
+        if(!isEncrypted(str)) {
+            encrypted = encryptionController.encrypt(str, MediaType.TEXT_PLAIN);
+            if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
+                encrypted = encryptedPrefix + encrypted;
+            }
+        }
+        else {
+            encrypted = str;
         }
         return encrypted;
     }

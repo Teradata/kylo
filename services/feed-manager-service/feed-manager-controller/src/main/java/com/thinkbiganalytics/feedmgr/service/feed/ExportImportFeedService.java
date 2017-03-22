@@ -20,12 +20,11 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * #L%
  */
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedProperty;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -35,9 +34,6 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -49,8 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -183,11 +178,11 @@ public class ExportImportFeedService {
         //detect any sensitive properties and prompt for input before proceeding
         if(!metadata.getSensitiveProperties().isEmpty()) {
             //if this is the first time populate the import options with the necessary properties
-            if(importOptions.getProperties().isEmpty()) {
-                importOptions.setProperties(metadata.getSensitiveProperties().stream().map(p -> new ImportFeedProperty(p.getProcessorName(),p.getProcessorId(),p.getKey(),p.getValue())).collect(
+            if(importOptions.getFeedProperties().isEmpty()) {
+                importOptions.setFeedProperties(metadata.getSensitiveProperties().stream().map(p -> new ImportProperty(p.getProcessorName(), p.getProcessorId(), p.getKey(), "", p.getProcessorType())).collect(
                     Collectors.toList()));
             }
-            if(importOptions.getProperties().stream().anyMatch(map -> StringUtils.isBlank(map.getPropertyValue()))) {
+            if(importOptions.getFeedProperties().stream().anyMatch(map -> StringUtils.isBlank(map.getPropertyValue()))) {
                 feed.setSuccess(false);
                 ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(fileName);
                 feed.setTemplate(importTemplate);
@@ -197,9 +192,13 @@ public class ExportImportFeedService {
             }
             else {
                 metadata.getSensitiveProperties().forEach(nifiProperty -> {
-                    ImportFeedProperty userSuppliedValue = importOptions.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey().equalsIgnoreCase(importFeedProperty.getPropertyKey())).findFirst().orElse(null);
+                    ImportProperty userSuppliedValue = importOptions.getFeedProperties().stream().filter(importFeedProperty -> {
+                        return nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey().equalsIgnoreCase(importFeedProperty.getPropertyKey());
+                    }).findFirst().orElse(null);
                     //deal with nulls?
-                     nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                    if(userSuppliedValue != null) {
+                        nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                    }
                 });
             }
 
@@ -209,6 +208,7 @@ public class ExportImportFeedService {
         //and otherwise skip and continue if it exists
         importOptions.setOverwrite(importOptions.isOverwriteFeedTemplate());
         importOptions.setContinueIfExists(true);
+
         ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
         if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
             //if we dont have the permission to replace the reusable template, then return and ask for it.
@@ -244,13 +244,15 @@ public class ExportImportFeedService {
             }
             feed.setNifiFeed(nifiFeed);
             feed.setSuccess(nifiFeed != null && nifiFeed.isSuccess());
-            return feed;
+        }
+        else {
+            feed.setSuccess(false);
+            feed.setTemplate(template);
+            feed.addErrorMessage(existingFeed, "The feed " + FeedNameUtil.fullName(feedCategory, metadata.getSystemFeedName())
+                                               + " needs additional properties to be supplied before importing.");
 
         }
-
-        return null;
-
-
+        return feed;
     }
 
     public class ExportFeed {

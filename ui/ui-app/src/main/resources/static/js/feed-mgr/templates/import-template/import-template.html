@@ -107,15 +107,25 @@
               Flow will be created in NiFi under the "reusable_templates" process group
             </div>
           </md-input-container>
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom"
-                              ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
-            <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Reusable Flow">
-              Import Connecting Reusable Flow
-            </md-checkbox>
-            <div class="hint" style="margin-top:-10px">
-              This template contains a common flow shared by other templates. Overwrite?
+
+
+          <div ng-if="vm.userSuppliedTemplateProperties" flex layout="column">
+            <div class="layout-padding-bottom">The following templateProperties below are sensitive templateProperties that need to be supplied before importing this feed</div>
+
+            <div ng-repeat="prop in vm.userSuppliedTemplateProperties" layout="column" layout-align="start start">
+              <span>{{prop.processorName}}</span>
+              <div layout="row" flex layout-fill>
+                <md-input-container>
+                  <label>{{prop.propertyKey}}</label>
+                  <input type="{{vm.userSuppliedTemplatePropertyInputType}}" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                </md-input-container>
+                <md-input-container flex >
+                  <label>Show value</label>
+                  <input type="checkbox" ng-model="vm.showUserSuppliedTemplatePropertyValues" ng-click="vm.showHidePassword()" name="">
+                </md-input-container>
+              </div>
             </div>
-          </md-input-container>
+          </div>
 
           <div layout="row" class="layout-padding-top">
             <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedProperty;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
@@ -29,7 +29,6 @@ import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -38,7 +37,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -138,15 +136,20 @@ public class AdminController {
                                @FormDataParam("overwriteFeedTemplate") @DefaultValue("false") boolean overwriteFeedTemplate,
                                @FormDataParam("categorySystemName") String categorySystemName,
                                @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
-                               @FormDataParam("properties") String properties)
+                               @FormDataParam("feedProperties") String feedProperties,
+                               @FormDataParam("templateProperties") String templateProperties)
         throws Exception {
         ImportFeedOptions options = new ImportFeedOptions();
         options.setOverwrite(overwrite);
         options.setImportConnectingFlow(importConnectingFlow);
         options.setCategorySystemName(categorySystemName);
         options.setOverwriteFeedTemplate(overwriteFeedTemplate);
-        if(properties != null) {
-            options.setProperties(ObjectMapperSerializer.deserialize(properties, new TypeReference<List<ImportFeedProperty>>() {
+        if(feedProperties != null) {
+            options.setFeedProperties(ObjectMapperSerializer.deserialize(feedProperties, new TypeReference<List<ImportProperty>>() {
+            }));
+        }
+        if(templateProperties != null) {
+            options.setTemplateProperties(ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
             }));
         }
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, options);
@@ -167,12 +170,17 @@ public class AdminController {
                                    @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                    @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                    @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
-                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)
+                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow,
+                                   @FormDataParam("templateProperties") String templateProperties)
         throws Exception {
         ImportOptions options = new ImportOptions();
         options.setCreateReusableFlow(createReusableFlow);
         options.setOverwrite(overwrite);
         options.setImportConnectingFlow(importConnectingFlow);
+        if(templateProperties != null) {
+            options.setTemplateProperties(ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
+            }));
+        }
         ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importTemplate).build();
