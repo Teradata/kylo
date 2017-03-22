@@ -269,7 +269,7 @@ public class FeedModelTransform {
     @Nonnull
     private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed<?> domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
 
-        FeedMetadata feed = deserializeFeedMetadata(domain);
+        FeedMetadata feed = deserializeFeedMetadata(domain,false);
         feed.setId(domain.getId().toString());
         feed.setFeedId(domain.getId().toString());
         feed.setTemplateId(domain.getTemplate().getId().toString());

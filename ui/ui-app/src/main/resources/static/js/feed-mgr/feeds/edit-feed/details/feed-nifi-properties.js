@@ -15,10 +15,15 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService) {
+    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService,FeedPropertyService) {
 
         var self = this;
 
+        /**
+         * The ng-form object
+         * @type {{}}
+         */
+        this.feedDetailsForm = {}
 
 
 
@@ -234,6 +239,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 self.model.table.incrementalDateField = self.editModel.table.incrementalDateField;
                 self.model.inputProcessorType = self.editModel.inputProcessorType;
 
+                FeedPropertyService.updateDisplayValueForProcessors(self.model.inputProcessors);
+                FeedPropertyService.updateDisplayValueForProcessors(self.model.nonInputProcessors)
+
+                updateControllerServiceProperties();
+                //update the displayValue
+
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
                 console.log('ERRORS were found ', response)
@@ -251,7 +262,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
     };
 
-    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","RestUrlService","AccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService",controller]);
+    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","RestUrlService","AccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService","FeedPropertyService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedNifiProperties', directive);

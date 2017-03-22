@@ -182,7 +182,7 @@ public class TableSetup {
     public void simplifyFieldPoliciesForSerialization() {
         if (fieldPolicies != null) {
             getFieldPolicies().stream().forEach(fieldPolicy -> {
-                if (fieldPolicy.getStandardization() != null) {
+               if (fieldPolicy.getStandardization() != null) {
                     fieldPolicy.getStandardization().stream().forEach(policy -> policy.simplifyForSerialization());
                 }
                 if (fieldPolicy.getValidation() != null) {

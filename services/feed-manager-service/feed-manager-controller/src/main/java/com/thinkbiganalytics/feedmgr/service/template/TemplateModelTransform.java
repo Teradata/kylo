@@ -147,11 +147,10 @@ public class TemplateModelTransform {
                 if(!includeEncryptedProperties){
                     nifiProperty.setValue("");
                 }
-                else {
-                    String val = encryptionService.decrypt(nifiProperty.getValue());
-                    nifiProperty.setValue(val);
-
-                }
+               // else {
+                //    String val = encryptionService.decrypt(nifiProperty.getValue());
+                 //   nifiProperty.setValue(val);
+                //}
             });
         return template;
     }

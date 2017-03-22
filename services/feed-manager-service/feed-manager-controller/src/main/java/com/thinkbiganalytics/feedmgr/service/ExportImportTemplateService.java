@@ -25,6 +25,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
@@ -67,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -207,7 +209,7 @@ public class ExportImportTemplateService {
 
         ImportTemplate importTemplate = openZip(fileName, inputStream);
         //verify options before proceeding
-        if (importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.NOT_SET.equals(importOptions.getImportConnectingFlow())) {
+        if (importTemplate.hasConnectingReusableTemplate() && importOptions.isOverwrite() && ImportOptions.IMPORT_CONNECTING_FLOW.NOT_SET.equals(importOptions.getImportConnectingFlow())) {
             //return to user to verify
             log.info("Importing Zip file template {}. Found a connectingReusableFlow but user has not verified to replace. returning to user to verify", fileName);
             importTemplate.setVerificationToReplaceConnectingResuableTemplateNeeded(true);
@@ -230,6 +232,40 @@ public class ExportImportTemplateService {
         }
 
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(importTemplate.getTemplateJson(), RegisteredTemplate.class);
+
+
+        //detect any sensitive properties and prompt for input before proceeding
+        if(!template.getSensitiveProperties().isEmpty()) {
+
+
+            //if this is the first time populate the import options with the necessary properties
+            if(importOptions.getTemplateProperties().isEmpty()) {
+                importOptions.setTemplateProperties(template.getSensitiveProperties().stream().map(p -> new ImportProperty(p.getProcessorName(), p.getProcessorId(), p.getKey(), "", p.getProcessorType())).collect(
+                    Collectors.toList()));
+            }
+            else {
+                //only add in those that are unique
+                Map<String ,ImportProperty> feedPropertyMap = importOptions.getTemplateProperties().stream().collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
+                template.getSensitiveProperties().stream().filter(nifiProperty -> !feedPropertyMap.containsKey(nifiProperty.getProcessorNameTypeKey())).forEach(p -> {
+                    importOptions.getTemplateProperties().add( new ImportProperty(p.getProcessorName(), p.getProcessorId(), p.getKey(), "", p.getProcessorType()));
+                });
+            }
+            if(importOptions.getTemplateProperties().stream().anyMatch(importFeedProperty -> StringUtils.isBlank(importFeedProperty.getPropertyValue()))) {
+                importTemplate.setSuccess(false);
+                importTemplate.setTemplateResults( new NifiProcessGroup());
+                importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN, "Unable to import Template. Additional properties to be supplied before importing.","");
+                return importTemplate;
+            }
+            else {
+                template.getSensitiveProperties().forEach(nifiProperty -> {
+                    ImportProperty
+                        userSuppliedValue = importOptions.getTemplateProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey().equalsIgnoreCase(importFeedProperty.getPropertyKey())).findFirst().orElse(null);
+                    //deal with nulls?
+                    nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                });
+            }
+
+        }
 
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
@@ -474,6 +510,7 @@ public class ExportImportTemplateService {
             } catch (IOException e) {
                 throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
             }
+            template.setImportOptions(importOptions);
             return template;
         });
     }
@@ -528,7 +565,7 @@ public class ExportImportTemplateService {
         private String templateJson;
         private List<String> nifiConnectingReusableTemplateXmls = new ArrayList<>();
         private boolean verificationToReplaceConnectingResuableTemplateNeeded;
-
+        private ImportOptions importOptions;
 
         public ImportTemplate() {}
 
@@ -645,6 +682,14 @@ public class ExportImportTemplateService {
 
         public void setVerificationToReplaceConnectingResuableTemplateNeeded(boolean verificationToReplaceConnectingResuableTemplateNeeded) {
             this.verificationToReplaceConnectingResuableTemplateNeeded = verificationToReplaceConnectingResuableTemplateNeeded;
+        }
+
+        public ImportOptions getImportOptions() {
+            return importOptions;
+        }
+
+        public void setImportOptions(ImportOptions importOptions) {
+            this.importOptions = importOptions;
         }
     }
 

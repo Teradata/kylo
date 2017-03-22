@@ -3,22 +3,24 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 /**
  * Created by sr186054 on 3/5/17.
  */
-public class ImportFeedProperty {
+public class ImportProperty {
 
 
     private String processorName;
     private String processorId;
+    private String processorType;
     private String propertyKey;
     private String propertyValue;
 
-    public ImportFeedProperty(){
+    public ImportProperty(){
 
     }
-    public ImportFeedProperty(String processorName, String processorId, String propertyKey, String propertyValue) {
+    public ImportProperty(String processorName, String processorId, String propertyKey, String propertyValue, String processorType) {
         this.processorName = processorName;
         this.processorId = processorId;
         this.propertyKey = propertyKey;
         this.propertyValue = propertyValue;
+        this.processorType = processorType;
     }
 
     public String getProcessorName() {
@@ -51,5 +53,17 @@ public class ImportFeedProperty {
 
     public void setPropertyValue(String propertyValue) {
         this.propertyValue = propertyValue;
+    }
+
+    public String getProcessorType() {
+        return processorType;
+    }
+
+    public void setProcessorType(String processorType) {
+        this.processorType = processorType;
+    }
+
+    public String getProcessorNameTypeKey() {
+        return this.getProcessorName() + "-" + this.getProcessorType() + "-" + this.getPropertyKey();
     }
 }

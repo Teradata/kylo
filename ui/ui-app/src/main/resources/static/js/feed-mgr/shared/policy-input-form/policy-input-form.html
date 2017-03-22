@@ -42,10 +42,7 @@
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
       </div>
-      <div ng-messages="vm.theForm[property.formKey].$error " md-auto-hide="false">
-        <div ng-message="required">This field is required.</div>
-        <div ng-message="pattern">{{property.patternInvalidMessage}}</div>
-      </div>
+      formKey
     </md-input-container>
 
     <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
