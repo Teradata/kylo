@@ -121,7 +121,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .build();
     public static final PropertyDescriptor SPARK_HOME = new PropertyDescriptor.Builder()
         .name("SparkHome")
-        .description("Qualified classname of the Spark job application class")
+        .description("Path to the Spark Client directory")
         .required(true)
         .defaultValue("/usr/hdp/current/spark-client/")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -410,7 +410,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 }
             }
 
-            String sparkHome = context.getProperty(SPARK_HOME).getValue();
+            String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
              /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher()
