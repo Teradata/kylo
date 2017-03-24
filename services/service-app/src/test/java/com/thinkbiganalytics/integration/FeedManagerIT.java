@@ -139,7 +139,7 @@ public class FeedManagerIT extends IntegrationTest {
 
     @Test
     public void testDataIngestFeed() throws IOException {
-        startClean();
+//        startClean();
 
         copyDataToDropzone();
 

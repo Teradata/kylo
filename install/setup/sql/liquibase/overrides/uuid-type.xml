@@ -1,0 +1,13 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+  <!-- By default Liquibase generates char(36) on mysql for UUID type, which would require us to generate a String
+       instead of UUID, which in turn would break compatibility with at least postgresql, so for mysql we create binary(16)
+       instead of default char(36) -->
+  <property name="uuid.type" value="binary(16)" dbms="mysql"/>
+  <property name="uuid.type" value="uuid" dbms="postgresql,oracle,mssql,sybase,asany,db2,derby,hsqldb,h2,informix,firebird,sqlite"/>
+
+
+</databaseChangeLog>

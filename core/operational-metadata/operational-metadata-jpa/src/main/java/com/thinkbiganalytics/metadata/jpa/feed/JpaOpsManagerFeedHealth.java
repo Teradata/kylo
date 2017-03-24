@@ -234,7 +234,7 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
 
         private static final long serialVersionUID = 6017751710414995750L;
 
-        @Column(name = "FEED_ID", columnDefinition = "binary(16)")
+        @Column(name = "FEED_ID")
         private UUID uuid;
 
         public OpsManagerFeedHealthFeedId() {

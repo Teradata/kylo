@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.app;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +71,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     public JpaKyloVersion(String majorVersion, String minorVersion) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
-    }
-
-    /**
-     * return the unique id for this version entry
-     *
-     * @return the unique id for this version entry
-     */
-    public UUID getId() {
-        return id;
     }
 
     /**
