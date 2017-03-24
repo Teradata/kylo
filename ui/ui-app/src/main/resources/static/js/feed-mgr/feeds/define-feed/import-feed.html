@@ -107,30 +107,121 @@
                 </md-autocomplete>
             </div>
           <div layout="row">
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom">
-            <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
-              Overwrite Feed
-            </md-checkbox>
-            <div class="hint" style="margin-top:-10px">
-              If the Feed already exists it will be replaced.
-            </div>
-          </md-input-container>
-            <span flex="5"></span>
+            <div layout="column">
+              <!-- Feed Data container -->
+                <!-- validation messages -->
+                <div ng-if="vm.feedDataImportOption.errorMessages != null && vm.feedDataImportOption.errorMessages.length >0">
+                    <div ng-repeat="message in vm.feedDataImportOption.errorMessages" layout="column">
+                       [icon] - {{message}}
+                    </div>
+                </div>
 
-            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
-              <md-checkbox ng-model="vm.overwriteFeedTemplate" aria-label="Overwrite if exists">
-                Overwrite Feed Template
-              </md-checkbox>
-              <div class="hint" style="margin-top:-10px">
-                If the Feed template exists it will be replaced.
+                <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+                  <md-checkbox ng-model="vm.feedDataImportOption.overwrite" aria-label="Overwrite if exists">
+                    Overwrite Feed
+                  </md-checkbox>
+                  <div class="hint" style="margin-top:-10px">
+                    If the Feed already exists it will be replaced.
+                  </div>
+               </md-input-container>
+
+              <!-- Feed properties required -->
+
+              <div ng-if="vm.feedDataImportOption.properties && vm.feedDataImportOption.properties.length >0" flex layout="column">
+                <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed</div>
+
+                <div ng-repeat="prop in vm.feedDataImportOption.properties" layout="column" layout-align="start start">
+                  <span>{{prop.processorName}}</span>
+                  <div layout="row" flex layout-fill>
+                    <md-input-container>
+                      <label>{{prop.propertyKey}}</label>
+                      <input type="text" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                    </md-input-container>
+                  </div>
+                </div>
               </div>
-            </md-input-container>
 
+            </div>
+            <span flex="5"></span>
+            <div layout="column">
+              <!-- Template Data Container -->
+              <!-- validation messages -->
+                <div ng-if="vm.templateDataImportOption.errorMessages != null && vm.templateDataImportOption.errorMessages.length >0">
+                  <div ng-repeat="message in vm.templateDataImportOption.errorMessages" layout="column">
+                    [icon] - {{message}}
+                  </div>
+                </div>
+
+              <div ng-if="vm.nifiTemplateImportOption.errorMessages != null && vm.nifiTemplateImportOption.errorMessages.length >0">
+                <div ng-repeat="message in vm.nifiTemplateImportOption.errorMessages" layout="column">
+                  [icon] - {{message}}
+                </div>
+              </div>
+
+              <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+                <md-checkbox ng-model="vm.templateDataImportOption.overwrite" aria-label="Overwrite if exists">
+                  Overwrite Feed Template
+                </md-checkbox>
+                <div class="hint" style="margin-top:-10px">
+                  If the Feed template exists it will be replaced.
+                </div>
+              </md-input-container>
+
+              <div ng-if="vm.templateDataImportOption.properties && vm.templateDataImportOption.properties.length >0 " flex layout="column">
+                <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+
+                <div ng-repeat="prop in vm.templateDataImportOption.properties" layout="column" layout-align="start start">
+                  <span>{{prop.processorName}}</span>
+                  <div layout="row" flex layout-fill>
+                    <md-input-container>
+                      <label>{{prop.propertyKey}}</label>
+                      <input type="text" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                    </md-input-container>
+                  </div>
+                </div>
+              </div>
+
+
+              <!-- ask to import reusable template if found -->
+              <div ng-if="vm.reusableTemplateImportOption.errorMessages != null && vm.reusableTemplateImportOption.errorMessages.length >0">
+                <div ng-repeat="message in vm.reusableTemplateImportOption.errorMessages" layout="column">
+                  [icon] - {{message}}
+                </div>
+
+                <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+                  <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Overwrite if exists">
+                    Overwrite Reusable Template
+                  </md-checkbox>
+                  <div class="hint" style="margin-top:-10px">
+                    Overwrite the reusable template
+                  </div>
+                </md-input-container>
+
+
+
+                <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
+                  <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+
+                  <div ng-repeat="prop in vm.reusableTemplateImportOption.properties" layout="column" layout-align="start start">
+                    <span>{{prop.processorName}}</span>
+                    <div layout="row" flex layout-fill>
+                      <md-input-container>
+                        <label>{{prop.propertyKey}}</label>
+                        <input type="text" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                      </md-input-container>
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
 
 
           </div>
+          </div>
 
-          <div ng-if="vm.userSuppliedFeedProperties" flex layout="column">
+
+          <div ng-if="vm.validationErrors" flex layout="column">
             <div class="layout-padding-bottom">The following feed properties below are sensitive templateProperties that need to be supplied before importing this feed</div>
 
             <div ng-repeat="prop in vm.userSuppliedFeedProperties" layout="column" layout-align="start start">
@@ -167,14 +258,14 @@
           </div>
 
 
-          <span style="padding-top:10px">
+          <span style="padding-top:10px"></span>
           <div layout="row" class="layout-padding-top">
                 <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
                            ng-disabled="vm.importBtnDisabled">
                   Import Feed
                 </md-button>
             <md-progress-circular md-diameter="20px" md-mode="indeterminate" ng-if="vm.importBtnDisabled"></md-progress-circular>
-        </div>
+          </div>
 
 
         <div ng-if="vm.importResult != null" class="layout-padding-top">
@@ -196,6 +287,7 @@
             </md-list-item>
           </md-list>
         </div>
+      </div>
       </div>
     </body-section>
   </card-layout>

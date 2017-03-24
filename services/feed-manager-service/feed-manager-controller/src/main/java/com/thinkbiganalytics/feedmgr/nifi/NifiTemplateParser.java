@@ -20,13 +20,28 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
+import org.apache.commons.io.IOUtils;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -50,5 +65,50 @@ public class NifiTemplateParser {
         InputSource source = new InputSource(new StringReader(nifiTemplate));
         String name = (String) xpath.evaluate("/template/name", source, XPathConstants.STRING);
         return name;
+    }
+
+    public static String updateTemplateName(String nifiTemplate, String newName) throws Exception {
+
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        XPath xpath = xpathFactory.newXPath();
+        Document doc = stringToDocument(nifiTemplate);
+
+        InputSource source = new InputSource(new StringReader(nifiTemplate));
+
+        Element element = (Element) xpath.compile("//template/name")
+            .evaluate(doc, XPathConstants.NODE);
+
+         element.setTextContent(newName);
+        return documentToString(doc);
+    }
+
+
+
+    public static String documentToString(Document doc) throws Exception {
+
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(doc), new StreamResult(writer));
+        String output = writer.getBuffer().toString();
+        return output;
+    }
+
+    public static Document stringToDocument(String strXml) throws Exception {
+
+        Document doc = null;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            StringReader strReader = new StringReader(strXml);
+            InputSource is = new InputSource(strReader);
+            doc = builder.parse(is);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return doc;
     }
 }

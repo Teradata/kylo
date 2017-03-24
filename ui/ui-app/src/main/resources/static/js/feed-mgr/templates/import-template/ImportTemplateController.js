@@ -2,11 +2,34 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     var controller = function ($scope, $http,$mdDialog, FileUpload, RestUrlService) {
 
+        /**
+         * Pointer to this controller
+         * @type {controller}
+         */
         var self = this;
+        /**
+         * The file to upload
+         * @type {null}
+         */
         this.templateFile = null;
+        /**
+         * The name of the file to upload
+         * @type {null}
+         */
         this.fileName = null;
+        /**
+         * true if uploading, false if not
+         * @type {boolean}
+         */
         this.importInProgress = false;
+
+        /**
+         * true to overwrite the template
+          * @type {boolean}
+         */
         this.overwrite = false;
+
+
         this.createReusableFlow = false;
         this.xmlType = false;
 
