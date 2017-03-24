@@ -38,7 +38,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.Tag;
@@ -534,7 +534,7 @@ public class FeedManagerIT extends IntegrationTest {
             .contentType("multipart/form-data")
             .multiPart(new File(feedsPath + feedName))
             .multiPart("overwrite", true)
-            .multiPart("importConnectingReusableFlow", ImportOptions.IMPORT_CONNECTING_FLOW.YES)
+            .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_FEED);
 
         post.then().statusCode(200);
@@ -548,7 +548,7 @@ public class FeedManagerIT extends IntegrationTest {
             .multiPart(new File(templatesPath + templateName))
             .multiPart("overwrite", true)
             .multiPart("createReusableFlow", false)
-            .multiPart("importConnectingReusableFlow", ImportOptions.IMPORT_CONNECTING_FLOW.YES)
+            .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_TEMPLATE);
 
         post.then().statusCode(200);
