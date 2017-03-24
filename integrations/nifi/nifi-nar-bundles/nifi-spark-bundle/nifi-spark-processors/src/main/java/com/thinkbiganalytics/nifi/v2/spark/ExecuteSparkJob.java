@@ -66,6 +66,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -235,6 +236,12 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .identifiesControllerService(MetadataProviderService.class)
         .build();
 
+    /**
+     * Matches a comma-separated list of UUIDs
+     */
+    private static final Pattern UUID_REGEX = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                                                              + "(,[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})*$");
+
     private final Set<Relationship> relationships;
 
     /**
@@ -299,7 +306,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
     @Nonnull
     private static Validator createUuidListValidator() {
         return (subject, input, context) -> {
-            if (input.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(,[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})*$")) {
+            final String value = context.getProperty(DATASOURCES).evaluateAttributeExpressions().getValue();
+            if (value == null || value.isEmpty() || UUID_REGEX.matcher(value).matches()) {
                 return new ValidationResult.Builder().subject(subject).input(input).valid(true).explanation("List of UUIDs").build();
             } else {
                 return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("not a list of UUIDs").build();

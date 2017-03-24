@@ -78,10 +78,10 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
 
         // Translates expressions into Spark code
         if (angular.isArray(FeedService.createFeedModel.dataTransformation.states) && FeedService.createFeedModel.dataTransformation.states.length > 0) {
-            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states);
+            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states, FeedService.createFeedModel.dataTransformation.datasources);
             this.functionHistory = this.sparkShellService.getHistory();
         } else {
-            this.sparkShellService = new SparkShellService(this.sql);
+            this.sparkShellService = new SparkShellService(this.sql, null, FeedService.createFeedModel.dataTransformation.datasources);
         }
 
         this.executingQuery = false;

@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -102,6 +103,11 @@ public class ExecuteSparkJobTest {
         // Test with two UUIDs
         runner.setProperty(ExecuteSparkJob.DATASOURCES, "87870c7e-8ae8-4db4-9959-c2f5a9496833,e4562514-8e06-459a-8ea9-1e2630c852f9");
         runner.enqueue(new byte[0]);
+        Assert.assertEquals(0, ((MockProcessContext) runner.getProcessContext()).validate().size());
+
+        // Test with expression
+        runner.setProperty(ExecuteSparkJob.DATASOURCES, "${metadata.dataTransformation.datasourceIds}");
+        runner.enqueue(new byte[0], Collections.singletonMap("metadata.dataTransformation.datasourceIds", "87870c7e-8ae8-4db4-9959-c2f5a9496833"));
         Assert.assertEquals(0, ((MockProcessContext) runner.getProcessContext()).validate().size());
     }
 

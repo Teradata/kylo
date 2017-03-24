@@ -22,13 +22,26 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
     /** Prefix for table aliases */
     var TABLE_PREFIX = "tbl";
 
-    var controller = function($scope, $log, $http, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService) {
+    var controller = function($scope, $log, $http, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService,
+                              DatasourcesService) {
 
         var self = this;
         this.model = VisualQueryService.model;
         this.isValid = false;
         this.stepNumber = parseInt(this.stepIndex) + 1;
         this.stepperController = null;
+
+        /**
+         * List of available data sources.
+         * @type {Array.<JdbcDatasource>}
+         */
+        self.availableDatasources = [{id: VisualQueryService.HIVE_DATASOURCE, name: "Hive"}];
+
+        /**
+         * List of the data sources used in model.
+         * @type {Array.<JdbcDatasource>}
+         */
+        self.selectedDatasources = [];
 
         SideNavService.hideSideNav();
 
@@ -183,6 +196,8 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var feedModel = FeedService.createFeedModel;
                 feedModel.dataTransformation.sql = self.model.visualQuerySql;
                 feedModel.dataTransformation.chartViewModel = null;
+                feedModel.dataTransformation.datasourceIds = [self.model.selectedDatasourceId];
+                feedModel.dataTransformation.datasources = DatasourcesService.filterArrayByIds(self.model.selectedDatasourceId, self.availableDatasources);
             } else if (typeof(self.chartViewModel.nodes) !== "undefined") {
                 self.isValid = (self.chartViewModel.nodes.length > 0);
 
@@ -194,6 +209,8 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var feedModel = FeedService.createFeedModel;
                 feedModel.dataTransformation.chartViewModel = angular.copy(self.chartViewModel.data);
                 feedModel.dataTransformation.sql = sql;
+                feedModel.dataTransformation.datasourceIds = DatasourcesService.getIds(self.selectedDatasources);
+                feedModel.dataTransformation.datasources = angular.copy(self.selectedDatasources);
             } else {
                 self.isValid = false;
             }
@@ -237,22 +254,32 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         }
 
         /**
-         * turn on and off sql mode
-         * TODO more work needs to be done to get it working with the tables
-         *
+         * Turn on SQL mode.
          */
         this.toggleAdvancedMode = function() {
-
-            if (self.advancedMode == false) {
-                //todo alert user you cannot go back to drag/drop
-                self.advancedMode = true;
-                self.advancedModeText = 'Visual Mode'
-            }
-            else {
+            if (self.advancedMode === false) {
+                var goAdvanced = function () {
+                    self.advancedMode = true;
+                    self.advancedModeText = "Visual Mode";
+                };
+                if (self.chartViewModel.nodes.length > 0) {
+                    $mdDialog.show(
+                        $mdDialog.confirm()
+                            .parent($("body"))
+                            .clickOutsideToClose(true)
+                            .title("Switch to advanced mode")
+                            .textContent("If you switch to the advanced SQL editor then you will no longer be able to return to this visual editor. Are you sure you want to continue?")
+                            .ariaLabel("Switch to advanced mode or stay in visual editor?")
+                            .ok("Continue")
+                            .cancel("Cancel")
+                    ).then(goAdvanced);
+                } else {
+                    goAdvanced();
+                }
+            } else {
                 self.advancedMode = false;
-                self.model.visualQuerySql = '';
-                self.advancedModeText = 'Advanced Mode';
-                //TODO reset the canvas model
+                self.model.visualQuerySql = "";
+                self.advancedModeText = "Advanced Mode";
             }
 
         };
@@ -552,7 +579,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         /**
          * Parses the tables on the canvas and returns a SQL string, along with populating the self.selectedColumnsAndTables array of objects.
          *
-         * @returns {string} the SQL string
+         * @returns {string|null} the SQL string or null if multiple data sources are used
          */
         function getSQLModel() {
             // Check and reset state
@@ -732,6 +759,11 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         //setup the flowchart Model
         setupFlowChartModel();
 
+        // Get the list of data sources
+        DatasourcesService.findAll().then(function(datasources) {
+            Array.prototype.push.apply(self.availableDatasources, datasources);
+        });
+
         //validate when the page loads
         validate();
     };
@@ -808,14 +840,10 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
     }
 
 
-    angular.module(moduleName).controller('VisualQueryBuilderController', ["$scope","$log","$http","$mdToast","$mdDialog","$document","Utils","RestUrlService","HiveService","SideNavService","StateService","VisualQueryService","FeedService",controller]);
+    angular.module(moduleName).controller('VisualQueryBuilderController', ["$scope","$log","$http","$mdToast","$mdDialog","$document","Utils","RestUrlService","HiveService","SideNavService",
+                                                                           "StateService","VisualQueryService","FeedService","DatasourcesService",controller]);
     angular.module(moduleName).directive('thinkbigVisualQueryBuilder', directive);
 
     angular.module(moduleName).controller('ConnectionDialog', ["$scope","$mdDialog","isNew","connectionDataModel","source","dest",ConnectionDialog]);
-
-
-
-
-
 });
 

@@ -43,6 +43,11 @@ public class FeedDataTransformation {
     private Map<String, Object> chartViewModel;
 
     /**
+     * List of required datasource ids
+     */
+    private List<String> datasourceIds;
+
+    /**
      * Spark script
      */
     @MetadataField(description = "The Data Transformation Spark Script")
@@ -74,6 +79,14 @@ public class FeedDataTransformation {
      */
     public void setChartViewModel(Map<String, Object> chartViewModel) {
         this.chartViewModel = chartViewModel;
+    }
+
+    public List<String> getDatasourceIds() {
+        return datasourceIds;
+    }
+
+    public void setDatasourceIds(List<String> datasourceIds) {
+        this.datasourceIds = datasourceIds;
     }
 
     /**

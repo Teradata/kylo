@@ -71,5 +71,11 @@
     </div>
 </div>
 
+<md-input-container style="margin-left: 16px;" ng-if="$vq.advancedMode == true">
+    <md-select ng-model="$vq.model.selectedDatasourceId" placeholder="Data Source">
+        <md-option ng-repeat="datasource in $vq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
+    </md-select>
+</md-input-container>
+
 <thinkbig-hql-editor ng-model="$vq.advancedModeSql" ng-model-options="{getterSetter: true}" ng-if="$vq.advancedMode == true" allow-fullscreen="false" allow-database-browse="false"
                      allow-execute-query="false"></thinkbig-hql-editor>

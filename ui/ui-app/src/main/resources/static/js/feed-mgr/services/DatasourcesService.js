@@ -50,6 +50,20 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             },
 
             /**
+             * Filters the specified array of data sources by matching ids.
+             *
+             * @param {string|Array.<string>} ids the list of ids
+             * @param {Array.<JdbcDatasource>} array the data sources to filter
+             * @return {Array.<JdbcDatasource>} the array of matching data sources
+             */
+            filterArrayByIds: function (ids, array) {
+                var idList = angular.isArray(ids) ? ids: [ids];
+                return array.filter(function (datasource) {
+                    return (idList.indexOf(datasource.id) > -1);
+                });
+            },
+
+            /**
              * Finds all user data sources.
              * @returns {Promise} with the list of data sources
              */
@@ -70,6 +84,18 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     .then(function (response) {
                         return response.data;
                     });
+            },
+
+            /**
+             * Gets the ids for the specified data sources.
+             *
+             * @param {JdbcDatasource|Array.<JdbcDatasource>} datasources the data sources
+             */
+            getIds: function (datasources) {
+                var array = angular.isArray(datasources) ? datasources : [datasources];
+                return array.map(function (datasource) {
+                    return datasource.id;
+                });
             },
 
             /**
