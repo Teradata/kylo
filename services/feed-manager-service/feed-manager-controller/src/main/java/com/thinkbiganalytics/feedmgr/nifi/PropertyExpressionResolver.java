@@ -30,8 +30,6 @@ import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.text.StrLookup;
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +37,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -64,10 +65,8 @@ public class PropertyExpressionResolver {
     /**
      * Matches a variable in a property value
      */
+    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
     private static final Logger log = LoggerFactory.getLogger(PropertyExpressionResolver.class);
-
-    private static final String VAR_PREFIX = "${";
-
     /**
      * Prefix for variable-type property replacement
      */
@@ -76,7 +75,7 @@ public class PropertyExpressionResolver {
     /**
      * Prefix for {@link FeedMetadata} property replacement
      */
-    private static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
+    public static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
 
     /**
      * Properties from the {@code application.properties} file
@@ -109,23 +108,6 @@ public class PropertyExpressionResolver {
         }
     }
 
-    public Map<String, Object> getStaticConfigProperties() {
-        Map<String, Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
-        if (props == null) {
-            props = new HashMap<>();
-        }
-        Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
-        if (nifiProps != null && !nifiProps.isEmpty()) {
-            //copy it to a new map
-            props = new HashMap<>(props);
-            props.putAll(nifiProps);
-        }
-        return props;
-    }
-
-    public List<AnnotatedFieldProperty> getMetadataProperties() {
-        return MetadataFields.getInstance().getProperties(FeedMetadata.class);
-    }
 
     /**
      * @return only those properties that were updated
@@ -147,97 +129,13 @@ public class PropertyExpressionResolver {
      * @param property the property
      * @return {@code true} if the property was modified, or {@code false} otherwise
      */
-    boolean resolveExpression(@Nonnull final FeedMetadata metadata, @Nonnull final NifiProperty property) {
+    public boolean resolveExpression(@Nonnull final FeedMetadata metadata, @Nonnull final NifiProperty property) {
         final ResolveResult variableResult = resolveVariables(property, metadata);
         final ResolveResult staticConfigResult = (!variableResult.isFinal) ? resolveStaticConfigProperty(property) : new ResolveResult(false, false);
         return variableResult.isModified || staticConfigResult.isModified;
     }
 
-    public boolean containsVariablesPatterns(String str) {
-        return str.contains(VAR_PREFIX);
-    }
-
-    public static class ResolvedVariables {
-
-        private Map<String, String> resolvedVariables;
-
-        private String resolvedString;
-
-        ResolvedVariables(String str) {
-            this.resolvedString = str;
-            this.resolvedVariables = new HashMap<>();
-        }
-
-        public Map<String, String> getResolvedVariables() {
-            return resolvedVariables;
-        }
-
-        public String getResolvedString() {
-            return resolvedString;
-        }
-
-        void setResolvedString(String resolvedString) {
-            this.resolvedString = resolvedString;
-        }
-    }
-
-
-    /**
-     * Replace any property in the str  ${var} with the respective value in the map of vars
-     */
-    public String resolveVariables(String str, Map<String, String> vars) {
-        StrSubstitutor ss = new StrSubstitutor(vars);
-        return ss.replace(str);
-    }
-
-    public String replaceAll(String str, String replacement) {
-        if (str != null) {
-            StrLookup lookup = new StrLookup() {
-                @Override
-                public String lookup(String key) {
-                    return replacement;
-                }
-            };
-            StrSubstitutor ss = new StrSubstitutor(lookup);
-            return ss.replace(str);
-        }
-        return null;
-    }
-
-    /**
-     * Resolve the str with values from the supplied {@code properties} This will recursively fill out the str looking back at the properties to get the correct value. NOTE the property values will be
-     * overwritten if replacement is found!
-     */
-    public ResolvedVariables resolveVariables(String str, List<NifiProperty> properties) {
-        ResolvedVariables variables = new ResolvedVariables(str);
-
-        StrLookup resolver = new StrLookup() {
-            @Override
-            public String lookup(String key) {
-                Optional<NifiProperty> optional = properties.stream().filter(prop -> key.equals(prop.getKey())).findFirst();
-                if (optional.isPresent()) {
-                    NifiProperty property = optional.get();
-                    String value = property.getValue().trim();
-                    variables.getResolvedVariables().put(property.getKey(), value);
-                    return value;
-                } else {
-                    return null;
-                }
-            }
-        };
-
-        StrSubstitutor ss = new StrSubstitutor(resolver);
-        variables.setResolvedString(ss.replace(str));
-
-        Map<String, String> map = variables.getResolvedVariables();
-        Map<String, String> vars = map.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, entry -> ss.replace(entry.getValue())));
-        variables.getResolvedVariables().putAll(vars);
-
-        return variables;
-    }
-
-    private String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception {
+    public String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception {
         String fieldPathName = StringUtils.substringAfter(variableName, metadataPropertyPrefix);
         Object obj = null;
         try {
@@ -258,7 +156,21 @@ public class PropertyExpressionResolver {
         }
     }
 
-    private String getConfigurationPropertyValue(NifiProperty property, String propertyKey) {
+    public Map<String, Object> getStaticConfigProperties() {
+        Map<String, Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
+        if (props == null) {
+            props = new HashMap<>();
+        }
+        Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
+        if (nifiProps != null && !nifiProps.isEmpty()) {
+            //copy it to a new map
+            props = new HashMap<>(props);
+            props.putAll(nifiProps);
+        }
+        return props;
+    }
+
+    public String getConfigurationPropertyValue(NifiProperty property, String propertyKey) {
         if (StringUtils.isNotBlank(propertyKey) && propertyKey.startsWith(configPropertyPrefix)) {
             return environmentProperties.getPropertyValueAsString(propertyKey);
         } else {
@@ -271,6 +183,10 @@ public class PropertyExpressionResolver {
             }
             return value;
         }
+    }
+
+    public List<AnnotatedFieldProperty> getMetadataProperties() {
+        return MetadataFields.getInstance().getProperties(FeedMetadata.class);
     }
 
     /**
@@ -310,43 +226,147 @@ public class PropertyExpressionResolver {
             return new ResolveResult(false, false);
         }
 
-        final boolean[] hasConfig = {false};
-        final boolean[] isModified = {false};
+        // Look for a match, else return
+        final Matcher matcher = VARIABLE_PATTERN.matcher(value);
+        if (!matcher.find()) {
+            return new ResolveResult(false, false);
+        }
 
-        StrLookup resolver = new StrLookup() {
-            @Override
-            public String lookup(String variable) {
-                // Resolve configuration variables
-                final String configValue = getConfigurationPropertyValue(property, variable);
-                if (configValue != null) {
-                    hasConfig[0] = true;
-                    isModified[0] = true;
-                    if (!property.isContainsConfigurationVariables()) {
-                        property.setTemplateValue(property.getValue());
-                        property.setContainsConfigurationVariables(true);
-                    }
-                    return configValue;
-                }
+        // Replace matches with resolved values
+        boolean hasConfig = false;
+        boolean isModified = false;
+        final StringBuffer result = new StringBuffer(value.length() * 2);
 
-                // Resolve metadata variables
-                try {
-                    final String metadataValue = getMetadataPropertyValue(metadata, variable);
-                    if (metadataValue != null) {
-                        isModified[0] = true;
-                        return metadataValue;
-                    }
-                } catch (Exception e) {
-                    log.error("Unable to resolve variable: " + variable, e);
-                }
+        do {
+            final String variable = matcher.group(1);
 
-                return null;
+            // Resolve configuration variables
+            final String configValue = getConfigurationPropertyValue(property, variable);
+            if (configValue != null) {
+                hasConfig = true;
+                isModified = true;
+                //todo do we need to check if the user supplied a value?
+                property.setTemplateValue(property.getValue());
+                property.setContainsConfigurationVariables(true);
+                matcher.appendReplacement(result, Matcher.quoteReplacement(configValue));
+                continue;
             }
-        };
-        StrSubstitutor ss = new StrSubstitutor(resolver);
-        ss.setEnableSubstitutionInVariables(true);
-        property.setValue(StringUtils.trim(ss.replace(value)));
 
-        return new ResolveResult(hasConfig[0], isModified[0]);
+            // Resolve metadata variables
+            try {
+                final String metadataValue = getMetadataPropertyValue(metadata, variable);
+                if (metadataValue != null) {
+                    isModified = true;
+                    matcher.appendReplacement(result, Matcher.quoteReplacement(metadataValue));
+                }
+            } catch (Exception e) {
+                log.error("Unable to resolve variable: " + variable, e);
+            }
+        } while (matcher.find());
+
+        // Replace property value
+        matcher.appendTail(result);
+        property.setValue(StringUtils.trim(result.toString()));
+
+        return new ResolveResult(hasConfig, isModified);
+    }
+
+    public boolean containsVariablesPatterns(String str) {
+        final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+        return (matcher.find());
+    }
+
+    /**
+     * Replace any property in the str  ${var} with the respective value in the map of vars
+     */
+    public String resolveVariables(String str, Map<String, String> vars) {
+
+        String replacedString = str;
+        if (str != null) {
+            // Look for a match, else return
+            final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+            if (!matcher.find()) {
+                return replacedString;
+            }
+
+            final StringBuffer result = new StringBuffer(str.length() * 2);
+
+            do {
+                final String variable = matcher.group(1);
+
+                String replacement = vars.get(variable);
+                if (replacement != null) {
+                    matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+                }
+            } while (matcher.find());
+
+            // Replace property value
+            matcher.appendTail(result);
+            replacedString = StringUtils.trim(result.toString());
+        }
+        return replacedString;
+    }
+
+    public String replaceAll(String str, String replacement) {
+        if (str != null) {
+            final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+            return matcher.replaceAll(replacement);
+        }
+        return str;
+    }
+
+    /**
+     * Resolve the str with values from the supplied {@code properties} This will recursively fill out the str looking back at the properties to get the correct value. NOTE the property values will be
+     * overwritten if replacement is found!
+     */
+    public ResolvedVariables resolveVariables(String str, List<NifiProperty> properties) {
+        return resolveVariables(str, properties, new HashMap<>());
+    }
+
+    private ResolvedVariables resolveVariables(String str, List<NifiProperty> properties, Map<String, Set<String>> resolvedValues) {
+        ResolvedVariables variables = new ResolvedVariables(str);
+
+        if (str != null) {
+            // Look for a match, else return
+            final Matcher matcher = PropertyExpressionResolver.VARIABLE_PATTERN.matcher(str);
+            if (!matcher.find()) {
+                return variables;
+            }
+
+            final StringBuffer result = new StringBuffer(str.length() * 2);
+
+            do {
+                final String variable = matcher.group(1);
+                NifiProperty property = properties.stream().filter(p -> p.getKey().equals(variable)).findFirst().orElse(null);
+                if (property != null) {
+                    String replacedString = property.getValue();
+                    //cannot contain itself
+
+                    if (replacedString != null && !replacedString.contains("${" + property.getKey() + "}") && (!resolvedValues.containsKey(property.getKey()) || (!resolvedValues.get(property.getKey())
+                        .contains(replacedString)))) {
+                        resolvedValues.computeIfAbsent(property.getKey(), (key) -> new HashSet<String>()).add(replacedString);
+                        ResolvedVariables resolvedVariables = resolveVariables(replacedString, properties, resolvedValues);
+                        replacedString = resolvedVariables.getResolvedString();
+                        property.setValue(resolvedVariables.getResolvedString());
+                        variables.getResolvedVariables().put(property.getKey(), replacedString);
+
+                    }
+                    if (replacedString != null) {
+                        matcher.appendReplacement(result, Matcher.quoteReplacement(replacedString));
+                    }
+                }
+
+            } while (matcher.find());
+
+            // Replace property value
+            matcher.appendTail(result);
+            String replacement = StringUtils.trim(result.toString());
+            variables.setResolvedString(replacement);
+            return variables;
+
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -375,4 +395,37 @@ public class PropertyExpressionResolver {
             this.isModified = isModified;
         }
     }
+
+    public static class ResolvedVariables {
+
+        private Map<String, String> resolvedVariables;
+
+        private String str;
+
+        private String resolvedString;
+
+        public ResolvedVariables(String str) {
+            this.str = str;
+            this.resolvedString = str;
+            this.resolvedVariables = new HashMap<>();
+        }
+
+        public Map<String, String> getResolvedVariables() {
+            return resolvedVariables;
+        }
+
+        public void setResolvedVariables(Map<String, String> resolvedVariables) {
+            this.resolvedVariables = resolvedVariables;
+        }
+
+        public String getResolvedString() {
+            return resolvedString;
+        }
+
+        public void setResolvedString(String resolvedString) {
+            this.resolvedString = resolvedString;
+        }
+    }
+
+
 }
