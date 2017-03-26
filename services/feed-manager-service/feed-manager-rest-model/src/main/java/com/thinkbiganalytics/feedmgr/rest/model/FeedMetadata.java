@@ -480,7 +480,11 @@ public class FeedMetadata implements UIFeed {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
     }
 
+    /**
+     * Return the properties for this feed that are marked as being sensitive
+     * @return
+     */
     public List<NifiProperty> getSensitiveProperties(){
-        return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive() && (!nifiProperty.isInputProperty() || (nifiProperty.isInputProperty() && nifiProperty.getProcessorType().equals(this.getInputProcessorType())))).collect(Collectors.toList());
     }
 }

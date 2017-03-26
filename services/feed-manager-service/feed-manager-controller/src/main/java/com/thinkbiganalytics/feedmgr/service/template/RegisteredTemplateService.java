@@ -241,7 +241,7 @@ public class RegisteredTemplateService {
     public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest){
         RegisteredTemplate registeredTemplate = findRegisteredTemplate(registeredTemplateRequest);
         if(registeredTemplate == null) {
-            registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplate.getNifiTemplateId());
+            registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
         }
         if(registeredTemplate == null){
             //throw exception

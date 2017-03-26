@@ -1,40 +1,98 @@
 define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
 
-    var controller = function ($scope, $http,$mdDialog, FileUpload, RestUrlService) {
+    var controller = function ($scope, $http,$interval, $timeout,$mdDialog, FileUpload, RestUrlService, ImportService) {
 
         /**
-         * Pointer to this controller
+         * reference to the controller
          * @type {controller}
          */
         var self = this;
+
         /**
          * The file to upload
          * @type {null}
          */
         this.templateFile = null;
         /**
-         * The name of the file to upload
+         * the name of the file to upload
          * @type {null}
          */
         this.fileName = null;
+
         /**
-         * true if uploading, false if not
+         * The type of upload (either 'zip', or 'xml')
+         * @type {null}
+         */
+        this.uploadType = null;
+
+        /**
+         * flag if uploading
          * @type {boolean}
          */
-        this.importInProgress = false;
+        this.uploadInProgress = false;
 
         /**
-         * true to overwrite the template
-          * @type {boolean}
+         * Flag to indicate the upload produced validation errors
+         * @type {boolean}
          */
-        this.overwrite = false;
+        this.validationErrors = false;
+
+        /**
+         * unique key to track upload status
+         * @type {null}
+         */
+        this.uploadKey = null;
+
+        /**
+         * Status of the current upload
+         * @type {Array}
+         */
+        this.uploadStatusMessages = [];
+
+        /**
+         * handle on the $interval object to cancel later
+         * @type {null}
+         */
+        this.uploadStatusCheck = undefined;
+
+        /**
+         * Percent upload complete
+         * @type {number}
+         */
+        this.uploadProgress = 0;
+
+        /**
+         * Flag to indicate additional properties exist and a header show be shown for template options
+         */
+        this.additionalInputNeeded = false;
+
+        /**
+         * All the importOptions that will be uploaded
+         * @type {{}}
+         */
+        this.importComponentOptions = {};
+
+        /**
+         * Registered Template import options
+         */
+        this.templateDataImportOption = ImportService.newTemplateDataImportOption();
+
+        /**
+         * NiFi template options
+         */
+        this.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
+
+        /**
+         * Reusable template options
+         */
+        this.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
+
+        /**
+         * Called when a user changes a import option for overwriting
+         */
+        this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
 
 
-        this.createReusableFlow = false;
-        this.xmlType = false;
-
-        this.verifiedToCreateConnectingReusableTemplate = false;
-        this.createConnectingReusableTemplate = false;
 
         self.importResult = null;
         self.importResultIcon = "check_circle";
@@ -45,209 +103,280 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         self.showReorderList = false;
 
-        /**
-         * User supplied properties required before the feed is imported
-         * @type {undefined}
-         */
-        self.userSuppliedTemplateProperties = undefined;
-        /**
-         * The input type, either password or text.  Changed via the checkbox in the UI
-         * @type {string}
-         */
-        self.userSuppliedTemplatePropertyInputType = 'password';
-        /**
-         * Show the text string, or keep it as a password showing asterisks
-         * @type {boolean}
-         */
-        self.showUserSuppliedTemplatePropertyValues = false;
-
-
-        function showVerifyReplaceReusableTemplateDialog(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title('Import Connecting Reusable Flow')
-                .textContent(' The Template you are importing also contains its reusable flow.  Do you want to also import the reusable flow and version that as well?')
-                .ariaLabel('Import Connecting Reusable Flow')
-                .targetEvent(ev)
-                .ok('Please do it!')
-                .cancel('Nope');
-            $mdDialog.show(confirm).then(function() {
-                self.verifiedToCreateConnectingReusableTemplate = true;
-                self.createConnectingReusableTemplate = true;
-                self.importTemplate();
-            }, function() {
-                self.verifiedToCreateConnectingReusableTemplate = true;
-                self.createConnectingReusableTemplate = false;
-                self.importTemplate();
-
-            });
-        };
-
-        self.showHidePassword = function(){
-            if (self.userSuppliedPropertyInputType == 'password')
-                self.userSuppliedPropertyInputType= 'text';
-            else
-                self.userSuppliedPropertyInputType = 'password';
-        };
-
 
         this.importTemplate = function () {
             self.showReorderList = false;
-            self.importInProgress = true;
+            self.uploadInProgress = true;
             self.importResult = null;
-            showProgress();
             var file = self.templateFile;
             var uploadUrl = RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
             var successFn = function (response) {
                 var responseData = response.data;
-                if(responseData.verificationToReplaceConnectingResuableTemplateNeeded){
-                    showVerifyReplaceReusableTemplateDialog();
-                    return;
-                }
-
-                if(responseData.importOptions.properties){
+            /*
+               if(responseData.importOptions.properties){
                     _.each(responseData.importOptions.properties,function(prop){
                         var inputName = prop.processorName.split(' ').join('_')+prop.propertyKey.split(' ').join('_');
                         prop.inputName = inputName.toLowerCase();
                     });
                 }
-                self.userSuppliedTemplateProperties = responseData.importOptions.templateProperties;
+                */
 
 
+                //reassign the options back from the response data
+                var importComponentOptions = responseData.importOptions.importComponentOptions;
+                //map the options back to the object map
+                updateImportOptions(importComponentOptions);
 
-                var count = 0;
-                var errorMap = {"FATAL": [], "WARN": []};
-                self.importResult = responseData;
-                //if(responseData.templateResults.errors) {
-                if (responseData.templateResults.errors) {
-                    //angular.forEach(responseData.templateResults.errors, function (processor) {
-                    angular.forEach(responseData.templateResults.errors, function (processor) {
-                        if (processor.validationErrors) {
-                            angular.forEach(processor.validationErrors, function (error) {
-                                var copy = {};
-                                angular.extend(copy, error);
-                                angular.extend(copy, processor);
-                                copy.validationErrors = null;
-                                errorMap[error.severity].push(copy);
-                                count++;
-                            });
-                        }
-                    });
-                    self.errorMap = errorMap;
-                    self.errorCount = count;
-                }
-
-                hideProgress();
-
-                if (count == 0) {
-                    self.showReorderList = true;
-                    self.importResultIcon = "check_circle";
-                    self.importResultIconColor = "#009933";
-                    if (responseData.zipFile == true) {
-                        self.message = "Successfully imported and registered the template " + responseData.templateName;
-                    }
-                    else {
-                        self.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
-                    }
-                    self.createReusableFlow = false;
-                    self.overwrite = false;
-                    self.verifiedToCreateConnectingReusableTemplate = false;
-                    self.createConnectingReusableTemplate = false;
+                if(!responseData.valid){
+                    //Validation Error.  Additional Input is needed by the end user
+                    self.additionalInputNeeded = true;
                 }
                 else {
-                    if (responseData.success) {
+                    var count = 0;
+                    var errorMap = {"FATAL": [], "WARN": []};
+                    self.importResult = responseData;
+                    //if(responseData.templateResults.errors) {
+                    if (responseData.templateResults.errors) {
+                        //angular.forEach(responseData.templateResults.errors, function (processor) {
+                        angular.forEach(responseData.templateResults.errors, function (processor) {
+                            if (processor.validationErrors) {
+                                angular.forEach(processor.validationErrors, function (error) {
+                                    var copy = {};
+                                    angular.extend(copy, error);
+                                    angular.extend(copy, processor);
+                                    copy.validationErrors = null;
+                                    errorMap[error.severity].push(copy);
+                                    count++;
+                                });
+                            }
+                        });
+                        self.errorMap = errorMap;
+                        self.errorCount = count;
+                    }
+
+                    if (count == 0) {
                         self.showReorderList = true;
-                        self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                        self.importResultIcon = "warning";
-                        self.importResultIconColor = "#FF9901";
-                        self.createReusableFlow = false;
-                        self.overwrite = false;
-                        self.verifiedToCreateConnectingReusableTemplate = false;
-                        self.createConnectingReusableTemplate = false;
+                        self.importResultIcon = "check_circle";
+                        self.importResultIconColor = "#009933";
+                        if (responseData.zipFile == true) {
+                            self.message = "Successfully imported and registered the template " + responseData.templateName;
+                        }
+                        else {
+                            self.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
+                        }
+                        resetImportOptions();
                     }
                     else {
-                        self.importResultIcon = "error";
-                        self.importResultIconColor = "#FF0000";
-                        self.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
-                        self.verifiedToCreateConnectingReusableTemplate = false;
-                        self.createConnectingReusableTemplate = false;
+                        if (responseData.success) {
+                            resetImportOptions();
+                            self.showReorderList = true;
+                            self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                            self.importResultIcon = "warning";
+                            self.importResultIconColor = "#FF9901";
+                        }
+                        else {
+                            self.importResultIcon = "error";
+                            self.importResultIconColor = "#FF0000";
+                            self.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        }
                     }
-                }
 
-                self.importInProgress = false;
+
+                }
+                self.uploadInProgress = false;
+                stopUploadStatus(1000);
+
+
             }
             var errorFn = function (response) {
-                hideProgress();
                 self.importResult = response.data;
-                self.importInProgress = false;
+                self.uploadInProgress = false;
                 self.importResultIcon = "error";
                 self.importResultIconColor = "#FF0000";
                 var msg = response.data.message != undefined ? response.data.message : "Unable to import the template.";
                 self.message = msg;
-                self.verifiedToCreateConnectingReusableTemplate = false;
-                self.createConnectingReusableTemplate = false;
-            }
-            var createConnectingReusableFlow = 'NOT_SET';
-            if(self.verifiedToCreateConnectingReusableTemplate && self.createConnectingReusableTemplate) {
-                createConnectingReusableFlow = 'YES';
-            }
-            else if(self.verifiedToCreateConnectingReusableTemplate && !self.createConnectingReusableTemplate) {
-                createConnectingReusableFlow = 'NO';
+
+                stopUploadStatus(1000);
             }
 
+            //build up the options from the Map and into the array for uploading
+            var importComponentOptions = ImportService.getImportOptionsForUpload(self.importComponentOptions);
 
+            //generate a new upload key for status tracking
+            self.uploadKey = ImportService.newUploadKey();
 
             var params = {
-                overwrite: self.overwrite,
-                createReusableFlow: self.createReusableFlow,
-                importConnectingReusableFlow: createConnectingReusableFlow
+                uploadKey : self.uploadKey,
+                importComponents:angular.toJson(importComponentOptions)
             };
-            if(self.userSuppliedTemplateProperties != undefined && ! _.isEmpty(self.userSuppliedTemplateProperties)  ) {
-                params.templateProperties = angular.toJson(self.userSuppliedTemplateProperties);
-            }
+
+
+            startUploadStatus();
 
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
-        function showProgress() {
-
-        }
-
-        function hideProgress() {
-
-        }
-
-        function resetUserSuppliedValues(){
-
-            self.userSuppliedTemplateProperties = undefined;
-            self.userSuppliedTemplatePropertyInputType = 'password';
-            self.showUserSuppliedTemplatePropertyValues = false;
-
-        }
-
-
+        /**
+         * Watch when the file changs
+         */
         $scope.$watch(function () {
             return self.templateFile;
-        }, function (newVal) {
+        }, function (newVal, oldValue) {
             if (newVal != null) {
                 self.fileName = newVal.name;
-                self.xmlType = self.fileName.toLowerCase().endsWith(".xml");
+              if(self.fileName.toLowerCase().endsWith(".xml")){
+                  self.uploadType = 'xml';
+              }
+              else {
+                  self.uploadType = 'zip'
+              }
             }
             else {
                 self.fileName = null;
-                self.xmlType = false;
-                self.createReusableFlow = false;
+               self.uploadType = null;
+            }
+            //reset them if changed
+            if(newVal != oldValue){
+                resetImportOptions();
             }
 
-            if (!self.xmlType) {
-                self.createReusableFlow = false;
+        });
+
+
+
+
+        /**
+         * Set the default values for the import options
+         */
+        function setDefaultImportOptions(){
+           if(self.uploadType == 'zip') {
+               //only if it is a zip do we continue with the niFi template
+               self.nifiTemplateImportOption.continueIfExists = true;
+               self.reusableTemplateImportOption.shouldImport = false;
+               self.reusableTemplateImportOption.userAcknowledged = false;
+           }
+           else {
+               self.nifiTemplateImportOption.continueIfExists = false;
+               self.reusableTemplateImportOption.shouldImport = false;
+               self.reusableTemplateImportOption.userAcknowledged = true;
+           }
+
+
+        }
+
+        /**
+         * Initialize the Controller
+         */
+        function init() {
+            indexImportOptions();
+            setDefaultImportOptions();
+        }
+
+        function indexImportOptions(){
+            var arr = [self.templateDataImportOption,self.nifiTemplateImportOption,self.reusableTemplateImportOption];
+            self.importComponentOptions = _.indexBy(arr,'importComponent')
+        }
+
+        /**
+         * Reset the options back to their orig. state
+         */
+        function resetImportOptions(){
+            self.importComponentOptions = {};
+
+            self.templateDataImportOption = ImportService.newTemplateDataImportOption();
+
+            self.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
+
+            self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
+
+            indexImportOptions();
+            setDefaultImportOptions();
+
+            self.additionalInputNeeded = false;
+
+        }
+
+
+
+        init();
+        /**
+         *
+         * @param importOptionsArr array of importOptions
+         */
+        function updateImportOptions(importOptionsArr){
+            var map = _.indexBy(importOptionsArr,'importComponent');
+            _.each(importOptionsArr, function(option) {
+                if(option.userAcknowledged){
+                    option.overwriteSelectValue = ""+option.overwrite;
+                }
+
+                else if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA){
+                    self.templateDataImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.REUSABLE_TEMPLATE){
+                    self.reusableTemplateImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE){
+                    self.nifiTemplateImportOption= option;
+                }
+                self.importComponentOptions[option.importComponent] = option;
+            });
+        }
+
+
+
+
+
+
+        /**
+         * Stop the upload status check,
+         * @param delay wait xx millis before stopping (allows for the last status to be queried)
+         */
+        function stopUploadStatus(delay){
+
+            function stopStatusCheck(){
+                self.uploadProgress = 0;
+                if (angular.isDefined(self.uploadStatusCheck)) {
+                    $interval.cancel(self.uploadStatusCheck);
+                    self.uploadStatusCheck = undefined;
+                }
             }
-            resetUserSuppliedValues();
-        })
+
+            if(delay != undefined) {
+                $timeout(function(){
+                    stopStatusCheck();
+                },delay)
+            }
+            else {
+                stopStatusCheck();
+            }
+
+        }
+
+        /**
+         * starts the upload status check
+         */
+        function startUploadStatus(){
+            stopUploadStatus();
+            self.uploadStatusMessages =[];
+            self.uploadStatusCheck = $interval(function() {
+                //poll for status
+                $http.get(RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(self.uploadKey)).then(function(response) {
+                    if(response && response.data && response.data != null) {
+                        self.uploadStatusMessages = response.data.messages;
+                        self.uploadProgress = response.data.percentComplete;
+                    }
+                }, function(err){
+                    //  self.uploadStatusMessages = [];
+                });
+            },500);
+        }
+
+
 
     };
 
-    angular.module(moduleName).controller('ImportTemplateController', ["$scope","$http","$mdDialog","FileUpload","RestUrlService",controller]);
+    angular.module(moduleName).controller('ImportTemplateController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","ImportService",controller]);
 
 
 });

@@ -16,7 +16,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * Return true if every char in value == '*'
          */
         this.isMasked = function(value){
-           return _.every(value.split(''),function(char){
+           return value != null && _.every(value.split(''),function(char){
                 return char == '*';
             });
         };

@@ -26,15 +26,18 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -85,6 +88,9 @@ public class AdminController {
     @Inject
     ExportImportFeedService exportImportFeedService;
 
+    @Inject
+    UploadProgressService uploadProgressService;
+
     /**
      * Feed manager metadata service
      */
@@ -128,6 +134,25 @@ public class AdminController {
             throw new RuntimeException("Unable to export Feed " + e.getMessage());
         }
     }
+
+    @GET
+    @Path("/upload-status/{key}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets thet status of a given upload/import.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the upload status")
+                  })
+    public Response uploadStatus(@NotNull @PathParam("key") String key) {
+            UploadProgress uploadProgress = uploadProgressService.getUploadStatus(key);
+            if(uploadProgress != null) {
+                uploadProgress.checkAndIncrementPercentage();
+                return Response.ok(uploadProgress).build();
+            }
+            else {
+                return Response.ok(uploadProgress).build();
+            }
+    }
+
 
 
     @POST
@@ -207,13 +232,20 @@ public class AdminController {
                   })
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
+                               @NotNull @FormDataParam("uploadKey") String uploadKey,
+                               @FormDataParam("categorySystemName") String categorySystemName,
                                @FormDataParam("importComponents") String importComponents)
         throws Exception {
         ImportFeedOptions options = new ImportFeedOptions();
+        options.setUploadKey(uploadKey);
         ExportImportFeedService.ImportFeed importFeed = null;
+
+        options.setCategorySystemName(categorySystemName);
+
 
         boolean overwriteFeed= true;
         boolean overwriteTemplate = true;
+        uploadProgressService.newUpload(uploadKey);
 /*
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(overwriteTemplate);
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(overwriteTemplate);
@@ -232,7 +264,9 @@ public class AdminController {
         */
       //  importComponents = "";
 
+
         if(importComponents == null) {
+            //shouldnt get here
             byte[] content = ImportUtil.streamToByteArray(fileInputStream);
             importFeed = exportImportFeedService.validateFeedForImport(fileMetaData.getFileName(),content, options);
             importFeed.setSuccess(false);
@@ -243,6 +277,7 @@ public class AdminController {
             byte[] content = ImportUtil.streamToByteArray(fileInputStream);
             importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
         }
+        uploadProgressService.removeUpload(uploadKey);
         return Response.ok(importFeed).build();
     }
 
@@ -257,11 +292,16 @@ public class AdminController {
                   })
     public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                    @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
+                                   @NotNull @FormDataParam("uploadKey") String uploadKey,
                                    @FormDataParam("importComponents") String importComponents)
         throws Exception {
         ImportTemplateOptions options = new ImportTemplateOptions();
+        options.setUploadKey(uploadKey);
         ExportImportTemplateService.ImportTemplate importTemplate = null;
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
+
+        uploadProgressService.newUpload(uploadKey);
+
         if(importComponents == null) {
             importTemplate = exportImportTemplateService.validateTemplateForImport(fileMetaData.getFileName(), content,options);
             importTemplate.setSuccess(false);
@@ -269,11 +309,6 @@ public class AdminController {
         else {
             options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
             }));
-
-//            if (templateProperties != null) {
- //               options.setTemplateProperties(ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
-  //              }));
-         //   }
             importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
         }
         return Response.ok(importTemplate).build();

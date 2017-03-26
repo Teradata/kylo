@@ -216,6 +216,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         this.ADMIN_IMPORT_FEED_URL = self.ADMIN_BASE_URL + "/import-feed2";
 
+        this.ADMIN_UPLOAD_STATUS_CHECK = function(key) {
+            return self.ADMIN_BASE_URL+"/upload-status/"+key;
+        }
+
         // Hadoop Security Authorization
         this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
 

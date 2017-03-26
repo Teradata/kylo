@@ -188,6 +188,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             self.editModel.allInputProcessorProperties = allInputProcessorProperties;
             self.editModel.inputProcessors = inputProcessors;
             self.editModel.nonInputProcessors = nonInputProcessors;
+
+            // Find controller services
+            _.chain(self.editModel.inputProcessors.concat(self.editModel.nonInputProcessors ))
+                .pluck("properties")
+                .flatten(true)
+                .filter(function(property) {
+                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                })
+                .each(FeedService.findControllerServicesForProperty);
+
+
+
             //NEED TO COPY IN TABLE PROPS HERE
             self.editModel.table = angular.copy(FeedService.editFeedModel.table);
             EditFeedNifiPropertiesService.editFeedModel = self.editModel;
