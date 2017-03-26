@@ -725,6 +725,28 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             return response.data;
                         });
                 },
+                /**
+                 * Finds the allowed controller services for the specified property and sets the allowable values.
+                 *
+                 * @param {Object} property the property to be updated
+                 */
+                findControllerServicesForProperty: function(property) {
+                    // Show progress indicator
+                    property.isLoading = true;
+
+                    // Fetch the list of controller services
+                    data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
+                        .then(function(services) {
+                            // Update the allowable values
+                            property.isLoading = false;
+                            property.propertyDescriptor.allowableValues = _.map(services, function(service) {
+                                return {displayName: service.name, value: service.id}
+                            });
+                        }, function() {
+                            // Hide progress indicator
+                            property.isLoading = false;
+                        });
+                },
 
                 /**
                  * Gets the list of available Hive partition functions.

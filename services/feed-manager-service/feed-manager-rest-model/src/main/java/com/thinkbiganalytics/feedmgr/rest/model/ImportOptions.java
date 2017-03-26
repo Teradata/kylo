@@ -12,6 +12,8 @@ import java.util.Set;
  */
 public class ImportOptions {
 
+    private String uploadKey;
+
     private Set<ImportComponentOption> importComponentOptions;
 
     public Set<ImportComponentOption> getImportComponentOptions() {
@@ -133,4 +135,18 @@ public class ImportOptions {
     public void addErrorMessage(ImportComponent component, String msg){
         findImportComponentOption(component).getErrorMessages().add(msg);
     }
+
+    public boolean hasErrorMessages(ImportComponent component){
+        return  findImportComponentOption(component).getErrorMessages().size() >0;
+    }
+
+
+    public String getUploadKey() {
+        return uploadKey;
+    }
+
+    public void setUploadKey(String uploadKey) {
+        this.uploadKey = uploadKey;
+    }
+
 }

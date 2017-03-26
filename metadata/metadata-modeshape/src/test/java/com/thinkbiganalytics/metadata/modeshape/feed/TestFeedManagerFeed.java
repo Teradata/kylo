@@ -20,6 +20,9 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -86,6 +89,7 @@ public class TestFeedManagerFeed {
     private FeedTestUtil feedTestUtil;
 
 
+
     private boolean deleteTemplate(String templateName) {
         //try to delete the template.  This should fail since there are feeds attached to it
         return metadata.commit(new AdminCredentials(), () -> {
@@ -114,6 +118,65 @@ public class TestFeedManagerFeed {
             List<FeedManagerFeed> feeds = template.getFeeds();
             Assert.assertTrue(feeds != null && feeds.size() > 0);
         });
+    }
+
+    @Test
+    public void testLotsOfFeeds(){
+        int numberOfFeeds = 5;
+        int numberOfFeedsPerCategory = 20;
+        boolean convert = true;
+
+        String templateName = "my_template";
+
+        int categories = numberOfFeeds/numberOfFeedsPerCategory;
+        //create all the categories
+        metadata.commit(new AdminCredentials(), () -> {
+            for(int i=1;i<=categories;i++){
+                Category category = feedTestUtil.createCategory("category_"+i);
+            }
+        });
+
+        metadata.commit(new AdminCredentials(), () -> {
+                            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+                        });
+
+        //create the feeds
+        metadata.commit(new AdminCredentials(), () -> {
+
+            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+            Category category = null;
+
+            int categoryNum = 0;
+            String categoryName = "category"+categoryNum;
+                            for (int i = 0; i < numberOfFeeds; i++) {
+                                if (i % numberOfFeedsPerCategory == 0) {
+                                    categoryNum++;
+                                    categoryName = "category_" + categoryNum;
+                                    category = feedTestUtil.findOrCreateCategory(categoryName);
+                                }
+                                FeedManagerFeed feed = feedTestUtil.findOrCreateFeed(category, "feed_"+i, template);
+                            }
+                        });
+
+        //now query it
+        long time = System.currentTimeMillis();
+
+            Integer size = metadata.read(new AdminCredentials(), () -> {
+                List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+                if(convert) {
+                    for (FeedManagerFeed feed : feeds) {
+                        String json = feed.getJson();
+                        if(json != null) {
+                            Object o = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+                            int i = 0;
+                        }
+                    }
+                }
+                return feeds.size();
+            });
+            long stopTime = System.currentTimeMillis();
+            System.out.println("Time to query " + size + " = " + (stopTime - time) + " ms");
+
     }
 
 

@@ -1,6 +1,6 @@
 define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
-    var controller = function ($scope, $http, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService) {
+    var controller = function ($scope, $http, $interval,$timeout, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService, ImportService) {
 
         /**
          * reference to the controller
@@ -31,58 +31,65 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         this.validationErrors = false;
 
-
-
-        var importComponentTypes = {NIFI_TEMPLATE:"NIFI_TEMPLATE",
-                                     TEMPLATE_DATA:"TEMPLATE_DATA",
-                                     FEED_DATA:"FEED_DATA",
-                                     REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE"};
-
-        this.importComponentOptions = {};
-
-        this.feedDataImportOption = newImportComponentOption(importComponentTypes.FEED_DATA);
-
-        this.templateDataImportOption = newImportComponentOption(importComponentTypes.TEMPLATE_DATA);
-
-        this.nifiTemplateImportOption = newImportComponentOption(importComponentTypes.NIFI_TEMPLATE);
-
-        this.reusableTemplateImportOption = newImportComponentOption(importComponentTypes.REUSABLE_TEMPLATE);
-
-
-        function newImportComponentOption(component) {
-            var option = {importComponent:component,overwrite:false,userAcknowledged:true,shouldImport:true,analyzed:false,continueIfExist:false,properties:[]}
-            self.importComponentOptions[component] = option;
-            return option;
-        }
-
-        function init() {
-            setDefaultImportOptions();
-        }
+        /**
+         * unique key to track upload status
+         * @type {null}
+         */
+        this.uploadKey = null;
 
         /**
-         *
-         * @param importOptionsArr array of importOptions
+         * Status of the current upload
+         * @type {Array}
          */
-        function updateImportOptions(importOptionsArr){
-            var map = _.indexBy(importOptionsArr,'importComponent');
-            _.each(importOptionsArr, function(option) {
+        this.uploadStatusMessages = [];
 
-                if(option.importComponent == importComponentTypes.FEED_DATA){
-                    self.feedDataImportOption= option;
-                }
-                else if(option.importComponent == importComponentTypes.TEMPLATE_DATA){
-                    self.templateDataImportOption= option;
-                }
-                else if(option.importComponent == importComponentTypes.REUSABLE_TEMPLATE){
-                    self.reusableTemplateImportOption= option;
-                }
-                else if(option.importComponent == importComponentTypes.NIFI_TEMPLATE){
-                    self.nifiTemplateImportOption= option;
-                }
-                self.importComponentOptions[option.importComponent] = option;
-            });
-        }
+        /**
+         * handle on the $interval object to cancel later
+         * @type {null}
+         */
+        this.uploadStatusCheck = undefined;
 
+        /**
+         * Percent upload complete
+         * @type {number}
+         */
+        this.uploadProgress = 0;
+
+        /**
+         * Flag to indicate additional properties exist and a header show be shown for template options
+         */
+        this.additionalInputNeeded = false;
+
+        /**
+         * All the importOptions that will be uploaded
+         * @type {{}}
+         */
+        this.importComponentOptions = {};
+
+        /**
+         * Feed ImportOptions
+         */
+        this.feedDataImportOption = ImportService.newFeedDataImportOption();
+
+        /**
+         * Registered Template import options
+         */
+        this.templateDataImportOption = ImportService.newTemplateDataImportOption();
+
+        /**
+         * NiFi template options
+         */
+        this.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
+
+        /**
+         * Reusable template options
+         */
+        this.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
+
+        /**
+         * Called when a user changes a import option for overwriting
+         */
+        this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
 
 
 
@@ -102,48 +109,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             category: {}
         };
 
-        function searchTextChange(text) {
-        }
-        function selectedItemChange(item) {
-            if(item != null && item != undefined) {
-                self.model.category.name = item.name;
-                self.model.category.id = item.id;
-                self.model.category.systemName = item.systemName;
-            }
-            else {
-                self.model.category.name = null;
-                self.model.category.id = null;
-                self.model.category.systemName = null;
-            }
-        }
-
-        function showVerifyReplaceReusableTemplateDialog(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title('Import Connecting Reusable Flow')
-                .textContent(' The Feed you are importing also contains its reusable flow.  Do you want to also import the reusable flow?')
-                .ariaLabel('Import Connecting Reusable Flow')
-                .targetEvent(ev)
-                .ok('Please do it!')
-                .cancel('Nope');
-            $mdDialog.show(confirm).then(function () {
-                self.verifiedToCreateConnectingReusableTemplate = true;
-                self.createConnectingReusableTemplate = true;
-                self.importFeed();
-            }, function () {
-                self.verifiedToCreateConnectingReusableTemplate = true;
-                self.createConnectingReusableTemplate = false;
-                self.importFeed();
-
-            });
-        };
 
         this.importFeed = function () {
             //reset flags
             self.uploadInProgress = true;
             self.importResult = null;
-
-            showProgress();
 
             var file = self.feedFile;
             var uploadUrl = RestUrlService.ADMIN_IMPORT_FEED_URL;
@@ -151,16 +121,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var successFn = function (response) {
                 var responseData = response.data;
                 //reassign the options back from the response data
-
                 var importComponentOptions = responseData.importOptions.importComponentOptions;
                 //map the options back to the object map
                 updateImportOptions(importComponentOptions);
 
                 if(!responseData.valid){
                     //Validation Error.  Additional Input is needed by the end user
-
-
-
+                    self.additionalInputNeeded = true;
                 }
                 else {
 
@@ -193,7 +160,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.errorMap = errorMap;
                     self.errorCount = count;
 
-                    hideProgress();
                     var feedName = responseData.feedName != null ? responseData.feedName : "";
 
                     if (count == 0) {
@@ -201,37 +167,31 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         self.importResultIconColor = "#009933";
 
                         self.message = "Successfully imported the feed " + feedName + ".";
-                        self.overwrite = false;
-                        self.overwriteFeedTemplate = false;
-                        self.verifiedToCreateConnectingReusableTemplate = false;
-                        self.createConnectingReusableTemplate = false;
+
+                        resetImportOptions();
+
                     }
                     else {
                         if (responseData.success) {
+                            resetImportOptions();
+
                             self.message = "Successfully imported and registered the feed " + feedName + " but some errors were found. Please review these errors";
                             self.importResultIcon = "warning";
                             self.importResultIconColor = "#FF9901";
-                            self.overwrite = false;
-                            self.overwriteFeedTemplate = false;
-                            self.verifiedToCreateConnectingReusableTemplate = false;
-                            self.createConnectingReusableTemplate = false;
-                        }
+                               }
                         else {
                             self.importResultIcon = "error";
                             self.importResultIconColor = "#FF0000";
                             self.message = "Unable to import and register the feed.  Errors were found. ";
-                            self.verifiedToCreateConnectingReusableTemplate = false;
-                            self.createConnectingReusableTemplate = false;
-
                         }
                     }
                 }
 
                 self.uploadInProgress = false;
+                stopUploadStatus(1000);
             }
             var errorFn = function (response) {
                 var data = response.data
-                hideProgress();
                 //reset the flags
                 self.importResult = {};
                 self.uploadInProgress = false;
@@ -244,6 +204,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     msg += data.developerMessage;
                 }
                 self.message = msg;
+                stopUploadStatus(1000);
             }
 
 
@@ -257,35 +218,158 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
 
             //build up the options from the Map and into the array for uploading
-            var importComponentOptions = []
-            _.each(self.importComponentOptions,function(option,key){
-                //set defaults for options
-                if(option.overwrite){
-                    option.userAcknowledged = true;
-                    option.shouldImport = true;
-                }
-                //reset the errors
-                option.errorMessages = [];
-                importComponentOptions.push(option);
-            })
+            var importComponentOptions = ImportService.getImportOptionsForUpload(self.importComponentOptions);
+
+            //generate a new upload key for status tracking
+            self.uploadKey = ImportService.newUploadKey();
 
             var params = {
+                uploadKey : self.uploadKey,
                 categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
                 importComponents:angular.toJson(importComponentOptions)
             };
 
+
+            startUploadStatus();
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
 
         };
 
+        function searchTextChange(text) {
+        }
+        function selectedItemChange(item) {
+            if(item != null && item != undefined) {
+                self.model.category.name = item.name;
+                self.model.category.id = item.id;
+                self.model.category.systemName = item.systemName;
+            }
+            else {
+                self.model.category.name = null;
+                self.model.category.id = null;
+                self.model.category.systemName = null;
+            }
+        }
 
-        function showProgress() {
+
+
+        /**
+         * Set the default values for the import options
+         */
+        function setDefaultImportOptions(){
+            self.nifiTemplateImportOption.continueIfExists = true;
+            self.reusableTemplateImportOption.userAcknowledged = false;
+            //it is assumed with a feed you will be importing the template with the feed
+            self.templateDataImportOption.userAcknowledged=true;
+        }
+
+        function indexImportOptions(){
+            var arr = [self.feedDataImportOption,self.templateDataImportOption,self.nifiTemplateImportOption,self.reusableTemplateImportOption];
+            self.importComponentOptions = _.indexBy(arr,'importComponent')
+        }
+
+        /**
+         * Initialize the Controller
+         */
+        function init() {
+            indexImportOptions();
+            setDefaultImportOptions();
+        }
+
+        /**
+         * Reset the options back to their orig. state
+         */
+        function resetImportOptions(){
+            self.importComponentOptions = {};
+
+            self.feedDataImportOption = ImportService.newFeedDataImportOption();
+
+            self.templateDataImportOption = ImportService.newTemplateDataImportOption();
+
+            self.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
+
+            self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
+
+            indexImportOptions();
+            setDefaultImportOptions();
+
+            self.additionalInputNeeded = false;
 
         }
 
-        function hideProgress() {
+
+
+
+        /**
+         *
+         * @param importOptionsArr array of importOptions
+         */
+        function updateImportOptions(importOptionsArr){
+            var map = _.indexBy(importOptionsArr,'importComponent');
+            _.each(importOptionsArr, function(option) {
+                if(option.userAcknowledged){
+                    option.overwriteSelectValue = ""+option.overwrite;
+                }
+
+                if(option.importComponent == ImportService.importComponentTypes.FEED_DATA){
+                    self.feedDataImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA){
+                    self.templateDataImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.REUSABLE_TEMPLATE){
+                    self.reusableTemplateImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE){
+                    self.nifiTemplateImportOption= option;
+                }
+                self.importComponentOptions[option.importComponent] = option;
+            });
+        }
+
+        /**
+         * Stop the upload status check,
+         * @param delay wait xx millis before stopping (allows for the last status to be queried)
+         */
+        function stopUploadStatus(delay){
+
+            function stopStatusCheck(){
+                self.uploadProgress = 0;
+                if (angular.isDefined(self.uploadStatusCheck)) {
+                    $interval.cancel(self.uploadStatusCheck);
+                    self.uploadStatusCheck = undefined;
+                }
+            }
+
+            if(delay != undefined) {
+                $timeout(function(){
+                    stopStatusCheck();
+                },delay)
+            }
+            else {
+                stopStatusCheck();
+            }
 
         }
+
+        /**
+         * starts the upload status check
+         */
+        function startUploadStatus(){
+            stopUploadStatus();
+            self.uploadStatusMessages =[];
+           self.uploadStatusCheck = $interval(function() {
+                //poll for status
+                $http.get(RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(self.uploadKey)).then(function(response) {
+                    if(response && response.data && response.data != null) {
+                        self.uploadStatusMessages = response.data.messages;
+                        self.uploadProgress = response.data.percentComplete;
+                    }
+                }, function(err){
+                  //  self.uploadStatusMessages = [];
+                });
+            },500);
+        }
+
 
         $scope.$watch(function () {
             return self.feedFile;
@@ -298,9 +382,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         })
 
+        init();
+
     };
 
-    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService",controller]);
+    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService",controller]);
 
 });
 

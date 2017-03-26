@@ -32,6 +32,7 @@ import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
@@ -221,6 +222,11 @@ public class FeedManagerConfiguration {
     @Bean
     public RegisteredTemplateUtil registeredTemplateUtil() {
         return new RegisteredTemplateUtil();
+    }
+
+    @Bean
+    public UploadProgressService uploadProgressService(){
+        return new UploadProgressService();
     }
 
 }

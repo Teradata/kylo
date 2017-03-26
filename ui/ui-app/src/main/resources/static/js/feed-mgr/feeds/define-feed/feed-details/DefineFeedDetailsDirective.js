@@ -79,21 +79,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} property the property to be updated
          */
         function findControllerServicesForProperty(property) {
-            // Show progress indicator
-            property.isLoading = true;
 
-            // Fetch the list of controller services
-            FeedService.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
-                    .then(function(services) {
-                        // Update the allowable values
-                        property.isLoading = false;
-                        property.propertyDescriptor.allowableValues = _.map(services, function(service) {
-                            return {displayName: service.name, value: service.id}
-                        });
-                    }, function() {
-                        // Hide progress indicator
-                        property.isLoading = false;
-                    });
+            FeedService.findControllerServicesForProperty(property);
         }
 
         /**

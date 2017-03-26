@@ -34,6 +34,7 @@ public class ImportTemplateOptions extends ImportOptions{
 
     private boolean createReusableFlow;
 
+
     public boolean isCreateReusableFlow() {
         return createReusableFlow;
     }
@@ -41,4 +42,6 @@ public class ImportTemplateOptions extends ImportOptions{
     public void setCreateReusableFlow(boolean createReusableFlow) {
         this.createReusableFlow = createReusableFlow;
     }
+
+
 }

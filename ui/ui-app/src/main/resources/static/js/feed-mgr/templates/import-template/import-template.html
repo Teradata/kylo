@@ -90,54 +90,142 @@
         <div fex layout="column" layout-align="start start" style="padding-top:15px;"
              class="layout-padding-indent">
           <upload-file upload-file-model="vm.templateFile"></upload-file>
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom">
-            <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
-              Overwrite
-            </md-checkbox>
-            <div class="hint" style="margin-top:-10px">
-              Replace any template with same name
-            </div>
-          </md-input-container>
-          <md-input-container class="condensed-no-float md-block layout-padding-bottom"
-                              ng-if="vm.xmlType == true">
-            <md-checkbox ng-model="vm.createReusableFlow" aria-label="Create a reusable flow (callable by other flows)">
-              Create Reusable Flow
-            </md-checkbox>
-            <div class="hint" style="margin-top:-10px">
-              Flow will be created in NiFi under the "reusable_templates" process group
-            </div>
-          </md-input-container>
 
-
-          <div ng-if="vm.userSuppliedTemplateProperties" flex layout="column">
-            <div class="layout-padding-bottom">The following templateProperties below are sensitive templateProperties that need to be supplied before importing this feed</div>
-
-            <div ng-repeat="prop in vm.userSuppliedTemplateProperties" layout="column" layout-align="start start">
-              <span>{{prop.processorName}}</span>
-              <div layout="row" flex layout-fill>
-                <md-input-container>
-                  <label>{{prop.propertyKey}}</label>
-                  <input type="{{vm.userSuppliedTemplatePropertyInputType}}" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
-                </md-input-container>
-                <md-input-container flex >
-                  <label>Show value</label>
-                  <input type="checkbox" ng-model="vm.showUserSuppliedTemplatePropertyValues" ng-click="vm.showHidePassword()" name="">
-                </md-input-container>
+          <div ng-if="vm.uploadType == 'zip'" >
+            <!-- validation messages -->
+            <div ng-if="vm.templateDataImportOption.errorMessages != null && vm.templateDataImportOption.errorMessages.length >0">
+              <div ng-repeat="message in vm.templateDataImportOption.errorMessages" layout="column">
+                <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
               </div>
             </div>
+
+            <div ng-if="vm.nifiTemplateImportOption.errorMessages != null && vm.nifiTemplateImportOption.errorMessages.length >0">
+              <div ng-repeat="message in vm.nifiTemplateImportOption.errorMessages" layout="column">
+                <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+              </div>
+            </div>
+
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+              <md-checkbox ng-model="vm.templateDataImportOption.overwrite" aria-label="Overwrite if exists">
+                Overwrite
+              </md-checkbox>
+              <div class="hint" style="margin-top:-10px">
+                Check to replace the template if it already exists.
+              </div>
+            </md-input-container>
+
+            <div ng-if="vm.templateDataImportOption.properties && vm.templateDataImportOption.properties.length >0 " flex layout="column">
+              <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+
+              <div ng-repeat="prop in vm.templateDataImportOption.properties" layout="column" layout-align="start start">
+                <span>{{prop.processorName}}</span>
+                <div layout="row" flex layout-fill>
+                  <md-input-container>
+                    <label>{{prop.propertyKey}}</label>
+                    <input type="text" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                  </md-input-container>
+                </div>
+              </div>
+            </div>
+
+            <!-- ask to import reusable template if found -->
+            <div ng-if="(vm.reusableTemplateImportOption.overwriteSelectValue == 'true' || vm.reusableTemplateImportOption.overwriteSelectValue == 'false' )|| (vm.reusableTemplateImportOption.errorMessages != null && vm.reusableTemplateImportOption.errorMessages.length >0)">
+              <div ng-repeat="message in vm.reusableTemplateImportOption.errorMessages" layout="column">
+                <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+              </div>
+
+              <md-input-container class="md-block layout-padding-bottom">
+                <label>Overwrite Reusable Template</label>
+                <md-select ng-model="vm.reusableTemplateImportOption.overwriteSelectValue" placeholder="Overwrite" aria-label="Overwrite if exists" class="md-no-underline" ng-change="vm.onOverwriteSelectOptionChanged(vm.reusableTemplateImportOption)">
+                  <md-option><em>Choose</em></md-option>
+                  <md-option value="true">Yes</md-option>
+                  <md-option value="false">No</md-option>
+                </md-select>
+
+                <div class="hint">
+                  Overwrite the reusable template
+                </div>
+              </md-input-container>
+
+
+
+              <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
+                <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+
+                <div ng-repeat="prop in vm.reusableTemplateImportOption.properties" layout="column" layout-align="start start">
+                  <span>{{prop.processorName}}</span>
+                  <div layout="row" flex layout-fill>
+                    <md-input-container>
+                      <label>{{prop.propertyKey}}</label>
+                      <input type="text" ng-model="prop.propertyValue" autocomplete="false" name="{{prop.inputName}}">
+                    </md-input-container>
+                  </div>
+                </div>
+              </div>
+
+
+            </div>
+
+
           </div>
 
-          <div layout="row" class="layout-padding-top">
-            <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"
-                       ng-disabled="vm.importInProgress">
-              Import Template
-            </md-button>
-            <span flex="5"></span>
-            <md-progress-circular md-mode="indeterminate" ng-if="vm.importInProgress" ></md-progress-circular>
+          <div ng-if="vm.uploadType == 'xml'" >
+            <div ng-if="vm.nifiTemplateImportOption.errorMessages != null && vm.nifiTemplateImportOption.errorMessages.length >0">
+              <div ng-repeat="message in vm.nifiTemplateImportOption.errorMessages" layout="column">
+                <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+              </div>
+            </div>
+
+
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+              <md-checkbox ng-model="vm.nifiTemplateImportOption.overwrite" aria-label="Overwrite if exists">
+                Overwrite
+              </md-checkbox>
+              <div class="hint" style="margin-top:-10px">
+                Replace any template in NiFi with same name
+              </div>
+            </md-input-container>
+
+
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+              <md-checkbox ng-model="vm.reusableTemplateImportOption.shouldImport" aria-label="Create a reusable flow (callable by other flows)">
+                Create Reusable Flow
+              </md-checkbox>
+              <div class="hint" style="margin-top:-10px">
+                Flow will be created in NiFi under the "reusable_templates" process group
+              </div>
+            </md-input-container>
+
+          </div>
+
+        </div>
+
+        <div layout="row" class="layout-padding-top" flex>
+          <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"
+                     ng-disabled="vm.importInProgress">
+            Import Template
+          </md-button>
+          <span flex="5"></span>
+          <md-progress-linear flex md-mode="determinate" value="{{vm.uploadProgress}}" ng-if="vm.uploadInProgress"></md-progress-linear>
+        </div>
+
+        <div layout="column">
+          <div ng-repeat="msg in vm.uploadStatusMessages" layout="row" layout-fill>
+            <div flex>
+                <span ng-if="msg.complete && msg.success">
+                   <ng-md-icon icon="check" size="20" style="fill:green"></ng-md-icon>
+                </span>
+              <span ng-if="msg.complete && !msg.success">
+                  <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
+                </span>
+              <span>{{msg.message}}</span>
+            </div>
           </div>
         </div>
-      </div>
 
+
+
+      </div>
 
       <div ng-if="vm.importResult != null" class="layout-padding-indent layout-padding-top-bottom">
         <div layout="row">
@@ -167,7 +255,6 @@
 
 
       </div>
-</div>
 </body-section>
 </card-layout>
 </div>

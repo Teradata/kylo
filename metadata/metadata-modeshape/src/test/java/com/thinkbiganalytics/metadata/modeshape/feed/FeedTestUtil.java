@@ -66,13 +66,17 @@ public class FeedTestUtil {
     public Category findOrCreateCategory(String categorySystemName) {
         Category category = categoryProvider.findBySystemName(categorySystemName);
         if (category == null) {
-            JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
-            cat.setDescription(categorySystemName + " desc");
-            cat.setTitle(categorySystemName);
-            categoryProvider.update(cat);
-            category = cat;
+          category = createCategory(categorySystemName);
         }
         return category;
+    }
+
+    public Category createCategory(String categorySystemName){
+        JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
+        cat.setDescription(categorySystemName + " desc");
+        cat.setTitle(categorySystemName);
+        categoryProvider.update(cat);
+        return cat;
     }
 
     public FeedManagerFeed findOrCreateFeed(String categorySystemName, String feedSystemName, String feedTemplate) {
@@ -82,6 +86,18 @@ public class FeedTestUtil {
         FeedManagerTemplate template = findOrCreateTemplate(feedTemplate);
         feed.setTemplate(template);
         return feedManagerFeedProvider.update(feed);
+    }
+
+    public FeedManagerFeed findOrCreateFeed(Category category, String feedSystemName,FeedManagerTemplate template) {
+        FeedManagerFeed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
+        feed.setDisplayName(feedSystemName);
+        feed.setTemplate(template);
+        feed.setJson(sampleFeedJson());
+        return feedManagerFeedProvider.update(feed);
+    }
+
+    private String sampleFeedJson(){
+        return "";
     }
 
     public FeedManagerFeed findFeed(String categorySystemName, String feedSystemName) {

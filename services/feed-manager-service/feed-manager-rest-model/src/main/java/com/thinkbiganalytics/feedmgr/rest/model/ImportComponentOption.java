@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 
 import java.util.ArrayList;
@@ -48,6 +49,13 @@ public class ImportComponentOption {
      * list of errors
      */
     private List<String> errorMessages;
+
+
+    /**
+     * true will import this item
+     */
+    @JsonIgnore
+    private boolean validForImport;
 
 
     public ImportComponentOption() {
@@ -133,5 +141,17 @@ public class ImportComponentOption {
 
     public void setErrorMessages(List<String> errorMessages) {
         this.errorMessages = errorMessages;
+    }
+
+    public boolean hasErrorMessages(){
+        return getErrorMessages().size()>0;
+    }
+
+    public boolean isValidForImport() {
+        return validForImport;
+    }
+
+    public void setValidForImport(boolean validForImport) {
+        this.validForImport = validForImport;
     }
 }
