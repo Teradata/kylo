@@ -61,7 +61,7 @@ import javax.inject.Inject;
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
 public class FeedManagerFeedTest {
 
-    private static final Logger log = LoggerFactory.getLogger(TestFeedManagerFeed.class);
+    private static final Logger log = LoggerFactory.getLogger(FeedManagerFeedTest.class);
 
     @Inject
     CategoryProvider categoryProvider;
@@ -149,7 +149,7 @@ public class FeedManagerFeedTest {
                     categoryName = "category_" + categoryNum;
                     category = feedTestUtil.findOrCreateCategory(categoryName);
                 }
-                FeedManagerFeed feed = feedTestUtil.findOrCreateFeed(category, "feed_" + i, template);
+                Feed feed = feedTestUtil.findOrCreateFeed(category, "feed_" + i, template);
             }
         });
 
@@ -157,7 +157,7 @@ public class FeedManagerFeedTest {
         long time = System.currentTimeMillis();
 
         Integer size = metadata.read(new AdminCredentials(), () -> {
-            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+            List<Feed> feeds = feedProvider.findAll();
             return feeds.size();
         });
         long stopTime = System.currentTimeMillis();

@@ -48,13 +48,12 @@ import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -368,8 +367,8 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    FeedManagerCategoryProvider feedManagerCategoryProvider() {
-        return new Mockito().mock(FeedManagerCategoryProvider.class);
+    CategoryProvider feedManagerCategoryProvider() {
+        return new Mockito().mock(CategoryProvider.class);
     }
 
     @Bean

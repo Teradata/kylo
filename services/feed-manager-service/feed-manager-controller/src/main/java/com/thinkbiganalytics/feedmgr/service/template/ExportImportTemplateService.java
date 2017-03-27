@@ -36,7 +36,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
@@ -129,7 +130,7 @@ public class ExportImportTemplateService {
     //Export Methods
 
     public ExportTemplate exportTemplate(String templateId) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
 
         RegisteredTemplate
             template =
@@ -227,7 +228,7 @@ public class ExportImportTemplateService {
     //validate
     public ImportTemplate validateTemplateForImport(final String fileName, byte[] content, ImportOptions importOptions) {
 
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
         InputStream inputStream = new ByteArrayInputStream(content);
         UploadProgressMessage overallStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Validating template for import");
         UploadProgressMessage statusMessage = overallStatusMessage;
@@ -511,7 +512,7 @@ public class ExportImportTemplateService {
      */
     public ImportTemplate importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
 
             ImportTemplate template = null;
             if (!isValidFileImport(fileName)) {
@@ -547,7 +548,7 @@ public class ExportImportTemplateService {
      * @return the template data to validate before importing
      */
     public ImportTemplate importZip(ImportTemplate importTemplate) throws Exception {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
         ImportTemplateOptions importOptions = importTemplate.getImportOptions();
 
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA),
@@ -682,7 +683,7 @@ public class ExportImportTemplateService {
 
 
     private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) throws Exception {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
         ImportTemplate importTemplate = validateTemplateForImport(fileName, content, importOptions);
         return importZip(importTemplate);
     }
