@@ -289,7 +289,7 @@ start() {
         echo Already running.
       else
         echo Starting kylo-spark-shell ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh >> \$stdout_log 2>> \$stderr_log" &
     fi
 }
 
