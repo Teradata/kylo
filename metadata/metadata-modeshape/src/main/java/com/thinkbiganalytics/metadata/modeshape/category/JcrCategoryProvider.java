@@ -38,9 +38,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -60,6 +63,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
      */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
     
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
@@ -100,8 +106,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
         
         if (isNew) {
+            List<SecurityRole> roles = this.roleProvider.getRoles(AllowedActions.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                    .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
         }
         
         return category;

@@ -96,6 +96,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 /**
@@ -126,6 +128,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private AccessController accessController;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
     
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
@@ -258,8 +263,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
+            List<SecurityRole> roles = this.roleProvider.getRoles(AllowedActions.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                            .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                            .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 

@@ -47,6 +47,7 @@ import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -155,11 +156,24 @@ public class JcrUtil {
             .stream(getInterableChildren(parent, property).spliterator(), false)
             .collect(Collectors.toList());
     }
+    
+    public static boolean hasNode(Session session, String absParentPath) {
+        try {
+            session.getNode(absParentPath);
+            return true;
+        } catch (PathNotFoundException e) {
+            return false;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + absParentPath, e);
+        }
+    }
 
     public static boolean hasNode(Session session, String absParentPath, String name) {
         try {
             Node parentNode = session.getNode(absParentPath);
             return hasNode(parentNode, name);
+        } catch (PathNotFoundException e) {
+            return false;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
         }
@@ -615,17 +629,17 @@ public class JcrUtil {
     /**
      * Creates an object set from the nodes of a same-name sibling property
      */
-    public static <T extends JcrObject> Set<T> getPropertyObjectSet(Node parentNode, String property, Class<T> objClass) {
+    public static <T extends JcrObject> Set<T> getPropertyObjectSet(Node parentNode, String property, Class<T> objClass, Object... args) {
         try {
             Set<T> set = new HashSet<>();
             NodeIterator itr = parentNode.getNodes(property);
             while (itr.hasNext()) {
                 Node objNode = (Node) itr.next();
-                T obj = ConstructorUtils.invokeConstructor(objClass, objNode);
+                T obj = constructNodeObject(objNode, objClass, args);
                 set.add(obj);
             }
             return set;
-        } catch (RepositoryException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create set of child objects from property: " + property, e);
         }
     }

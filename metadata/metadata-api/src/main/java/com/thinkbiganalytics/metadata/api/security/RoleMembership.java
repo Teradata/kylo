@@ -33,17 +33,17 @@ import com.thinkbiganalytics.security.role.SecurityRole;
 /**
  *
  */
-public interface RoleAssignments {
+public interface RoleMembership {
 
-    Set<SecurityRole> getAssignedRoles();
+    SecurityRole getRole();
     
-    Set<Principal> getMembers(SecurityRole role);
+    Set<Principal> getMembers();
     
-    void addMember(SecurityRole role, UsernamePrincipal principal);
+    void addMember(UsernamePrincipal principal);
     
-    void addMember(SecurityRole role, GroupPrincipal principal);
+    void addMember(GroupPrincipal principal);
     
-    void removeMember(SecurityRole role, UsernamePrincipal principal);
+    void removeMember(UsernamePrincipal principal);
     
-    void removeMember(SecurityRole role, GroupPrincipal principal);
+    void removeMember(GroupPrincipal principal);
 }

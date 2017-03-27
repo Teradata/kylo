@@ -24,7 +24,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
@@ -167,7 +167,7 @@ public class BaseCategory implements Category {
     }
 
     @Override
-    public RoleAssignments getRoleAssignments() {
+    public Set<RoleMembership> getRoleMemberships() {
         // TODO Auto-generated method stub
         return null;
     }

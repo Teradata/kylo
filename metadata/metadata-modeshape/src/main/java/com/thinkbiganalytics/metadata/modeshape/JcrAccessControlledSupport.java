@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.util.Set;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -28,7 +30,7 @@ import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
@@ -52,9 +54,9 @@ public class JcrAccessControlledSupport extends JcrObject implements AccessContr
      * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
      */
     @Override
-    public RoleAssignments getRoleAssignments() {
-//        return JcrUtil.getPropertyObjectSet(node, JcrRoleAssignments.NODE_NAME, JcrRoleAssignments.class).stream()
-//                        .map(RoleAssignments.class::cast)
+    public Set<RoleMembership> getRoleMemberships() {
+//        return JcrUtil.getPropertyObjectSet(node, JcrRoleMembership.NODE_NAME, JcrRoleMembership.class).stream()
+//                        .map(RoleMembership.class::cast)
 //                        .collect(Collectors.toSet());
         return null;
     }

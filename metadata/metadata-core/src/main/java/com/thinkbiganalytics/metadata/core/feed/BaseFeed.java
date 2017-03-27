@@ -47,7 +47,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
@@ -403,7 +403,7 @@ public class BaseFeed implements Feed {
      * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
      */
     @Override
-    public RoleAssignments getRoleAssignments() {
+    public Set<RoleMembership> getRoleMemberships() {
         // TODO Auto-generated method stub
         return null;
     }

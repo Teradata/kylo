@@ -23,27 +23,36 @@ package com.thinkbiganalytics.metadata.modeshape.security.mixin;
  * #L%
  */
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.NodeEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**
  *
  */
 public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin {
     
-    default RoleAssignments getRoleAssignments() {
-//      return JcrUtil.getPropertyObjectSet(node, JcrRoleAssignments.NODE_NAME, JcrRoleAssignments.class).stream()
-//                      .map(RoleAssignments.class::cast)
-//                      .collect(Collectors.toSet());
-      return null;
+    @Override
+    default Set<RoleMembership> getRoleMemberships() {
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        
+        return JcrUtil.getPropertyObjectSet(getNode(), JcrRoleMembership.NODE_NAME, JcrRoleMembership.class, allowed).stream()
+                      .map(RoleMembership.class::cast)
+                      .collect(Collectors.toSet());
     }
     
     @Override
@@ -56,7 +65,9 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
         return JcrUtil.createJcrObject(allowedNode, getJcrAllowedActionsType());
     }
 
-    default void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner) {
+    default void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner, List<SecurityRole> roles) {
+        roles.forEach(rNode -> JcrRoleMembership.create(getNode(), ((JcrSecurityRole) rNode).getNode()));
+        
         JcrAllowedActions allowed = getJcrAllowedActions();
         prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);

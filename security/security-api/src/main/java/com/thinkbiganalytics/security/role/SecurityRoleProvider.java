@@ -3,6 +3,12 @@
  */
 package com.thinkbiganalytics.security.role;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import com.thinkbiganalytics.security.action.Action;
+
 /*-
  * #%L
  * kylo-security-api
@@ -30,7 +36,13 @@ public interface SecurityRoleProvider {
 
     SecurityRole createRole(String entityName, String roleName, String title, String descr);
     
-    SecurityRole getRole(String entityName, String roleName);
+    List<SecurityRole> getRoles(String entityName);
+    
+    Optional<SecurityRole> getRole(String entityName, String roleName);
     
     boolean removeRole(String entityName, String roleName);
+    
+    Optional<SecurityRole> setPermissions(String entityName, String roleName, Action... actions);
+    
+    Optional<SecurityRole> setPermissions(String entityName, String roleName, Collection<Action> actions);
 }

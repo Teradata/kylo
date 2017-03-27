@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape.template;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -49,6 +50,8 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntity
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 /**
  */
@@ -57,6 +60,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     @Inject
     private MetadataEventService metadataEventService;
     
+    @Inject
+    private SecurityRoleProvider roleProvider;
+
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
 
@@ -84,8 +90,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
 
         if (newTemplate) {
+            List<SecurityRole> roles = this.roleProvider.getRoles(AllowedActions.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
-                    .ifPresent(actions -> template.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> template.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             addPostFeedChangeAction(template, ChangeType.CREATE);
         }
 

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.security;
 
+import java.util.Set;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -31,7 +33,7 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  */
 public interface AccessControlled {
     
-    RoleAssignments getRoleAssignments();
+    Set<RoleMembership> getRoleMemberships();
 
     AllowedActions getAllowedActions();
 }

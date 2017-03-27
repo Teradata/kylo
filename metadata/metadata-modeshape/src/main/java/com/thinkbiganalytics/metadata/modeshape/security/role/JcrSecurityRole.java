@@ -28,6 +28,10 @@ import java.security.Principal;
 import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAbstractActionsBuilder;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionTreeBuilder;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.RolePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -38,9 +42,12 @@ import com.thinkbiganalytics.security.role.SecurityRole;
  */
 public class JcrSecurityRole extends JcrObject implements SecurityRole {
 
+    public static final String NODE_TYPE = "tba:securityRole";
+    
     public static final String NAME = "tba:systemName";
     public static final String TITLE = "jcr:title";
     public static final String DESCR = "jcr:description";
+    public static final String ALLOWED_ACTIONS = "tba:allowedActions";
 
     public JcrSecurityRole(Node node) {
         super(node);
@@ -88,8 +95,11 @@ public class JcrSecurityRole extends JcrObject implements SecurityRole {
      */
     @Override
     public AllowedActions getAllowedActions() {
-        // TODO Auto-generated method stub
-        return null;
+        return JcrUtil.getJcrObject(getNode(), ALLOWED_ACTIONS, JcrAllowedActions.class);
+    }
+
+    public Node getAllowedActionsNode() {
+        return JcrUtil.getNode(getNode(), ALLOWED_ACTIONS);
     }
 
 }

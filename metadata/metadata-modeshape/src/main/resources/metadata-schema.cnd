@@ -37,7 +37,6 @@
  *                      allowedActions
  *              "services"
  *                  allowedActions
- *
  *              "roles"
  *                  "services"
  *                      "roles"
