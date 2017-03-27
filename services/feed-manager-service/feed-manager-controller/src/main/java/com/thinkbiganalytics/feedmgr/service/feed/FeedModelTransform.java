@@ -114,31 +114,31 @@ public class FeedModelTransform {
 
     }
 
-    private void clearSensitivePropertyValues(FeedMetadata feedMetadata){
+    private void clearSensitivePropertyValues(FeedMetadata feedMetadata) {
         feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(""));
     }
 
-    private void encryptSensitivePropertyValues(FeedMetadata feedMetadata){
+    private void encryptSensitivePropertyValues(FeedMetadata feedMetadata) {
         List<String> encrypted = new ArrayList<>();
         feedMetadata.getSensitiveProperties().stream().forEach(nifiProperty -> {
             nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue()));
             encrypted.add(nifiProperty.getValue());
         });
-        int i =0;
+        int i = 0;
     }
 
-    public void decryptSensitivePropertyValues(FeedMetadata feedMetadata){
+    public void decryptSensitivePropertyValues(FeedMetadata feedMetadata) {
         List<String> decrypted = new ArrayList<>();
         feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> {
             try {
                 String decryptedValue = encryptionService.decrypt(nifiProperty.getValue());
                 nifiProperty.setValue(decryptedValue);
                 decrypted.add(decryptedValue);
-            }catch (Exception e){
+            } catch (Exception e) {
 
             }
         });
-        int i =0;
+        int i = 0;
     }
 
     /**
@@ -248,14 +248,14 @@ public class FeedModelTransform {
     public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain, boolean clearSensitiveProperties) {
         String json = domain.getJson();
         FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
-        if(clearSensitiveProperties){
+        if (clearSensitiveProperties) {
             clearSensitivePropertyValues(feedMetadata);
         }
         return feedMetadata;
     }
 
     public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain) {
-      return  deserializeFeedMetadata(domain,true);
+        return deserializeFeedMetadata(domain, true);
     }
 
 
@@ -269,7 +269,7 @@ public class FeedModelTransform {
     @Nonnull
     private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed<?> domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
 
-        FeedMetadata feed = deserializeFeedMetadata(domain,false);
+        FeedMetadata feed = deserializeFeedMetadata(domain, false);
         feed.setId(domain.getId().toString());
         feed.setFeedId(domain.getId().toString());
         feed.setTemplateId(domain.getTemplate().getId().toString());

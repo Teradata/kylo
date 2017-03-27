@@ -1,14 +1,12 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform.TEMPLATE_TRANSFORMATION_TYPE;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
@@ -16,7 +14,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
@@ -45,7 +42,7 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 3/14/17.
+ *
  */
 public class RegisteredTemplateService {
 
@@ -67,13 +64,13 @@ public class RegisteredTemplateService {
     private LegacyNifiRestClient nifiRestClient;
 
 
-
     @Inject
     private RegisteredTemplateUtil registeredTemplateUtil;
 
 
     /**
      * Gets a Registered Template or returns null if not found by various means passed in via the request object
+     *
      * @param registeredTemplateRequest a request to get a registered template
      * @return the RegisteredTemplate or null if not found
      */
@@ -89,31 +86,30 @@ public class RegisteredTemplateService {
             principals = new Principal[1];
             principals[0] = MetadataAccess.SERVICE;
 
-        }
-        else {
+        } else {
             principals = new Principal[0];
         }
         //The default transformation type will not include sensitive property values.
         //if requested as a template or feed edit, it will include the encrypted sensitive property values
         TEMPLATE_TRANSFORMATION_TYPE transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_FEED_NAMES;
-        if(registeredTemplateRequest.isTemplateEdit() || registeredTemplateRequest.isFeedEdit() || registeredTemplateRequest.isIncludeSensitiveProperties()) {
+        if (registeredTemplateRequest.isTemplateEdit() || registeredTemplateRequest.isFeedEdit() || registeredTemplateRequest.isIncludeSensitiveProperties()) {
             transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_SENSITIVE_DATA;
         }
 
-        RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId,transformationType ,principals);
+        RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId, transformationType, principals);
         //if it is null check to see if the template exists in nifi and is already registered
         if (registeredTemplate == null) {
             log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
-            registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId,transformationType,principals);
+            registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId, transformationType, principals);
         }
-        if(registeredTemplate == null) {
+        if (registeredTemplate == null) {
             //attempt to look by name
-            registeredTemplate = findRegisteredTemplateByName(templateName,transformationType,principals);
+            registeredTemplate = findRegisteredTemplateByName(templateName, transformationType, principals);
 
         }
-        if (registeredTemplate != null){
-            if(registeredTemplateRequest.isIncludeAllProperties()) {
-              registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate, registeredTemplateRequest);
+        if (registeredTemplate != null) {
+            if (registeredTemplateRequest.isIncludeAllProperties()) {
+                registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate, registeredTemplateRequest);
             }
             if (NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiFeedConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
                 registeredTemplate.setAllowPreconditions(true);
@@ -125,28 +121,27 @@ public class RegisteredTemplateService {
     }
 
 
-
-
-
     /**
      * Find a template by the Kylo Id
+     *
      * @param templateId The Kylo {@link RegisteredTemplate#id}
      * @return the RegisteredTemplate matching the id or null if not found
      */
     public RegisteredTemplate findRegisteredTemplateById(final String templateId) {
-        return findRegisteredTemplateById(templateId,null);
+        return findRegisteredTemplateById(templateId, null);
     }
+
     /**
      * Find a template by the Kylo Id
+     *
      * @param templateId The Kylo {@link RegisteredTemplate#id}
      * @param principals list or principals required to access
      * @return the RegisteredTemplate matching the id or null if not found
      */
-    private RegisteredTemplate findRegisteredTemplateById(final String templateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal ... principals) {
-        if(StringUtils.isBlank(templateId)){
+    private RegisteredTemplate findRegisteredTemplateById(final String templateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
+        if (StringUtils.isBlank(templateId)) {
             return null;
-        }
-        else {
+        } else {
             return metadataAccess.read(() -> {
                 this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
 
@@ -163,30 +158,31 @@ public class RegisteredTemplateService {
                 }
 
                 return registeredTemplate;
-            },principals);
+            }, principals);
         }
 
     }
 
     /**
      * Find a template by the nifi id
-     * @param nifiTemplateId the nifi id
      *
+     * @param nifiTemplateId the nifi id
      * @return the RegisteredTemplate matching the passed in nifiTemplateId, or null if not found
      */
     public RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId) {
-     return findRegisteredTemplateByNiFiIdentifier(nifiTemplateId,null);
+        return findRegisteredTemplateByNiFiIdentifier(nifiTemplateId, null);
     }
 
 
     /**
      * Find a template by the nifi id
+     *
      * @param nifiTemplateId the nifi id
-     * @param principals list of principals required to access
+     * @param principals     list of principals required to access
      * @return the RegisteredTemplate matching the passed in nifiTemplateId, or null if not found
      */
-    private RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId, TEMPLATE_TRANSFORMATION_TYPE transformationType,Principal ... principals) {
-        if(StringUtils.isBlank(nifiTemplateId)){
+    private RegisteredTemplate findRegisteredTemplateByNiFiIdentifier(final String nifiTemplateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
+        if (StringUtils.isBlank(nifiTemplateId)) {
             return null;
         }
         return metadataAccess.read(() -> {
@@ -198,32 +194,34 @@ public class RegisteredTemplateService {
                 registeredTemplate = templateModelTransform.getTransformationFunction(transformationType).apply(template);
             }
             return registeredTemplate;
-        },principals);
+        }, principals);
 
 
     }
 
     /**
      * Find a template by the name
+     *
      * @param templateName the name of the template
      * @return the RegisteredTemplate matching the passed in name or null if not found
      */
     public RegisteredTemplate findRegisteredTemplateByName(final String templateName) {
-        return findRegisteredTemplateByName(templateName,null);
+        return findRegisteredTemplateByName(templateName, null);
     }
 
     /**
      * Find a template by the name
+     *
      * @param templateName the name of the template
-     *                     @param principals list of principals required to access
+     * @param principals   list of principals required to access
      * @return the RegisteredTemplate matching the passed in name or null if not found
      */
-    public RegisteredTemplate findRegisteredTemplateByName(final String templateName, TEMPLATE_TRANSFORMATION_TYPE transformationType,Principal ... principals) {
+    public RegisteredTemplate findRegisteredTemplateByName(final String templateName, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
 
             RegisteredTemplate registeredTemplate = null;
-                FeedManagerTemplate   template = templateProvider.findByName(templateName);
+            FeedManagerTemplate template = templateProvider.findByName(templateName);
             if (template != null) {
                 registeredTemplate = templateModelTransform.getTransformationFunction(transformationType).apply(template);
             }
@@ -235,60 +233,64 @@ public class RegisteredTemplateService {
 
     /**
      * Return a registered template object that is populated for use with updating in Kylo
+     *
      * @param registeredTemplateRequest the request to get a registered template
      * @return a RegisteredTemplate object mapping either one already defined in Kylo, or a new template that maps to one in NiFi
      */
-    public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest){
+    public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest) {
         RegisteredTemplate registeredTemplate = findRegisteredTemplate(registeredTemplateRequest);
-        if(registeredTemplate == null) {
+        if (registeredTemplate == null) {
             registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
         }
-        if(registeredTemplate == null){
+        if (registeredTemplate == null) {
             //throw exception
-        }
-        else {
-                Set<PortDTO> ports = null;
-                // fetch ports for this template
-                try {
-                    if (registeredTemplate.getNifiTemplate() != null) {
-                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
-                    } else {
-                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
-                    }
-                } catch (NifiComponentNotFoundException notFoundException) {
-                    syncNiFiTemplateId(registeredTemplate);
+        } else {
+            Set<PortDTO> ports = null;
+            // fetch ports for this template
+            try {
+                if (registeredTemplate.getNifiTemplate() != null) {
+                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
+                } else {
                     ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
                 }
-                if (ports == null) {
-                    ports = new HashSet<>();
+            } catch (NifiComponentNotFoundException notFoundException) {
+                syncNiFiTemplateId(registeredTemplate);
+                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+            }
+            if (ports == null) {
+                ports = new HashSet<>();
+            }
+            List<PortDTO>
+                outputPorts =
+                ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+
+            List<PortDTO>
+                inputPorts =
+                ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+            registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
+            List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
+            List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
+
+            for (final PortDTO port : outputPorts) {
+
+                ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
+                if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                    reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
+                                                                       reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
+                                                                           .getFeedOutputPortName()
+                                                                           .equalsIgnoreCase(port.getName())).orNull();
                 }
-                List<PortDTO> outputPorts = ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
-
-                List<PortDTO> inputPorts = ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
-                registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
-                List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
-                List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
-
-                for (final PortDTO port : outputPorts) {
-
-                    ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
-                    if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
-                        reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
-                                                                           reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
-                                                                               .getFeedOutputPortName()
-                                                                               .equalsIgnoreCase(port.getName())).orNull();
-                    }
-                    if (reusableTemplateConnectionInfo == null) {
-                        reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
-                        reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
-                    }
-                    updatedConnectionInfo.add(reusableTemplateConnectionInfo);
-
+                if (reusableTemplateConnectionInfo == null) {
+                    reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
+                    reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
                 }
+                updatedConnectionInfo.add(reusableTemplateConnectionInfo);
 
-                registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
-                registeredTemplate.initializeProcessors();
-                ensureRegisteredTemplateInputProcessors(registeredTemplate);
+            }
+
+            registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+            registeredTemplate.initializeProcessors();
+            ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
         }
 
@@ -316,24 +318,24 @@ public class RegisteredTemplateService {
     }
 
 
-
     /**
      * this will return a RegisteredTemplate object for a given NiFi template Id.
      * This is to be used for new templates that are going to be registered with Kylo.
      * Callers of this method should ensure that a template of this id is not already registered
+     *
      * @param nifiTemplateId the nifi template identifier
      * @return a RegisteredTemplate object of null if not found in NiFi
      */
-    private RegisteredTemplate nifiTemplateToRegisteredTemplate(String nifiTemplateId){
+    private RegisteredTemplate nifiTemplateToRegisteredTemplate(String nifiTemplateId) {
 
         RegisteredTemplate registeredTemplate = null;
         List<NifiProperty> properties = new ArrayList<>();
         TemplateDTO nifiTemplate = nifiRestClient.getTemplateById(nifiTemplateId);
-        if(nifiTemplate != null) {
-            registeredTemplate =  new RegisteredTemplate();
+        if (nifiTemplate != null) {
+            registeredTemplate = new RegisteredTemplate();
             registeredTemplate.setNifiTemplateId(nifiTemplateId);
 
-            properties = nifiRestClient.getPropertiesForTemplate(nifiTemplate,true);
+            properties = nifiRestClient.getPropertiesForTemplate(nifiTemplate, true);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
             registeredTemplate.setProperties(properties);
@@ -342,7 +344,6 @@ public class RegisteredTemplateService {
         return registeredTemplate;
 
     }
-
 
 
     /**
@@ -399,13 +400,15 @@ public class RegisteredTemplateService {
     }
 
 
-
-    public FeedMetadata mergeTemplatePropertiesWithFeed(FeedMetadata feedMetadata){
+    public FeedMetadata mergeTemplatePropertiesWithFeed(FeedMetadata feedMetadata) {
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
 
-        RegisteredTemplate registeredTemplate = findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).isFeedEdit(true).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
-           if (registeredTemplate != null) {
-               feedMetadata.setTemplateId(registeredTemplate.getId());
+        RegisteredTemplate
+            registeredTemplate =
+            findRegisteredTemplate(
+                new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).isFeedEdit(true).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
+        if (registeredTemplate != null) {
+            feedMetadata.setTemplateId(registeredTemplate.getId());
 
             NifiPropertyUtil
                 .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
@@ -413,15 +416,14 @@ public class RegisteredTemplateService {
             //detect template properties that dont match the feed.properties from the registeredtemplate
             ensureFeedPropertiesExistInTemplate(feedMetadata, registeredTemplate);
             feedMetadata.setProperties(registeredTemplate.getProperties());
-               registeredTemplate.initializeProcessors();
-               feedMetadata.setRegisteredTemplate(registeredTemplate);
+            registeredTemplate.initializeProcessors();
+            feedMetadata.setRegisteredTemplate(registeredTemplate);
 
         }
 
         return feedMetadata;
 
     }
-
 
 
     /**
@@ -472,10 +474,6 @@ public class RegisteredTemplateService {
     }
 
 
-
-
-
-
     /**
      * Return the NiFi {@link TemplateDTO} object fully populated and sets this to the incoming {@link RegisteredTemplate#nifiTemplate}
      * If at first looking at the {@link RegisteredTemplate#nifiTemplateId} it is unable to find the template it will then fallback and attempt to find the template by its name
@@ -484,7 +482,7 @@ public class RegisteredTemplateService {
      * @return the NiFi template
      */
     private TemplateDTO ensureNifiTemplate(RegisteredTemplate registeredTemplate) {
-        if(registeredTemplate.getNifiTemplate() == null) {
+        if (registeredTemplate.getNifiTemplate() == null) {
 
             TemplateDTO templateDTO = null;
             try {
@@ -517,7 +515,6 @@ public class RegisteredTemplateService {
     }
 
 
-
     /**
      * Ensures that the {@code RegisteredTemplate#inputProcessors} list is populated not only with the processors which were defined as having user inputs, but also those that done require any input
      */
@@ -545,7 +542,6 @@ public class RegisteredTemplateService {
     }
 
 
-
     /**
      * Ensure that the NiFi template Ids are correct and match our metadata for the Template Name
      *
@@ -564,7 +560,7 @@ public class RegisteredTemplateService {
             RegisteredTemplate t = findRegisteredTemplateById(template.getId());
             t.setNifiTemplateId(nifiTemplateId);
 
-           return metadataAccess.commit(() -> {
+            return metadataAccess.commit(() -> {
                 return saveTemplate(t);
             }, MetadataAccess.ADMIN);
         }
@@ -582,21 +578,20 @@ public class RegisteredTemplateService {
     }
 
 
+    public RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
 
-    public RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate ) {
-
-        return saveRegisteredTemplate(registeredTemplate,true);
+        return saveRegisteredTemplate(registeredTemplate, true);
     }
 
     private RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate, boolean reorder) {
         List<String> templateOrder = registeredTemplate.getTemplateOrder();
         RegisteredTemplate savedTemplate = metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
-             return saveTemplate(registeredTemplate);
+            return saveTemplate(registeredTemplate);
         });
 
         //order it
-        if(reorder) {
+        if (reorder) {
             if (StringUtils.isBlank(registeredTemplate.getId())) {
                 templateOrder = templateOrder.stream().map(template -> {
                     if ("NEW".equals(template)) {
@@ -606,7 +601,6 @@ public class RegisteredTemplateService {
                     }
                 }).collect(Collectors.toList());
             }
-
 
             orderTemplates(templateOrder, Sets.newHashSet(savedTemplate.getId()));
         }
@@ -618,10 +612,11 @@ public class RegisteredTemplateService {
 
     /**
      * This needs to be wrapped in a MetadataAccess transaction
+     *
      * @param registeredTemplate the template to save
      * @return the saved template
      */
-    private RegisteredTemplate saveTemplate(RegisteredTemplate registeredTemplate){
+    private RegisteredTemplate saveTemplate(RegisteredTemplate registeredTemplate) {
 
         //ensure that the incoming template name doesnt already exist.
         //if so remove and replace with this one
@@ -640,7 +635,7 @@ public class RegisteredTemplateService {
 
             FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
             ensureNifiTemplateId(domain);
-            if(domain != null ) {
+            if (domain != null) {
                 log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
             }
             domain = templateProvider.update(domain);
@@ -730,7 +725,6 @@ public class RegisteredTemplateService {
         }
         return null;
     }
-
 
 
 }

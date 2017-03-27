@@ -61,6 +61,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.additionalInputNeeded = false;
 
         /**
+         * flag to force the feed to be DISABLED upon importing
+         * @type {boolean}
+         */
+        this.disableFeedUponImport = false;
+
+        /**
          * All the importOptions that will be uploaded
          * @type {{}}
          */
@@ -90,6 +96,24 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * Called when a user changes a import option for overwriting
          */
         this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
+
+        /**
+         * flag to show the additional template options are needed
+         * @type {boolean}
+         */
+        this.showTemplateOptions = false;
+
+        /**
+         * Flag to show reusable template options
+         * @type {boolean}
+         */
+        this.showReusableTemplateOptions = false;
+
+        /**
+         * The angular Form for validation
+         * @type {{}}
+         */
+        this.importFeedForm = {};
 
 
 
@@ -128,6 +152,19 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 if(!responseData.valid){
                     //Validation Error.  Additional Input is needed by the end user
                     self.additionalInputNeeded = true;
+
+                    if(self.showTemplateOptions == false ) {
+                       var show = (self.templateDataImportOption.overwriteSelectValue == 'true' || self.templateDataImportOption.overwriteSelectValue == 'false' ) || (self.templateDataImportOption.errorMessages != null && self.templateDataImportOption.errorMessages.length >0);
+                       if(show) {
+                           //if this is the first time we show the options, set the overwrite flag to be empty
+                           self.templateDataImportOption.overwriteSelectValue = '';
+                       }
+                        self.showTemplateOptions = show;
+                    }
+                    if(self.showReusableTemplateOptions == false) {
+                        self.showReusableTemplateOptions = (self.reusableTemplateImportOption.overwriteSelectValue == 'true' || self.reusableTemplateImportOption.overwriteSelectValue == 'false' )|| (self.reusableTemplateImportOption.errorMessages != null && self.reusableTemplateImportOption.errorMessages.length >0);
+                    }
+
                 }
                 else {
 
@@ -226,6 +263,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var params = {
                 uploadKey : self.uploadKey,
                 categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
+                disableFeedUponImport:self.disableFeedUponImport,
                 importComponents:angular.toJson(importComponentOptions)
             };
 
@@ -293,11 +331,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             setDefaultImportOptions();
 
             self.additionalInputNeeded = false;
+            self.showTemplateOptions = false;
+            self.showReusableTemplateOptions = false;
+            self.disableFeedUponImport = false;
 
         }
-
-
-
 
         /**
          *
@@ -373,12 +411,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         $scope.$watch(function () {
             return self.feedFile;
-        }, function (newVal) {
+        }, function (newVal,oldValue) {
             if (newVal != null) {
                 self.fileName = newVal.name;
             }
             else {
                 self.fileName = null;
+            }
+            //reset them if changed
+            if(newVal != oldValue){
+                resetImportOptions();
             }
         })
 

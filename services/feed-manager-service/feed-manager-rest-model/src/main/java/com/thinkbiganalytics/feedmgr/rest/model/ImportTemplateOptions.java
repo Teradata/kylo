@@ -20,28 +20,13 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
-
 /**
  */
-public class ImportTemplateOptions extends ImportOptions{
+public class ImportTemplateOptions extends ImportOptions {
 
     @Deprecated
     public enum IMPORT_CONNECTING_FLOW {
         YES, NO, NOT_SET
     }
-
-    private boolean createReusableFlow;
-
-
-    public boolean isCreateReusableFlow() {
-        return createReusableFlow;
-    }
-
-    public void setCreateReusableFlow(boolean createReusableFlow) {
-        this.createReusableFlow = createReusableFlow;
-    }
-
 
 }

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.feedmgr.service.template;
 
 /*-
  * #%L
@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -38,7 +37,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -104,10 +104,6 @@ public class ExportImportTemplateService {
     @Autowired
     PropertyExpressionResolver propertyExpressionResolver;
 
-
-    @Inject
-    NifiControllerServiceProperties nifiControllerServiceProperties;
-
     @Autowired
     MetadataService metadataService;
 
@@ -130,18 +126,14 @@ public class ExportImportTemplateService {
     @Inject
     private UploadProgressService uploadProgressService;
 
-
-    /**
-     * Called when the system imports a Reusable template either from a ZIP file or an xml file uploaded in kylo.
-     */
-    private void importReusableTemplateSuccess(ImportTemplate importTemplate) {
-
-    }
+    //Export Methods
 
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
 
-        RegisteredTemplate template = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
+        RegisteredTemplate
+            template =
+            registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
@@ -218,17 +210,255 @@ public class ExportImportTemplateService {
         return baos.toByteArray();
     }
 
+    //Validation Methods
+
+
+    /**
+     * Is the file a valid file for importing
+     *
+     * @param fileName the name of the file
+     * @return true if valid, false if not valid
+     */
     private boolean isValidFileImport(String fileName) {
         return fileName.endsWith(".zip") || fileName.endsWith(".xml");
     }
 
 
+    //validate
+    public ImportTemplate validateTemplateForImport(final String fileName, byte[] content, ImportOptions importOptions) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        InputStream inputStream = new ByteArrayInputStream(content);
+        UploadProgressMessage overallStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Validating template for import");
+        UploadProgressMessage statusMessage = overallStatusMessage;
+        ImportTemplateOptions options = new ImportTemplateOptions();
+        options.setUploadKey(importOptions.getUploadKey());
+        ImportTemplate template = null;
+        if (!isValidFileImport(fileName)) {
+            statusMessage.complete(false);
+            throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
+        }
+        try {
+            if (fileName.endsWith(".zip")) {
+                template = openZip(fileName, inputStream);
+                template.setValid(true);
+                Set<ImportComponentOption> componentOptions = ImportUtil.inspectZipComponents(content, ImportType.TEMPLATE);
+                options.setImportComponentOptions(importOptions.getImportComponentOptions());
+                options.addOptionsIfNotExists(componentOptions);
+                template.setImportOptions(options);
+
+                validateReusableTemplate(template, options);
+
+                validateRegisteredTemplate(template, options);
+
+                validateNiFiTemplateImport(template);
+            } else {
+                template = getNewNiFiTemplateImport(fileName, inputStream);
+                template.setImportOptions(options);
+                //deal with reusable templates??
+                validateNiFiTemplateImport(template);
+            }
+        } catch (Exception e) {
+            statusMessage.update("An Error occurred " + e.getMessage(), false);
+            throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
+        }
+        overallStatusMessage.update("Validated template for import ", template.isValid());
+
+        return template;
+    }
+
+    /**
+     * Validate the NiFi template is valid.  This method will validate the {@link ImportTemplate#nifiTemplateXml}
+     *
+     * @param template the template data to validate before importing
+     */
+    private void validateNiFiTemplateImport(ImportTemplate template) throws IOException {
+        ImportOptions options = template.getImportOptions();
+        ImportComponentOption nifiTemplateOption = options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE);
+        //if the options of the TEMPLATE_DATA are marked to import and overwrite this should be as well
+        ImportComponentOption templateData = options.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+
+        if (templateData.isUserAcknowledged()) {
+            nifiTemplateOption.setUserAcknowledged(true);
+        }
+        if (templateData.isShouldImport()) {
+            nifiTemplateOption.setShouldImport(true);
+        }
+        if (templateData.isOverwrite()) {
+            nifiTemplateOption.setOverwrite(true);
+        }
+
+        if (nifiTemplateOption.isShouldImport()) {
+            UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating the NiFi template");
+            String templateName = null;
+            TemplateDTO dto = null;
+            try {
+                templateName = NifiTemplateParser.getTemplateName(template.getNifiTemplateXml());
+                template.setTemplateName(templateName);
+                dto = nifiRestClient.getTemplateByName(templateName);
+                if (dto != null) {
+                    template.setNifiTemplateId(dto.getId());
+                    if (!options.isUserAcknowledged(ImportComponent.NIFI_TEMPLATE) && !options.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && !options
+                        .isContinueIfExists(ImportComponent.NIFI_TEMPLATE)) {
+                        template.setValid(false);
+                        String msg = "Unable to import Template " + templateName
+                                     + ".  It already exists in NiFi.";
+                        template.getImportOptions().addErrorMessage(ImportComponent.NIFI_TEMPLATE, msg);
+                        statusMessage.update("Validation Error: Unable to import Template " + templateName + ".  It already exists in NiFi.");
+                        statusMessage.complete(false);
+                    } else {
+                        statusMessage.update("Validated the NiFi template.  The template " + templateName + " will be overwritten in NiFi");
+                        statusMessage.complete(true);
+                    }
+                } else {
+                    statusMessage.update("Validated the NiFi template.  The template " + templateName + " will be created in NiFi");
+                    statusMessage.complete(true);
+                }
+            } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
+                template.setValid(false);
+                template.getTemplateResults().addError(NifiError.SEVERITY.WARN, "The xml file you are trying to import is not a valid NiFi template.  Please try again. " + e.getMessage(), "");
+                statusMessage.complete(false);
+            }
+            nifiTemplateOption.setValidForImport(!nifiTemplateOption.hasErrorMessages());
+        }
+        completeSection(options, ImportSection.Section.VALIDATE_NIFI_TEMPLATE);
+    }
+
+    /**
+     * Validate the Registered Template is valid for importing
+     *
+     * @param template the template data to validate before importing
+     * @param options  user options about what/how it should be imported
+     */
+    private void validateRegisteredTemplate(ImportTemplate template, ImportOptions options) {
+        ImportComponentOption registeredTemplateOption = options.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+        //validate template
+        boolean validForImport = true;
+
+        if (!registeredTemplateOption.isUserAcknowledged()) {
+            template.setValid(false);
+            template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "A template exists.  Do you want to import it?");
+        }
+
+        if (registeredTemplateOption.isUserAcknowledged() && registeredTemplateOption.isShouldImport()) {
+            UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating feed template for import");
+            RegisteredTemplate registeredTemplate = template.getTemplateToImport();
+
+            //validate unique
+            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
+            if (existingTemplate != null) {
+                if (options.stopProcessingAlreadyExists(ImportComponent.TEMPLATE_DATA)) {
+                    template.setValid(false);
+                    String msg = "Unable to import the template " + registeredTemplate.getTemplateName() + " It is already registered.";
+                    template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, msg);
+                    statusMessage.update("Validation error: The template " + registeredTemplate.getTemplateName() + " is already registered", false);
+                } else {
+                    //skip importing if user doesnt want it.
+                    if (!registeredTemplateOption.isOverwrite()) {
+                        validForImport = false;
+                    }
+                    statusMessage.complete(true);
+                }
+                registeredTemplate.setId(existingTemplate.getId());
+            } else {
+                //reset it so it gets the new id upon import
+                registeredTemplate.setId(null);
+                statusMessage.complete(true);
+            }
+            validForImport &= !registeredTemplateOption.hasErrorMessages();
+
+            if (validForImport) {
+                boolean isValid = validateTemplateProperties(template, options);
+                if (template.isValid()) {
+                    template.setValid(isValid);
+                }
+                validForImport &= isValid;
+            }
+
+            registeredTemplateOption.setValidForImport(validForImport);
+        }
+        completeSection(options, ImportSection.Section.VALIDATE_REGISTERED_TEMPLATE);
+    }
+
+    /**
+     * Validate any reusable templates as part of a zip file upload are valid for importing
+     *
+     * @param template the template data to validate before importing
+     * @param options  user options about what/how it should be imported
+     */
+    private void validateReusableTemplate(ImportTemplate template, ImportTemplateOptions options) throws Exception {
+        //validate the reusable template
+        if (template.hasConnectingReusableTemplate()) {
+
+            ImportComponentOption reusableTemplateOption = options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE);
+            UploadProgressMessage reusableTemplateStatusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating Reusable Template. ");
+            if (reusableTemplateOption.isShouldImport()) {
+                boolean validForImport = true;
+                //for each of the connecting template
+                for (String reusableTemplateXml : template.getNifiConnectingReusableTemplateXmls()) {
+
+                    String templateName = NifiTemplateParser.getTemplateName(reusableTemplateXml);
+                    UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating Reusable Template. " + templateName);
+                    TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
+                    //if there is a match and it has not been acknowledged by the user to overwrite or not, error out
+                    if (dto != null && !reusableTemplateOption.isUserAcknowledged()) {
+                        //error out it exists
+                        template.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE, "A reusable template with the same name " + templateName + " exists.");
+                        template.setValid(false);
+                        statusMessage.update("Reusable template, " + templateName + ", already exists.", false);
+                        validForImport = false;
+                    } else if (dto != null && reusableTemplateOption.isUserAcknowledged() && !reusableTemplateOption.isOverwrite()) {
+                        validForImport = false;
+                        //user has asked to not import the template.
+                        uploadProgressService.removeMessage(options.getUploadKey(), statusMessage);
+                    } else {
+                        uploadProgressService.removeMessage(options.getUploadKey(), statusMessage);
+                        //statusMessage.update("Validated Reusable Template", true);
+                        validForImport &= true;
+                    }
+
+                }
+                reusableTemplateOption.setValidForImport(validForImport);
+                reusableTemplateStatusMessage.update("Validated Reusable Templates ", !reusableTemplateOption.hasErrorMessages());
+            } else if (!reusableTemplateOption.isUserAcknowledged()) {
+                template.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE, "The file " + template.getFileName() + " has a reusable template to import.");
+                template.setValid(false);
+                reusableTemplateStatusMessage.update("A reusable template was found. Additional input needed.", false);
+            } else {
+                reusableTemplateStatusMessage.update("Reusable template found in import, but it is not marked for importing", true);
+            }
+
+
+        }
+        completeSection(options, ImportSection.Section.VALIDATE_REUSABLE_TEMPLATE);
+    }
+
+    /**
+     * Validate the Template doesnt have any sensitive properties needing additional user input before importing
+     *
+     * @param importTemplate the template data to validate before importing
+     * @param importOptions  user options about what/how it should be imported
+     * @return true if valid, false if not
+     */
+    private boolean validateTemplateProperties(ImportTemplate importTemplate, ImportOptions importOptions) {
+        RegisteredTemplate template = importTemplate.getTemplateToImport();
+        //detect any sensitive properties and prompt for input before proceeding
+        List<NifiProperty> sensitiveProperties = template.getSensitiveProperties();
+        ImportUtil.addToImportOptionsSensitiveProperties(importOptions, sensitiveProperties, ImportComponent.TEMPLATE_DATA);
+        boolean valid = ImportUtil.applyImportPropertiesToTemplate(template, importTemplate, ImportComponent.TEMPLATE_DATA);
+        if (!valid) {
+            importTemplate.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Additional properties are required for the Template");
+        }
+        importOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setAnalyzed(true);
+        return valid;
+    }
+
     /**
      * Validate the sensitive properties are set for the reusable templates.
-     * @param importTemplate
-     * @param importOptions
-     * @return
-     * @throws Exception
+     *
+     * @param importTemplate the template data to validate before importing
+     * @param importOptions  user options about what/how it should be imported
+     * @return true if valid, false if not
      */
     private boolean analyzeReusableTemplateForImport(ImportTemplate importTemplate, ImportOptions importOptions) throws Exception {
 
@@ -252,7 +482,7 @@ public class ExportImportTemplateService {
                     NifiPropertyUtil.getProperties(flow, propertyDescriptorTransform).stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
                 if (sensitiveProperties != null && !sensitiveProperties.isEmpty()) {
                     ImportUtil.addToImportOptionsSensitiveProperties(importOptions, sensitiveProperties, ImportComponent.REUSABLE_TEMPLATE);
-                    importTemplate.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE,"Additional Properties are required for input on the reusable template");
+                    importTemplate.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE, "Additional Properties are required for input on the reusable template");
                     valid = false;
                 }
 
@@ -262,284 +492,163 @@ public class ExportImportTemplateService {
         return valid;
     }
 
-    private void validateNifiTemplateImport(ImportTemplate template) throws IOException {
-        ImportOptions options = template.getImportOptions();
-        ImportComponentOption nifiTemplateOption = options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE);
-        //if the options of the TEMPLATE_DATA are marked to import and overwrite this should be as well
-        ImportComponentOption templateData = options.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
 
-        if(templateData.isUserAcknowledged()){
-            nifiTemplateOption.setUserAcknowledged(true);
-        }
-        if(templateData.isShouldImport()){
-            nifiTemplateOption.setShouldImport(true);
-        }
-        if(templateData.isOverwrite()){
-            nifiTemplateOption.setOverwrite(true);
-        }
-
-
-        if(nifiTemplateOption.isShouldImport()) {
-           UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating the NiFi template");
-            String templateName = null;
-           TemplateDTO dto = null;
-            try {
-                templateName = NifiTemplateParser.getTemplateName(template.getNifiTemplateXml());
-                template.setTemplateName(templateName);
-                dto = nifiRestClient.getTemplateByName(templateName);
-                if (dto != null) {
-                    template.setNifiTemplateId(dto.getId());
-                    if (!options.isUserAcknowledged(ImportComponent.NIFI_TEMPLATE) && !options.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && !options.isContinueIfExists(ImportComponent.NIFI_TEMPLATE)) {
-                        template.setValid(false);
-                        String msg = "Unable to import Template " + templateName
-                                     + ".  It already exists in NiFi.";
-                        template.getImportOptions().addErrorMessage(ImportComponent.NIFI_TEMPLATE,msg);
-                        statusMessage.update("Validation Error: Unable to import Template " + templateName + ".  It already exists in NiFi.");
-                        statusMessage.complete(false);
-                    }
-                    else {
-                        statusMessage.update("Validated the NiFi template.  The template "+templateName+" will be overwritten in NiFi");
-                        statusMessage.complete(true);
-                    }
-                }
-                else {
-                    statusMessage.update("Validated the NiFi template.  The template "+templateName+" will be created in NiFi");
-                    statusMessage.complete(true);
-                }
-            } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
-                template.setValid(false);
-                template.getTemplateResults().addError(NifiError.SEVERITY.WARN,   "The xml file you are trying to import is not a valid NiFi template.  Please try again. " + e.getMessage(),"");
-                statusMessage.complete(false);
-            }
-            nifiTemplateOption.setValidForImport(!nifiTemplateOption.hasErrorMessages());
-        }
-        completeSection(options, ImportSection.Section.VALIDATE_NIFI_TEMPLATE);
-    }
-
-
-    //validate
-    public ImportTemplate validateTemplateForImport(final String fileName, byte[] content, ImportOptions importOptions ) {
-
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
-            InputStream inputStream = new ByteArrayInputStream(content);
-            UploadProgressMessage overallStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Validating template for import");
-            UploadProgressMessage statusMessage = overallStatusMessage;
-            ImportTemplateOptions options = new ImportTemplateOptions();
-            options.setUploadKey(importOptions.getUploadKey());
-            ImportTemplate template = null;
-            if (!isValidFileImport(fileName)) {
-                statusMessage.complete(false);
-                throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
-            }
-            try {
-                if (fileName.endsWith(".zip")) {
-                    template = openZip(fileName, inputStream);
-                    template.setValid(true);
-                    Set<ImportComponentOption> componentOptions = ImportUtil.inspectZipComponents(content, ImportType.TEMPLATE);
-                    options.setImportComponentOptions(importOptions.getImportComponentOptions());
-                    options.addOptionsIfNotExists(componentOptions);
-                    template.setImportOptions(options);
-
-                    validateReusableTemplate(template,options);
-
-                    validateRegisteredTemplate(template, options);
-
-                    validateNifiTemplateImport(template);
-                }
-                else {
-                    template = nifiTemplateImport(fileName,inputStream);
-                    template.setImportOptions(options);
-                    //deal with reusable templates??
-                    validateNifiTemplateImport(template);
-                }
-            } catch (Exception e) {
-                statusMessage.update("An Error occurred "+e.getMessage(),false);
-                throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
-            }
-            overallStatusMessage.update("Validated template for import ",template.isValid());
-
-            return template;
-    }
-
-    private void validateRegisteredTemplate(ImportTemplate template,ImportOptions options) {
-        ImportComponentOption registeredTemplateOption = options.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
-        //validate template
-        boolean validForImport = true;
-
-        if(!registeredTemplateOption.isUserAcknowledged()) {
-            template.setValid(false);
-            template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA,"A template exists.  Do you want to import it?");
-        }
-
-        if(registeredTemplateOption.isUserAcknowledged() && registeredTemplateOption.isShouldImport()) {
-        UploadProgressMessage   statusMessage =  uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating feed template for import");
-            RegisteredTemplate registeredTemplate = template.getTemplateToImport();
-
-            //validate unique
-            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
-            if (existingTemplate != null) {
-                if (options.stopProcessingAlreadyExists(ImportComponent.TEMPLATE_DATA)) {
-                    template.setValid(false);
-                    String msg = "Unable to import the template " + registeredTemplate.getTemplateName() + " It is already registered.";
-                    template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA,msg);
-                    statusMessage.update("Validation error: The template "+registeredTemplate.getTemplateName() +" is already registered",false);
-                }
-                else {
-                    //skip importing if user doesnt want it.
-                    if(!registeredTemplateOption.isOverwrite()){
-                        validForImport = false;
-                    }
-                    statusMessage.complete(true);
-                }
-                registeredTemplate.setId(existingTemplate.getId());
-            } else {
-                //reset it so it gets the new id upon import
-                registeredTemplate.setId(null);
-                statusMessage.complete(true);
-            }
-            validForImport &= !registeredTemplateOption.hasErrorMessages();
-
-            if(validForImport){
-                boolean isValid = validateTemplateProperties(registeredTemplate, template, options);
-                    if(template.isValid()) {
-                        template.setValid(isValid);
-                    }
-                    validForImport &= isValid;
-            }
-
-            registeredTemplateOption.setValidForImport(validForImport);
-        }
-        completeSection(options, ImportSection.Section.VALIDATE_REGISTERED_TEMPLATE);
-    }
-
-    private void validateReusableTemplate(ImportTemplate template, ImportTemplateOptions options) throws Exception {
-        //validate the reusable template
-        if(template.hasConnectingReusableTemplate() ){
-
-            ImportComponentOption reusableTemplateOption = options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE);
-           UploadProgressMessage reusableTemplateStatusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating Reusable Template. ");
-            if(reusableTemplateOption.isShouldImport()) {
-                boolean validForImport = true;
-                //for each of the connecting template
-                for(String reusableTemplateXml : template.getNifiConnectingReusableTemplateXmls()){
-
-                  String templateName = NifiTemplateParser.getTemplateName(reusableTemplateXml);
-                  UploadProgressMessage  statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating Reusable Template. "+templateName);
-                    TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
-                    //if there is a match and it has not been acknowledged by the user to overwrite or not, error out
-                    if(dto != null && !reusableTemplateOption.isUserAcknowledged()) {
-                        //error out it exists
-                        template.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE,"A reusable template with the same name "+templateName+" exists." );
-                        template.setValid(false);
-                        statusMessage.update("Reusable template, "+templateName+", already exists.",false);
-                        validForImport =false;
-                    }
-                    else if(dto != null && reusableTemplateOption.isUserAcknowledged() && !reusableTemplateOption.isOverwrite()){
-                        validForImport = false;
-                        uploadProgressService.removeMessage(options.getUploadKey(),statusMessage);
-                    }
-                    /*
-
-                    else if(reusableTemplateOption.isUserAcknowledged() && !reusableTemplateOption.isAnalyzed()){
-                        statusMessage.update("Validating Reusable Template. Analyzing flow properties");
-                        //analyze it to ensure sensitive properties are parsed
-                        boolean valid = analyzeReusableTemplateForImport(template,options);
-                        validForImport &= valid;
-                        if(!valid) {
-                            statusMessage.update("Validation Error. Reusable Template properties.  Additional input needed", valid);
-                        }
-                        else {
-                            //valid remove the message
-                            uploadProgressService.removeMessage(options.getUploadKey(),statusMessage);
-                            //statusMessage.update("Validated Reusable Template.", valid);
-                        }
-                    }*/
-                    else {
-                        uploadProgressService.removeMessage(options.getUploadKey(),statusMessage);
-                        //statusMessage.update("Validated Reusable Template", true);
-                        validForImport &= true;
-                    }
-
-                }
-                reusableTemplateOption.setValidForImport(validForImport);
-                reusableTemplateStatusMessage.update("Validated Reusable Templates ",!reusableTemplateOption.hasErrorMessages());
-            }
-            else if(!reusableTemplateOption.isUserAcknowledged()){
-                template.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE,"The file "+template.getFileName()+" has a reusable template to import." );
-                template.setValid(false);
-                reusableTemplateStatusMessage.update("A reusable template was found. Additional input needed.",false);
-            }
-            else {
-                reusableTemplateStatusMessage.update("Reusable template found in import, but it is not marked for importing",true);
-            }
-
-
-        }
-        completeSection(options, ImportSection.Section.VALIDATE_REUSABLE_TEMPLATE);
-    }
-
-    public void completeSection(ImportOptions options, ImportSection.Section section){
+    private void completeSection(ImportOptions options, ImportSection.Section section) {
         UploadProgress progress = uploadProgressService.getUploadStatus(options.getUploadKey());
         progress.completeSection(section.name());
     }
 
-
-    private boolean validateTemplateProperties(RegisteredTemplate template, ImportTemplate importTemplate, ImportOptions importOptions) {
-        //detect any sensitive properties and prompt for input before proceeding
-        List<NifiProperty> sensitiveProperties = template.getSensitiveProperties();
-        ImportUtil.addToImportOptionsSensitiveProperties(importOptions, sensitiveProperties, ImportComponent.TEMPLATE_DATA);
-       boolean valid = ImportUtil.applyImportPropertiesToTemplate(template, importTemplate, ImportComponent.TEMPLATE_DATA);
-        if(!valid) {
-            importTemplate.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA,"Additional properties are required for the Template");
-        }
-        importOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setAnalyzed(true);
-       return valid;
-    }
+    /// IMPORT methods
 
 
-    private class NiFiTemplateImport {
+    /**
+     * Import a xml or zip file.
+     *
+     * @param fileName      the name of the file
+     * @param content       the file
+     * @param importOptions user options about what/how it should be imported
+     * @return the template data to import along with status/messages/error information if it was valid and if was successfully imported
+     */
+    public ImportTemplate importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
 
-        private String oldTemplateXml;
-        private TemplateDTO dto;
+            ImportTemplate template = null;
+            if (!isValidFileImport(fileName)) {
+                throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
+            }
+            try {
+                if (fileName.endsWith(".zip")) {
+                    UploadProgress progress = uploadProgressService.getUploadStatus(importOptions.getUploadKey());
+                    progress.setSections(ImportSection.sectionsForImportAsString(ImportType.TEMPLATE));
+                    template = validateAndImportZip(fileName, content, importOptions); //dont allow exported reusable flows to become registered templates
+                } else if (fileName.endsWith(".xml")) {
 
-        public NiFiTemplateImport(String oldTemplateXml, TemplateDTO dto) {
-            this.oldTemplateXml = oldTemplateXml;
-            this.dto = dto;
-        }
+                    UploadProgress progress = uploadProgressService.getUploadStatus(importOptions.getUploadKey());
+                    progress.setSections(ImportSection.sectionsForImportAsString(ImportType.TEMPLATE_XML));
 
-        public String getOldTemplateXml() {
-            return oldTemplateXml;
-        }
-
-        public void setOldTemplateXml(String oldTemplateXml) {
-            this.oldTemplateXml = oldTemplateXml;
-        }
-
-        public TemplateDTO getDto() {
-            return dto;
-        }
-
-        public void setDto(TemplateDTO dto) {
-            this.dto = dto;
-        }
+                    template = importNifiTemplate(fileName, content, importOptions, true);
+                }
+            } catch (IOException e) {
+                throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
+            }
+            template.setImportOptions(importOptions);
+            return template;
+        });
     }
 
     /**
-     * Import a template string into NiFi as a template to use
-     * @param importOptions
-     * @param template
-     * @return
-     * @throws IOException
+     * Imports the data and various components based upon the supplied {@link ImportTemplate#importOptions}.
+     *
+     * Note.  This method will not call any validation routines.  It will just import.
+     * If you want to validate before to ensure the import will be correct call this.importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions)
+     *
+     * @param importTemplate the template data to validate before importing
+     * @return the template data to validate before importing
      */
-    private NiFiTemplateImport importNiFiXmlTemplate(ImportTemplate template,ImportTemplateOptions importOptions) throws IOException {
+    public ImportTemplate importZip(ImportTemplate importTemplate) throws Exception {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        ImportTemplateOptions importOptions = importTemplate.getImportOptions();
+
+        log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA),
+                 importOptions.isImport(ImportComponent.REUSABLE_TEMPLATE));
+        if (importTemplate.isValid()) {
+            UploadProgressMessage startingStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Starting import of the template");
+            startingStatusMessage.complete(true);
+            UploadProgressMessage statusMessage = null;
+
+            //Get information about the import
+
+            RegisteredTemplate template = importTemplate.getTemplateToImport();
+            //  validateTemplateProperties(template, importTemplate, importOptions);
+            //1 ensure this template doesnt already exist
+            importTemplate.setTemplateName(template.getTemplateName());
+
+            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(template.getTemplateName()));
+            if (existingTemplate != null) {
+                template.setId(existingTemplate.getId());
+            } else {
+                template.setId(null);
+            }
+
+            List<ImportTemplate> connectingTemplates = importReusableTemplate(importTemplate, importOptions);
+            if (importOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).hasErrorMessages()) {
+                //return if invalid
+                return importTemplate;
+            }
+
+            NiFiTemplateImport niFiTemplateImport = importNiFiXmlTemplate(importTemplate, importOptions);
+
+            String oldTemplateXml = niFiTemplateImport.getOldTemplateXml();
+            TemplateDTO dto = niFiTemplateImport.getDto();
+            template.setNifiTemplateId(dto.getId());
+            importTemplate.setNifiTemplateId(dto.getId());
+            ImportComponentOption registeredTemplateImport = importOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+            if (existingTemplate != null) {
+                importTemplate.setTemplateId(existingTemplate.getId());
+            }
+            if (registeredTemplateImport.isShouldImport() && registeredTemplateImport.isValidForImport()) {
+
+                NifiProcessGroup newTemplateInstance = createTemplateInstance(importTemplate, importOptions);
+
+                if (newTemplateInstance.isSuccess()) {
+                    importTemplate.setSuccess(true);
+                    RegisteredTemplate savedTemplate = registerTemplate(importTemplate, importOptions);
+                    if (savedTemplate != null) {
+                        template = savedTemplate;
+                    }
+
+                }
+                if (!importTemplate.isSuccess()) {
+                    //ROLLBACK.. errrors
+                    statusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Errors were found registering the template.  Attempting to rollback.");
+                    rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
+                    //also restore existing registered template with metadata
+                    //restore old registered template
+                    if (existingTemplate != null) {
+                        try {
+                            metadataService.registerTemplate(existingTemplate);
+                        } catch (Exception e) {
+                            Throwable root = ExceptionUtils.getRootCause(e);
+                            String msg = root != null ? root.getMessage() : e.getMessage();
+                            importTemplate.getTemplateResults()
+                                .addError(NifiError.SEVERITY.WARN, "Error while restoring the template " + template.getTemplateName() + " in the Kylo metadata. " + msg, "");
+                        }
+                    }
+                    statusMessage.update("Errors were found registering the template.  Rolled back to previous version.", true);
+                }
+
+                //remove the temporary Process Group we created
+                removeTemporaryProcessGroup(importTemplate);
+            } else {
+                importTemplate.setSuccess(true);
+            }
+
+            //if we also imported the reusable template make sure that is all running properly
+            for (ImportTemplate connectingTemplate : connectingTemplates) {
+                //enable it
+                nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
+            }
+
+            completeSection(importOptions, ImportSection.Section.IMPORT_REGISTERED_TEMPLATE);
+
+        }
+
+        return importTemplate;
+    }
+
+
+    /**
+     * Import a template string into NiFi as a template to use
+     */
+    private NiFiTemplateImport importNiFiXmlTemplate(ImportTemplate template, ImportTemplateOptions importOptions) throws IOException {
 
         TemplateDTO dto = null;
         String templateName = null;
-        String  oldTemplateXml = null;
-
+        String oldTemplateXml = null;
 
         ImportComponentOption nifiTemplateImport = importOptions.findImportComponentOption(ImportComponent.NIFI_TEMPLATE);
-        if(nifiTemplateImport.isValidForImport()  ) {
+        if (nifiTemplateImport.isValidForImport()) {
             try {
                 templateName = NifiTemplateParser.getTemplateName(template.getNifiTemplateXml());
                 template.setTemplateName(templateName);
@@ -558,151 +667,59 @@ public class ExportImportTemplateService {
             boolean register = (dto == null || (importOptions.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && nifiTemplateImport.isValidForImport()));
             //attempt to import the xml into NiFi if its new, or if the user said to overwrite
             if (register) {
-                UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(),"Importing "+templateName+" into NiFi");
+                UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Importing " + templateName + " into NiFi");
                 log.info("Attempting to import Nifi Template: {} for file {}", templateName, template.getFileName());
                 dto = nifiRestClient.importTemplate(template.getTemplateName(), template.getNifiTemplateXml());
                 template.setNifiTemplateId(dto.getId());
-                statusMessage.update("Imported "+templateName+" into NiFi",true);
+                statusMessage.update("Imported " + templateName + " into NiFi", true);
             }
         }
 
         completeSection(importOptions, ImportSection.Section.IMPORT_NIFI_TEMPLATE);
-            return new NiFiTemplateImport(oldTemplateXml,dto);
+        return new NiFiTemplateImport(oldTemplateXml, dto);
 
     }
 
 
-    private ImportTemplate importZip(String fileName, byte[] content, ImportTemplateOptions importOptions) throws Exception {
+    private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) throws Exception {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
         ImportTemplate importTemplate = validateTemplateForImport(fileName, content, importOptions);
         return importZip(importTemplate);
     }
 
 
-    private NifiProcessGroup createTemplateInstance(ImportTemplate importTemplate, ImportTemplateOptions importOptions){
-            UploadProgressMessage
-                statusMessage =
-                uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Starting to import RegisteredTemplate.  Attempting to verify NiFi flow ");
+    private NifiProcessGroup createTemplateInstance(ImportTemplate importTemplate, ImportTemplateOptions importOptions) {
+        UploadProgressMessage
+            statusMessage =
+            uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Starting to import RegisteredTemplate.  Attempting to verify NiFi flow ");
 
-            //Create the new instance of the template in NiFi
-            Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
-            NifiProcessGroup newTemplateInstance =
-                nifiRestClient.createNewTemplateInstance(importTemplate.getNifiTemplateId(), configProperties, false, new NifiFlowCacheReusableTemplateCreationCallback(false));
-            importTemplate.setTemplateResults(newTemplateInstance);
-            if(newTemplateInstance.isSuccess()) {
-                statusMessage.update("Verified NiFi flow.", true);
-            }
-            else {
-                statusMessage.update("Error creating NiFi template instance ",false);
-            }
-            completeSection(importOptions, ImportSection.Section.CREATE_NIFI_INSTANCE);
-            return newTemplateInstance;
+        //Create the new instance of the template in NiFi
+        Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
+        NifiProcessGroup newTemplateInstance =
+            nifiRestClient.createNewTemplateInstance(importTemplate.getNifiTemplateId(), configProperties, false, new NifiFlowCacheReusableTemplateCreationCallback(false));
+        importTemplate.setTemplateResults(newTemplateInstance);
+        if (newTemplateInstance.isSuccess()) {
+            statusMessage.update("Verified NiFi flow.", true);
+        } else {
+            statusMessage.update("Error creating NiFi template instance ", false);
+        }
+        completeSection(importOptions, ImportSection.Section.CREATE_NIFI_INSTANCE);
+        return newTemplateInstance;
 
     }
 
 
     /**
-     *  Skips Validatoin and imports the template
-     * @param importTemplate
-     * @return
-     * @throws IOException
+     * Register the template with the metadata and save it
+     *
+     * @param importTemplate the template data to import
+     * @param importOptions  user options about what/how it should be imported
+     * @return the registered template that was saved
      */
-    public ImportTemplate importZip(ImportTemplate importTemplate) throws Exception {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
-        ImportTemplateOptions importOptions = importTemplate.getImportOptions();
-
-        log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA), importOptions.isImport(ImportComponent.REUSABLE_TEMPLATE));
-        if(importTemplate.isValid()){
-            UploadProgressMessage startingStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(),"Starting import of the template");
-            startingStatusMessage.complete(true);
-            UploadProgressMessage statusMessage = null;
-
-           //Get information about the import
-
-            RegisteredTemplate template = importTemplate.getTemplateToImport();
-          //  validateTemplateProperties(template, importTemplate, importOptions);
-            //1 ensure this template doesnt already exist
-            importTemplate.setTemplateName(template.getTemplateName());
-
-            RegisteredTemplate existingTemplate =  registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(template.getTemplateName()));
-            if (existingTemplate != null) {
-                template.setId(existingTemplate.getId());
-            } else {
-                template.setId(null);
-            }
-
-            List<ImportTemplate> connectingTemplates = importReusableTemplate(importTemplate, importOptions);
-            if (importOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).hasErrorMessages() ) {
-                //return if invalid
-                return importTemplate;
-            }
-
-
-
-            NiFiTemplateImport niFiTemplateImport = importNiFiXmlTemplate(importTemplate,importOptions);
-
-            String oldTemplateXml = niFiTemplateImport.getOldTemplateXml();
-            TemplateDTO dto = niFiTemplateImport.getDto();
-            template.setNifiTemplateId(dto.getId());
-            importTemplate.setNifiTemplateId(dto.getId());
-            ImportComponentOption registeredTemplateImport = importOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
-            if(existingTemplate != null) {
-                importTemplate.setTemplateId(existingTemplate.getId());
-            }
-            if(registeredTemplateImport.isShouldImport() && registeredTemplateImport.isValidForImport()){
-
-                NifiProcessGroup newTemplateInstance = createTemplateInstance(importTemplate, importOptions);
-
-                if (newTemplateInstance.isSuccess()) {
-                    importTemplate.setSuccess(true);
-                    RegisteredTemplate savedTemplate = registerTemplate(importTemplate, importOptions,template);
-                    if(savedTemplate != null){
-                        template = savedTemplate;
-                    }
-
-                }
-                if (!importTemplate.isSuccess()) {
-                    //ROLLBACK.. errrors
-                    statusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(),"Errors were found registering the template.  Attempting to rollback.");
-                    rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
-                    //also restore existing registered template with metadata
-                    //restore old registered template
-                    if (existingTemplate != null) {
-                        try {
-                            metadataService.registerTemplate(existingTemplate);
-                        } catch (Exception e) {
-                            Throwable root = ExceptionUtils.getRootCause(e);
-                            String msg = root != null ? root.getMessage() : e.getMessage();
-                            importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN, "Error while restoring the template " + template.getTemplateName() + " in the Kylo metadata. " + msg, "");
-                        }
-                    }
-                    statusMessage.update("Errors were found registering the template.  Rolled back to previous version.",true);
-                }
-
-                //remove the temporary Process Group we created
-                removeTemporaryProcessGroup(importTemplate);
-            }
-            else {
-                importTemplate.setSuccess(true);
-            }
-
-
-            //if we also imported the reusable template make sure that is all running properly
-            for (ImportTemplate connectingTemplate : connectingTemplates) {
-                //enable it
-                nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
-            }
-
-            completeSection(importOptions, ImportSection.Section.IMPORT_REGISTERED_TEMPLATE);
-
-        }
-
-        return importTemplate;
-    }
-
-    private RegisteredTemplate registerTemplate(ImportTemplate importTemplate, ImportTemplateOptions importOptions, RegisteredTemplate template) {
+    private RegisteredTemplate registerTemplate(ImportTemplate importTemplate, ImportTemplateOptions importOptions) {
+        RegisteredTemplate template = importTemplate.getTemplateToImport();
         ImportComponentOption registeredTemplateOption = importOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
-        if(registeredTemplateOption.isValidForImport()) {
+        if (registeredTemplateOption.isValidForImport()) {
             UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Registering template " + template.getTemplateName() + " with Kylo metadata.");
             try {
                 importTemplate.setNifiTemplateId(template.getNifiTemplateId());
@@ -724,7 +741,7 @@ public class ExportImportTemplateService {
         return template;
     }
 
-    private  List<ImportTemplate> importReusableTemplate(ImportTemplate importTemplate, ImportTemplateOptions importOptions) throws Exception {
+    private List<ImportTemplate> importReusableTemplate(ImportTemplate importTemplate, ImportTemplateOptions importOptions) throws Exception {
         List<ImportTemplate> connectingTemplates = new ArrayList<>();
         //start the import
         ImportComponentOption reusableComponentOption = importOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE);
@@ -736,7 +753,7 @@ public class ExportImportTemplateService {
             log.info("Importing Zip file template {}. first importing reusable flow from zip");
             for (String reusableTemplateXml : importTemplate.getNifiConnectingReusableTemplateXmls()) {
 
-                String name =NifiTemplateParser.getTemplateName(reusableTemplateXml);
+                String name = NifiTemplateParser.getTemplateName(reusableTemplateXml);
                 ImportTemplate connectingTemplate = importNifiTemplateWithTemplateString(name, reusableTemplateXml, importOptions,
                                                                                          false);
                 lastReusableTemplate = connectingTemplate;
@@ -757,12 +774,11 @@ public class ExportImportTemplateService {
 
                 }
             }
-            if(valid) {
+            if (valid) {
                 statusMessage.update("Successfully imported Reusable Templates " + (connectingTemplates.stream().map(t -> t.getTemplateName()).collect(Collectors.joining(","))), true);
-            }
-            else {
+            } else {
 
-                statusMessage.update("Errors importing reusable template: Imported Reusable Template. "+lastReusableTemplate != null ? lastReusableTemplate.getTemplateName():"");
+                statusMessage.update("Errors importing reusable template: Imported Reusable Template. " + lastReusableTemplate != null ? lastReusableTemplate.getTemplateName() : "");
             }
         }
         completeSection(importOptions, ImportSection.Section.IMPORT_REUSABLE_TEMPLATE);
@@ -785,32 +801,31 @@ public class ExportImportTemplateService {
      */
     private ImportTemplate importNifiTemplate(String fileName, byte[] xmlFile, ImportTemplateOptions importOptions, boolean xmlImport) throws IOException {
         InputStream inputStream = new ByteArrayInputStream(xmlFile);
-        ImportTemplate importTemplate  = nifiTemplateImport(fileName,inputStream);
+        ImportTemplate importTemplate = getNewNiFiTemplateImport(fileName, inputStream);
         importTemplate.setImportOptions(importOptions);
 
-        validateNifiTemplateImport(importTemplate);
+        validateNiFiTemplateImport(importTemplate);
 
-        if(importTemplate.isValid()) {
+        if (importTemplate.isValid()) {
 
-            UploadProgressMessage importStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(),"Importing the NiFi flow ");
+            UploadProgressMessage importStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Importing the NiFi flow ");
 
             boolean createReusableFlow = importOptions.isImport(ImportComponent.REUSABLE_TEMPLATE);
             boolean overwrite = importOptions.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE);
             log.info("Importing XML file template {}, overwrite: {}, reusableFlow: {}", fileName, overwrite, createReusableFlow);
 
-
-            NiFiTemplateImport niFiTemplateImport = importNiFiXmlTemplate(importTemplate,importOptions);
+            NiFiTemplateImport niFiTemplateImport = importNiFiXmlTemplate(importTemplate, importOptions);
             String oldTemplateXml = niFiTemplateImport.getOldTemplateXml();
             TemplateDTO dto = niFiTemplateImport.getDto();
             String templateName = importTemplate.getTemplateName();
 
-            importStatusMessage.update("Importing the NiFi flow, "+templateName);
+            importStatusMessage.update("Importing the NiFi flow, " + templateName);
 
             log.info("validate NiFi Flow by creating a template instance in nifi Nifi Template: {} for file {}", templateName, fileName);
             Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
             NifiFlowCacheReusableTemplateCreationCallback reusableTemplateCreationCallback = new NifiFlowCacheReusableTemplateCreationCallback(xmlImport);
-            if(createReusableFlow){
-                importStatusMessage.update("Creating reusable flow instance for "+templateName);
+            if (createReusableFlow) {
+                importStatusMessage.update("Creating reusable flow instance for " + templateName);
             }
             NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow, reusableTemplateCreationCallback);
             importTemplate.setTemplateResults(newTemplateInstance);
@@ -819,15 +834,14 @@ public class ExportImportTemplateService {
                 log.info("SUCCESS! This template is valid Nifi Template: {} for file {}", templateName, fileName);
                 importTemplate.setSuccess(true);
                 if (createReusableFlow) {
-                    importStatusMessage.update("Finished creating reusable flow instance for "+templateName,true);
+                    importStatusMessage.update("Finished creating reusable flow instance for " + templateName, true);
                     importReusableTemplateSuccess(importTemplate);
-                }
-                else {
-                    importStatusMessage.update("Validated "+templateName,true);
+                } else {
+                    importStatusMessage.update("Validated " + templateName, true);
                 }
             } else {
                 rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
-                importStatusMessage.update("An error occurred importing the template, "+templateName,false);
+                importStatusMessage.update("An error occurred importing the template, " + templateName, false);
             }
 
             if (!createReusableFlow) {
@@ -840,7 +854,7 @@ public class ExportImportTemplateService {
                 log.info("Success cleanup: Successfully cleaned up Nifi");
             }
 
-            log.info("Import NiFi Template for {} finished",fileName);
+            log.info("Import NiFi Template for {} finished", fileName);
 
         }
 
@@ -874,7 +888,7 @@ public class ExportImportTemplateService {
      * This should be called after the import to cleanup NiFi
      */
     private void removeTemporaryProcessGroup(ImportTemplate importTemplate) {
-        UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importTemplate.getImportOptions().getUploadKey(),"Cleaning up the temporary process group in NiFi");
+        UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importTemplate.getImportOptions().getUploadKey(), "Cleaning up the temporary process group in NiFi");
         String processGroupName = importTemplate.getTemplateResults().getProcessGroupEntity().getName();
         String processGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getId();
         String parentProcessGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getParentGroupId();
@@ -902,7 +916,7 @@ public class ExportImportTemplateService {
                 }
             }
             log.info("Successfully cleaned up Nifi and deleted the process group {} ", importTemplate.getTemplateResults().getProcessGroupEntity().getName());
-            statusMessage.update("Cleaned up NiFi",true);
+            statusMessage.update("Cleaned up NiFi", true);
         } catch (NifiClientRuntimeException e) {
             log.error("error attempting to cleanup and remove the temporary process group (" + processGroupId + " during the import of template " + importTemplate.getTemplateName());
             importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN,
@@ -910,39 +924,18 @@ public class ExportImportTemplateService {
                                                          + processGroupId + ")"
                                                          + " may need to be manually cleaned up in NiFi ", "");
             statusMessage.update("Error cleaning up NiFi. The Process Group : " + processGroupName + " ("
-                                 + processGroupId + ")",false);
+                                 + processGroupId + ")", false);
         }
     }
 
-    public ImportTemplate importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
-        return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
 
-            ImportTemplate template = null;
-            if (!isValidFileImport(fileName)) {
-                throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
-            }
-            try {
-                if (fileName.endsWith(".zip")) {
-                    UploadProgress progress = uploadProgressService.getUploadStatus(importOptions.getUploadKey());
-                    progress.setSections(ImportSection.sectionsForImportAsString(ImportType.TEMPLATE));
-                    template = importZip(fileName, content, importOptions); //dont allow exported reusable flows to become registered templates
-                } else if (fileName.endsWith(".xml")) {
-
-                    UploadProgress progress = uploadProgressService.getUploadStatus(importOptions.getUploadKey());
-                    progress.setSections(ImportSection.sectionsForImportAsString(ImportType.TEMPLATE_XML));
-
-                    template = importNifiTemplate(fileName, content, importOptions, true);
-                }
-            } catch (IOException e) {
-                throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
-            }
-            template.setImportOptions(importOptions);
-            return template;
-        });
-    }
-
-
+    /**
+     * Open the zip file and populate the {@link ImportTemplate} object with the components in the file/archive
+     *
+     * @param fileName    the file name
+     * @param inputStream the file
+     * @return the template data to import
+     */
     private ImportTemplate openZip(String fileName, InputStream inputStream) throws IOException {
         byte[] buffer = new byte[1024];
         ZipInputStream zis = new ZipInputStream(inputStream);
@@ -970,8 +963,8 @@ public class ExportImportTemplateService {
 
     }
 
-    private ImportTemplate nifiTemplateImport(String fileName, InputStream inputStream) throws IOException {
-        ImportTemplate  template = new ImportTemplate(fileName);
+    private ImportTemplate getNewNiFiTemplateImport(String fileName, InputStream inputStream) throws IOException {
+        ImportTemplate template = new ImportTemplate(fileName);
         template.setValid(true);
         StringWriter writer = new StringWriter();
         IOUtils.copy(inputStream, writer, "UTF-8");
@@ -980,29 +973,14 @@ public class ExportImportTemplateService {
         return template;
     }
 
+    /**
+     * Called when the system imports a Reusable template either from a ZIP file or an xml file uploaded in kylo.
+     */
+    private void importReusableTemplateSuccess(ImportTemplate importTemplate) {
 
-    public Set<ImportComponent> inspectZipComponents(String fileName, InputStream inputStream) throws IOException {
-
-        Set<ImportComponent> importComponents = new HashSet<>();
-        ZipInputStream zis = new ZipInputStream(inputStream);
-        ZipEntry entry;
-        while ((entry = zis.getNextEntry()) != null) {
-            log.info("zip file entry: " + entry.getName());
-            if (entry.getName().startsWith(NIFI_TEMPLATE_XML_FILE)) {
-                importComponents.add(ImportComponent.NIFI_TEMPLATE);
-            } else if (entry.getName().startsWith(TEMPLATE_JSON_FILE)) {
-                importComponents.add(ImportComponent.TEMPLATE_DATA);
-            } else if (entry.getName().startsWith(NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
-                importComponents.add(ImportComponent.REUSABLE_TEMPLATE);
-            }
-        }
-        zis.closeEntry();
-        zis.close();
-
-        return importComponents;
     }
 
-
+    //Internal classes
 
 
     public static class ImportTemplate {
@@ -1026,7 +1004,8 @@ public class ExportImportTemplateService {
         @JsonIgnore
         private RegisteredTemplate templateToImport;
 
-        public ImportTemplate() {}
+        public ImportTemplate() {
+        }
 
         public ImportTemplate(String fileName) {
             this.fileName = fileName;
@@ -1083,7 +1062,7 @@ public class ExportImportTemplateService {
         }
 
         public NifiProcessGroup getTemplateResults() {
-            if(templateResults == null){
+            if (templateResults == null) {
                 templateResults = new NifiProcessGroup();
             }
             return templateResults;
@@ -1164,12 +1143,13 @@ public class ExportImportTemplateService {
 
         @JsonIgnore
         public RegisteredTemplate getTemplateToImport() {
-            if(templateToImport == null && StringUtils.isNotBlank(templateJson)){
+            if (templateToImport == null && StringUtils.isNotBlank(templateJson)) {
                 templateToImport = ObjectMapperSerializer.deserialize(getTemplateJson(), RegisteredTemplate.class);
 
             }
             return templateToImport;
         }
+
         @JsonIgnore
         public void setTemplateToImport(RegisteredTemplate templateToImport) {
             this.templateToImport = templateToImport;
@@ -1194,6 +1174,37 @@ public class ExportImportTemplateService {
             return file;
         }
     }
+
+    /**
+     * Store data about a NiFi import
+     */
+    private class NiFiTemplateImport {
+
+        private String oldTemplateXml;
+        private TemplateDTO dto;
+
+        public NiFiTemplateImport(String oldTemplateXml, TemplateDTO dto) {
+            this.oldTemplateXml = oldTemplateXml;
+            this.dto = dto;
+        }
+
+        public String getOldTemplateXml() {
+            return oldTemplateXml;
+        }
+
+        public void setOldTemplateXml(String oldTemplateXml) {
+            this.oldTemplateXml = oldTemplateXml;
+        }
+
+        public TemplateDTO getDto() {
+            return dto;
+        }
+
+        public void setDto(TemplateDTO dto) {
+            this.dto = dto;
+        }
+    }
+
 
     public class NifiFlowCacheReusableTemplateCreationCallback implements ReusableTemplateCreationCallback {
 

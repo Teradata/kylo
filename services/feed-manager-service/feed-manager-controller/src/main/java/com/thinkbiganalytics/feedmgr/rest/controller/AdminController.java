@@ -20,31 +20,23 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
-import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
+import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
-import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -143,18 +135,20 @@ public class AdminController {
                       @ApiResponse(code = 200, message = "Returns the upload status")
                   })
     public Response uploadStatus(@NotNull @PathParam("key") String key) {
-            UploadProgress uploadProgress = uploadProgressService.getUploadStatus(key);
-            if(uploadProgress != null) {
-                uploadProgress.checkAndIncrementPercentage();
-                return Response.ok(uploadProgress).build();
-            }
-            else {
-                return Response.ok(uploadProgress).build();
-            }
+        UploadProgress uploadProgress = uploadProgressService.getUploadStatus(key);
+        if (uploadProgress != null) {
+            uploadProgress.checkAndIncrementPercentage();
+            return Response.ok(uploadProgress).build();
+        } else {
+            return Response.ok(uploadProgress).build();
+        }
     }
 
 
-
+    /**
+     * This is deprecated.  Please use the AdminControllerV2 class
+     */
+    @Deprecated
     @POST
     @Path(IMPORT_FEED)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -172,13 +166,27 @@ public class AdminController {
                                @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportTemplateOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
         throws Exception {
         ImportFeedOptions options = new ImportFeedOptions();
+        String uploadKey = uploadProgressService.newUpload();
+        options.setUploadKey(uploadKey);
         options.findImportComponentOption(ImportComponent.FEED_DATA).setOverwrite(overwrite);
+        options.findImportComponentOption(ImportComponent.FEED_DATA).setUserAcknowledged(true);
+        options.findImportComponentOption(ImportComponent.FEED_DATA).setShouldImport(true);
+
         options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES));
+        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setUserAcknowledged(!importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.NOT_SET));
+        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES) && overwriteFeedTemplate);
+
         options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setOverwrite(overwriteFeedTemplate);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setUserAcknowledged(true);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setShouldImport(true);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setContinueIfExists(!overwriteFeedTemplate);
+
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwriteFeedTemplate);
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(true);
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(true);
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setContinueIfExists(!overwriteFeedTemplate);
 
         options.setCategorySystemName(categorySystemName);
-
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
@@ -187,8 +195,10 @@ public class AdminController {
     }
 
 
-
-
+    /**
+     * This is deprecated.  Please use the AdminControllerV2 class
+     */
+    @Deprecated
     @POST
     @Path(IMPORT_TEMPLATE)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -206,111 +216,34 @@ public class AdminController {
         throws Exception {
 
         ImportTemplateOptions options = new ImportTemplateOptions();
-        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES));
-        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES));
-        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwrite);
+        String uploadKey = uploadProgressService.newUpload();
+        options.setUploadKey(uploadKey);
+
+        boolean isZip = fileMetaData.getFileName().endsWith("zip");
+
+        if (isZip) {
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES));
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setUserAcknowledged(!importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.NOT_SET));
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(importConnectingFlow.equals(ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES));
+
+        } else {
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(createReusableFlow);
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setUserAcknowledged(true);
+            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(createReusableFlow);
+        }
+
         options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setOverwrite(overwrite);
-        options.setCreateReusableFlow(createReusableFlow);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setUserAcknowledged(true);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setShouldImport(true);
+        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setContinueIfExists(!overwrite);
+
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwrite);
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(true);
+        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(true);
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
         ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
 
-        return Response.ok(importTemplate).build();
-    }
-
-
-
-
-    @POST
-    @Path(IMPORT_FEED_NEW)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Imports a feed zip file.")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
-                      @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
-                  })
-    public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
-                               @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
-                               @NotNull @FormDataParam("uploadKey") String uploadKey,
-                               @FormDataParam("categorySystemName") String categorySystemName,
-                               @FormDataParam("importComponents") String importComponents)
-        throws Exception {
-        ImportFeedOptions options = new ImportFeedOptions();
-        options.setUploadKey(uploadKey);
-        ExportImportFeedService.ImportFeed importFeed = null;
-
-        options.setCategorySystemName(categorySystemName);
-
-
-        boolean overwriteFeed= true;
-        boolean overwriteTemplate = true;
-        uploadProgressService.newUpload(uploadKey);
-/*
-        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(overwriteTemplate);
-        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(overwriteTemplate);
-        options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwriteTemplate);
-        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setUserAcknowledged(overwriteTemplate);
-        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setShouldImport(overwriteTemplate);
-        options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setOverwrite(overwriteTemplate);
-
-        options.findImportComponentOption(ImportComponent.FEED_DATA).setShouldImport(overwriteFeed);
-        options.findImportComponentOption(ImportComponent.FEED_DATA).setOverwrite(overwriteFeed);
-        options.findImportComponentOption(ImportComponent.FEED_DATA).setUserAcknowledged(overwriteFeed);
-
-        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(true);
-        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setUserAcknowledged(true);
-        options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(true);
-        */
-      //  importComponents = "";
-
-
-        if(importComponents == null) {
-            //shouldnt get here
-            byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-            importFeed = exportImportFeedService.validateFeedForImport(fileMetaData.getFileName(),content, options);
-            importFeed.setSuccess(false);
-        }
-        else {
-            options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
-            }));
-            byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-            importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
-        }
-        uploadProgressService.removeUpload(uploadKey);
-        return Response.ok(importFeed).build();
-    }
-
-    @POST
-    @Path(IMPORT_TEMPLATE_NEW)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Imports a template xml or zip file.")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
-                      @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
-                  })
-    public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
-                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
-                                   @NotNull @FormDataParam("uploadKey") String uploadKey,
-                                   @FormDataParam("importComponents") String importComponents)
-        throws Exception {
-        ImportTemplateOptions options = new ImportTemplateOptions();
-        options.setUploadKey(uploadKey);
-        ExportImportTemplateService.ImportTemplate importTemplate = null;
-        byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-
-        uploadProgressService.newUpload(uploadKey);
-
-        if(importComponents == null) {
-            importTemplate = exportImportTemplateService.validateTemplateForImport(fileMetaData.getFileName(), content,options);
-            importTemplate.setSuccess(false);
-        }
-        else {
-            options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
-            }));
-            importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
-        }
         return Response.ok(importTemplate).build();
     }
 

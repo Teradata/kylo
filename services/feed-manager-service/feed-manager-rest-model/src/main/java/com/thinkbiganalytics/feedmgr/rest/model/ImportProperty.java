@@ -12,9 +12,10 @@ public class ImportProperty {
     private String propertyKey;
     private String propertyValue;
 
-    public ImportProperty(){
+    public ImportProperty() {
 
     }
+
     public ImportProperty(String processorName, String processorId, String propertyKey, String propertyValue, String processorType) {
         this.processorName = processorName;
         this.processorId = processorId;

@@ -28,9 +28,10 @@ public class ImportSection {
 
     public static enum Section {
         VALIDATE_FEED_CATEGORY(ImportType.FEED), VALIDATE_FEED(ImportType.FEED), VALIDATE_PROPERTIES(ImportType.FEED), IMPORT_FEED_DATA(ImportType.FEED),
-        VALIDATE_REUSABLE_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE, ImportType.TEMPLATE_XML), VALIDATE_REGISTERED_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE),
-        VALIDATE_NIFI_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE, ImportType.TEMPLATE_XML), IMPORT_REUSABLE_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE, ImportType.TEMPLATE_XML),
-        IMPORT_NIFI_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE, ImportType.TEMPLATE_XML), CREATE_NIFI_INSTANCE(ImportType.FEED,ImportType.TEMPLATE), IMPORT_REGISTERED_TEMPLATE(ImportType.FEED,ImportType.TEMPLATE);
+        VALIDATE_REUSABLE_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), VALIDATE_REGISTERED_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE),
+        VALIDATE_NIFI_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), IMPORT_REUSABLE_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML),
+        IMPORT_NIFI_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), CREATE_NIFI_INSTANCE(ImportType.FEED, ImportType.TEMPLATE),
+        IMPORT_REGISTERED_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE);
 
 
         private ImportType[] importTypes;
@@ -39,17 +40,17 @@ public class ImportSection {
             this.importTypes = importTypes;
         }
 
-        public boolean hasImportType(ImportType importType){
+        public boolean hasImportType(ImportType importType) {
             return Stream.of(importTypes).anyMatch(type -> type.equals(importType));
         }
 
     }
 
-    public static Set<Section> sectionsForImport(ImportType importType){
-       return  Stream.of(Section.values()).filter(section -> section.hasImportType(importType)).collect(Collectors.toSet());
+    public static Set<Section> sectionsForImport(ImportType importType) {
+        return Stream.of(Section.values()).filter(section -> section.hasImportType(importType)).collect(Collectors.toSet());
     }
 
-    public static Set<String>sectionsForImportAsString(ImportType importType){
-       return  ImportSection.sectionsForImport(importType).stream().map(Enum::name).collect(Collectors.toSet());
+    public static Set<String> sectionsForImportAsString(ImportType importType) {
+        return ImportSection.sectionsForImport(importType).stream().map(Enum::name).collect(Collectors.toSet());
     }
 }

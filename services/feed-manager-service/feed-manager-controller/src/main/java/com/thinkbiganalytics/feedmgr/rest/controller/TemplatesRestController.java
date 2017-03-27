@@ -24,28 +24,21 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowResponse;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
-import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
-import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
-import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.apache.commons.lang3.StringUtils;
@@ -117,8 +110,6 @@ public class TemplatesRestController {
 
     /**
      * This will list all the templates registered in Kylo
-     * @param includeDetails
-     * @return
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -133,7 +124,10 @@ public class TemplatesRestController {
         List<RegisteredTemplate> registeredTemplates = registeredTemplateService.getRegisteredTemplates();
         for (final TemplateDTO dto : nifiTemplates) {
 
-            RegisteredTemplate match =registeredTemplates.stream().filter(template -> template.getNifiTemplateId().equalsIgnoreCase(dto.getId()) || template.getTemplateName().equalsIgnoreCase(dto.getName())).findFirst().orElse(null);
+            RegisteredTemplate
+                match =
+                registeredTemplates.stream().filter(template -> template.getNifiTemplateId().equalsIgnoreCase(dto.getId()) || template.getTemplateName().equalsIgnoreCase(dto.getName())).findFirst()
+                    .orElse(null);
 
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
@@ -146,9 +140,6 @@ public class TemplatesRestController {
 
     /**
      * This will populate the select drop down when a user asks to register a new template
-     *
-     * @param includeDetails
-     * @return
      */
     @GET
     @Path("/unregistered")
@@ -371,8 +362,6 @@ public class TemplatesRestController {
 
     /**
      * get a registeredTemplate for updating
-     *
-     * 
      */
     @GET
     @Path("/registered/{templateId}")
@@ -385,7 +374,10 @@ public class TemplatesRestController {
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
                                           @QueryParam("templateName") String templateName) {
 
-        RegisteredTemplateRequest registeredTemplateRequest = new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).includePropertyDescriptors(true).isTemplateEdit(true).build();
+        RegisteredTemplateRequest
+            registeredTemplateRequest =
+            new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).includePropertyDescriptors(true)
+                .isTemplateEdit(true).build();
         RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
         return Response.ok(registeredTemplate).build();
     }

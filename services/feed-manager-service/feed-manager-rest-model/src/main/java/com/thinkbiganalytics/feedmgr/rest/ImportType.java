@@ -20,6 +20,6 @@ package com.thinkbiganalytics.feedmgr.rest;
  * #L%
  */
 
-public  enum ImportType {
+public enum ImportType {
     FEED, TEMPLATE, TEMPLATE_XML
 }

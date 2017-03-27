@@ -105,7 +105,7 @@ public class ImportComponentOption {
     }
 
     public List<ImportProperty> getProperties() {
-        if(properties == null){
+        if (properties == null) {
             properties = new ArrayList<>();
         }
         return properties;
@@ -133,7 +133,7 @@ public class ImportComponentOption {
 
 
     public List<String> getErrorMessages() {
-        if(errorMessages == null){
+        if (errorMessages == null) {
             errorMessages = new ArrayList<>();
         }
         return errorMessages;
@@ -143,8 +143,8 @@ public class ImportComponentOption {
         this.errorMessages = errorMessages;
     }
 
-    public boolean hasErrorMessages(){
-        return getErrorMessages().size()>0;
+    public boolean hasErrorMessages() {
+        return getErrorMessages().size() > 0;
     }
 
     public boolean isValidForImport() {

@@ -20,12 +20,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
-
-import java.util.Collections;
-import java.util.List;
-
 public class ImportFeedOptions extends ImportOptions {
+
+    private boolean disableUponImport;
 
     private String categorySystemName;
 
@@ -37,5 +34,11 @@ public class ImportFeedOptions extends ImportOptions {
         this.categorySystemName = categorySystemName;
     }
 
+    public boolean isDisableUponImport() {
+        return disableUponImport;
+    }
 
+    public void setDisableUponImport(boolean disableUponImport) {
+        this.disableUponImport = disableUponImport;
+    }
 }

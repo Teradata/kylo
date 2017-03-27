@@ -7,6 +7,16 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             FEED_DATA:"FEED_DATA",
             REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE"};
 
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+            }
+            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                   s4() + '-' + s4() + s4() + s4();
+        }
+
         var data = {
 
             importComponentTypes : importComponentTypes,
@@ -28,7 +38,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 return data.newImportComponentOption(importComponentTypes.NIFI_TEMPLATE);
             },
             newUploadKey:function(){
-                return _.uniqueId("upload_")+new Date().getTime();
+                return _.uniqueId("upload_")+new Date().getTime()+guid();
             },
 
             /**

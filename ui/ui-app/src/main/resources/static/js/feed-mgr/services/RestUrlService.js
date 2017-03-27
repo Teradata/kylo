@@ -25,6 +25,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         this.ROOT = "";
         this.ADMIN_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/admin";
+        this.ADMIN_V2_BASE_URL = this.ROOT + "/proxy/v2/feedmgr/admin";
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
         this.TEMPLATES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/templates";
         this.FEEDS_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/feeds";
@@ -208,13 +209,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/standardization";
         this.AVAILABLE_VALIDATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/validation";
 
-        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/import-template2";
+        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_V2_BASE_URL + "/import-template";
 
         this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/export-template";
 
         this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL + "/export-feed";
 
-        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_BASE_URL + "/import-feed2";
+        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_V2_BASE_URL + "/import-feed";
 
         this.ADMIN_UPLOAD_STATUS_CHECK = function(key) {
             return self.ADMIN_BASE_URL+"/upload-status/"+key;

@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -47,17 +46,17 @@ public class TemplateModelTransform {
     private EncryptionService encryptionService;
 
     public enum TEMPLATE_TRANSFORMATION_TYPE {
-        WITH_FEED_NAMES, WITHOUT_FEED_NAMES,WITH_SENSITIVE_DATA
+        WITH_FEED_NAMES, WITHOUT_FEED_NAMES, WITH_SENSITIVE_DATA
     }
 
 
-    private void prepareForSave(RegisteredTemplate registeredTemplate){
+    private void prepareForSave(RegisteredTemplate registeredTemplate) {
         //mark password rendertypes as sensitive
         registeredTemplate.getProperties().stream().filter(p -> "password".equalsIgnoreCase(p.getRenderType())).forEach(p -> p.setSensitive(true));
         encryptSensitivePropertyValues(registeredTemplate);
     }
 
-    private void encryptSensitivePropertyValues(RegisteredTemplate registeredTemplate){
+    private void encryptSensitivePropertyValues(RegisteredTemplate registeredTemplate) {
         registeredTemplate.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue())));
     }
 
@@ -72,16 +71,16 @@ public class TemplateModelTransform {
         DOMAIN_TO_REGISTERED_TEMPLATE_WITH_SENSITIVE_DATA = DOMAIN_TO_REGISTERED_TEMPLATE(true, true);
 
 
-    public  Function<FeedManagerTemplate, RegisteredTemplate> getTransformationFunction(TEMPLATE_TRANSFORMATION_TYPE transformationType){
-        switch (transformationType){
+    public Function<FeedManagerTemplate, RegisteredTemplate> getTransformationFunction(TEMPLATE_TRANSFORMATION_TYPE transformationType) {
+        switch (transformationType) {
             case WITH_FEED_NAMES:
                 return DOMAIN_TO_REGISTERED_TEMPLATE;
             case WITH_SENSITIVE_DATA:
                 return DOMAIN_TO_REGISTERED_TEMPLATE_WITH_SENSITIVE_DATA;
             case WITHOUT_FEED_NAMES:
                 return DOMAIN_TO_REGISTERED_TEMPLATE_WITHOUT_FEED_NAMES;
-                default:
-                    return DOMAIN_TO_REGISTERED_TEMPLATE;
+            default:
+                return DOMAIN_TO_REGISTERED_TEMPLATE;
         }
     }
 
@@ -137,21 +136,22 @@ public class TemplateModelTransform {
 
     /**
      * Deserialize the JSON of the template
-     * @param json the template json
+     *
+     * @param json                       the template json
      * @param includeEncryptedProperties if true the encrypted properties will be returned.  false will set the property values to ""
      * @return the registered template
      */
-    private RegisteredTemplate deserialize(String json, boolean includeEncryptedProperties){
+    private RegisteredTemplate deserialize(String json, boolean includeEncryptedProperties) {
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(json, RegisteredTemplate.class);
-            template.getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).forEach(nifiProperty -> {
-                if(!includeEncryptedProperties){
-                    nifiProperty.setValue("");
-                }
-               // else {
-                //    String val = encryptionService.decrypt(nifiProperty.getValue());
-                 //   nifiProperty.setValue(val);
-                //}
-            });
+        template.getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).forEach(nifiProperty -> {
+            if (!includeEncryptedProperties) {
+                nifiProperty.setValue("");
+            }
+            // else {
+            //    String val = encryptionService.decrypt(nifiProperty.getValue());
+            //   nifiProperty.setValue(val);
+            //}
+        });
         return template;
     }
 
@@ -162,7 +162,7 @@ public class TemplateModelTransform {
             @Override
             public RegisteredTemplate apply(FeedManagerTemplate domain) {
                 String json = domain.getJson();
-                RegisteredTemplate template = deserialize(json,includeEncryptedProperties);
+                RegisteredTemplate template = deserialize(json, includeEncryptedProperties);
                 template.setId(domain.getId().toString());
                 template.setState(domain.getState().name());
                 template.setNifiTemplateId(domain.getNifiTemplateId());
