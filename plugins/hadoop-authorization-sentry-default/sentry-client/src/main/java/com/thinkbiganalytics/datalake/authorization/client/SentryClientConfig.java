@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
+import javax.sql.DataSource;
+
 /*-
  * #%L
  * thinkbig-sentry-client
@@ -23,8 +25,7 @@ package com.thinkbiganalytics.datalake.authorization.client;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.sql.DataSource;
+import org.springframework.ldap.core.support.LdapContextSource;
 
 /**
  * Sentry Client configuration class for setting sentry connection information.
@@ -42,6 +43,20 @@ public class SentryClientConfig {
     private DataSource dataSrouce;
     private JdbcTemplate sentryJdbcTemplate;
     private String sentryGroups;
+    private String authorizationGroupType;
+    private String linuxGroupFilePath;
+
+
+    /**
+     * LDAP Connection Parameter 
+     */
+    private String ldapURL;
+    private String ldapAdmin;
+    private String ldapAdminPassword;
+    private LdapContextSource LdapContextSource;
+    private String LdapGroupDnPattern;
+
+
 
     public SentryClientConfig() {
 
@@ -153,6 +168,64 @@ public class SentryClientConfig {
     public void setSentryGroups(String sentryGroups) {
         this.sentryGroups = sentryGroups;
     }
+
+    public String getAuthorizationGroupType() {
+        return authorizationGroupType;
+    }
+
+    public void setAuthorizationGroupType(String authorizationGroupType) {
+        this.authorizationGroupType = authorizationGroupType;
+    }
+
+    public String getLinuxGroupFilePath() {
+        return linuxGroupFilePath;
+    }
+
+    public void setLinuxGroupFilePath(String linuxGroupFilePath) {
+        this.linuxGroupFilePath = linuxGroupFilePath;
+    }
+
+    public String getLdapURL() {
+        return ldapURL;
+    }
+
+    public void setLdapURL(String ldapURL) {
+        this.ldapURL = ldapURL;
+    }
+
+    public String getLdapAdmin() {
+        return ldapAdmin;
+    }
+
+    public void setLdapAdmin(String ldapAdmin) {
+        this.ldapAdmin = ldapAdmin;
+    }
+
+    public String getLdapAdminPassword() {
+        return ldapAdminPassword;
+    }
+
+    public void setLdapAdminPassword(String ldapAdminPassword) {
+        this.ldapAdminPassword = ldapAdminPassword;
+    }
+
+    public LdapContextSource getLdapContextSource() {
+        return LdapContextSource;
+    }
+
+    public void setLdapContextSource(LdapContextSource ldapContextSource) {
+        LdapContextSource = ldapContextSource;
+    }
+
+    public String getLdapGroupDnPattern() {
+        return LdapGroupDnPattern;
+    }
+
+    public void setLdapGroupDnPattern(String ldapGroupDnPattern) {
+        LdapGroupDnPattern = ldapGroupDnPattern;
+    }
+
+
 
 
 }

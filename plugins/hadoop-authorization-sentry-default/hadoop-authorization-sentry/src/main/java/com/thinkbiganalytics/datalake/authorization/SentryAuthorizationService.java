@@ -1,5 +1,18 @@
 package com.thinkbiganalytics.datalake.authorization;
 
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*-
  * #%L
  * thinkbig-hadoop-authorization-sentry
@@ -20,6 +33,7 @@ package com.thinkbiganalytics.datalake.authorization;
  * #L%
  */
 
+
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
@@ -28,19 +42,6 @@ import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Sentry Authorization Service
@@ -81,7 +82,26 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         this.sentryConnection = (SentryConnection) config;
         SentryClientConfig sentryClientConfiguration = new SentryClientConfig(sentryConnection.getDataSource());
         sentryClientConfiguration.setDriverName(sentryConnection.getDriverName());
+
+        /**
+         * Static Group Sync Process 
+         */
         sentryClientConfiguration.setSentryGroups(sentryConnection.getSentryGroups());
+
+        /**
+         * Linux Group Sync Process
+         */
+        sentryClientConfiguration.setAuthorizationGroupType(sentryConnection.getAuthorizationGroupType());
+        sentryClientConfiguration.setLinuxGroupFilePath(sentryConnection.getLinuxGroupFilePath());
+
+
+        /**
+         *  LDAP Sync Process
+         */
+
+        sentryClientConfiguration.setLdapContextSource(sentryConnection.getLdapContextSource());
+        sentryClientConfiguration.setLdapGroupDnPattern(sentryConnection.getLdapGroupDnPattern());
+
         this.sentryClientObject = new SentryClient(sentryClientConfiguration);
     }
 
@@ -287,8 +307,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                                 if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
                                     String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                                     List<String>
-                                        hiveTables =
-                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    hiveTables =
+                                    Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                                     String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                                     createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                                 }
@@ -304,8 +324,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
                                     String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                                     List<String>
-                                        hiveTables =
-                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    hiveTables =
+                                    Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                                     String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                                     List<String> hivePermissions = new ArrayList();
                                     hivePermissions.add(HIVE_READ_ONLY_PERMISSION);

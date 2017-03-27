@@ -196,7 +196,7 @@ public class HDFSUtil {
 
                     // Create HDFS ACL for each for each Path on HDFS
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
@@ -214,7 +214,7 @@ public class HDFSUtil {
 
                     // Create HDFS ACL for each for each Path on HDFS
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 

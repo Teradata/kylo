@@ -31,6 +31,7 @@
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
 
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
@@ -170,5 +171,18 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
     </dependency>
+    
+     <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-ldap</artifactId>
+      <version>${spring.security.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>${spring.ldap.version}</version>
+    </dependency>
+
+    
   </dependencies>
 </project>
