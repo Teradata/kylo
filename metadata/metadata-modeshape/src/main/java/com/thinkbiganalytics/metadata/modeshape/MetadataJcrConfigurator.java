@@ -81,8 +81,6 @@ public class MetadataJcrConfigurator {
     }
 
     public void configure() {
-        log.info("SKIPPING CONFIGURATION ");
-
         this.metadataAccess.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
