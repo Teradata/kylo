@@ -20,9 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -39,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.JcrPropertyTest;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
@@ -46,6 +44,8 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -63,6 +63,8 @@ import javax.inject.Inject;
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
 public class TestFeedManagerFeed {
+
+    private static final Logger log = LoggerFactory.getLogger(TestFeedManagerFeed.class);
 
     @Inject
     CategoryProvider categoryProvider;
@@ -87,7 +89,6 @@ public class TestFeedManagerFeed {
 
     @Inject
     private FeedTestUtil feedTestUtil;
-
 
 
     private boolean deleteTemplate(String templateName) {
@@ -120,25 +121,28 @@ public class TestFeedManagerFeed {
         });
     }
 
+    /**
+     * Test querying a large number of feeds
+     */
     @Test
-    public void testLotsOfFeeds(){
+    public void testLotsOfFeeds() {
+        //increase to query more .. i.e. 1000
         int numberOfFeeds = 5;
-        int numberOfFeedsPerCategory = 20;
-        boolean convert = true;
 
+        int numberOfFeedsPerCategory = 20;
         String templateName = "my_template";
 
-        int categories = numberOfFeeds/numberOfFeedsPerCategory;
+        int categories = numberOfFeeds / numberOfFeedsPerCategory;
         //create all the categories
         metadata.commit(new AdminCredentials(), () -> {
-            for(int i=1;i<=categories;i++){
-                Category category = feedTestUtil.createCategory("category_"+i);
+            for (int i = 1; i <= categories; i++) {
+                Category category = feedTestUtil.createCategory("category_" + i);
             }
         });
 
         metadata.commit(new AdminCredentials(), () -> {
-                            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
-                        });
+            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+        });
 
         //create the feeds
         metadata.commit(new AdminCredentials(), () -> {
@@ -147,35 +151,26 @@ public class TestFeedManagerFeed {
             Category category = null;
 
             int categoryNum = 0;
-            String categoryName = "category"+categoryNum;
-                            for (int i = 0; i < numberOfFeeds; i++) {
-                                if (i % numberOfFeedsPerCategory == 0) {
-                                    categoryNum++;
-                                    categoryName = "category_" + categoryNum;
-                                    category = feedTestUtil.findOrCreateCategory(categoryName);
-                                }
-                                FeedManagerFeed feed = feedTestUtil.findOrCreateFeed(category, "feed_"+i, template);
-                            }
-                        });
+            String categoryName = "category" + categoryNum;
+            for (int i = 0; i < numberOfFeeds; i++) {
+                if (i % numberOfFeedsPerCategory == 0) {
+                    categoryNum++;
+                    categoryName = "category_" + categoryNum;
+                    category = feedTestUtil.findOrCreateCategory(categoryName);
+                }
+                FeedManagerFeed feed = feedTestUtil.findOrCreateFeed(category, "feed_" + i, template);
+            }
+        });
 
         //now query it
         long time = System.currentTimeMillis();
 
-            Integer size = metadata.read(new AdminCredentials(), () -> {
-                List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
-                if(convert) {
-                    for (FeedManagerFeed feed : feeds) {
-                        String json = feed.getJson();
-                        if(json != null) {
-                            Object o = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
-                            int i = 0;
-                        }
-                    }
-                }
-                return feeds.size();
-            });
-            long stopTime = System.currentTimeMillis();
-            System.out.println("Time to query " + size + " = " + (stopTime - time) + " ms");
+        Integer size = metadata.read(new AdminCredentials(), () -> {
+            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+            return feeds.size();
+        });
+        long stopTime = System.currentTimeMillis();
+        log.info("Time to query {} feeds was {} ms", size, (stopTime - time));
 
     }
 
