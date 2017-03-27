@@ -1,4 +1,4 @@
-CREATE PROCEDURE abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255))
+CREATE PROCEDURE abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255), out res integer)
 BEGIN
 
 UPDATE BATCH_JOB_EXECUTION
@@ -12,5 +12,8 @@ WHERE BATCH_JOB_INSTANCE.JOB_NAME in ( SELECT checkFeed.NAME
     UNION
     SELECT feed from dual )
   AND BATCH_JOB_EXECUTION.STATUS = 'FAILED';
+
+  --   need to return a value for this procedure calls to work on postgresql and with spring-data-jpa repositories and named queries
+set res = 1;
 
 END

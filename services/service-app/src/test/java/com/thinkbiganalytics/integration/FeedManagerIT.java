@@ -139,7 +139,7 @@ public class FeedManagerIT extends IntegrationTest {
 
     @Test
     public void testDataIngestFeed() throws IOException {
-//        startClean();
+        startClean();
 
         copyDataToDropzone();
 
@@ -235,7 +235,7 @@ public class FeedManagerIT extends IntegrationTest {
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
-        importSystemFeeds();
+//        importSystemFeeds();
     }
 
     public void importSystemFeeds() {

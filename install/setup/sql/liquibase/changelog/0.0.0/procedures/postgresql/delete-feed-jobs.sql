@@ -1,5 +1,5 @@
-CREATE FUNCTION delete_feed_jobs(in category varchar(255), in feed varchar(255))
-RETURNS void AS $$
+CREATE or replace FUNCTION delete_feed_jobs(in category varchar(255), in feed varchar(255))
+RETURNS integer AS $$
 
 DECLARE jobName TEXT;
 
@@ -83,6 +83,9 @@ WHERE FM_FEED_NAME = jobName;
 
 DELETE FROM NIFI_FEED_PROCESSOR_STATS
 WHERE FM_FEED_NAME = jobName;
+
+ --   need to return a value for this procedure calls to work with spring-data-jpa repositories and named queries
+return 1;
 
 END;
 $$ LANGUAGE plpgsql;

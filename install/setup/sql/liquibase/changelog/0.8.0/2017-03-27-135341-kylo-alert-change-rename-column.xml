@@ -5,11 +5,11 @@
 
  <changeSet author="ru186002" id="1">
    <!-- change column name because USER is a reserved word -->
-   <!-- at this time this feature is not supported for SQLLite -->
-    <renameColumn tableName="AUDIT_LOG"
+   <!-- at this time 'rename column' feature is not supported for SQLLite -->
+    <renameColumn tableName="KYLO_ALERT_CHANGE"
                   oldColumnName="user"
                   newColumnName="user_name"
-                  columnDataType="VARCHAR(100)"/>
+                  columnDataType="VARCHAR(128)"/>
   </changeSet>
 
 </databaseChangeLog>
