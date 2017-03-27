@@ -1,17 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.ldap.core.support.DefaultDirObjectFactory;
-import org.springframework.ldap.core.support.LdapContextSource;
-
 /*-
  * #%L
  * thinkbig-hadoop-authorization-sentry
@@ -36,7 +24,19 @@ import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.ldap.core.support.DefaultDirObjectFactory;
+import org.springframework.ldap.core.support.LdapContextSource;
+
 /**
+ * Sentry Configuration
  */
 @Configuration
 @PropertySource("classpath:authorization.sentry.properties")
@@ -59,7 +59,7 @@ public class SentryConfiguration {
                                                               , @Value("${authorization.sentry.groups}") String sentryGroups
                                                               , @Value("${sentry.kerberos.principal}") String kerberosPrincipal
                                                               , @Value("${sentry.kerberos.KeytabLocation}") String kerberosKeytabLocation
-                                                              , @Value("${sentry.IsKerberosEnabled}") String kerberosEnabled) {
+                                                              , @Value("${sentry.IsKerberosEnabled}") String kerberosEnabled) {    
         SentryConnection sentryConnection = new SentryConnection();
         sentryConnection.setDriverName(driverURL);
         sentryConnection.setSentryGroups(sentryGroups);
@@ -87,6 +87,13 @@ public class SentryConfiguration {
         return dataSourceBuilder.build();
     }
 
+    /**
+     * Create LDAP Context for Authentication
+     * @param ldapURL LDAP URL
+     * @param ldapAdminDN LDAP User For Search Query.
+     * @param ldapAdminPassword LDAP Password for specified user.
+     * @return
+     */
     public LdapContextSource getLdapContextSource(String ldapURL , String ldapAdminDN , String ldapAdminPassword ) {
 
         LdapContextSource lcs = new LdapContextSource();
@@ -97,7 +104,6 @@ public class SentryConfiguration {
         lcs.afterPropertiesSet();
         return lcs;
     }
-
 
     private KerberosTicketConfiguration createKerberosTicketConfiguration(String kerberosEnabled, String hadoopConfigurationResources, String kerberosPrincipal, String keytabLocation) {
         KerberosTicketConfiguration config = new KerberosTicketConfiguration();

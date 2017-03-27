@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization;
 
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*-
  * #%L
  * thinkbig-hadoop-authorization-sentry
@@ -33,7 +20,6 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
@@ -43,9 +29,22 @@ import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGro
 import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Sentry Authorization Service
  */
+
 public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SentryAuthorizationService.class);

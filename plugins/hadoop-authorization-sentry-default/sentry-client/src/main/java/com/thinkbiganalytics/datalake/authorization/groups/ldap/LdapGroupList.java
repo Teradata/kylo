@@ -1,15 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.groups.ldap;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.ldap.NamingException;
-import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.query.LdapQuery;
-
-import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
-
 /*-
  * #%L
  * thinkbig-sentry-client
@@ -29,6 +19,16 @@ import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
  * limitations under the License.
  * #L%
  */
+
+import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
+import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.ldap.NamingException;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQuery;
 import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 public class LdapGroupList {

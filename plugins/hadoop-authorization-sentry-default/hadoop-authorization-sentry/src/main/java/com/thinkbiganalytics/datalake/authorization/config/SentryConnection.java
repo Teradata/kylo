@@ -1,9 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import javax.sql.DataSource;
-
-import org.springframework.ldap.core.support.LdapContextSource;
-
 /*-
  * #%L
  * thinkbig-hadoop-authorization-sentry
@@ -25,6 +21,9 @@ import org.springframework.ldap.core.support.LdapContextSource;
  */
 
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+
+import javax.sql.DataSource;
+import org.springframework.ldap.core.support.LdapContextSource;
 
 /**
  */

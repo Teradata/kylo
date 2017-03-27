@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
-import javax.sql.DataSource;
+
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ import javax.sql.DataSource;
  * #L%
  */
 
+import javax.sql.DataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.jdbc.core.JdbcTemplate;
