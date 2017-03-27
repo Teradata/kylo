@@ -547,7 +547,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var functionDefs = self.sparkShellService.getFunctionDefs();
 
                 self.sql = self.model.visualQuerySql;
-                self.sparkShellService = new SparkShellService(self.sql);
+                self.sparkShellService = new SparkShellService(self.sql, null, FeedService.createFeedModel.dataTransformation.datasources);
                 self.sparkShellService.setFunctionDefs(functionDefs);
                 self.query();
             }

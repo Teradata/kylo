@@ -135,6 +135,34 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         };
 
         /**
+         * Initialize state from services.
+         */
+        function init() {
+            // Get the list of data sources
+            DatasourcesService.findAll()
+                .then(function (datasources) {
+                    Array.prototype.push.apply(self.availableDatasources, datasources);
+                })
+                .finally(function () {
+                    // Get state if in Edit Feed mode
+                    var feedModel = FeedService.createFeedModel.dataTransformation;
+                    if (angular.isUndefined(self.model.visualQuerySql) && angular.isString(feedModel.sql)) {
+                        self.advancedMode = (angular.isUndefined(self.model.visualQuerySql) && feedModel.chartViewModel == null);
+                        self.model.visualQuerySql = feedModel.sql;
+                        if (angular.isArray(feedModel.datasourceIds)) {
+                            self.model.selectedDatasourceId = feedModel.datasourceIds[0];
+                        }
+                    }
+
+                    // Setup the flowchart Model
+                    setupFlowChartModel();
+
+                    // Validate when the page loads
+                    validate();
+                });
+        }
+
+        /**
          * Initialize the model for the flowchart.
          */
         function setupFlowChartModel() {
@@ -756,16 +784,8 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
 
         });
 
-        //setup the flowchart Model
-        setupFlowChartModel();
-
-        // Get the list of data sources
-        DatasourcesService.findAll().then(function(datasources) {
-            Array.prototype.push.apply(self.availableDatasources, datasources);
-        });
-
-        //validate when the page loads
-        validate();
+        // Initialize state
+        init();
     };
 
 
