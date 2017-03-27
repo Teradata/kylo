@@ -24,7 +24,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.sun.tools.javac.comp.Flow;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -106,24 +105,24 @@ public class TemplateCreationHelper {
 
     /**
      * Creates an instance of the supplied template under the temporary inspection group inside its own process group
+     *
      * @param templateId the template to instantiate
      * @return the process group holding this template
      */
-    public ProcessGroupDTO createTemporaryTemplateFlow(@Nonnull final String templateId){
+    public ProcessGroupDTO createTemporaryTemplateFlow(@Nonnull final String templateId) {
         ProcessGroupDTO temporaryTemplateInspectionGroup = null;
         //first get the parent temp group
-        Optional<ProcessGroupDTO> group = nifiRestClient.processGroups().findByName("root",TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME,false,false);
-        if(!group.isPresent()){
-            temporaryTemplateInspectionGroup =  nifiRestClient.processGroups().create("root",TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME);
-        }
-        else {
+        Optional<ProcessGroupDTO> group = nifiRestClient.processGroups().findByName("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME, false, false);
+        if (!group.isPresent()) {
+            temporaryTemplateInspectionGroup = nifiRestClient.processGroups().create("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME);
+        } else {
             temporaryTemplateInspectionGroup = group.get();
         }
 
         //next create the temp group
         snapshotControllerServiceReferences();
-        ProcessGroupDTO tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(),"template_"+System.currentTimeMillis());
-        FlowSnippetDTO snippet = instantiateFlowFromTemplate(tempGroup.getId(),templateId);
+        ProcessGroupDTO tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        FlowSnippetDTO snippet = instantiateFlowFromTemplate(tempGroup.getId(), templateId);
         identifyNewlyCreatedControllerServiceReferences();
         tempGroup.setContents(snippet);
 

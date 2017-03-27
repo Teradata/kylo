@@ -307,7 +307,7 @@ public class ExportImportTemplateService {
                         statusMessage.update("Validation Error: Unable to import Template " + templateName + ".  It already exists in NiFi.");
                         statusMessage.complete(false);
                     } else {
-                        statusMessage.update("Validated the NiFi template.  The template " + templateName + " will be overwritten in NiFi");
+                        statusMessage.update("Validated the NiFi template. ");
                         statusMessage.complete(true);
                     }
                 } else {
