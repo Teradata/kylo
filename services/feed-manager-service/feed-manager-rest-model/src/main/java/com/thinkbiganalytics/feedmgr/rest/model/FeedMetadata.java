@@ -36,6 +36,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -168,6 +169,9 @@ public class FeedMetadata implements UIFeed {
     }
 
     public List<NifiProperty> getProperties() {
+        if(properties == null){
+            properties = new ArrayList<NifiProperty>();
+        }
         return properties;
     }
 

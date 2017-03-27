@@ -24,14 +24,22 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.InMemoryFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.InMemoryFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.InMemoryFeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -40,7 +48,10 @@ import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
@@ -61,9 +72,13 @@ import com.thinkbiganalytics.security.AccessController;
 import org.mockito.Mockito;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.springframework.cloud.config.server.encryption.EncryptionController;
+import org.springframework.cloud.config.server.encryption.SingleTextEncryptorLocator;
+import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.security.Principal;
 import java.util.Properties;
@@ -174,8 +189,6 @@ public class TestSpringConfiguration {
     public Repository repository() {
         return Mockito.mock(Repository.class);
     }
-
-    ;
 
     @Bean
     public TransactionManagerLookup txnLookup() {
@@ -334,5 +347,73 @@ public class TestSpringConfiguration {
     @Bean
     NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
         return new NiFiPropertyDescriptorTransformV1();
+    }
+
+
+    @Bean
+    RegisteredTemplateUtil registeredTemplateUtil(){
+        return new RegisteredTemplateUtil();
+    }
+    @Bean
+    RegisteredTemplateService registeredTemplateService() {
+        return new RegisteredTemplateService();
+    }
+
+    @Bean
+    FeedModelTransform feedModelTransform(){
+        return new FeedModelTransform();
+    }
+
+    @Bean
+    CategoryModelTransform categoryModelTransform(){
+        return new CategoryModelTransform();
+    }
+
+    @Bean
+    FeedManagerCategoryProvider feedManagerCategoryProvider(){
+        return new Mockito().mock(FeedManagerCategoryProvider.class);
+    }
+    @Bean
+    FeedManagerTemplateProvider feedManagerTemplateProvider(){
+        return new Mockito().mock(FeedManagerTemplateProvider.class);
+    }
+
+    @Bean(name = "hiveJdbcTemplate")
+    JdbcTemplate hiveJdbcTemplate(){
+        return new Mockito().mock(JdbcTemplate.class);
+    }
+    @Bean(name="kerberosHiveConfiguration")
+    KerberosTicketConfiguration kerberosHiveConfiguration(){
+        return new KerberosTicketConfiguration();
+    }
+
+    @Bean
+    HadoopSecurityGroupProvider hadoopSecurityGroupProvider(){
+        return new Mockito().mock(HadoopSecurityGroupProvider.class);
+    }
+
+    @Bean
+    HiveService hiveService(){
+        return new Mockito().mock(HiveService.class);
+    }
+
+    @Bean
+    TemplateModelTransform templateModelTransform(){
+        return new TemplateModelTransform();
+    }
+
+    @Bean
+    EncryptionService encryptionService(){
+        return new EncryptionService();
+    }
+
+    @Bean
+    TextEncryptorLocator textEncryptorLocator() {
+        return new SingleTextEncryptorLocator(null);
+    }
+
+    @Bean
+    EncryptionController encryptionController(){
+        return new EncryptionController(textEncryptorLocator());
     }
 }
