@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -168,6 +169,12 @@ public class BaseCategory implements Category {
 
     @Override
     public Set<RoleMembership> getRoleMemberships() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Optional<RoleMembership> getRoleMembership(String roleName) {
         // TODO Auto-generated method stub
         return null;
     }

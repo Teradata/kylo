@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
  */
 
 import java.security.Principal;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,11 +51,24 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
     public static final String GROUPS = "tba:groups";
     public static final String USERS = "tba:users";
     
-    private JcrAllowedActions allowedActions;
+    private transient JcrAllowedActions allowedActions;
 
-    public static Object create(Node node, Node rNode) {
-        // TODO Auto-generated method stub
-        return null;
+    public static JcrRoleMembership create(Node parentNode, Node roleNode, JcrAllowedActions allowed) {
+        // This is a no-op if the membership already exists in the SNS nodes
+        return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
+                        .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, allowed))
+                        .filter(memshp -> memshp.getRole().getSystemName().equals(JcrUtil.getName(roleNode)))
+                        .findFirst()
+                        .orElseGet(() -> {
+                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, JcrRoleMembership.class, roleNode, allowed);
+                        });
+    }
+    
+    public static Optional<JcrRoleMembership> find(Node parentNode, String roleName, JcrAllowedActions allowed) {
+        return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
+                        .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, allowed))
+                        .filter(memshp -> memshp.getRole().getSystemName().equals(roleName))
+                        .findFirst();
     }
 
     /**
@@ -63,6 +77,17 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
      */
     public JcrRoleMembership(Node node, JcrAllowedActions allowed) {
         super(node);
+        this.allowedActions = allowed;
+    }
+    
+    /**
+     * Wraps a parent node containing the tba:accessControlled mixin.
+     * @param node the parent entity node
+     */
+    public JcrRoleMembership(Node node, Node roleNode, JcrAllowedActions allowed) {
+        super(node);
+        JcrPropertyUtil.setProperty(node, ROLE, roleNode);
+        this.allowedActions = allowed;
     }
 
     /* (non-Javadoc)

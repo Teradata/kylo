@@ -172,6 +172,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
             } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
                 this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedDetails.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
                 this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedData.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
+                JcrAccessControlUtil.removePermissions(this.feed.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             }
         });
     }

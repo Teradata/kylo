@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.api.security;
 
+import java.util.Optional;
 import java.util.Set;
 
 /*-
@@ -34,6 +35,8 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 public interface AccessControlled {
     
     Set<RoleMembership> getRoleMemberships();
+    
+    Optional<RoleMembership> getRoleMembership(String roleName);
 
     AllowedActions getAllowedActions();
 }

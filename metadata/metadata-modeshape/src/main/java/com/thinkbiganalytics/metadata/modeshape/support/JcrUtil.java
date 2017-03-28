@@ -151,9 +151,12 @@ public class JcrUtil {
         }
     }
 
-    public static List<Node> getNodeList(Node parent, String property) {
+    /**
+     * Gets the nodes in a same-name-sibling node set with the given name and returns them as a list.
+     */
+    public static List<Node> getNodeList(Node parent, String name) {
         return StreamSupport
-            .stream(getInterableChildren(parent, property).spliterator(), false)
+            .stream(getInterableChildren(parent, name).spliterator(), false)
             .collect(Collectors.toList());
     }
     
@@ -288,15 +291,15 @@ public class JcrUtil {
         return toJcrObject(node, nodeType, new DefaultObjectTypeResolver<T>(type));
     }
 
-    public static <T extends JcrObject> T toJcrObject(Node node, String nodeType, JcrObjectTypeResolver<T> typeResolver) {
+    public static <T extends JcrObject> T toJcrObject(Node node, String nodeType, JcrObjectTypeResolver<T> typeResolver, Object... args) {
         try {
             if (nodeType == null || node.isNodeType(nodeType)) {
-                T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(node), node);
+                T entity = constructNodeObject(node, typeResolver.resolve(node), args);
                 return entity;
             } else {
                 throw new MetadataRepositoryException("Unable to instanciate object of node type: " + nodeType);
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | RepositoryException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to instanciate object from node: " + node, e);
         }
     }
@@ -346,7 +349,7 @@ public class JcrUtil {
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
-    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, NodeType nodeType, JcrObjectTypeResolver<T> typeResolver) {
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, NodeType nodeType, JcrObjectTypeResolver<T> typeResolver, Object... args) {
         List<T> list = new ArrayList<>();
         try {
             javax.jcr.NodeIterator nodeItr = null;
@@ -360,12 +363,12 @@ public class JcrUtil {
                     Node n = nodeItr.nextNode();
 
                     if (nodeType == null || n.isNodeType(nodeType.getName())) {
-                        T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(n), n);
+                        T entity = constructNodeObject(n, typeResolver.resolve(n), args);
                         list.add(entity);
                     }
                 }
             }
-        } catch (RepositoryException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
         return list;
@@ -374,23 +377,19 @@ public class JcrUtil {
     /**
      * Get a creates a Wrapper object around the given node
      */
-    public static <T extends JcrObject> T getJcrObject(Node node, Class<T> type) {
-        T entity = null;
-        try {
-            entity = ConstructorUtils.invokeConstructor(type, node);
-        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            throw new MetadataRepositoryException("Failed to wrap the given node", e);
-        }
-        return entity;
+    public static <T extends JcrObject> T getJcrObject(Node node, Class<T> type, Object... args) {
+        return constructNodeObject(node, type, args);
     }
 
     /**
      * Get a child node relative to the parentNode and create the Wrapper object
      */
-    public static <T extends JcrObject> T getJcrObject(Node parentNode, String name, Class<T> type) {
+    public static <T extends JcrObject> T getJcrObject(Node parentNode, String name, Class<T> type, Object... args) {
         try {
             Node n = parentNode.getNode(name);
-            return getJcrObject(n, type);
+            return getJcrObject(n, type, args);
+        } catch (PathNotFoundException e) {
+            return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }

@@ -407,7 +407,12 @@ public class BaseFeed implements Feed {
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    @Override
+    public Optional<RoleMembership> getRoleMembership(String roleName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
     
     @Override
     public String getJson() {

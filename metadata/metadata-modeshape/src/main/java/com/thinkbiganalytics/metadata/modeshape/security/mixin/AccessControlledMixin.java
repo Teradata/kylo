@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.mixin;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,13 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
     }
     
     @Override
+    default Optional<RoleMembership> getRoleMembership(String roleName) {
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        
+        return JcrRoleMembership.find(getNode(), roleName, allowed).map(RoleMembership.class::cast);
+    }
+    
+    @Override
     default AllowedActions getAllowedActions() {
         return getJcrAllowedActions();
     }
@@ -66,11 +74,11 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
     }
 
     default void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner, List<SecurityRole> roles) {
-        roles.forEach(rNode -> JcrRoleMembership.create(getNode(), ((JcrSecurityRole) rNode).getNode()));
-        
         JcrAllowedActions allowed = getJcrAllowedActions();
         prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);
+        
+        roles.forEach(role -> JcrRoleMembership.create(getNode(), ((JcrSecurityRole) role).getNode(), allowed));
     }
 
     Class<? extends JcrAllowedActions> getJcrAllowedActionsType();

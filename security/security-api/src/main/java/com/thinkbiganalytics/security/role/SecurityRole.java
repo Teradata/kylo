@@ -35,6 +35,7 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 public interface SecurityRole {
     
     // Entity names
+    String SERVICES = "services";
     String FEED = "feed";
     String CATEGORY = "category";
     String TEMPLATE = "template";

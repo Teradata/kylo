@@ -29,11 +29,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -43,24 +44,29 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 /**
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class })
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class JcrFeedRolesTest {
     
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");
+    private static final UsernamePrincipal TEST_USER3 = new UsernamePrincipal("tester3");
 
     @Inject
     private MetadataAccess metadata;
@@ -70,10 +76,15 @@ public class JcrFeedRolesTest {
     
     @Inject
     private FeedProvider feedProvider;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
 
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
     
+    private JcrTool tool = new JcrTool(true, System.out);
+
     private String categoryName;
     private Feed.ID idA;
     private Feed.ID idB;
@@ -81,14 +92,23 @@ public class JcrFeedRolesTest {
     
     @Before
     public void createFeeds() {
-        categoryName = metadata.commit(() -> {
+        this.categoryName = metadata.commit(() -> {
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
+            
+            this.roleProvider.createRole(SecurityRole.FEED, "editor", "Editor", "Can edit feeds")
+                .setPermissions(FeedAccessControl.EDIT_DETAILS, FeedAccessControl.ENABLE_DISABLE, FeedAccessControl.EXPORT);
+            this.roleProvider.createRole(SecurityRole.FEED, "viewer", "Viewer", "Can view feeds only")
+                .setPermissions(FeedAccessControl.ACCESS_FEED);
+            
             Category cat = categoryProvider.ensureCategory("test");
             cat.getAllowedActions().enableAll(TEST_USER1);
             cat.getAllowedActions().enableAll(TEST_USER2);
+            
             return cat.getName();
         }, JcrMetadataAccess.SERVICE);
+        
+        metadata.commit(() -> tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata/security/roles/feed"), JcrMetadataAccess.SERVICE);
         
         this.idA = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedA");
@@ -96,7 +116,7 @@ public class JcrFeedRolesTest {
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
             return feed.getId();
-        }, TEST_USER1);
+        }, JcrMetadataAccess.SERVICE);
         
         this.idB = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedB");
@@ -104,7 +124,7 @@ public class JcrFeedRolesTest {
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
             return feed.getId();
-        }, TEST_USER2);
+        }, JcrMetadataAccess.SERVICE);
         
         this.idC = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedC");
@@ -112,78 +132,97 @@ public class JcrFeedRolesTest {
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
             return feed.getId();
-        }, TEST_USER2);
-    }
-    
-    @After
-    public void cleanup() {
-        metadata.commit(() -> { 
-            this.feedProvider.deleteFeed(idC);
-            this.feedProvider.deleteFeed(idB);
-            this.feedProvider.deleteFeed(idA);
-        }, MetadataAccess.SERVICE);
+        }, JcrMetadataAccess.SERVICE);
     }
     
     @Test
     public void testSeeOnlyOwnFeeds() {
+        metadata.commit(() -> {
+            this.feedProvider.findById(idA).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER1));
+            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER2));
+            this.feedProvider.findById(idB).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER1));
+            this.feedProvider.findById(idC).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER2));
+        }, JcrMetadataAccess.SERVICE);
+
         int feedCnt1 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER1);
         
-        assertThat(feedCnt1).isEqualTo(1);
+        assertThat(feedCnt1).isEqualTo(2);
         
         int feedCnt2 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER2);
         
         assertThat(feedCnt2).isEqualTo(2);
+        
+        int feedCnt3 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER3);
+        
+        assertThat(feedCnt3).isEqualTo(0);
     }
     
     @Test
-    public void testSeeOwnFeedContentOnly() {
+    public void testAddMembership() {
         metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
             
-            assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
-            assertThat(feedA.getJson()).isNotNull();
-            assertThat(feedA.getState()).isNotNull();
+            assertThat(feedA).isNull();
             
             Feed feedB = this.feedProvider.getFeed(idB);
             
             assertThat(feedB).isNull();
-        }, TEST_USER1);
-    }
-    
-    @Test
-    public void testLimitRelationshipResults() {
+        }, TEST_USER3);
+        
         metadata.commit(() -> {
+            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER3));
+        }, JcrMetadataAccess.SERVICE);
+        
+        metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
-            Feed feedB = this.feedProvider.getFeed(idB);
-            Feed feedC = this.feedProvider.getFeed(idC);
             
-            feedC.addDependentFeed(feedA);
-            feedC.addDependentFeed(feedB);
-        }, MetadataAccess.SERVICE);
-        
-        metadata.read(() -> {
-            Feed feedC = this.feedProvider.getFeed(idC);
-            List<Feed> deps = feedC.getDependentFeeds();
-                            
-            assertThat(deps).hasSize(1).extracting("id").contains(this.idB);
-        }, TEST_USER2);
+            assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
+            assertThat(feedA.getJson()).isNull();
+            assertThat(feedA.getState()).isNull();
+            
+            Feed feedB = this.feedProvider.getFeed(idB);
+            
+            assertThat(feedB.getDescription()).isNotNull().isEqualTo("Feed B");
+            assertThat(feedB.getJson()).isNotNull();
+            assertThat(feedB.getState()).isNotNull();
+        }, TEST_USER3);
     }
     
     @Test
-    public void testSummaryOnlyRead() {
+    public void testRemoveMembership() {
         metadata.commit(() -> {
-            Feed feed = this.feedProvider.findById(idB);
-            feed.getAllowedActions().enable(TEST_USER1, FeedAccessControl.ACCESS_FEED);
-        }, TEST_USER2);
+            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER3));
+        }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
-            Feed feed = this.feedProvider.findById(idB);
+            Feed feedA = this.feedProvider.getFeed(idA);
             
-            assertThat(feed.getName()).isNotNull().isEqualTo("FeedB");
-            assertThat(feed.getCategory()).isNotNull().hasFieldOrPropertyWithValue("name", this.categoryName);
+            assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
+            assertThat(feedA.getJson()).isNull();
+            assertThat(feedA.getState()).isNull();
             
-            assertThat(feed.getJson()).isNull();
-            assertThat(feed.getState()).isNull();
-        }, TEST_USER1);
+            Feed feedB = this.feedProvider.getFeed(idB);
+            
+            assertThat(feedB.getDescription()).isNotNull().isEqualTo("Feed B");
+            assertThat(feedB.getJson()).isNotNull();
+            assertThat(feedB.getState()).isNotNull();
+        }, TEST_USER3);
+        
+        metadata.commit(() -> {
+            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.removeMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.removeMember(TEST_USER3));
+        }, JcrMetadataAccess.SERVICE);
+        
+        metadata.read(() -> {
+            Feed feedA = this.feedProvider.getFeed(idA);
+            
+            assertThat(feedA).isNull();
+            
+            Feed feedB = this.feedProvider.getFeed(idB);
+            
+            assertThat(feedB).isNull();
+        }, TEST_USER3);
     }
 }
