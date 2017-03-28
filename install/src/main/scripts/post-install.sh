@@ -327,7 +327,14 @@ echo "    - Install kylo-spark-shell application"
 cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/kylo/kylo-services/conf --driver-java-options -Dlog4j.configuration=log4j-spark.properties $rpmInstallDir/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerKyloSparkShell
+KYLO_DRIVER_CLASS_PATH=/opt/kylo/kylo-services/conf
+if [[ -n \$SPARK_CONF_DIR ]]; then
+        CLASSPATH_FROM_SPARK_CONF=$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
+        if [[ -n \$CLASSPATH_FROM_SPARK_CONF ]]; then
+                KYLO_DRIVER_CLASS_PATH=\${KYLO_DRIVER_CLASS_PATH}:\$CLASSPATH_FROM_SPARK_CONF
+        fi
+fi
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties /opt/kylo/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
 EOF
 chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 echo "   - Created kylo-spark-shell script '$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh'"
