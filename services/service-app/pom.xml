@@ -426,11 +426,11 @@
       <artifactId>mariadb-java-client</artifactId>
       <version>1.5.7</version>
     </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.0.0</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.postgresql</groupId>-->
+      <!--<artifactId>postgresql</artifactId>-->
+      <!--<version>42.0.0</version>-->
+    <!--</dependency>-->
 
 
     <!-- mail -->
