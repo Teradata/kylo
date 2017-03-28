@@ -7,6 +7,6 @@
     <include file="overrides/uuid-type.xml" relativeToChangelogFile="true"/>
 
     <include file="changelog/0.0.0/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/0.8.0/changelog.xml" relativeToChangelogFile="true"/>
+    <!--<include file="changelog/0.8.0/changelog.xml" relativeToChangelogFile="true"/>-->
 
 </databaseChangeLog>
