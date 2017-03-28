@@ -24,13 +24,21 @@ package com.thinkbiganalytics.security.role;
  */
 
 import java.security.Principal;
+import java.util.Collection;
 
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  * Defines a role used for representing a set of predefined permissions.
  */
 public interface SecurityRole {
+    
+    // Entity names
+    String FEED = "feed";
+    String CATEGORY = "category";
+    String TEMPLATE = "template";
+    
     
     Principal getPrincipal();
     
@@ -41,4 +49,8 @@ public interface SecurityRole {
     String getDescription();
     
     AllowedActions getAllowedActions();
+    
+    void setPermissions(Action... actions);
+    
+    void setPermissions(Collection<Action> actions);
 }

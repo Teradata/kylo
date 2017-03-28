@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
+import javax.jcr.nodetype.NodeType;
 
 import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -36,7 +37,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         Session session = JcrMetadataAccess.getActiveSession();
         Path rolePath = SecurityPaths.rolePath(entityName, roleName);
         
-        if (JcrUtil.hasNode(JcrMetadataAccess.getActiveSession(), rolePath.toString())) {
+        if (JcrUtil.hasNode(session, rolePath.toString())) {
             throw new SecurityRoleAlreadyExistsException(entityName, roleName);
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {
@@ -45,7 +46,10 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
             }
             
             Node entityNode = JcrUtil.getNode(session, rolePath.getParent().toString());
-            return JcrUtil.getOrCreateNode(entityNode, roleName, JcrSecurityRole.NODE_TYPE, JcrSecurityRole.class);
+            JcrSecurityRole role = JcrUtil.getOrCreateNode(entityNode, roleName, JcrSecurityRole.NODE_TYPE, JcrSecurityRole.class);
+            role.setTitle(title == null ? roleName : title);
+            role.setDescription(descr);
+            return role;
         }
     }
 
@@ -57,12 +61,13 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         Session session = JcrMetadataAccess.getActiveSession();
         Path entityPath = SecurityPaths.roleEntityPath(entityName);
         
-        if (JcrUtil.hasNode(JcrMetadataAccess.getActiveSession(), entityPath.toString())) {
+        if (! JcrUtil.hasNode(session, entityPath.toString())) {
             // TODO create new exception
             throw new MetadataException("No role entity found with the specified name: " + entityName);
         } else {
-            Node entityNode = JcrUtil.getNode(session, entityPath.getParent().toString());
-            return JcrUtil.getJcrObjects(entityNode, JcrSecurityRole.NODE_TYPE, JcrSecurityRole.class).stream()
+            Node entityNode = JcrUtil.getNode(session, entityPath.toString());
+            NodeType type = JcrUtil.getNodeType(session, JcrSecurityRole.NODE_TYPE);
+            return JcrUtil.getJcrObjects(entityNode, type, JcrSecurityRole.class).stream()
                             .map(SecurityRole.class::cast)
                             .collect(Collectors.toList());
         }
@@ -76,7 +81,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         Session session = JcrMetadataAccess.getActiveSession();
         Path rolePath = SecurityPaths.rolePath(entityName, roleName);
         
-        if (JcrUtil.hasNode(JcrMetadataAccess.getActiveSession(), rolePath.toString())) {
+        if (JcrUtil.hasNode(session, rolePath.toString())) {
             JcrSecurityRole role = JcrUtil.getJcrObject(JcrUtil.getNode(session, rolePath.toString()), JcrSecurityRole.class);
             return Optional.of(role);
         } else {
@@ -97,7 +102,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         Session session = JcrMetadataAccess.getActiveSession();
         Path rolePath = SecurityPaths.rolePath(entityName, roleName);
         
-        if (JcrUtil.hasNode(JcrMetadataAccess.getActiveSession(), rolePath.toString())) {
+        if (JcrUtil.hasNode(session, rolePath.toString())) {
             Node entityNode = JcrUtil.getNode(session, rolePath.getParent().toString());
             return JcrUtil.removeNode(entityNode, roleName);
         } else {
@@ -126,14 +131,10 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         Session session = JcrMetadataAccess.getActiveSession();
         Path rolePath = SecurityPaths.rolePath(entityName, roleName);
         
-        if (JcrUtil.hasNode(JcrMetadataAccess.getActiveSession(), rolePath.toString())) {
+        if (JcrUtil.hasNode(session, rolePath.toString())) {
             JcrSecurityRole role = JcrUtil.getJcrObject(JcrUtil.getNode(session, rolePath.toString()), JcrSecurityRole.class);
-            Node actionsNode = role.getAllowedActionsNode();
             
-            JcrActionTreeBuilder<JcrAbstractActionsBuilder> bldr = new JcrActionTreeBuilder<>(actionsNode, null);
-            actions.forEach(action -> bldr.action(action));
-            bldr.add();
-            
+            role.setPermissions(actions);
             return Optional.of(role);
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {

@@ -24,6 +24,8 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
  */
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
 
 import javax.jcr.Node;
 
@@ -31,8 +33,10 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAbstractActionsBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionTreeBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.RolePrincipal;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -44,18 +48,12 @@ public class JcrSecurityRole extends JcrObject implements SecurityRole {
 
     public static final String NODE_TYPE = "tba:securityRole";
     
-    public static final String NAME = "tba:systemName";
     public static final String TITLE = "jcr:title";
     public static final String DESCR = "jcr:description";
     public static final String ALLOWED_ACTIONS = "tba:allowedActions";
 
     public JcrSecurityRole(Node node) {
         super(node);
-    }
-    
-    public JcrSecurityRole(Node node, String name) {
-        super(node);
-        setProperty(NAME, name);
     }
 
     /* (non-Javadoc)
@@ -71,7 +69,7 @@ public class JcrSecurityRole extends JcrObject implements SecurityRole {
      */
     @Override
     public String getSystemName() {
-        return getProperty(NAME, String.class);
+        return JcrPropertyUtil.getName(getNode());
     }
 
     /* (non-Javadoc)
@@ -97,9 +95,36 @@ public class JcrSecurityRole extends JcrObject implements SecurityRole {
     public AllowedActions getAllowedActions() {
         return JcrUtil.getJcrObject(getNode(), ALLOWED_ACTIONS, JcrAllowedActions.class);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.role.SecurityRole#setPermissions(com.thinkbiganalytics.security.action.Action[])
+     */
+    @Override
+    public void setPermissions(Action... actions) {
+        setPermissions(Arrays.asList(actions));
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.role.SecurityRole#setPermissions(java.util.Collection)
+     */
+    @Override
+    public void setPermissions(Collection<Action> actions) {
+        Node actionsNode = getAllowedActionsNode();
+        JcrActionTreeBuilder<JcrAbstractActionsBuilder> bldr = new JcrActionTreeBuilder<>(actionsNode, null);
+        
+        actions.forEach(action -> bldr.action(action));
+        bldr.add();
+    }
+
+    public void setTitle(String title) {
+        setProperty(TITLE, title);
+    }
+
+    public void setDescription(String descr) {
+        setProperty(DESCR, descr);
+    }
 
     public Node getAllowedActionsNode() {
         return JcrUtil.getNode(getNode(), ALLOWED_ACTIONS);
     }
-
 }

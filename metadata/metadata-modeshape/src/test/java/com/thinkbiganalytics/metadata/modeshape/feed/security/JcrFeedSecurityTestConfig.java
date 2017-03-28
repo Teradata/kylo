@@ -44,7 +44,7 @@ import javax.inject.Inject;
  *
  */
 @Configuration
-public class JcrFeedAllowedActionsTestConfig {
+public class JcrFeedSecurityTestConfig {
 
     @Inject
     private ActionsModuleBuilder builder;

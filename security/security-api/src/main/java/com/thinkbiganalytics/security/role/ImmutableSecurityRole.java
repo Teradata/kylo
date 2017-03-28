@@ -24,8 +24,10 @@ package com.thinkbiganalytics.security.role;
  */
 
 import java.security.Principal;
+import java.util.Collection;
 
 import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
@@ -88,6 +90,16 @@ public class ImmutableSecurityRole implements SecurityRole {
     @Override
     public AllowedActions getAllowedActions() {
         return this.allowedActions;
+    }
+
+    @Override
+    public void setPermissions(Action... actions) {
+        throw new UnsupportedOperationException("Updating permissions on this immutable roles is not supported");
+    }
+
+    @Override
+    public void setPermissions(Collection<Action> actions) {
+        throw new UnsupportedOperationException("Updating permissions on this immutable roles is not supported");
     }
 
 }

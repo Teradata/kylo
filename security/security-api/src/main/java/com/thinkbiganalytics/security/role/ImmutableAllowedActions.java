@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.thinkbiganalytics.security.action.Action;
@@ -48,7 +49,10 @@ public class ImmutableAllowedActions implements AllowedActions {
     }
     
     public ImmutableAllowedActions(List<AllowableAction> actions) {
-        this.availableActions = Collections.unmodifiableList(actions);
+        List<AllowableAction> newActions = actions.stream()
+                        .map(ImmutableAllowableAction::new)
+                        .collect(Collectors.toList());
+        this.availableActions = Collections.unmodifiableList(newActions);
     }
 
     /* (non-Javadoc)
@@ -155,5 +159,13 @@ public class ImmutableAllowedActions implements AllowedActions {
     @Override
     public boolean disableAll(Principal principal) {
         throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return this.availableActions.toString();
     }
 }

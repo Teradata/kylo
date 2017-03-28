@@ -57,7 +57,7 @@ import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class })
-public class JcrFeedAllowedActionsTest {
+public class JcrFeedRolesTest {
     
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");

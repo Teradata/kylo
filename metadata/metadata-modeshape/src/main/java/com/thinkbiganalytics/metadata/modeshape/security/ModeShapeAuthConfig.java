@@ -13,6 +13,7 @@ import javax.jcr.security.Privilege;
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 
@@ -44,10 +45,12 @@ import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRoleProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 /**
  * Defines ModeShape-managed implementations of security infrastructure components.
@@ -67,6 +70,11 @@ public class ModeShapeAuthConfig {
     @Bean
     public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
         return new JcrAllowedEntityActionsProvider();
+    }
+
+    @Bean
+    public SecurityRoleProvider roleProvider() {
+        return new JcrSecurityRoleProvider();
     }
 
     @Bean

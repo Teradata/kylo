@@ -157,26 +157,32 @@ public class JcrUtil {
             .collect(Collectors.toList());
     }
     
-    public static boolean hasNode(Session session, String absParentPath) {
+    public static Node getRootNode(Session session) {
         try {
-            session.getNode(absParentPath);
-            return true;
+            return session.getRootNode();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the root node", e);
+        }
+    }
+    
+    public static boolean hasNode(Session session, String absPath) {
+        try {
+            if (absPath.startsWith("/")) {
+                session.getNode(absPath);
+                return true;
+            } else {
+                return session.getRootNode().hasNode(absPath);
+            }
         } catch (PathNotFoundException e) {
             return false;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + absParentPath, e);
+            throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + absPath, e);
         }
     }
 
     public static boolean hasNode(Session session, String absParentPath, String name) {
-        try {
-            Node parentNode = session.getNode(absParentPath);
-            return hasNode(parentNode, name);
-        } catch (PathNotFoundException e) {
-            return false;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
-        }
+        Node parentNode = getNode(session, absParentPath);
+        return hasNode(parentNode, name);
     }
 
     public static boolean hasNode(Node parentNode, String name) {
@@ -187,11 +193,15 @@ public class JcrUtil {
         }
     }
 
-    public static Node getNode(Session session, String path) {
+    public static Node getNode(Session session, String absPath) {
         try {
-            return session.getRootNode().getNode(path);
+            if (absPath.startsWith("/")) {
+                return session.getNode(absPath);
+            } else {
+                return session.getRootNode().getNode(absPath);
+            }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node at the path: " + path, e);
+            throw new MetadataRepositoryException("Failed to retrieve the Node at the path: " + absPath, e);
         }
     }
 
@@ -231,7 +241,7 @@ public class JcrUtil {
 
             while (itr.hasNext()) {
                 Node node = (Node) itr.next();
-                if (node.getPrimaryNodeType().isNodeType(nodeType)) {
+                if (node.isNodeType(nodeType)) {
                     list.add(node);
                 }
             }

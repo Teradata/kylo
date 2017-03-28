@@ -85,4 +85,11 @@ public class ImmutableAllowableAction implements AllowableAction {
                              getSubActions().stream().flatMap(AllowableAction::stream));
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return this.action.getSystemName() + ": " + this.subactions.size();
+    }
 }
