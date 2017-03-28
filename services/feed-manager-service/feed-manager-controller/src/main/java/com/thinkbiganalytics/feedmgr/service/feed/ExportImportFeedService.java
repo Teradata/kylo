@@ -45,6 +45,7 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -317,6 +318,15 @@ public class ExportImportFeedService {
                         metadata.setActive(false);
                         metadata.setState(FeedMetadata.STATE.DISABLED.name());
                     }
+
+                    //remap any preconditions to this new feed/category name.
+                    if (metadata.getSchedule().hasPreconditions()) {
+                        metadata.getSchedule().getPreconditions().stream()
+                            .flatMap(preconditionRule -> preconditionRule.getProperties().stream())
+                            .filter(fieldRuleProperty -> PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name().equals(fieldRuleProperty.getType()))
+                            .forEach(fieldRuleProperty -> fieldRuleProperty.setValue(metadata.getCategoryAndFeedName()));
+                    }
+
                     return metadataService.createFeed(metadata);
                 });
                 if (nifiFeed != null) {
