@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
+import java.lang.reflect.InvocationTargetException;
+
 /*-
  * #%L
  * thinkbig-operational-metadata-upgrade-service
@@ -21,20 +23,26 @@ package com.thinkbiganalytics.metadata.upgrade;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.persistence.Column;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -57,6 +65,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.metadata.jpa.app.JpaKyloVersion;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
@@ -66,8 +75,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-@Order(PostMetadataConfigAction.LATE_ORDER + 100)
-public class UpgradeKyloService implements PostMetadataConfigAction {
+//@Order(PostMetadataConfigAction.LATE_ORDER + 100)
+//public class UpgradeKyloService implements PostMetadataConfigAction {
+public class UpgradeKyloService {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
     @Inject
@@ -89,10 +99,46 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
 
+//    
+//    public void run() {
+//        upgradeCheck();
+//    };
+    public KyloVersion getCurrentVersion() {
+        KyloVersion version = kyloVersionProvider.getKyloVersion();
+        return new Version(version.getMajorVersion(), version.getMinorVersion());
+    }
     
-    public void run() {
-        upgradeCheck();
-    };
+    public KyloVersion upgradeFrom(KyloVersion startingVersion) {
+        return metadataAccess.commit(() -> {
+            getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
+            
+            // TODO: This current implementation assumes all upgrading occurs from the single state found above.
+            // This should be changed to supporting a repeated upgrade path from starting ver->next ver->...->latest vers.
+            KyloVersion version = kyloVersionProvider.getKyloVersion();
+            return new Version(version.getMajorVersion(), version.getMinorVersion());
+        }, MetadataAccess.SERVICE);
+    }
+    
+    public Optional<UpgradeState> getUpgradeState(KyloVersion version) {
+        try {
+            String className = getPackageName(version) + ".UpgradeState";
+            @SuppressWarnings("unchecked")
+            Class<UpgradeState> upgradeClass = (Class<UpgradeState>) Class.forName(className);
+            return Optional.of(ConstructorUtils.invokeConstructor(upgradeClass));
+        } catch (ClassNotFoundException e) {
+            return Optional.empty();
+        } catch ( NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new IllegalStateException("Unable to load upgrade state for version: " + version, e);
+        }
+    }
+    
+    protected String getPackageName(KyloVersion version) {
+        return getClass().getPackage().getName() + ".version_" + createVersionTag(version);
+    }
+    
+    protected String createVersionTag(KyloVersion version) {
+        return version.getVersion().replaceAll("[.- ]", "_");
+    }
 
     /**
      * checks the upgrade for Kylo and updates the version if needed
@@ -321,6 +367,120 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         UserGroup newGroup = userProvider.ensureGroup(groupName);
         newGroup.setTitle(title);
         return newGroup;
+    }
+    
+    public static class Version implements KyloVersion {
+
+        private String majorVersion;
+        private String minorVersion;
+        private String description;
+
+
+        public Version(KyloVersion version) {
+            this(version.getMajorVersion(), version.getMinorVersion());
+        }
+
+        /**
+         * create a new version with a supplied major and minor version
+         */
+        public Version(String majorVersion, String minorVersion) {
+            this.majorVersion = majorVersion;
+            this.minorVersion = minorVersion;
+        }
+
+        /**
+         * update this version to the new passed in version
+         *
+         * @return the newly updated version
+         */
+        public KyloVersion update(KyloVersion v) {
+            setMajorVersion(v.getMajorVersion());
+            setMinorVersion(v.getMinorVersion());
+            return this;
+        }
+
+
+        /**
+         * Return the major.minor version string
+         *
+         * @return the major.minor version string
+         */
+        @Override
+        public String getVersion() {
+            return majorVersion + "." + minorVersion;
+        }
+
+        /**
+         * Return the major version of Kylo
+         *
+         * @return the major version
+         */
+        public String getMajorVersion() {
+            return this.majorVersion;
+        }
+
+        public void setMajorVersion(String majorVersion) {
+            this.majorVersion = majorVersion;
+        }
+
+        public String getMinorVersion() {
+            return this.minorVersion;
+        }
+
+        public void setMinorVersion(String minorVersion) {
+            this.minorVersion = minorVersion;
+        }
+
+        /**
+         * @return the major version number
+         */
+        @Override
+        public Float getMajorVersionNumber() {
+            if (getMajorVersion() != null) {
+                try {
+                    return Float.parseFloat(getMajorVersion());
+                } catch (NumberFormatException e) {
+                    throw new IllegalStateException("Cannot parse major version number", e);
+                }
+            } else {
+                return null;
+            }
+        }
+
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || ! (o instanceof KyloVersion)) {
+                return false;
+            }
+
+            KyloVersion that = (KyloVersion) o;
+
+            if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
+                return false;
+            }
+            return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = majorVersion != null ? majorVersion.hashCode() : 0;
+            result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
+            return result;
+        }
     }
 
 }
