@@ -76,13 +76,25 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             }
         };
 
-        // Translates expressions into Spark code
-        if (angular.isArray(FeedService.createFeedModel.dataTransformation.states) && FeedService.createFeedModel.dataTransformation.states.length > 0) {
-            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states, FeedService.createFeedModel.dataTransformation.datasources);
-            this.functionHistory = this.sparkShellService.getHistory();
-        } else {
-            this.sparkShellService = new SparkShellService(this.sql, null, FeedService.createFeedModel.dataTransformation.datasources);
-        }
+        /**
+         * Translates expressions into Spark code.
+         * @type {SparkShellService}
+         */
+        this.sparkShellService = function () {
+            var model = FeedService.createFeedModel.dataTransformation;
+            var source = (angular.isObject(self.sqlModel) && angular.isArray(model.datasourceIds)
+                          && (model.datasourceIds.length > 1 || (model.datasourceIds.length === 1 && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE)))
+                ? self.sqlModel
+                : self.sql;
+
+            if (angular.isArray(model.states) && model.states.length > 0) {
+                var service = new SparkShellService(source, model.states, model.datasources);
+                self.functionHistory = service.getHistory();
+                return service;
+            } else {
+                return new SparkShellService(source, null, model.datasources);
+            }
+        }();
 
         this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode

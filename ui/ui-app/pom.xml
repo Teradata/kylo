@@ -36,7 +36,7 @@
     </dependencies>
   </dependencyManagement>
 
-    <dependencies>
+  <dependencies>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -275,6 +275,28 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.searls</groupId>
+        <artifactId>jasmine-maven-plugin</artifactId>
+        <configuration>
+          <additionalContexts>
+            <context>
+              <contextRoot>assets</contextRoot>
+              <directory>${project.basedir}/src/main/resources/static/assets</directory>
+            </context>
+            <context>
+              <contextRoot>bower_components</contextRoot>
+              <directory>${project.basedir}/src/main/resources/static/bower_components</directory>
+            </context>
+            <context>
+              <contextRoot>js</contextRoot>
+              <directory>${project.basedir}/src/main/resources/static/js</directory>
+            </context>
+          </additionalContexts>
+          <customRunnerTemplate>${project.basedir}/src/test/javascript/index.html</customRunnerTemplate>
+        </configuration>
       </plugin>
 
     </plugins>

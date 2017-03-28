@@ -76,7 +76,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "
          * @private
          * @type {Array<string>}
          */
-        this.datasources_ = angular.copy(opt_datasources);
+        this.datasources_ = angular.isArray(opt_datasources) ? opt_datasources.filter(function (datasource) { return datasource.id !== VisualQueryService.HIVE_DATASOURCE; }) : null;
 
         /**
          * Transformation function definitions.
@@ -124,7 +124,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "
          * @private
          * @type {string}
          */
-        this.source_ = SparkDatasourceService.toScript(source, this.datasources_);
+        this.source_ = SparkDatasourceService.toScript(source, opt_datasources);
 
         /**
          * List of states.

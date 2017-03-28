@@ -20,7 +20,13 @@
 <div flex layout="column"
      ng-class="{'visual-query-auto-complete-centered':$vq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$vq.chartViewModel.data.nodes.length >0}">
     <div layout="row" flex layout-fill layout-align="center center" ng-hide="$vq.advancedMode" class="layout-padding-top-bottom">
-        <md-autocomplete flex="30"
+        <md-input-container style="right: 16px;" flex="5">
+            <md-select ng-model="$vq.model.selectedDatasourceId" placeholder="Data Source" ng-change="$vq.tablesAutocomplete.searchText = ''">
+                <md-option ng-repeat="datasource in $vq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
+            </md-select>
+        </md-input-container>
+        <div flex="30" layout="column" flex>
+            <md-autocomplete flex="30"
                              md-input-id="tables-auto-complete"
                              md-no-cache="$vq.tablesAutocomplete.noCache"
                              md-selected-item="$vq.tablesAutocomplete.selectedTable"
@@ -49,6 +55,8 @@
                     No tables matching "{{$vq.tablesAutocomplete.searchText}}" were found.  Try <a href="" ng-click="$vq.refreshAutocompleteCache()">refreshing</a> the cache.
                 </md-not-found>
             </md-autocomplete>
+            <div class="hint md-warn-text" ng-if="$vq.databaseConnectionError">Unable to connect to selected data source.</div>
+          </div>
           <md-button flex="5" ng-click="$vq.onAddTable()" class="md-raised md-accent" ng-disabled="!$vq.tablesAutocomplete.selectedTable">Add Table</md-button>
           <md-button flex="5" ng-click="$vq.toggleAdvancedMode()" class="md-raised">Edit SQL</md-button>
           <span flex-auto layout-align="end center">

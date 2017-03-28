@@ -57,7 +57,7 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
              * @return {Array.<JdbcDatasource>} the array of matching data sources
              */
             filterArrayByIds: function (ids, array) {
-                var idList = angular.isArray(ids) ? ids: [ids];
+                var idList = angular.isArray(ids) ? ids : [ids];
                 return array.filter(function (datasource) {
                     return (idList.indexOf(datasource.id) > -1);
                 });
@@ -87,15 +87,56 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             },
 
             /**
-             * Gets the ids for the specified data sources.
-             *
-             * @param {JdbcDatasource|Array.<JdbcDatasource>} datasources the data sources
+             * Gets the schema for the specified table.
+             * @param {string} id the data source id
+             * @param {string} table the table name
+             * @param {string} [opt_schema] the schema name
              */
-            getIds: function (datasources) {
-                var array = angular.isArray(datasources) ? datasources : [datasources];
-                return array.map(function (datasource) {
-                    return datasource.id;
-                });
+            getTableSchema: function (id, table, opt_schema) {
+                var options = {params: {}};
+                if (angular.isString(opt_schema)) {
+                    options.params.schema = opt_schema;
+                }
+
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
+                    .then(function (response) {
+                        return response.data;
+                    });
+            },
+
+            /**
+             * Lists the tables for the specified data source.
+             * @param {string} id the data source id
+             * @param {string} [opt_query] the table name query
+             */
+            listTables: function (id, opt_query) {
+                var options = {params: {}};
+                if (angular.isString(opt_query) && opt_query.length > 0) {
+                    options.params.tableName = "%" + opt_query + "%";
+                }
+
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
+                    .then(function (response) {
+                        // Get the list of tables
+                        var tables = [];
+                        if (angular.isArray(response.data)) {
+                            tables = response.data.map(function (table) {
+                                var schema = table.substr(0, table.indexOf("."));
+                                var tableName = table.substr(table.indexOf(".") + 1);
+                                return {schema: schema, tableName: tableName, fullName: table, fullNameLower: table.toLowerCase()};
+                            });
+                        }
+
+                        // Search for tables matching the query
+                        if (angular.isString(opt_query) && opt_query.length > 0) {
+                            var lowercaseQuery = opt_query.toLowerCase();
+                            return tables.filter(function (table) {
+                                return table.fullNameLower.indexOf(lowercaseQuery) !== -1;
+                            });
+                        } else {
+                            return tables;
+                        }
+                    });
             },
 
             /**

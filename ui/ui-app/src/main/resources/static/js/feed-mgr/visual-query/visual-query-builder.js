@@ -1,4 +1,4 @@
-define(['angular',"feed-mgr/visual-query/module-name"], function (angular,moduleName) {
+define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/module"], function (angular,moduleName) {
 
     var directive = function() {
         return {
@@ -19,9 +19,6 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         };
     };
 
-    /** Prefix for table aliases */
-    var TABLE_PREFIX = "tbl";
-
     var controller = function($scope, $log, $http, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService,
                               DatasourcesService) {
 
@@ -38,10 +35,16 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         self.availableDatasources = [{id: VisualQueryService.HIVE_DATASOURCE, name: "Hive"}];
 
         /**
-         * List of the data sources used in model.
-         * @type {Array.<JdbcDatasource>}
+         * Indicates that there was an error retrieving the list of tables.
+         * @type {boolean} true if there was an error or false otherwise
          */
-        self.selectedDatasources = [];
+        self.databaseConnectionError = false;
+
+        /**
+         * List of the data sources used in model.
+         * @type {Array.<string>}
+         */
+        self.selectedDatasourceIds = [];
 
         SideNavService.hideSideNav();
 
@@ -114,8 +117,17 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
 
             },
             querySearch: function(txt) {
-                return HiveService.queryTablesSearch(txt);
-
+                if (self.model.selectedDatasourceId === VisualQueryService.HIVE_DATASOURCE) {
+                    return HiveService.queryTablesSearch(txt);
+                } else {
+                    return DatasourcesService.listTables(self.model.selectedDatasourceId, txt)
+                        .then(function (tables) {
+                            self.databaseConnectionError = false;
+                            return tables;
+                        }, function () {
+                            self.databaseConnectionError = true;
+                        });
+                }
             },
             refreshCache: function(){
                 HiveService.init();
@@ -189,23 +201,29 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback, self.onDeleteSelectedCallback);
         }
 
+        this.setupFlowChartModel = setupFlowChartModel;
+
         /**
-         * Called after a user Adds a table to fetch the Columns and datatypes
-         * @param schema
-         * @param table
-         * @param callback
+         * Called after a user Adds a table to fetch the Columns and datatypes.
+         * @param {string} schema the schema name
+         * @param {string} table the table name
+         * @param callback the callback function
          * @returns {HttpPromise}
          */
         function getTableSchema(schema, table, callback) {
-            var successFn = function(response) {
-                callback(response.data);
-            };
-            var errorFn = function(err) {
+            var promise;
+            if (self.model.selectedDatasourceId === VisualQueryService.HIVE_DATASOURCE) {
+                promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas/" + schema + "/tables/" + table)
+                    .then(function (response) {
+                        return response.data;
+                    });
+            } else {
+                promise = DatasourcesService.getTableSchema(self.model.selectedDatasourceId, table, schema);
+            }
+
+            return promise.then(callback, function () {
                 self.loading = false;
-            };
-            var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas/" + schema + "/tables/" + table);
-            promise.then(successFn, errorFn);
-            return promise;
+            });
         }
 
         /**
@@ -237,8 +255,8 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var feedModel = FeedService.createFeedModel;
                 feedModel.dataTransformation.chartViewModel = angular.copy(self.chartViewModel.data);
                 feedModel.dataTransformation.sql = sql;
-                feedModel.dataTransformation.datasourceIds = DatasourcesService.getIds(self.selectedDatasources);
-                feedModel.dataTransformation.datasources = angular.copy(self.selectedDatasources);
+                feedModel.dataTransformation.datasourceIds = angular.copy(self.selectedDatasourceIds);
+                feedModel.dataTransformation.datasources = DatasourcesService.filterArrayByIds(self.selectedDatasourceIds, self.availableDatasources);
             } else {
                 self.isValid = false;
             }
@@ -383,6 +401,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         this.onTableClick = function(table) {
 
             //get attributes for table
+            var datasourceId = self.model.selectedDatasourceId;
             var nodeName = table.schema + "." + table.tableName;
             getTableSchema(table.schema, table.tableName, function(schemaData) {
                 //
@@ -396,12 +415,13 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var newNodeDataModel = {
                     name: nodeName,
                     id: nextNodeID++,
+                    datasourceId: datasourceId,
                     x: coord.x,
                     y: coord.y,
                     nodeAttributes: {
                         attributes: schemaData.fields,
-                        selected: [],
-                        sql: "`" + StringUtils.quoteSql(table.schema) + "`.`" + StringUtils.quoteSql(table.tableName) + "`"
+                        reference: [table.schema, table.tableName],
+                        selected: []
                     },
                     connectors: {
                         top: {},
@@ -473,221 +493,16 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         });
 
         /**
-         * Adds joins for the specified table to a SQL statement.
-         *
-         * @param {TableInfo} tableInfo the table to search for joins
-         * @param {TableJoinMap} graph the table join map
-         * @param {string[]} fromTables the list of tables to include in the FROM clause
-         * @param {string[]} joinClauses the list of JOIN clauses
-         */
-        function addTableJoins(tableInfo, graph, fromTables, joinClauses) {
-            // Add JOIN clauses for tables connected to this one
-            var edges = [];
-            var srcID = tableInfo.data.id;
-            graph[srcID].seen = true;
-
-            angular.forEach(graph[srcID].edges, function(connection, dstID) {
-                if (connection !== null) {
-                    joinClauses.push(getJoinSQL(tableInfo.data, graph[dstID].data, connection, graph));
-                    edges.push(dstID);
-                    graph[srcID].edges[dstID] = null;
-                    graph[dstID].edges[srcID] = null;
-                }
-            });
-
-            // Add table to FROM clause if it's the root of a JOIN tree
-            if (edges.length !== 0 && fromTables !== null) {
-                fromTables.push(tableInfo.data.nodeAttributes.sql + " " + TABLE_PREFIX + tableInfo.data.id);
-            }
-
-            // Add JOIN clauses for tables connected to child nodes
-            angular.forEach(edges, function(nodeID) {
-                addTableJoins(graph[nodeID], graph, null, joinClauses);
-            });
-        }
-
-        /**
-         * A map of node IDs to the node model and connections.
-         *
-         * @typedef {Object.<number, TableInfo>} TableJoinMap
-         */
-
-        /**
-         * A dictionary with the node model and connections.
-         *
-         * @typedef {{data: Object, edges: Object.<number, Object>, seen: boolean}} TableInfo
-         */
-
-        /**
-         * Creates a map indicating how tables may be joined. The key is the node ID and the value is a dictionary containing the node model and the connections for the joins.
-         *
-         * @returns {TableJoinMap} the table join map
-         */
-        function createTableJoinMap() {
-            var map = {};
-
-            // Add every node to the map
-            angular.forEach(self.chartViewModel.data.nodes, function(node) {
-                map[node.id] = {data: node, edges: {}, seen: false};
-            });
-
-            // Add edges to the map
-            angular.forEach(self.chartViewModel.data.connections, function(connection) {
-                map[connection.source.nodeID].edges[connection.dest.nodeID] = connection;
-                map[connection.dest.nodeID].edges[connection.source.nodeID] = connection;
-            });
-
-            return map;
-        }
-
-        /**
-         * Generates a list of possible aliases for the specified column.
-         *
-         * @param tableName the name of the table
-         * @param columnName the name of the column
-         * @returns {string[]} the list of aliases
-         */
-        function getColumnAliases(tableName, columnName) {
-            var aliases = [];
-            if (columnName !== "processing_dttm") {
-                aliases.push(columnName);
-            }
-            aliases.push(tableName.replace(/.*\./, "") + "_" + columnName, tableName.replace(".", "_") + "_" + columnName);
-            return aliases;
-        }
-
-        /**
-         * Generates the SQL for joining two tables. The destination table will be added to the SQL statement as part of the JOIN clause.
-         *
-         * @param {Object} src the node for the source table
-         * @param {Object} dst the node for the destination table
-         * @param {Object} connection the join description
-         * @param {TableJoinMap} graph the table join map
-         * @return {string} the JOIN statement
-         */
-        function getJoinSQL(src, dst, connection, graph) {
-            // Use default text if missing join keys
-            if (typeof(connection.joinKeys.destKey) === "undefined" || typeof(connection.joinKeys.sourceKey) === "undefined") {
-                return "JOIN " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id;
-            }
-
-            // Create JOIN clause
-            graph[dst.id].seen = true;
-
-            var sql = connection.joinType + " " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id + " ON " + TABLE_PREFIX + dst.id + ".`";
-            sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey);
-            sql += "` = " + TABLE_PREFIX + src.id + ".`";
-            sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey);
-            sql += "`";
-
-            // Add conditions for 'seen' tables
-            var conditions = _.values(graph[dst.id].edges)
-                    // Filter for tables already added in the SQL query
-                    .filter(function(edge) {
-                        return (edge != null && edge.source.nodeID != src.id && graph[edge.source.nodeID].seen && edge.dest.nodeID != src.id && graph[edge.dest.nodeID].seen);
-                    })
-                    // Build join condition
-                    .map(function(edge) {
-                        var condition = TABLE_PREFIX + edge.source.nodeID + ".`" + StringUtils.quoteSql(edge.joinKeys.sourceKey) + "` = ";
-                        condition += TABLE_PREFIX + edge.dest.nodeID + ".`" + StringUtils.quoteSql(edge.joinKeys.destKey) + "`";
-
-                        // Remove join from graph
-                        graph[edge.source.nodeID].edges[edge.dest.nodeID] = null;
-                        graph[edge.dest.nodeID].edges[edge.source.nodeID] = null;
-
-                        return condition;
-                    });
-            if (conditions.length > 0) {
-                sql += " AND " + conditions.join(" AND ");
-            }
-
-            return sql;
-        }
-
-        /**
          * Parses the tables on the canvas and returns a SQL string, along with populating the self.selectedColumnsAndTables array of objects.
          *
          * @returns {string|null} the SQL string or null if multiple data sources are used
          */
         function getSQLModel() {
-            // Check and reset state
-            self.selectedColumnsAndTables = [];
+            var builder = VisualQueryService.sqlBuilder(self.chartViewModel.data);
+            var sql = builder.build();
 
-            if (self.chartViewModel.data.nodes.length === 0) {
-                return "";
-            }
-
-            // Determine a unique alias for each column
-            var aliasCount = {};
-
-            angular.forEach(self.chartViewModel.data.nodes, function(node) {
-                angular.forEach(node.nodeAttributes.attributes, function(attr) {
-                    if (attr.selected) {
-                        angular.forEach(getColumnAliases(node.name, attr.name), function(alias) {
-                            aliasCount[alias] = (typeof(aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
-                        });
-                    }
-                });
-            });
-
-            // Build FROM and JOIN clauses
-            var fromTables = [];
-            var graph = createTableJoinMap();
-            var joinClauses = [];
-
-            angular.forEach(graph, function(node) {
-                if (_.size(node.edges) === 0) {
-                    fromTables.push(node.data.nodeAttributes.sql + " " + TABLE_PREFIX + node.data.id);
-                }
-                else {
-                    addTableJoins(node, graph, fromTables, joinClauses);
-                }
-            });
-
-            // Build SELECT statement
-            var select = "";
-
-            angular.forEach(self.chartViewModel.data.nodes, function(node) {
-                var table = TABLE_PREFIX + node.id;
-                angular.forEach(node.nodeAttributes.attributes, function(attr) {
-                    if (attr.selected) {
-                        // Determine column alias
-                        var alias = _.find(getColumnAliases(node.name, attr.name), function(name){ return (aliasCount[name] === 1) });
-                        if (typeof(alias) === "undefined") {
-                            var i = 0;
-                            do {
-                                ++i;
-                                alias = attr.name + "_" + i;
-                            } while (aliasCount[alias] > 0);
-                            aliasCount[alias] = 1;
-                        }
-
-                        // Add column to clause
-                        select += (select.length === 0) ? "SELECT " : ", ";
-                        select += table + ".`" + StringUtils.quoteSql(attr.name) + "`";
-                        if (alias !== attr.name) {
-                            select += " AS `" + StringUtils.quoteSql(alias) + "`";
-                        }
-                        self.selectedColumnsAndTables.push({
-                            column: attr.name,
-                            alias: TABLE_PREFIX + node.id, tableName: node.name,
-                            tableColumn: attr.name, dataType: attr.dataType
-                        });
-                    }
-                });
-            });
-
-            // Return SQL
-            var sql = "";
-
-            angular.forEach(fromTables, function(table) {
-                sql += (sql.length === 0) ? select + " FROM " : ", ";
-                sql += table;
-            });
-            angular.forEach(joinClauses, function(join) {
-                sql += " " + join;
-            });
-
+            self.selectedColumnsAndTables = builder.getSelectedColumnsAndTables();
+            self.selectedDatasourceIds = builder.getDatasourceIds();
             return sql;
         }
 
