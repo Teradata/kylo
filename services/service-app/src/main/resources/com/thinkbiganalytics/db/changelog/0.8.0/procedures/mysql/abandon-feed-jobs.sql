@@ -1,4 +1,8 @@
+DELIMITER ;
+
 DROP PROCEDURE IF EXISTS abandon_feed_jobs;
+
+DELIMITER $$
 
 CREATE PROCEDURE abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255), out res integer)
 BEGIN
@@ -19,3 +23,7 @@ WHERE BATCH_JOB_INSTANCE.JOB_NAME in ( SELECT checkFeed.NAME
 set res = 1;
 
 END
+
+$$
+
+DELIMITER ;

@@ -4,9 +4,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="overrides/uuid-type.xml" relativeToChangelogFile="true"/>
+    <include file="com/thinkbiganalytics/db/overrides/uuid-type.xml"/>
 
-    <include file="changelog/0.0.0/changelog.xml" relativeToChangelogFile="true"/>
-    <!--<include file="changelog/0.8.0/changelog.xml" relativeToChangelogFile="true"/>-->
+    <include file="com/thinkbiganalytics/db/changelog/0.0.0/changelog.xml"/>
+    <include file="com/thinkbiganalytics/db/changelog/0.8.0/changelog.xml"/>
 
 </databaseChangeLog>

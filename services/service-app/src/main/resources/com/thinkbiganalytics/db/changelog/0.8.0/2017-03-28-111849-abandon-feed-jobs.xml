@@ -4,12 +4,11 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
   <changeSet author="ru186002" id="5" dbms="mysql">
-    <createProcedure
-        path="procedures/mysql/abandon-feed-jobs.sql"
-        relativeToChangelogFile="true"/>
-    <createProcedure
-        path="procedures/postgresql/abandon-feed-jobs.sql"
-        relativeToChangelogFile="true"/>
+    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/abandon-feed-jobs.sql" />
+  </changeSet>
+
+  <changeSet author="ru186002" id="5" dbms="postgresql">
+    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/postgresql/abandon-feed-jobs.sql" />
   </changeSet>
 
 </databaseChangeLog>
