@@ -65,18 +65,6 @@ public class ModeShapeEngineConfig {
     private Environment environment;
 
 
-    @PreDestroy
-    public void stopEngine() throws InterruptedException, ExecutionException {
-        log.info("Stopping ModeShape engine...");
-        Future<Boolean> future = modeShapeEngine().shutdown();
-
-        if (future.get()) {
-            log.info("ModeShape engine stopped");
-        } else {
-            log.info("ModeShape engine not reported as stopped");
-        }
-    }
-
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
         return metadataRepoConfig().getTransactionManagerLookup();
@@ -106,7 +94,7 @@ public class ModeShapeEngineConfig {
         return config;
     }
 
-    @Bean
+    @Bean(destroyMethod="shutdown")
     public ModeShapeEngine modeShapeEngine() {
         ModeShapeEngine engine = new ModeShapeEngine();
         log.info("Starting ModeShape engine...");
