@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255))
+CREATE FUNCTION abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255))
   RETURNS integer AS $$
 BEGIN
 
