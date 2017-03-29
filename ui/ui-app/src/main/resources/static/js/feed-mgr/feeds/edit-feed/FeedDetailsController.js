@@ -17,7 +17,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
      * @param StateService
      */
     var controller = function ($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
-                               FileUpload, ConfigurationService) {
+                               FileUpload, ConfigurationService,EntityAccessControlDialogService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -177,7 +177,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
 
         this.showFeedUploadDialog = function() {
-
             $mdDialog.show({
                 controller: 'FeedUploadFileDialogController',
                 escapeToClose: false,
@@ -192,6 +191,20 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                         .hideDelay(3000)
                 );
             });
+        }
+
+        this.showAccessControlDialog = function(){
+
+            function onCancel(){
+                console.log('CANCELLED FROM FEED DETAILS')
+            }
+
+            function onSave(){
+                console.log('SAVED FROM FEED DETAILS')
+            }
+
+            EntityAccessControlDialogService.showAccessControlDialog(self.model,self.model.feedName,onSave,onCancel);
+
         }
 
 
@@ -444,7 +457,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService",controller]);
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService",controller]);
 
     angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
 });

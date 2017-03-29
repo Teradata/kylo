@@ -29,7 +29,10 @@ define(['angular',
         'feed-mgr/shared/nifi-property-input/nifi-property-input',
         'feed-mgr/shared/cron-expression-validator/cron-expression-validator',
         'feed-mgr/shared/cron-expression-preview/cron-expression-preview',
-        'feed-mgr/services/DatasourcesService'],function() {
+        'feed-mgr/services/DatasourcesService',
+        'feed-mgr/shared/cron-expression-preview/cron-expression-preview',
+        'feed-mgr/shared/entity-access-control/entity-access',
+        'feed-mgr/shared/entity-access-control/EntityAccessControlService'],function() {
 
 });
 
