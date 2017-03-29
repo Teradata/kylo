@@ -426,11 +426,12 @@
       <artifactId>mariadb-java-client</artifactId>
       <version>1.5.7</version>
     </dependency>
-    <dependency>
-      <groupId>postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>9.1-901-1.jdbc4</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.postgresql</groupId>-->
+      <!--<artifactId>postgresql</artifactId>-->
+      <!--<version>42.0.0</version>-->
+    <!--</dependency>-->
+
 
     <!-- mail -->
     <dependency>
@@ -456,6 +457,11 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <version>${liquibase.version}</version>
+    </dependency>
 
   </dependencies>
 

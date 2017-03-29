@@ -71,7 +71,7 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
 
     @Id
     @GeneratedValue
-    @Column(name = "id", columnDefinition = "binary(16)")
+    @Column(name = "id")
     private UUID id;
 
     @Transient

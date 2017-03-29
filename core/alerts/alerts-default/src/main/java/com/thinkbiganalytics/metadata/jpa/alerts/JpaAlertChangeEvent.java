@@ -53,7 +53,7 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Column(name = "CHANGE_TIME")
     private DateTime changeTime;
 
-    @Column(name = "USER", columnDefinition = "varchar(128)")
+    @Column(name = "USER_NAME", columnDefinition = "varchar(128)")
     private String username;
 
     @Enumerated(EnumType.STRING)

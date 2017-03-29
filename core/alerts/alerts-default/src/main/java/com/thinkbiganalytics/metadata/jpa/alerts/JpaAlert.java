@@ -259,7 +259,7 @@ public class JpaAlert implements Alert {
 
         private static final long serialVersionUID = 1L;
 
-        @Column(name = "id", columnDefinition = "binary(16)")
+        @Column(name = "id")
         private UUID value;
 
         public AlertId() {

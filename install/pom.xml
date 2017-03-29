@@ -169,6 +169,39 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>${liquibase.version}</version>
+        <configuration>
+          <propertyFileWillOverride>true</propertyFileWillOverride>
+          <propertyFile>../services/service-app/src/main/resources/application.properties</propertyFile>
+          <propertyFile>setup/sql/liquibase/liquibase.properties</propertyFile>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <!-- force to have latest version of liquibase, otherwise generates LONGBLOB instead of  binary(16)-->
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.2-GA</version>
+          </dependency>
+          <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-hibernate4</artifactId>
+            <version>${liquibase-hibernate4.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring.boot.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
       <!-- Generate THIRD-PARTY license file -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

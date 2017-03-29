@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 
 import org.joda.time.DateTime;
@@ -47,6 +48,10 @@ public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
     public JpaBatchJobExecutionStatusCounts(String status, Long count) {
         this.status = status;
         this.count = count;
+    }
+
+    public JpaBatchJobExecutionStatusCounts(BatchJobExecution.JobStatus status, Long count) {
+        this(status.name(), count);
     }
 
     public JpaBatchJobExecutionStatusCounts(String status, Integer year, Integer month, Integer day, Long count) {

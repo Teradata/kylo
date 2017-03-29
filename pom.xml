@@ -90,6 +90,10 @@
     <!-- Plugin Versions -->
     <plugin.surefire.version>2.19.1</plugin.surefire.version>
     <plugin.license.version>1.12</plugin.license.version>
+    <liquibase.version>3.5.3</liquibase.version>
+    <!--<liquibase.version>3.3.5</liquibase.version>-->
+    <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
+    <liquibase-hibernate4.version>3.5</liquibase-hibernate4.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -904,11 +908,11 @@
 
   <profiles>
     <profile>
-      <!--* Run Functional Tests (*FT.java) by selecting `integration-tests` Maven profile-->
+      <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
       <!--* Integration Tests are not run if profile is not selected-->
-      <!--mvn clean -Pfunctional-tests integration-test-->
+      <!--mvn clean -Pintegration-tests integration-test-->
 
-      <id>functional-tests</id>
+      <id>integration-tests</id>
       <build>
         <plugins>
           <plugin>

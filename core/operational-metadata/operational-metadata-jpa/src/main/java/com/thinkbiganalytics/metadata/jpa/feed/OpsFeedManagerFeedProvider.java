@@ -199,7 +199,8 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
             .where(jobExecution.startTime.goe(DateTime.now().minus(period))
                        .and(jobExecution.jobInstance.feed.name.eq(feedName)))
-            .groupBy(jobState, jobExecution.startYear,
+            .groupBy(jobExecution.status,
+                     jobExecution.startYear,
                      jobExecution.startMonth,
                      jobExecution.startDay);
 
