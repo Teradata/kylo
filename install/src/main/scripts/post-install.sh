@@ -329,7 +329,7 @@ cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
 KYLO_DRIVER_CLASS_PATH=/opt/kylo/kylo-services/conf
 if [[ -n \$SPARK_CONF_DIR ]]; then
-        CLASSPATH_FROM_SPARK_CONF=$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
+        CLASSPATH_FROM_SPARK_CONF=\$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
         if [[ -n \$CLASSPATH_FROM_SPARK_CONF ]]; then
                 KYLO_DRIVER_CLASS_PATH=\${KYLO_DRIVER_CLASS_PATH}:\$CLASSPATH_FROM_SPARK_CONF
         fi
