@@ -235,7 +235,7 @@ public class FeedManagerIT extends IntegrationTest {
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
-//        importSystemFeeds();
+        importSystemFeeds();
     }
 
     public void importSystemFeeds() {
