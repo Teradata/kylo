@@ -23,6 +23,9 @@ package com.thinkbiganalytics.policy;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.List;
  * Hold reference to the {@link StandardizationPolicy} and {@link ValidationPolicy} associated to a given field
  */
 public class FieldPolicy implements Serializable {
+
+    private static final Logger log = LoggerFactory.getLogger(FieldPolicy.class);
 
     private String table;
     private String field;
@@ -178,5 +183,16 @@ public class FieldPolicy implements Serializable {
                                                                                                                   ? "NULL"
                                                                                                                   : policies.size())
                + "]";
+    }
+
+    public ValidationPolicy getNotNullValidator() {
+        if ((validators !=null) && (validators.size() > 0)) {
+            for (ValidationPolicy validationPolicy: validators) {
+                if (validationPolicy.getClass().getName().equals("com.thinkbiganalytics.policy.validation.NotNullValidator")) {
+                    return validationPolicy;
+                }
+            }
+        }
+        return null;
     }
 }
