@@ -24,18 +24,28 @@ package com.thinkbiganalytics.metadata.api.app;
  * Provider to return/update metadata representing the current Kylo version deployed
  */
 public interface KyloVersionProvider {
+    
+    /**
+     * @return true if the current version is equal to the latest version
+     */
+    boolean isUpToDate();
 
     /**
      * Return the current Kylo version,
      *
      * @return the current kylo version deployed
      */
-    KyloVersion getKyloVersion();
+    KyloVersion getCurrentVersion();
+    
+    /**
+     * @return the latest version of kylo
+     */
+    KyloVersion getLatestVersion();
 
     /**
      * Routine to update the metadata storing the latest version of Kylo depoloyed.
      *
      * @return the updated version
      */
-    KyloVersion updateToCurrentVersion();
+    KyloVersion updateToLatestVersion();
 }

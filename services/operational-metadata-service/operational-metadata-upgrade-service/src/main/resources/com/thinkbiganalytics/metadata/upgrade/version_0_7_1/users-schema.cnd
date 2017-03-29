@@ -1,0 +1,32 @@
+/*
+ * Defines the following structure and node types:
+ * 
+ *      "users"
+ *          user*
+ *      "groups"
+ *          group*
+ */
+<jcr = 'http://www.jcp.org/jcr/1.0'>
+<nt='http://www.jcp.org/jcr/nt/1.0'>
+<mix='http://www.jcp.org/jcr/mix/1.0'>
+<tba = 'http://thinkbiganalytics.com/metadata'>
+<usr = 'http://thinkbiganalytics.com/pcng/usr/1.0'>
+
+
+[tba:usersFolder] > nt:folder
+	+ * (tba:user)
+	
+[tba:groupsFolder] > nt:folder
+	+ * (tba:userGroup)
+
+[tba:userGroupable] mixin
+    - tba:groups (WEAKREFERENCE) multiple < 'tba:userGroup'
+
+[tba:user] > tba:extensibleEntity, tba:userGroupable, mix:referenceable
+    - tba:displayName (STRING)
+    - tba:email (STRING)
+    - tba:enabled (BOOLEAN) = 'true' autocreated mandatory
+    - tba:password (STRING)
+
+[tba:userGroup] > tba:extensibleEntity, mix:title, tba:userGroupable, mix:referenceable
+    - tba:enabled (BOOLEAN) = 'true' autocreated mandatory

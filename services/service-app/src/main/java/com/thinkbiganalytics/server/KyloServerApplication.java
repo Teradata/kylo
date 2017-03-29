@@ -1,5 +1,24 @@
 package com.thinkbiganalytics.server;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.config.server.EnableConfigServer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+
 /*-
  * #%L
  * thinkbig-service-app
@@ -21,23 +40,9 @@ package com.thinkbiganalytics.server;
  */
 
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
+import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.metadata.upgrade.UpgradeKyloConfig;
 import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.config.server.EnableConfigServer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication
@@ -48,8 +53,19 @@ import java.util.concurrent.Executors;
 @ComponentScan("com.thinkbiganalytics")
 public class KyloServerApplication implements SchedulingConfigurer {
 
+    private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
+        boolean upgradeComplete = false;
+        do {
+            log.info("Upgrading...");
+            ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
+            KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
+            upgradeComplete = upgrader.upgrade();
+            cxt.close();
+        } while (! upgradeComplete);
+        log.info("Upgrading complete");
+        
         SpringApplication.run("classpath:application-context.xml", args);
     }
 

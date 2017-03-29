@@ -1,0 +1,49 @@
+{
+    "name" : "metadata-repository",
+    "node-types" : ["metadata-schema.cnd", "users-schema.cnd"],
+    "workspaces" : {
+        "predefined" : ["metadata"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "username" : "<anonymous>",
+            "roles" : ["readonly"],
+            "useOnFailedLogin" : false
+        },
+        "providers" : [
+            {
+                "name" : "Spring Security-Based Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationProvider"
+            },
+            {
+                "name" : "Override Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider"
+            },
+            {
+                "name" : "DB Admin Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider"
+            }
+        ]
+    },
+    "storage" : {
+        "persistence" : {
+            "type" : "db",
+            "connectionUrl": "${modeshape.datasource.url}",
+            "driver": "${modeshape.datasource.driverClassName}",
+            "username": "${modeshape.datasource.username}",
+            "password": "${modeshape.datasource.password}",
+            "createOnStart" : true,
+            "dropOnExit" : false
+        },
+        "binaryStorage" : {
+            "type" : "file",
+            "directory": "/var/thinkbig/modeshape",
+            "minimumBinarySizeInBytes" : 5000000
+        }
+    },
+    "garbageCollection" : {
+        "initialTime": "17:00"
+    }
+}

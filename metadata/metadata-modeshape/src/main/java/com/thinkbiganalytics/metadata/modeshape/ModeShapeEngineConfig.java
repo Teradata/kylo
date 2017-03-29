@@ -39,10 +39,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.jcr.Repository;
 
@@ -55,7 +52,7 @@ public class ModeShapeEngineConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
 
-    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+    public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password"

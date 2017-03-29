@@ -40,7 +40,6 @@ import javax.annotation.PostConstruct;
 /**
  * Provider for accessing and updating the Kylo version
  */
-@Service
 public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaKyloVersionProvider.class);
@@ -58,9 +57,13 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
         this.kyloVersionRepository = kyloVersionRepository;
     }
 
+    @Override
+    public boolean isUpToDate() {
+        return getCurrentVersion().equals(getLatestVersion());
+    }
 
     @Override
-    public KyloVersion getKyloVersion() {
+    public KyloVersion getCurrentVersion() {
 
         List<JpaKyloVersion> versions = kyloVersionRepository.findAll();
         if (versions != null && !versions.isEmpty()) {
@@ -70,10 +73,10 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     }
 
     @Override
-    public KyloVersion updateToCurrentVersion() {
-        if (getCurrentVersion() != null) {
-            KyloVersion currentVersion = parseVersionString(getCurrentVersion());
-            KyloVersion existingVersion = getKyloVersion();
+    public KyloVersion updateToLatestVersion() {
+        if (getLatestVersion() != null) {
+            KyloVersion currentVersion = getLatestVersion();
+            KyloVersion existingVersion = getCurrentVersion();
             if (existingVersion == null) {
                 existingVersion = currentVersion;
                 kyloVersionRepository.save((JpaKyloVersion) existingVersion);
@@ -86,6 +89,11 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
             return existingVersion;
         }
         return null;
+    }
+    
+    @Override
+    public KyloVersion getLatestVersion() {
+        return parseVersionString(getCurrentVersionString());
     }
 
     private KyloVersion parseVersionString(String versionString) {
@@ -109,14 +117,14 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @PostConstruct
     private void init() {
-        getCurrentVersion();
+        getLatestVersion();
     }
 
 
     /**
      * Parse the version.txt file located in the classpath to obtain the current version installed
      */
-    private String getCurrentVersion() {
+    private String getCurrentVersionString() {
         if (currentVersion == null) {
             Properties prop = new Properties();
             String versionFile = "version.txt";

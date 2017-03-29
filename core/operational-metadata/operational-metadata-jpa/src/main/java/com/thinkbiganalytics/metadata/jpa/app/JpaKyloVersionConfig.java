@@ -1,11 +1,8 @@
-/**
- * 
- */
-package com.thinkbiganalytics.metadata.upgrade;
+package com.thinkbiganalytics.metadata.jpa.app;
 
 /*-
  * #%L
- * kylo-operational-metadata-upgrade-service
+ * kylo-operational-metadata-jpa
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -22,27 +19,19 @@ package com.thinkbiganalytics.metadata.upgrade;
  * limitations under the License.
  * #L%
  */
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.net.URL;
-
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 /**
  *
  */
-public interface UpgradeState { 
-    
-    KyloVersion getStartingVersion();
+@Configuration
+public class JpaKyloVersionConfig {
 
-    void upgradeFrom(KyloVersion startingVersion);
-
-    default URL getResource(String name) {
-        String relName = name.startsWith("/") ? name.substring(1, name.length()) : name;
-        return getClass().getResource(relName);
+    @Bean
+    public KyloVersionProvider versionProvider(KyloVersionRepository kyloVersionRepository) {
+        return new JpaKyloVersionProvider(kyloVersionRepository);
     }
-    
-    default KyloVersion asVersion(String major, String minor) {
-        return new UpgradeKyloService.Version(major, minor);
-    }
-
 }

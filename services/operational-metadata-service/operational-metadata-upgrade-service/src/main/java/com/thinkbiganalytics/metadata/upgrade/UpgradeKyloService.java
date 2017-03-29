@@ -104,24 +104,22 @@ public class UpgradeKyloService {
 //        upgradeCheck();
 //    };
     public KyloVersion getCurrentVersion() {
-        KyloVersion version = kyloVersionProvider.getKyloVersion();
+        KyloVersion version = kyloVersionProvider.getCurrentVersion();
         return new Version(version.getMajorVersion(), version.getMinorVersion());
     }
     
-    public KyloVersion upgradeFrom(KyloVersion startingVersion) {
-        return metadataAccess.commit(() -> {
-            getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
-            
-            // TODO: This current implementation assumes all upgrading occurs from the single state found above.
-            // This should be changed to supporting a repeated upgrade path from starting ver->next ver->...->latest vers.
-            KyloVersion version = kyloVersionProvider.getKyloVersion();
-            return new Version(version.getMajorVersion(), version.getMinorVersion());
-        }, MetadataAccess.SERVICE);
+    public boolean upgradeFrom(KyloVersion startingVersion) {
+        getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
+        
+        // TODO: This current implementation assumes all upgrading occurs from the single state found above.
+        // This should be changed to supporting a repeated upgrade path from starting ver->next ver->...->latest vers.
+        kyloVersionProvider.updateToLatestVersion();
+        return kyloVersionProvider.isUpToDate();
     }
     
     public Optional<UpgradeState> getUpgradeState(KyloVersion version) {
         try {
-            String className = getPackageName(version) + ".UpgradeState";
+            String className = getPackageName(version) + ".UpgradeAction";
             @SuppressWarnings("unchecked")
             Class<UpgradeState> upgradeClass = (Class<UpgradeState>) Class.forName(className);
             return Optional.of(ConstructorUtils.invokeConstructor(upgradeClass));
@@ -137,14 +135,14 @@ public class UpgradeKyloService {
     }
     
     protected String createVersionTag(KyloVersion version) {
-        return version.getVersion().replaceAll("[.- ]", "_");
+        return version.getVersion().replaceAll("[.-]", "_");
     }
 
     /**
      * checks the upgrade for Kylo and updates the version if needed
      */
     public void upgradeCheck() {
-        KyloVersion version = kyloVersionProvider.getKyloVersion();
+        KyloVersion version = kyloVersionProvider.getCurrentVersion();
         
         if (version == null) {
             setupFreshInstall();
@@ -157,7 +155,7 @@ public class UpgradeKyloService {
         // migrateUnusedFeedProperties();
         version = metadataAccess.commit(() -> {
             //ensure/update the version
-            KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
+            KyloVersion kyloVersion = kyloVersionProvider.updateToLatestVersion();
             return kyloVersion;
         }, MetadataAccess.SERVICE);
 
@@ -342,7 +340,7 @@ public class UpgradeKyloService {
             }
 
             //update the version
-            return kyloVersionProvider.updateToCurrentVersion();
+            return kyloVersionProvider.updateToLatestVersion();
         }), MetadataAccess.SERVICE);
     }
 
@@ -480,6 +478,14 @@ public class UpgradeKyloService {
             int result = majorVersion != null ? majorVersion.hashCode() : 0;
             result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
             return result;
+        }
+        
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString() {
+            return getMajorVersion() + "." + getMinorVersion();
         }
     }
 
