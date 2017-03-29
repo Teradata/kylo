@@ -26,13 +26,13 @@ done
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
 
     # Only supporting MySql at this time
-    database_type=1
-#    while [[ ! $database_type =~ ^[1]{1}$ ]]; do
-#        echo "Which database (Enter the number)?"
-#        echo "1) MySQL"
-#        echo "2) Postgress (Not yet supported)"
-#        read -p "> " database_type;
-#    done
+    database_type=0
+    while [[ ! ${database_type} =~ ^[1-2]{1}$ ]]; do
+        echo "Which database (Enter the number)?"
+        echo "1) MySQL"
+        echo "2) PostgresSQL"
+        read -p "> " database_type;
+    done
 
     while : ; do
         echo
@@ -47,7 +47,14 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
             hostname=localhost
         fi
 
-        ! mysql -h $hostname -u $username --password=$password -e ";" || break;
+        if [ "$database_type" == "1"  ] ; then
+            echo "Creating MySQL database 'kylo'"
+            ! mysql -h ${hostname} -u ${username} --password=${password} -e "create database if not exists kylo character set utf8 collate utf8_general_ci;" || break;
+        fi
+        if [ "$database_type" == "2"  ] ; then
+            echo "Creating PostgreSQL database 'kylo'"
+            ! PGPASSWORD=${password} createdb -U kylo -h ${hostname} -E UTF8 -e kylo || break;
+        fi
     done
 fi
 
@@ -86,18 +93,18 @@ else
     cd /opt/kylo/setup
 fi
 
-if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
-    echo "Running the database scripts"
-
-    if [ "$database_type" == "1"  ] ; then
-        echo "Installing for MySQL"
-        ./sql/mysql/setup-mysql.sh $hostname $username $password
-    fi
-    if [ "$database_type" == "2"  ] ; then
-        echo "Installation for Postgres is not yet supported"
-    fi
-
-fi
+#if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
+#    echo "Running the database scripts"
+#
+#    if [ "$database_type" == "1"  ] ; then
+#        echo "Installing for MySQL"
+#        ./sql/mysql/setup-mysql.sh $hostname $username $password
+#    fi
+#    if [ "$database_type" == "2"  ] ; then
+#        echo "Installation for Postgres is not yet supported"
+#    fi
+#
+#fi
 
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
