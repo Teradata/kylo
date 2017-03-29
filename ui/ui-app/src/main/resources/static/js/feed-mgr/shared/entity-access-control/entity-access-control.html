@@ -1,10 +1,6 @@
 
 <div layout-padding>
     <div layout="row">
-    <div >
-    <h2 class="md-title">Owner</h2>
-    </div>
-    <span flex="5"></span>
     <div flex>
       <md-autocomplete flex="45" required ng-disabled="vm.model.id != null"
                        md-input-name="owner"
@@ -24,6 +20,7 @@
         <md-not-found>
           No users matching "{{vm.ownerAutoComplete.searchText}}" were found.
         </md-not-found>
+        <div class="hint">Define a user who owns this entity</div>
         <div ng-messages="vm.theForm.owner.$error">
           <div ng-message="required">Required.</div>
         </div>
@@ -34,12 +31,12 @@
 
 
 
-  <div layout="row">
+  <div layout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
     <div flex="40" style="align-self:center;">
-      <h2 class="md-title">Roles</h2>
+      <span class="item-title" style="color:grey">Roles</span>
     </div>
     <div flex class="">
-      <h2 class="md-title">Members</h2>
+      <span class="item-title" style="color:grey">Members</span>
     </div>
   </div>
   <div layout="column" ng-repeat="role in vm.model.roles">
@@ -57,7 +54,7 @@
               md-search-text="role.ui.members.searchText"
               md-items="item in vm.queryUsersAndGroups(role.ui.members.searchText)"
               md-item-text="item.title"
-              md-no-cache="true"
+              md-no-cache="true"ap
               placeholder="Add Group access">
             <span md-highlight-text="role.ui.members.searchText">{{item.title}}</span>
             <md-item-template>

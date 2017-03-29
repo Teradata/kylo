@@ -50,7 +50,7 @@
  * @property {Array.<string>} users the users that should have their permissions changed
  */
 define(['angular','services/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).factory("AccessControlService",["$http","$q","CommonRestUrlService", function ($http, $q, CommonRestUrlService) {
+    return  angular.module(moduleName).factory("AccessControlService",["$http","$q","CommonRestUrlService","UserGroupService", function ($http, $q, CommonRestUrlService,UserGroupService) {
 
         var DEFAULT_MODULE = "services";
 
@@ -214,7 +214,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             executingAllowedActions:{},
 
 
-
+            getCurrentUser:function(){
+                return UserGroupService.getCurrentUser();
+            },
 
             /**
              * Gets the list of allowed actions for the specified users or groups. If no users or groups are specified, then gets the allowed actions for the current user.

@@ -165,7 +165,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         },
                         userProperties: [],
                         options: {skipHeader: false},
-                        active: true
+                        active: true,
+                        accessControl:{roles:[],owner:null}
                     };
                 },
                 /**

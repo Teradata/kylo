@@ -22,6 +22,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         var self = this;
 
+
        if(angular.isUndefined(this.theForm)){
            this.theForm = {};
        }
@@ -35,6 +36,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         if(angular.isUndefined(this.model.owner)){
             this.model.owner = null;
+            //assign it the current user
+            UserGroupService.getCurrentUser().then(function(user){
+                self.model.owner = user;
+            })
         }
 
         /**

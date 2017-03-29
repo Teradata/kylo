@@ -19,8 +19,10 @@
  * @property {string|null} title human-readable name
  */
 define(['angular','services/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory("UserGroupService", ['$http', 'CommonRestUrlService', function ($http, CommonRestUrlService) {
+    angular.module(moduleName).factory("UserGroupService", ['$http','$q', 'CommonRestUrlService', function ($http, $q,CommonRestUrlService) {
 
+
+        var currentUser = null;
         /**
          * Interacts with the Users REST API.
          *
@@ -31,6 +33,31 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         }
 
         angular.extend(UserGroupService.prototype, {
+
+            getCurrentUser: function(){
+                var deferred = $q.defer();
+
+                var user = {
+                    "displayName": null,
+                    "email": null,
+                    "enabled": false,
+                    "groups": [],
+                    "systemName": null
+                };
+
+                if(this.currentUser == null){
+                    $http.get("/proxy/v1/about/me").then(function (response) {
+                            currentUser = response.data;
+                            deferred.resolve(currentUser);
+                    },function(response) {
+                        deferred.reject(response);
+                    });
+                }
+                else {
+                    deferred.resolve(currentUser);
+                }
+                return deferred.promise;
+            },
 
             /**
              * Gets metadata for the specified group.
