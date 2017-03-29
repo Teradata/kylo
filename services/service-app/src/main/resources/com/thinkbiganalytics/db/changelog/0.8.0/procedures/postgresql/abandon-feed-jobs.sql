@@ -17,7 +17,7 @@
 -- limitations under the License.
 -- #L%
 -- -
-CREATE FUNCTION abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255))
+CREATE OR REPLACE FUNCTION abandon_feed_jobs(in feed varchar(255), in exitMessage varchar(255))
   RETURNS integer AS $$
 BEGIN
 

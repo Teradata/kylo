@@ -24,16 +24,13 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
 
-  <changeSet author="ru186002" id="1">
+  <changeSet author="ru186002" id="1" dbms="mysql">
     <dropProcedure procedureName="abandon_feed_jobs"/>
-  </changeSet>
-
-  <changeSet author="ru186002" id="2" dbms="mysql">
     <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/abandon-feed-jobs.sql" />
   </changeSet>
 
-  <changeSet author="ru186002" id="3" dbms="postgresql">
-    <createProcedure replaceIfExists="true" path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/postgresql/abandon-feed-jobs.sql" />
+  <changeSet author="ru186002" id="2" dbms="postgresql">
+    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/postgresql/abandon-feed-jobs.sql" />
   </changeSet>
 
 </databaseChangeLog>
