@@ -58,7 +58,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
         var DEFAULT_MODULE = "services";
 
-        var allowedServiceActions = [];
+        var currentUser = null;
+
+        var ROLE_CACHE = [];
 
         /**
          * Interacts with the Access Control REST API.
@@ -86,15 +88,54 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
             initialized: false,
 
+            ACCESS_MODULES:{
+                SERVICES:"services"
+            },
+
             /**
              * Initialize the service
              */
             init:function(){
                 var self = this;
-              this.getUserAllowedActions(DEFAULT_MODULE,true).then(function(actions){
-                  self.initialized = true;
-              }) ;
+
+                //build the user access and role/permission cache
+                var requests = {userActions:this.getUserAllowedActions(DEFAULT_MODULE,true),roles:this.getRoles(), currentUser:this.getCurrentUser()};
+
+                $q.all(requests).then(function(response){
+                    self.initialized = true;
+                    currentUser= response.currentUser;
+                });
+
             },
+            hasEntityAccess:function(requiredPermissions,entity){
+
+                //all entities should have the object .accessControl with the correct {owner:systemName,roles:[{name:'role1'},{name:'role2'}]}
+                //ASSUMES initialize will build up ROLE_CACHE
+
+                var permissions = [];
+
+                if(entity.accessControl == undefined){
+                    return false;
+                }
+                //short circuit if the owner matches
+                if(entity.accessControl.owner == currentUser.systemName){
+                    return true;
+                }
+                //check the permissions on the entity roles
+               _.each(entity.accessControl.roles,function(role){
+                    var rolePermissions = ROLE_CACHE[role] != undefined ? ROLE_CACHE[role].permissions : [];
+                    permissions.concat(rolePermissions);
+                });
+
+               return this.hasAnyAction(requiredPermissions,permissions);
+            },
+
+            /**
+             * Determines if a user has access to a give ui-router state transition
+             * This is accessed via the 'routes.js' ui-router listener
+             * @param transition a ui-router state transition.
+             * @returns {boolean} true if has access, false if access deined
+             */
             hasAccess: function (transition) {
                 var self = this;
                 var valid = false;
@@ -128,11 +169,13 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 return valid;
 
             },
-
+            /**
+             * Gets the current user from the server
+             * @returns {*}
+             */
             getCurrentUser: function () {
                 return UserGroupService.getCurrentUser();
             },
-
             /**
              * Gets the list of allowed actions for the specified users or groups. If no users or groups are specified, then gets the allowed actions for the current user.
              *
@@ -233,15 +276,15 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
              */
             hasAnyAction: function (names, actions) {
                 var self = this;
-                var valid = _.find(names, function (name) {
+                var valid = _.some(names, function (name) {
                     return self.hasAction(name.trim(), actions);
                 });
-                return valid != undefined;
+                return valid;
             },
 
             /**
              * returns a promise with a value of true/false if the user has any of the required permissions
-             * @param requiredPermissions
+             * @param requiredPermissions array of required permission strings
              */
             doesUserHavePermission: function (requiredPermissions) {
                 var self = this;
@@ -249,7 +292,6 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
                 self.getUserAllowedActions()
                     .then(function (actionSet) {
-
                         var allowed = self.hasAnyAction(requiredPermissions, actionSet.actions);
                         d.resolve(allowed);
                     });
@@ -314,6 +356,26 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     }
                     return response.data;
                 });
+            },
+            /**
+             * Gets the roles from the server with their assigned permissions
+             * TODO should it populate a map of {entityType: rolesArr} ??
+             */
+            getRoles:function(){
+                var df = $q.defer();
+                var rolesArr = [];
+                if(ROLE_CACHE.length >0) {
+                    df.resolve(angular.copy(ROLE_CACHE));
+                }
+                else {
+                    //TODO CALL OUT TO SERVER via REST endpoint to get all roles and permissions
+                    rolesArr.push({systemName: 'readOnly', name: 'Read Only', permissions: ["perm1", "perm2"]});
+                    rolesArr.push({systemName: 'editor', name: 'Editor', permissions: ["perm1", "perm2"]});
+
+                    ROLE_CACHE = rolesArr;
+                    df.resolve(rolesArr);
+                }
+                return df.promise;
             }
         });
 

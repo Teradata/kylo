@@ -8,6 +8,12 @@
  *
  * <div ng-if-permission="a_permission, b_permission">
  *
+ *
+ * For Entity Level accesc you can also supplie the Access Controlled Entity
+ *
+ *
+ * <div ng-if-permission="a_permission, b_permission", entity="vm.feedModel">
+ *
  */
 define(['angular','common/module-name','kylo-services'], function (angular,moduleName) {
 
@@ -66,44 +72,55 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
                  * @param entity optional entity
                  */
                 function check(permissions,entity){
-                    AccessControlService.getUserAllowedActions()
-                        .then(function (actionSet) {
 
-                            if (AccessControlService.hasAnyAction(permissions, actionSet.actions)) {
-                                if (!childScope) {
-                                    $transclude(function (clone, newScope) {
-                                        childScope = newScope;
-                                        clone[clone.length++] = $compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
-                                        // Note: We only need the first/last node of the cloned nodes.
-                                        // However, we need to keep the reference to the jqlite wrapper as it might be changed later
-                                        // by a directive with templateUrl when its template arrives.
-                                        block = {
-                                            clone: clone
-                                        };
-                                        $animate.enter(clone, $element.parent(), $element);
-                                    });
-                                }
-                            } else {
-                                if (previousElements) {
-                                    previousElements.remove();
-                                    previousElements = null;
-                                }
-                                if (childScope) {
-                                    childScope.$destroy();
-                                    childScope = null;
-                                }
-                                if (block) {
-                                    previousElements = getBlockNodes(block.clone);
-                                    $animate.leave(previousElements).done(function (response) {
-                                        if (response !== false) previousElements = null;
-                                    });
-                                    block = null;
-                                }
-                            }
+                    if(angular.isDefined(entity)){
+                        validate(AccessControlService.hasEntityAccess(permissions));
+                    }
+                    else {
+                    AccessControlService.getUserAllowedActions(AccessControlService.ACCESS_MODULES.SERVICES,true)
+                        .then(function (actionSet) {
+                            var valid = AccessControlService.hasAnyAction(permissions, actionSet.actions);
+                            validate(valid);
                         },true);
                 }
 
 
+            }
+
+            function validate(valid){
+                if(valid){
+                    if (!childScope) {
+                        $transclude(function (clone, newScope) {
+                            childScope = newScope;
+                            clone[clone.length++] = $compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
+                            // Note: We only need the first/last node of the cloned nodes.
+                            // However, we need to keep the reference to the jqlite wrapper as it might be changed later
+                            // by a directive with templateUrl when its template arrives.
+                            block = {
+                                clone: clone
+                            };
+                            $animate.enter(clone, $element.parent(), $element);
+                        });
+                    }
+                }
+                else {
+                    if (previousElements) {
+                        previousElements.remove();
+                        previousElements = null;
+                    }
+                    if (childScope) {
+                        childScope.$destroy();
+                        childScope = null;
+                    }
+                    if (block) {
+                        previousElements = getBlockNodes(block.clone);
+                        $animate.leave(previousElements).done(function (response) {
+                            if (response !== false) previousElements = null;
+                        });
+                        block = null;
+                    }
+                }
+                }
             }
         };
     }];

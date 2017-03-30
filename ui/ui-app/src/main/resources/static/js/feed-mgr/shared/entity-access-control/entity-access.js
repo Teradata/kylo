@@ -19,7 +19,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         };
     };
 
-    var controller = function($q, UserGroupService){
+    var controller = function($q, UserGroupService,AccessControlService){
 
         var self = this;
 
@@ -39,12 +39,21 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             this.model.roles = [];
         }
 
-        if(angular.isUndefined(this.model.owner)){
+        if(angular.isUndefined(this.model.owner) || this.model.owner == null){
             this.model.owner = null;
             //assign it the current user
+            var requests = {currentUser:UserGroupService.getCurrentUser(),allUsers:getAllUsers()};
+            $q.all(requests).then(function(response){
+                    var matchingUsers = filterCollection(response.allUsers,response.currentUser.systemName,['_lowerDisplayName','_lowerSystemName']);
+                    if(matchingUsers){
+                        self.model.owner = matchingUsers[0];
+                    }
+            })
+            /*
             UserGroupService.getCurrentUser().then(function(user){
                 self.model.owner = user;
-            })
+            });
+            */
         }
 
         /**
@@ -126,7 +135,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             var df = $q.defer();
             getAllUsers().then(function(users){
 
-                var matchingUsers = filterCollection(users,query,['_lowername']);
+                var matchingUsers = filterCollection(users,query,['_lowerDisplayName','_lowerSystemName']);
                 df.resolve(matchingUsers);
             });
             return df.promise;
@@ -153,7 +162,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             return df.promise;
         }
 
-        var getAllUsers = function(){
+        function getAllUsers(){
             var df = $q.defer();
             if(allUsers == null ) {
                 // Get the list of groups
@@ -181,7 +190,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
 
         function newRole(name){
-            var role = {name:name,members:[]};
+            var role = {systemName:'',name:name,members:[]};
             // addin ui related stuff
             augmentRoleWithUiModel(role);
             return role;
@@ -189,32 +198,39 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         function augmentRoleWithUiModel(role){
             role.ui = {members:{selectedItem:'',searchText:''}};
+            if(angular.isUndefined(role.members)){
+                role.members = [];
+            }
         }
 
         /**
-         * Get the roles available for this entity
-         * TODO replace with REST call
+         * Merges all possible roles for this entity, with the assigned roles/memberships
          */
-        var getRoles = function() {
-            var df = $q.defer();
+        function mergeRoleAssignments(){
+            var availableEntityRoles = {};
 
-            var rolesArr = [];
-            rolesArr.push(newRole("Read Only"));
-            rolesArr.push(newRole("Editor"));
+           var existingModelRoleAssignments = {};
+               _.each(self.model.roles,function(role){
+                   existingModelRoleAssignments[role.systemName] = role;
+                   augmentRoleWithUiModel(role);
+               });
 
-            df.resolve(rolesArr);
-            return df.promise;
+
+            //get the available roles for this entity (might need to add a method to AccessControlService to getRolesForEntityType()
+            AccessControlService.getRoles().then(function(roles) {
+                _.each(roles, function (role) {
+                    augmentRoleWithUiModel(role);
+                    availableEntityRoles[role.systeName] = role;
+                    if(angular.isUndefined(existingModelRoleAssignments[role.systemName])){
+                        self.model.roles.push(role);
+                    }
+                });
+            });
         }
-
-
 
         function init(){
 
-            if(self.model.roles.length ==0) {
-                getRoles().then(function (roles) {
-                    self.model.roles = roles;
-                });
-            }
+            mergeRoleAssignments();
         }
 
 
@@ -231,7 +247,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
     };
 
-    angular.module(moduleName).controller('EntityAccessControlController', ["$q","UserGroupService",controller]);
+    angular.module(moduleName).controller('EntityAccessControlController', ["$q","UserGroupService","AccessControlService",controller]);
     angular.module(moduleName).directive('entityAccessControl', directive);
 
 
