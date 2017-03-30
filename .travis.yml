@@ -16,9 +16,15 @@ addons:
   apt:
     packages:
     - rpm
+  sonarqube:
+    organization: ${SONAR_ORGANIZATION}
+    token:
+      secure: ${SONAR_TOKEN}
+    github_token:
+      secure: ${GITHUB_TOKEN}
 
 install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
-script: mvn clean install -B -V
+script: mvn clean install sonar:sonar -B -V
 
 # Cache .m2 directory for next run
 before_cache: "rm -rf $HOME/.m2/repository/com/thinkbiganalytics"
