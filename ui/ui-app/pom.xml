@@ -259,6 +259,9 @@
             <root>src/main/java</root>
             <root>src/test</root>
           </roots>
+          <excludes>
+            <exclude>*.js</exclude>
+          </excludes>
         </configuration>
         <executions>
           <execution>
