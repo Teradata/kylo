@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, ['nvd3']);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -24,7 +24,8 @@ define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','kylo-c
             data:{
                 breadcrumbRoot:false,
                 displayName:'Feed Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.FEED_OPERATIONS_DETAIL_ACCESS
             }
         });
 

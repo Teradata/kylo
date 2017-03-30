@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
 
@@ -25,7 +25,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadU
             data:{
                 breadcrumbRoot:false,
                 displayName:'Feed Stats',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.FEED_OPERATIONS_DETAIL_ACCESS
             }
         });
 

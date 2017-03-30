@@ -1,4 +1,4 @@
-define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','auth/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-services'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
 
     var module = angular.module(moduleName, []);
 
@@ -19,7 +19,8 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: true,
                 displayName: 'Users',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.USERS_ACCESS
             }
         });
 
@@ -41,7 +42,8 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: false,
                 displayName: "User Details",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.USERS_ACCESS
             }
         }).state("groups", {
             url: "/groups",
@@ -59,7 +61,8 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: true,
                 displayName: "Groups",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.USERS_GROUPS_ACCESS
             }
         }).state("group-details", {
             url: "/group-details/{groupId}",
@@ -79,7 +82,8 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: false,
                 displayName: "Group Details",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.USERS_GROUPS_ACCESS
             }
         });
 

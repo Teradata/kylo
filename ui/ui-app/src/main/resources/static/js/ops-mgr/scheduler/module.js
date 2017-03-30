@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -21,7 +21,8 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','k
             data:{
                 breadcrumbRoot:true,
                 displayName:'Scheduler',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.SLA_SCHEDULER_ACCESS
             }
         });
 

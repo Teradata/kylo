@@ -49,10 +49,16 @@
  * @property {Array.<string>} groups the groups that should have their permissions changed
  * @property {Array.<string>} users the users that should have their permissions changed
  */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).factory("AccessControlService",["$http","$q","CommonRestUrlService","UserGroupService", function ($http, $q, CommonRestUrlService,UserGroupService) {
+define(['angular', 'services/module-name', 'constants/AccessConstants'], function (angular, moduleName,AccessConstants) {
+
+
+
+
+    return angular.module(moduleName).factory("AccessControlService", ["$http", "$q", "CommonRestUrlService", "UserGroupService", function ($http, $q, CommonRestUrlService, UserGroupService) {
 
         var DEFAULT_MODULE = "services";
+
+        var allowedServiceActions = [];
 
         /**
          * Interacts with the Access Control REST API.
@@ -62,145 +68,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         function AccessControlService() {
         }
 
-        angular.extend(AccessControlService.prototype, {
+        var svc = angular.extend(AccessControlService.prototype, AccessConstants);
 
-            /**
-             * Allows access to categories.
-             * @type {string}
-             */
-            CATEGORIES_ACCESS: "accessCategories",
-
-            /**
-             * Allows the administration of any category; even those created by others.
-             * @type {string}
-             */
-            CATEGORIES_ADMIN: "adminCategories",
-
-            /**
-             * Allows creating and editing new categories.
-             * @type {string}
-             */
-            CATEGORIES_EDIT: "editCategories",
-
-            /**
-             * Allows access to data sources.
-             * @type {string}
-             */
-            DATASOURCE_ACCESS: "accessDatasources",
-
-            /**
-             * Allows creating and editing new data sources.
-             * @type {string}
-             */
-            DATASOURCE_EDIT: "editDatasources",
-
-            /**
-             * Allows access to feeds.
-             * @type {string}
-             */
-            FEEDS_ACCESS: "accessFeeds",
-
-            /**
-             * Allows the administration of any feed; even those created by others.
-             * @type {string}
-             */
-            FEEDS_ADMIN: "adminFeeds",
-
-            /**
-             * Allows creating and editing new feeds.
-             * @type {string}
-             */
-            FEEDS_EDIT: "editFeeds",
-
-            /**
-             * Allows exporting feeds definitions.
-             * @type {string}
-             */
-            FEEDS_EXPORT: "exportFeeds",
-
-            /**
-             * Allows importing of previously exported feeds.
-             * @type {string}
-             */
-            FEEDS_IMPORT: "importFeeds",
-
-            /**
-             * Allows access to feeds and feed-related functions.
-             * @type {string}
-             */
-            FEED_MANAGER_ACCESS: "accessFeedsSupport",
-
-            /**
-             * Allows the ability to view existing groups.
-             * @type {string}
-             */
-            GROUP_ACCESS: "accessGroups",
-
-            /**
-             * Allows the ability to create and manage groups.
-             * @type {string}
-             */
-            GROUP_ADMIN: "adminGroups",
-
-            /**
-             * Allows access to feed templates.
-             * @type {string}
-             */
-            TEMPLATES_ACCESS: "accessTemplates",
-
-            /**
-             * Allows the administration of any feed template; even those created by others.
-             * @type {string}
-             */
-            TEMPLATES_ADMIN: "adminTemplates",
-
-            /**
-             * Allows created and editing new feed templates.
-             * @type {string}
-             */
-            TEMPLATES_EDIT: "editTemplates",
-
-            /**
-             * Allows exporting template definitions.
-             * @type {string}
-             */
-            TEMPLATES_EXPORT: "exportTemplates",
-
-            /**
-             * Allows importing of previously exported templates.
-             * @type {string}
-             */
-            TEMPLATES_IMPORT: "importTemplates",
-
-            /**
-             * Allows the ability to view existing users.
-             * @type {string}
-             */
-            USERS_ACCESS: "accessUsers",
-
-            /**
-             * Allows the ability to create and manage users.
-             * @type {string}
-             */
-            USERS_ADMIN: "adminUsers",
-
-            /**
-             * Allows access to user and group-related functions.
-             * @type {string}
-             */
-            USERS_GROUPS_ACCESS: "accessUsersGroupsSupport",
-
-            /**
-             * Allows administration of operations, such as stopping and abandoning them.
-             * @type {string}
-             */
-            OPERATIONS_ADMIN: "adminOperations",
-
-            /**
-             * Allows access to operational information like active feeds and execution history, etc.
-             * @type {string}
-             */
-            OPERATIONS_MANAGER_ACCESS: "accessOperations",
+        return angular.extend(svc, {
 
             /**
              * List of available actions
@@ -210,11 +80,56 @@ define(['angular','services/module-name'], function (angular,moduleName) {
              */
             AVAILABLE_ACTIONS_: null,
 
+            executingAllowedActions: {},
 
-            executingAllowedActions:{},
+            cachedUserAllowedActions: {},
 
+            initialized: false,
 
-            getCurrentUser:function(){
+            /**
+             * Initialize the service
+             */
+            init:function(){
+                var self = this;
+              this.getUserAllowedActions(DEFAULT_MODULE,true).then(function(actions){
+                  self.initialized = true;
+              }) ;
+            },
+            hasAccess: function (transition) {
+                var self = this;
+                var valid = false;
+                if (transition) {
+                    var toState = transition.to();
+                    var toStateName = toState.name;
+                    var data = toState.data;
+                    if(data == undefined){
+                        //if there is nothing there, treat it as valid
+                        return true;
+                    }
+                    var requiredPermissions = data.permissions || null;
+                    //if its a future lazy loaded state, allow it
+                    if (toStateName.endsWith(".**")) {
+                        valid = true;
+                    }else {
+                        //check to see if the user has the required permission(s) in the String or [array] from the data.permissions object
+
+                        if (self.initialized) {
+                            var allowedActions = self.cachedUserAllowedActions[DEFAULT_MODULE];
+                            if(angular.isArray(requiredPermissions)){
+                                //find the first match
+                                 valid = self.hasAnyAction(requiredPermissions,allowedActions)
+                            }
+                            else {
+                                valid = self.hasAction(requiredPermissions,allowedActions);
+                            }
+                        }
+                    }
+                }
+                return valid;
+
+            },
+
+            getCurrentUser: function () {
                 return UserGroupService.getCurrentUser();
             },
 
@@ -251,20 +166,25 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 });
             },
 
-
             /**
              * Gets the list of allowed actions for the current user.
              *
              * @param {string|null} [opt_module] name of the access module, or {@code null}
+             * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            getUserAllowedActions: function (opt_module) {
+            getUserAllowedActions: function (opt_module, cache) {
                 var self = this;
-             var defer = null;
+                var defer = null;
+
                 var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : DEFAULT_MODULE;
                 var isExecuting = self.executingAllowedActions[safeModule] != undefined;
-                if(!isExecuting) {
-                     defer = $q.defer();
+                if(cache == true && !isExecuting && self.cachedUserAllowedActions[safeModule] != undefined) {
+                    defer = $q.defer();
+                    defer.resolve(self.cachedUserAllowedActions[safeModule]);
+                }
+               else if (!isExecuting) {
+                    defer = $q.defer();
                     self.executingAllowedActions[safeModule] = defer;
 
                     var promise = $http.get(CommonRestUrlService.SECURITY_BASE_URL + "/actions/" + safeModule + "/allowed")
@@ -273,18 +193,18 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                                 response.data.actions = [];
                             }
                             defer.resolve(response.data);
+                            //add it to the cache
+                            self.cachedUserAllowedActions[safeModule] = response.data;
+                            //remove the executing request
                             delete self.executingAllowedActions[safeModule];
                             return response.data;
                         });
                 }
                 else {
-
                     defer = self.executingAllowedActions[safeModule];
                 }
                 return defer.promise;
             },
-
-
 
             /**
              * Gets all available actions.
@@ -313,8 +233,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
              */
             hasAnyAction: function (names, actions) {
                 var self = this;
-                var valid = _.find(names,function(name){
-                    return self.hasAction(name.trim(),actions);
+                var valid = _.find(names, function (name) {
+                    return self.hasAction(name.trim(), actions);
                 });
                 return valid != undefined;
             },
@@ -323,7 +243,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
              * returns a promise with a value of true/false if the user has any of the required permissions
              * @param requiredPermissions
              */
-            doesUserHavePermission: function(requiredPermissions){
+            doesUserHavePermission: function (requiredPermissions) {
                 var self = this;
                 var d = $q.defer();
 
@@ -348,7 +268,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 return _.some(actions, function (action) {
                     if (action.systemName === name) {
                         return true;
-                    } else if (angular.isArray(action.actions)) {
+                    }  else if (angular.isArray(action)) {
+                        return self.hasAction(name, action);
+                    }else if (angular.isArray(action.actions)) {
                         return self.hasAction(name, action.actions);
                     }
                     return false;

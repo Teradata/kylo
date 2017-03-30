@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil', 'kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil', 'constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessControl) {
    var module = angular.module(moduleName, []);
 
 
@@ -21,7 +21,8 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
             data:{
                 breadcrumbRoot:true,
                 displayName:'Service Health',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.SERVICES_ACCESS
             }
         }).state('service-details',{
             url:'/service-details/:serviceName',
@@ -40,7 +41,8 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
             },
             data:{
                 displayName:'Service Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.SERVICES_ACCESS
             }
         }).state('service-component-details',{
             url:'/service-details/{serviceName}/{componentName}',
@@ -59,7 +61,8 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
             },
             data:{
                 displayName:'Service Component',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.SERVICES_ACCESS
             }
         });
 

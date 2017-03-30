@@ -1,4 +1,4 @@
-define(['angular','search/module-name','kylo-utils/LazyLoadUtil', 'kylo-services','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-services','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessControl) {
 
     var module = angular.module(moduleName, []);
 
@@ -20,7 +20,8 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil', 'kylo-services
             data:{
                 breadcrumbRoot:false,
                 displayName:'Search',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.SEARCH_ACCESS
             }
         })
 

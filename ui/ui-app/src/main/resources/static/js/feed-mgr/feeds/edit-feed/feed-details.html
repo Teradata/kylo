@@ -94,7 +94,7 @@
                     Upload...
                   </md-button>
                 </md-menu-item>
-                <md-menu-divider ng-if-permission="exportFeeds"></md-menu-divider>
+                <md-menu-divider ng-if-permission="exportFeeds" entity="vm.model"></md-menu-divider>
                 <md-menu-item ng-if-permission="exportFeeds">
                   <md-button href="{{vm.exportFeedUrl}}" >
                     <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>

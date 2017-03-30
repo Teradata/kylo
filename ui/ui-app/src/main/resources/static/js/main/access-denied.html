@@ -1,0 +1,7 @@
+
+<div layout="column">
+   <h2 class="md-title">Access Denied</h2>
+  <span> You are unable to access {{vm.attemptedState.displayName}}</span>
+
+  <span ng-if="vm.attemptedState.data.permissions">One of the following permissions is needed to access this page: <b>{{vm.attemptedState.data.permissions}}</b></span>
+</div>

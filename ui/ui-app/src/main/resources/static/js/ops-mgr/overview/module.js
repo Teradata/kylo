@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$compileProvider',function ($compileProvider) {
@@ -33,7 +33,8 @@ define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','kyl
             data:{
                 breadcrumbRoot:true,
                 displayName:'Dashboard',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.OPERATIONS_MANAGER_ACCESS
             }
         });
 

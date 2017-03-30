@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, []);
 
     /**
@@ -20,7 +20,8 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','kylo-co
             data:{
                 breadcrumbRoot:true,
                 displayName:'Service Level Agreements',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.SLA_ACCESS
             }
         })
 

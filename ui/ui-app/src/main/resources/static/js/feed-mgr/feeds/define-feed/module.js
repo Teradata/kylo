@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','feed-mgr/feeds/module','angular-ui-router','kylo-feedmgr','feed-mgr/visual-query/module'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','angular-ui-router','kylo-feedmgr','feed-mgr/visual-query/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
     module.config(["$compileProvider",function($compileProvider) {
@@ -28,7 +28,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.FEEDS_ACCESS
             }
         });
 
@@ -50,7 +51,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.FEEDS_ACCESS
             }
         });
 
@@ -72,7 +74,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Import Feed',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.FEEDS_IMPORT
             }
         });
 

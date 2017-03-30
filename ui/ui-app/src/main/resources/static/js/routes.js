@@ -1,5 +1,7 @@
 define(['angular', 'kylo-common','kylo-services',
-    'main/IndexController'], function (angular,app,lazyLoadUtil) {
+    'main/IndexController',
+'main/HomeController',
+'main/AccessDeniedController'], function (angular,app,lazyLoadUtil) {
     'use strict';
    app.config(["$ocLazyLoadProvider","$stateProvider","$urlRouterProvider",function ($ocLazyLoadProvider,$stateProvider, $urlRouterProvider) {
 
@@ -514,12 +516,36 @@ define(['angular', 'kylo-common','kylo-services',
                });
            }
        });
+
+
+       $stateProvider.state({
+           name:'access-denied',
+           url:'/access-denied',
+           params:{attemptedState:null},
+           views: {
+               "content": {
+                   templateUrl: "js/main/access-denied.html",
+                   controller:'AccessDeniedController',
+                   controllerAs:'vm'
+               }
+           },
+           resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
+               loadMyCtrl: ['$ocLazyLoad', function($ocLazyLoad) {
+                   // you can lazy load files for an existing module
+                   return $ocLazyLoad.load('main/AccessDeniedController');
+               }]
+           }
+
+       });
+
    }]);
 
 
     app.run(
-        [          '$rootScope', '$state', '$location',
-                   function ($rootScope,   $state, $location) {
+        [          '$rootScope', '$state', '$location',"$transitions","AccessControlService",
+                   function ($rootScope,   $state, $location,$transitions,AccessControlService) {
+                       //initialize the access control
+                       AccessControlService.init();
 
                        $rootScope.$state = $state;
                        $rootScope.$location = $location;
@@ -527,6 +553,20 @@ define(['angular', 'kylo-common','kylo-services',
                        $rootScope.typeOf = function(value) {
                            return typeof value;
                        };
+
+
+                       $transitions.onStart({}, function (trans) {
+
+                           var to = trans.to().name;
+                           if(!AccessControlService.hasAccess(trans)){
+                               if(trans.to().name != 'not-allowed') {
+                                   return $state.target("access-denied",{ attemptedState: trans.to()});
+                               }
+                           }
+                       });
+
+
+
                    }
         ]
     );

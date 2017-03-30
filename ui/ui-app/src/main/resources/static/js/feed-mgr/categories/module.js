@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','app','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','app','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, ['ui.router']);
 
@@ -24,7 +24,8 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:true,
                 displayName:'Categories',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.CATEGORIES_ACCESS
             }
         }).state('category-details',{
             url:'/category-details/{categoryId}',
@@ -44,7 +45,8 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:false,
                 displayName:'Category Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.CATEGORIES_ACCESS
             }
         })
 

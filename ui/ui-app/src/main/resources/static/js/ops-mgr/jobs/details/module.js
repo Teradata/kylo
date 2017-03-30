@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil', 'kylo-common', 'kylo-services','kylo-opsmgr','ops-mgr/jobs/module'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-common', 'kylo-services','kylo-opsmgr','ops-mgr/jobs/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -23,7 +23,8 @@ define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil',
             },
             data:{
                 displayName:'Job Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.JOB_DETAILS_ACCESS
             }
         });
 

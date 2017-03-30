@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil,AccessControl) {
     var module = angular.module(moduleName, []);
 
     /**
@@ -22,7 +22,8 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo
             data:{
                 breadcrumbRoot:true,
                 displayName:'Tables',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.TABLES_ACCESS
             }
         });
 
@@ -45,7 +46,8 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo
             data:{
                 breadcrumbRoot:false,
                 displayName:'Table Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessControl.TABLES_ACCESS
             }
         })
 

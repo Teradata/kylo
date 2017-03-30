@@ -40,7 +40,7 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
 
     var directive = ['$animate', '$compile', 'AccessControlService', function ($animate, $compile, AccessControlService) {
         return {
-            scope: {},
+            scope: {entity:'=?'},
             multiElement: true,
             transclude: 'element',
          //   priority: 600,
@@ -52,16 +52,11 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
                 $attr.$observe('ngIfPermission', function(value,old) {
                     var value2 = $attr.ngIfPermission;
 
-                    var entityId = $attr.ngPermissionEntityId;
-                    var entityType = $attr.ngPermissionEntityType;
                     if(value != undefined) {
 
                         var permissions = value.split(',');
-                        var entity = null;
-                        if(angular.isDefined(entityId) && angular.isDefined(entityType)){
-                            entity = {id:entityId,type:entityType};
-                        }
-                        check(permissions,entity)
+
+                        check(permissions,$scope.entity)
                     }
                 });
 

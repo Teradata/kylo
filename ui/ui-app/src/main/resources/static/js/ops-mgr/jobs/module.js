@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
 
@@ -20,7 +20,8 @@ define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','kylo-c
             data:{
                 breadcrumbRoot:false,
                 displayName:'Jobs',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.JOBS_ACCESS
             }
         });
 

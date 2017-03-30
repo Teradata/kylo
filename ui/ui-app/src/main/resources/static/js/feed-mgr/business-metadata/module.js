@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadUtil','kylo-feedmgr','kylo-common','kylo-services'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-feedmgr','kylo-common','kylo-services'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
 
@@ -23,7 +23,8 @@ define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadU
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Business Metadata',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.CATEGORIES_ADMIN
             }
         });
 
