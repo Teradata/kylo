@@ -162,6 +162,10 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                 var select = "";
                 var tree = this.buildTree();
 
+                if (tree === null) {
+                    return "";
+                }
+
                 // Build SELECT clause
                 angular.forEach(tree.targetList, function (target) {
                     select += (select.length === 0) ? "SELECT " : ", ";
@@ -202,7 +206,7 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             buildTree: function () {
                 this.selectedColumnsAndTables_ = [];
 
-                if (this.model_.nodes.length === 0) {
+                if (this.model_ === null || this.model_.nodes.length === 0) {
                     return null;
                 } else {
                     var fromClause = this.buildFromTree();

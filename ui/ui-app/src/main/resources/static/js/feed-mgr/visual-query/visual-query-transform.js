@@ -578,7 +578,9 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             var feedModel = FeedService.createFeedModel;
             var newScript = self.sparkShellService.getFeedScript();
             if (newScript === feedModel.dataTransformation.dataTransformScript) {
-                return $q.defer().reject(true).promise;
+                var result = $q.defer();
+                result.reject(true);
+                return result.promise;
             }
 
             // Populate Feed Model from the Visual Query Model
@@ -588,7 +590,6 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             feedModel.table.existingTableName = "";
             feedModel.table.method = "EXISTING_TABLE";
             feedModel.table.sourceTableSchema.name = "";
-
 
             // Get list of fields
             var deferred = $q.defer();
