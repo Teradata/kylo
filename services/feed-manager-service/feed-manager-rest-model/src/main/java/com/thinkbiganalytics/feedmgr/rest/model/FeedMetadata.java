@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
@@ -31,6 +30,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -132,6 +132,11 @@ public class FeedMetadata implements UIFeed {
      */
     private List<FeedSummary> usedByFeeds;
 
+    /**
+     * List of data source dependencies.
+     */
+    private List<Datasource> userDatasources;
+
     public FeedMetadata() {
     }
 
@@ -169,7 +174,7 @@ public class FeedMetadata implements UIFeed {
     }
 
     public List<NifiProperty> getProperties() {
-        if(properties == null){
+        if (properties == null) {
             properties = new ArrayList<NifiProperty>();
         }
         return properties;
@@ -480,15 +485,25 @@ public class FeedMetadata implements UIFeed {
         NEW, ENABLED, DISABLED
     }
 
-    public List<NifiProperty> getConfigurationProperties(){
+    public List<NifiProperty> getConfigurationProperties() {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
     }
 
     /**
      * Return the properties for this feed that are marked as being sensitive
-     * @return
      */
-    public List<NifiProperty> getSensitiveProperties(){
-        return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive() && (!nifiProperty.isInputProperty() || (nifiProperty.isInputProperty() && nifiProperty.getProcessorType().equals(this.getInputProcessorType())))).collect(Collectors.toList());
+    public List<NifiProperty> getSensitiveProperties() {
+        return getProperties().stream()
+            .filter(nifiProperty -> nifiProperty.isSensitive() && (!nifiProperty.isInputProperty() || (nifiProperty.isInputProperty()
+                                                                                                       && nifiProperty.getProcessorType().equals(this.getInputProcessorType()))))
+            .collect(Collectors.toList());
+    }
+
+    public List<Datasource> getUserDatasources() {
+        return userDatasources;
+    }
+
+    public void setUserDatasources(List<Datasource> userDatasources) {
+        this.userDatasources = userDatasources;
     }
 }

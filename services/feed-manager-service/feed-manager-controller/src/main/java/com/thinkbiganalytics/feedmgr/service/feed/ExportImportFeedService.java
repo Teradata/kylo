@@ -26,24 +26,27 @@ import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportSection;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.security.AccessController;
@@ -57,6 +60,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -88,6 +92,18 @@ public class ExportImportFeedService {
     @Inject
     private UploadProgressService uploadProgressService;
 
+    /**
+     * Provides access to {@code Datasource} objects.
+     */
+    @Inject
+    private DatasourceProvider datasourceProvider;
+
+    /**
+     * The {@code Datasource} transformer
+     */
+    @Inject
+    private DatasourceModelTransform datasourceTransform;
+
     //Export
 
     /**
@@ -99,14 +115,38 @@ public class ExportImportFeedService {
     public ExportFeed exportFeed(String feedId) throws IOException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_FEEDS);
 
-        FeedMetadata feed = metadataService.getFeedById(feedId);
-        RegisteredTemplate template = feed.getRegisteredTemplate();
-        ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
-        //merge zip files
-        String feedJson = ObjectMapperSerializer.serialize(feed);
-        byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
-        return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
+        // Prepare feed metadata
+        final FeedMetadata feed = metadataService.getFeedById(feedId);
 
+        final List<Datasource> userDatasources = Optional.ofNullable(feed.getDataTransformation())
+            .map(FeedDataTransformation::getDatasourceIds)
+            .map(datasourceIds -> metadataAccess.read(
+                () ->
+                    datasourceIds.stream()
+                        .map(datasourceProvider::resolve)
+                        .map(datasourceProvider::getDatasource)
+                        .map(domain -> datasourceTransform.toDatasource(domain, DatasourceModelTransform.Level.FULL))
+                        .map(datasource -> {
+                            // Clear sensitive fields
+                            datasource.getDestinationForFeeds().clear();
+                            datasource.getSourceForFeeds().clear();
+                            return datasource;
+                        })
+                        .collect(Collectors.toList())
+                 )
+            )
+            .orElse(null);
+        if (userDatasources != null && !userDatasources.isEmpty()) {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_DATASOURCES);
+            feed.setUserDatasources(userDatasources);
+        }
+
+        // Add feed json to template zip file
+        final ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
+        final String feedJson = ObjectMapperSerializer.serialize(feed);
+
+        final byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
+        return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
     }
 
     //Validate
