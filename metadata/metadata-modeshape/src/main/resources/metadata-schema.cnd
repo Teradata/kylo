@@ -112,6 +112,7 @@
 
 [tba:securityFolder] > nt:folder
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
+    + roles (tba:entityRolesFolder) = tba:entityRolesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:prototypesFolder] > nt:folder
@@ -132,23 +133,20 @@
 
 
 [tba:entityRolesFolder] > nt:folder
-    + services (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
-    + feed (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
-    + template (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
-    + category (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
-
-[tba:roleDefinitionsFolder] > nt:folder
-    + roles (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
-    + allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + services (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + feed (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + template (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + category (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
 
 [tba:rolesFolder] > nt:folder
     + * (tba:securityRole)
 
 [tba:securityRole] > mix:title, mix:lastModified, mix:referenceable
-    - tba:systemName (STRING) mandatory
+    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:roleMembership]
     - tba:role (REFERENCE)
+//    - tba:groups (REFERENCE) multiple
     - tba:groups (STRING) multiple
     - tba:users (STRING) multiple
 

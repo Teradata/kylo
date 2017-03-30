@@ -8,12 +8,11 @@
  *          "datasources"
  *              "hive"
  *                  HiveTableDatasource*
-                "directory"
-                    DirectoryDatasource*
-                "derived"
-
-            "datasourceDefinitions"
-                   datasourceDefinition
+ *              "directory"
+ *                  DirectoryDatasource*
+ *              "derived"
+ *          "datasourceDefinitions"
+ *                 datasourceDefinition
  *          "prototypes"
  *             template
  *          "sla"
@@ -26,15 +25,33 @@
  *          "security"
  *              "prototypes"
  *                  "services"
- *                      allowableAction*
+ *                      allowedActions
  *                  "feed"
- *                      allowableAction*
+ *                      allowedActions
  *                  "template"
- *                      allowableAction*
+ *                      allowedActions
  *                  "category"
- *                      allowableAction*
+ *                      allowedActions
  *              "services"
- *                  allowableAction*
+ *                  allowedActions
+ *
+ *              "roles"
+ *                  "services"
+ *                      "roles"
+ *                          role*
+ *                              allowedActions
+ *                  "feed"
+ *                     "roles"
+ *                          role*
+ *                              allowedActions
+ *                  "template"
+ *                     "roles"
+ *                          role*
+ *                              allowedActions
+ *                  "category"
+ *                     "roles"
+ *                          role*
+ *                              allowedActions
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -47,29 +64,29 @@
  * // Tree structure /////
  */
 [tba:metadataFolder] 
-	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
-	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
-	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
-	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
-	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
-	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
-	+ security (tba:securityFolder) = tba:securityFolder autocreated mandatory
-	+ hadoopSecurityGroups (tba:hadoopSecurityGroupFolder) = tba:hadoopSecurityGroupFolder autocreated mandatory
+    + feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
+    + datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
+    + datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
+    + templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
+    + sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
+    + extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
+    + security (tba:securityFolder) = tba:securityFolder autocreated mandatory
+    + hadoopSecurityGroups (tba:hadoopSecurityGroupFolder) = tba:hadoopSecurityGroupFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
 
 [tba:feedFolder] > nt:folder 
-	+ feedSource (tba:feedSourceFolder) = tba:feedSourceFolder autocreated
-	+ feedDestination (tba:feedDestinationFolder) = tba:feedDestinationFolder autocreated
+    + feedSource (tba:feedSourceFolder) = tba:feedSourceFolder autocreated
+    + feedDestination (tba:feedDestinationFolder) = tba:feedDestinationFolder autocreated
 
 [tba:feedSourceFolder] > nt:folder 
 
 [tba:feedDestinationFolder] > nt:folder 
 
 [tba:extensionsFolder] > nt:folder 
-	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory
-	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
+    + types (tba:typesFolder) = tba:typesFolder autocreated mandatory
+    + entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
 
 [tba:datasourcesFolder] > nt:folder
     + derived (tba:derivedDatasourcesFolder) = tba:derivedDatasourcesFolder autocreated mandatory
@@ -92,6 +109,7 @@
 
 [tba:securityFolder] > nt:folder
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
+    + roles (tba:entityRolesFolder) = tba:entityRolesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:prototypesFolder] > nt:folder
@@ -100,14 +118,34 @@
     + template (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + category (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
-[tba:accessControlled] mixin
-    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
-
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)
 
 [tba:allowableAction] > nt:hierarchyNode, mix:title
     + * (tba:allowableAction)
+
+[tba:accessControlled] mixin
+    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + tba:roleMemberships (tba:roleMembership) sns
+
+
+[tba:entityRolesFolder] > nt:folder
+    + services (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + feed (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + template (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + category (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    
+[tba:rolesFolder] > nt:folder
+    + * (tba:securityRole)
+    
+[tba:securityRole] > mix:title, mix:lastModified, mix:referenceable
+    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    
+[tba:roleMembership]
+    - tba:role (REFERENCE)
+//    - tba:groups (REFERENCE) multiple
+    - tba:groups (STRING) multiple
+    - tba:users (STRING) multiple
 
 /* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
 
@@ -130,14 +168,14 @@
     - tba:tags (STRING) multiple
 
 [tba:propertied] mixin
-	+ tba:properties (tba:properties) COPY
+    + tba:properties (tba:properties) COPY
 
 [tba:properties] > nt:hierarchyNode
-	- * (UNDEFINED) COPY
+    - * (UNDEFINED) COPY
 
 [tba:waterMarks] > nt:hierarchyNode
-	- * (UNDEFINED) COPY
-	
+    - * (UNDEFINED) COPY
+    
 [tba:initialization] > nt:hierarchyNode
     - tba:currentStatus (WEAKREFERENCE)
     + tba:history (tba:initStatus) sns
@@ -151,7 +189,7 @@
 [tba:extensibleEntity] > tba:entity
     - * (UNDEFINED) COPY
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:accessControlled
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -164,31 +202,44 @@
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
 
-[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
-	- tba:systemName (STRING) mandatory
-	- tba:securityGroups (WEAKREFERENCE) multiple
-	- tba:state (LONG)
-	- tba:initialized (BOOLEAN) = 'false'
-	+ * (tba:feed) sns
 
-[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled, mix:versionable
-	+ tba:sources (tba:feedSource) sns
-	+ tba:destinations (tba:feedDestination) sns
-    + tba:precondition (tba:feedPrecondition)
-    + tba:highWaterMarks (tba:waterMarks)
-	+ tba:initialization (tba:initialization)
-	- tba:systemName (STRING) mandatory
-	- tba:state (STRING) = 'ENABLED'
-	- tba:category (REFERENCE) mandatory
-	- tba:feedTemplate (REFERENCE)
-	- tba:json (STRING)
-	- tba:schedulingPeriod (STRING)
-	- tba:schedulingStrategy (STRING)
-    - tba:dependentFeeds (REFERENCE) multiple
-    - tba:usedByFeeds (REFERENCE) multiple
-    - tba:slas (WEAKREFERENCE) multiple
+[tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled
+    - tba:systemName (STRING) mandatory
+    - tba:state (LONG)
+    + tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
+
+[tba:categoryDetails] > tba:extensibleEntity, tba:propertied
+    - tba:initialized (BOOLEAN) = 'false'
     - tba:securityGroups (WEAKREFERENCE) multiple
+    + * (tba:feed) sns
 
+
+[tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
+    + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
+    + tba:data (tba:feedData) = tba:feedData autocreated mandatory
+
+[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable   //, mix:versionable
+    - tba:systemName (STRING) mandatory
+    - tba:category (REFERENCE) mandatory
+    + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
+
+[tba:feedDetails] > nt:hierarchyNode, tba:propertied
+    - tba:feedTemplate (REFERENCE)
+    - tba:slas (WEAKREFERENCE) multiple
+    - tba:dependentFeeds (WEAKREFERENCE) multiple
+    - tba:usedByFeeds (WEAKREFERENCE) multiple
+    - tba:json (STRING)
+    + tba:sources (tba:feedSource) sns
+    + tba:destinations (tba:feedDestination) sns
+    + tba:precondition (tba:feedPrecondition)
+
+[tba:feedData] > nt:hierarchyNode, tba:propertied
+    - tba:state (STRING) = 'ENABLED'
+    - tba:schedulingPeriod (STRING)
+    - tba:schedulingStrategy (STRING)
+    - tba:securityGroups (WEAKREFERENCE) multiple
+    + tba:highWaterMarks (tba:waterMarks)
+    + tba:initialization (tba:initialization)
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)

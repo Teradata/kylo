@@ -1,6 +1,6 @@
 {
     "name" : "metadata-repository",
-    "node-types" : ["metadata-schema.cnd", "users-schema.cnd"],
+    "node-types" : ["com/thinkbiganalytics/metadata/upgrade/version_0_7_1/metadata-schema.cnd", "com/thinkbiganalytics/metadata/upgrade/version_0_7_1/users-schema.cnd"],
     "workspaces" : {
         "predefined" : ["metadata"],
         "default" : "default",
