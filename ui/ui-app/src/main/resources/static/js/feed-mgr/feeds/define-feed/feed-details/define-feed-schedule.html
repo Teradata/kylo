@@ -121,16 +121,6 @@
       </div>
 
 
-
-
-      <div layout="column" class="layout-padding-top">
-        <div class="md-subhead">Feed Access Control</div>
-        <entity-access-control entity="vm.model" model="vm.model.accessControl" the-form="vm.defineFeedScheduleForm"></entity-access-control>
-      </div>
-
-
-
-
       <thinkbig-step-buttons can-continue="vm.isValid && !vm.savingFeed" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 
     </ng-form>

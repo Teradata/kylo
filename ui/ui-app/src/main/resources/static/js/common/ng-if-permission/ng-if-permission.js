@@ -66,7 +66,6 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
                  * @param entity optional entity
                  */
                 function check(permissions,entity){
-                    console.log('CHECK ',permissions,'for entity: ',entity, AccessControlService.getCurrentUser())
                     AccessControlService.getUserAllowedActions()
                         .then(function (actionSet) {
 

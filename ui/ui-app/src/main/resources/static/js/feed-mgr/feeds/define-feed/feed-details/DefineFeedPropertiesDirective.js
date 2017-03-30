@@ -40,7 +40,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
     };
 
-    var DefineFeedPropertiesDirective = function($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService, FeedSecurityGroups) {
+    var DefineFeedPropertiesDirective = function($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService) {
         var self = this;
 
         self.stepNumber = parseInt(this.stepIndex) + 1;
@@ -50,7 +50,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         self.tagChips.selectedItem = null;
         self.tagChips.searchText = null;
         self.isValid = true;
-        self.feedSecurityGroups = FeedSecurityGroups;
+
 
         // Update user fields when category changes
         $scope.$watch(
@@ -63,14 +63,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
         );
 
-        self.transformChip = function(chip) {
-            // If it is an object, it's already a known chip
-            if (angular.isObject(chip)) {
-                return chip;
-            }
-            // Otherwise, create a new one
-            return {name: chip}
-        };
 
         /**
          * Sets the user fields for this feed.
@@ -102,18 +94,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             });
         }
 
-        self.securityGroupChips = {};
-        self.securityGroupChips.selectedItem = null;
-        self.securityGroupChips.searchText = null;
-        self.securityGroupsEnabled = false;
-
-        FeedSecurityGroups.isEnabled().then(function(isValid) {
-                self.securityGroupsEnabled = isValid;
-            }
-
-        );
     };
 
-    angular.module(moduleName).controller('DefineFeedPropertiesController', ["$scope","$http","$mdToast","RestUrlService","FeedTagService","FeedService","FeedSecurityGroups",DefineFeedPropertiesDirective]);
+    angular.module(moduleName).controller('DefineFeedPropertiesController', ["$scope","$http","$mdToast","RestUrlService","FeedTagService","FeedService",DefineFeedPropertiesDirective]);
     angular.module(moduleName).directive('thinkbigDefineFeedProperties', directive);
 });

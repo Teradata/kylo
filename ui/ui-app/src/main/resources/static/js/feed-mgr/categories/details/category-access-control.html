@@ -1,0 +1,10 @@
+<ng-form name="vm.categoryAccessControlForm">
+<vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew" section-title="Access Control" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" editable="vm.isEditable" is-valid="vm.isValid">
+  <readonly-section>
+    <entity-access-control entity="vm.model" model="vm.model.accessControl" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
+  </readonly-section>
+  <editable-section>
+    <entity-access-control entity="vm.editModel" model="vm.model.accessControl" the-form="vm.categoryAccessControlForm"></entity-access-control>
+  </editable-section>
+</vertical-section-layout>
+</ng-form>

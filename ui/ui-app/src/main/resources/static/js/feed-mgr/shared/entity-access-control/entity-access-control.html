@@ -2,8 +2,9 @@
 <div layout-padding>
     <div layout="row">
     <div flex>
-      <md-autocomplete flex="45" required ng-disabled="vm.model.id != null"
+      <md-autocomplete flex="45" required
                        md-input-name="owner"
+                       ng-disabled="vm.readOnly"
                        md-selected-item="vm.model.owner"
                        md-search-text-change="vm.ownerAutoComplete.searchTextChanged(vm.ownerAutoComplete.searchText)"
                        md-search-text="vm.ownerAutoComplete.searchText"
@@ -47,6 +48,7 @@
 
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
         <md-chips ng-model="role.members" md-autocomplete-snap
+                  readonly="vm.readOnly"
                   md-require-match="true" class="layout-padding-top-bottom">
           <md-autocomplete
               md-min-length="0"

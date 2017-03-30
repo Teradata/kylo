@@ -78,10 +78,18 @@
         </md-tab>
         <md-tab ng-disabled="vm.steps[7].disabled">
             <md-tab-label>
-                <div class="{{vm.steps[7].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[7].icon}}" size="{{vm.steps[7].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[7].iconStyle}}"></ng-md-icon> Schedule</div>
+                <div class="{{vm.steps[7].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[7].icon}}" size="{{vm.steps[7].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[7].iconStyle}}"></ng-md-icon> Access Control</div>
             </md-tab-label>
             <md-tab-body>
-                <thinkbig-define-feed-schedule step-index="7" ></thinkbig-define-feed-schedule>
+                <thinkbig-define-feed-access-control step-index="7"></thinkbig-define-feed-access-control>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[8].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[8].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[8].icon}}" size="{{vm.steps[8].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[8].iconStyle}}"></ng-md-icon> Schedule</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-schedule step-index="8" ></thinkbig-define-feed-schedule>
             </md-tab-body>
         </md-tab>
 

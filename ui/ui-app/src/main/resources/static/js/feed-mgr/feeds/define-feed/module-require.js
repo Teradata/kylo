@@ -1,6 +1,6 @@
 define(['angular','angular-ui-router','kylo-feedmgr','feed-mgr/feeds/get-table-data-properties/GetTableDataPropertiesController',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController',
-        'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController',
+        'feed-mgr/feeds/define-feed/feed-details/DefineFeedAccessControlDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedDataProcessingDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedDetailsDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedGeneralInfoDirective',

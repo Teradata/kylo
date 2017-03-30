@@ -6,7 +6,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             bindToController: {
                 entity:'=',
                 model:'=',
-                theForm:'=?'
+                theForm:'=?',
+                readOnly:'=?'
             },
             controllerAs: 'vm',
             scope: {},
@@ -22,6 +23,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         var self = this;
 
+
+        if(angular.isUndefined(this.readOnly)){
+            this.readOnly = false;
+        }
 
        if(angular.isUndefined(this.theForm)){
            this.theForm = {};
@@ -205,9 +210,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         function init(){
 
-            getRoles().then(function(roles){
-                self.model.roles = roles;
-            });
+            if(self.model.roles.length ==0) {
+                getRoles().then(function (roles) {
+                    self.model.roles = roles;
+                });
+            }
         }
 
 

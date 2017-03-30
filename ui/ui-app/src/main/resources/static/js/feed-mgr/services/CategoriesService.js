@@ -163,7 +163,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @returns {CategoryModel} the new category model
              */
             newCategory: function () {
-                return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: [], securityGroups: []};
+                return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: [], securityGroups: [],accessControl:{roles:[],owner:null}};
             },
 
             /**

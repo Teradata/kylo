@@ -68,7 +68,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 feedsCount: 0,
                 registeredDatasources: [],
                 isStream: false,
-                validTemplateProcessorNames: true
+                validTemplateProcessorNames: true,
+                accessControl:{roles:[],owner:null}
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
