@@ -97,6 +97,16 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         };
 
         /**
+         * Gets the number of related feeds for the specified data source.
+         *
+         * @param {Object} datasource the data source
+         * @returns {number} the number of related feeds
+         */
+        self.getRelatedFeedsCount = function (datasource) {
+            return angular.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
+        };
+
+        /**
          * Updates the order of the table.
          *
          * @param order the sort order

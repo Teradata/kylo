@@ -23,7 +23,7 @@
                 <span class="column-title column-title-bottom">Description</span>
               </div>
               <div flex="20" layout="column" class="item-column md-list-item-text">
-                <span class="item-title">{{datasource.sourceForFeeds.length}}</span>
+                <span class="item-title">{{vm.getRelatedFeedsCount(datasource)}}</span>
                 <span class="column-title column-title-bottom">Related Feeds</span>
               </div>
             </div>
@@ -59,7 +59,7 @@
               <td md-cell>{{datasource.name}}</td>
               <td md-cell>{{datasource.type}}</td>
               <td md-cell>{{datasource.description}}</td>
-              <td md-cell>{{datasource.sourceForFeeds.length}}</td>
+              <td md-cell>{{vm.getRelatedFeedsCount(datasource)}}</td>
             </tr>
             </tbody>
           </table>
