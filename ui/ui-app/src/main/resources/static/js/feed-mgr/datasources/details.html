@@ -9,43 +9,47 @@
       </div>
     </header-section>
     <body-section>
-      <form name="datasourceForm">
-        <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                                 editable="vm.isEditable" is-valid="datasourceForm.$valid" allow-edit="vm.allowEdit">
-          <readonly-section>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Name</span>
-              <div flex>{{vm.model.name}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Description</span>
-              <div flex>{{vm.model.description}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Type</span>
-              <div flex>{{vm.model.type}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Connection URL</span>
-              <div flex>{{vm.model.databaseConnectionUrl}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Driver Class Name</span>
-              <div flex>{{vm.model.databaseDriverClassName}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Driver Location(s)</span>
-              <div flex>{{vm.model.databaseDriverLocation}}</div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database User</span>
-              <div flex>{{vm.model.databaseUser}}</div>
-            </div>
-          </readonly-section>
-          <editable-section>
+      <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                               editable="vm.isEditable" is-valid="vm.datasourceForm.$valid" allow-edit="vm.allowEdit">
+        <readonly-section>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Name</span>
+            <div flex>{{vm.model.name}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Description</span>
+            <div flex>{{vm.model.description}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Type</span>
+            <div flex>{{vm.model.type}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Connection URL</span>
+            <div flex>{{vm.model.databaseConnectionUrl}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Driver Class Name</span>
+            <div flex>{{vm.model.databaseDriverClassName}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Driver Location(s)</span>
+            <div flex>{{vm.model.databaseDriverLocation}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database User</span>
+            <div flex>{{vm.model.databaseUser}}</div>
+          </div>
+        </readonly-section>
+        <editable-section>
+          <ng-form name="vm.datasourceForm">
             <md-input-container class="md-block">
               <label>Name</label>
-              <input required ng-model="vm.editModel.name"/>
+              <input required ng-model="vm.editModel.name" name="datasourceName"/>
+              <div ng-messages="vm.datasourceForm.datasourceName.$error" md-auto-hide="false">
+                <div ng-message="required">Required.</div>
+                <div ng-message="notUnique">This name is already used.</div>
+              </div>
             </md-input-container>
 
             <md-input-container class="md-block">
@@ -77,9 +81,9 @@
               <label>Password</label>
               <input type="password" ng-model="vm.editModel.password"/>
             </md-input-container>
-          </editable-section>
-        </vertical-section-layout>
-      </form>
+          </ng-form>
+        </editable-section>
+      </vertical-section-layout>
     </body-section>
   </card-layout>
 </div>
