@@ -1,10 +1,26 @@
 #!/usr/bin/env bash
 
-java -cp '/opt/kylo/kylo-services/lib/liquibase-core-3.5.3.jar.jar:/opt/kylo/kylo-services/lib/*' \
+TARGET=kylo-db-update-script.sql
+PROPS=/opt/kylo/kylo-services/conf/application.properties
+
+echo "Reading configuration properties from ${PROPS}"
+
+USERNAME=`grep "^spring.datasource.username=" ${PROPS} | cut -d'=' -f2`
+PASSWORD=`grep "^spring.datasource.password=" ${PROPS} | cut -d'=' -f2`
+DRIVER=`grep "^spring.datasource.driverClassName=" ${PROPS} | cut -d'=' -f2`
+URL=`grep "^spring.datasource.url=" ${PROPS} | cut -d'=' -f2`
+
+echo "Generating ${TARGET} for ${URL}, connecting as ${USERNAME}"
+
+CP='/opt/kylo/kylo-services/lib/liquibase-core-3.5.3.jar.jar:/opt/kylo/kylo-services/lib/*'
+
+echo "Loading classpath: ${CP}"
+
+java -cp ${CP} \
     liquibase.integration.commandline.Main \
-     --driver=org.mariadb.jdbc.Driver \
      --changeLogFile=com/thinkbiganalytics/db/master.xml \
-     --url="jdbc:mysql://localhost:3306/kylo" \
-     --username=root \
-     --password=hadoop \
-     updateSQL > kylo-db-update-script.sql
+     --driver=${DRIVER} \
+     --url=${URL} \
+     --username=${USERNAME} \
+     --password=${PASSWORD} \
+     updateSQL > ${TARGET}
