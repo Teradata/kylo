@@ -69,6 +69,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -634,6 +635,27 @@ public class MetadataClient {
      */
     public Boolean isNiFiFlowDataAvailable() {
         return get(path("nifi-provenance", "nifi-flow-cache", "available"), Boolean.class);
+    }
+
+    /**
+     * Gets the data source with the specified id.
+     *
+     * @param id the data source id
+     * @return the data source, if found
+     * @throws RestClientException if the data source is unavailable
+     */
+    public Optional<Datasource> getDatasource(@Nonnull final String id) {
+        try {
+            return Optional.of(get(path("datasource", id),
+                                   uri -> (uri != null) ? uri.queryParam("sensitive", true) : null,
+                                   Datasource.class));
+        } catch (final HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
     }
 
     private UriComponentsBuilder base(Path path) {

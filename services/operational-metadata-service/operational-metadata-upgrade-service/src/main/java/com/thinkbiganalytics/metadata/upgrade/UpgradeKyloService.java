@@ -162,6 +162,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                FeedsAccessControl.IMPORT_FEEDS,
                                                FeedsAccessControl.EXPORT_FEEDS,
                                                FeedsAccessControl.EDIT_CATEGORIES,
+                                               FeedsAccessControl.EDIT_DATASOURCES,
                                                FeedsAccessControl.EDIT_TEMPLATES,
                                                FeedsAccessControl.IMPORT_TEMPLATES,
                                                FeedsAccessControl.EXPORT_TEMPLATES,

@@ -73,4 +73,13 @@ public interface FeedsAccessControl {
                                                         "Administer Templates",
                                                         "Allows the administration of a feed template");
 
+    Action ACCESS_DATASOURCES = FEEDS_SUPPORT.subAction("accessDatasources",
+                                                        "Access Data Sources",
+                                                        "Allows access to data sources");
+    Action EDIT_DATASOURCES = ACCESS_DATASOURCES.subAction("editDatasources",
+                                                           "Edit Data Sources",
+                                                           "Allows creating and editing new data sources");
+    Action ADMIN_DATASOURCES = ACCESS_DATASOURCES.subAction("adminDatasources",
+                                                            "Administer Data Sources",
+                                                            "Allows the administration of data sources");
 }

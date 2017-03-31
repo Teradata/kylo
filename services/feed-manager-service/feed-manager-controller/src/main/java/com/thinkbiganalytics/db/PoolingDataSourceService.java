@@ -21,28 +21,57 @@ package com.thinkbiganalytics.db;
  */
 
 
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
- * A Connection Pooling service to return a new DataSource
- * Used for the DBSchemaParser class
+ * A Connection Pooling service to return a new DataSource.
+ * <p>Used for the {@code DBSchemaParser} class.</p>
  */
 public class PoolingDataSourceService {
 
     /**
-     * Cache of datasources
+     * Cache of data sources.
+     *
+     * <p>Expires unused entries to avoid long-term caching of data sources with invalid credentials.</p>
      */
-    private static Map<String, DataSource> datasources = new ConcurrentHashMap<>();
+    private static final LoadingCache<DataSourceProperties, DataSource> DATA_SOURCES = CacheBuilder.newBuilder()
+        .expireAfterAccess(60, TimeUnit.MINUTES)
+        .build(new CacheLoader<DataSourceProperties, DataSource>() {
+            @Override
+            public DataSource load(@Nonnull final DataSourceProperties key) throws Exception {
+                return createDatasource(key);
+            }
+        });
 
-    public static DataSource getDataSource(DataSourceProperties props) {
-        String cacheKey = cacheKey(props.getUrl(), props.getUser());
-        return datasources.computeIfAbsent(cacheKey, key -> createDatasource(props));
+    /**
+     * Gets the data source using the specified properties.
+     *
+     * @param props the data source properties
+     * @return the data source
+     */
+    public static DataSource getDataSource(@Nonnull final DataSourceProperties props) {
+        try {
+            return DATA_SOURCES.get(props);
+        } catch (final ExecutionException e) {
+            if (e.getCause() != null) {
+                throw Throwables.propagate(e.getCause());
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static DataSource createDatasource(DataSourceProperties props) {
@@ -64,10 +93,6 @@ public class PoolingDataSourceService {
             }
         }
         return ds;
-    }
-
-    private static String cacheKey(String connectURI, String user) {
-        return connectURI + "." + user;
     }
 
     public static class DataSourceProperties {
@@ -141,6 +166,34 @@ public class PoolingDataSourceService {
         public void setDriverClassName(String driverClassName) {
             this.driverClassName = driverClassName;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            DataSourceProperties that = (DataSourceProperties) o;
+            return Objects.equals(user, that.user) &&
+                   Objects.equals(password, that.password) &&
+                   Objects.equals(url, that.url) &&
+                   Objects.equals(driverClassName, that.driverClassName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(user, password, url, driverClassName);
+        }
     }
 
+    /**
+     * Instances of {@code PoolingDataSourceService} may not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private PoolingDataSourceService() {
+        throw new UnsupportedOperationException();
+    }
 }

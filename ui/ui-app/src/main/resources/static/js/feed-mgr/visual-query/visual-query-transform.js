@@ -76,13 +76,25 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             }
         };
 
-        // Translates expressions into Spark code
-        if (angular.isArray(FeedService.createFeedModel.dataTransformation.states) && FeedService.createFeedModel.dataTransformation.states.length > 0) {
-            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states);
-            this.functionHistory = this.sparkShellService.getHistory();
-        } else {
-            this.sparkShellService = new SparkShellService(this.sql);
-        }
+        /**
+         * Translates expressions into Spark code.
+         * @type {SparkShellService}
+         */
+        this.sparkShellService = function () {
+            var model = FeedService.createFeedModel.dataTransformation;
+            var source = (angular.isObject(self.sqlModel) && angular.isArray(model.datasourceIds)
+                          && (model.datasourceIds.length > 1 || (model.datasourceIds.length === 1 && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE)))
+                ? self.sqlModel
+                : self.sql;
+
+            if (angular.isArray(model.states) && model.states.length > 0) {
+                var service = new SparkShellService(source, model.states, model.datasources);
+                self.functionHistory = service.getHistory();
+                return service;
+            } else {
+                return new SparkShellService(source, null, model.datasources);
+            }
+        }();
 
         this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode
@@ -547,7 +559,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 var functionDefs = self.sparkShellService.getFunctionDefs();
 
                 self.sql = self.model.visualQuerySql;
-                self.sparkShellService = new SparkShellService(self.sql);
+                self.sparkShellService = new SparkShellService(self.sql, null, FeedService.createFeedModel.dataTransformation.datasources);
                 self.sparkShellService.setFunctionDefs(functionDefs);
                 self.query();
             }
@@ -566,7 +578,9 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             var feedModel = FeedService.createFeedModel;
             var newScript = self.sparkShellService.getFeedScript();
             if (newScript === feedModel.dataTransformation.dataTransformScript) {
-                return $q.defer().reject(true).promise;
+                var result = $q.defer();
+                result.reject(true);
+                return result.promise;
             }
 
             // Populate Feed Model from the Visual Query Model
@@ -576,7 +590,6 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             feedModel.table.existingTableName = "";
             feedModel.table.method = "EXISTING_TABLE";
             feedModel.table.sourceTableSchema.name = "";
-
 
             // Get list of fields
             var deferred = $q.defer();

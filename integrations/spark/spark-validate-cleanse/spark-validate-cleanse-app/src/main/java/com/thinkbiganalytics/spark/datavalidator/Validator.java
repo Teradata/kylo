@@ -394,13 +394,13 @@ public class Validator implements Serializable {
             Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
             // Handle complex types by passing them through
 
-            if (dataType.isUnchecked() || (!(val instanceof String))) {
+            if (dataType.isUnchecked()) {
                 if (val == null) {
                     nulls++;
                 }
                 newValues[idx] = val;
             } else {
-                String fieldValue = (val != null ? val.toString() : null);
+                Object fieldValue = (val != null ? val : null);
 
                 if (fieldValue == null) {
                     nulls++;
@@ -411,7 +411,8 @@ public class Validator implements Serializable {
                 newValues[idx] = fieldValue;
 
                 // Record results in the appended columns
-                result = validateField(fieldPolicy, dataType, fieldValue);
+                String fieldValueForValidation = ((fieldValue == null) ? null:fieldValue.toString());
+                result = validateField(fieldPolicy, dataType, fieldValueForValidation);
                 if (!result.isValid()) {
                     rowValid = false;
                     results = (results == null ? new Vector<ValidationResult>() : results);
@@ -524,8 +525,12 @@ public class Validator implements Serializable {
 
         boolean isEmpty = (StringUtils.isEmpty(fieldValue));
         if (isEmpty) {
-            if (!fieldPolicy.isNullable()) {
-                return ValidationResult.failField("null", fieldDataType.getName(), "Cannot be null");
+            ValidationPolicy validator;
+            if ((validator = fieldPolicy.getNotNullValidator()) != null) {
+                ValidationResult result = validateValue(validator, fieldDataType, fieldValue);
+                if (result != VALID_RESULT) {
+                    return result;
+                }
             }
         } else {
 
@@ -595,16 +600,21 @@ public class Validator implements Serializable {
     /**
      * Applies the standardization policies
      */
-    protected String standardizeField(FieldPolicy fieldPolicy, String value) {
-        String newValue = value;
+    protected Object standardizeField(FieldPolicy fieldPolicy, Object value) {
+        Object newValue = value;
         List<StandardizationPolicy> standardizationPolicies = fieldPolicy.getStandardizationPolicies();
         if (standardizationPolicies != null) {
-            boolean isEmpty = (StringUtils.isEmpty(value));
+            boolean isEmpty = ((value == null) || (StringUtils.isEmpty(value.toString())));
             for (StandardizationPolicy standardizationPolicy : standardizationPolicies) {
                 if (isEmpty && !(standardizationPolicy instanceof AcceptsEmptyValues)) {
                     continue;
                 }
-                newValue = standardizationPolicy.convertValue(newValue);
+
+                if (!standardizationPolicy.accepts(value)) {
+                    continue;
+                }
+
+                newValue = standardizationPolicy.convertRawValue(newValue);
             }
         }
         return newValue;

@@ -21,7 +21,10 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
@@ -38,12 +41,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 
 /**
  * Implements a {@link NiFiControllerServicesRestClient} for communicating with NiFi v1.0.
  */
-public class NiFiControllerServicesRestClientV1 implements NiFiControllerServicesRestClient {
+public class NiFiControllerServicesRestClientV1 extends AbstractNiFiControllerServicesRestClient {
 
     /**
      * Base path for controller service requests
@@ -92,6 +96,19 @@ else {
 
     @Nonnull
     @Override
+    public ControllerServiceDTO create(@Nonnull ControllerServiceDTO controllerService) {
+        final ControllerServiceEntity entity = new ControllerServiceEntity();
+        entity.setComponent(controllerService);
+
+        final RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(0L);
+        entity.setRevision(revision);
+
+        return client.post("/process-groups/root/controller-services", entity, ControllerServiceEntity.class).getComponent();
+    }
+
+    @Nonnull
+    @Override
     public Set<ControllerServiceDTO> findAll() {
         return client.get("/flow/process-groups/root/controller-services", null, ControllerServicesEntity.class)
             .getControllerServices().stream()
@@ -103,6 +120,11 @@ else {
     @Override
     public Optional<ControllerServiceDTO> findById(@Nonnull final String id) {
         return findEntityById(id).map(ControllerServiceEntity::getComponent);
+    }
+
+    @Override
+    public NiFiRestClient getClient() {
+        return client;
     }
 
     @Nonnull
@@ -133,6 +155,8 @@ else {
                     return Optional.of(client.put(BASE_PATH + controllerService.getId(), entity, ControllerServiceEntity.class).getComponent());
                 } catch (final NotFoundException e) {
                     return Optional.empty();
+                } catch (final ClientErrorException e) {
+                    throw new NifiClientRuntimeException("Error updating controller service: " + e.getResponse().readEntity(String.class), e);
                 }
             })
             .orElseThrow(() -> new NifiComponentNotFoundException(controllerService.getId(), NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));

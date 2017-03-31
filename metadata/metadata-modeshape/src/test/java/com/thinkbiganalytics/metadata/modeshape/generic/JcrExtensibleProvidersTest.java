@@ -64,7 +64,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
         //  + Datasource + DatasourceDefinition + DerivedDatasource + DirectoryDatasource + Feed + FeedSLA + HiveTableDatasource + Metric +  +  +  + User +
-        // UserGroup = 14
+        // UserGroup + UserDatasource + JdbcDatasource = 14
         /*0 = {JcrExtensibleType@5423} "tba:sla"
         1 = {JcrExtensibleType@5424} "tba:slaCheck"
         2 = {JcrExtensibleType@5425} "tba:category"
@@ -78,12 +78,14 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         10 = {JcrExtensibleType@5433} "tba:metric"
         11 = {JcrExtensibleType@5434} "tba:userGroup"
         12 = {JcrExtensibleType@5435} "tba:datasourceDefinition"
+        13 = {JcrExtensibleType@5436} "tba:userDatasource"
+        14 = {JcrExtensibleType@5437} "tba:jdbcDatasource"
         */
         //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
         //KYLO-292 will address this.  For now to get the build to pass look for result either 13 or 14
 
 
-        assertThat(size).isBetween(13,14);
+        assertThat(size).isBetween(15,16);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
@@ -166,8 +168,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
          //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
         //KYLO-292 will address this.  For now to get the build to pass look for result either 15,16
 
-        // 14 + Person + Employee = 16
-        assertThat(size).isBetween(15,16);
+        // 16 + Person + Employee = 18
+        assertThat(size).isBetween(17,18);
     }
 
     @Test(dependsOnMethods="testCreatePersonType")

@@ -321,6 +321,11 @@ public class PropertyExpressionResolver {
                 if (configValue != null) {
                     hasConfig[0] = true;
                     isModified[0] = true;
+                    //if this is the first time we found the config var, set the template value correctly
+                    if (!property.isContainsConfigurationVariables()) {
+                        property.setTemplateValue(property.getValue());
+                        property.setContainsConfigurationVariables(true);
+                    }
                     return configValue;
                 }
 

@@ -117,6 +117,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
 
                     var menu = ({type:'toggle', text: "Admin",narrowText:'Admin',expanded:false});
                     var links = [];
+                    links.push({sref: "datasources", type: "link", icon: "storage", text: "Data Sources", defaultActive: false, permission: AccessControlService.DATASOURCE_ACCESS});
                     links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessControlService.CATEGORIES_ADMIN});
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessControlService.TEMPLATES_ACCESS});
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessControlService.USERS_ACCESS});
@@ -244,10 +245,10 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     if(moduleName.indexOf('opsmgr') >=0){
                         return menuMap[MENU_KEY.OPS_MGR];
                     }
-                    else if(moduleName.indexOf('feedmgr') >=0 && moduleName != 'kylo.feedmgr.templates'){
+                    else if(moduleName.indexOf('feedmgr') >=0 && moduleName != 'kylo.feedmgr.datasources' && moduleName != 'kylo.feedmgr.templates'){
                         return menuMap[MENU_KEY.FEED_MGR];
                     }
-                    else if(moduleName.indexOf('auth') >=0 || moduleName == 'kylo.feedmgr.templates'){
+                    else if(moduleName.indexOf('auth') >=0 || moduleName == 'kylo.feedmgr.datasources' || moduleName == 'kylo.feedmgr.templates'){
                         return menuMap[MENU_KEY.ADMIN];
                     }
                     else {

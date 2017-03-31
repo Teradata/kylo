@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -82,12 +83,14 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     static {
         Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
+        map.put(JdbcDatasource.class, JcrJdbcDatasource.class);
         DOMAIN_TYPES_MAP = map;
     }
 
     static {
         Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
+        map.put(JcrJdbcDatasource.NODE_TYPE, JcrJdbcDatasource.class);
         NODE_TYPES_MAP = map;
     }
 
@@ -261,7 +264,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         Datasource ds = getDatasource(id);
         if (ds != null) {
             try {
-                ((JcrMetadataAccess) metadataAccess).ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
+                JcrMetadataAccess.ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
                 ((JcrDatasource) ds).getNode().remove();
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Unable to remove Datasource: " + id);

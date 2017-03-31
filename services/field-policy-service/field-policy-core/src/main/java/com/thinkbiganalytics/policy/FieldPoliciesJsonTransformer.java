@@ -22,12 +22,15 @@ package com.thinkbiganalytics.policy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,4 +112,78 @@ public class FieldPoliciesJsonTransformer {
         }
     }
 
+    public void augmentPartitionColumnValidation() {
+        log.info("Augmenting partition column validation");
+        for (com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
+            if (uiFieldPolicy.isPartitionColumn()) {
+                log.info("Found a partition column: " + uiFieldPolicy.getFieldName());
+                boolean augmentRule = true;
+
+                List<FieldValidationRule> currentValidationRules = uiFieldPolicy.getValidation();
+                if (currentValidationRules != null) {
+                    log.info("There are validation rules already set for " + uiFieldPolicy.getFieldName());
+                    for (FieldValidationRule fieldValidationRule : currentValidationRules) {
+                        if (fieldValidationRule.getObjectClassType().equals("com.thinkbiganalytics.policy.validation.NotNullValidator")
+                            || (fieldValidationRule.getObjectShortClassType().equals("NotNullValidator"))) {
+                            log.info("NotNull validation rule already set for " + uiFieldPolicy.getFieldName());
+                            augmentRule = false;
+                        }
+                    }
+                }
+
+                if (augmentRule) {
+                    log.info("Augmenting the field " + uiFieldPolicy.getFieldName() + " with NotNull validation rule");
+                    if (currentValidationRules == null) {
+                        currentValidationRules = new ArrayList<>();
+                    }
+                    FieldValidationRule fvRule = new FieldValidationRule();
+                    fvRule.setName("Partition Column Not Null");
+                    fvRule.setObjectClassType("com.thinkbiganalytics.policy.validation.NotNullValidator");
+                    fvRule.setObjectShortClassType("NotNullValidator");
+
+                    List<FieldRuleProperty> fieldRulePropertyList = new ArrayList<>();
+
+                    FieldRuleProperty fieldRuleProperty1 = new FieldRuleProperty();
+                    fieldRuleProperty1.setName("EMPTY_STRING");
+                    fieldRuleProperty1.setDisplayName(null);
+                    fieldRuleProperty1.setValue("false");
+                    fieldRuleProperty1.setPlaceholder(null);
+                    fieldRuleProperty1.setType(null);
+                    fieldRuleProperty1.setHint(null);
+                    fieldRuleProperty1.setObjectProperty("allowEmptyString");
+                    fieldRuleProperty1.setRequired(false);
+                    fieldRuleProperty1.setGroup(null);
+                    fieldRuleProperty1.setLayout(null);
+                    fieldRuleProperty1.setHidden(false);
+                    fieldRuleProperty1.setPattern(null);
+                    fieldRuleProperty1.setPatternInvalidMessage(null);
+
+                    FieldRuleProperty fieldRuleProperty2 = new FieldRuleProperty();
+                    fieldRuleProperty2.setName("TRIM_STRING");
+                    fieldRuleProperty2.setDisplayName(null);
+                    fieldRuleProperty2.setValue("true");
+                    fieldRuleProperty2.setPlaceholder(null);
+                    fieldRuleProperty2.setType(null);
+                    fieldRuleProperty2.setHint(null);
+                    fieldRuleProperty2.setObjectProperty("trimString");
+                    fieldRuleProperty2.setRequired(false);
+                    fieldRuleProperty2.setGroup(null);
+                    fieldRuleProperty2.setLayout(null);
+                    fieldRuleProperty2.setHidden(false);
+                    fieldRuleProperty2.setPattern(null);
+                    fieldRuleProperty2.setPatternInvalidMessage(null);
+
+                    fieldRulePropertyList.add(fieldRuleProperty1);
+                    fieldRulePropertyList.add(fieldRuleProperty2);
+
+                    fvRule.setProperties(fieldRulePropertyList);
+
+                    currentValidationRules.add(fvRule);
+                    log.info("Added rule for NotNull validation on " + uiFieldPolicy.getFieldName());
+                    uiFieldPolicy.setValidation(currentValidationRules);
+                }
+
+            }
+        }
+    }
 }

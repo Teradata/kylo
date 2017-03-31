@@ -142,9 +142,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             existingTableName: null,
                             structured: false,
                             targetMergeStrategy: 'DEDUPE_AND_MERGE',
-                            feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
-                                        + ' STORED AS'
-                                        + ' TEXTFILE',
+                            feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
+                                        + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
+                                        + ' STORED AS TEXTFILE',
                             targetFormat: null,
                             fieldPolicies: [],
                             partitions: [],
@@ -155,7 +155,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         dataOwner: '',
                         tags: [],
                         reusableFeed: false,
-                        dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: []},
+                        dataTransformation: {
+                            chartViewModel: null,
+                            datasourceIds: null,
+                            datasources: null,
+                            dataTransformScript: null,
+                            sql: null,
+                            states: []
+                        },
                         userProperties: [],
                         options: {skipHeader: false},
                         active: true

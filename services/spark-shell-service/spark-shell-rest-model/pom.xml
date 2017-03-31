@@ -29,6 +29,11 @@
 
     <!-- Kylo -->
     <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-service-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>

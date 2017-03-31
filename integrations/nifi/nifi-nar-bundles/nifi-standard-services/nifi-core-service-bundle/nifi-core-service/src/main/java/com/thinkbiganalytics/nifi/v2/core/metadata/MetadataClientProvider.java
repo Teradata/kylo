@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -236,5 +237,8 @@ public class MetadataClientProvider implements MetadataProvider {
         return client.mergeFeedProperties(id, props);
     }
 
-
+    @Override
+    public Optional<Datasource> getDatasource(@Nonnull final String id) {
+        return client.getDatasource(id);
+    }
 }

@@ -85,13 +85,19 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         StepperService.registerStepper(self.stepperName, self.totalSteps);
         this.steps = StepperService.getSteps(self.stepperName);
 
-        if (typeof(this.selectedStepIndex) !== "undefined") {
-            angular.forEach(this.steps, function (step) {
-                step.complete = true;
-                step.disabled = false;
-                step.visited = true;
-                step.updateStepType();
-            });
+        if (angular.isNumber(this.selectedStepIndex) || angular.isString(this.selectedStepIndex)) {
+            // Complete previous steps
+            for (var i=0; i < this.selectedStepIndex; ++i) {
+                this.steps[i].complete = true;
+                this.steps[i].disabled = false;
+                this.steps[i].visited = true;
+                this.steps[i].updateStepType();
+            }
+
+            // Active current step
+            this.steps[this.selectedStepIndex].disabled = false;
+            this.steps[this.selectedStepIndex].visited = true;
+            this.steps[this.selectedStepIndex].updateStepType();
         } else {
             this.selectedStepIndex = 0;
         }

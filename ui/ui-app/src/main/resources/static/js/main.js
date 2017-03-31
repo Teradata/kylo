@@ -104,7 +104,7 @@ require.config({
         "ng-text-truncate":["angular"],
         'nvd3':{deps:['d3'],exports:'nv'},
         'pivottable':{deps:['c3','jquery']},
-        'vis;':{exports:"vis"},
+        'vis':{exports:"vis"},
         'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app'},
         'routes':{deps:['app'], exports:'routes'}
     },

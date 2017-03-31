@@ -21,7 +21,10 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.feedmgr.rest.FeedLineageBuilder;
+import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -31,8 +34,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
-import com.thinkbiganalytics.metadata.rest.FeedLineageBuilder;
-import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
@@ -110,6 +111,12 @@ public class FeedsController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private Model model;
+
+    @Inject
+    private DatasourceModelTransform datasourceTransform;
 
     @GET
     @Path("{id}/initstatus")
@@ -317,7 +324,7 @@ public class FeedsController {
 
             com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(category, name, srcId, destId);
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = feedProvider.getFeeds(criteria);
-            return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
+            return new ArrayList<>(Collections2.transform(domainFeeds, model::domainToFeed));
         });
     }
 
@@ -339,7 +346,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
 
-            return Model.DOMAIN_TO_FEED.apply(domain);
+            return model.domainToFeed(domain);
         });
     }
 
@@ -503,7 +510,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
-                return new ArrayList<>(Collections2.transform(domain.getSources(), Model.DOMAIN_TO_FEED_SOURCE));
+                return new ArrayList<>(Collections2.transform(domain.getSources(), model::domainToFeedSource));
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
             }
@@ -525,7 +532,7 @@ public class FeedsController {
 //                com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
 //
 //                if (domainSrc != null) {
-//                    return Model.DOMAIN_TO_FEED_SOURCE.apply(domainSrc);
+//                    return Model.domainToFeedSource.apply(domainSrc);
 //                } else {
 //                    throw new WebApplicationException("A feed source with the given ID does not exist: " + srcId, Status.NOT_FOUND);
 //                }
@@ -554,7 +561,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
-                return new ArrayList<>(Collections2.transform(domain.getDestinations(), Model.DOMAIN_TO_FEED_DESTINATION));
+                return new ArrayList<>(Collections2.transform(domain.getDestinations(), model::domainToFeedDestination));
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
             }
@@ -576,7 +583,7 @@ public class FeedsController {
 //                com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
 //
 //                if (domainDest != null) {
-//                    return Model.DOMAIN_TO_FEED_DESTINATION.apply(domainDest);
+//                    return Model.domainToFeedDestination.apply(domainDest);
 //                } else {
 //                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destId, Status.NOT_FOUND);
 //                }
@@ -684,9 +691,9 @@ public class FeedsController {
                 ensurePrecondition(feed, domainFeed);
                 ensureProperties(feed, domainFeed);
 
-                return Model.DOMAIN_TO_FEED.apply(feedProvider.getFeed(domainFeed.getId()));
+                return model.domainToFeed(feedProvider.getFeed(domainFeed.getId()));
             } else if (ensure) {
-                return Model.DOMAIN_TO_FEED.apply(existing.iterator().next());
+                return model.domainToFeed(existing.iterator().next());
             } else {
                 throw new WebApplicationException("A feed with the given name already exists: " + feed.getSystemName(), Status.BAD_REQUEST);
             }
@@ -717,8 +724,8 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
-                domain = Model.updateDomain(feed, domain);
-                return Model.DOMAIN_TO_FEED.apply(domain);
+                domain = model.updateDomain(feed, domain);
+                return model.domainToFeed(domain);
             } else {
                 throw new WebApplicationException("No feed exist with the ID: " + feed.getId(), Status.NOT_FOUND);
             }
@@ -839,7 +846,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
 
             if (domainFeed != null) {
-                FeedLineageBuilder builder = new FeedLineageBuilder(domainFeed);
+                FeedLineageBuilder builder = new FeedLineageBuilder(domainFeed, model, datasourceTransform);
                 Feed feed = builder.build();//Model.DOMAIN_TO_FEED_WITH_DEPENDENCIES.apply(domainFeed);
                 return new FeedLineage(feed, datasourceService.getFeedLineageStyleMap());
             }
@@ -907,7 +914,7 @@ public class FeedsController {
             Datasource.ID domainDsId = datasetProvider.resolve(datasourceId);
             com.thinkbiganalytics.metadata.api.feed.FeedSource domainDest = feedProvider.ensureFeedSource(domainFeedId, domainDsId);
 
-            return Model.DOMAIN_TO_FEED.apply(domainDest.getFeed());
+            return model.domainToFeed(domainDest.getFeed());
         });
     }
 
@@ -932,7 +939,7 @@ public class FeedsController {
             Datasource.ID domainDsId = datasetProvider.resolve(datasourceId);
             com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = feedProvider.ensureFeedDestination(domainFeedId, domainDsId);
 
-            return Model.DOMAIN_TO_FEED.apply(domainDest.getFeed());
+            return model.domainToFeed(domainDest.getFeed());
         });
     }
 
@@ -962,7 +969,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed
                 = feedProvider.createPrecondition(domainFeedId, "", domainMetrics);
 
-            return Model.DOMAIN_TO_FEED.apply(domainFeed);
+            return model.domainToFeed(domainFeed);
         });
     }
 
@@ -1052,7 +1059,7 @@ public class FeedsController {
 
     private FeedDependencyGraph collectFeedDependencies(com.thinkbiganalytics.metadata.api.feed.Feed currentFeed, boolean assessPrecond) {
         List<com.thinkbiganalytics.metadata.api.feed.Feed<?>> domainDeps = currentFeed.getDependentFeeds();
-        FeedDependencyGraph feedDep = new FeedDependencyGraph(Model.DOMAIN_TO_FEED.apply(currentFeed), null);
+        FeedDependencyGraph feedDep = new FeedDependencyGraph(model.domainToFeed(currentFeed), null);
 
         if (!domainDeps.isEmpty()) {
             for (com.thinkbiganalytics.metadata.api.feed.Feed<?> depFeed : domainDeps) {

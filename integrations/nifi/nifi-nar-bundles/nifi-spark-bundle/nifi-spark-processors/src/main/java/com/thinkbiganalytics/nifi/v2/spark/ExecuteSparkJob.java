@@ -20,6 +20,11 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
@@ -27,7 +32,6 @@ import com.thinkbiganalytics.nifi.security.SecurityUtil;
 import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 import com.thinkbiganalytics.nifi.util.InputStreamReaderRunnable;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -52,11 +56,17 @@ import org.apache.spark.launcher.SparkLauncher;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -187,7 +197,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .name("Hadoop Configuration Resources")
         .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
                      + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
-        .required(false).addValidator(createMultipleFilesExistValidator())
+        .required(false)
+        .addValidator(createMultipleFilesExistValidator())
         .build();
     public static final PropertyDescriptor SPARK_CONFS = new PropertyDescriptor.Builder()
         .name("Spark Configurations")
@@ -211,7 +222,28 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor DATASOURCES = new PropertyDescriptor.Builder()
+        .name("Data Sources")
+        .description("A comma-separated list of data source ids to include in the environment for Spark.")
+        .required(false)
+        .addValidator(createUuidListValidator())
+        .expressionLanguageSupported(true)
+        .build();
+    public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
+        .name("Metadata Service")
+        .description("Kylo metadata service")
+        .required(false)
+        .identifiesControllerService(MetadataProviderService.class)
+        .build();
+
+    /**
+     * Matches a comma-separated list of UUIDs
+     */
+    private static final Pattern UUID_REGEX = Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+                                                              + "(,[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})*$");
+
     private final Set<Relationship> relationships;
+
     /**
      * Kerberos service keytab
      */
@@ -266,6 +298,23 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         };
     }
 
+    /**
+     * Creates a new {@link Validator} that checks for a comma-separated list of UUIDs.
+     *
+     * @return the validator
+     */
+    @Nonnull
+    private static Validator createUuidListValidator() {
+        return (subject, input, context) -> {
+            final String value = context.getProperty(DATASOURCES).evaluateAttributeExpressions().getValue();
+            if (value == null || value.isEmpty() || UUID_REGEX.matcher(value).matches()) {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).explanation("List of UUIDs").build();
+            } else {
+                return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("not a list of UUIDs").build();
+            }
+        };
+    }
+
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
@@ -297,6 +346,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         pds.add(YARN_QUEUE);
         pds.add(SPARK_CONFS);
         pds.add(EXTRA_SPARK_FILES);
+        pds.add(DATASOURCES);
+        pds.add(METADATA_SERVICE);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -344,6 +395,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String sparkConfs = context.getProperty(SPARK_CONFS).evaluateAttributeExpressions(flowFile).getValue();
             String extraFiles = context.getProperty(EXTRA_SPARK_FILES).evaluateAttributeExpressions(flowFile).getValue();
             Integer sparkProcessTimeout = context.getProperty(PROCESS_TIMEOUT).evaluateAttributeExpressions(flowFile).asTimePeriod(TimeUnit.SECONDS).intValue();
+            String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
+            MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
             String[] confs = null;
             if (!StringUtils.isEmpty(sparkConfs)) {
@@ -355,9 +408,9 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 args = appArgs.split(",");
             }
 
-            String[] extraJarPaths = null;
+            final List<String> extraJarPaths = new ArrayList<>();
             if (!StringUtils.isEmpty(extraJars)) {
-                extraJarPaths = extraJars.split(",");
+                extraJarPaths.addAll(Arrays.asList(extraJars.split(",")));
             } else {
                 getLog().info("No extra jars to be added to class path");
             }
@@ -397,7 +450,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                             }
 
                         } catch (Exception unknownException) {
-                            getLog().error("Unknown exception occured while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
+                            getLog().error("Unknown exception occurred while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
@@ -412,8 +465,38 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
+            // Build environment
+            final Map<String, String> env = new HashMap<>();
+
+            if (StringUtils.isNotBlank(datasourceIds)) {
+                final StringBuilder datasources = new StringBuilder(10240);
+                final ObjectMapper objectMapper = new ObjectMapper();
+                final MetadataProvider provider = metadataService.getProvider();
+
+                for (final String id : datasourceIds.split(",")) {
+                    datasources.append((datasources.length() == 0) ? '[' : ',');
+
+                    final Optional<Datasource> datasource = provider.getDatasource(id);
+                    if (datasource.isPresent()) {
+                        if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
+                            final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
+                            extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+                        }
+                        datasources.append(objectMapper.writeValueAsString(datasource.get()));
+                    } else {
+                        logger.error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
+                    }
+                }
+
+                datasources.append(']');
+                env.put("DATASOURCES", datasources.toString());
+            }
+
              /* Launch the spark job as a child process */
-            SparkLauncher launcher = new SparkLauncher()
+            SparkLauncher launcher = new SparkLauncher(env)
                 .setAppResource(appJar)
                 .setMainClass(mainClass)
                 .setMaster(sparkMaster)
@@ -440,7 +523,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 }
             }
 
-            if (ArrayUtils.isNotEmpty(extraJarPaths)) {
+            if (!extraJarPaths.isEmpty()) {
                 for (String path : extraJarPaths) {
                     getLog().info("Adding to class path '" + path + "'");
                     launcher.addJar(path);
@@ -494,6 +577,21 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
+    }
 
+    @Override
+    protected Collection<ValidationResult> customValidate(@Nonnull final ValidationContext validationContext) {
+        final Set<ValidationResult> results = new HashSet<>();
+
+        if (validationContext.getProperty(DATASOURCES).isSet() && !validationContext.getProperty(METADATA_SERVICE).isSet()) {
+            results.add(new ValidationResult.Builder()
+                            .subject(METADATA_SERVICE.getName())
+                            .input(validationContext.getProperty(METADATA_SERVICE).getValue())
+                            .valid(false)
+                            .explanation("Metadata Service is required when Data Sources is not empty")
+                            .build());
+        }
+
+        return results;
     }
 }
