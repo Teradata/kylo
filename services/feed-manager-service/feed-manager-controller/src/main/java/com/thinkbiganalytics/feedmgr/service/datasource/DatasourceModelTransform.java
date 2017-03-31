@@ -164,15 +164,21 @@ public class DatasourceModelTransform {
         if (level.compareTo(Level.CONNECTIONS) <= 0) {
             for (com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc : domain.getFeedSources()) {
                 Feed feed = new Feed();
+                feed.setDisplayName(domainSrc.getFeed().getDisplayName());
                 feed.setId(domainSrc.getFeed().getId().toString());
+                feed.setState(Feed.State.valueOf(domainSrc.getFeed().getState().name()));
                 feed.setSystemName(domainSrc.getFeed().getName());
+                feed.setModifiedTime(domainSrc.getFeed().getModifiedTime());
 
                 ds.getSourceForFeeds().add(feed);
             }
             for (com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest : domain.getFeedDestinations()) {
                 Feed feed = new Feed();
+                feed.setDisplayName(domainDest.getFeed().getDisplayName());
                 feed.setId(domainDest.getFeed().getId().toString());
+                feed.setState(Feed.State.valueOf(domainDest.getFeed().getState().name()));
                 feed.setSystemName(domainDest.getFeed().getName());
+                feed.setModifiedTime(domainDest.getFeed().getModifiedTime());
 
                 ds.getDestinationForFeeds().add(feed);
             }

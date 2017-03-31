@@ -67,6 +67,11 @@ public class Feed implements Serializable {
     private Set<Feed> usedByFeeds;
     private Set<String> usedByFeedIds;
 
+    /**
+     * Last modified time
+     */
+    private DateTime modifiedTime;
+
     public Feed() {
         super();
     }
@@ -253,5 +258,11 @@ public class Feed implements Serializable {
 
     public enum State {ENABLED, DISABLED, DELETED}
 
+    public DateTime getModifiedTime() {
+        return modifiedTime;
+    }
 
+    public void setModifiedTime(DateTime modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
 }

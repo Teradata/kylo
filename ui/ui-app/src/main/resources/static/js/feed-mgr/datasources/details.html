@@ -84,6 +84,44 @@
           </ng-form>
         </editable-section>
       </vertical-section-layout>
+
+      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds">
+        <readonly-section>
+          <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.sourceForFeeds.length > 0">
+            <md-list-item>
+              <div layout="row" layout-fill>
+                <div flex="50" class="md-list-item-text hint">
+                  Name
+                </div>
+                <div flex="10" class="md-list-item-text hint">
+                  Active
+                </div>
+                <div flex="40" class="md-list-item-text hint">
+                  Last Modified
+                </div>
+              </div>
+            </md-list-item>
+            <md-list-item ng-repeat="feed in vm.model.sourceForFeeds" >
+              <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
+                <div flex="50" class="md-list-item-text">
+                  <md-input-container class="md-block" flex-gt-sm>
+                    <div>{{feed.displayName}}</div>
+                  </md-input-container>
+                </div>
+                <div flex="10" class="md-list-item-text ">
+                  <ng-md-icon icon="check" ng-if="feed.state == 'ENABLED'"></ng-md-icon>
+                </div>
+                <div flex="40" class="md-list-item-text ">
+                  {{feed.modifiedTime | date : 'MM/dd/yyyy hh:mm:ss'}}
+                </div>
+              </div>
+            </md-list-item>
+          </md-list>
+          <div ng-if="vm.model.sourceForFeeds == null || vm.model.sourceForFeeds.length === 0">
+            There are no feeds associated with this data source.
+          </div>
+        </readonly-section>
+      </vertical-section-layout>
     </body-section>
   </card-layout>
 </div>
