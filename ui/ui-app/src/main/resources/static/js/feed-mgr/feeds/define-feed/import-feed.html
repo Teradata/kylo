@@ -157,6 +157,22 @@
                   </div>
                 </div>
 
+                <!-- Data source properties required -->
+                <div ng-if="vm.userDatasourcesOption.properties && vm.userDatasourcesOption.properties.length > 0" flex layout="column">
+                  <div class="layout-padding-bottom">The following data sources need to be supplied before importing this feed:</div>
+
+                  <div ng-repeat="prop in vm.userDatasourcesOption.properties" layout="column" layout-align="start start">
+                    <span>Data Source: {{prop.processorName}}</span>
+                    <div layout="row" flex layout-fill>
+                      <md-input-container>
+                        <md-select ng-model="prop.propertyValue" placeholder="Select new data source">
+                          <md-option ng-value="datasource.id" ng-repeat="datasource in vm.availableDatasources">{{datasource.name}}</md-option>
+                        </md-select>
+                      </md-input-container>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="md-subheader" ng-if="vm.additionalInputNeeded">Template Options</div>
                 <!-- Template Data Container -->
                 <!-- validation messages -->

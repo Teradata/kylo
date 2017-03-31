@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.util;
 
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
@@ -43,10 +44,13 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.annotation.Nonnull;
 
 public class ImportUtil {
 
@@ -68,11 +72,10 @@ public class ImportUtil {
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_DATA, importType.equals(ImportType.TEMPLATE) ? true : false));
             } else if (entry.getName().startsWith(ExportImportTemplateService.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.REUSABLE_TEMPLATE, false));
-
             } else if (importType.equals(ImportType.FEED) && entry.getName().startsWith(ExportImportFeedService.FEED_JSON_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.FEED_DATA, true));
+                options.add(new ImportComponentOption(ImportComponent.USER_DATASOURCES, true));
             }
-
         }
         zis.closeEntry();
         zis.close();
@@ -146,6 +149,49 @@ public class ImportUtil {
             });
             return true;
         }
+    }
+
+    /**
+     * Replaces the specified data source id with a new data source id.
+     *
+     * @param metadata the feed metadata
+     * @param oldDatasourceId the id of the data source to be replaced
+     * @param newDatasourceId the id of the new data source
+     */
+    @SuppressWarnings("unchecked")
+    public static void replaceDatasource(@Nonnull final FeedMetadata metadata, @Nonnull final String oldDatasourceId, @Nonnull final String newDatasourceId) {
+        // Update data transformation
+        final FeedDataTransformation transformation = metadata.getDataTransformation();
+        if (transformation != null) {
+            // Update chart view model
+            Optional.of(transformation.getChartViewModel())
+                .map(model -> (List<Map<String, Object>>) model.get("nodes"))
+                .ifPresent(
+                    nodes -> nodes.forEach(
+                        node -> {
+                            final String nodeDatasourceId = (String) node.get("datasourceId");
+                            if (nodeDatasourceId != null && oldDatasourceId.equals(nodeDatasourceId)) {
+                                node.put("datasourceId", newDatasourceId);
+                            }
+                        }
+                    )
+                );
+
+            // Update data source id list
+            transformation.getDatasourceIds().replaceAll(id -> oldDatasourceId.equals(id) ? newDatasourceId : id);
+
+            // Update transform script
+            final String updatedDataTransformScript = transformation.getDataTransformScript().replace(oldDatasourceId, newDatasourceId);
+            transformation.setDataTransformScript(updatedDataTransformScript);
+        }
+
+        // Update processor properties
+        metadata.getProperties().forEach(property -> {
+            final String value = property.getValue();
+            if (value != null && !value.isEmpty()) {
+                property.setValue(value.replace(oldDatasourceId, newDatasourceId));
+            }
+        });
     }
 
     public static byte[] streamToByteArray(InputStream inputStream) throws IOException {

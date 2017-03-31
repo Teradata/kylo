@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
@@ -45,6 +46,7 @@ import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -59,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -66,6 +69,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -201,6 +205,12 @@ public class ExportImportFeedService {
             if (!validateSensitiveProperties(metadata, importFeed, options)) {
                 return importFeed;
             }
+
+            // Valid data sources
+            if (!validateUserDatasources(metadata, importFeed, options)) {
+                return importFeed;
+            }
+
             //UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating the template data");
             ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.validateTemplateForImport(importFeed.getFileName(), content, options);
             // need to set the importOptions back to the feed options
@@ -244,7 +254,7 @@ public class ExportImportFeedService {
         ImportUtil.addToImportOptionsSensitiveProperties(importOptions, sensitiveProperties, ImportComponent.FEED_DATA);
         boolean valid = ImportUtil.applyImportPropertiesToFeed(metadata, importFeed, ImportComponent.FEED_DATA);
         if (!valid) {
-            statusMessage.update("Validatoin Error. Additional properties are needed before uploading the feed ", false);
+            statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
             importFeed.setValid(false);
         } else {
             statusMessage.update("Validated feed properties.", valid);
@@ -252,6 +262,58 @@ public class ExportImportFeedService {
         completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_PROPERTIES);
         return valid;
 
+    }
+
+    /**
+     * Validates that user data sources can be imported with provided properties.
+     *
+     * @param metadata      the feed data
+     * @param importFeed    the import request
+     * @param importOptions the import options
+     * @return {@code true} if the feed can be imported, or {@code false} otherwise
+     */
+    private boolean validateUserDatasources(@Nonnull final FeedMetadata metadata, @Nonnull final ImportFeed importFeed, @Nonnull final ImportFeedOptions importOptions) {
+        final UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importFeed.getImportOptions().getUploadKey(), "Validating data sources.");
+
+        // Get data sources needing to be created
+        final Set<String> availableDatasources = metadataAccess.read(
+            () -> datasourceProvider.getDatasources(datasourceProvider.datasetCriteria().type(UserDatasource.class)).stream()
+                .map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId)
+                .map(Object::toString)
+                .collect(Collectors.toSet())
+        );
+        final ImportComponentOption componentOption = importOptions.findImportComponentOption(ImportComponent.USER_DATASOURCES);
+        final List<Datasource> providedDatasources = Optional.ofNullable(metadata.getUserDatasources()).orElse(Collections.emptyList());
+
+        if (componentOption.getProperties().isEmpty()) {
+            componentOption.setProperties(
+                providedDatasources.stream()
+                    .filter(datasource -> !availableDatasources.contains(datasource.getId()))
+                    .map(datasource -> new ImportProperty(datasource.getName(), datasource.getId(), null, null, null))
+                    .collect(Collectors.toList())
+            );
+        }
+
+        // Update feed with re-mapped data sources
+        final boolean valid = componentOption.getProperties().stream()
+            .allMatch(property -> {
+                if (property.getPropertyValue() != null) {
+                    ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+        if (valid) {
+            statusMessage.update("Validated data sources.", true);
+        } else {
+            statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
+            importFeed.setValid(false);
+        }
+
+        completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
+        return valid;
     }
 
     private boolean validateOverwriteExistingFeed(FeedMetadata existingFeed, FeedMetadata importingFeed, ImportFeed feed) {

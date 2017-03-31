@@ -1,6 +1,6 @@
 define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
-    var controller = function ($scope, $http, $interval,$timeout, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService, ImportService) {
+    var controller = function ($scope, $http, $interval,$timeout, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService, ImportService, DatasourcesService) {
 
         /**
          * reference to the controller
@@ -93,6 +93,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
 
         /**
+         * User data sources options
+         */
+        this.userDatasourcesOption = ImportService.newUserDatasourcesImportOption();
+
+        /**
          * Called when a user changes a import option for overwriting
          */
         this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
@@ -114,6 +119,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @type {{}}
          */
         this.importFeedForm = {};
+
+        /**
+         * List of available data sources.
+         * @type {Array.<JdbcDatasource>}
+         */
+        self.availableDatasources = [];
 
 
 
@@ -311,6 +322,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function init() {
             indexImportOptions();
             setDefaultImportOptions();
+
+            // Get the list of data sources
+            DatasourcesService.findAll()
+                .then(function (datasources) {
+                    self.availableDatasources = datasources;
+                });
         }
 
         /**
@@ -326,6 +343,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
 
             self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
+
+            self.userDatasourcesOption = ImportService.newUserDatasourcesImportOption();
 
             indexImportOptions();
             setDefaultImportOptions();
@@ -359,6 +378,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
                 else if(option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE){
                     self.nifiTemplateImportOption= option;
+                } else if (option.importComponent === ImportService.importComponentTypes.USER_DATASOURCES) {
+                    self.userDatasourcesOption = option;
                 }
                 self.importComponentOptions[option.importComponent] = option;
             });
@@ -428,7 +449,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
     };
 
-    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService",controller]);
+    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService","DatasourcesService",controller]);
 
 });
 

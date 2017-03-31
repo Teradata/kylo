@@ -5,7 +5,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         var importComponentTypes = {NIFI_TEMPLATE:"NIFI_TEMPLATE",
             TEMPLATE_DATA:"TEMPLATE_DATA",
             FEED_DATA:"FEED_DATA",
-            REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE"};
+            REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE",
+            USER_DATASOURCES: "USER_DATASOURCES"
+        };
 
         function guid() {
             function s4() {
@@ -36,6 +38,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             },
             newNiFiTemplateImportOption: function(){
                 return data.newImportComponentOption(importComponentTypes.NIFI_TEMPLATE);
+            },
+            newUserDatasourcesImportOption: function () {
+                return data.newImportComponentOption(importComponentTypes.USER_DATASOURCES)
             },
             newUploadKey:function(){
                 return _.uniqueId("upload_")+new Date().getTime()+guid();

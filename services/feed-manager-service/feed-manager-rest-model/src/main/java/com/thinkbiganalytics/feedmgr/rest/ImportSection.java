@@ -31,7 +31,7 @@ public class ImportSection {
         VALIDATE_REUSABLE_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), VALIDATE_REGISTERED_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE),
         VALIDATE_NIFI_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), IMPORT_REUSABLE_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML),
         IMPORT_NIFI_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE, ImportType.TEMPLATE_XML), CREATE_NIFI_INSTANCE(ImportType.FEED, ImportType.TEMPLATE),
-        IMPORT_REGISTERED_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE);
+        IMPORT_REGISTERED_TEMPLATE(ImportType.FEED, ImportType.TEMPLATE), VALIDATE_USER_DATASOURCES(ImportType.FEED);
 
 
         private ImportType[] importTypes;
