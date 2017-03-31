@@ -280,13 +280,13 @@ public class DatasourceController {
                       @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
                   })
-    public Response getTableNames(@PathParam("id") final String idStr, @QueryParam("schema") final String schema) {
+    public Response getTableNames(@PathParam("id") final String idStr, @QueryParam("schema") final String schema, @QueryParam("tableName") final String tableName) {
         return metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_DATASOURCES);
 
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
             if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) {
-                final List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForDatasource((com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasource, schema);
+                final List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForDatasource((com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasource, schema, tableName);
                 return Response.ok(tables).build();
             } else {
                 throw new NotFoundException("No JDBC datasource exists with the given ID: " + idStr);

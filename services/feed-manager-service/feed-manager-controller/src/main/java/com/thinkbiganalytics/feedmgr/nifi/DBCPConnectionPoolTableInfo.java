@@ -87,15 +87,16 @@ public class DBCPConnectionPoolTableInfo {
      *
      * @param datasource the data source
      * @param schema     the schema name, or {@code null} for all schemas
+     * @param tableName  a table pattern to look for
      * @return a list of schema.table names, or {@code null} if not accessible
      */
     @Nullable
-    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema) {
+    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nullable final String tableName) {
         final Optional<ControllerServiceDTO> controllerService = datasource.getControllerServiceId()
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
             final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
-            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
             return getTableNamesForControllerService(serviceProperties);
         } else {
             log.error("Cannot get table names for data source: {}", datasource.getId());
