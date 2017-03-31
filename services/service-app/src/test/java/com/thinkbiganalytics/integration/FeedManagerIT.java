@@ -89,7 +89,7 @@ public class FeedManagerIT extends IntegrationTest {
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
-    private static final int PROCESSOR_STOP_WAIT_DELAY = 20;
+    private static final int PROCESSOR_STOP_WAIT_DELAY = 5;
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private String feedsPath;
     private String templatesPath;
@@ -134,7 +134,7 @@ public class FeedManagerIT extends IntegrationTest {
 
         //TODO assert data is in Hive table by looking at Table tab preview or maybe even executing count all query
 
-
+        //TODO delete feed
     }
 
     @Test

@@ -27,6 +27,7 @@
   <include file="com/thinkbiganalytics/db/changelog/0.8.0/2017-03-24-113757-audit-log-rename-column.xml"/>
   <include file="com/thinkbiganalytics/db/changelog/0.8.0/2017-03-27-135341-kylo-alert-change-rename-column.xml"/>
   <include file="com/thinkbiganalytics/db/changelog/0.8.0/2017-03-28-111849-abandon-feed-jobs.xml"/>
+  <include file="com/thinkbiganalytics/db/changelog/0.8.0/2017-03-31-173945-delete-feed-jobs.xml"/>
 
 
 </databaseChangeLog>

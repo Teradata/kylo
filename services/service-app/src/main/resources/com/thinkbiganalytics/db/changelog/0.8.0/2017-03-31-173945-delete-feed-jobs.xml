@@ -25,8 +25,8 @@
 
 
   <changeSet author="ru186002" id="1" dbms="mysql">
-    <dropProcedure procedureName="abandon_feed_jobs"/>
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/abandon-feed-jobs.sql" />
+    <dropProcedure procedureName="delete_feed_jobs"/>
+    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/delete-feed-jobs.sql" />
   </changeSet>
 
 </databaseChangeLog>

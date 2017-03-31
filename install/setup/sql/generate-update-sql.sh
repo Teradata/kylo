@@ -10,11 +10,10 @@ PASSWORD=`grep "^spring.datasource.password=" ${PROPS} | cut -d'=' -f2`
 DRIVER=`grep "^spring.datasource.driverClassName=" ${PROPS} | cut -d'=' -f2`
 URL=`grep "^spring.datasource.url=" ${PROPS} | cut -d'=' -f2`
 
-echo "Generating ${TARGET} for ${URL}, connecting as ${USERNAME}"
-
 CP='/opt/kylo/kylo-services/lib/liquibase-core-3.5.3.jar.jar:/opt/kylo/kylo-services/lib/*'
-
 echo "Loading classpath: ${CP}"
+
+echo "Generating ${TARGET} for ${URL}, connecting as ${USERNAME}"
 
 java -cp ${CP} \
     liquibase.integration.commandline.Main \

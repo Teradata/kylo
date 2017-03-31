@@ -17,7 +17,8 @@
 -- limitations under the License.
 -- #L%
 -- -
-CREATE PROCEDURE delete_feed_jobs(in category varchar(255), in feed varchar(255))
+
+CREATE PROCEDURE delete_feed_jobs(in category varchar(255), in feed varchar(255), out res integer)
 BEGIN
 
 DECLARE jobName VARCHAR(255) DEFAULT CONCAT(category,'.',feed);
@@ -98,5 +99,8 @@ WHERE FM_FEED_NAME = jobName;
 
 DELETE FROM NIFI_FEED_PROCESSOR_STATS
 WHERE FM_FEED_NAME = jobName;
+
+  --   need to return a value for this procedure calls to work on postgresql with spring-data-jpa repositories and named queries
+set res = 1;
 
 END
