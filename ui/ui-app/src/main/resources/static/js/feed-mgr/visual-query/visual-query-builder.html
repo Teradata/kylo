@@ -24,6 +24,7 @@
             <md-select ng-model="$vq.model.selectedDatasourceId" placeholder="Data Source" ng-change="$vq.tablesAutocomplete.searchText = ''">
                 <md-option ng-repeat="datasource in $vq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
             </md-select>
+            <div class="hint">Data Source</div>
         </md-input-container>
         <div flex="30" layout="column" flex>
             <md-autocomplete flex="30"
@@ -83,6 +84,7 @@
     <md-select ng-model="$vq.model.selectedDatasourceId" placeholder="Data Source">
         <md-option ng-repeat="datasource in $vq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
     </md-select>
+    <div class="hint">Data Source</div>
 </md-input-container>
 
 <thinkbig-hql-editor ng-model="$vq.advancedModeSql" ng-model-options="{getterSetter: true}" ng-if="$vq.advancedMode == true" allow-fullscreen="false" allow-database-browse="false"
