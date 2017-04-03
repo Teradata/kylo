@@ -24,11 +24,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="settings/uuid-type.xml" relativeToChangelogFile="true"/>
-    <include file="settings/delimiters.xml" relativeToChangelogFile="true"/>
-
-    <include file="changelog/changelog.xml" relativeToChangelogFile="true"/>
-
-    <include file="repeatable/changelog.xml" relativeToChangelogFile="true"/>
+    <include file="views/changelog.xml" relativeToChangelogFile="true"/>
+    <include file="procedures/changelog.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

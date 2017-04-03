@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   #%L
   kylo-service-app
@@ -19,14 +19,12 @@
   #L%
   -->
 
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-
-  <changeSet author="ru186002" id="1" dbms="mysql">
-    <dropProcedure procedureName="delete_feed_jobs"/>
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/delete-feed-jobs.sql" />
-  </changeSet>
+    <include file="0.0.0/changelog.xml" relativeToChangelogFile="true"/>
+    <include file="0.8.0/changelog.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

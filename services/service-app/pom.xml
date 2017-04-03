@@ -495,6 +495,49 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <!-- Liquibase plugin for quick testing of database upgrades with following command
+             mvn package liquibase:updateSQL -->
+
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>${liquibase.version}</version>
+        <configuration>
+          <!--<changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>-->
+          <changeLogFile>/Users/RU186002/Source/0-kylo/kylo-master/services/service-app/src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
+          <driver>org.mariadb.jdbc.Driver</driver>
+          <url>jdbc:mysql://localhost:3306/kylo</url>
+          <defaultSchemaName>kylo</defaultSchemaName>
+          <username>root</username>
+          <password>hadoop</password>
+          <verbose>true</verbose>
+          <logging>debug</logging>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.2-GA</version>
+          </dependency>
+          <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-hibernate4</artifactId>
+            <version>${liquibase-hibernate4.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>1.4.2.RELEASE</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
     </plugins>
   </build>
 

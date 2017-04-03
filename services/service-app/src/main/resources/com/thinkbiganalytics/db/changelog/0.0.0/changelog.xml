@@ -24,7 +24,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <include file="com/thinkbiganalytics/db/changelog/0.0.0/2017-03-24-113520-automated-export.xml"/>
-  <include file="com/thinkbiganalytics/db/changelog/0.0.0/2017-03-24-113530-manual-corrections.xml"/>
+  <include file="2017-03-24-1135-automated-export.xml" relativeToChangelogFile="true"/>
+  <include file="2017-03-24-1136-manual-corrections.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

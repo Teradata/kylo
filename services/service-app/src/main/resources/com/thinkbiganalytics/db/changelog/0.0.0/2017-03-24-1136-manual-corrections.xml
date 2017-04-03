@@ -55,18 +55,4 @@
       <column name="VALUE_COLUMN" type="bigint(20)" value="1"/>
     </insert>
   </changeSet>
-  <changeSet author="ru186002" id="5" dbms="mysql">
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.0.0/procedures/mysql/abandon-feed-jobs.sql"/>
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.0.0/procedures/mysql/delete-feed-jobs.sql"/>
-  </changeSet>
-  <changeSet author="ru186002" id="5" dbms="postgresql">
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.0.0/procedures/postgresql/abandon-feed-jobs.sql"/>
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.0.0/procedures/postgresql/delete-feed-jobs.sql"
-        />
-  </changeSet>
-  <changeSet author="ru186002" id="6">
-    <sqlFile path="com/thinkbiganalytics/db/changelog/0.0.0/views/create-db-views.sql"
-        />
-  </changeSet>
-
 </databaseChangeLog>

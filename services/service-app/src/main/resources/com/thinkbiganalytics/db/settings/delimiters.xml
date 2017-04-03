@@ -23,10 +23,17 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-
-  <changeSet author="ru186002" id="1" dbms="mysql">
-    <dropProcedure procedureName="abandon_feed_jobs"/>
-    <createProcedure path="com/thinkbiganalytics/db/changelog/0.8.0/procedures/mysql/abandon-feed-jobs.sql" />
-  </changeSet>
+  <!-- By default Liquibase generates an update script with updateSQL command which includes all
+    update types, i.e. tables, views, procedures etc and at the same time does not separate
+    procedure statements with delimiters. This works when updates are automatic on server start, but
+    does not work with manual updates via updateSQL command. If we are to include manual delimit statements
+    in procedures then the reverse is true, the server does not start with automatic updates but
+    the valid sql file is generated with updateSQL command.
+    So here we have a workaround, such that by default we include delimit statements which are just
+    SQL comments and don't do anything, which works for automatic updates, and we override these properties
+    when generating manual update SQL with out utility script
+   -->
+  <property name="delimiter.start" value="-- -" dbms="mysql"/>
+  <property name="delimiter.end" value="-- -" dbms="mysql"/>
 
 </databaseChangeLog>
