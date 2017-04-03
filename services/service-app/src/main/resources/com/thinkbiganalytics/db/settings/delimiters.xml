@@ -29,11 +29,16 @@
     does not work with manual updates via updateSQL command. If we are to include manual delimit statements
     in procedures then the reverse is true, the server does not start with automatic updates but
     the valid sql file is generated with updateSQL command.
-    So here we have a workaround, such that by default we include delimit statements which are just
-    SQL comments and don't do anything, which works for automatic updates, and we override these properties
+    So here we have a workaround, such that by default we include commented out delimit statements which are just
+    SQL comments and don't do anything, which works for automatic updates, and we 'uncomment' these statements
     when generating manual update SQL with out utility script
    -->
-  <property name="delimiter.start" value="-- -" dbms="mysql"/>
-  <property name="delimiter.end" value="-- -" dbms="mysql"/>
+  <property name="delimiter.start"  value="-- delimiter placeholder DELIMITER |" dbms="mysql"/>
+  <property name="delimiter.end"    value="-- delimiter placeholder |" dbms="mysql"/>
+  <property name="delimiter.reset"  value="-- delimiter placeholder DELIMITER ;" dbms="mysql"/>
+
+  <property name="delimiter.start"  value="-- delimiter placeholder DELIMITER |" dbms="postgresql"/>
+  <property name="delimiter.end"    value="-- delimiter placeholder |" dbms="postgresql"/>
+  <property name="delimiter.reset"  value="-- delimiter placeholder DELIMITER ;" dbms="mysql"/>
 
 </databaseChangeLog>

@@ -504,8 +504,7 @@
         <artifactId>liquibase-maven-plugin</artifactId>
         <version>${liquibase.version}</version>
         <configuration>
-          <!--<changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>-->
-          <changeLogFile>/Users/RU186002/Source/0-kylo/kylo-master/services/service-app/src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
+          <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
           <driver>org.mariadb.jdbc.Driver</driver>
           <url>jdbc:mysql://localhost:3306/kylo</url>
           <defaultSchemaName>kylo</defaultSchemaName>

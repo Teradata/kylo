@@ -25,14 +25,19 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
   <changeSet id="1" author="ru186002" runOnChange="true" dbms="mysql">
-    <sqlFile path="mysql/drop-abandon-feed-jobs.sql" relativeToChangelogFile="true" splitStatements="true" />
-    <sql splitStatements="true" endDelimiter="\n">${delimiter.start}</sql>
-    <sqlFile path="mysql/abandon-feed-jobs.sql" relativeToChangelogFile="true" splitStatements="true" endDelimiter="$$"/>
-    <sql splitStatements="true" endDelimiter="\n">${delimiter.end}</sql>
+    <sqlFile path="mysql/drop-abandon-feed-jobs.sql" relativeToChangelogFile="true"/>
+    <sql endDelimiter="\n">${delimiter.start}</sql>
+    <createProcedure path="mysql/abandon-feed-jobs.sql" relativeToChangelogFile="true"/>
+    <sql endDelimiter="\n">${delimiter.end}</sql>
+    <sql endDelimiter="\n">${delimiter.reset}</sql>
   </changeSet>
 
   <changeSet id="2" author="ru186002" runOnChange="true" dbms="mysql">
+    <sqlFile path="mysql/drop-delete-feed-jobs.sql" relativeToChangelogFile="true"/>
+    <sql endDelimiter="\n">${delimiter.start}</sql>
     <createProcedure path="mysql/delete-feed-jobs.sql" relativeToChangelogFile="true"/>
+    <sql endDelimiter="\n">${delimiter.end}</sql>
+    <sql endDelimiter="\n">${delimiter.reset}</sql>
   </changeSet>
 
   <changeSet id="3" author="ru186002" runOnChange="true" dbms="postgresql">

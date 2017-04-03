@@ -23,3 +23,6 @@ java -cp ${CP} \
      --username=${USERNAME} \
      --password=${PASSWORD} \
      updateSQL > ${TARGET}
+
+echo "Replacing delimiter placeholders"
+sed -i.bac "s/-- delimiter placeholder //g" ${TARGET}
