@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark.repl;
 import com.google.common.base.Joiner;
 import com.thinkbiganalytics.spark.SparkInterpreterBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
@@ -31,14 +32,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.script.ScriptException;
 
 import scala.collection.JavaConversions;
-import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.interpreter.Results;
@@ -57,6 +61,12 @@ public class SparkScriptEngine extends ScriptEngine {
      */
     @Autowired
     private SparkConf conf;
+
+    /**
+     * List of patterns to deny in scripts
+     */
+    @Nullable
+    private List<Pattern> denyPatterns;
 
     /**
      * Spark REPL interface
@@ -86,8 +96,15 @@ public class SparkScriptEngine extends ScriptEngine {
     }
 
     @Override
-    protected void execute(@Nonnull final String script) {
+    protected void execute(@Nonnull final String script) throws ScriptException {
         log.debug("Executing script:\n{}", script);
+
+        for (final Pattern pattern : getDenyPatterns()) {
+            if (pattern.matcher(script).find()) {
+                log.error("Not executing script that matches deny pattern: {}", pattern.toString());
+                throw new ScriptException("Script not executed due to security policy.");
+            }
+        }
 
         try {
             getInterpreter().interpret(script);
@@ -107,6 +124,35 @@ public class SparkScriptEngine extends ScriptEngine {
             interpreter.close();
             interpreter = null;
         }
+    }
+
+    /**
+     * Gets the list of patterns that should prevent a script from executing.
+     *
+     * @return the deny patterns list
+     * @throws IllegalStateException if the spark-deny-patterns.conf file cannot be found
+     */
+    @Nonnull
+    private List<Pattern> getDenyPatterns() {
+        if (denyPatterns == null) {
+            // Load deny patterns
+            final List<String> denyPatternLines;
+            try {
+                denyPatternLines = IOUtils.readLines(getClass().getResourceAsStream("/spark-deny-patterns.conf"), "UTF-8");
+            } catch (final IOException e) {
+                throw new IllegalStateException("Unable to load spark-deny-patterns.conf", e);
+            }
+
+            // Compile patterns
+            denyPatterns = new ArrayList<>();
+            for (final String line : denyPatternLines) {
+                final String trimLine = line.trim();
+                if (!line.startsWith("#") && !trimLine.isEmpty()) {
+                    denyPatterns.add(Pattern.compile(line));
+                }
+            }
+        }
+        return denyPatterns;
     }
 
     /**
@@ -131,7 +177,7 @@ public class SparkScriptEngine extends ScriptEngine {
             interpreter.initializeSynchronous();
 
             // Setup environment
-            List<String> empty = JavaConversions.asScalaBuffer(new ArrayList<String>()).toList();
+            scala.collection.immutable.List<String> empty = JavaConversions.asScalaBuffer(new ArrayList<String>()).toList();
             Results.Result result = interpreter.bind("engine", SparkScriptEngine.class.getName(), this, empty);
             if (result instanceof Results.Error$) {
                 throw new IllegalStateException("Failed to initialize interpreter");
