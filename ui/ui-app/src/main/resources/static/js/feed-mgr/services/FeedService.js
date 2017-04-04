@@ -417,17 +417,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 },
 
                 updateEnabledMergeStrategy: function (feedModel, strategies) {
-                    // If data transformation then only support sync
-                    if (feedModel.dataTransformationFeed) {
+                    // If data transformation then default to sync
+                    if (feedModel.dataTransformationFeed && feedModel.id === null) {
                         feedModel.table.targetMergeStrategy = 'SYNC';
-                        angular.forEach(strategies, function (strat) {
-                            strat.disabled = true;
-                        });
-                    } else {
-                        this.enableDisablePkMergeStrategy(feedModel, strategies);
-                        this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
                     }
 
+                    this.enableDisablePkMergeStrategy(feedModel, strategies);
+                    this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
                 },
 
                 hasPartitions: function (feedModel) {
