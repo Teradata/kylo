@@ -57,6 +57,16 @@ public class SparkScriptEngine extends ScriptEngine {
     private static final Logger log = LoggerFactory.getLogger(SparkScriptEngine.class);
 
     /**
+     * Matches a multi-line comment in Scala
+     */
+    private static final Pattern COMMENT = Pattern.compile("/\\*.*\\*/");
+
+    /**
+     * Matches continuation lines in Scala
+     */
+    private static final Pattern LINE_CONTINUATION = Pattern.compile("^\\s*\\.");
+
+    /**
      * Spark configuration
      */
     @Autowired
@@ -99,19 +109,33 @@ public class SparkScriptEngine extends ScriptEngine {
     protected void execute(@Nonnull final String script) throws ScriptException {
         log.debug("Executing script:\n{}", script);
 
+        // Convert script to single line (for checking security violations)
+        final StringBuilder safeScriptBuilder = new StringBuilder(script.length());
+
+        for (final String line : script.split("\n")) {
+            if (!LINE_CONTINUATION.matcher(line).find()) {
+                safeScriptBuilder.append(';');
+            }
+            safeScriptBuilder.append(line);
+        }
+
+        final String safeScript = COMMENT.matcher(safeScriptBuilder.toString()).replaceAll("");
+
+        // Check for security violations
         for (final Pattern pattern : getDenyPatterns()) {
-            if (pattern.matcher(script).find()) {
+            if (pattern.matcher(safeScript).find()) {
                 log.error("Not executing script that matches deny pattern: {}", pattern.toString());
                 throw new ScriptException("Script not executed due to security policy.");
             }
         }
 
+        // Execute script
         try {
-            getInterpreter().interpret(script);
+            getInterpreter().interpret(safeScript);
         } catch (final AssertionError e) {
             log.warn("Caught assertion error when executing script. Retrying...", e);
             reset();
-            getInterpreter().interpret(script);
+            getInterpreter().interpret(safeScript);
         }
     }
 
