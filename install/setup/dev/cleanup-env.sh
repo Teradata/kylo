@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# function for determining way to handle startup scripts
+function get_linux_type {
+    # redhat
+    which chkconfig > /dev/null && echo "chkonfig" && return 0
+    # ubuntu sysv
+    which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+    echo "Couldn't recognize linux version, after installation you need to do these steps manually:"
+    echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services,kylo-spark-shell} files"
+    echo " * set them to autostart"
+}
+
+linux_type=$(get_linux_type)
+
 read -p "Are you sure you want to uninstall all Kylo components AND delete the kylo database? Type YES to confirm: " CONFIRM_DELETE
 
 if [ "$CONFIRM_DELETE" == "YES" ] ; then
@@ -13,7 +26,10 @@ mysql -phadoop -e "show databases;"
 
 echo "Uninstalling NiFi"
 service nifi stop
-chkconfig nifi off
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig nifi off
+fi
+
 rm -rf /opt/nifi
 rm -rf /var/log/nifi
 rm -f /etc/init.d/nifi
@@ -25,7 +41,12 @@ rm -f /etc/default/activemq
 rm -rf /opt/activemq
 
 echo "Uninstalling elasticsearch"
-rpm -e elasticsearch
+if [ "$linux_type" == "chkonfig" ]; then
+    rpm -e elasticsearch
+elif [ "$linux_type" == "update-rc.d" ]; then
+    dpkg -r elasticsearch
+fi
+
 rm -rf /var/lib/elasticsearch/
 
 echo "Uninstalling /opt/java"
