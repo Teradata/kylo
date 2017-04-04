@@ -93,7 +93,7 @@ public class UpgradeKyloConfig {
         return new KyloUpgrader();
     }
     
-    @Bean
+   /* @Bean
     @Primary
     public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
         // Overrides the this bean from MetadataJcrConfig so that it does not invoke configure() at bean construction.
@@ -123,5 +123,5 @@ public class UpgradeKyloConfig {
 
         return config;
     }
-
+*/
 }

@@ -64,6 +64,9 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
 
                         check(permissions,$scope.entity)
                     }
+                    else {
+                        validate(true);
+                    }
                 });
 
                 /**

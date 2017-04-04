@@ -20,7 +20,7 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -242,7 +242,7 @@ public class SparkShellProxyController {
 
         // Add data source details
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
-            accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_DATASOURCES);
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             final List<Datasource> datasources = metadata.read(
                 () -> request.getDatasources().stream()

@@ -19,6 +19,12 @@ define([], function () {
         this.CATEGORIES_EDIT = "editCategories";
 
         /**
+         * Allows access to data sources.
+         * @type {string}
+         */
+        this.DATASOURCE_ACCESS = "accessDatasources";
+
+        /**
          * Allows access to feeds.
          * @type {string}
          */

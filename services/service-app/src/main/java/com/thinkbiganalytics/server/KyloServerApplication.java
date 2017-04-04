@@ -56,15 +56,18 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
-        boolean upgradeComplete = false;
-        do {
-            log.info("Upgrading...");
-            ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
-            KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
-            upgradeComplete = upgrader.upgrade();
-            cxt.close();
-        } while (! upgradeComplete);
-        log.info("Upgrading complete");
+        boolean skipUpgrade = true;
+        if(!skipUpgrade) {
+            boolean upgradeComplete = false;
+            do {
+                log.info("Upgrading...");
+                ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
+                KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
+                upgradeComplete = upgrader.upgrade();
+                cxt.close();
+            } while (!upgradeComplete);
+            log.info("Upgrading complete");
+        }
         
         SpringApplication.run("classpath:application-context.xml", args);
     }

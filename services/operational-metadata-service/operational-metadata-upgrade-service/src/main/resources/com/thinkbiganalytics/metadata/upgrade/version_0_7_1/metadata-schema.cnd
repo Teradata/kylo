@@ -11,13 +11,16 @@
  *              "directory"
  *                  DirectoryDatasource*
  *              "derived"
+ *                  derivedDatasource
+ *              "user"
+ *                  userDatasource
  *          "datasourceDefinitions"
  *                 datasourceDefinition
  *          "prototypes"
  *             template
  *          "sla"
  *              sla*
- *          "extensions"
+ *          "extensions"Acce
  *              "types"
  *                  typeDescriptor
  *              "entities"
