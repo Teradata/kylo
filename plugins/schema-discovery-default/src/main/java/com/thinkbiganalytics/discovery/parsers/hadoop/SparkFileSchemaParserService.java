@@ -92,8 +92,7 @@ public class SparkFileSchemaParserService {
             return toSchema(response.getResults(), fileType, tableSchemaType);
 
         } catch (Exception e) {
-            log.warn("Error parsing file {}", fileType);
-            log.error(e.getMessage(), e);
+            log.error("Error parsing file {}: {}", fileType, e.getMessage());
             throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
             tempFile.delete();
