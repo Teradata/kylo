@@ -37,7 +37,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import java.util.Collection;
@@ -55,7 +55,7 @@ import javax.inject.Inject;
 public class MetadataModelTransform {
     
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
 
     public Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus> domainToInitStatus() {
         return (domain) -> {
@@ -181,7 +181,7 @@ public class MetadataModelTransform {
                 }
             }
             
-            ActionGroup allowed = actionsTransform.allowedActionsToActionSet(null).apply(domain.getAllowedActions());
+            ActionGroup allowed = actionsTransform.toActionGroup(null).apply(domain.getAllowedActions());
             feed.setAllowedActions(allowed);
 
             return feed;

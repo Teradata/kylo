@@ -27,12 +27,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +91,7 @@ public class FeedCategoryRestController {
     private SecurityService securityService;
 
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -217,8 +217,8 @@ public class FeedCategoryRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for category: {}", categoryIdStr);
         
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.getAllowedCategoryActions(categoryIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -260,14 +260,47 @@ public class FeedCategoryRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.createCategoryPermissionChange(categoryIdStr, 
                                                                ChangeType.valueOf(changeType.toUpperCase()), 
                                                                Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(p -> Response.ok(p).build())
                         .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+    }
+    
+    @GET
+    @Path("{categoryId}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the category's roles")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+        @ApiResponse(code = 404, message = "A category with the given ID does not exist.", response = RestResponseStatus.class)
+    })
+    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr) {
+        return this.securityService.getCategoryRoleMemberships(categoryIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+    }
+    
+
+    @POST
+    @Path("{categoryId}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a category's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No category exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("categoryId") String categoryIdStr,
+                                          RoleMembershipChange changes) {
+        return this.securityService.changeCategoryRoleMemberships(categoryIdStr, changes)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("Either a category with the ID \"" + categoryIdStr
+                                                                       + "\" does not exist or it does not have a role the named \"" 
+                                                                       + changes.getRoleName() + "\"", Status.NOT_FOUND));
     }
 
 }

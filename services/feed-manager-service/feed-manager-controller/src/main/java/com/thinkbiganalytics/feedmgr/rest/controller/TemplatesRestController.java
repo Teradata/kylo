@@ -41,9 +41,10 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -110,7 +111,7 @@ public class TemplatesRestController {
     private SecurityService securityService;
 
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
 
     @Inject
     RegisteredTemplateService registeredTemplateService;
@@ -496,8 +497,8 @@ public class TemplatesRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for template: {}", templateIdStr);
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.getAllowedTemplateActions(templateIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -539,13 +540,46 @@ public class TemplatesRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.createTemplatePermissionChange(templateIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),
                                                                Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(p -> Response.ok(p).build())
                         .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
+    }
+    
+    @GET
+    @Path("/registered/{templateId}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the template's roles")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+        @ApiResponse(code = 404, message = "A template with the given ID does not exist.", response = RestResponseStatus.class)
+    })
+    public Response getRoleMemberships(@PathParam("templateId") String templateIdStr) {
+        return this.securityService.getTemplateRoleMemberships(templateIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
+    }
+    
+
+    @POST
+    @Path("/registered/{templateId}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a template's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No template exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("templateId") String templateIdStr,
+                                          RoleMembershipChange changes) {
+        return this.securityService.changeTemplateRoleMemberships(templateIdStr, changes)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("Either a template with the ID \"" + templateIdStr
+                                                                       + "\" does not exist or it does not have a role the named \"" 
+                                                                       + changes.getRoleName() + "\"", Status.NOT_FOUND));
     }
 }

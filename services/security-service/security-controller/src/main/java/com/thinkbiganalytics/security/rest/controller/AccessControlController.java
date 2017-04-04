@@ -77,7 +77,7 @@ public class AccessControlController {
 
     @Inject
     @Named("actionsModelTransform")
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
     
     @Inject
     private AccessController accessController;
@@ -94,7 +94,7 @@ public class AccessControlController {
         
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.allowedActionsToActionSet(AllowedActions.SERVICES))
+                .map(this.actionsTransform.toActionGroup(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -112,14 +112,14 @@ public class AccessControlController {
                                          @QueryParam("user") Set<String> userNames,
                                          @QueryParam("group") Set<String> groupNames) {
         
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
         Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
         // Retrieve the allowed actions by executing the query as the specified user/groups 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
-                .map(this.actionsTransform.allowedActionsToActionSet(AllowedActions.SERVICES))
+                .map(this.actionsTransform.toActionGroup(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         }, principals);
@@ -191,7 +191,7 @@ public class AccessControlController {
 
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
+                .map(this.actionsTransform.toPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -201,8 +201,8 @@ public class AccessControlController {
     private Set<Principal> collectPrincipals(PermissionsChange changes) {
         Set<Principal> set = new HashSet<>();
 
-        set.addAll(this.actionsTransform.toUserPrincipals(changes.getUsers()));
-        set.addAll(this.actionsTransform.toGroupPrincipals(changes.getGroups()));
+        set.addAll(this.actionsTransform.asUserPrincipals(changes.getUsers()));
+        set.addAll(this.actionsTransform.asGroupPrincipals(changes.getGroups()));
 
         return set;
     }

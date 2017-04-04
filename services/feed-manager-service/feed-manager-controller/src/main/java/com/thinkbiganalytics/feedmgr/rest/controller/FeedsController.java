@@ -47,7 +47,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
@@ -127,7 +127,7 @@ public class FeedsController {
     private MetadataModelTransform metadataTransform;
 
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
 
     @Inject
     private AccessController accessController;
@@ -166,9 +166,9 @@ public class FeedsController {
                                          @QueryParam("user") Set<String> userNames,
                                          @QueryParam("group") Set<String> groupNames) {
         LOG.debug("Get allowed actions for feed: {}", feedIdStr);
-
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
@@ -208,8 +208,8 @@ public class FeedsController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
 
                 return this.securityService.createFeedPermissionChange(feedIdStr,ChangeType.valueOf(changeType.toUpperCase()),

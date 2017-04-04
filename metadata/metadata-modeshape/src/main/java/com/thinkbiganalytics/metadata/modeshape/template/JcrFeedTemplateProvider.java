@@ -90,7 +90,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
 
         if (newTemplate) {
-            List<SecurityRole> roles = this.roleProvider.getRoles(SecurityRole.FEED);
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
                     .ifPresent(actions -> template.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             addPostFeedChangeAction(template, ChangeType.CREATE);

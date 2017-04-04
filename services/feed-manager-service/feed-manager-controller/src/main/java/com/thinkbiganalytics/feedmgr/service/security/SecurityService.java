@@ -24,12 +24,15 @@ package com.thinkbiganalytics.feedmgr.service.security;
  */
 
 import java.security.Principal;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 /**
  *
@@ -42,17 +45,29 @@ public interface SecurityService {
     
     Optional<ActionGroup> changeFeedPermissions(String id, PermissionsChange change);
     
+    Optional<Map<String, RoleMembership>> getFeedRoleMemberships(String id);
+    
+    Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change);
+    
     Optional<ActionGroup> getAvailableCategoryActions(String id);
     
     Optional<ActionGroup> getAllowedCategoryActions(String id, Set<Principal> principals);
     
     Optional<ActionGroup> changeCategoryPermissions(String id, PermissionsChange change);
     
+    Optional<Map<String, RoleMembership>> getCategoryRoleMemberships(String id);
+    
+    Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change);
+    
     Optional<ActionGroup> getAvailableTemplateActions(String id);
     
     Optional<ActionGroup> getAllowedTemplateActions(String id, Set<Principal> principals);
     
     Optional<ActionGroup> changeTemplatePermissions(String id, PermissionsChange change);
+    
+    Optional<Map<String, RoleMembership>> getTemplateRoleMemberships(String id);
+    
+    Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change);
     
     Optional<PermissionsChange> createFeedPermissionChange(String id, ChangeType changeType, Set<Principal> members);
     

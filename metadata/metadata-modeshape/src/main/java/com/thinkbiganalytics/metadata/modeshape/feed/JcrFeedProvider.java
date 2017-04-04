@@ -263,7 +263,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
-            List<SecurityRole> roles = this.roleProvider.getRoles(SecurityRole.FEED);
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
                             .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             addPostFeedChangeAction(feed, ChangeType.CREATE);

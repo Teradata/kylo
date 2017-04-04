@@ -56,10 +56,11 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -158,7 +159,7 @@ public class FeedRestController {
     private SecurityService securityService;
 
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform actionsTransform;
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
@@ -516,7 +517,40 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         return getPage(processingdttm, limit, feedMetadata.getValidTableName());
     }
+    
+    @GET
+    @Path("{feedId}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the feed's roles")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+        @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
+    })
+    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr) {
+        return this.securityService.getFeedRoleMemberships(feedIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    }
+    
 
+    @POST
+    @Path("{feedId}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a feed's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No feed exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("feedId") String feedIdStr,
+                                          RoleMembershipChange changes) {
+        return this.securityService.changeFeedRoleMemberships(feedIdStr, changes)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("Either a feed with the ID \"" + feedIdStr
+                                                                       + "\" does not exist or it does not have a role the named \"" 
+                                                                       + changes.getRoleName() + "\"", Status.NOT_FOUND));
+    }
+    
     @GET
     @Path("{feedId}/actions/available")
     @Produces(MediaType.APPLICATION_JSON)
@@ -546,8 +580,8 @@ public class FeedRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for feed: {}", feedIdStr);
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -589,8 +623,8 @@ public class FeedRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
 
         return this.securityService.createFeedPermissionChange(feedIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),

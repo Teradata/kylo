@@ -25,7 +25,8 @@ package com.thinkbiganalytics.feedmgr.service.security;
 
 import java.security.Principal;
 import java.security.acl.Group;
-import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -43,15 +44,16 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
-import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 /**
  *
@@ -74,7 +76,7 @@ public class DefaultSecurityService implements SecurityService {
     private MetadataAccess metadata;
 
     @Inject
-    private ActionsModelTransform actionsTransform;
+    private SecurityModelTransform securityTransform;
 
     @Inject
     private AccessController accessController;
@@ -97,6 +99,16 @@ public class DefaultSecurityService implements SecurityService {
     }
     
     @Override
+    public Optional<Map<String, RoleMembership>> getFeedRoleMemberships(String id) {
+        return getRoleMemberships(supplyFeedRoleMemberships(id));
+    }
+    
+    @Override
+    public Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change) {
+        return changeRoleMemberships(change, supplyTemplateRoleMembership(id, change.getRoleName()));
+    }
+    
+    @Override
     public Optional<ActionGroup> getAvailableCategoryActions(String id) {
         return getAvailableActions(() -> {
             return accessCategory(id).flatMap(c -> actionsProvider.getAvailableActions(AllowedActions.CATEGORY));
@@ -114,6 +126,16 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
+    public Optional<Map<String, RoleMembership>> getCategoryRoleMemberships(String id) {
+        return getRoleMemberships(supplyCategoryRoleMemberships(id));
+    }
+    
+    @Override
+    public Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change) {
+        return changeRoleMemberships(change, supplyCategoryRoleMembership(id, change.getRoleName()));
+    }
+    
+    @Override
     public Optional<ActionGroup> getAvailableTemplateActions(String id) {
         return getAvailableActions(() -> {
             return accessTemplate(id).flatMap(t -> actionsProvider.getAvailableActions(AllowedActions.TEMPLATE));
@@ -130,6 +152,15 @@ public class DefaultSecurityService implements SecurityService {
         return changePermissions(changes, supplyTemplateActions(id));
     }
 
+    @Override
+    public Optional<Map<String, RoleMembership>> getTemplateRoleMemberships(String id) {
+        return getRoleMemberships(supplyTemplateRoleMemberships(id));
+    }
+    
+    @Override
+    public Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change) {
+        return changeRoleMemberships(change, supplyTemplateRoleMembership(id, change.getRoleName()));
+    }
     
     @Override
     public Optional<PermissionsChange> createFeedPermissionChange(String id, ChangeType changeType, Set<Principal> members) {
@@ -179,21 +210,57 @@ public class DefaultSecurityService implements SecurityService {
         };
     }
     
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyFeedRoleMemberships(String id) {
+        return () -> {
+            return accessFeed(id).map(Feed::getRoleMemberships);
+        };
+    }
+    
+    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyFeedRoleMembership(String id, String roleName) {
+        return () -> {
+            return accessFeed(id).flatMap(t -> t.getRoleMembership(roleName));
+        };
+    }
+    
     private Supplier<Optional<AllowedActions>> supplyCategoryActions(String id) {
         return () -> {
             return accessCategory(id).map(Category::getAllowedActions);
         };
     }
     
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyCategoryRoleMemberships(String id) {
+        return () -> {
+            return accessCategory(id).map(Category::getRoleMemberships);
+        };
+    }
+    
+    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyCategoryRoleMembership(String id, String roleName) {
+        return () -> {
+            return accessCategory(id).flatMap(t -> t.getRoleMembership(roleName));
+        };
+    }
+   
     private Supplier<Optional<AllowedActions>> supplyTemplateActions(String id) {
         return () -> {
             return accessTemplate(id).map(FeedManagerTemplate::getAllowedActions);
         };
     }
+    
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyTemplateRoleMemberships(String id) {
+        return () -> {
+            return accessTemplate(id).map(FeedManagerTemplate::getRoleMemberships);
+        };
+    }
+    
+    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyTemplateRoleMembership(String id, String roleName) {
+        return () -> {
+            return accessTemplate(id).flatMap(t -> t.getRoleMembership(roleName));
+        };
+    }
 
     private Optional<ActionGroup> changePermissions(PermissionsChange changes, Supplier<Optional<AllowedActions>> allowedSupplier) {
-        Set<Action> actionSet = this.actionsTransform.collectActions(changes);
-        Set<Principal> principals = this.actionsTransform.collectPrincipals(changes);
+        Set<Action> actionSet = this.securityTransform.collectActions(changes);
+        Set<Principal> principals = this.securityTransform.collectPrincipals(changes);
         
         metadata.commit(() -> {
             allowedSupplier.get().ifPresent(allowed -> { 
@@ -219,16 +286,35 @@ public class DefaultSecurityService implements SecurityService {
 
     private Optional<ActionGroup> getAllowedActions(Set<Principal> principals, Supplier<Optional<AllowedActions>> allowedSupplier) {
         return this.metadata.read(() -> {
-            return allowedSupplier.get().map(allowed -> this.actionsTransform.allowedActionsToActionSet(null).apply(allowed));
+            return allowedSupplier.get().map(allowed -> this.securityTransform.toActionGroup(null).apply(allowed));
         }, principals.stream().toArray(s -> new Principal[s]));
     }
 
     private Optional<ActionGroup> getAvailableActions(Supplier<Optional<AllowedActions>> allowedSupplier) {
         return this.metadata.read(() -> {
             return Optional.of(actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
-                                .map(this.actionsTransform.allowedActionsToActionSet(AllowedActions.TEMPLATE))
+                                .map(this.securityTransform.toActionGroup(AllowedActions.TEMPLATE))
                                 .orElseThrow(() -> new WebApplicationException("The available actions were not found",
                                                                                Status.NOT_FOUND)));
+        });
+    }
+    
+    private Optional<Map<String, RoleMembership>> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> membershipSupplier) {
+        return this.metadata.read(() -> {
+            return membershipSupplier.get().map(members -> members.stream()
+                                                    .collect(Collectors.toMap(m -> m.getRole().getSystemName(), 
+                                                                              securityTransform.toRoleMembership())));
+        });
+    }
+    
+    private Optional<RoleMembership> changeRoleMemberships(RoleMembershipChange change, Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> domainSupplier) {
+        return this.metadata.commit(() -> {
+            return domainSupplier.get().map(domain -> {
+                securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
+                securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+                
+                return securityTransform.toRoleMembership().apply(domain);
+            });
         });
     }
 
@@ -237,7 +323,7 @@ public class DefaultSecurityService implements SecurityService {
         Set<String> userNames = extractUserNames(members);
         
         return this.metadata.read(() -> {
-            return supplyTemplateActions(id).get().map(actionsTransform.availableActionsToPermissionsChange(changeType, null, userNames, groupNames));
+            return supplyTemplateActions(id).get().map(securityTransform.toPermissionsChange(changeType, null, userNames, groupNames));
         });
     }
 

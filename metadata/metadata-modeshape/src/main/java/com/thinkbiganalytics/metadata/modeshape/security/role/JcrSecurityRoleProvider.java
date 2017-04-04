@@ -12,9 +12,15 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
+<<<<<<< HEAD
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
+=======
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+>>>>>>> KYLO-198: Security role REST APIs
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +32,9 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,8 +45,6 @@ import javax.jcr.nodetype.NodeType;
 import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAbstractActionsBuilder;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionTreeBuilder;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -74,10 +80,26 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.role.SecurityRoleProvider#getRoles()
+     */
+    @Override
+    public Map<String, SecurityRole> getRoles() {
+        HashMap<String, SecurityRole> map = new HashMap<>();
+        
+        for (String entity : SecurityRole.ENTITIES) {
+            for (SecurityRole role : getEntityRoles(entity)) {
+                map.put(entity, role);
+            }
+        }
+        
+        return map;
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.role.SecurityRoleProvider#getRoles(java.lang.String)
      */
     @Override
-    public List<SecurityRole> getRoles(String entityName) {
+    public List<SecurityRole> getEntityRoles(String entityName) {
         Session session = JcrMetadataAccess.getActiveSession();
         Path entityPath = SecurityPaths.roleEntityPath(entityName);
         

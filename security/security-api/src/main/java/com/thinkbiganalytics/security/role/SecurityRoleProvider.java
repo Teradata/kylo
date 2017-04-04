@@ -5,6 +5,7 @@ package com.thinkbiganalytics.security.role;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.thinkbiganalytics.security.action.Action;
@@ -36,7 +37,9 @@ public interface SecurityRoleProvider {
 
     SecurityRole createRole(String entityName, String roleName, String title, String descr);
     
-    List<SecurityRole> getRoles(String entityName);
+    Map<String, SecurityRole> getRoles();
+    
+    List<SecurityRole> getEntityRoles(String entityName);
     
     Optional<SecurityRole> getRole(String entityName, String roleName);
     

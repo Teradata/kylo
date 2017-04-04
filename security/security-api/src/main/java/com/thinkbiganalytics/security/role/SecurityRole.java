@@ -24,7 +24,10 @@ package com.thinkbiganalytics.security.role;
  */
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -39,6 +42,7 @@ public interface SecurityRole {
     String FEED = "feed";
     String CATEGORY = "category";
     String TEMPLATE = "template";
+    List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE));
     
     
     Principal getPrincipal();

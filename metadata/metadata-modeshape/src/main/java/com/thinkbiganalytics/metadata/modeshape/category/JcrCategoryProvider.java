@@ -106,7 +106,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
         
         if (isNew) {
-            List<SecurityRole> roles = this.roleProvider.getRoles(SecurityRole.FEED);
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
                     .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
         }
