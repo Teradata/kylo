@@ -93,6 +93,7 @@ public class SparkFileSchemaParserService {
 
         } catch (Exception e) {
             log.warn("Error parsing file {}", fileType);
+            log.error(e.getMessage(), e);
             throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
             tempFile.delete();
@@ -116,10 +117,13 @@ public class SparkFileSchemaParserService {
         sb.append("import sqlContext.implicits._\n");
         sb.append("import org.apache.spark.sql._\n");
 
+
         String method;
         switch (fileType) {
             case AVRO:
                 method = "avro";
+                sb.append("import com.databricks.spark.avro._\n");
+                sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
                 break;
             case JSON:
                 method = "json";
@@ -178,7 +182,7 @@ public class SparkFileSchemaParserService {
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
         }
-        log.info("Created temporary file {} success?", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
+        log.info("Created temporary file {} success? {}", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
         return tempFile;
     }
 
