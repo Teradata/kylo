@@ -43,35 +43,28 @@ import java.lang.reflect.InvocationTargetException;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.persistence.Column;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -80,19 +73,22 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.metadata.jpa.app.JpaKyloVersion;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 //@Order(PostMetadataConfigAction.LATE_ORDER + 100)
@@ -114,6 +110,8 @@ public class UpgradeKyloService {
     private CategoryProvider categoryProvider;
     @Inject
     private UserProvider userProvider;
+    @Inject
+    private SecurityRoleProvider roleProvider;
     @Inject
     private PasswordEncoder passwordEncoder;
     @Inject
@@ -202,6 +200,16 @@ public class UpgradeKyloService {
             UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
             UserGroup usersGroup = createDefaultGroup("user", "Users");
             
+            // Create default roles
+            createDefaultRole(SecurityRole.FEED, "editor", "Editor",
+                              FeedAccessControl.EDIT_DETAILS,
+                              FeedAccessControl.DELETE,
+                              FeedAccessControl.ACCESS_OPS,
+                              FeedAccessControl.ENABLE_DISABLE,
+                              FeedAccessControl.EXPORT);
+            createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
+            
+            
             // Add default users to their respective groups
             adminsGroup.addUser(dladmin);
             designersGroup.addUser(designer);
@@ -211,6 +219,7 @@ public class UpgradeKyloService {
             usersGroup.addUser(analyst);
             usersGroup.addUser(designer);
             usersGroup.addUser(operator);
+            
             
             // Setup initial group access control.  Administrators group already has all rights.
             actionsProvider.getAllowedActions(AllowedActions.SERVICES)
@@ -389,6 +398,15 @@ public class UpgradeKyloService {
         UserGroup newGroup = userProvider.ensureGroup(groupName);
         newGroup.setTitle(title);
         return newGroup;
+    }
+    
+    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, Action... actions) {
+        return roleProvider.getRole(entityName, roleName)
+            .orElseGet(() -> {
+                SecurityRole role = roleProvider.createRole(entityName, roleName, title, "");
+                role.setPermissions(actions);
+                return role;
+            });
     }
     
     public static class Version implements KyloVersion {
