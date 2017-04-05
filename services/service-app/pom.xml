@@ -462,6 +462,11 @@
       <artifactId>liquibase-core</artifactId>
       <version>${liquibase.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.18</version>
+    </dependency>
 
   </dependencies>
 
@@ -507,13 +512,17 @@
           <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
           <driver>org.mariadb.jdbc.Driver</driver>
           <url>jdbc:mysql://localhost:3306/kylo</url>
-          <defaultSchemaName>kylo</defaultSchemaName>
           <username>root</username>
           <password>hadoop</password>
           <verbose>true</verbose>
           <logging>debug</logging>
         </configuration>
         <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.0.0</version>
+          </dependency>
           <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
