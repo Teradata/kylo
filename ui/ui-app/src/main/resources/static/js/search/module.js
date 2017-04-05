@@ -3,7 +3,7 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/Acce
     var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('search',{
+        $stateProvider.state(AccessConstants.UI_STATES.SEARCH.state,{
             url:'/search',
             params: {
             },
@@ -21,7 +21,7 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/Acce
                 breadcrumbRoot:false,
                 displayName:'Search',
                 module:moduleName,
-                permissions:AccessControl.SEARCH_ACCESS
+                permissions:AccessConstants.UI_STATES.SEARCH.permissions
             }
         })
 

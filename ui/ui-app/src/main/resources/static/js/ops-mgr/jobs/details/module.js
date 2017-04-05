@@ -6,7 +6,7 @@ define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil',
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('job-details',{
+        $stateProvider.state(AccessConstants.UI_STATES.JOB_DETAILS.state,{
             url:'/job-details/{executionId}',
             params: {
                 executionId:null
@@ -24,7 +24,7 @@ define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil',
             data:{
                 displayName:'Job Details',
                 module:moduleName,
-                permissions:AccessConstants.JOB_DETAILS_ACCESS
+                permissions:AccessConstants.UI_STATES.JOB_DETAILS.permissions
             }
         });
 

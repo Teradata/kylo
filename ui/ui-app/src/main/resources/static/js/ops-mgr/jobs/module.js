@@ -7,7 +7,7 @@ define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','consta
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('jobs',{
+        $stateProvider.state(AccessConstants.UI_STATES.JOBS.state,{
             url:'/jobs',
             views: {
                 'content': {
@@ -21,7 +21,7 @@ define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','consta
                 breadcrumbRoot:false,
                 displayName:'Jobs',
                 module:moduleName,
-                permissions:AccessConstants.JOBS_ACCESS
+                permissions:AccessConstants.UI_STATES.JOBS.permissions
             }
         });
 

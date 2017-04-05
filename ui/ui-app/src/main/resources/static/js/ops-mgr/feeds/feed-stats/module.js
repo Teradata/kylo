@@ -7,7 +7,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadU
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('feed-stats',{
+        $stateProvider.state(AccessConstants.UI_STATES.FEED_STATS.state,{
             url:'/feed-stats/{feedName}',
             params:{
                feedName:null
@@ -26,7 +26,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadU
                 breadcrumbRoot:false,
                 displayName:'Feed Stats',
                 module:moduleName,
-                permissions:AccessConstants.FEED_OPERATIONS_DETAIL_ACCESS
+                permissions:AccessConstants.UI_STATES.FEED_STATS.permissions
             }
         });
 

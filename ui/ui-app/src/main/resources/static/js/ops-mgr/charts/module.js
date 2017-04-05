@@ -8,7 +8,7 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','const
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('charts',{
+        $stateProvider.state(AccessConstants.UI_STATES.CHARTS.state,{
             url:'/charts',
             views: {
                 'content': {
@@ -24,7 +24,7 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','const
                 breadcrumbRoot:true,
                 displayName:'Charts',
                 module:moduleName,
-                permissions:AccessConstants.CHARTS_ACCESS
+                permissions:AccessConstants.UI_STATES.CHARTS.permissions
             }
         });
 

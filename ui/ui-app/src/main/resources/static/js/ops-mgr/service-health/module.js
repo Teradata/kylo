@@ -8,7 +8,7 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('service-health',{
+        $stateProvider.state(AccessConstants.UI_STATES.SERVICE_HEALTH.state,{
             url:'/service-health',
             views: {
                 'content': {
@@ -22,9 +22,9 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
                 breadcrumbRoot:true,
                 displayName:'Service Health',
                 module:moduleName,
-                permissions:AccessControl.SERVICES_ACCESS
+                permissions:AccessConstants.UI_STATES.SERVICE_HEALTH.permissions
             }
-        }).state('service-details',{
+        }).state(AccessConstants.UI_STATES.SERVICE_DETAILS.state,{
             url:'/service-details/:serviceName',
             params: {
                 serviceName: null
@@ -42,9 +42,9 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
             data:{
                 displayName:'Service Details',
                 module:moduleName,
-                permissions:AccessControl.SERVICES_ACCESS
+                permissions:AccessConstants.UI_STATES.SERVICE_DETAILS.permissions
             }
-        }).state('service-component-details',{
+        }).state(AccessConstants.UI_STATES.SERVICE_COMPONENT_DETAILS.state,{
             url:'/service-details/{serviceName}/{componentName}',
             params: {
                 serviceName: null
@@ -62,7 +62,7 @@ define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil
             data:{
                 displayName:'Service Component',
                 module:moduleName,
-                permissions:AccessControl.SERVICES_ACCESS
+                permissions:AccessConstants.UI_STATES.SERVICE_COMPONENT_DETAILS.permissions
             }
         });
 

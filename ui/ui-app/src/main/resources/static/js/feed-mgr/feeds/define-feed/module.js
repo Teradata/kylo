@@ -10,7 +10,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('define-feed', {
+        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
             url: '/define-feed',
             params: {
                 templateId: null
@@ -29,11 +29,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.FEEDS_ACCESS
+                permissions:AccessConstants.UI_STATES.DEFINE_FEED.permissions
             }
         });
 
-        $stateProvider.state('define-feed-complete', {
+        $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.state, {
             url: '/define-feed-complete',
             params: {
                 templateId: null
@@ -52,13 +52,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Define Feed',
                 module:moduleName,
-                permissions:AccessConstants.FEEDS_ACCESS
+                permissions:AccessConstants.UI_STATES.DEFINE_FEED_COMPLETE.permissions
             }
         });
 
 
 
-        $stateProvider.state('import-feed', {
+        $stateProvider.state(AccessConstants.UI_STATES.IMPORT_FEED.state, {
             url: '/import-feed',
             params: {},
             views: {
@@ -75,7 +75,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
                 breadcrumbRoot: false,
                 displayName: 'Import Feed',
                 module:moduleName,
-                permissions:AccessConstants.FEEDS_IMPORT
+                permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
             }
         });
 

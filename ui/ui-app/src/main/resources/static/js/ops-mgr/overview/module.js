@@ -16,7 +16,7 @@ define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','con
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('dashboard',{
+        $stateProvider.state(AccessConstants.UI_STATES.DASHBOARD.state,{
             url:'/dashboard',
             params: {
             },
@@ -34,7 +34,7 @@ define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','con
                 breadcrumbRoot:true,
                 displayName:'Dashboard',
                 module:moduleName,
-                permissions:AccessConstants.OPERATIONS_MANAGER_ACCESS
+                permissions:AccessConstants.UI_STATES.DASHBOARD.permissions
             }
         });
 

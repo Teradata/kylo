@@ -6,7 +6,7 @@ define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','consta
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('ops-feed-details',{
+        $stateProvider.state(AccessConstants.UI_STATES.OPS_FEED_DETAILS.state,{
             url:'/ops-feed-details/{feedName}',
             params: {
                feedName:null
@@ -25,7 +25,7 @@ define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','consta
                 breadcrumbRoot:false,
                 displayName:'Feed Details',
                 module:moduleName,
-                permissions:AccessConstants.FEED_OPERATIONS_DETAIL_ACCESS
+                permissions:AccessConstants.UI_STATES.OPS_FEED_DETAILS.permissions
             }
         });
 

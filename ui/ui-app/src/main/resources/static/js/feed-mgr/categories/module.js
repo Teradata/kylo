@@ -7,7 +7,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('categories',{
+        $stateProvider.state(AccessConstants.UI_STATES.CATEGORIES.state,{
             url:'/categories',
             params: {
             },
@@ -25,9 +25,9 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 breadcrumbRoot:true,
                 displayName:'Categories',
                 module:moduleName,
-                permissions:AccessConstants.CATEGORIES_ACCESS
+                permissions:AccessConstants.UI_STATES.CATEGORIES.permissions
             }
-        }).state('category-details',{
+        }).state(AccessConstants.UI_STATES.CATEGORY_DETAILS.state,{
             url:'/category-details/{categoryId}',
             params: {
                 categoryId:null
@@ -46,7 +46,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','c
                 breadcrumbRoot:false,
                 displayName:'Category Details',
                 module:moduleName,
-                permissions:AccessConstants.CATEGORIES_ACCESS
+                permissions:AccessConstants.UI_STATES.CATEGORY_DETAILS.permissions
             }
         })
 

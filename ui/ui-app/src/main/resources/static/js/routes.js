@@ -534,8 +534,8 @@ $stateProvider.state({
     }]);
 
     app.run(
-        ['$rootScope', '$state', '$location', "$transitions", "AccessControlService",
-         function ($rootScope, $state, $location, $transitions, AccessControlService) {
+        ['$rootScope', '$state', '$location', "$transitions","$timeout","$q", "AccessControlService",
+         function ($rootScope, $state, $location, $transitions,$timeout, $q, AccessControlService) {
              //initialize the access control
              AccessControlService.init();
 
@@ -552,10 +552,30 @@ $stateProvider.state({
               */
              $transitions.onStart({}, function (trans) {
 
-                 var to = trans.to().name;
-                 if (!AccessControlService.hasAccess(trans)) {
-                     if (trans.to().name != 'access-denied') {
-                         return $state.target("access-denied", {attemptedState: trans.to()});
+                 if(!AccessControlService.isFutureState(trans.to().name)) {
+                     //if we havent initialized the user yet, init and defer the transition
+                     if (!AccessControlService.initialized) {
+                         var defer = $q.defer();
+                         $q.when(AccessControlService.init(), function () {
+                             //if not allowed, go to access-denied
+                             if (!AccessControlService.hasAccess(trans)) {
+                                 if (trans.to().name != 'access-denied') {
+                                     defer.resolve($state.target("access-denied", {attemptedState: trans.to()}));
+                                 }
+                             }
+                             else {
+                                 console.log('transitiong to ',trans, trans.to())
+                                 defer.resolve($state.target(trans.to()).name, trans.to(),trans.to().params());
+                             }
+                         });
+                         return defer.promise;
+                     }
+                     else {
+                         if (!AccessControlService.hasAccess(trans)) {
+                             if (trans.to().name != 'access-denied') {
+                                 return $state.target("access-denied", {attemptedState: trans.to()});
+                             }
+                         }
                      }
                  }
              });

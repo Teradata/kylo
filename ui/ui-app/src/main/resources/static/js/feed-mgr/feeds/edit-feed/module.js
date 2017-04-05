@@ -10,7 +10,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('feed-details',{
+        $stateProvider.state(AccessConstants.UI_STATES.FEED_DETAILS.state,{
             url:'/feed-details/{feedId}',
             params: {
                 feedId: null,
@@ -30,9 +30,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 breadcrumbRoot:false,
                 displayName:'Edit Feed',
                 module:moduleName,
-                permissions:AccessConstants.FEEDS_ACCESS
+                permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
             }
-        }).state('edit-feed',{
+        }).state(AccessConstants.UI_STATES.EDIT_FEED.state,{
                 url:'/edit-feed/{feedId}',
                 params: {
                     feedId: null
@@ -51,7 +51,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                     breadcrumbRoot: false,
                     displayName: 'Edit Feed',
                     module:moduleName,
-                    permissions:AccessConstants.FEEDS_EDIT
+                    permissions:AccessConstants.UI_STATES.EDIT_FEED.permissions
                 }
             })
 

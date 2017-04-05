@@ -5,7 +5,7 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
      * LAZY loaded in from /app.js
      */
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('service-level-agreements',{
+        $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state,{
             url:'/service-level-agreements',
             params: {
             },
@@ -21,7 +21,7 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
                 breadcrumbRoot:true,
                 displayName:'Service Level Agreements',
                 module:moduleName,
-                permissions:AccessConstants.SLA_ACCESS
+                permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
             }
         })
 

@@ -54,13 +54,17 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
 
 
-    return angular.module(moduleName).factory("AccessControlService", ["$http", "$q", "CommonRestUrlService", "UserGroupService", function ($http, $q, CommonRestUrlService, UserGroupService) {
+    return angular.module(moduleName).factory("AccessControlService", ["$http", "$q","$timeout", "CommonRestUrlService", "UserGroupService", function ($http, $q,$timeout, CommonRestUrlService, UserGroupService) {
 
         var DEFAULT_MODULE = "services";
 
         var currentUser = null;
 
-        var ROLE_CACHE = [];
+        /**
+         * Key: Entity Type, Value: [{systemName:'ROLE1',permissions:['perm1','perm2']},...]
+         * @type {{}}
+         */
+        var ROLE_CACHE = {};
 
         /**
          * Interacts with the Access Control REST API.
@@ -98,19 +102,25 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
             init:function(){
                 var self = this;
 
-                //build the user access and role/permission cache
-                var requests = {userActions:this.getUserAllowedActions(DEFAULT_MODULE,true),roles:this.getRoles(), currentUser:this.getCurrentUser()};
+                //build the user access and role/permission cache//  roles:self.getRoles()
+                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true), currentUser:self.getCurrentUser()};
+                var defer = $q.defer();
 
                 $q.all(requests).then(function(response){
                     self.initialized = true;
                     currentUser= response.currentUser;
+                        defer.resolve(true);
                 });
+                return defer.promise;
 
             },
             hasEntityAccess:function(requiredPermissions,entity){
 
                 //all entities should have the object .accessControl with the correct {owner:systemName,roles:[{name:'role1'},{name:'role2'}]}
                 //ASSUMES initialize will build up ROLE_CACHE
+                if(entity == undefined){
+                    return false;
+                }
 
                 var permissions = [];
 
@@ -118,16 +128,19 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     return false;
                 }
                 //short circuit if the owner matches
-                if(entity.accessControl.owner == currentUser.systemName){
+                if(entity.owner == currentUser.systemName){
                     return true;
                 }
                 //check the permissions on the entity roles
-               _.each(entity.accessControl.roles,function(role){
+               _.each(entity.roleMemberships,function(role){
                     var rolePermissions = ROLE_CACHE[role] != undefined ? ROLE_CACHE[role].permissions : [];
                     permissions.concat(rolePermissions);
                 });
 
                return this.hasAnyAction(requiredPermissions,permissions);
+            },
+            isFutureState:function(state){
+                return state.endsWith(".**");
             },
 
             /**
@@ -149,7 +162,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     }
                     var requiredPermissions = data.permissions || null;
                     //if its a future lazy loaded state, allow it
-                    if (toStateName.endsWith(".**")) {
+                    if (self.isFutureState(toStateName)) {
                         valid = true;
                     }else {
                         //check to see if the user has the required permission(s) in the String or [array] from the data.permissions object
@@ -358,22 +371,25 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 });
             },
             /**
-             * Gets the roles from the server with their assigned permissions
-             * TODO should it populate a map of {entityType: rolesArr} ??
+             * For a given entity type (i.e. FEED) return the roles/permissions
+             * @param entityType the type of entity
              */
-            getRoles:function(){
+            getEntityRoles:function(entityType){
                 var df = $q.defer();
-                var rolesArr = [];
-                if(ROLE_CACHE.length >0) {
-                    df.resolve(angular.copy(ROLE_CACHE));
+                if(ROLE_CACHE[entityType] != undefined) {
+                    df.resolve(angular.copy(ROLE_CACHE[entityType]));
                 }
                 else {
-                    //TODO CALL OUT TO SERVER via REST endpoint to get all roles and permissions
-                    rolesArr.push({systemName: 'readOnly', name: 'Read Only', permissions: ["perm1", "perm2"]});
-                    rolesArr.push({systemName: 'editor', name: 'Editor', permissions: ["perm1", "perm2"]});
+                    var rolesArr = [];
+                    $http.get(CommonRestUrlService.SECURITY_ENTITY_ROLES_URL(entityType)).then(function (response) {
+                        _.each(response.data,function(role){
+                            role.name = role.title;
+                            rolesArr.push(role);
+                        });
+                        ROLE_CACHE[entityType] = rolesArr;
+                        df.resolve(rolesArr);
+                    });
 
-                    ROLE_CACHE = rolesArr;
-                    df.resolve(rolesArr);
                 }
                 return df.promise;
             }

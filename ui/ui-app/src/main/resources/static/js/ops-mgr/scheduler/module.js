@@ -6,7 +6,7 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','c
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('scheduler',{
+        $stateProvider.state(AccessConstants.UI_STATES.SCHEDULER.state,{
             url:'/scheduler',
             views: {
                 'content': {
@@ -22,7 +22,7 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','c
                 breadcrumbRoot:true,
                 displayName:'Scheduler',
                 module:moduleName,
-                permissions:AccessConstants.SLA_SCHEDULER_ACCESS
+                permissions:AccessConstants.UI_STATES.SCHEDULER.permissions
             }
         });
 

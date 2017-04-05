@@ -6,7 +6,7 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('alerts',{
+        $stateProvider.state(AccessConstants.UI_STATES.ALERTS.state,{
             url:'/alerts',
             views: {
                 'content': {
@@ -20,9 +20,9 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
                 breadcrumbRoot:true,
                 displayName:'Alerts',
                 module:moduleName,
-                permissions:AccessConstants.ALERTS_ACCESS
+                permissions:AccessConstants.UI_STATES.ALERTS.permissions
             }
-        }).state("alert-details",{
+        }).state(AccessConstants.UI_STATES.ALERT_DETAILS.state,{
             url:"/alert-details/{alertId}",
             views: {
                 'content': {
@@ -40,7 +40,7 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
             data:{
                 displayName:'Alert Details',
                 module:moduleName,
-                permissions:AccessConstants.ALERTS_ACCESS
+                permissions:AccessConstants.UI_STATES.ALERT_DETAILS.permissions
             }
         })
 
