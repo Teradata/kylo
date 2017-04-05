@@ -81,6 +81,22 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
     }
 
     @Test
+    public void testParseRemainingParametersStorageLevel() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file", "--storageLevel", "MEMORY_ONLY"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        String storageLevel = params.getStorageLevel();
+        assertEquals("MEMORY_ONLY", storageLevel);
+    }
+
+    @Test
+    public void testDefaultStorageLevel() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        String defaultStorageLevel = params.getStorageLevel();
+        assertEquals("MEMORY_AND_DISK", defaultStorageLevel);
+    }
+
+    @Test
     public void testParseRemainingParameters_missingParameters() {
         String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
         CommandLineParams params = Validator.parseRemainingParameters(args, 4);
