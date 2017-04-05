@@ -310,8 +310,28 @@ public class DefaultSecurityService implements SecurityService {
     private Optional<RoleMembership> changeRoleMemberships(RoleMembershipChange change, Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> domainSupplier) {
         return this.metadata.commit(() -> {
             return domainSupplier.get().map(domain -> {
-                securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
-                securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+
+                switch (change.getChange()) {
+                    case ADD:
+                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
+                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+                        break;
+                    case REMOVE:
+                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.removeMember(p));
+                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.removeMember(p));
+                        break;
+                    case REPLACE:
+                        domain.removeAllMembers();
+                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
+                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+                        break;
+                    default:
+                        break;
+                }
+
+
+
+
                 
                 return securityTransform.toRoleMembership().apply(domain);
             });
