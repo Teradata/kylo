@@ -34,6 +34,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -54,6 +55,9 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Inject
     MetadataAccess metadataAccess;
+
+    @Inject
+    private SecurityService securityService;
 
     @Inject
     private AccessController accessController;
@@ -113,6 +117,11 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             // Repopulate identifier
             category.setId(domainCategory.getId().toString());
+
+            ///update access control
+            //TODO only do this when modifying the access control
+            category.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(category.getId(),roleMembershipChange));
+
             return domainCategory.getId();
         });
 

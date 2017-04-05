@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -321,6 +321,10 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             //get all properties that are selected
             var savedTemplate = RegisterTemplateService.getModelForSave();
+
+            //prepare access control changes if any
+            EntityAccessControlService.updateEntityForSave(savedTemplate);
+
             //get template order
             var order = [];
             _.each(self.templateOrder, function (template) {
@@ -405,7 +409,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", RegisterCompleteRegistrationController]);
+    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
     angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);

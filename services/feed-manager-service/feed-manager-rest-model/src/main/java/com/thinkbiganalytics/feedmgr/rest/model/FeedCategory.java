@@ -37,7 +37,7 @@ import java.util.Set;
  * A category is a collection of zero or more feeds in the Feed Manager.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedCategory {
+public class FeedCategory extends EntityAccessControl {
 
     private String id;
     @MetadataField

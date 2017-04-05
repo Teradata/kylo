@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
@@ -280,5 +281,10 @@ public class FeedManagerConfiguration {
     @Nonnull
     public ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform(@Nonnull final Model model) {
         return new ServiceLevelAgreementModelTransform(model);
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform(){
+        return new AccessControlledEntityTransform();
     }
 }

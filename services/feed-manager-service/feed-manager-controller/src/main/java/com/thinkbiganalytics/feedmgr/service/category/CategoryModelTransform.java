@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -49,6 +50,10 @@ import javax.inject.Inject;
  * Transforms categories between Feed Manager and Metadata formats.
  */
 public class CategoryModelTransform {
+
+    @Inject
+    private AccessControlledEntityTransform accessControlledEntityTransform;
+
 
     /**
      * Provider for categories
@@ -130,6 +135,8 @@ public class CategoryModelTransform {
                 }
             }
             category.setSecurityGroups(restSecurityGroups);
+
+            accessControlledEntityTransform.applyAccessControlToRestModel(domainCategory,category);
 
             return category;
         } else {

@@ -58,6 +58,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -141,6 +142,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
+
+    @Inject
+    private SecurityService securityService;
 
     /**
      * Adds listeners for transferring events.
@@ -314,6 +318,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             Feed.ID id = feedProvider.resolveId(feedMetadata.getId());
             notifyFeedStateChange(feedMetadata, id, state, MetadataChange.ChangeType.UPDATE);
+        }
+        else if(feed.isSuccess() && feedMetadata.isNew()){
+            //update the access control
+            feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(),roleMembershipChange));
         }
         return feed;
 

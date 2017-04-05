@@ -69,7 +69,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 registeredDatasources: [],
                 isStream: false,
                 validTemplateProcessorNames: true,
-                accessControl:{roles:[],owner:null}
+                roleMemberships:[],
+                owner:null
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
@@ -100,7 +101,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     needsReusableTemplate: this.model.needsReusableTemplate,
                     reusableTemplateConnections: this.model.reusableTemplateConnections,
                     state: this.model.state,
-                    isStream: this.model.isStream
+                    isStream: this.model.isStream,
+                    roleMemberships:this.model.roleMemberships,
+                    owner: this.model.owner
                 }
             },
             newReusableConnectionInfo: function () {

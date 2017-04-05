@@ -241,7 +241,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @returns {string} the URL for listing controller services
          */
         this.LIST_SERVICES_URL = function (processGroupId) {
-            return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
         };
 
         /**
@@ -268,5 +268,33 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @type {string}
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+
+        /**
+         * Get/Post roles changes for a Feed entity
+         * @param feedId the feed id
+         * @returns {string} the url to get/post feed role changes
+         */
+        this.FEED_ROLES_URL = function(feedId){
+            return self.FEEDS_BASE_URL+"/"+feedId+"/roles"
+        }
+
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_ROLES_URL = function(categoryId){
+            return self.CATEGORIES_URL+"/"+categoryId+"/roles"
+        }
+
+
+        /**
+         * Get/Post roles changes for a Template entity
+         * @param categoryId the Template id
+         * @returns {string} the url to get/post Template role changes
+         */
+        this.TEMPLATE_ROLES_URL = function(templateId){
+            return self.TEMPLATES_BASE_URL+"/registered/"+templateId+"/roles"
+        }
     });
 });

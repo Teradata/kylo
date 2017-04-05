@@ -1,5 +1,5 @@
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService", function ($q, $http, RestUrlService) {
+    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","EntityAccessControlService", function ($q, $http, RestUrlService,EntityAccessControlService) {
 
         /**
          * Create filter function for a query string
@@ -98,6 +98,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return promise;
             },
             save: function (category) {
+                //prepare access control changes if any
+                EntityAccessControlService.updateEntityForSave(category);
 
                 var promise = $http({
                     url: RestUrlService.CATEGORIES_URL,
@@ -163,7 +165,16 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @returns {CategoryModel} the new category model
              */
             newCategory: function () {
-                return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: [], securityGroups: [],accessControl:{roles:[],owner:null}};
+                return {id: null,
+                        name: null,
+                        description: null,
+                        icon: null, iconColor: null,
+                        userFields: [],
+                        userProperties: [],
+                        relatedFeedSummaries: [],
+                        securityGroups: [],
+                        roleMemberships:[],
+                        owner:null};
             },
 
             /**

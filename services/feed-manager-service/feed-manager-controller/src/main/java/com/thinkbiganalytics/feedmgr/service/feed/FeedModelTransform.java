@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -44,8 +45,6 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
-import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,9 +73,8 @@ public class FeedModelTransform {
 
     @Inject
     private FeedProvider feedProvider;
-    
     @Inject
-    private SecurityModelTransform actionsTransform;
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private TemplateModelTransform templateModelTransform;
@@ -328,8 +326,8 @@ public class FeedModelTransform {
             feed.setUsedByFeeds(usedByFeeds);
         }
 
-        ActionGroup allowed = actionsTransform.toActionGroup(null).apply(domain.getAllowedActions());
-        feed.setAllowedActions(allowed);
+        //add in access control items
+        accessControlledEntityTransform.applyAccessControlToRestModel(domain,feed);
 
         return feed;
     }
@@ -367,6 +365,8 @@ public class FeedModelTransform {
                 feedSummary.setTemplateName(fmf.getTemplate().getName());
             }
         }
+        //add in access control items
+        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed,feedSummary);
         return feedSummary;
     }
 

@@ -5,9 +5,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             restrict: "E",
             bindToController: {
                 entity:'=',
-                model:'=',
+                entityType:'@',
                 theForm:'=?',
-                readOnly:'=?'
+                readOnly:'=?',
+                queryForEntityAccess:'=?'
             },
             controllerAs: 'vm',
             scope: {},
@@ -19,7 +20,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         };
     };
 
-    var controller = function($q, UserGroupService,AccessControlService){
+    var controller = function($q,$http, UserGroupService,EntityAccessControlService){
 
         var self = this;
 
@@ -32,21 +33,19 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
            this.theForm = {};
        }
 
-        if(angular.isUndefined(this.model)){
-            this.model = {};
-        }
-        if(angular.isUndefined(this.model.roles)){
-            this.model.roles = [];
+
+        if(angular.isUndefined(this.entity.roleMemberships)){
+            this.entity.roleMemberships = [];
         }
 
-        if(angular.isUndefined(this.model.owner) || this.model.owner == null){
-            this.model.owner = null;
+        if(angular.isUndefined(this.entity.owner) || this.entity.owner == null){
+            this.entity.owner = null;
             //assign it the current user
             var requests = {currentUser:UserGroupService.getCurrentUser(),allUsers:getAllUsers()};
             $q.all(requests).then(function(response){
                     var matchingUsers = filterCollection(response.allUsers,response.currentUser.systemName,['_lowerDisplayName','_lowerSystemName']);
                     if(matchingUsers){
-                        self.model.owner = matchingUsers[0];
+                        self.entity.owner = matchingUsers[0];
                     }
             })
             /*
@@ -56,6 +55,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             */
         }
 
+
         /**
          * Owner autocomplete model
          * @type {{searchText: string, searchTextChanged: controller.ownerAutoComplete.searchTextChanged, selectedItemChange: controller.ownerAutoComplete.selectedItemChange}}
@@ -64,10 +64,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             searchTextChanged:function(query){ },
             selectedItemChange:function(item) {
                 if(item != null && item != undefined) {
-                    self.model.owner = item;
+                    self.entity.owner = item;
                 }
                 else {
-                    self.model.owner = null;
+                    self.entity.owner = null;
                 }
 
             }
@@ -114,6 +114,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @param query
          */
         this.queryUsersAndGroups = function(query){
+            /**
+             * Flag that the user has updated the role memberships
+             * @type {boolean}
+             */
+            self.entity.roleMemberships.updated = true;
+
             var df = $q.defer();
             var request = {groups:getAllGroups(),users:getAllUsers()};
             $q.all(request).then(function(results){
@@ -189,48 +195,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         }
 
 
-        function newRole(name){
-            var role = {systemName:'',name:name,members:[]};
-            // addin ui related stuff
-            augmentRoleWithUiModel(role);
-            return role;
-        }
-
-        function augmentRoleWithUiModel(role){
-            role.ui = {members:{selectedItem:'',searchText:''}};
-            if(angular.isUndefined(role.members)){
-                role.members = [];
-            }
-        }
-
-        /**
-         * Merges all possible roles for this entity, with the assigned roles/memberships
-         */
-        function mergeRoleAssignments(){
-            var availableEntityRoles = {};
-
-           var existingModelRoleAssignments = {};
-               _.each(self.model.roles,function(role){
-                   existingModelRoleAssignments[role.systemName] = role;
-                   augmentRoleWithUiModel(role);
-               });
 
 
-            //get the available roles for this entity (might need to add a method to AccessControlService to getRolesForEntityType()
-            AccessControlService.getRoles().then(function(roles) {
-                _.each(roles, function (role) {
-                    augmentRoleWithUiModel(role);
-                    availableEntityRoles[role.systeName] = role;
-                    if(angular.isUndefined(existingModelRoleAssignments[role.systemName])){
-                        self.model.roles.push(role);
-                    }
-                });
-            });
-        }
+
+
 
         function init(){
-
-            mergeRoleAssignments();
+            EntityAccessControlService.mergeRoleAssignments(self.entity,self.entityType);
         }
 
 
@@ -247,7 +218,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
     };
 
-    angular.module(moduleName).controller('EntityAccessControlController', ["$q","UserGroupService","AccessControlService",controller]);
+    angular.module(moduleName).controller('EntityAccessControlController', ["$q","$http","UserGroupService","EntityAccessControlService",controller]);
     angular.module(moduleName).directive('entityAccessControl', directive);
 
 

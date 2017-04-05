@@ -43,6 +43,13 @@ public class RoleMembership {
 
     public RoleMembership() {
     }
+
+    public RoleMembership(String systemName, String name, String description){
+        this.role = new Role();
+        this.role.setSystemName(systemName);
+        this.role.setTitle(name);
+        this.role.setDescription(description);
+    }
     
     public RoleMembership(Role role) {
         this.role = role;
@@ -63,6 +70,14 @@ public class RoleMembership {
     public Set<String> getGroups() {
         return groups;
     }
-    
+
+
+    public void addUser(String user){
+        getUsers().add(user);
+    }
+
+    public void addGroup(String group){
+        getGroups().add(group);
+    }
     
 }

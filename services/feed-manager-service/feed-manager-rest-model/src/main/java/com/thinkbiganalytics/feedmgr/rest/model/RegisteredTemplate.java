@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RegisteredTemplate {
+public class RegisteredTemplate extends EntityAccessControl {
 
     private List<NifiProperty> properties;
 
@@ -77,8 +77,6 @@ public class RegisteredTemplate {
     private Long order;
 
     private List<String> templateOrder;
-    
-    private ActionGroup allowedActions;
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -144,13 +142,6 @@ public class RegisteredTemplate {
 
     }
 
-    public ActionGroup getAllowedActions() {
-        return allowedActions;
-    }
-    
-    public void setAllowedActions(ActionGroup allowedActions) {
-        this.allowedActions = allowedActions;
-    }
 
     public List<NifiProperty> getProperties() {
         return properties;

@@ -21,8 +21,8 @@
  *
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService",
-        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService) {
+    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","EntityAccessControlService",
+        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,EntityAccessControlService) {
 
             function trim(str) {
                 return str.replace(/^\s+|\s+$/g, "");
@@ -166,7 +166,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         userProperties: [],
                         options: {skipHeader: false},
                         active: true,
-                        accessControl:{roles:[],owner:null}
+                        roleMemberships:[],
+                        owner:null
                     };
                 },
                 /**
@@ -482,6 +483,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         });
                     });
                     model.properties = properties;
+
+                    //prepare access control changes if any
+                    EntityAccessControlService.updateEntityForSave(model);
 
                     if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                         // Set feed

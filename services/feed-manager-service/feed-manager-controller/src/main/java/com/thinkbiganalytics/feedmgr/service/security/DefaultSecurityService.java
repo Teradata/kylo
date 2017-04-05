@@ -105,7 +105,7 @@ public class DefaultSecurityService implements SecurityService {
     
     @Override
     public Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change) {
-        return changeRoleMemberships(change, supplyTemplateRoleMembership(id, change.getRoleName()));
+        return changeRoleMemberships(change, supplyFeedRoleMembership(id, change.getRoleName()));
     }
     
     @Override

@@ -216,7 +216,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     public void setIcon(String icon) {
-        setProperty(ICON, icon);
+        super.setProperty(ICON, icon);
     }
 
     @Override

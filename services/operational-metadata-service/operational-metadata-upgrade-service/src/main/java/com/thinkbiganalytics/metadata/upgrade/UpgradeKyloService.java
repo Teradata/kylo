@@ -60,28 +60,36 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.security.action.Action;
@@ -91,9 +99,9 @@ import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-//@Order(PostMetadataConfigAction.LATE_ORDER + 100)
-//public class UpgradeKyloService implements PostMetadataConfigAction {
-public class UpgradeKyloService {
+@Order(PostMetadataConfigAction.LATE_ORDER + 100)
+public class UpgradeKyloService implements PostMetadataConfigAction {
+//public class UpgradeKyloService {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
     @Inject
@@ -117,10 +125,11 @@ public class UpgradeKyloService {
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
 
-//    
-//    public void run() {
-//        upgradeCheck();
-//    };
+
+
+    public void run() {
+        upgradeCheck();
+    };
     public KyloVersion getCurrentVersion() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
         if(version == null){
@@ -168,6 +177,7 @@ public class UpgradeKyloService {
         if (version == null) {
             setupFreshInstall();
         }
+        ensureDefaultEntityRoles();
         
         if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber()< 0.4f)) {
             version = upgradeTo0_4_0();
@@ -208,6 +218,24 @@ public class UpgradeKyloService {
                               FeedAccessControl.ENABLE_DISABLE,
                               FeedAccessControl.EXPORT);
             createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
+
+
+            createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
+                              TemplateAccessControl.ACCESS_TEMPLATE,
+                              TemplateAccessControl.EDIT_TEMPLATE,
+                              TemplateAccessControl.CREATE_TEMPLATE,
+                              TemplateAccessControl.EXPORT);
+            createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", TemplateAccessControl.ACCESS_TEMPLATE);
+
+
+            createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
+                              CategoryAccessControl.ACCESS_CATEGORY,
+                              CategoryAccessControl.EDIT_DETAILS,
+                              CategoryAccessControl.EDIT_SUMMARY,
+                              CategoryAccessControl.EXPORT,
+                              CategoryAccessControl.CREATE_FEED,
+                              CategoryAccessControl.DELETE);
+            createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
             
             
             // Add default users to their respective groups
@@ -250,6 +278,56 @@ public class UpgradeKyloService {
                                                FeedServicesAccessControl.ACCESS_DATASOURCES);
                             });
         }, MetadataAccess.SERVICE);
+    }
+
+    private void ensureDefaultEntityRoles(){
+        metadataAccess.commit(() -> {
+            ensureFeedRoles();
+            ensureCategoryRoles();
+            ensureTemplateRoles();
+        }, MetadataAccess.SERVICE);
+    }
+
+    private void ensureFeedRoles() {
+        List<Feed> feeds = feedProvider.findAll();
+        if (feeds != null) {
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
+            Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
+            feeds.stream().forEach(feed -> {
+              roleProvider.getEntityRoles(SecurityRole.FEED).stream().forEach(securityRole -> {
+                  allowedActions
+                      .ifPresent(actions -> ((JcrFeed)feed).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+              });
+            });
+        }
+    }
+
+    private void ensureCategoryRoles() {
+        List<Category> categories = categoryProvider.findAll();
+        if (categories != null) {
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+            Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY);
+            categories.stream().forEach(category -> {
+                roleProvider.getEntityRoles(SecurityRole.CATEGORY).stream().forEach(securityRole -> {
+                    allowedActions
+                        .ifPresent(actions -> ((JcrCategory)category).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                });
+            });
+        }
+    }
+
+    private void ensureTemplateRoles() {
+        List<FeedManagerTemplate> templates = feedManagerTemplateProvider.findAll();
+        if (templates != null) {
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
+            Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE);
+            templates.stream().forEach(template -> {
+                roleProvider.getEntityRoles(SecurityRole.TEMPLATE).stream().forEach(securityRole -> {
+                    allowedActions
+                        .ifPresent(actions -> ((JcrFeedTemplate)template).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                });
+            });
+        }
     }
 
     /*

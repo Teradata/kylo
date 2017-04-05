@@ -22,9 +22,11 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.beanvalidation.NewFeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -32,6 +34,7 @@ import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
@@ -44,6 +47,8 @@ import org.springframework.stereotype.Component;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +57,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -92,6 +98,9 @@ public class FeedCategoryRestController {
 
     @Inject
     private SecurityModelTransform actionsTransform;
+
+    @Inject
+    AccessControlledEntityTransform accessControlledEntityTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -278,10 +287,22 @@ public class FeedCategoryRestController {
         @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
         @ApiResponse(code = 404, message = "A category with the given ID does not exist.", response = RestResponseStatus.class)
     })
-    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr) {
-        return this.securityService.getCategoryRoleMemberships(categoryIdStr)
-                        .map(m -> Response.ok(m).build())
-                        .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr,@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        if(!verbose) {
+            return this.securityService.getCategoryRoleMemberships(categoryIdStr)
+                .map(m -> Response.ok(m).build())
+                .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+        }
+        else {
+            Optional<Map<String,RoleMembership>> memberships = this.securityService.getCategoryRoleMemberships(categoryIdStr);
+            if(memberships.isPresent()){
+                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                return Response.ok(entityAccessRoleMemberships).build();
+            }
+            else {
+                throw new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND);
+            }
+        }
     }
     
 

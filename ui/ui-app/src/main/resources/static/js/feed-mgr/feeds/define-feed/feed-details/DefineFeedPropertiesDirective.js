@@ -94,6 +94,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             });
         }
 
+        self.transformChip = function(chip) {
+            // If it is an object, it's already a known chip
+            if (angular.isObject(chip)) {
+                return chip;
+            }
+            // Otherwise, create a new one
+            return {name: chip}
+        };
+
     };
 
     angular.module(moduleName).controller('DefineFeedPropertiesController', ["$scope","$http","$mdToast","RestUrlService","FeedTagService","FeedService",DefineFeedPropertiesDirective]);

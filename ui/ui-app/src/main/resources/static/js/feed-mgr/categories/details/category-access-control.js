@@ -15,7 +15,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     };
 
-    function CategoryAccessControlController($scope,CategoriesService,AccessControlService) {
+    function CategoryAccessControlController($scope,$mdToast,CategoriesService,AccessControlService,EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -27,8 +27,8 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
 
         this.model = CategoriesService.model;
 
-        if(CategoriesService.model.accessControl == undefined){
-            CategoriesService.model.accessControl = this.model.accessControl = {roles:[],owner:null};
+        if(CategoriesService.model.roleMemberships == undefined){
+            CategoriesService.model.roleMemberships = this.model.roleMemberships = [];
         }
 
 
@@ -79,10 +79,14 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          */
         self.onSave = function() {
             var model = angular.copy(CategoriesService.model);
-            model.accessControl = self.editModel.accessControl;
+            model.roleMemberships = self.editModel.roleMemberships;
+            model.owner = self.editModel.owner;
+            EntityAccessControlService.updateEntityForSave(model);
+
 
             CategoriesService.save(model).then(function(response) {
                 self.model = CategoriesService.model = response.data;
+                EntityAccessControlService.mergeRoleAssignments(self.model,EntityAccessControlService.entityTypes.CATEGORY)
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
@@ -103,7 +107,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
 
     }
 
-    angular.module(moduleName).controller("CategoryAccessControlController",["$scope","CategoriesService","AccessControlService", CategoryAccessControlController]);
+    angular.module(moduleName).controller("CategoryAccessControlController",["$scope","$mdToast","CategoriesService","AccessControlService","EntityAccessControlService", CategoryAccessControlController]);
 
     angular.module(moduleName).directive("thinkbigCategoryAccessControl", directive);
 });

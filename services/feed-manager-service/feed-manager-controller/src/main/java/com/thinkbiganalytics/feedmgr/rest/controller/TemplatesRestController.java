@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowResponse;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -31,6 +32,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
@@ -44,6 +46,7 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
@@ -61,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,6 +72,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -118,6 +123,9 @@ public class TemplatesRestController {
 
     @Inject
     NifiFlowCache nifiFlowCache;
+
+    @Inject
+    AccessControlledEntityTransform accessControlledEntityTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -452,7 +460,7 @@ public class TemplatesRestController {
     /**
      * Register and save a given template and its properties
      *
-     * @
+     * @param registeredTemplate  the template to register
      */
     @POST
     @Path("/register")
@@ -558,10 +566,22 @@ public class TemplatesRestController {
         @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
         @ApiResponse(code = 404, message = "A template with the given ID does not exist.", response = RestResponseStatus.class)
     })
-    public Response getRoleMemberships(@PathParam("templateId") String templateIdStr) {
-        return this.securityService.getTemplateRoleMemberships(templateIdStr)
-                        .map(m -> Response.ok(m).build())
-                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
+    public Response getRoleMemberships(@PathParam("templateId") String templateIdStr,@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        if(!verbose) {
+            return this.securityService.getTemplateRoleMemberships(templateIdStr)
+                .map(m -> Response.ok(m).build())
+                .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
+        }
+        else {
+            Optional<Map<String,RoleMembership>> memberships = this.securityService.getTemplateRoleMemberships(templateIdStr);
+            if(memberships.isPresent()){
+                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                return Response.ok(entityAccessRoleMemberships).build();
+            }
+            else {
+                throw new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND);
+            }
+        }
     }
     
 

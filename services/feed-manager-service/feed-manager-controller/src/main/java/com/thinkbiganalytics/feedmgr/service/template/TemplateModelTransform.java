@@ -23,13 +23,12 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import java.util.ArrayList;
@@ -43,6 +42,9 @@ import javax.inject.Inject;
  * Transforms data from the domain {@link FeedManagerTemplate} to the REST object {@link RegisteredTemplate}
  */
 public class TemplateModelTransform {
+
+    @Inject
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private EncryptionService encryptionService;
@@ -190,8 +192,7 @@ public class TemplateModelTransform {
                 }
                 template.setOrder(domain.getOrder());
 
-                ActionGroup group = actionsTransform.toActionGroup(null).apply(domain.getAllowedActions());
-                template.setAllowedActions(group);
+                accessControlledEntityTransform.applyAccessControlToRestModel(domain,template);
 
                 return template;
             }

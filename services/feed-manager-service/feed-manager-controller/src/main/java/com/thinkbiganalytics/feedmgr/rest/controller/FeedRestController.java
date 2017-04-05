@@ -26,12 +26,15 @@ import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessControl;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.EditFeedAction;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -60,6 +63,7 @@ import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -91,6 +95,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -166,6 +171,9 @@ public class FeedRestController {
 
     @Inject
     RegisteredTemplateService registeredTemplateService;
+
+    @Inject
+    AccessControlledEntityTransform accessControlledEntityTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -526,12 +534,25 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
         @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
     })
-    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr) {
-        return this.securityService.getFeedRoleMemberships(feedIdStr)
-                        .map(m -> Response.ok(m).build())
-                        .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr,@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        if(!verbose) {
+            return this.securityService.getFeedRoleMemberships(feedIdStr)
+                .map(m -> Response.ok(m).build())
+                .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+        }
+        else {
+            Optional<Map<String,RoleMembership>> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
+            if(memberships.isPresent()){
+                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                return Response.ok(entityAccessRoleMemberships).build();
+            }
+            else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND);
+            }
+        }
     }
-    
+
+
 
     @POST
     @Path("{feedId}/roles")

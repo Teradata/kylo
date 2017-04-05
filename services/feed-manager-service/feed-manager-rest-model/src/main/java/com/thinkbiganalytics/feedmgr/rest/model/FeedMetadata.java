@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedMetadata implements UIFeed {
+public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     boolean isNew = false;
     private String id;
@@ -132,8 +132,6 @@ public class FeedMetadata implements UIFeed {
      * List of feed IDs dependent on this feed
      */
     private List<FeedSummary> usedByFeeds;
-    
-    private ActionGroup allowedActions;
 
 
     /**
@@ -142,14 +140,6 @@ public class FeedMetadata implements UIFeed {
     private List<Datasource> userDatasources;
 
     public FeedMetadata() {
-    }
-
-    public ActionGroup getAllowedActions() {
-        return allowedActions;
-    }
-    
-    public void setAllowedActions(ActionGroup allowedActions) {
-        this.allowedActions = allowedActions;
     }
 
     public String getTemplateId() {

@@ -203,7 +203,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 console.log('SAVED FROM FEED DETAILS')
             }
 
-            EntityAccessControlDialogService.showAccessControlDialog(self.model,self.model.feedName,onSave,onCancel);
+            EntityAccessControlDialogService.showAccessControlDialog(self.model,"feed",self.model.feedName,onSave,onCancel);
 
         }
 
