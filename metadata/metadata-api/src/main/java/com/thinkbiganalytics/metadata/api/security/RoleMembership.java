@@ -46,4 +46,6 @@ public interface RoleMembership {
     void removeMember(UsernamePrincipal principal);
     
     void removeMember(GroupPrincipal principal);
+
+    void removeAllMembers();
 }

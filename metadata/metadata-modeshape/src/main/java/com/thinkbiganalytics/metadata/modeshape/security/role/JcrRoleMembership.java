@@ -160,4 +160,15 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
                 .forEach(action -> this.allowedActions.disable(principal, action));
     }
 
+    @Override
+    public void removeAllMembers() {
+        getMembers().stream().forEach(member -> {
+            if(member instanceof UsernamePrincipal){
+                removeMember((UsernamePrincipal)member);
+            }
+            else if(member instanceof GroupPrincipal){
+                removeMember((GroupPrincipal)member);
+            }
+        });
+    }
 }
