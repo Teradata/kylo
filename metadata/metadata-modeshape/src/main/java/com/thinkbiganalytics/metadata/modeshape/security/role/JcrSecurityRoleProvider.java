@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
  */
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,13 +78,11 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
      * @see com.thinkbiganalytics.security.role.SecurityRoleProvider#getRoles()
      */
     @Override
-    public Map<String, SecurityRole> getRoles() {
-        HashMap<String, SecurityRole> map = new HashMap<>();
+    public Map<String, List<SecurityRole>> getRoles() {
+        HashMap<String, List<SecurityRole>> map = new HashMap<>();
         
         for (String entity : SecurityRole.ENTITIES) {
-            for (SecurityRole role : getEntityRoles(entity)) {
-                map.put(entity, role);
-            }
+            map.put(entity,getEntityRoles(entity));
         }
         
         return map;

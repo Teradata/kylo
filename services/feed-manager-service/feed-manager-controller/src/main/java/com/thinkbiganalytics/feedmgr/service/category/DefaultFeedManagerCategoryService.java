@@ -39,6 +39,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.security.AccessController;
 

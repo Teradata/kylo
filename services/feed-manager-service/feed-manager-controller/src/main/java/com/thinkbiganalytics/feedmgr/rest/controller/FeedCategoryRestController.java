@@ -117,6 +117,7 @@ public class FeedCategoryRestController {
         return Response.ok(categories).build();
     }
 
+
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces(MediaType.APPLICATION_JSON)

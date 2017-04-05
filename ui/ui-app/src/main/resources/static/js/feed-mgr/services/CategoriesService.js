@@ -1,5 +1,5 @@
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","EntityAccessControlService", function ($q, $http, RestUrlService,EntityAccessControlService) {
+define(['angular','feed-mgr/module-name','constants/AccessConstants'], function (angular,moduleName) {
+    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","AccessControlService","EntityAccessControlService", function ($q, $http, RestUrlService,AccessControlService,EntityAccessControlService) {
 
         /**
          * Create filter function for a query string
@@ -50,6 +50,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             return $http.get(RestUrlService.CATEGORIES_URL).then(function (response) {
                 return response.data.map(function (category) {
                     category._lowername = category.name.toLowerCase();
+                    category.createFeed = false;
+                    if(AccessControlService.hasEntityAccess("createFeed",category,"category")){
+                        category.createFeed = true;
+                    }
                     return category;
                 });
             });

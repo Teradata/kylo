@@ -62,12 +62,12 @@ public class RolesController {
     private SecurityModelTransform securityTransform;
 
     @GET
-    public Map<String, Role> getRoles() {
+    public Map<String, List<Role>> getRoles() {
         return metadata.read(() -> {
-            Map<String, SecurityRole> roleMap = this.roleProvider.getRoles();
+            Map<String, List<SecurityRole>> roleMap = this.roleProvider.getRoles();
             return roleMap.entrySet().stream()
                             .collect(Collectors.toMap(e -> e.getKey(), 
-                                                      e -> securityTransform.toRole().apply(e.getValue())));
+                                                      e -> securityTransform.toRoles().apply(e.getValue())));
         });
     }
 

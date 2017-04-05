@@ -37,7 +37,7 @@ public interface SecurityRoleProvider {
 
     SecurityRole createRole(String entityName, String roleName, String title, String descr);
     
-    Map<String, SecurityRole> getRoles();
+    Map<String, List<SecurityRole>> getRoles();
     
     List<SecurityRole> getEntityRoles(String entityName);
     

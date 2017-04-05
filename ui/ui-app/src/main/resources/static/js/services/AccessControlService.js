@@ -103,7 +103,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 var self = this;
 
                 //build the user access and role/permission cache//  roles:self.getRoles()
-                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true), currentUser:self.getCurrentUser()};
+                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true), roles:self.getRoles(),currentUser:self.getCurrentUser()};
                 var defer = $q.defer();
 
                 $q.all(requests).then(function(response){
@@ -114,7 +114,8 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 return defer.promise;
 
             },
-            hasEntityAccess:function(requiredPermissions,entity){
+            hasEntityAccess:function(requiredPermissions,entity,entityType){
+                var self = this;
 
                 //all entities should have the object .accessControl with the correct {owner:systemName,roles:[{name:'role1'},{name:'role2'}]}
                 //ASSUMES initialize will build up ROLE_CACHE
@@ -122,22 +123,53 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     return false;
                 }
 
-                var permissions = [];
-
-                if(entity.accessControl == undefined){
+                if(entity.roleMemberships == undefined){
                     return false;
                 }
                 //short circuit if the owner matches
                 if(entity.owner == currentUser.systemName){
                     return true;
                 }
-                //check the permissions on the entity roles
-               _.each(entity.roleMemberships,function(role){
-                    var rolePermissions = ROLE_CACHE[role] != undefined ? ROLE_CACHE[role].permissions : [];
-                    permissions.concat(rolePermissions);
-                });
 
-               return this.hasAnyAction(requiredPermissions,permissions);
+                function checkForAccess() {
+                    var permissions = [];
+                    //check the permissions on the entity roles
+                    _.each(entity.roleMemberships, function (roleMembership) {
+                        var role = ROLE_CACHE[entityType] != undefined ? _.find(ROLE_CACHE[entityType], function (entityRole) {
+                                                                           return entityRole.systemName == roleMembership.role.systemName;
+                                                                       }) : undefined;
+                        if(role != undefined && role.allowedActions != undefined) {
+                            var rolePermissions = role.allowedActions;
+                            if(rolePermissions.systemName == undefined && rolePermissions.actions) {
+                                permissions.push(rolePermissions.actions);
+                            }
+                            else {
+                                permissions.push(rolePermissions);
+                            }
+                        }
+                    });
+
+                    if(!angular.isArray(requiredPermissions)){
+                        requiredPermissions = [requiredPermissions];
+                    }
+                    return self.hasAnyAction(requiredPermissions, permissions);
+                }
+
+
+
+
+
+                //if we dont have the roles populated yet... query it
+                if(_.isEmpty(ROLE_CACHE)) {
+                    var defer = $q.deferred();
+                    self.getRoles().then(function(response){
+                        defer.resolve(checkForAccess());
+                    });
+                    return defer.promise;
+                }
+                else {
+                   return checkForAccess();
+                }
             },
             isFutureState:function(state){
                 return state.endsWith(".**");
@@ -369,6 +401,17 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     }
                     return response.data;
                 });
+            },
+            /**
+             * Gets all roles abd populates the ROLE_CACHE
+             * @returns {*|Request}
+             */
+            getRoles:function(){
+                  return  $http.get(CommonRestUrlService.SECURITY_ROLES_URL).then(function (response) {
+                        _.each(response.data,function(roles,entityType){
+                            ROLE_CACHE[entityType] = roles;
+                        });
+                    });
             },
             /**
              * For a given entity type (i.e. FEED) return the roles/permissions

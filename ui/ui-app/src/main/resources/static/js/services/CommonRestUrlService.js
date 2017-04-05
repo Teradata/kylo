@@ -34,7 +34,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
 
         /**
-         * get all roles for a given type
+         * get all roles
          * @type {string}
          */
         this.SECURITY_ROLES_URL = self.SECURITY_BASE_URL + "/roles";

@@ -104,6 +104,10 @@ public class SecurityModelTransform {
             return role;
         };
     }
+
+    public Function<List<SecurityRole>, List<Role>> toRoles() {
+        return (securityRoles) -> securityRoles.stream().map(toRole()).collect(Collectors.toList());
+    }
     
     public Function<com.thinkbiganalytics.metadata.api.security.RoleMembership, RoleMembership> toRoleMembership() {
         return (domain) -> {
