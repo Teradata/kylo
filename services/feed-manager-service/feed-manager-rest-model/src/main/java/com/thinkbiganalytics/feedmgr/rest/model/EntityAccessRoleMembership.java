@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.Role;
