@@ -67,6 +67,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
@@ -135,6 +136,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject 
+    private FeedOpsAccessControlProvider opsAccessProvider;
 
     @Inject
     private MetadataEventService metadataEventService;
@@ -266,7 +270,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
 
-        JcrFeed feed = new JcrFeed(feedNode, category);
+        JcrFeed feed = new JcrFeed(feedNode, category, this.opsAccessProvider);
 
         feed.setSystemName(feedSystemName);
 

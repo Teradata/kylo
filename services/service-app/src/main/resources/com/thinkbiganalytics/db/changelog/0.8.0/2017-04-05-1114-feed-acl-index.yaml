@@ -19,6 +19,12 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
                     nullable: false
+              - column:
+                  name: PRINCIPAL_TYPE
+                  type: varchar(10)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
         - addForeignKeyConstraint:
             constraintName: FEED_ACL_INDEX_FK1
             baseColumnNames: FEED_ID
@@ -37,3 +43,5 @@ databaseChangeLog:
                   name: FEED_ID
               - column:
                   name: PRINCIPAL
+              - column:
+                  name: PRINCIPAL_TYPE

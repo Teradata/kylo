@@ -23,6 +23,11 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
  * #L%
  */
 
+import java.security.Principal;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -35,11 +40,6 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
-
-import java.security.Principal;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -61,7 +61,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         super(allowedActionsNode);
         this.feed = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeed.class);
     }
-
+    
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
         enableEntityAccess(principal, actions.stream());
@@ -105,8 +105,10 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
-            if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+            if (action.implies(FeedAccessControl.ACCESS_OPS)) {
+                this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
+            } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+                //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
                 Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
                 JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {

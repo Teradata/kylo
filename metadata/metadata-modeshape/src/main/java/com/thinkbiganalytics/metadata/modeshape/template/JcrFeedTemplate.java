@@ -180,7 +180,9 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(this.node, FEEDS);
 
         for (Node depNode : feedNodes) {
-            feeds.add(new JcrFeed(depNode));
+            // TODO: note that feeds instances returned here will not be able to update feed ops 
+            // access through permission changes to their allowed actions.
+            feeds.add(new JcrFeed(depNode, null));
         }
 
         return feeds;

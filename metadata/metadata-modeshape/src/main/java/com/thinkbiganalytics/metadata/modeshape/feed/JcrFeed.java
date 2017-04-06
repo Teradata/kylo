@@ -41,6 +41,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -72,16 +73,33 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     private FeedSummary summary;
     private FeedData data;
     
-    public JcrFeed(Node node) {
+    // TODO: Referencing the ops access provider is kind of ugly but is needed so that 
+    // a change to the feed's allowed accessions for ops access get's propagated to the JPA table.
+    private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
+    
+    public JcrFeed(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
         super(node);
     }
 
-    public JcrFeed(Node node, JcrCategory category) {
-        this(node);
+    public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
+        this(node, opsAccessProvider);
         getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
     }
     
     
+    /**
+     * This should be set after an instance of this type is created to allow the change
+     * of a feed's operations access control.
+     * @param opsAccessProvider the opsAccessProvider to set
+     */
+    public void setOpsAccessProvider(FeedOpsAccessControlProvider opsAccessProvider) {
+        this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
+    }
+    
+    public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
+        return this.opsAccessProvider;
+    }
+
     
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
     
