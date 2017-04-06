@@ -33,8 +33,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -159,12 +161,26 @@ public class SparkScriptEngine extends ScriptEngine {
     @Nonnull
     private List<Pattern> getDenyPatterns() {
         if (denyPatterns == null) {
-            // Load deny patterns
+            // Load custom or default deny patterns
+            String resourceName = "spark-deny-patterns.conf";
+            InputStream resourceStream = getClass().getResourceAsStream("/" + resourceName);
+            if (resourceStream == null) {
+                resourceName = "spark-deny-patterns.default.conf";
+                resourceStream = getClass().getResourceAsStream(resourceName);
+            }
+
+            // Parse lines
             final List<String> denyPatternLines;
-            try {
-                denyPatternLines = IOUtils.readLines(getClass().getResourceAsStream("/spark-deny-patterns.conf"), "UTF-8");
-            } catch (final IOException e) {
-                throw new IllegalStateException("Unable to load spark-deny-patterns.conf", e);
+            if (resourceStream != null) {
+                try {
+                    denyPatternLines = IOUtils.readLines(resourceStream, "UTF-8");
+                    log.info("Loaded Spark deny patterns from {}.", resourceName);
+                } catch (final IOException e) {
+                    throw new IllegalStateException("Unable to load " + resourceName, e);
+                }
+            } else {
+                log.info("Missing default Spark deny patterns.");
+                denyPatternLines = Collections.emptyList();
             }
 
             // Compile patterns
