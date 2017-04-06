@@ -13,7 +13,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param FeedSecurityGroups the feed security groups service
      * @param FeedService the feed service
      */
-    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
+    function CategoryDefinitionController($scope, $mdDialog, $mdToast, $q,AccessControlService, EntityAccessControlService,CategoriesService, StateService, FeedSecurityGroups, FeedService) {
         var self = this;
 
         /**
@@ -33,6 +33,12 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @type {boolean}
          */
         self.allowEdit = false;
+
+        /**
+         * Indicates the user has the permission to delete
+         * @type {boolean}
+         */
+        self.allowDelete = false;
 
         /**
          * Category data used in "edit" mode.
@@ -79,7 +85,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @return {boolean} {@code true} if the category can be deleted, or {@code false} otherwise
          */
         self.canDelete = function() {
-            return (angular.isString(self.model.id) && (!angular.isArray(self.model.relatedFeedSummaries) || self.model.relatedFeedSummaries.length === 0));
+            return self.allowDelete && (angular.isString(self.model.id) && (!angular.isArray(self.model.relatedFeedSummaries) || self.model.relatedFeedSummaries.length === 0));
         };
 
         /**
@@ -196,11 +202,15 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
-                });
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS,self.model)).then(function(response){
+            self.allowEdit = response;
+        });
+
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY,self.model)).then(function(response){
+            self.allowDelete = response;
+        })
+
+
 
         // Fetch the existing categories
         CategoriesService.reload().then(function (response) {
@@ -231,6 +241,6 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     }
 
-    angular.module(moduleName).controller('CategoryDefinitionController', ["$scope","$mdDialog","$mdToast","AccessControlService","CategoriesService","StateService","FeedSecurityGroups","FeedService",CategoryDefinitionController]);
+    angular.module(moduleName).controller('CategoryDefinitionController', ["$scope","$mdDialog","$mdToast","$q","AccessControlService","EntityAccessControlService","CategoriesService","StateService","FeedSecurityGroups","FeedService",CategoryDefinitionController]);
     angular.module(moduleName).directive('thinkbigCategoryDefinition', thinkbigCategoryDefinition);
 });

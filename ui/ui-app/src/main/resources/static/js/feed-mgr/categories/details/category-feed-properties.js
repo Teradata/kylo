@@ -8,7 +8,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param {AccessControlService} AccessControlService the access control service
      * @param CategoriesService the category service
      */
-    function CategoryFeedPropertiesController($scope, $mdToast, AccessControlService, CategoriesService) {
+    function CategoryFeedPropertiesController($scope, $mdToast, $q,AccessControlService,EntityAccessControlService, CategoriesService) {
         var self = this;
 
         /**
@@ -77,11 +77,17 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             });
         };
 
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS,self.model)).then(function(response){
+            self.allowEdit = response;
+        })
+
+        /*
         // Fetch the allowed actions
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
                     self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
                 });
+                */
     }
 
     /**
@@ -99,6 +105,6 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     }
 
-    angular.module(moduleName).controller('CategoryFeedPropertiesController', ["$scope","$mdToast","AccessControlService","CategoriesService",CategoryFeedPropertiesController]);
+    angular.module(moduleName).controller('CategoryFeedPropertiesController', ["$scope","$mdToast","$q","AccessControlService","EntityAccessControlService","CategoriesService",CategoryFeedPropertiesController]);
     angular.module(moduleName).directive('thinkbigCategoryFeedProperties', thinkbigFeedCategoryProperties);
 });

@@ -54,6 +54,30 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         var data = {
             entityTypes:{CATEGORY:"category",FEED:"feed",TEMPLATE:"template"},
+
+            ENTITY_ACCESS: {
+              CATEGORY: {
+               //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
+                  EDIT_CATEGORY_DETAILS: "editCategoryDetails",
+                  DELETE_CATEGORY: "deleteCategory",
+                  CREATE_FEED: "createFeed",
+                  ENABLE_CATEGORY:"enableCategory",
+                  CHANGE_CATEGORY_PERMISSIONS: "changeCategoryPermissions"
+              },
+                FEED: {
+                    //EDIT_FEED_SUMMARY: "editFeedSummary", // will not be used in v0.8.0
+                    EDIT_FEED_DETAILS: "editFeedDetails",
+                    DELETE_FEED: "deleteFeed",
+                    //ENABLE_FEED: "enableFeed",  /// Do we need this??... can enable be inferred from edit details
+                    CHANGE_FEED_PERMISSIONS: "changeFeedPermissions"
+                },
+                TEMPLATE:{
+                    EDIT_TEMPLATE:"editTemplate",
+                    DELETE_TEMPLATE:"deleteTemplate",
+                //CREATE_TEMPLATE:"createTemplate" .... QUESTIONS about this permission
+                    CHANGE_TEMPLATE_PERMISSIONS:"changeTemplatePermissions"
+                }
+             },
             /**
              * ensure the entity.roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
              * @param entity the entity to save

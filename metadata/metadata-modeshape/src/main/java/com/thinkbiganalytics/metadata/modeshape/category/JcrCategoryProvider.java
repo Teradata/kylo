@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -76,6 +77,13 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Inject
     MetadataAccess metadataAccess;
 
+
+    @Override
+    public Category update(Category category) {
+        category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
+        return super.update(category);
+    }
+
     @Override
     public Category findBySystemName(String systemName) {
         final String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = $systemName";
@@ -106,7 +114,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
         
         if (isNew) {
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
             this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
                     .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
         }

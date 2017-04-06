@@ -15,7 +15,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     };
 
-    function CategoryAccessControlController($scope,$mdToast,CategoriesService,AccessControlService,EntityAccessControlService) {
+    function CategoryAccessControlController($scope,$q,$mdToast,CategoriesService,AccessControlService,EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -96,18 +96,13 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             });
         }
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-            .then(function(actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
-            });
-
-
-
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS,self.model)).then(function(response){
+            self.allowEdit = response;
+        })
 
     }
 
-    angular.module(moduleName).controller("CategoryAccessControlController",["$scope","$mdToast","CategoriesService","AccessControlService","EntityAccessControlService", CategoryAccessControlController]);
+    angular.module(moduleName).controller("CategoryAccessControlController",["$scope","$q","$mdToast","CategoriesService","AccessControlService","EntityAccessControlService", CategoryAccessControlController]);
 
     angular.module(moduleName).directive("thinkbigCategoryAccessControl", directive);
 });

@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService, StateService) {
+    var controller = function ($scope, $mdDialog, $timeout, $q,AccessControlService, EntityAccessControlService,FeedService, StateService) {
 
         var self = this;
 
@@ -237,14 +237,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        //Apply the entity access permissions
+        $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
+            self.allowEdit = response;
+        })
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","AccessControlService","FeedService","StateService",controller]);
+    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","$q","AccessControlService","EntityAccessControlService","FeedService","StateService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDataPolicies', directive);

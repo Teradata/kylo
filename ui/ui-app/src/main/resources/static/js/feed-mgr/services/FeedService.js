@@ -21,8 +21,8 @@
  *
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","EntityAccessControlService",
-        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,EntityAccessControlService) {
+    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","AccessControlService","EntityAccessControlService",
+        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,AccessControlService,EntityAccessControlService) {
 
             function trim(str) {
                 return str.replace(/^\s+|\s+$/g, "");
@@ -766,6 +766,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         .then(function (response) {
                             return response.data;
                         });
+                },
+                /**
+                 * check if the user has access on an entity
+                 * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+                 * @param entity the entity to check. if its undefined it will use the current feed in the model
+                 * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().when()
+                 */
+                hasEntityAccess:function(permissionsToCheck,entity) {
+                    if(entity == undefined){
+                        entity = data.model;
+                    }
+                    return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.FEED);
                 }
             };
             data.init();

@@ -8,7 +8,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @param {AccessControlService} AccessControlService the access control service
          * @param CategoriesService the category service
          */
-        function CategoryPropertiesController($scope, $mdToast, AccessControlService, CategoriesService) {
+        function CategoryPropertiesController($scope, $mdToast, $q,AccessControlService,EntityAccessControlService, CategoriesService) {
             var self = this;
 
             /**
@@ -80,11 +80,11 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                 });
             };
 
-            // Fetch the allowed actions
-            AccessControlService.getAllowedActions()
-                .then(function (actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
-                });
+            //Apply the entity access permissions
+            $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS,self.model)).then(function(response){
+                self.allowEdit = response;
+            })
+
         }
 
         /**
@@ -102,7 +102,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             };
         }
 
-        angular.module(moduleName).controller("CategoryPropertiesController",["$scope","$mdToast","AccessControlService","CategoriesService", CategoryPropertiesController]);
+        angular.module(moduleName).controller("CategoryPropertiesController",["$scope","$mdToast","$q","AccessControlService","EntityAccessControlService","CategoriesService", CategoryPropertiesController]);
         angular.module(moduleName).directive("thinkbigCategoryProperties", thinkbigCategoryProperties);
 
 });

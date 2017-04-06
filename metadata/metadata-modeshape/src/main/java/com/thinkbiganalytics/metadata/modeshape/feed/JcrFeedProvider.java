@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -151,6 +152,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
+    }
+
+    @Override
+    public Feed update(Feed feed) {
+
+        feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+        return super.update(feed);
     }
 
     public void removeFeedSources(Feed.ID feedId) {
