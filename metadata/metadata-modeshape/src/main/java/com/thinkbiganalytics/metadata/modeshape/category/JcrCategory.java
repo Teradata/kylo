@@ -212,7 +212,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     @Override
     public String getIcon() {
-        return getProperty(ICON, String.class, true);
+        return super.getProperty(ICON, String.class, true);
     }
 
     public void setIcon(String icon) {
