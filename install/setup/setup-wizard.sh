@@ -1,4 +1,29 @@
 #!/bin/bash
+
+
+validate-system() {
+	if [ -z ${SPARK_PROFILE} ] && ! which spark-submit;  then 
+		>&2 echo "Spark not installed or version not found.  Install spark and try again";
+		exit 1
+	fi	
+	if ! id kylo >/dev/null 2>&1 ; then
+		>&2 echo "user 'kylo' not found.  Create user and try again"
+		exit 1
+	fi
+	if ! id nifi >/dev/null 2>&1; then
+		>&2 echo "user 'nifi' not found.  Create user and try again"
+		exit 1
+	fi
+	if ! id activemq >/dev/null 2>&1; then
+		>&2 echo "user 'activemq' not found.  Create user and try again"
+		exit 1
+	fi
+}
+
+validate-system
+exit 0
+
+
 offline=false
 if [ $# > 1 ]
 then
