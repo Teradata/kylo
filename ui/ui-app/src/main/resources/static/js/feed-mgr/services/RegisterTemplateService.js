@@ -18,7 +18,7 @@
  * #L%
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -800,6 +800,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     return deferred.promise;
                 }
 
+            },
+            /**
+             * check if the user has access on an entity
+             * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+             * @param entity the entity to check. if its undefined it will use the current template in the model
+             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
+             */
+            hasEntityAccess:function(permissionsToCheck,entity) {
+                if(entity == undefined){
+                    entity = data.model;
+                }
+                return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.TEMPLATE);
             }
 
         };

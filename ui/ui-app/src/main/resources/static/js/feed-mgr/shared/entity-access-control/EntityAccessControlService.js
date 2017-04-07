@@ -60,7 +60,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
                   EDIT_CATEGORY_DETAILS: "editCategoryDetails",
                   DELETE_CATEGORY: "deleteCategory",
-                  CREATE_FEED: "createFeed",
+                  CREATE_FEED: "createFeedUnderCategory",
                   ENABLE_CATEGORY:"enableCategory",
                   CHANGE_CATEGORY_PERMISSIONS: "changeCategoryPermissions"
               },
@@ -74,7 +74,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 TEMPLATE:{
                     EDIT_TEMPLATE:"editTemplate",
                     DELETE_TEMPLATE:"deleteTemplate",
-                //CREATE_TEMPLATE:"createTemplate" .... QUESTIONS about this permission
+                    CREATE_TEMPLATE:"createFeedFromTemplate",
                     CHANGE_TEMPLATE_PERMISSIONS:"changeTemplatePermissions"
                 }
              },

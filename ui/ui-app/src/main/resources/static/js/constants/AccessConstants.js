@@ -40,7 +40,7 @@ define([], function () {
          * Allows creating and editing new feeds.
          * @type {string}
          */
-        this.FEEDS_EDIT = "editFeeds";
+        this.FEEDS_CREATE = "createFeeds";
 
         /**
          * Allows exporting feeds definitions.
@@ -71,12 +71,6 @@ define([], function () {
          * @type {string}
          */
         this.GROUP_ADMIN = "adminGroups";
-
-        /**
-         * Allows access to SLA page
-         * @type {string}
-         */
-        this.SLA_ACCESS = "accessServiceLevelAgreements";
 
         /**
          * Allows access to Tables page
@@ -193,19 +187,13 @@ define([], function () {
 
 
 
-        /**
-         * Access to ops manager sla scheduler
-         * @type {string}
-         */
-        this.SLA_SCHEDULER_ACCESS = "accessSLAScheduler";
-
         this.UI_STATES = {
             FEEDS: {state: "feeds", permissions: [this.FEEDS_ACCESS]},
-            DEFINE_FEED:{state:"define-feed",permissions: [this.FEEDS_EDIT]},
-            DEFINE_FEED_COMPLETE:{state:"define-feed-complete",permissions: [this.FEEDS_EDIT]},
+            DEFINE_FEED:{state:"define-feed",permissions: [this.FEEDS_CREATE]},
+            DEFINE_FEED_COMPLETE:{state:"define-feed-complete",permissions: [this.FEEDS_ACCESS]},
             IMPORT_FEED:{state:"import-feed",permissions: [this.FEEDS_IMPORT]},
             FEED_DETAILS:{state:"feed-details",permissions:[this.FEEDS_ACCESS]},
-            EDIT_FEED:{state:"edit-feed",permissions:[this.FEEDS_EDIT]},
+            EDIT_FEED:{state:"edit-feed",permissions:[this.FEEDS_ACCESS]},
             CATEGORIES: {state: "categories", permissions: [this.CATEGORIES_ACCESS]},
             CATEGORY_DETAILS:{state:"category-details",permissions:[this.CATEGORIES_ACCESS]},
             BUSINESS_METADATA:{state:"business-metadata",permissions:[this.CATEGORIES_ADMIN]},
@@ -214,7 +202,7 @@ define([], function () {
             GROUPS:{state:"groups",permissions:[this.USERS_GROUPS_ACCESS]},
             GROUP_DETAILS:{state:"group-details",permissions:[this.USERS_GROUPS_ACCESS]},
             VISUAL_QUERY:{state:"visual-query",permissions:[]},
-            SERVICE_LEVEL_AGREEMENTS:{state:"service-level-agreements",permissions:[this.SLA_ACCESS]},
+            SERVICE_LEVEL_AGREEMENTS:{state:"service-level-agreements",permissions:[this.FEEDS_ACCESS]},
             TABLES:{state:"tables",permissions:[this.TABLES_ACCESS]},
             TABLE:{state:"table",permissions:[this.TABLES_ACCESS]},
             DATASOURCES:{state:"datasources",permissions:[this.DATASOURCE_ACCESS]},
@@ -234,7 +222,7 @@ define([], function () {
             JOBS:{state:"jobs",permissions:[this.JOBS_ACCESS]},
             JOB_DETAILS:{state:"job-details",permissions:[this.JOB_DETAILS_ACCESS]},
             DASHBOARD:{state:"dashboard",permissions:[this.OPERATIONS_MANAGER_ACCESS]},
-            SCHEDULER:{state:"scheduler",permissions:[this.SLA_SCHEDULER_ACCESS]},
+            SCHEDULER:{state:"scheduler",permissions:[this.OPERATIONS_MANAGER_ACCESS]},
             SERVICE_HEALTH:{state:"service-health",permissions:[this.SERVICES_ACCESS]},
             SERVICE_DETAILS:{state:"service-details",permissions:[this.SERVICES_ACCESS]},
             SERVICE_COMPONENT_DETAILS:{state:"service-component-details",permissions:[this.SERVICES_ACCESS]}

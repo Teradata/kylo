@@ -10,12 +10,12 @@
                        md-search-text="vm.ownerAutoComplete.searchText"
                        md-selected-item-change="vm.ownerAutoComplete.selectedItemChange(item)"
                        md-items="item in vm.queryUsers(vm.ownerAutoComplete.searchText)"
-                       md-item-text="item.name"
+                       md-item-text="item.displayName"
                        md-min-length="1"
                        md-floating-label="Owner">
         <md-item-template>
                   <span class="item-title">
-                    <span> {{item.name}} </span>
+                    <span> {{item.displayName}} </span>
                   </span>
         </md-item-template>
         <md-not-found>

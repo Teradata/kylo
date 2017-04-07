@@ -20,23 +20,6 @@ package com.thinkbiganalytics.metadata.core.feed;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -53,10 +36,28 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * A POJO implementation of {@link Feed}.
  *
- * @param  the type of parent category
+ * @param the type of parent category
  */
 public class BaseFeed implements Feed {
 
@@ -78,6 +79,7 @@ public class BaseFeed implements Feed {
     private String json;
     private FeedManagerTemplate template;
     private String nifiProcessGroupId;
+    private Principal owner;
 
     /**
      * User-defined properties
@@ -407,13 +409,13 @@ public class BaseFeed implements Feed {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
     public Optional<RoleMembership> getRoleMembership(String roleName) {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
     public String getJson() {
         return json;
@@ -446,9 +448,17 @@ public class BaseFeed implements Feed {
     @Override
     public void setVersionName(String version) {
         // TODO Auto-generated method stub
-        
+
     }
 
+    @Override
+    public Principal getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Principal owner) {
+        this.owner = owner;
+    }
 
     private static class BaseId {
 

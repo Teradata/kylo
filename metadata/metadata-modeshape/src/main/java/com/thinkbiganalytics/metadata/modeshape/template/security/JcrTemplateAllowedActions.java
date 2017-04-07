@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
@@ -100,7 +101,12 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
+            //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
+            if(action.implies(FeedAccessControl.CHANGE_PERMS)) {
+                Node allowedActionsNode = ((JcrAllowedActions)this.template.getAllowedActions()).getNode();
+                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
+            }
+            else if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
                 JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
                 JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_READ);

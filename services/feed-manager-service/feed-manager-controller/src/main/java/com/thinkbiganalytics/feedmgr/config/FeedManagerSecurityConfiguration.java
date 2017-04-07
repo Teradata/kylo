@@ -58,7 +58,7 @@ public class FeedManagerSecurityConfiguration {
                             .module(AllowedActions.SERVICES)
                                 .action(FeedServicesAccessControl.FEEDS_SUPPORT)
                                 .action(FeedServicesAccessControl.ACCESS_FEEDS)
-                                .action(FeedServicesAccessControl.EDIT_FEEDS)
+                                .action(FeedServicesAccessControl.CREATE_FEEDS)
                                 .action(FeedServicesAccessControl.IMPORT_FEEDS)
                                 .action(FeedServicesAccessControl.EXPORT_FEEDS)
                                 .action(FeedServicesAccessControl.ADMIN_FEEDS)
@@ -103,7 +103,7 @@ public class FeedManagerSecurityConfiguration {
                                 .action(TemplateAccessControl.EDIT_TEMPLATE)
                                 .action(TemplateAccessControl.DELETE)
                                 .action(TemplateAccessControl.EXPORT)
-                                .action(TemplateAccessControl.CREATE_TEMPLATE)
+                                .action(TemplateAccessControl.CREATE_FEED)
                                 .action(TemplateAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();

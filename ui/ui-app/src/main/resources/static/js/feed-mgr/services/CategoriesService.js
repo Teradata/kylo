@@ -51,7 +51,7 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                 return response.data.map(function (category) {
                     category._lowername = category.name.toLowerCase();
                     category.createFeed = false;
-                    if(AccessControlService.hasEntityAccess("createFeed",category,"category")){
+                    if(AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED,category,"category")){
                         category.createFeed = true;
                     }
                     return category;
@@ -196,7 +196,7 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
              * check if the user has access on an entity
              * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
              * @param entity the entity to check. if its undefined it will use the current category in the model
-             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().when()
+             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
              */
             hasEntityAccess:function(permissionsToCheck,entity) {
                 if(entity == undefined){

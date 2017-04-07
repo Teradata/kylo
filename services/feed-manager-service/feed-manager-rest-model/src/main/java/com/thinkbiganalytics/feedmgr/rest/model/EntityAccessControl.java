@@ -23,11 +23,14 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EntityAccessControl {
+
+    private UserPrincipal owner;
 
     private ActionGroup allowedActions;
 
@@ -42,7 +45,7 @@ public class EntityAccessControl {
     }
 
     public List<RoleMembership> getRoleMemberships() {
-        if(roleMemberships == null){
+        if (roleMemberships == null) {
             roleMemberships = new ArrayList<>();
         }
         return roleMemberships;
@@ -52,13 +55,13 @@ public class EntityAccessControl {
         this.roleMemberships = roleMemberships;
     }
 
-    public void addRoleMembership(RoleMembership roleMembership){
+    public void addRoleMembership(RoleMembership roleMembership) {
         getRoleMemberships().add(roleMembership);
     }
 
-    public List<RoleMembershipChange> toRoleMembershipChangeList(){
+    public List<RoleMembershipChange> toRoleMembershipChangeList() {
         List<RoleMembershipChange> membershipChanges = new ArrayList<>();
-        for(RoleMembership membership : getRoleMemberships()) {
+        for (RoleMembership membership : getRoleMemberships()) {
             RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
             roleMembershipChange.setRoleName(membership.getRole().getSystemName());
             roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);
@@ -67,5 +70,13 @@ public class EntityAccessControl {
             membershipChanges.add(roleMembershipChange);
         }
         return membershipChanges;
+    }
+
+    public UserPrincipal getOwner() {
+        return owner;
+    }
+
+    public void setOwner(UserPrincipal owner) {
+        this.owner = owner;
     }
 }

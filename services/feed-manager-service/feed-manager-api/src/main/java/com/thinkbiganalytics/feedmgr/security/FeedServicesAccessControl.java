@@ -44,9 +44,9 @@ public interface FeedServicesAccessControl {
     Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
                                                   "Access Feeds",
                                                   "Allows access to feeds");
-    Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
-                                               "Edit Feeds",
-                                               "Allows creating and editing new feeds");
+    Action CREATE_FEEDS = ACCESS_FEEDS.subAction("createFeeds",
+                                                 "Create Feeds",
+                                                 "Allows creating new feeds");
     Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
                                                  "Import Feeds",
                                                  "Allows importing of previously exported feeds");

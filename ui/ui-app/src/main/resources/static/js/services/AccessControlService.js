@@ -127,7 +127,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     return false;
                 }
                 //short circuit if the owner matches
-                if(entity.owner == currentUser.systemName){
+                if(entity.owner && entity.owner.systemName == currentUser.systemName){
                     return true;
                 }
 

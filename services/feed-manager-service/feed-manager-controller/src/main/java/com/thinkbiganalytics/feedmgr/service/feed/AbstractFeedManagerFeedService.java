@@ -31,6 +31,13 @@ import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -82,6 +89,15 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
 
+    @Inject
+    protected CategoryProvider categoryProvider;
+
+    @Inject
+    protected FeedProvider feedProvider;
+
+    @Inject
+    protected MetadataAccess metadataAccess;
+
 
     /**
      * Create/Update a Feed in NiFi
@@ -90,19 +106,33 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
      * @return an object indicating if the feed creation was successful or not
      */
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
-
 
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
+            //User needs rights to create feed
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.CREATE_FEEDS);
+        } else {
+            //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
+            Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());
+            Feed domainFeed = feedProvider.findById(domainId);
+            if (domainFeed != null) {
+                domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+            }
         }
+
+        //ensure the user has rights to create feeds under this category
+        metadataAccess.read(() -> {
+            Category domainCategory = categoryProvider.findBySystemName(feedMetadata.getSystemCategoryName());
+            //Query for Category and ensure the user has access to create feeds on that category
+            domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+
+        });
+
         //replace expressions with values
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
         }
-
 
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
@@ -111,7 +141,11 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
         //get all the properties for the metadata
-        RegisteredTemplate registeredTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true).build());
+        RegisteredTemplate
+            registeredTemplate =
+            registeredTemplateService.findRegisteredTemplate(
+                new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
+                    .build());
         //TODO ensure not null... throw exception
         List<NifiProperty> matchedProperties = NifiPropertyUtil
             .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);

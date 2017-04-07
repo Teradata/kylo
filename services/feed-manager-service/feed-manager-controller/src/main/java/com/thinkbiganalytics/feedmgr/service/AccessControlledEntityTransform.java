@@ -111,6 +111,11 @@ public class AccessControlledEntityTransform {
             });
                 restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
         }
+        Principal owner = domain.getOwner();
+        Optional<UserPrincipal> userPrincipal = userService.getUser(owner.getName());
+        if(userPrincipal.isPresent()) {
+            restModel.setOwner(userPrincipal.get());
+        }
     }
 
 }

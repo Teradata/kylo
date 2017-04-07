@@ -30,6 +30,7 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +60,8 @@ public class BaseCategory implements Category {
     private DateTime createdTime;
 
     private DateTime modifiedTime;
+
+    private Principal owner;
 
     private List<? extends HadoopSecurityGroup> hadoopSecurityGroups;
 
@@ -188,7 +191,7 @@ public class BaseCategory implements Category {
     @Override
     public void setIcon(String icon) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
@@ -200,7 +203,16 @@ public class BaseCategory implements Category {
     @Override
     public void setIconColor(String iconColor) {
         // TODO Auto-generated method stub
-        
+
+    }
+
+    @Override
+    public Principal getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Principal owner) {
+        this.owner = owner;
     }
 
     private static class BaseId {

@@ -94,15 +94,15 @@
                     Upload...
                   </md-button>
                 </md-menu-item>
-                <md-menu-divider ng-if-permission="exportFeeds" entity="vm.model" entity-type="feed"></md-menu-divider>
-                <md-menu-item  ng-if-permission="exportFeeds" entity="vm.model" entity-type="feed">
+                <md-menu-divider></md-menu-divider>
+                <md-menu-item >
                   <md-button href="{{vm.exportFeedUrl}}" >
                     <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span>Export</span>
                   </md-button>
                 </md-menu-item>
-                <md-menu-divider  ng-if-permission="editFeedDetails" entity="vm.model" entity-type="feed"></md-menu-divider>
-                <md-menu-item ng-if-permission="editFeedDetails" entity="vm.model" entity-type="feed">
+                <md-menu-divider  ng-if="vm.allowChangePermissions"></md-menu-divider>
+                <md-menu-item ng-if="vm.allowChangePermissions">
                   <md-button ng-click="vm.showAccessControlDialog()" >
                     <ng-md-icon icon="lock" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span>Access Control</span>

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.category.security;
 
@@ -23,15 +23,8 @@ package com.thinkbiganalytics.metadata.modeshape.category.security;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
-import javax.jcr.Node;
-import javax.jcr.security.Privilege;
-
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
@@ -41,12 +34,20 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
+import java.security.Principal;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+
+import javax.jcr.Node;
+import javax.jcr.security.Privilege;
+
 /**
  * A type of allowed actions that applies to category.  It intercepts certain action enable/disable
  * calls related to visibility to update the underlying JCR node structure's ACL lists.
  */
 public class JcrCategoryAllowedActions extends JcrAllowedActions {
-    
+
     private JcrCategory category;
 
     /**
@@ -86,21 +87,25 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         disableEntityAccess(principal, actions.getAvailableActions().stream());
         return super.disable(principal, actions);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
      */
     @Override
     public void setupAccessControl(UsernamePrincipal owner) {
         super.setupAccessControl(owner);
-        
+
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, CategoryAccessControl.EDIT_DETAILS);
     }
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
+            //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
+            if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+                Node allowedActionsNode = ((JcrAllowedActions) this.category.getAllowedActions()).getNode();
+                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
+            } else if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
@@ -111,45 +116,45 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
             }
         });
     }
-    
+
     protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
         AtomicBoolean summaryAccess = new AtomicBoolean(false);
         AtomicBoolean detailsAccess = new AtomicBoolean(false);
         AtomicBoolean summaryEdit = new AtomicBoolean(false);
         AtomicBoolean detailsEdit = new AtomicBoolean(false);
-        
+
         actions.forEach(action -> {
             summaryAccess.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_CATEGORY));
             detailsAccess.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_DETAILS));
             summaryEdit.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_SUMMARY));
             detailsEdit.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_DETAILS));
         });
-        
+
         if (detailsEdit.get()) {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         } else {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         }
-        
+
         if (summaryEdit.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         }
-        
+
         if (detailsAccess.get()) {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         } else {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         }
-        
+
         if (summaryAccess.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
         }
     }
-    
+
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {

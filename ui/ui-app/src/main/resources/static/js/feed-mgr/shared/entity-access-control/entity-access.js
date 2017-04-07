@@ -177,6 +177,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         allUsers = _.map(users,function (user) {
                             var name = (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
                             user.name = name;
+                            user.displayName = name;
                             user.title = name;
                             user.type = 'user';
                             user._lowername = name.toLowerCase();

@@ -28,8 +28,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         };
     }
 
-    var controller = function($scope, $mdDialog, $mdToast, $http, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
-                              AddButtonService, AccessControlService) {
+    var controller = function($scope, $mdDialog, $mdToast, $http, $rootScope, $q,StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
+                              AddButtonService, AccessControlService,EntityAccessControlService) {
 
         var self = this;
 
@@ -74,7 +74,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         // Register Add button
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, actionSet.actions)) {
                         AddButtonService.registerAddButton("service-level-agreements", function() {
                             self.onNewSla();
                         });
@@ -615,14 +615,13 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             }
         }
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        //Apply the entity access permissions
+        $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
+            self.allowEdit = response;
+        })
     };
 
-    angular.module(moduleName).controller('ServiceLevelAgreementController', ["$scope","$mdDialog","$mdToast","$http","$rootScope","StateService","FeedService","SlaService","PolicyInputFormService","PaginationDataService","TableOptionsService","AddButtonService","AccessControlService",controller]);
+    angular.module(moduleName).controller('ServiceLevelAgreementController', ["$scope","$mdDialog","$mdToast","$http","$rootScope","$q","StateService","FeedService","SlaService","PolicyInputFormService","PaginationDataService","TableOptionsService","AddButtonService","AccessControlService","EntityAccessControlService",controller]);
     angular.module(moduleName)
             .directive('thinkbigServiceLevelAgreement', directive);
 

@@ -20,31 +20,6 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * #L%
  */
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
@@ -64,7 +39,6 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
@@ -76,7 +50,6 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
@@ -97,14 +70,38 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
 public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     /**
      * Event listener for precondition events
      */
     private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
-    @Inject
-    CategoryProvider categoryProvider;
+
     @Inject
     FeedManagerTemplateProvider templateProvider;
     @Inject
@@ -119,10 +116,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     ServiceLevelAgreementService serviceLevelAgreementService;
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
-    @Inject
-    MetadataAccess metadataAccess;
-    @Inject
-    private FeedProvider feedProvider;
     @Inject
     private DatasourceProvider datasourceProvider;
     /**
@@ -298,13 +291,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
 
-
     @Override
     public Feed.ID resolveFeed(@Nonnull Serializable fid) {
         return metadataAccess.read(() -> feedProvider.resolveFeed(fid));
     }
 
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
+
         if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {
                 feedMetadata.setState(Feed.State.ENABLED.name());
@@ -318,10 +311,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             Feed.ID id = feedProvider.resolveId(feedMetadata.getId());
             notifyFeedStateChange(feedMetadata, id, state, MetadataChange.ChangeType.UPDATE);
-        }
-        else if(feed.isSuccess() && feedMetadata.isNew()){
+        } else if (feed.isSuccess() && feedMetadata.isNew()) {
             //update the access control
-            feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(),roleMembershipChange));
+            feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(), roleMembershipChange));
         }
         return feed;
 
@@ -333,8 +325,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             feed.setIsNew(true);
         }
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
             if (feed.isNew()) {
@@ -508,8 +498,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void enableFeedCleanup(@Nonnull String feedId) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
             final Feed.ID id = feedProvider.resolveFeed(feedId);
             return feedProvider.mergeFeedProperties(id, ImmutableMap.of(FeedProperties.CLEANUP_ENABLED, "true"));
         });
@@ -517,12 +505,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
             boolean enabled = feedProvider.enableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed,true);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
                 feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedProvider.update(domainFeed);
@@ -540,13 +527,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
             boolean disabled = feedProvider.disableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed,false);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, false);
                 feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedProvider.update(domainFeed);
@@ -562,8 +547,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary enableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);
@@ -587,8 +570,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
-
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);

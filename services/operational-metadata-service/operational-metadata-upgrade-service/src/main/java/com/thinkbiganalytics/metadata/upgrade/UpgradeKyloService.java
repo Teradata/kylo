@@ -2,28 +2,6 @@ package com.thinkbiganalytics.metadata.upgrade;
 
 /*-
  * #%L
- * kylo-operational-metadata-upgrade-service
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import java.lang.reflect.InvocationTargetException;
-
-/*-
- * #%L
  * thinkbig-operational-metadata-upgrade-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
@@ -31,9 +9,9 @@ import java.lang.reflect.InvocationTargetException;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,27 +20,7 @@ import java.lang.reflect.InvocationTargetException;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.RepositoryException;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -77,7 +35,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
@@ -98,6 +55,30 @@ import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
+
+
 
 @Order(PostMetadataConfigAction.LATE_ORDER + 100)
 public class UpgradeKyloService implements PostMetadataConfigAction {
@@ -126,27 +107,29 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private AllowedEntityActionsProvider actionsProvider;
 
 
-
     public void run() {
         upgradeCheck();
-    };
+    }
+
+    ;
+
     public KyloVersion getCurrentVersion() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
-        if(version == null){
+        if (version == null) {
             version = kyloVersionProvider.getLatestVersion();
         }
         return new Version(version.getMajorVersion(), version.getMinorVersion());
     }
-    
+
     public boolean upgradeFrom(KyloVersion startingVersion) {
         getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
-        
+
         // TODO: This current implementation assumes all upgrading occurs from the single state found above.
         // This should be changed to supporting a repeated upgrade path from starting ver->next ver->...->latest vers.
         kyloVersionProvider.updateToLatestVersion();
         return kyloVersionProvider.isUpToDate();
     }
-    
+
     public Optional<UpgradeState> getUpgradeState(KyloVersion version) {
         try {
             String className = getPackageName(version) + ".UpgradeAction";
@@ -155,15 +138,15 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             return Optional.of(ConstructorUtils.invokeConstructor(upgradeClass));
         } catch (ClassNotFoundException e) {
             return Optional.empty();
-        } catch ( NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException("Unable to load upgrade state for version: " + version, e);
         }
     }
-    
+
     protected String getPackageName(KyloVersion version) {
         return getClass().getPackage().getName() + ".version_" + createVersionTag(version);
     }
-    
+
     protected String createVersionTag(KyloVersion version) {
         return version.getVersion().replaceAll("[.-]", "_");
     }
@@ -173,13 +156,13 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      */
     public void upgradeCheck() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
-        
+
         if (version == null) {
             setupFreshInstall();
         }
         ensureDefaultEntityRoles();
-        
-        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber()< 0.4f)) {
+
+        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber() < 0.4f)) {
             version = upgradeTo0_4_0();
         }
         ensureFeedTemplateFeedRelationships();
@@ -194,7 +177,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     }
 
     /**
-     * 
+     *
      */
     private void setupFreshInstall() {
         metadataAccess.commit(() -> {
@@ -202,42 +185,47 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             User analyst = createDefaultUser("analyst", "Analyst", "analyst");
             User designer = createDefaultUser("designer", "Designer", "designer");
             User operator = createDefaultUser("operator", "Operator", "operator");
-            
+
             // Create default groups if they don't exist.
             UserGroup adminsGroup = createDefaultGroup("admin", "Administrators");
             UserGroup opsGroup = createDefaultGroup("operations", "Operations");
             UserGroup designersGroup = createDefaultGroup("designer", "Designers");
             UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
             UserGroup usersGroup = createDefaultGroup("user", "Users");
-            
+
             // Create default roles
-            createDefaultRole(SecurityRole.FEED, "editor", "Editor",
-                              FeedAccessControl.EDIT_DETAILS,
-                              FeedAccessControl.DELETE,
-                              FeedAccessControl.ACCESS_OPS,
-                              FeedAccessControl.ENABLE_DISABLE,
-                              FeedAccessControl.EXPORT);
+            SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor",
+                                                        FeedAccessControl.EDIT_DETAILS,
+                                                        FeedAccessControl.DELETE,
+                                                        FeedAccessControl.ACCESS_OPS,
+                                                        FeedAccessControl.ENABLE_DISABLE,
+                                                        FeedAccessControl.EXPORT);
+            //admin can do everything the editor does + change perms
+            createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
+
             createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
 
+            SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
+                                                            TemplateAccessControl.ACCESS_TEMPLATE,
+                                                            TemplateAccessControl.EDIT_TEMPLATE,
+                                                            TemplateAccessControl.CREATE_FEED,
+                                                            TemplateAccessControl.EXPORT);
+            createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", templateEditor, TemplateAccessControl.CHANGE_PERMS);
 
-            createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
-                              TemplateAccessControl.ACCESS_TEMPLATE,
-                              TemplateAccessControl.EDIT_TEMPLATE,
-                              TemplateAccessControl.CREATE_TEMPLATE,
-                              TemplateAccessControl.EXPORT);
             createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", TemplateAccessControl.ACCESS_TEMPLATE);
 
+            SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
+                                                            CategoryAccessControl.ACCESS_CATEGORY,
+                                                            CategoryAccessControl.EDIT_DETAILS,
+                                                            CategoryAccessControl.EDIT_SUMMARY,
+                                                            CategoryAccessControl.EXPORT,
+                                                            CategoryAccessControl.CREATE_FEED,
+                                                            CategoryAccessControl.DELETE);
 
-            createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
-                              CategoryAccessControl.ACCESS_CATEGORY,
-                              CategoryAccessControl.EDIT_DETAILS,
-                              CategoryAccessControl.EDIT_SUMMARY,
-                              CategoryAccessControl.EXPORT,
-                              CategoryAccessControl.CREATE_FEED,
-                              CategoryAccessControl.DELETE);
+            createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
+
             createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
-            
-            
+
             // Add default users to their respective groups
             adminsGroup.addUser(dladmin);
             designersGroup.addUser(designer);
@@ -247,40 +235,39 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             usersGroup.addUser(analyst);
             usersGroup.addUser(designer);
             usersGroup.addUser(operator);
-            
-            
+
             // Setup initial group access control.  Administrators group already has all rights.
             actionsProvider.getAllowedActions(AllowedActions.SERVICES)
-                            .ifPresent((allowed) -> {
-                                allowed.enable(opsGroup.getRootPrincial(), 
-                                               OperationsAccessControl.ADMIN_OPS,
-                                               FeedServicesAccessControl.ACCESS_CATEGORIES,
-                                               FeedServicesAccessControl.ACCESS_FEEDS,
-                                               FeedServicesAccessControl.ACCESS_TEMPLATES);
-                                allowed.enable(designersGroup.getRootPrincial(), 
-                                               OperationsAccessControl.ACCESS_OPS,
-                                               FeedServicesAccessControl.EDIT_FEEDS,
-                                               FeedServicesAccessControl.IMPORT_FEEDS,
-                                               FeedServicesAccessControl.EXPORT_FEEDS,
-                                               FeedServicesAccessControl.EDIT_CATEGORIES,
-                                               FeedServicesAccessControl.CREATE_DATASOURCES,
-                                               FeedServicesAccessControl.EDIT_TEMPLATES,
-                                               FeedServicesAccessControl.IMPORT_TEMPLATES,
-                                               FeedServicesAccessControl.EXPORT_TEMPLATES,
-                                               FeedServicesAccessControl.ADMIN_TEMPLATES);
-                                allowed.enable(analystsGroup.getRootPrincial(), 
-                                               OperationsAccessControl.ACCESS_OPS,
-                                               FeedServicesAccessControl.EDIT_FEEDS,
-                                               FeedServicesAccessControl.IMPORT_FEEDS,
-                                               FeedServicesAccessControl.EXPORT_FEEDS,
-                                               FeedServicesAccessControl.EDIT_CATEGORIES,
-                                               FeedServicesAccessControl.ACCESS_TEMPLATES,
-                                               FeedServicesAccessControl.ACCESS_DATASOURCES);
-                            });
+                .ifPresent((allowed) -> {
+                    allowed.enable(opsGroup.getRootPrincial(),
+                                   OperationsAccessControl.ADMIN_OPS,
+                                   FeedServicesAccessControl.ACCESS_CATEGORIES,
+                                   FeedServicesAccessControl.ACCESS_FEEDS,
+                                   FeedServicesAccessControl.ACCESS_TEMPLATES);
+                    allowed.enable(designersGroup.getRootPrincial(),
+                                   OperationsAccessControl.ACCESS_OPS,
+                                   FeedServicesAccessControl.CREATE_FEEDS,
+                                   FeedServicesAccessControl.IMPORT_FEEDS,
+                                   FeedServicesAccessControl.EXPORT_FEEDS,
+                                   FeedServicesAccessControl.EDIT_CATEGORIES,
+                                   FeedServicesAccessControl.CREATE_DATASOURCES,
+                                   FeedServicesAccessControl.EDIT_TEMPLATES,
+                                   FeedServicesAccessControl.IMPORT_TEMPLATES,
+                                   FeedServicesAccessControl.EXPORT_TEMPLATES,
+                                   FeedServicesAccessControl.ADMIN_TEMPLATES);
+                    allowed.enable(analystsGroup.getRootPrincial(),
+                                   OperationsAccessControl.ACCESS_OPS,
+                                   FeedServicesAccessControl.CREATE_FEEDS,
+                                   FeedServicesAccessControl.IMPORT_FEEDS,
+                                   FeedServicesAccessControl.EXPORT_FEEDS,
+                                   FeedServicesAccessControl.EDIT_CATEGORIES,
+                                   FeedServicesAccessControl.ACCESS_TEMPLATES,
+                                   FeedServicesAccessControl.ACCESS_DATASOURCES);
+                });
         }, MetadataAccess.SERVICE);
     }
 
-    private void ensureDefaultEntityRoles(){
+    private void ensureDefaultEntityRoles() {
         metadataAccess.commit(() -> {
             ensureFeedRoles();
             ensureCategoryRoles();
@@ -294,10 +281,10 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
             feeds.stream().forEach(feed -> {
-              roleProvider.getEntityRoles(SecurityRole.FEED).stream().forEach(securityRole -> {
-                  allowedActions
-                      .ifPresent(actions -> ((JcrFeed)feed).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
-              });
+                roleProvider.getEntityRoles(SecurityRole.FEED).stream().forEach(securityRole -> {
+                    allowedActions
+                        .ifPresent(actions -> ((JcrFeed) feed).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                });
             });
         }
     }
@@ -310,7 +297,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             categories.stream().forEach(category -> {
                 roleProvider.getEntityRoles(SecurityRole.CATEGORY).stream().forEach(securityRole -> {
                     allowedActions
-                        .ifPresent(actions -> ((JcrCategory)category).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                        .ifPresent(actions -> ((JcrCategory) category).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
                 });
             });
         }
@@ -324,7 +311,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             templates.stream().forEach(template -> {
                 roleProvider.getEntityRoles(SecurityRole.TEMPLATE).stream().forEach(securityRole -> {
                     allowedActions
-                        .ifPresent(actions -> ((JcrFeedTemplate)template).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                        .ifPresent(actions -> ((JcrFeedTemplate) template).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
                 });
             });
         }
@@ -340,26 +327,26 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<Feed> feeds = feedProvider.findAll();
             if (feeds != null) {
                 feeds.stream().forEach(feed -> {
-                        FeedManagerTemplate template = feed.getTemplate();
-                        if (template != null) {
-                            //ensure the template has feeds.
-                            List<Feed> templateFeeds = null;
-                            try {
-                                templateFeeds =  template.getFeeds();
-                            }catch(MetadataRepositoryException e){
-                                //templateFeeds are weak references.
-                                //if the template feeds return itemNotExists we need to reset it
-                                Throwable rootCause = ExceptionUtils.getRootCause(e);
-                                if(rootCause != null && rootCause instanceof ItemNotFoundException ) {
-                                    //reset the reference collection.  It will be rebuilt in the subsequent call
-                                    JcrPropertyUtil.removeAllFromSetProperty(((JcrFeedTemplate) template).getNode(), JcrFeedTemplate.FEEDS);
-                                }
-                            }
-                            if (templateFeeds == null || !templateFeeds.contains(feed)) {
-                                template.addFeed(feed);
-                                feedManagerTemplateProvider.update(template);
+                    FeedManagerTemplate template = feed.getTemplate();
+                    if (template != null) {
+                        //ensure the template has feeds.
+                        List<Feed> templateFeeds = null;
+                        try {
+                            templateFeeds = template.getFeeds();
+                        } catch (MetadataRepositoryException e) {
+                            //templateFeeds are weak references.
+                            //if the template feeds return itemNotExists we need to reset it
+                            Throwable rootCause = ExceptionUtils.getRootCause(e);
+                            if (rootCause != null && rootCause instanceof ItemNotFoundException) {
+                                //reset the reference collection.  It will be rebuilt in the subsequent call
+                                JcrPropertyUtil.removeAllFromSetProperty(((JcrFeedTemplate) template).getNode(), JcrFeedTemplate.FEEDS);
                             }
                         }
+                        if (templateFeeds == null || !templateFeeds.contains(feed)) {
+                            template.addFeed(feed);
+                            feedManagerTemplateProvider.update(template);
+                        }
+                    }
                 });
 
             }
@@ -455,11 +442,11 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         }), MetadataAccess.SERVICE);
     }
 
-    
+
     protected User createDefaultUser(String username, String displayName, String password) {
         Optional<User> userOption = userProvider.findUserBySystemName(username);
         User user = null;
-        
+
         // Create the user if it doesn't exists.
         if (userOption.isPresent()) {
             user = userOption.get();
@@ -468,7 +455,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             user.setPassword(passwordEncoder.encode(password));
             user.setDisplayName(displayName);
         }
-        
+
         return user;
     }
 
@@ -477,7 +464,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         newGroup.setTitle(title);
         return newGroup;
     }
-    
+
     protected SecurityRole createDefaultRole(String entityName, String roleName, String title, Action... actions) {
         return roleProvider.getRole(entityName, roleName)
             .orElseGet(() -> {
@@ -486,7 +473,14 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 return role;
             });
     }
-    
+
+    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, SecurityRole baseRole, Action... actions) {
+        List<Action> allowedActions = new ArrayList<Action>();
+        allowedActions.addAll(baseRole.getAllowedActions().getAvailableActions());
+        allowedActions.addAll(Lists.newArrayList(actions));
+        return createDefaultRole(entityName, roleName, title, allowedActions.toArray(new Action[allowedActions.size()]));
+    }
+
     public static class Version implements KyloVersion {
 
         private String majorVersion;
@@ -580,7 +574,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             if (this == o) {
                 return true;
             }
-            if (o == null || ! (o instanceof KyloVersion)) {
+            if (o == null || !(o instanceof KyloVersion)) {
                 return false;
             }
 
@@ -599,7 +593,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
             return result;
         }
-        
+
         /* (non-Javadoc)
          * @see java.lang.Object#toString()
          */

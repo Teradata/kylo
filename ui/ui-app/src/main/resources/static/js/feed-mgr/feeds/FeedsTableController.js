@@ -16,7 +16,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         // Register Add button
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.FEEDS_CREATE, actionSet.actions)) {
                         AddButtonService.registerAddButton("feeds", function() {
                             FeedService.resetFeed();
                             StateService.FeedManager().Feed().navigateToDefineFeed()
