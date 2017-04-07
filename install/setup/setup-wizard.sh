@@ -21,8 +21,6 @@ validate-system() {
 }
 
 validate-system
-exit 0
-
 
 offline=false
 if [ $# > 1 ]
