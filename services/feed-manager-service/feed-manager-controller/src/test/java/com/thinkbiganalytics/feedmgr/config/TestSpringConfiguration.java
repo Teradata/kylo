@@ -25,6 +25,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -69,6 +70,8 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.ModeShapeEngine;
@@ -419,5 +422,20 @@ public class TestSpringConfiguration {
     @Bean
     ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform() {
         return new ServiceLevelAgreementModelTransform(Mockito.mock(Model.class));
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform() {
+        return Mockito.mock(AccessControlledEntityTransform.class);
+    }
+
+    @Bean
+    SecurityModelTransform actionsTransform() {
+        return Mockito.mock(SecurityModelTransform.class);
+    }
+
+    @Bean
+    UserService userService() {
+        return Mockito.mock(UserService.class);
     }
 }
