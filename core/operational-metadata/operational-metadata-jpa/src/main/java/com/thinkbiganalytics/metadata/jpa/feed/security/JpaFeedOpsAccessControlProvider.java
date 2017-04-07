@@ -15,7 +15,9 @@ import javax.inject.Inject;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry.PrincipalType;
 import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
@@ -119,8 +121,9 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
     }
     
     protected Principal asPrincipal(JpaFeedOpsAclEntry entry) {
-        // TODO parse name or use principal_type to discriminate.
-        return new GroupPrincipal(entry.getPrincipalName());
+        return entry.getPrincipalType() == PrincipalType.GROUP 
+                        ? new GroupPrincipal(entry.getPrincipalName())
+                        : new UsernamePrincipal(entry.getPrincipalName());
     }
 
     protected Set<JpaFeedOpsAclEntry> createEntries(ID feedId, Stream<Principal> stream) {

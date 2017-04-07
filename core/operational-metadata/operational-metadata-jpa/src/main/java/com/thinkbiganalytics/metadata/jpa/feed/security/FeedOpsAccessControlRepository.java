@@ -17,7 +17,7 @@ import org.springframework.data.repository.query.Param;
  */
 public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOpsAclEntry, JpaFeedOpsAclEntry.EntryId> {
     
-    @Query("select from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
+    @Query("select entry from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
     List<JpaFeedOpsAclEntry> findForFeed(@Param("id") UUID feedId); 
     
     @Modifying

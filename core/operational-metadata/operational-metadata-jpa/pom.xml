@@ -155,6 +155,14 @@
       <scope>test</scope>
       <type>pom</type>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-core</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- H2 DB -->
     <dependency>
       <groupId>com.h2database</groupId>

@@ -460,7 +460,7 @@ public class BaseFeed implements Feed {
         this.owner = owner;
     }
 
-    private static class BaseId {
+    public static class BaseId {
 
         private final UUID uuid;
 
@@ -499,7 +499,7 @@ public class BaseFeed implements Feed {
         }
     }
 
-    protected static class FeedId extends BaseId implements Feed.ID {
+    public static class FeedId extends BaseId implements Feed.ID {
 
         public FeedId() {
             super();

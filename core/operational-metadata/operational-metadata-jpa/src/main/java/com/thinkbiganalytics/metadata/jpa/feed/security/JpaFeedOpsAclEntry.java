@@ -30,18 +30,15 @@ public class JpaFeedOpsAclEntry {
     @EmbeddedId
     private EntryId id;
     
-//    @Id
-//    @Column(name = "feed_id")
-//    private UUID feedId;
-//
-//    @Id
-//    @Column(name = "principal", length = 255, unique = false, nullable = false)
-//    private String principalName;
-//    
-//    @Id
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "principal_type")
-//    private PrincipalType principalType;
+    @Column(name = "feed_id", insertable = false, updatable = false)
+    private UUID feedId;
+    
+    @Column(name = "principal", insertable = false, updatable = false)
+    private String principalName;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "principal_type", insertable = false, updatable = false)
+    private PrincipalType principalType;
     
     public JpaFeedOpsAclEntry() {
         super();
@@ -57,15 +54,18 @@ public class JpaFeedOpsAclEntry {
     
     
     public UUID getFeedId() {
-        return this.id.getUuid();
+        return this.feedId;
     }
 
     public String getPrincipalName() {
-        return this.id.getPrincipalName();
+        return this.principalName;
     }
 
+    public PrincipalType getPrincipalType() {
+        return this.principalType;
+    }
 
-
+    
     public static class EntryId implements Serializable {
 
         private static final long serialVersionUID = 1L;
