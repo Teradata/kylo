@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -51,6 +50,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -72,7 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Property;
@@ -476,11 +478,21 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             });
     }
 
-    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, SecurityRole baseRole, Action... actions) {
-        List<Action> allowedActions = new ArrayList<Action>();
-        allowedActions.addAll(baseRole.getAllowedActions().getAvailableActions());
-        allowedActions.addAll(Lists.newArrayList(actions));
-        return createDefaultRole(entityName, roleName, title, allowedActions.toArray(new Action[allowedActions.size()]));
+    /**
+     * Constructs a new role using the specified base role and actions.
+     *
+     * @param entityName the folder name
+     * @param roleName   the system name for the role
+     * @param title      the human-readable name for the role
+     * @param baseRole   the role with the default actions for this role
+     * @param actions    additional actions for this role
+     * @return the security role
+     */
+    protected SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title, @Nonnull final SecurityRole baseRole,
+                                             final Action... actions) {
+        final Stream<Action> baseActions = baseRole.getAllowedActions().getAvailableActions().stream().flatMap(AllowableAction::stream);
+        final Action[] allowedActions = Stream.concat(baseActions, Stream.of(actions)).toArray(Action[]::new);
+        return createDefaultRole(entityName, roleName, title, allowedActions);
     }
 
     public static class Version implements KyloVersion {
