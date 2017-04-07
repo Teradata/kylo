@@ -20,7 +20,7 @@ package com.thinkbiganalytics.metadata.modeshape.datasource;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
 
 import java.util.Optional;
 
@@ -30,12 +30,12 @@ import javax.jcr.Node;
 /**
  * A {@code JdbcDatasource} that is stored in JRC.
  */
-public class JcrJdbcDatasource extends JcrUserDatasource implements JdbcDatasource {
+public class JcrJdbcDatasourceDetails extends JcrDatasourceDetails implements JdbcDatasourceDetails {
 
     /**
      * JCR node type
      */
-    public static String NODE_TYPE = "tba:jdbcDatasource";
+    public static String NODE_TYPE = "tba:jdbcDatasourceDetails";
 
     /**
      * Name of the controllerServiceId attribute
@@ -48,11 +48,11 @@ public class JcrJdbcDatasource extends JcrUserDatasource implements JdbcDatasour
     private static final String PASSWORD = "tba:password";
 
     /**
-     * Constructs a {@code JcrJdbcDatasource} with the specified JCR node.
+     * Constructs a {@code JcrJdbcDatasourceDetails} with the specified JCR node.
      *
      * @param node the JCR node
      */
-    public JcrJdbcDatasource(@Nonnull final Node node) {
+    public JcrJdbcDatasourceDetails(@Nonnull final Node node) {
         super(node);
     }
 

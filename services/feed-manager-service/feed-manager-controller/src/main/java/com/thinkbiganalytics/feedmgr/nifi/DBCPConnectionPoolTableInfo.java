@@ -24,7 +24,7 @@ import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
@@ -52,10 +52,10 @@ import javax.sql.DataSource;
 public class DBCPConnectionPoolTableInfo {
 
     private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
-    @Autowired
-    LegacyNifiRestClient nifiRestClient;
+
     @Autowired
     private NifiControllerServiceProperties nifiControllerServiceProperties;
+
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
@@ -91,7 +91,7 @@ public class DBCPConnectionPoolTableInfo {
      * @return a list of schema.table names, or {@code null} if not accessible
      */
     @Nullable
-    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nullable final String tableName) {
+    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasourceDetails datasource, @Nullable final String schema, @Nullable final String tableName) {
         final Optional<ControllerServiceDTO> controllerService = datasource.getControllerServiceId()
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
@@ -99,7 +99,7 @@ public class DBCPConnectionPoolTableInfo {
             final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
             return getTableNamesForControllerService(serviceProperties);
         } else {
-            log.error("Cannot get table names for data source: {}", datasource.getId());
+            log.error("Cannot get table names for data source: {}", datasource);
             return null;
         }
     }
@@ -134,7 +134,7 @@ public class DBCPConnectionPoolTableInfo {
      * @param tableName  the table name
      * @return the database table and fields, or {@code null} if not found
      */
-    public TableSchema describeTableForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nonnull final String tableName) {
+    public TableSchema describeTableForDatasource(@Nonnull final JdbcDatasourceDetails datasource, @Nullable final String schema, @Nonnull final String tableName) {
         final Optional<ControllerServiceDTO> controllerService = datasource.getControllerServiceId()
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
@@ -142,7 +142,7 @@ public class DBCPConnectionPoolTableInfo {
             final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
             return describeTableForControllerService(serviceProperties);
         } else {
-            log.error("Cannot describe table for data source: {}", datasource.getId());
+            log.error("Cannot describe table for data source: {}", datasource);
             return null;
         }
     }

@@ -25,11 +25,15 @@ import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -38,19 +42,32 @@ import com.thinkbiganalytics.metadata.rest.model.data.UserDatasource;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.AccessControlException;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -58,6 +75,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -73,6 +91,8 @@ import io.swagger.annotations.Tag;
 @Path("/v1/metadata/datasource")
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Data Sources", description = "manages data sources"))
 public class DatasourceController {
+
+    private static final Logger log = LoggerFactory.getLogger(DatasourceController.class);
 
     /**
      * Ensures the user has the correct permissions.
@@ -106,6 +126,15 @@ public class DatasourceController {
      */
     @Inject
     private DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
+
+    @Inject
+    private SecurityService securityService;
+
+    @Inject
+    private SecurityModelTransform actionsTransform;
+
+    @Inject
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     /**
      * Gets a list of datasource that match the criteria provided.
@@ -148,7 +177,7 @@ public class DatasourceController {
      *
      * @param datasource the data source
      * @return the data source
-     * @throws AccessControlException if the user does not have the {@code EDIT_DATASOURCES} permission
+     * @throws AccessControlException if the user does not have the {@code CREATE_DATASOURCES} permission
      */
     @POST
     @ApiOperation("Updates the specified data source.")
@@ -159,7 +188,10 @@ public class DatasourceController {
                   })
     public Datasource postDatasource(@Nonnull final UserDatasource datasource) {
         return metadata.commit(() -> {
-            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_DATASOURCES);
+            if (datasource.getId() == null) {
+                accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.CREATE_DATASOURCES);
+            }
+
             datasourceTransform.toDomain(datasource);
             if (datasource instanceof JdbcDatasource) {
                 ((JdbcDatasource) datasource).setPassword(null);
@@ -206,7 +238,6 @@ public class DatasourceController {
      * Deletes the datasource with the specified id.
      *
      * @param idStr the datasource id
-     * @throws AccessControlException if the user does not have the {@code EDIT_DATASOURCES} permission
      */
     @DELETE
     @Path("{id}")
@@ -219,18 +250,19 @@ public class DatasourceController {
                   })
     public void deleteDatasource(@PathParam("id") final String idStr) {
         metadata.commit(() -> {
-            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_DATASOURCES);
-
             final com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = datasetProvider.resolve(idStr);
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(id);
             if (datasource == null) {
                 throw new NotFoundException("No datasource exists with the given ID: " + idStr);
             }
-            if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) {
-                ((com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasource).getControllerServiceId()
-                    .ifPresent(controllerServiceId -> nifiRestClient.controllerServices().disableAndDeleteAsync(controllerServiceId));
-            }
             if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+                final com.thinkbiganalytics.metadata.api.datasource.UserDatasource userDatasource = (com.thinkbiganalytics.metadata.api.datasource.UserDatasource) datasource;
+                userDatasource.getDetails().ifPresent(details -> {
+                    if (details instanceof JdbcDatasourceDetails) {
+                        ((JdbcDatasourceDetails) details).getControllerServiceId()
+                            .ifPresent(controllerServiceId -> nifiRestClient.controllerServices().disableAndDeleteAsync(controllerServiceId));
+                    }
+                });
                 datasetProvider.removeDatasource(id);
             }
         });
@@ -285,12 +317,15 @@ public class DatasourceController {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
-            if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) {
-                final List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForDatasource((com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasource, schema, tableName);
-                return Response.ok(tables).build();
-            } else {
-                throw new NotFoundException("No JDBC datasource exists with the given ID: " + idStr);
-            }
+            final List<String> tables = Optional.ofNullable(datasource)
+                .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
+                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
+                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
+                .filter(JdbcDatasourceDetails.class::isInstance)
+                .map(JdbcDatasourceDetails.class::cast)
+                .map(details -> dbcpConnectionPoolTableInfo.getTableNamesForDatasource(details, schema, tableName))
+                .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(tables).build();
         });
     }
 
@@ -317,13 +352,137 @@ public class DatasourceController {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
-            if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) {
-                final TableSchema tableSchema = dbcpConnectionPoolTableInfo.describeTableForDatasource((com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasource, schema, tableName);
-                return Response.ok(tableSchema).build();
-            } else {
-                throw new NotFoundException("No JDBC datasource exists with the given ID: " + idStr);
-            }
+            final TableSchema tableSchema = Optional.ofNullable(datasource)
+                .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
+                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
+                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
+                .filter(JdbcDatasourceDetails.class::isInstance)
+                .map(JdbcDatasourceDetails.class::cast)
+                .map(details -> dbcpConnectionPoolTableInfo.describeTableForDatasource(details, schema, tableName))
+                .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(tableSchema).build();
         });
+    }
+
+    @GET
+    @Path("{id}/actions/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available actions that may be permitted or revoked on a data source.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAvailableActions(@PathParam("id") final String datasourceIdStr) {
+        log.debug("Get available actions for data source: {}", datasourceIdStr);
+
+        return this.securityService.getAvailableDatasourceActions(datasourceIdStr)
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{id}/actions/allowed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of actions permitted for the given username and/or groups.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedActions(@PathParam("id") final String datasourceIdStr, @QueryParam("user") final Set<String> userNames, @QueryParam("group") final Set<String> groupNames) {
+        log.debug("Get allowed actions for data source: {}", datasourceIdStr);
+
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+
+        return this.securityService.getAllowedDatasourceActions(datasourceIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @POST
+    @Path("{id}/actions/allowed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the permissions for a data source using the supplied permission change request.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No data source exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("id") final String datasourceIdStr, final PermissionsChange changes) {
+
+        return this.securityService.changeDatasourcePermissions(datasourceIdStr, changes)
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{id}/actions/change")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Constructs and returns a permission change request for a set of users/groups containing the actions that the requester may permit or revoke.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the change request that may be modified by the client and re-posted.", response = PermissionsChange.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No data source exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedPermissionsChange(@PathParam("id") final String datasourceIdStr,
+                                                @QueryParam("type") final String changeType,
+                                                @QueryParam("user") final Set<String> userNames,
+                                                @QueryParam("group") final Set<String> groupNames) {
+        if (StringUtils.isBlank(changeType)) {
+            throw new WebApplicationException("The query parameter \"type\" is required", Response.Status.BAD_REQUEST);
+        }
+
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+
+        return this.securityService.createDatasourcePermissionChange(datasourceIdStr,
+                                                                     PermissionsChange.ChangeType.valueOf(changeType.toUpperCase()),
+                                                                     Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+            .map(p -> Response.ok(p).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{id}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the data source's roles")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getRoleMemberships(@PathParam("id") final String datasourceIdStr, @QueryParam("verbose") @DefaultValue("false") final boolean verbose) {
+        if (!verbose) {
+            return this.securityService.getDatasourceRoleMemberships(datasourceIdStr)
+                .map(m -> Response.ok(m).build())
+                .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+        } else {
+            Optional<Map<String, RoleMembership>> memberships = this.securityService.getDatasourceRoleMemberships(datasourceIdStr);
+            if (memberships.isPresent()) {
+                List<EntityAccessRoleMembership>
+                    entityAccessRoleMemberships =
+                    memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                return Response.ok(entityAccessRoleMemberships).build();
+            } else {
+                throw new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND);
+            }
+        }
+    }
+
+    @POST
+    @Path("{id}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a data source's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No data source exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("id") final String datasourceIdStr, final RoleMembershipChange changes) {
+        return this.securityService.changeDatasourceRoleMemberships(datasourceIdStr, changes)
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("Either a data source with the ID \"" + datasourceIdStr + "\" does not exist or it does not have a role the named \""
+                                                           + changes.getRoleName() + "\"", Response.Status.NOT_FOUND));
     }
 
     private com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria createDatasourceCriteria(String name,
@@ -349,7 +508,7 @@ public class DatasourceController {
         }
         if (StringUtils.isNotEmpty(type)) {
             if ("UserDatasource".equalsIgnoreCase(type)) {
-                criteria.type(com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource.class);
+                criteria.type(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class);
             }
         }
 

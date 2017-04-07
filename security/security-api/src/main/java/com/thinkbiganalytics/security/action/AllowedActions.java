@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.security.action;
 
 /*-
@@ -23,6 +20,7 @@ package com.thinkbiganalytics.security.action;
  * #L%
  */
 
+import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +31,14 @@ import java.util.Set;
  * of the active security context.
  */
 public interface AllowedActions {
-    
+
     // TODO find a better place to define the types of entities that can have associated actions.
     String SERVICES = "services";
     String FEED = "feed";
     String CATEGORY = "category";
     String TEMPLATE = "template";
-    
+    String DATASOURCE = "datasource";
+
 
     /**
      * Retrieves the hierarchical set of allowable actions.
@@ -61,7 +60,7 @@ public interface AllowedActions {
      * Checks whether the given actions are implied by this set of actions based on the current
      * security context, i.e. the principals associates with the current user executing the current thread.
      *
-     * @param actions the actions to check
+     * @param action the actions to check
      * @throws AccessControlException thrown if any of the actions being checked are not present
      */
     void checkPermission(Action action, Action... more);
@@ -117,12 +116,12 @@ public interface AllowedActions {
 
     /**
      * Enables all actions for the specified principals.
-     * 
+     *
      * @param principal the principal to which the actions are granted
      * @return true if not all actions had already been granted to that principal, otherwise false.
      */
     boolean enableAll(Principal principal);
-    
+
     /**
      * Updates this object to disable the given action(s) for the specified principal.
      *
@@ -144,7 +143,7 @@ public interface AllowedActions {
 
     /**
      * Updates this object disable all actions for the principal contained in the given AllowedActions.
-     * 
+     *
      * @param principal the principal to which the action(s) are revoked
      * @param actions   the set of actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
@@ -153,7 +152,7 @@ public interface AllowedActions {
 
     /**
      * Disables all actions for the specified principals.
-     * 
+     *
      * @param principal the principal to which the actions are revoked
      * @return true if not all actions had already been revoked from that principal, otherwise false.
      */

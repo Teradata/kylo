@@ -20,7 +20,9 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -110,18 +112,40 @@ public class DatasourceModelTransform {
      * @param domain the domain object
      * @param level  the level of detail
      * @return the REST object
+     * @throws IllegalArgumentException if the domain object cannot be converted
      */
     public Datasource toDatasource(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.Datasource domain, @Nonnull final Level level) {
         if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource) {
             final DerivedDatasource ds = new DerivedDatasource();
             updateDatasource(ds, (com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource) domain, level);
             return ds;
-        } else if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) {
-            final JdbcDatasource jdbcDatasource = new JdbcDatasource();
-            updateDatasource(jdbcDatasource, (com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) domain, level);
-            return jdbcDatasource;
+        } else if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+            return toDatasource((com.thinkbiganalytics.metadata.api.datasource.UserDatasource) domain, level);
         } else {
             throw new IllegalArgumentException("Not a supported datasource class: " + domain.getClass());
+        }
+    }
+
+    /**
+     * Transforms the specified domain object to a REST object.
+     *
+     * @param domain the domain object
+     * @param level  the level of detail
+     * @return the REST object
+     * @throws IllegalArgumentException if the domain object cannot be converted
+     */
+    public UserDatasource toDatasource(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain, @Nonnull final Level level) {
+        final DatasourceDetails details = domain.getDetails().orElse(null);
+        if (details == null) {
+            final UserDatasource userDatasource = new UserDatasource();
+            updateDatasource(userDatasource, domain, level);
+            return userDatasource;
+        } else if (details instanceof JdbcDatasourceDetails) {
+            final JdbcDatasource jdbcDatasource = new JdbcDatasource();
+            updateDatasource(jdbcDatasource, domain, level);
+            return jdbcDatasource;
+        } else {
+            throw new IllegalArgumentException("Not a supported datasource details class: " + details.getClass());
         }
     }
 
@@ -130,18 +154,30 @@ public class DatasourceModelTransform {
      *
      * @param ds the REST object
      * @return the domain object
+     * @throws IllegalArgumentException if the REST object cannot be converted
      */
     public com.thinkbiganalytics.metadata.api.datasource.Datasource toDomain(@Nonnull final Datasource ds) {
-        if (ds instanceof JdbcDatasource) {
-            final com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource domain;
-            if (ds.getId() != null) {
-                final com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = datasourceProvider.resolve(ds.getId());
-                domain = (com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource) datasourceProvider.getDatasource(id);
-            } else {
-                domain = datasourceProvider.ensureDatasource(ds.getName(), ds.getDescription(), com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource.class);
+        if (ds instanceof UserDatasource) {
+            final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain;
+            final boolean isNew = (ds.getId() == null);
+
+            if (isNew) {
+                domain = datasourceProvider.ensureDatasource(ds.getName(), ds.getDescription(), com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class);
                 ds.setId(domain.getId().toString());
+            } else {
+                final com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = datasourceProvider.resolve(ds.getId());
+                domain = (com.thinkbiganalytics.metadata.api.datasource.UserDatasource) datasourceProvider.getDatasource(id);
             }
-            updateDomain(domain, (JdbcDatasource) ds);
+
+            if (ds instanceof JdbcDatasource) {
+                if (isNew) {
+                    datasourceProvider.ensureDatasourceDetails(domain.getId(), JdbcDatasourceDetails.class);
+                }
+                updateDomain(domain, (JdbcDatasource) ds);
+            } else {
+                updateDomain(domain, (UserDatasource) ds);
+            }
+
             return domain;
         } else {
             throw new IllegalArgumentException("Not a supported user datasource class: " + ds.getClass());
@@ -205,23 +241,27 @@ public class DatasourceModelTransform {
      * @param domain the domain object
      * @param level  the level of detail
      */
-    private void updateDatasource(@Nonnull final JdbcDatasource ds, @Nonnull final com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource domain, @Nonnull final Level level) {
+    private void updateDatasource(@Nonnull final JdbcDatasource ds, @Nonnull final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain, @Nonnull final Level level) {
         updateDatasource((UserDatasource) ds, domain, level);
-        domain.getControllerServiceId().ifPresent(ds::setControllerServiceId);
-        if (level.compareTo(Level.ADMIN) <= 0) {
-            ds.setPassword(encryptor.decrypt(domain.getPassword()));
-        }
-        if (level.compareTo(Level.FULL) <= 0) {
-            // Fetch database properties from NiFi
-            domain.getControllerServiceId()
-                .flatMap(id -> nifiRestClient.controllerServices().findById(id))
-                .ifPresent(controllerService -> {
-                    ds.setDatabaseConnectionUrl(controllerService.getProperties().get(DatasourceConstants.DATABASE_CONNECTION_URL));
-                    ds.setDatabaseDriverClassName(controllerService.getProperties().get(DatasourceConstants.DATABASE_DRIVER_CLASS_NAME));
-                    ds.setDatabaseDriverLocation(controllerService.getProperties().get(DatasourceConstants.DATABASE_DRIVER_LOCATION));
-                    ds.setDatabaseUser(controllerService.getProperties().get(DatasourceConstants.DATABASE_USER));
-                });
-        }
+        domain.getDetails()
+            .map(JdbcDatasourceDetails.class::cast)
+            .ifPresent(details -> {
+                details.getControllerServiceId().ifPresent(ds::setControllerServiceId);
+                if (level.compareTo(Level.ADMIN) <= 0) {
+                    ds.setPassword(encryptor.decrypt(details.getPassword()));
+                }
+                if (level.compareTo(Level.FULL) <= 0) {
+                    // Fetch database properties from NiFi
+                    details.getControllerServiceId()
+                        .flatMap(id -> nifiRestClient.controllerServices().findById(id))
+                        .ifPresent(controllerService -> {
+                            ds.setDatabaseConnectionUrl(controllerService.getProperties().get(DatasourceConstants.DATABASE_CONNECTION_URL));
+                            ds.setDatabaseDriverClassName(controllerService.getProperties().get(DatasourceConstants.DATABASE_DRIVER_CLASS_NAME));
+                            ds.setDatabaseDriverLocation(controllerService.getProperties().get(DatasourceConstants.DATABASE_DRIVER_LOCATION));
+                            ds.setDatabaseUser(controllerService.getProperties().get(DatasourceConstants.DATABASE_USER));
+                        });
+                }
+            });
     }
 
     /**
@@ -242,64 +282,67 @@ public class DatasourceModelTransform {
      * @param domain the domain object
      * @param ds     the REST object
      */
-    private void updateDomain(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.JdbcDatasource domain, @Nonnull final JdbcDatasource ds) {
+    private void updateDomain(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain, @Nonnull final JdbcDatasource ds) {
         updateDomain(domain, (UserDatasource) ds);
+        domain.getDetails()
+            .map(JdbcDatasourceDetails.class::cast)
+            .ifPresent(details -> {
+                // Look for changed properties
+                final Map<String, String> properties = new HashMap<>();
+                if (StringUtils.isNotBlank(ds.getDatabaseConnectionUrl())) {
+                    properties.put(DatasourceConstants.DATABASE_CONNECTION_URL, ds.getDatabaseConnectionUrl());
+                }
+                if (StringUtils.isNotBlank(ds.getDatabaseDriverClassName())) {
+                    properties.put(DatasourceConstants.DATABASE_DRIVER_CLASS_NAME, ds.getDatabaseDriverClassName());
+                }
+                if (StringUtils.isNotBlank(ds.getDatabaseDriverLocation())) {
+                    properties.put(DatasourceConstants.DATABASE_DRIVER_LOCATION, ds.getDatabaseDriverLocation());
+                }
+                if (StringUtils.isNotBlank(ds.getDatabaseUser())) {
+                    properties.put(DatasourceConstants.DATABASE_USER, ds.getDatabaseUser());
+                }
+                if (StringUtils.isNotBlank(ds.getPassword())) {
+                    details.setPassword(encryptor.encrypt(ds.getPassword()));
+                    properties.put(DatasourceConstants.PASSWORD, ds.getPassword());
+                }
 
-        // Look for changed properties
-        final Map<String, String> properties = new HashMap<>();
-        if (StringUtils.isNotBlank(ds.getDatabaseConnectionUrl())) {
-            properties.put(DatasourceConstants.DATABASE_CONNECTION_URL, ds.getDatabaseConnectionUrl());
-        }
-        if (StringUtils.isNotBlank(ds.getDatabaseDriverClassName())) {
-            properties.put(DatasourceConstants.DATABASE_DRIVER_CLASS_NAME, ds.getDatabaseDriverClassName());
-        }
-        if (StringUtils.isNotBlank(ds.getDatabaseDriverLocation())) {
-            properties.put(DatasourceConstants.DATABASE_DRIVER_LOCATION, ds.getDatabaseDriverLocation());
-        }
-        if (StringUtils.isNotBlank(ds.getDatabaseUser())) {
-            properties.put(DatasourceConstants.DATABASE_USER, ds.getDatabaseUser());
-        }
-        if (StringUtils.isNotBlank(ds.getPassword())) {
-            domain.setPassword(encryptor.encrypt(ds.getPassword()));
-            properties.put(DatasourceConstants.PASSWORD, ds.getPassword());
-        }
+                // Update or create the controller service
+                ControllerServiceDTO controllerService = null;
 
-        // Update or create the controller service
-        ControllerServiceDTO controllerService = null;
-
-        if (domain.getControllerServiceId().isPresent()) {
-            controllerService = new ControllerServiceDTO();
-            controllerService.setId(domain.getControllerServiceId().get());
-            controllerService.setName(ds.getName());
-            controllerService.setComments(ds.getDescription());
-            controllerService.setProperties(properties);
-            try {
-                nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.DISABLED);
-                nifiRestClient.controllerServices().update(controllerService);
-                nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
-            } catch (final NifiComponentNotFoundException e) {
-                log.warn("Controller service is missing for datasource: {}", domain.getId(), e);
-                controllerService = null;
-            }
-            ds.setControllerServiceId(controllerService.getId());
-        }
-        if (controllerService == null) {
-            controllerService = new ControllerServiceDTO();
-            controllerService.setType("org.apache.nifi.dbcp.DBCPConnectionPool");
-            controllerService.setName(ds.getName());
-            controllerService.setComments(ds.getDescription());
-            controllerService.setProperties(properties);
-            final ControllerServiceDTO newControllerService = nifiRestClient.controllerServices().create(controllerService);
-            try {
-                nifiRestClient.controllerServices().updateStateById(newControllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
-            } catch (final NifiClientRuntimeException nifiException) {
-                log.error("Failed to enable controller service for datasource: {}", domain.getId(), nifiException);
-                nifiRestClient.controllerServices().disableAndDeleteAsync(newControllerService.getId());
-                throw nifiException;
-            }
-            domain.setControllerServiceId(newControllerService.getId());
-            ds.setControllerServiceId(newControllerService.getId());
-        }
+                if (details.getControllerServiceId().isPresent()) {
+                    controllerService = new ControllerServiceDTO();
+                    controllerService.setId(details.getControllerServiceId().get());
+                    controllerService.setName(ds.getName());
+                    controllerService.setComments(ds.getDescription());
+                    controllerService.setProperties(properties);
+                    try {
+                        nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.DISABLED);
+                        nifiRestClient.controllerServices().update(controllerService);
+                        nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
+                    } catch (final NifiComponentNotFoundException e) {
+                        log.warn("Controller service is missing for datasource: {}", domain.getId(), e);
+                        controllerService = null;
+                    }
+                    ds.setControllerServiceId(controllerService.getId());
+                }
+                if (controllerService == null) {
+                    controllerService = new ControllerServiceDTO();
+                    controllerService.setType("org.apache.nifi.dbcp.DBCPConnectionPool");
+                    controllerService.setName(ds.getName());
+                    controllerService.setComments(ds.getDescription());
+                    controllerService.setProperties(properties);
+                    final ControllerServiceDTO newControllerService = nifiRestClient.controllerServices().create(controllerService);
+                    try {
+                        nifiRestClient.controllerServices().updateStateById(newControllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
+                    } catch (final NifiClientRuntimeException nifiException) {
+                        log.error("Failed to enable controller service for datasource: {}", domain.getId(), nifiException);
+                        nifiRestClient.controllerServices().disableAndDeleteAsync(newControllerService.getId());
+                        throw nifiException;
+                    }
+                    details.setControllerServiceId(newControllerService.getId());
+                    ds.setControllerServiceId(newControllerService.getId());
+                }
+            });
     }
 
     /**

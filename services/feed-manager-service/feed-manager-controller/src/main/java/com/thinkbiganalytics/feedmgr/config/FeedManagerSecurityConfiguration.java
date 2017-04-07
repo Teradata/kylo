@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.feedmgr.config;
 
 /*-
@@ -27,6 +24,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -74,7 +72,7 @@ public class FeedManagerSecurityConfiguration {
                                 .action(FeedServicesAccessControl.EXPORT_TEMPLATES)
                                 .action(FeedServicesAccessControl.ADMIN_TEMPLATES)
                                 .action(FeedServicesAccessControl.ACCESS_DATASOURCES)
-                                .action(FeedServicesAccessControl.EDIT_DATASOURCES)
+                                .action(FeedServicesAccessControl.CREATE_DATASOURCES)
                                 .add()
                             .module(AllowedActions.FEED)
                                 .action(FeedAccessControl.ACCESS_FEED)
@@ -105,6 +103,14 @@ public class FeedManagerSecurityConfiguration {
                                 .action(TemplateAccessControl.EXPORT)
                                 .action(TemplateAccessControl.CREATE_FEED)
                                 .action(TemplateAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.DATASOURCE)
+                                .action(DatasourceAccessControl.ACCESS_DATASOURCE)
+                                .action(DatasourceAccessControl.EDIT_SUMMARY)
+                                .action(DatasourceAccessControl.ACCESS_DETAILS)
+                                .action(DatasourceAccessControl.EDIT_DETAILS)
+                                .action(DatasourceAccessControl.DELETE)
+                                .action(DatasourceAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

@@ -2,7 +2,7 @@ package com.thinkbiganalytics.metadata.upgrade;
 
 /*-
  * #%L
- * thinkbig-operational-metadata-upgrade-service
+ * kylo-operational-metadata-upgrade-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
@@ -78,8 +79,6 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
-
-
 @Order(PostMetadataConfigAction.LATE_ORDER + 100)
 public class UpgradeKyloService implements PostMetadataConfigAction {
 //public class UpgradeKyloService {
@@ -110,8 +109,6 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     public void run() {
         upgradeCheck();
     }
-
-    ;
 
     public KyloVersion getCurrentVersion() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
@@ -176,9 +173,6 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
     }
 
-    /**
-     *
-     */
     private void setupFreshInstall() {
         metadataAccess.commit(() -> {
             User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", "thinkbig");
@@ -225,6 +219,14 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
 
             createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
+
+            final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
+                                                                    DatasourceAccessControl.ACCESS_DATASOURCE,
+                                                                    DatasourceAccessControl.EDIT_DETAILS,
+                                                                    DatasourceAccessControl.EDIT_SUMMARY,
+                                                                    DatasourceAccessControl.DELETE);
+            createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
+            createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", DatasourceAccessControl.ACCESS_DATASOURCE);
 
             // Add default users to their respective groups
             adminsGroup.addUser(dladmin);

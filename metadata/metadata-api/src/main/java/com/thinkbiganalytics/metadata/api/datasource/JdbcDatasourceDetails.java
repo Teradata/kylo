@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 /**
  * Defines a connection to a JDBC data source.
  */
-public interface JdbcDatasource extends UserDatasource {
+public interface JdbcDatasourceDetails extends DatasourceDetails {
 
     /**
      * Gets the id of the NiFi DBCPConnectionPool controller service.

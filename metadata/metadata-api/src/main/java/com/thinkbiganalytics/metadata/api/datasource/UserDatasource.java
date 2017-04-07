@@ -20,12 +20,16 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+
+import java.util.Optional;
+
 import javax.annotation.Nonnull;
 
 /**
  * Defines a data source managed through Kylo by a user.
  */
-public interface UserDatasource extends Datasource {
+public interface UserDatasource extends Datasource, AccessControlled {
 
     /**
      * Sets the description of this data source.
@@ -33,6 +37,14 @@ public interface UserDatasource extends Datasource {
      * @param description the description
      */
     void setDescription(@Nonnull String description);
+
+    /**
+     * Gets the additional properties for this data source.
+     *
+     * @return the details
+     */
+    @Nonnull
+    Optional<? extends DatasourceDetails> getDetails();
 
     /**
      * Sets the name of this data source.

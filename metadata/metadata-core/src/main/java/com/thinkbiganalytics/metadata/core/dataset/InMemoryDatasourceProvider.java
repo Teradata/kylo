@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
@@ -45,7 +46,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nonnull;
 
 /**
  *
@@ -180,6 +184,10 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
         return list;
     }
 
+    @Override
+    public <D extends DatasourceDetails> Optional<D> ensureDatasourceDetails(@Nonnull ID id, @Nonnull Class<D> type) {
+        return null;
+    }
 
     private BaseDatasource getExistingDataset(String name) {
         synchronized (this.datasets) {

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.security.role;
 
 /*-
@@ -23,39 +20,40 @@ package com.thinkbiganalytics.security.role;
  * #L%
  */
 
+import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
+
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedActions;
-
 /**
  * Defines a role used for representing a set of predefined permissions.
  */
 public interface SecurityRole {
-    
+
     // Entity names
     String SERVICES = "services";
     String FEED = "feed";
     String CATEGORY = "category";
     String TEMPLATE = "template";
-    List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE));
-    
-    
+    String DATASOURCE = "datasource";
+    List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE, DATASOURCE));
+
+
     Principal getPrincipal();
-    
+
     String getSystemName();
-    
+
     String getTitle();
-    
+
     String getDescription();
-    
+
     AllowedActions getAllowedActions();
-    
+
     void setPermissions(Action... actions);
-    
+
     void setPermissions(Collection<Action> actions);
 }
