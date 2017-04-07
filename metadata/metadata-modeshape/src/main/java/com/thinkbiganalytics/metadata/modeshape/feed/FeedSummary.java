@@ -45,20 +45,22 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
     public static final String CATEGORY = "tba:category";
     
     private FeedDetails details;
-
-    public FeedSummary(Node node) {
+    private JcrFeed feed;
+    
+    public FeedSummary(Node node, JcrFeed feed) {
         super(node);
+        this.feed = feed;
     }
     
-    public FeedSummary(Node node, JcrCategory category) {
-        super(node);
+    public FeedSummary(Node node, JcrCategory category, JcrFeed feed) {
+        this(node, feed);
         setProperty(CATEGORY, category);
     }
     
     public Optional<FeedDetails> getFeedDetails() {
         if (this.details == null) {
             if (JcrUtil.hasNode(getNode(), DETAILS)) {
-                this.details = JcrUtil.getJcrObject(getNode(), DETAILS, FeedDetails.class);
+                this.details = JcrUtil.getJcrObject(getNode(), DETAILS, FeedDetails.class, this);
                 return Optional.of(this.details);
             } else {
                 return Optional.empty();
@@ -87,4 +89,7 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
         return category;
     }
 
+    protected JcrFeed getParentFeed() {
+        return this.feed;
+    }
 }

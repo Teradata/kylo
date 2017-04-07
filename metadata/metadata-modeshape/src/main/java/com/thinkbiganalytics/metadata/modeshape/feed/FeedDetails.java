@@ -69,25 +69,21 @@ public class FeedDetails extends JcrPropertiesEntity {
     public static final String TEMPLATE = "tba:template";
     public static final String SLA = "tba:slas";
 
-    private JcrFeed feed;
+    private FeedSummary summary;
     
     /**
      * @param node
      */
-    public FeedDetails(Node node, JcrFeed feed) {
+    public FeedDetails(Node node, FeedSummary summary) {
         super(node);
     }
 
     protected JcrFeed getParentFeed() {
-        return this.feed;
+        return this.summary.getParentFeed();
     }
     
     protected FeedSummary getParentSummary() {
-        try {
-            return new FeedSummary(this.node.getParent());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the parent feed summary of the feed details", e);
-        }
+        return this.summary;
     }
 
     public List<? extends FeedSource> getSources() {
@@ -103,7 +99,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
 
         for (Node depNode : depNodes) {
-            deps.add(new JcrFeed(depNode, this.feed.getOpsAccessProvider().orElse(null)));
+            deps.add(new JcrFeed(depNode, this.summary.getParentFeed().getOpsAccessProvider().orElse(null)));
         }
 
         return deps;
@@ -136,7 +132,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, USED_BY_FEEDS);
 
         for (Node depNode : depNodes) {
-            deps.add(new JcrFeed(depNode, this.feed.getOpsAccessProvider().orElse(null)));
+            deps.add(new JcrFeed(depNode, this.summary.getParentFeed().getOpsAccessProvider().orElse(null)));
         }
 
         return deps;

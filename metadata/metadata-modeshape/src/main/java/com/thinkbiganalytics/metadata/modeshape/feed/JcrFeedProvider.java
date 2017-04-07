@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -156,6 +157,35 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
+     */
+    @Override
+    public Feed create(Feed t) {
+        JcrFeed feed = (JcrFeed) super.create(t);
+        feed.setOpsAccessProvider(this.opsAccessProvider);
+        return feed;
+    }
+    
+    @Override
+    public List<Feed> findAll() {
+        List<Feed> feeds = super.findAll();
+        return feeds.stream()
+                        .map(JcrFeed.class::cast)
+                        .map(feed -> { 
+                            feed.setOpsAccessProvider(opsAccessProvider);
+                            return feed;
+                        })
+                        .collect(Collectors.toList());
+    }
+    
+    @Override
+    public Feed findById(ID id) {
+        JcrFeed feed = (JcrFeed) super.findById(id);
+        feed.setOpsAccessProvider(this.opsAccessProvider);
+        return feed;
     }
 
     @Override

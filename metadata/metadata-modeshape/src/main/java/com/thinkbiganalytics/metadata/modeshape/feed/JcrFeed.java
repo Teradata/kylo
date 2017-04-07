@@ -50,6 +50,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -77,8 +78,18 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     // a change to the feed's allowed accessions for ops access get's propagated to the JPA table.
     private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
     
+    public JcrFeed(Node node) {
+        super(node);
+    }
+    
     public JcrFeed(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
         super(node);
+        setOpsAccessProvider(opsAccessProvider);
+    }
+    
+    public JcrFeed(Node node, JcrCategory category) {
+        this(node, (FeedOpsAccessControlProvider) null);
+        getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
     }
 
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
@@ -427,6 +438,15 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public void setNifiProcessGroupId(String id) {
         getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin#getJcrAllowedActions()
+     */
+    @Override
+    public JcrAllowedActions getJcrAllowedActions() {
+        Node allowedNode = JcrUtil.getNode(getNode(), JcrAllowedActions.NODE_NAME);
+        return JcrUtil.createJcrObject(allowedNode, getJcrAllowedActionsType(), this.opsAccessProvider.orElse(null));
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin#getJcrAllowedActionsType()
@@ -439,7 +459,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public Optional<FeedSummary> getFeedSummary() {
         if (this.summary == null) {
             if (JcrUtil.hasNode(getNode(), SUMMARY)) {
-                this.summary = JcrUtil.getJcrObject(getNode(), SUMMARY, FeedSummary.class);
+                this.summary = JcrUtil.getJcrObject(getNode(), SUMMARY, FeedSummary.class, this);
                 return Optional.of(this.summary);
             } else {
                 return Optional.empty();

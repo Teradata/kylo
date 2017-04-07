@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
@@ -72,6 +73,11 @@ public class JcrTestConfig {
     @Primary
     public LoginConfiguration restModeShapeLoginConfiguration() {
         return Mockito.mock(LoginConfiguration.class);
+    }
+    
+    @Bean
+    public FeedOpsAccessControlProvider opsAccessProvider() {
+        return Mockito.mock(FeedOpsAccessControlProvider.class);
     }
 
     @Bean

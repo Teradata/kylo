@@ -29,6 +29,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -182,7 +183,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         for (Node depNode : feedNodes) {
             // TODO: note that feeds instances returned here will not be able to update feed ops 
             // access through permission changes to their allowed actions.
-            feeds.add(new JcrFeed(depNode, null));
+            feeds.add(new JcrFeed(depNode, (FeedOpsAccessControlProvider) null));
         }
 
         return feeds;
