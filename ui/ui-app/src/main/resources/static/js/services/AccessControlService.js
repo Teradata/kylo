@@ -117,59 +117,21 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
             hasEntityAccess:function(requiredPermissions,entity,entityType){
                 var self = this;
 
-                //all entities should have the object .accessControl with the correct {owner:systemName,roles:[{name:'role1'},{name:'role2'}]}
-                //ASSUMES initialize will build up ROLE_CACHE
+                //all entities should have the object .allowedActions and .owner
                 if(entity == undefined){
                     return false;
                 }
 
-                if(entity.roleMemberships == undefined){
-                    return false;
-                }
                 //short circuit if the owner matches
                 if(entity.owner && entity.owner.systemName == currentUser.systemName){
                     return true;
                 }
 
-                function checkForAccess() {
-                    var permissions = [];
-                    //check the permissions on the entity roles
-                    _.each(entity.roleMemberships, function (roleMembership) {
-                        var role = ROLE_CACHE[entityType] != undefined ? _.find(ROLE_CACHE[entityType], function (entityRole) {
-                                                                           return entityRole.systemName == roleMembership.role.systemName;
-                                                                       }) : undefined;
-                        if(role != undefined && role.allowedActions != undefined) {
-                            var rolePermissions = role.allowedActions;
-                            if(rolePermissions.systemName == undefined && rolePermissions.actions) {
-                                permissions.push(rolePermissions.actions);
-                            }
-                            else {
-                                permissions.push(rolePermissions);
-                            }
-                        }
-                    });
-
-                    if(!angular.isArray(requiredPermissions)){
-                        requiredPermissions = [requiredPermissions];
-                    }
-                    return self.hasAnyAction(requiredPermissions, permissions);
+                if(!angular.isArray(requiredPermissions)){
+                    requiredPermissions = [requiredPermissions];
                 }
 
-
-
-
-
-                //if we dont have the roles populated yet... query it
-                if(_.isEmpty(ROLE_CACHE)) {
-                    var defer = $q.deferred();
-                    self.getRoles().then(function(response){
-                        defer.resolve(checkForAccess());
-                    });
-                    return defer.promise;
-                }
-                else {
-                   return checkForAccess();
-                }
+                return self.hasAnyAction(requiredPermissions, entity.allowedActions);
             },
             isFutureState:function(state){
                 return state.endsWith(".**");
