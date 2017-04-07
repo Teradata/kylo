@@ -30,6 +30,7 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.datavalidator.functions.SumPartitionLevelCounts;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
@@ -38,9 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.hive.HiveContext;
@@ -61,8 +60,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -76,6 +73,14 @@ import java.util.Vector;
 public class Validator implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(Validator.class);
+
+    @Autowired
+    IValidatorStrategy validatorStrategy;
+
+    public void setValidatorStrategy(IValidatorStrategy strategy) {
+        this.validatorStrategy = strategy;
+    }
+
     /*
     Valid validation result
      */
@@ -457,48 +462,10 @@ public class Validator implements Serializable {
         final int schemaLen = schemaLength;
 
         // Maps each partition in the JavaRDD<CleansedRowResults> to a long[] of invalid column counts and total valid/invalid counts
-        JavaRDD<long[]> partitionCounts = cleansedRowResultJavaRDD.mapPartitions(new FlatMapFunction<Iterator<CleansedRowResult>, long[]>() {
-
-            @Override
-            public Iterable<long[]> call(Iterator<CleansedRowResult> cleansedRowResultIterator) {
-
-                long[] validationCounts = new long[schemaLen + 2];
-
-                while (cleansedRowResultIterator.hasNext()) {
-
-                    CleansedRowResult cleansedRowResult = cleansedRowResultIterator.next();
-
-                    for (int idx = 0; idx < schemaLen; idx++) {
-                        if (!cleansedRowResult.columnsValid[idx]) {
-                            validationCounts[idx] = validationCounts[idx] + 1l;
-                        }
-                    }
-                    if (cleansedRowResult.rowIsValid) {
-                        validationCounts[schemaLen] = validationCounts[schemaLen] + 1l;
-                    } else {
-                        validationCounts[schemaLen + 1] = validationCounts[schemaLen + 1] + 1l;
-                    }
-                }
-
-                List<long[]> results = new LinkedList<long[]>();
-                results.add(validationCounts);
-                return results;
-            }
-        });
+        JavaRDD<long[]> partitionCounts = validatorStrategy.getCleansedRowResultPartitionCounts(cleansedRowResultJavaRDD, schemaLen);
 
         // Sums up all partitions validation counts into one long[]
-        long[] finalCounts = partitionCounts.reduce(new Function2<long[], long[], long[]>() {
-            @Override
-            public long[] call(long[] countsA, long[] countsB) throws Exception {
-
-                long[] countsResult = new long[countsA.length];
-
-                for (int idx = 0; idx < countsA.length; idx++) {
-                    countsResult[idx] = countsA[idx] + countsB[idx];
-                }
-                return countsResult;
-            }
-        });
+        long[] finalCounts = partitionCounts.reduce(new SumPartitionLevelCounts());
 
         return finalCounts;
     }
