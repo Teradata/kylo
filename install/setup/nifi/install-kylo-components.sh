@@ -83,7 +83,7 @@ elif [ "$linux_type" == "update-rc.d" ]; then
 fi
 
 echo "Starting NiFi service"
-if [ ! -z ${KYLO_INSTALL_NIFI_SUPPRESS_START} ] ; then
+if [[ -z ${KYLO_INSTALL_NIFI_SUPPRESS_START} ]]; then
 	service nifi start
 fi
 
