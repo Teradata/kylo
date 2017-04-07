@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
 /*-
@@ -23,19 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -43,7 +27,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
@@ -52,33 +36,46 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class })
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class})
 public class JcrFeedAllowedActionsTest {
-    
+
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");
 
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private CategoryProvider categoryProvider;
-    
+
     @Inject
     private FeedProvider feedProvider;
 
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
-    
+
     private String categoryName;
     private Feed.ID idA;
     private Feed.ID idB;
     private Feed.ID idC;
-    
+
     @Before
     public void createFeeds() {
         categoryName = metadata.commit(() -> {
@@ -89,7 +86,7 @@ public class JcrFeedAllowedActionsTest {
             cat.getAllowedActions().enableAll(TEST_USER2);
             return cat.getName();
         }, JcrMetadataAccess.SERVICE);
-        
+
         this.idA = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedA");
             feed.setDescription("Feed A");
@@ -97,7 +94,7 @@ public class JcrFeedAllowedActionsTest {
             feed.setState(State.ENABLED);
             return feed.getId();
         }, TEST_USER1);
-        
+
         this.idB = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedB");
             feed.setDescription("Feed B");
@@ -105,7 +102,7 @@ public class JcrFeedAllowedActionsTest {
             feed.setState(State.ENABLED);
             return feed.getId();
         }, TEST_USER2);
-        
+
         this.idC = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedC");
             feed.setDescription("Feed C");
@@ -114,74 +111,74 @@ public class JcrFeedAllowedActionsTest {
             return feed.getId();
         }, TEST_USER2);
     }
-    
+
     @After
     public void cleanup() {
-        metadata.commit(() -> { 
+        metadata.commit(() -> {
             this.feedProvider.deleteFeed(idC);
             this.feedProvider.deleteFeed(idB);
             this.feedProvider.deleteFeed(idA);
         }, MetadataAccess.SERVICE);
     }
-    
+
     @Test
     public void testSeeOnlyOwnFeeds() {
         int feedCnt1 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER1);
-        
+
         assertThat(feedCnt1).isEqualTo(1);
-        
+
         int feedCnt2 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER2);
-        
+
         assertThat(feedCnt2).isEqualTo(2);
     }
-    
+
     @Test
     public void testSeeOwnFeedContentOnly() {
         metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
-            
+
             assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
             assertThat(feedA.getJson()).isNotNull();
             assertThat(feedA.getState()).isNotNull();
-            
+
             Feed feedB = this.feedProvider.getFeed(idB);
-            
+
             assertThat(feedB).isNull();
         }, TEST_USER1);
     }
-    
+
     @Test
     public void testLimitRelationshipResults() {
         metadata.commit(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
             Feed feedB = this.feedProvider.getFeed(idB);
             Feed feedC = this.feedProvider.getFeed(idC);
-            
+
             feedC.addDependentFeed(feedA);
             feedC.addDependentFeed(feedB);
         }, MetadataAccess.SERVICE);
-        
+
         metadata.read(() -> {
             Feed feedC = this.feedProvider.getFeed(idC);
             List<Feed> deps = feedC.getDependentFeeds();
-                            
+
             assertThat(deps).hasSize(1).extracting("id").contains(this.idB);
         }, TEST_USER2);
     }
-    
+
     @Test
     public void testSummaryOnlyRead() {
         metadata.commit(() -> {
             Feed feed = this.feedProvider.findById(idB);
             feed.getAllowedActions().enable(TEST_USER1, FeedAccessControl.ACCESS_FEED);
         }, TEST_USER2);
-        
+
         metadata.read(() -> {
             Feed feed = this.feedProvider.findById(idB);
-            
+
             assertThat(feed.getName()).isNotNull().isEqualTo("FeedB");
             assertThat(feed.getCategory()).isNotNull().hasFieldOrPropertyWithValue("name", this.categoryName);
-            
+
             assertThat(feed.getJson()).isNull();
             assertThat(feed.getState()).isNull();
         }, TEST_USER1);

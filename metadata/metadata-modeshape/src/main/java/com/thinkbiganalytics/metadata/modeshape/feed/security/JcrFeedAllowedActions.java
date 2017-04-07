@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 
 import javax.jcr.Node;
@@ -116,7 +117,10 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
                 //If a user has Edit access for the feed, they need to be able to also Read the template
-                this.feed.getFeedDetails().ifPresent(d -> d.getTemplate().getAllowedActions().enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
+                this.feed.getFeedDetails()
+                    .map(FeedDetails::getTemplate)
+                    .map(FeedManagerTemplate::getAllowedActions)
+                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
                 this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
                 this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {

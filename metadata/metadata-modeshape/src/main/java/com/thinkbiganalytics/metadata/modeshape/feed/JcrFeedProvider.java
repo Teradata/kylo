@@ -183,8 +183,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     
     @Override
     public Feed findById(ID id) {
-        JcrFeed feed = (JcrFeed) super.findById(id);
-        feed.setOpsAccessProvider(this.opsAccessProvider);
+        final JcrFeed feed = (JcrFeed) super.findById(id);
+        if (feed != null) {
+            feed.setOpsAccessProvider(this.opsAccessProvider);
+        }
         return feed;
     }
 

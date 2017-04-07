@@ -76,6 +76,7 @@ public class FeedDetails extends JcrPropertiesEntity {
      */
     public FeedDetails(Node node, FeedSummary summary) {
         super(node);
+        this.summary = summary;
     }
 
     protected JcrFeed getParentFeed() {
