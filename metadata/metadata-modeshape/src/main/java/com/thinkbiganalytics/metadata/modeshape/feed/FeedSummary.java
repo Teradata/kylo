@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 /*-
@@ -23,19 +20,16 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import java.util.Optional;
-
-import javax.jcr.Node;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
-/**
- *
- */
+import java.util.Optional;
+
+import javax.jcr.Node;
+
 public class FeedSummary extends AbstractJcrAuditableSystemEntity {
 
     public static final String NODE_TYPE = "tba:feedSummary";
@@ -43,20 +37,22 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
     public static final String DETAILS = "tba:details";
 
     public static final String CATEGORY = "tba:category";
-    
+
     private FeedDetails details;
     private JcrFeed feed;
-    
+
     public FeedSummary(Node node, JcrFeed feed) {
         super(node);
         this.feed = feed;
     }
-    
+
     public FeedSummary(Node node, JcrCategory category, JcrFeed feed) {
         this(node, feed);
-        setProperty(CATEGORY, category);
+        if (category != null) {
+            setProperty(CATEGORY, category);
+        }
     }
-    
+
     public Optional<FeedDetails> getFeedDetails() {
         if (this.details == null) {
             if (JcrUtil.hasNode(getNode(), DETAILS)) {
@@ -69,7 +65,7 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
             return Optional.of(this.details);
         }
     }
-    
+
     protected Category getCategory(Class<? extends JcrCategory> categoryClass) {
         Category category = null;
         try {

@@ -20,28 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.query.QueryResult;
-
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -97,11 +75,32 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
 
 /**
  * A JCR provider for {@link Feed} objects.
@@ -130,15 +129,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     private MetadataAccess metadataAccess;
 
     @Inject
-    private AccessController accessController;
-    
-    @Inject
     private SecurityRoleProvider roleProvider;
-    
+
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
-    
-    @Inject 
+
+    @Inject
     private FeedOpsAccessControlProvider opsAccessProvider;
 
     @Inject
@@ -158,7 +154,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
      */
@@ -168,19 +164,19 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setOpsAccessProvider(this.opsAccessProvider);
         return feed;
     }
-    
+
     @Override
     public List<Feed> findAll() {
         List<Feed> feeds = super.findAll();
         return feeds.stream()
-                        .map(JcrFeed.class::cast)
-                        .map(feed -> { 
-                            feed.setOpsAccessProvider(opsAccessProvider);
-                            return feed;
-                        })
-                        .collect(Collectors.toList());
+            .map(JcrFeed.class::cast)
+            .map(feed -> {
+                feed.setOpsAccessProvider(opsAccessProvider);
+                return feed;
+            })
+            .collect(Collectors.toList());
     }
-    
+
     @Override
     public Feed findById(ID id) {
         final JcrFeed feed = (JcrFeed) super.findById(id);
@@ -214,7 +210,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed feed = (JcrFeed) findById(feedId);
         JcrFeedDestination dest = (JcrFeedDestination) feed.getDestination(dsId);
-    
+
         if (dest != null) {
             feed.removeFeedDestination(dest);
         }
@@ -298,7 +294,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
 
         String feedParentPath = category.getFeedParentPath();
-        boolean newFeed = ! hasEntityNode(feedParentPath, feedSystemName);
+        boolean newFeed = !hasEntityNode(feedParentPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
 
@@ -309,7 +305,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         if (newFeed) {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                            .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 
@@ -325,13 +321,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
         String desc = feed.getQualifiedName();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
-                                    ? SecurityContextHolder.getContext().getAuthentication()
-                                    : null;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                FeedChange change = new FeedChange(changeType, desc,id, state);
+                FeedChange change = new FeedChange(changeType, desc, id, state);
                 FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
             }
@@ -483,7 +477,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
         return null;
     }
-    
+
 
     @Override
     public List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId) {
@@ -559,9 +553,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean enableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        
+
         feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-        
+
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
             //Enable any SLAs on this feed
@@ -580,9 +574,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        
+
         feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-        
+
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
             //disable any SLAs on this feed
@@ -601,9 +595,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public void deleteFeed(ID feedId) {
         JcrFeed feed = (JcrFeed) getFeed(feedId);
-        
+
         feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-        
+
         if (feed != null) {
             addPostFeedChangeAction(feed, ChangeType.DELETE);
             deleteById(feedId);
@@ -613,7 +607,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public void delete(Feed feed) {
         feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
-        
+
         addPostFeedChangeAction(feed, ChangeType.DELETE);
 
         // Remove dependent feeds
@@ -626,7 +620,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         if (template != null) {
             template.removeFeed(feed);
         }
-        
+
         super.delete(feed);
     }
 
@@ -654,17 +648,17 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             HadoopSecurityGroup securityGroup = (HadoopSecurityGroup) o;
             securityGroupNames.add(securityGroup.getName());
         }
-        
+
         Map<String, Object> merged = feed.mergeProperties(properties);
-        
-        PropertyChange change = new PropertyChange(feed.getId().getIdValue(), 
-                                                   feed.getCategory().getName(), 
-                                                   feed.getSystemName(), 
-                                                   securityGroupNames, 
-                                                   feed.getProperties(), 
+
+        PropertyChange change = new PropertyChange(feed.getId().getIdValue(),
+                                                   feed.getCategory().getName(),
+                                                   feed.getSystemName(),
+                                                   securityGroupNames,
+                                                   feed.getProperties(),
                                                    properties);
         this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
-        
+
         return merged;
     }
 
@@ -729,6 +723,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 while (catItr.hasNext()) {
                     Node catNode = (Node) catItr.next();
                     NodeIterator feedItr = null;
+
+                    if (catNode.hasNode(JcrCategory.DETAILS)) {
+                        catNode = catNode.getNode(JcrCategory.DETAILS);
+                    }
 
                     if (this.name != null) {
                         feedItr = catNode.getNodes(this.name);

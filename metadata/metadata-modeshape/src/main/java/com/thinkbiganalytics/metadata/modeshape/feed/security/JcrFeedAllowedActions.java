@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
 /*-
@@ -23,19 +20,10 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
-
-import javax.jcr.Node;
-import javax.jcr.security.Privilege;
-
-import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.FeedData;
 import com.thinkbiganalytics.metadata.modeshape.feed.FeedDetails;
@@ -46,6 +34,14 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
+
+import java.security.Principal;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
+
+import javax.jcr.Node;
+import javax.jcr.security.Privilege;
 
 
 /**
@@ -60,12 +56,12 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         super(allowedActionsNode);
         this.feed = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeed.class);
     }
-    
+
     public JcrFeedAllowedActions(Node allowedActionsNode, FeedOpsAccessControlProvider opsAccessProvider) {
         super(allowedActionsNode);
         this.feed = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeed.class, opsAccessProvider);
     }
-    
+
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
         enableEntityAccess(principal, actions.stream());
@@ -127,7 +123,10 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
                 //If a user has Read access for the feed, they need to be able to also Read the template
-                this.feed.getFeedDetails().ifPresent(d -> d.getTemplate().getAllowedActions().enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
+                this.feed.getFeedDetails()
+                    .map(FeedDetails::getTemplate)
+                    .map(FeedManagerTemplate::getAllowedActions)
+                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
                 this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
                 this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
             } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
@@ -142,7 +141,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         AtomicBoolean summaryEdit = new AtomicBoolean(false);
         AtomicBoolean detailsEdit = new AtomicBoolean(false);
         AtomicBoolean accessOps = new AtomicBoolean(false);
-        
+
         actions.forEach(action -> {
             accessOps.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_OPS));
             summaryAccess.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_FEED));
@@ -150,13 +149,13 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
             summaryEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_SUMMARY));
             detailsEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_DETAILS));
         });
-        
+
         if (accessOps.get()) {
             this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
         } else {
             this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
         }
-        
+
         if (detailsEdit.get()) {
             this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
             this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
