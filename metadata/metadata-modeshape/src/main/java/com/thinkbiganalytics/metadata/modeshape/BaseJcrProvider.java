@@ -192,7 +192,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 return null;
             }
         } catch (AccessDeniedException e) {
-            log.debug("Access denided to feed with ID: {}", id, e);
+            log.debug("Access denied to feed with ID: {}", id, e);
             return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);

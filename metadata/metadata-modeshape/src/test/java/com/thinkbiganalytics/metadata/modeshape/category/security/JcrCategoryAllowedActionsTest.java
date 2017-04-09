@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.category.security;
 
 /*-
@@ -23,14 +20,13 @@ package com.thinkbiganalytics.metadata.modeshape.category.security;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
+import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,49 +35,33 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.google.common.base.Functions;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
-import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
-import com.thinkbiganalytics.security.UsernamePrincipal;
-import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
-/**
- *
- */
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrCategoryAllowedActionsTestConfig.class })
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
 public class JcrCategoryAllowedActionsTest {
-    
+
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");
 
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private CategoryProvider categoryProvider;
-    
-    @Inject
-    private AllowedEntityActionsProvider actionsProvider;
-    
+
     private Category.ID idA;
     private Category.ID idB;
     private Category.ID idC;
-    
+
     @Before
     public void createCategories() {
-        metadata.commit(() -> {
-            actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
-            actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
-        }, MetadataAccess.SERVICE);
-        
         idA = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testA");
             cat.setDisplayName("Test A");
@@ -89,7 +69,7 @@ public class JcrCategoryAllowedActionsTest {
             cat.setUserProperties(Arrays.asList("a1", "a2", "a3").stream().collect(Collectors.toMap(Object::toString, s -> s + " value")), Collections.emptySet());
             return cat.getId();
         }, TEST_USER1);
-        
+
         idB = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testB");
             cat.setDisplayName("Test B");
@@ -97,7 +77,7 @@ public class JcrCategoryAllowedActionsTest {
             cat.setUserProperties(Arrays.asList("b1", "b2", "b3").stream().collect(Collectors.toMap(Object::toString, s -> s + " value")), Collections.emptySet());
             return cat.getId();
         }, TEST_USER2);
-        
+
         idC = metadata.commit(() -> {
             Category cat = categoryProvider.ensureCategory("testC");
             cat.setDisplayName("Test C");
@@ -106,53 +86,56 @@ public class JcrCategoryAllowedActionsTest {
             return cat.getId();
         }, TEST_USER2);
     }
-    
+
     @After
     public void cleanup() {
-        metadata.commit(() -> { 
+        metadata.commit(() -> {
+            categoryProvider.deleteById(categoryProvider.findBySystemName("testA").getId());
+            categoryProvider.deleteById(categoryProvider.findBySystemName("testB").getId());
+            categoryProvider.deleteById(categoryProvider.findBySystemName("testC").getId());
         }, MetadataAccess.SERVICE);
     }
-    
+
     @Test
     public void testSeeOnlyOwnCategories() {
         int catCnt1 = metadata.read(() -> this.categoryProvider.findAll().size(), TEST_USER1);
-        
+
         assertThat(catCnt1).isEqualTo(1);
-        
+
         int catCnt2 = metadata.read(() -> this.categoryProvider.findAll().size(), TEST_USER2);
-        
+
         assertThat(catCnt2).isEqualTo(2);
     }
-    
+
     @Test
     public void testSeeOwnContentOnly() {
         metadata.read(() -> {
             Category catA = this.categoryProvider.findById(idA);
-            
+
             assertThat(catA.getDisplayName()).isNotNull().isEqualTo("Test A");
             assertThat(catA.getDescription()).isNotNull().isEqualTo("Test A descr");
             assertThat(catA.getSecurityGroups()).isNotNull();
             assertThat(catA.getUserProperties()).isNotNull();
-            
+
             Category catB = this.categoryProvider.findById(idB);
-            
+
             assertThat(catB).isNull();
         }, TEST_USER1);
     }
-    
+
     @Test
     public void testSummaryOnlyRead() {
         Object[] nameDescr = metadata.commit(() -> {
             Category cat = this.categoryProvider.findById(idB);
             cat.getAllowedActions().enable(TEST_USER1, CategoryAccessControl.ACCESS_CATEGORY);
-            return new String[] { cat.getName(), cat.getDescription() };
+            return new String[]{cat.getName(), cat.getDescription()};
         }, TEST_USER2);
-        
+
         metadata.read(() -> {
             Category cat = this.categoryProvider.findById(idB);
-            
+
             assertThat(cat).extracting("name", "description").contains(nameDescr);
-            
+
             assertThat(cat.getUserProperties()).isEmpty();
         }, TEST_USER1);
     }

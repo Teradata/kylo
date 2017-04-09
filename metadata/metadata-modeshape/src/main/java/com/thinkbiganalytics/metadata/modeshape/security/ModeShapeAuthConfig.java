@@ -1,25 +1,4 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.security;
-
-import java.security.Principal;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.Session;
-import javax.jcr.security.Privilege;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 
 /*-
  * #%L
@@ -30,9 +9,9 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,6 +20,9 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -52,12 +34,20 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+
 /**
  * Defines ModeShape-managed implementations of security infrastructure components.
  */
 @Configuration
 public class ModeShapeAuthConfig {
-    
+
     @Inject
     private MetadataAccess metadata;
 
@@ -87,7 +77,7 @@ public class ModeShapeAuthConfig {
     @Order(PostMetadataConfigAction.LATE_ORDER - 10)
     public PostMetadataConfigAction servicesAllowedActionsSetup() {
         // This action copies the prototype services actions to the single instance set of actions for all services access control. 
-        return () -> metadata.commit(() -> { 
+        return () -> metadata.commit(() -> {
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
             Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
 

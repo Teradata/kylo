@@ -1,5 +1,54 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
+/*-
+ * #%L
+ * thinkbig-metadata-modeshape
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,64 +61,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.version.Version;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.testng.Assert;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-
-/*-
- * #%L
- * thinkbig-metadata-modeshape
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
-import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
-import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
-
-/**
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrPropertyTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
@@ -82,8 +73,6 @@ public class JcrPropertyTest {
     DatasourceProvider datasourceProvider;
     @Inject
     FeedProvider feedProvider;
-    @Inject
-    FeedManagerTemplateProvider feedManagerTemplateProvider;
     @Inject
     TagProvider tagProvider;
     @Inject

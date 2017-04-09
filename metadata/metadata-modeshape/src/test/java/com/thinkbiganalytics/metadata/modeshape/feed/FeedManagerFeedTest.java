@@ -22,7 +22,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
@@ -33,7 +32,6 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.JcrPropertyTest;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
@@ -54,17 +52,12 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-/**
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
 public class FeedManagerFeedTest {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerFeedTest.class);
-
-    @Inject
-    CategoryProvider categoryProvider;
 
     @Inject
     FeedProvider feedProvider;
@@ -125,18 +118,18 @@ public class FeedManagerFeedTest {
 
         int categories = numberOfFeeds / numberOfFeedsPerCategory;
         //create all the categories
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
             for (int i = 1; i <= categories; i++) {
                 Category category = feedTestUtil.createCategory("category_" + i);
             }
-        });
+        }, MetadataAccess.ADMIN);
 
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
             FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
-        });
+        }, MetadataAccess.ADMIN);
 
         //create the feeds
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
 
             FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
             Category category = null;
@@ -151,7 +144,7 @@ public class FeedManagerFeedTest {
                 }
                 Feed feed = feedTestUtil.findOrCreateFeed(category, "feed_" + i, template);
             }
-        });
+        }, MetadataAccess.ADMIN);
 
         //now query it
         long time = System.currentTimeMillis();
@@ -164,7 +157,6 @@ public class FeedManagerFeedTest {
         log.info("Time to query {} feeds was {} ms", size, (stopTime - time));
 
     }
-
 
     @Test
     public void testFeedDatasource() {
