@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,7 +29,7 @@ import java.util.List;
 /**
  * Spring data repository to access the {@link JpaOpsManagerFeedHealth}
  */
-public interface FeedHealthRepository extends SecuredFeedRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
+public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
 
 
     @Query("select h from JpaOpsManagerFeedHealth as h where h.feedName = :feedName")
