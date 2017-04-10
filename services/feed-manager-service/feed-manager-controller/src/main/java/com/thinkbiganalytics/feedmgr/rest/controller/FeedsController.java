@@ -217,12 +217,6 @@ public class FeedsController {
             .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
     }
 
-    @Inject
-    private Model model;
-
-    @Inject
-    private DatasourceModelTransform datasourceTransform;
-
     @GET
     @Path("{id}/initstatus")
     @Produces(MediaType.APPLICATION_JSON)
