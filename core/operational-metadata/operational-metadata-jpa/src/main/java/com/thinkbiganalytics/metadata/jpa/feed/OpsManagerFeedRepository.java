@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Spring data repository for accessing {@link JpaOpsManagerFeed}
  */
-public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
+public interface OpsManagerFeedRepository extends SecuredFeedRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
 
     JpaOpsManagerFeed findByName(String name);

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,13 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
+import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
 import org.junit.Assert;
@@ -39,7 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import java.util.stream.StreamSupport;
 
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -55,9 +57,8 @@ public class OpsManagerFeedRepositoryTest {
     @Autowired
     FeedOpsAccessControlRepository aclRepo;
 
-    @Before
-    public void setup() {
-    }
+
+    //TODO test counts/deletes etc
 
 
 
@@ -184,6 +185,120 @@ public class OpsManagerFeedRepositoryTest {
         Assert.assertEquals(2, feedNames.size());
         Assert.assertTrue(feedNames.contains("feed1-name"));
         Assert.assertTrue(feedNames.contains("feed2-name"));
+    }
+
+
+
+
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @Test
+    public void findAll_NoMatchingRoleIsSetInAclEntry() throws Exception {
+        JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
+        repo.save(feed);
+
+        BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
+
+        JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(dladminUserAcl);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(nonMatching);
+
+        Iterable<JpaOpsManagerFeed> all = repo.findAll();
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("feed-name")));
+    }
+
+
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @Test
+    public void findAllFilter_NoMatchingRoleIsSetInAclEntry() throws Exception {
+        JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
+        repo.save(feed);
+
+        BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
+
+        JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(dladminUserAcl);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(nonMatching);
+
+
+        QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name: feed-name"));
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("feed-name")));
+    }
+
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @Test
+    public void findAllFilter_MatchingRoleButNoMatchingFilter() throws Exception {
+        JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
+        repo.save(feed);
+
+        BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
+
+        JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(dladminUserAcl);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(nonMatching);
+
+
+        QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==non-matching-feed-name"));
+
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("feed-name")));
+
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
+    }
+
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @Test
+    public void findAllFilter_MatchingRoleAndMatchingFilter() throws Exception {
+        JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
+        repo.save(feed);
+
+        BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
+
+        JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(dladminUserAcl);
+
+        JpaFeedOpsAclEntry matchingRole = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(matchingRole);
+
+
+        JpaOpsManagerFeed nonMatchingFeed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "non-matching-feed-name");
+        repo.save(nonMatchingFeed);
+
+        BaseFeed.FeedId nonMatchingFeedId = new BaseFeed.FeedId(nonMatchingFeed.getId().getUuid());
+
+        JpaFeedOpsAclEntry dladminUserAcl1 = new JpaFeedOpsAclEntry(nonMatchingFeedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(dladminUserAcl1);
+
+        JpaFeedOpsAclEntry matchingRole1 = new JpaFeedOpsAclEntry(nonMatchingFeedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(matchingRole1);
+
+
+        QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==feed-name"));
+
+        Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("feed-name")));
+
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+            .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
     }
 
 }

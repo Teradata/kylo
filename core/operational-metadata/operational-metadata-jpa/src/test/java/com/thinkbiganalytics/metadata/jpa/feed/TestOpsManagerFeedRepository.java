@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,16 +20,16 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 
 import java.util.List;
 
 /**
- * Created by ru186002 on 07/04/2017.
+ * This is an example repository which shows how to refer to principal roles in @Query annotations and also
+ * to extend SecuredFeedRepository which knows how to construct queries with reference to FeedAclIndex table
  */
-public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
+public interface TestOpsManagerFeedRepository extends SecuredFeedRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
     @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
     List<String> getFeedNamesWithPrincipal();
