@@ -103,7 +103,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             AccessControlService.getAllowedActions()
                     .then(function(actionSet) {
                         self.allowAdmin = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
-                     //   self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
                     });
 
 

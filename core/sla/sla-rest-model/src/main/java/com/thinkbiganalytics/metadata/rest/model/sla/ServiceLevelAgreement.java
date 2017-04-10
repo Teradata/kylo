@@ -60,6 +60,11 @@ public class ServiceLevelAgreement {
      */
     private List<String> slaCheckErrors;
 
+    /**
+     * Flag to indicate the user can edit this SLA
+     */
+    private boolean canEdit;
+
     public ServiceLevelAgreement() {
         this.defaultGroup = new ObligationGroup("REQUIRED");
         this.groups = Lists.newArrayList(this.defaultGroup);
@@ -187,5 +192,14 @@ public class ServiceLevelAgreement {
 
     public void setSlaCheckErrors(List<String> slaCheckErrors) {
         this.slaCheckErrors = slaCheckErrors;
+    }
+
+
+    public boolean isCanEdit() {
+        return canEdit;
+    }
+
+    public void setCanEdit(boolean canEdit) {
+        this.canEdit = canEdit;
     }
 }

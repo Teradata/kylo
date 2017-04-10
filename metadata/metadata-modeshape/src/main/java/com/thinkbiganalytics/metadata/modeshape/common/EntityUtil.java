@@ -57,7 +57,7 @@ public class EntityUtil {
     }
 
     public static String pathForFeed(String categorySystemName, String feedSystemName) {
-        return JcrUtil.path("/metadata", "feeds", categorySystemName, feedSystemName).toString();
+        return JcrUtil.path(pathForCategoryDetails(categorySystemName),feedSystemName).toString();
     }
 
     public static String pathForFeedSource(String categorySystemName, String feedSystemName) {

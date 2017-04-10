@@ -51,24 +51,24 @@ public class AccessControlledEntityTransform {
     @Inject
     private UserService userService;
 
-    public EntityAccessRoleMembership toEntityAccessRoleMembership(RoleMembership roleMembership){
-        EntityAccessRoleMembership entityAccessRoleMembership = new EntityAccessRoleMembership(roleMembership.getRole().getSystemName(),roleMembership.getRole().getTitle(),roleMembership.getRole().getDescription());
+    public EntityAccessRoleMembership toEntityAccessRoleMembership(RoleMembership roleMembership) {
+        EntityAccessRoleMembership
+            entityAccessRoleMembership =
+            new EntityAccessRoleMembership(roleMembership.getRole().getSystemName(), roleMembership.getRole().getTitle(), roleMembership.getRole().getDescription());
         roleMembership.getUsers().stream().forEach(user -> {
-                Optional<UserPrincipal> userPrincipal = userService.getUser(user);
-                if(userPrincipal.isPresent()){
-                    entityAccessRoleMembership.addUser(userPrincipal.get());
-                }
-                else {
-                    entityAccessRoleMembership.addUser(user);
-                }
+            Optional<UserPrincipal> userPrincipal = userService.getUser(user);
+            if (userPrincipal.isPresent()) {
+                entityAccessRoleMembership.addUser(userPrincipal.get());
+            } else {
+                entityAccessRoleMembership.addUser(user);
+            }
         });
 
         roleMembership.getGroups().stream().forEach(group -> {
             Optional<GroupPrincipal> groupPrincipal = userService.getGroup(group);
-            if(groupPrincipal.isPresent()){
+            if (groupPrincipal.isPresent()) {
                 entityAccessRoleMembership.addGroup(groupPrincipal.get());
-            }
-            else {
+            } else {
                 entityAccessRoleMembership.addGroup(group);
             }
         });
@@ -79,41 +79,41 @@ public class AccessControlledEntityTransform {
 
     /**
      * get the Access Control from the Domain Model and apply it to the rest model
-     * @param domain the domain
+     *
+     * @param domain    the domain
      * @param restModel the rest model
      */
-    public  void applyAccessControlToRestModel(AccessControlled domain, EntityAccessControl restModel){
-        if(domain.getAllowedActions() != null &&  domain.getAllowedActions().getAvailableActions() != null){
+    public void applyAccessControlToRestModel(AccessControlled domain, EntityAccessControl restModel) {
+        if (domain.getAllowedActions() != null && domain.getAllowedActions().getAvailableActions() != null) {
             ActionGroup allowed = actionsTransform.toActionGroup(null).apply(domain.getAllowedActions());
             restModel.setAllowedActions(allowed);
         }
 
-        if(domain.getRoleMemberships() != null ){
+        if (domain.getRoleMemberships() != null) {
             Map<String, RoleMembership> roleAssignmentMap = new HashMap<>();
             domain.getRoleMemberships().stream().forEach(membership -> {
-
 
                 String systemRoleName = membership.getRole().getSystemName();
                 String name = membership.getRole().getTitle();
                 String desc = membership.getRole().getDescription();
 
                 membership.getMembers().stream().forEach(member -> {
-                    roleAssignmentMap.putIfAbsent(systemRoleName, new RoleMembership(systemRoleName, name,desc));
+                    roleAssignmentMap.putIfAbsent(systemRoleName, new RoleMembership(systemRoleName, name, desc));
+
                     RoleMembership accessRoleAssignment = roleAssignmentMap.get(systemRoleName);
-                    if(member instanceof UsernamePrincipal){
-                            accessRoleAssignment.addUser(member.getName());
+                    if (member instanceof UsernamePrincipal) {
+                        accessRoleAssignment.addUser(member.getName());
+                    } else {
+                        accessRoleAssignment.addGroup(member.getName());
                     }
-                    else {
-                                accessRoleAssignment.addGroup(member.getName());
-                         }
                 });
 
             });
-                restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
+            restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
         }
         Principal owner = domain.getOwner();
         Optional<UserPrincipal> userPrincipal = userService.getUser(owner.getName());
-        if(userPrincipal.isPresent()) {
+        if (userPrincipal.isPresent()) {
             restModel.setOwner(userPrincipal.get());
         }
     }

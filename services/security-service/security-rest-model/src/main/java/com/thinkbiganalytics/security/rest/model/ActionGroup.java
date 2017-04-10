@@ -23,14 +23,19 @@ package com.thinkbiganalytics.security.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -76,5 +81,10 @@ public class ActionGroup implements Serializable {
         return this.actions.stream()
             .filter(a -> a.getSystemName().equals(name))
             .findFirst();
+    }
+
+    @JsonIgnore
+    public boolean hasAction(String action) {
+        return getActions().stream().filter(a -> a.hasAction(action)).findFirst().isPresent();
     }
 }

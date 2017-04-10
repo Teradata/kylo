@@ -52,6 +52,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
@@ -82,6 +83,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -597,8 +599,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
+                boolean canEditDetails = feedSummary.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName());
+                Map<String, Object> labelValueProperties = new HashMap<>();
+                labelValueProperties.put("feed:disabled", isDisabled);
+                labelValueProperties.put("feed:editDetails", canEditDetails);
                 feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) " : ""), feedSummary.getCategoryAndFeedSystemName(),
-                                                 isDisabled ? "This feed is currently disabled" : ""));
+                                                 isDisabled ? "This feed is currently disabled" : "", labelValueProperties));
             }
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);

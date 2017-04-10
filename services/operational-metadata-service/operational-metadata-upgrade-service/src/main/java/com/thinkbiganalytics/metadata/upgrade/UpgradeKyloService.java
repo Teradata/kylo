@@ -154,7 +154,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * checks the upgrade for Kylo and updates the version if needed
      */
     public void upgradeCheck() {
-        KyloVersion version = kyloVersionProvider.getCurrentVersion();
+        KyloVersion version = null; //kyloVersionProvider.getCurrentVersion();
 
         if (version == null) {
             setupFreshInstall();
@@ -247,7 +247,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    OperationsAccessControl.ADMIN_OPS,
                                    FeedServicesAccessControl.ACCESS_CATEGORIES,
                                    FeedServicesAccessControl.ACCESS_FEEDS,
-                                   FeedServicesAccessControl.ACCESS_TEMPLATES);
+                                   FeedServicesAccessControl.ACCESS_TEMPLATES,
+                                   FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
                     allowed.enable(designersGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
                                    FeedServicesAccessControl.CREATE_FEEDS,
@@ -258,7 +260,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.EDIT_TEMPLATES,
                                    FeedServicesAccessControl.IMPORT_TEMPLATES,
                                    FeedServicesAccessControl.EXPORT_TEMPLATES,
-                                   FeedServicesAccessControl.ADMIN_TEMPLATES);
+                                   FeedServicesAccessControl.ADMIN_TEMPLATES,
+                                   FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
                     allowed.enable(analystsGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
                                    FeedServicesAccessControl.CREATE_FEEDS,
@@ -266,7 +270,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
                                    FeedServicesAccessControl.ACCESS_TEMPLATES,
-                                   FeedServicesAccessControl.ACCESS_DATASOURCES);
+                                   FeedServicesAccessControl.ACCESS_DATASOURCES,
+                                   FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
                 });
         }, MetadataAccess.SERVICE);
     }

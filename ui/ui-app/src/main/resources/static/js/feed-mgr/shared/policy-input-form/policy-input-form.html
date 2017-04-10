@@ -38,11 +38,12 @@
           {{value.label}}
         </md-option>
       </md-select>
-
+      <div ng-if="property.errorMessage" class="hint">
+        {{property.errorMessage}}
+      </div>
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
       </div>
-      formKey
     </md-input-container>
 
     <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">

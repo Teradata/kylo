@@ -79,5 +79,11 @@ public class RoleMembership {
     public void addGroup(String group){
         getGroups().add(group);
     }
-    
+
+
+    public boolean hasAction(String action){
+        return role.getAllowedActions() != null ? role.getAllowedActions().hasAction(action) : false;
+
+    }
+
 }

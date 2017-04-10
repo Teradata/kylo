@@ -79,6 +79,18 @@ define([], function () {
         this.TABLES_ACCESS = "accessTables";
 
         /**
+         * Allows users to access the SLA page
+         * @type {string}
+         */
+        this.SLA_ACCESS = "accessServiceLevelAgreements";
+
+        /**
+         * Allows users to create new Service Level agreements
+         * @type {string}
+         */
+        this.SLA_CREATE = "createServiceLevelAgreements";
+
+        /**
          * Allows access to feed templates.
          * @type {string}
          */
@@ -202,7 +214,7 @@ define([], function () {
             GROUPS:{state:"groups",permissions:[this.USERS_GROUPS_ACCESS]},
             GROUP_DETAILS:{state:"group-details",permissions:[this.USERS_GROUPS_ACCESS]},
             VISUAL_QUERY:{state:"visual-query",permissions:[]},
-            SERVICE_LEVEL_AGREEMENTS:{state:"service-level-agreements",permissions:[this.FEEDS_ACCESS]},
+            SERVICE_LEVEL_AGREEMENTS:{state:"service-level-agreements",permissions:[this.SLA_ACCESS]},
             TABLES:{state:"tables",permissions:[this.TABLES_ACCESS]},
             TABLE:{state:"table",permissions:[this.TABLES_ACCESS]},
             DATASOURCES:{state:"datasources",permissions:[this.DATASOURCE_ACCESS]},

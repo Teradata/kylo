@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessContro
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -123,7 +124,11 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         //ensure the user has rights to create feeds under this category
         metadataAccess.read(() -> {
-            Category domainCategory = categoryProvider.findBySystemName(feedMetadata.getSystemCategoryName());
+            Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
+            if (domainCategory == null) {
+                //throw exception
+                throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
+            }
             //Query for Category and ensure the user has access to create feeds on that category
             domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
 

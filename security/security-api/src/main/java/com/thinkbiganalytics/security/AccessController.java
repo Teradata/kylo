@@ -56,4 +56,13 @@ public interface AccessController {
      * @param actions    the actions being checked
      */
     void checkPermission(String moduleName, Set<Action> actions);
+
+    /**
+     * Check to see if the user has an service permission for a given module
+     * @param moduleName the service module to check
+     * @param action the permission to check
+     * @param others additional permissions
+     * @return true if valid, false if not
+     */
+    boolean hasPermission(String moduleName, Action action, Action... others);
 }

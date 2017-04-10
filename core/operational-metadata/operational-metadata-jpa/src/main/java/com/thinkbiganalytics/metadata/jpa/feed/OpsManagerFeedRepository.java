@@ -47,9 +47,9 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
 
     @Procedure(name = "OpsManagerFeed.deleteFeedJobs")
-    Integer deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
+    void deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
 
     @Procedure(name = "OpsManagerFeed.abandonFeedJobs")
-    Integer abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage);
+    void abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage);
 
 }

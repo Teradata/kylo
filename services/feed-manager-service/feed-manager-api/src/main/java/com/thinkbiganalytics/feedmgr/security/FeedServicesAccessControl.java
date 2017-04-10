@@ -82,4 +82,12 @@ public interface FeedServicesAccessControl {
     Action ADMIN_DATASOURCES = ACCESS_DATASOURCES.subAction("adminDatasources",
                                                             "Administer Data Sources",
                                                             "Allows the administration of data sources");
+
+    Action ACCESS_SERVICE_LEVEL_AGREEMENTS = FEEDS_SUPPORT.subAction("accessServiceLevelAgreements",
+                                                                     "Access Service Level Agreements",
+                                                                     "Allows access to service level agreements");
+
+    Action CREATE_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("createServiceLevelAgreements",
+                                                                                       "Edit Service Level Agreements",
+                                                                                       "Allows create service level agreements");
 }

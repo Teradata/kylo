@@ -63,9 +63,16 @@ public class ImmutableAllowedActions implements AllowedActions {
         return availableActions;
     }
 
+
+    @Override
+    public boolean hasPermission(Action action, Action... more) {
+        return  this.availableActions.stream()
+            .anyMatch(a -> Stream.concat(Stream.of(action), Arrays.stream(more)).anyMatch(b -> a.implies(b)));
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.AllowedActions#checkPermission(java.util.Set)
-     */
+         * @see com.thinkbiganalytics.security.action.AllowedActions#checkPermission(java.util.Set)
+         */
     @Override
     public void checkPermission(Set<Action> actions) {
         this.availableActions.stream()

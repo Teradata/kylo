@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.MetadataField;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -127,6 +128,9 @@ public class FeedCategory extends EntityAccessControl {
      * @since 0.4.0
      */
     public Set<UserField> getUserFields() {
+        if(userFields == null){
+            userFields = new HashSet<>();
+        }
         return userFields;
     }
 

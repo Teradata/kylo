@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
@@ -78,5 +79,10 @@ public class EntityAccessControl {
 
     public void setOwner(UserPrincipal owner) {
         this.owner = owner;
+    }
+
+    @JsonIgnore
+    public boolean hasAction(String action) {
+        return getAllowedActions() != null && getAllowedActions().hasAction(action);
     }
 }

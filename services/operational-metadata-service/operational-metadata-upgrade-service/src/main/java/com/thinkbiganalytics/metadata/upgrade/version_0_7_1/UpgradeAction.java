@@ -119,6 +119,7 @@ public class UpgradeAction implements UpgradeState {
                     // Loop is needed because sns is specified for node type
                     List<Node> feedSourceNodes = JcrUtil.getNodeList(feedNode, "tba:sources");
                     for (Node feedSourceNode: feedSourceNodes) {
+                            JcrTools t = new JcrTools();
 
                         //TODO: Fix before final merge to master
                         //javax.jcr.PathNotFoundException for <feedSourceNode> in workspace "default"

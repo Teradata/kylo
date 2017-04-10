@@ -20,14 +20,6 @@ package com.thinkbiganalytics.feedmgr.service.category;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
@@ -42,6 +34,14 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.security.AccessController;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * An implementation of {@link FeedManagerCategoryService} backed by a {@link CategoryProvider}.
@@ -121,7 +121,9 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             ///update access control
             //TODO only do this when modifying the access control
-            category.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(category.getId(),roleMembershipChange));
+            if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+                category.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(category.getId(), roleMembershipChange));
+            }
 
             return domainCategory.getId();
         });

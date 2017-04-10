@@ -48,6 +48,14 @@ public interface AllowedActions {
     List<AllowableAction> getAvailableActions();
 
     /**
+     * validate a user has a given permission(s)
+     * @param action the action to check
+     * @param more additional actions to check
+     * @return true if user has the permission(s), false if not
+     */
+    boolean hasPermission(Action action, Action... more);
+
+    /**
      * Checks whether the given actions are implied by this set of actions based on the current
      * security context, i.e. the principals associates with the current user executing the current thread.
      *

@@ -4,7 +4,8 @@
  *      "metadata"
  *          "feeds"
  *              categorySystemName*
- *                  feedSystemName*
+ *                  tba:details
+ *                       feedSystemName*
  *          "datasources"
  *              "hive"
  *                  HiveTableDatasource*
@@ -60,6 +61,7 @@
  *                     "roles"
  *                          role*
  *                              allowedActions
+ *          "templates"
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>

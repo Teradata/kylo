@@ -80,10 +80,10 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants'], function
                 function buildFeedManagerMenu() {
                     var menu = ({type:'toggle', text: "Feed Manager",narrowText:'Feed',expanded:true,elementId:'toggle_feed_manager'});
                     var links = [];
-                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessConstants.FEEDS_ACCESS});
-                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.CATEGORIES_ACCESS});
-                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.TABLES_ACCESS});
-                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.FEEDS_ACCESS});
+                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessConstants.UI_STATES.FEEDS.permissions});
+                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
+                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.UI_STATES.TABLES.permissions});
+                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                   //  links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission: AccessControlService.FEED_MANAGER_ACCESS});
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;

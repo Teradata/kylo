@@ -72,6 +72,8 @@ public class FeedManagerSecurityConfiguration {
                                 .action(FeedServicesAccessControl.EXPORT_TEMPLATES)
                                 .action(FeedServicesAccessControl.ADMIN_TEMPLATES)
                                 .action(FeedServicesAccessControl.ACCESS_DATASOURCES)
+                                .action(FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS)
+                                .action(FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS)
                                 .action(FeedServicesAccessControl.CREATE_DATASOURCES)
                                 .add()
                             .module(AllowedActions.FEED)

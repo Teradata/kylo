@@ -45,6 +45,9 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -83,6 +86,9 @@ public class ExportImportFeedService {
 
     @Inject
     MetadataService metadataService;
+
+    @Inject
+    CategoryProvider categoryProvider;
 
     @Inject
     MetadataAccess metadataAccess;
@@ -353,8 +359,26 @@ public class ExportImportFeedService {
                 statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist.", false);
                 valid = false;
             } else {
-                metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
-                statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
+
+                //validate user has write access to create feeds under this category
+
+                //ensure the user has rights to create feeds under this category
+                valid = metadataAccess.read(() -> {
+                    Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
+                    //Query for Category and ensure the user has access to create feeds on that category
+                    if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
+                        importFeed.setValid(false);
+                        statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
+                        return false;
+                    } else {
+                        return true;
+                    }
+
+                });
+                if (valid) {
+                    metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
+                    statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
+                }
             }
         }
         completeSection(importOptions, ImportSection.Section.VALIDATE_FEED_CATEGORY);
@@ -413,6 +437,7 @@ public class ExportImportFeedService {
                     //get/create category
                     FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
                     if (category == null) {
+                        metadata.getCategory().setId(null);
                         metadataService.saveCategory(metadata.getCategory());
                     } else {
                         metadata.setCategory(category);

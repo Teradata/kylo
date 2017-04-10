@@ -24,6 +24,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
@@ -37,6 +39,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -48,11 +51,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Transforms to/from  Domain/Rest
  */
 public class ServiceLevelAgreementModelTransform {
+
+
+    @Inject
+    private AccessController accessController;
 
     public static final Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement> DOMAIN_TO_SLA
         = new Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement>() {
@@ -249,13 +257,22 @@ public class ServiceLevelAgreementModelTransform {
     public FeedServiceLevelAgreement toModel(ServiceLevelAgreement domain, Set<com.thinkbiganalytics.metadata.api.feed.Feed> feeds, boolean deep) {
         com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain, deep);
         FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
+        boolean canEdit = false;
         if (feeds != null && !feeds.isEmpty()) {
             final Set<Feed> feedModels = feeds.stream()
                 .filter(feed -> feed != null)
                 .map(model::domainToFeed)
                 .collect(Collectors.toSet());
             feedServiceLevelAgreement.setFeeds(feedModels);
+
+            //set the flag on the sla edit to true only if the user has access to edit the feeds assigned to this sla
+            canEdit = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.EDIT_DETAILS));
+
         }
+        else {
+           canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
+        }
+        slaModel.setCanEdit(canEdit);
         return feedServiceLevelAgreement;
     }
 }
