@@ -56,7 +56,10 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
     @Override
     public Feed getFeed() {
         try {
-            return JcrUtil.createJcrObject(this.node.getParent(), JcrFeed.class);
+            //this.getParent == tba:details.
+            //this.getParent.getParent == tba:summary
+            //this.getParent.getParent.getParent == tba:feed
+            return JcrUtil.createJcrObject(this.node.getParent().getParent().getParent(), JcrFeed.class);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access feed", e);
         }
