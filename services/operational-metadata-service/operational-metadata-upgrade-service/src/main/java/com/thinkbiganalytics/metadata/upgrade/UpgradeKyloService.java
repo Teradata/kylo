@@ -154,7 +154,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * checks the upgrade for Kylo and updates the version if needed
      */
     public void upgradeCheck() {
-        KyloVersion version = null; //kyloVersionProvider.getCurrentVersion();
+        KyloVersion version = kyloVersionProvider.getCurrentVersion();
 
         if (version == null) {
             setupFreshInstall();
@@ -241,7 +241,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             usersGroup.addUser(operator);
 
             // Setup initial group access control.  Administrators group already has all rights.
-            actionsProvider.getAllowedActions(AllowedActions.SERVICES)
+            actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
                 .ifPresent((allowed) -> {
                     allowed.enable(opsGroup.getRootPrincial(),
                                    OperationsAccessControl.ADMIN_OPS,
