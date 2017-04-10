@@ -187,7 +187,7 @@ public class FeedsController {
     public ActionGroup postPermissionsChange(@PathParam("id") String feedIdStr,
                                              PermissionsChange changes) {
 
-        return this.securityService.changeFeedPermissions(feedIdStr,changes)
+        return this.securityService.changeFeedPermissions(feedIdStr, changes)
             .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
     }
 
@@ -214,7 +214,7 @@ public class FeedsController {
         return this.securityService.createFeedPermissionChange(feedIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),
                                                                Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
-                        .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
     }
 
     @Inject

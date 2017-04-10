@@ -29,6 +29,7 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import java.util.ArrayList;
@@ -93,9 +94,6 @@ public class TemplateModelTransform {
 
     @Inject
     private SecurityModelTransform actionsTransform;
-
-    public final Function<FeedManagerTemplate, RegisteredTemplate>
-        DOMAIN_TO_REGISTERED_TEMPLATE = DOMAIN_TO_REGISTERED_TEMPLATE(true);
 
     public final Function<RegisteredTemplate, FeedManagerTemplate>
         REGISTERED_TEMPLATE_TO_DOMAIN =
@@ -192,7 +190,7 @@ public class TemplateModelTransform {
                 }
                 template.setOrder(domain.getOrder());
 
-                accessControlledEntityTransform.applyAccessControlToRestModel(domain,template);
+                accessControlledEntityTransform.applyAccessControlToRestModel(domain, template);
 
                 return template;
             }
