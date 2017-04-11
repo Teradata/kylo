@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -29,13 +31,17 @@ import java.io.Serializable;
 import javax.persistence.EntityManager;
 
 /**
- * Created by ru186002 on 05/04/2017.
+ * Creates AugmentableQueryRepositoryFactory
  */
-public class SecuredFeedRepositoryFactoryBean<R extends JpaRepository<T, I>, T,
+public class AugmentableQueryRepositoryFactoryBean<R extends JpaRepository<T, I>, T,
     I extends Serializable> extends JpaRepositoryFactoryBean<R, T, I> {
 
+
+    @Autowired
+    AutowireCapableBeanFactory beanFactory;
+
     protected RepositoryFactorySupport createRepositoryFactory(EntityManager em) {
-        return new SecuredFeedRepositoryFactory(em);
+        return new AugmentableQueryRepositoryFactory(em, beanFactory);
     }
 
 }

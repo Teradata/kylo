@@ -20,17 +20,13 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
-import org.springframework.data.repository.NoRepositoryBean;
-
-import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by ru186002 on 05/04/2017.
+ * Annotation which defines which QueryAugmentor should be used with AugmentableRepository
  */
-@NoRepositoryBean
-interface SecuredFeedRepository<T, ID extends Serializable>
-    extends JpaRepository<T, ID>, QueryDslPredicateExecutor<T> {
-
+@Retention(RetentionPolicy.RUNTIME)
+public @interface QueryAugmentorType {
+    Class<? extends QueryAugmentor> value();
 }

@@ -27,9 +27,10 @@ import java.util.List;
 
 /**
  * This is an example repository which shows how to refer to principal roles in @Query annotations and also
- * to extend SecuredFeedRepository which knows how to construct queries with reference to FeedAclIndex table
+ * to extend AugmentableQueryRepository which knows how to construct queries with reference to FeedAclIndex table
  */
-public interface TestOpsManagerFeedRepository extends SecuredFeedRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
+@QueryAugmentorType(FeedAclIndexQueryAugmentor.class)
+public interface TestOpsManagerFeedRepository extends AugmentableQueryRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
     @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
     List<String> getFeedNamesWithPrincipal();

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.jpa.feed.SecuredFeedRepositoryFactoryBean;
+import com.thinkbiganalytics.metadata.jpa.feed.AugmentableQueryRepositoryFactoryBean;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
@@ -36,7 +36,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
@@ -55,7 +54,7 @@ import javax.sql.DataSource;
     basePackages = {"com.thinkbiganalytics.metadata.jpa"},
     transactionManagerRef = "operationalMetadataTransactionManager",
     entityManagerFactoryRef = "operationalMetadataEntityManagerFactory",
-    repositoryFactoryBeanClass = SecuredFeedRepositoryFactoryBean.class)
+    repositoryFactoryBeanClass = AugmentableQueryRepositoryFactoryBean.class)
 public class OperationalMetadataConfig {
 
     @Bean(name = "operationalMetadataDateTimeFormatter")
