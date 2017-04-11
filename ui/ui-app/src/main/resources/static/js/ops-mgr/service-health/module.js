@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil', 'constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessControl) {
+define(['angular','ops-mgr/service-health/module-name', 'kylo-utils/LazyLoadUtil', 'constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
 
