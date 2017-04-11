@@ -111,7 +111,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
             } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
                 //When Change Perms comes through the user needs write access to the allowed actions tree to grant additional access
-                Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
+                final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
                 JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
                 //also add read to the category summary
@@ -210,9 +210,11 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
             this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
         }
 
+        final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
         if (changePerms.get()) {
-            final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
             JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+        } else {
+            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
         }
     }
 
@@ -220,6 +222,9 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         actions.forEach(action -> {
             if (action.implies(FeedAccessControl.ACCESS_OPS)) {
                 this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
+            } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+                final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
+                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
                 this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
                 this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));

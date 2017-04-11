@@ -102,7 +102,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         actions.forEach(action -> {
             //When Change Perms comes through the user needs write access to the allowed actions tree to grant additional access
             if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
-                Node allowedActionsNode = ((JcrAllowedActions) this.category.getAllowedActions()).getNode();
+                final Node allowedActionsNode = ((JcrAllowedActions) this.category.getAllowedActions()).getNode();
                 JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
@@ -157,15 +157,20 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
             JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
         }
 
+        final Node allowedActionsNode = ((JcrAllowedActions) category.getAllowedActions()).getNode();
         if (changePerms.get()) {
-            final Node allowedActionsNode = ((JcrAllowedActions) category.getAllowedActions()).getNode();
             JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+        } else {
+            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
         }
     }
 
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
+            if (action.implies(CategoryAccessControl.CHANGE_PERMS)) {
+                final Node allowedActionsNode = ((JcrAllowedActions) this.category.getAllowedActions()).getNode();
+                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+            } else if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL);

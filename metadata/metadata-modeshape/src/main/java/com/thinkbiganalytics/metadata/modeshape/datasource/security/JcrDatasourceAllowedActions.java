@@ -168,9 +168,11 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
             JcrAccessControlUtil.removeHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_READ);
         }
 
+        final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
         if (changePerms.get()) {
-            final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
             JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+        } else {
+            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
         }
     }
 
@@ -182,7 +184,10 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
      */
     protected void disableEntityAccess(@Nonnull final Principal principal, @Nonnull final Collection<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
+            if (action.implies(DatasourceAccessControl.CHANGE_PERMS)) {
+                final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
+                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+            } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
                 datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL));
             } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.removePermissions(datasource.getNode(), principal, Privilege.JCR_ALL);
