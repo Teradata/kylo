@@ -18,13 +18,6 @@
   </properties>
 
   <dependencies>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>kylo-nifi-hadoop-service-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-nifi-framework-api</artifactId>

@@ -16,11 +16,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-com.thinkbiganalytics.nifi.v2.spark.CheckSparkContextExists
-com.thinkbiganalytics.nifi.v2.spark.CreateSparkContext
-com.thinkbiganalytics.nifi.v2.spark.DeleteSparkContext
-com.thinkbiganalytics.nifi.v2.spark.UploadSparkJobJar
-com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkContextJob
 com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkJob
 com.thinkbiganalytics.nifi.pyspark.core.ExecutePySpark

@@ -2,7 +2,6 @@
 # Copyright (c) 2015. Teradata Inc.
 #
 
-com.thinkbiganalytics.nifi.v2.spark.JobServerService
 com.thinkbiganalytics.nifi.v2.thrift.ThriftConnectionPool
 com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService
 
