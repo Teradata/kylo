@@ -362,20 +362,20 @@ public class ExportImportFeedService {
             } else {
 
                 //validate user has write access to create feeds under this category
-
                 //ensure the user has rights to create feeds under this category
-                valid = metadataAccess.read(() -> {
-                    Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
-                    //Query for Category and ensure the user has access to create feeds on that category
-                    if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
-                        importFeed.setValid(false);
-                        statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
-                        return false;
-                    } else {
-                        return true;
-                    }
-
-                });
+                if (accessController.isEntityAccessControlled()) {
+                    valid = metadataAccess.read(() -> {
+                        Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
+                        //Query for Category and ensure the user has access to create feeds on that category
+                        if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
+                            importFeed.setValid(false);
+                            statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    });
+                }
                 if (valid) {
                     metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
                     statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);

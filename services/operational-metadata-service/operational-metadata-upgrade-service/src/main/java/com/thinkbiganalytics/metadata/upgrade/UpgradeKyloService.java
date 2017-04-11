@@ -189,46 +189,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
             UserGroup usersGroup = createDefaultGroup("user", "Users");
 
-            // Create default roles
-            SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor",
-                                                        FeedAccessControl.EDIT_DETAILS,
-                                                        FeedAccessControl.DELETE,
-                                                        FeedAccessControl.ACCESS_OPS,
-                                                        FeedAccessControl.ENABLE_DISABLE,
-                                                        FeedAccessControl.EXPORT);
-            //admin can do everything the editor does + change perms
-            createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
 
-            createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
-
-            SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
-                                                            TemplateAccessControl.ACCESS_TEMPLATE,
-                                                            TemplateAccessControl.EDIT_TEMPLATE,
-                                                            TemplateAccessControl.CREATE_FEED,
-                                                            TemplateAccessControl.EXPORT);
-            createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", templateEditor, TemplateAccessControl.CHANGE_PERMS);
-
-            createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", TemplateAccessControl.ACCESS_TEMPLATE);
-
-            SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
-                                                            CategoryAccessControl.ACCESS_CATEGORY,
-                                                            CategoryAccessControl.EDIT_DETAILS,
-                                                            CategoryAccessControl.EDIT_SUMMARY,
-                                                            CategoryAccessControl.EXPORT,
-                                                            CategoryAccessControl.CREATE_FEED,
-                                                            CategoryAccessControl.DELETE);
-
-            createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
-
-            createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
-
-            final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
-                                                                    DatasourceAccessControl.ACCESS_DATASOURCE,
-                                                                    DatasourceAccessControl.EDIT_DETAILS,
-                                                                    DatasourceAccessControl.EDIT_SUMMARY,
-                                                                    DatasourceAccessControl.DELETE);
-            createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
-            createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", DatasourceAccessControl.ACCESS_DATASOURCE);
 
             // Add default users to their respective groups
             adminsGroup.addUser(dladmin);
@@ -249,10 +210,10 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.ACCESS_FEEDS,
                                    FeedServicesAccessControl.ACCESS_TEMPLATES,
                                    FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
-                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
+                                   FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
                     allowed.enable(designersGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
-                                   FeedServicesAccessControl.CREATE_FEEDS,
+                                   FeedServicesAccessControl.EDIT_FEEDS,
                                    FeedServicesAccessControl.IMPORT_FEEDS,
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
@@ -262,22 +223,68 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.EXPORT_TEMPLATES,
                                    FeedServicesAccessControl.ADMIN_TEMPLATES,
                                    FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
-                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
+                                   FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
                     allowed.enable(analystsGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
-                                   FeedServicesAccessControl.CREATE_FEEDS,
+                                   FeedServicesAccessControl.EDIT_FEEDS,
                                    FeedServicesAccessControl.IMPORT_FEEDS,
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
                                    FeedServicesAccessControl.ACCESS_TEMPLATES,
                                    FeedServicesAccessControl.ACCESS_DATASOURCES,
                                    FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
-                                   FeedServicesAccessControl.CREATE_SERVICE_LEVEL_AGREEMENTS);
+                                   FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
                 });
         }, MetadataAccess.SERVICE);
     }
 
+    private void createDefaultRoles() {
+        metadataAccess.commit(() -> {
+        // Create default roles
+        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor",
+                                                    FeedAccessControl.EDIT_DETAILS,
+                                                    FeedAccessControl.DELETE,
+                                                    FeedAccessControl.ACCESS_OPS,
+                                                    FeedAccessControl.ENABLE_DISABLE,
+                                                    FeedAccessControl.EXPORT);
+        //admin can do everything the editor does + change perms
+        createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
+
+        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
+
+        SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
+                                                        TemplateAccessControl.ACCESS_TEMPLATE,
+                                                        TemplateAccessControl.EDIT_TEMPLATE,
+                                                        TemplateAccessControl.CREATE_FEED,
+                                                        TemplateAccessControl.EXPORT);
+        createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", templateEditor, TemplateAccessControl.CHANGE_PERMS);
+
+        createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", TemplateAccessControl.ACCESS_TEMPLATE);
+
+        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
+                                                        CategoryAccessControl.ACCESS_CATEGORY,
+                                                        CategoryAccessControl.EDIT_DETAILS,
+                                                        CategoryAccessControl.EDIT_SUMMARY,
+                                                        CategoryAccessControl.EXPORT,
+                                                        CategoryAccessControl.CREATE_FEED,
+                                                        CategoryAccessControl.DELETE);
+
+        createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
+
+        createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
+
+        final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
+                                                                DatasourceAccessControl.ACCESS_DATASOURCE,
+                                                                DatasourceAccessControl.EDIT_DETAILS,
+                                                                DatasourceAccessControl.EDIT_SUMMARY,
+                                                                DatasourceAccessControl.DELETE);
+        createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", DatasourceAccessControl.ACCESS_DATASOURCE);
+        }, MetadataAccess.SERVICE);
+    }
+
     private void ensureDefaultEntityRoles() {
+        createDefaultRoles();
         metadataAccess.commit(() -> {
             ensureFeedRoles();
             ensureCategoryRoles();

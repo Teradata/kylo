@@ -1,5 +1,7 @@
-
-<div layout-padding>
+<div ng-if="!vm.enabled">
+  <span>Entity access control is not enabled for Kylo.</span>
+</div>
+<div layout-padding ng-if="vm.enabled">
     <div layout="row">
     <div flex>
       <md-autocomplete flex="45" required
@@ -34,10 +36,10 @@
 
   <div layout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
     <div flex="40" style="align-self:center;">
-      <span class="item-title" style="color:grey">Roles</span>
+      <span class="item-title" style="color:grey">Roles x</span>
     </div>
     <div flex class="">
-      <span class="item-title" style="color:grey">Members</span>
+      <span class="item-title" style="color:grey">Members x</span>
     </div>
   </div>
   <div layout="column" ng-repeat="roleMembership in vm.entity.roleMemberships">

@@ -1,5 +1,6 @@
 define(['angular',
         'kylo-feedmgr',
+        'kylo-common',
         'ment-io',
         'feed-mgr/services/RegisterTemplateService',
         'feed-mgr/templates/RegisteredTemplatesController',

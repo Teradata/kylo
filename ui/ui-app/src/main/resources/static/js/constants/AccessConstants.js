@@ -46,7 +46,7 @@ define([], function () {
          * Allows creating and editing new feeds.
          * @type {string}
          */
-        this.FEEDS_CREATE = "createFeeds";
+        this.FEEDS_EDIT = "editFeeds";
 
         /**
          * Allows exporting feeds definitions.
@@ -94,7 +94,7 @@ define([], function () {
          * Allows users to create new Service Level agreements
          * @type {string}
          */
-        this.SLA_CREATE = "createServiceLevelAgreements";
+        this.SLA_EDIT = "editServiceLevelAgreements";
 
         /**
          * Allows access to feed templates.
@@ -200,11 +200,11 @@ define([], function () {
 
         this.UI_STATES = {
             FEEDS: {state: "feeds", permissions: [this.FEEDS_ACCESS]},
-            DEFINE_FEED: {state: "define-feed", permissions: [this.FEEDS_CREATE]},
-            DEFINE_FEED_COMPLETE: {state: "define-feed-complete", permissions: [this.FEEDS_ACCESS]},
-            IMPORT_FEED: {state: "import-feed", permissions: [this.FEEDS_IMPORT]},
-            FEED_DETAILS: {state: "feed-details", permissions: [this.FEEDS_ACCESS]},
-            EDIT_FEED: {state: "edit-feed", permissions: [this.FEEDS_ACCESS]},
+            DEFINE_FEED:{state:"define-feed",permissions: [this.FEEDS_EDIT]},
+            DEFINE_FEED_COMPLETE:{state:"define-feed-complete",permissions: [this.FEEDS_ACCESS]},
+            IMPORT_FEED:{state:"import-feed",permissions: [this.FEEDS_IMPORT]},
+            FEED_DETAILS:{state:"feed-details",permissions:[this.FEEDS_ACCESS]},
+            EDIT_FEED:{state:"edit-feed",permissions:[this.FEEDS_ACCESS]},
             CATEGORIES: {state: "categories", permissions: [this.CATEGORIES_ACCESS]},
             CATEGORY_DETAILS: {state: "category-details", permissions: [this.CATEGORIES_ACCESS]},
             BUSINESS_METADATA: {state: "business-metadata", permissions: [this.CATEGORIES_ADMIN]},
@@ -225,18 +225,18 @@ define([], function () {
             IMPORT_TEMPLATE: {state: "import-template", permissions: [this.TEMPLATES_IMPORT]},
             SEARCH: {state: "search", permissions: [this.SERVICES_ACCESS]},
             //Ops Manager
-            ALERTS: {state: "alerts", permissions: [this.ALERTS_ACCESS]},
-            ALERT_DETAILS: {state: "alert-details", permissions: [this.ALERTS_ACCESS]},
-            CHARTS: {state: "charts", permissions: [this.CHARTS_ACCESS]},
-            OPS_FEED_DETAILS: {state: "ops-feed-details", permissions: [this.FEED_OPERATIONS_DETAIL_ACCESS]},
-            FEED_STATS: {state: "feed-stats", permissions: [this.FEED_OPERATIONS_DETAIL_ACCESS]},
-            JOBS: {state: "jobs", permissions: [this.JOBS_ACCESS]},
-            JOB_DETAILS: {state: "job-details", permissions: [this.JOB_DETAILS_ACCESS]},
+            ALERTS: {state: "alerts", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            ALERT_DETAILS: {state: "alert-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            CHARTS: {state: "charts", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            OPS_FEED_DETAILS: {state: "ops-feed-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            FEED_STATS: {state: "feed-stats", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            JOBS: {state: "jobs", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            JOB_DETAILS: {state: "job-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             DASHBOARD: {state: "dashboard", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             SCHEDULER: {state: "scheduler", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
-            SERVICE_HEALTH: {state: "service-health", permissions: [this.SERVICES_ACCESS]},
-            SERVICE_DETAILS: {state: "service-details", permissions: [this.SERVICES_ACCESS]},
-            SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [this.SERVICES_ACCESS]}
+            SERVICE_HEALTH: {state: "service-health", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            SERVICE_DETAILS: {state: "service-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]}
         }
     };
     return new AccessConstants();

@@ -108,11 +108,12 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
      */
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
 
+        //functional access to be able to create a feed
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
-            //User needs rights to create feed
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.CREATE_FEEDS);
         } else {
             //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
             Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());

@@ -89,22 +89,28 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
              */
             updateEntityForSave: function (entity) {
 
-                if (entity.roleMemberships && entity.roleMemberships.updated == true) {
-
-                    _.each(entity.roleMemberships, function (roleMembership) {
-                        var users = [];
-                        var groups = [];
-                        _.each(roleMembership.members, function (member) {
-                            if (member.type == 'user') {
-                                users.push(member.systemName);
-                            }
-                            else if (member.type == 'group') {
-                                groups.push(member.systemName);
-                            }
-                        });
-                        roleMembership.users = users;
-                        roleMembership.groups = groups;
-                    });
+               if(entity.roleMemberships){
+                   _.each(entity.roleMemberships,function(roleMembership){
+                       var users = [];
+                       var groups = [];
+                       //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
+                       var update = roleMembership.members.length ==0;
+                       _.each(roleMembership.members,function(member) {
+                           if(angular.isDefined(member.type)) {
+                               if (member.type == 'user') {
+                                   users.push(member.systemName);
+                               }
+                               else if (member.type == 'group') {
+                                   groups.push(member.systemName);
+                               }
+                               update = true;
+                           }
+                       });
+                       if(update) {
+                           roleMembership.users = users;
+                           roleMembership.groups = groups;
+                       }
+                   });
 
                 }
             },

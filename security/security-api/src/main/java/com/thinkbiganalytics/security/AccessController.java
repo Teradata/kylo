@@ -65,4 +65,11 @@ public interface AccessController {
      * @return true if valid, false if not
      */
     boolean hasPermission(String moduleName, Action action, Action... others);
+
+
+    /**
+     * Returns true if setup to use Entity access control, false if not
+     * @return true if using entity access control, false if not
+     */
+    boolean isEntityAccessControlled();
 }

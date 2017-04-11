@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -46,6 +47,18 @@ public class DefaultAccessController implements AccessController {
 
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
+
+    @org.springframework.beans.factory.annotation.Value("${security.entity.access.controlled:true}")
+    private boolean entityAccessControlled;
+
+    public DefaultAccessController(){
+
+    }
+
+    @PostConstruct
+    private void init() {
+        JcrAccessControlUtil.setEnableEntityAccessControl(entityAccessControlled);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.AccessController#checkPermission(java.lang.String, com.thinkbiganalytics.security.action.Action, com.thinkbiganalytics.security.action.Action[])
@@ -89,4 +102,11 @@ public class DefaultAccessController implements AccessController {
        }
     }
 
+    public boolean isEntityAccessControlled() {
+        return entityAccessControlled;
+    }
+
+    public void setEntityAccessControlled(boolean entityAccessControlled) {
+        this.entityAccessControlled = entityAccessControlled;
+    }
 }

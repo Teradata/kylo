@@ -44,9 +44,9 @@ public interface FeedServicesAccessControl {
     Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
                                                   "Access Feeds",
                                                   "Allows access to feeds");
-    Action CREATE_FEEDS = ACCESS_FEEDS.subAction("createFeeds",
-                                                 "Create Feeds",
-                                                 "Allows creating new feeds");
+    Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
+                                                 "Edit Feeds",
+                                                 "Allows editing of feeds");
     Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
                                                  "Import Feeds",
                                                  "Allows importing of previously exported feeds");
@@ -71,7 +71,7 @@ public interface FeedServicesAccessControl {
                                                          "Allows exporting template definitions");
     Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
                                                         "Administer Templates",
-                                                        "Allows the administration of a feed template");
+                                                        "Allows the administration of a feed template (enable/disable/delete)");
 
     Action ACCESS_DATASOURCES = FEEDS_SUPPORT.subAction("accessDatasources",
                                                         "Access Data Sources",
@@ -87,7 +87,7 @@ public interface FeedServicesAccessControl {
                                                                      "Access Service Level Agreements",
                                                                      "Allows access to service level agreements");
 
-    Action CREATE_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("createServiceLevelAgreements",
-                                                                                       "Edit Service Level Agreements",
-                                                                                       "Allows create service level agreements");
+    Action EDIT_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("editServiceLevelAgreements",
+                                                                                     "Edit Service Level Agreements",
+                                                                                     "Allows create service level agreements");
 }

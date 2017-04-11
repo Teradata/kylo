@@ -70,7 +70,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 isStream: false,
                 validTemplateProcessorNames: true,
                 roleMemberships:[],
-                owner:null
+                owner:null,
+                roleMembershipsUpdated:false
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
@@ -103,7 +104,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     state: this.model.state,
                     isStream: this.model.isStream,
                     roleMemberships:this.model.roleMemberships,
-                    owner: this.model.owner
+                    owner: this.model.owner,
+                    roleMembershipsUpdated: this.model.roleMembershipsUpdated
                 }
             },
             newReusableConnectionInfo: function () {
@@ -776,6 +778,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length > 0;
                         self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
                         self.model.isStream = templateData.isStream;
+                        self.model.owner = templateData.owner;
+                        self.model.allowedActions = templateData.allowedActions;
+                        self.model.roleMemberships = templateData.roleMemberships;
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }

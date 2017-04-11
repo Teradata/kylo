@@ -103,7 +103,10 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 var self = this;
 
                 //build the user access and role/permission cache//  roles:self.getRoles()
-                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true), roles:self.getRoles(),currentUser:self.getCurrentUser()};
+                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true),
+                    roles:self.getRoles(),
+                    currentUser:self.getCurrentUser(),
+                    entityAccessControlled:self.checkEntityAccessControlled()};
                 var defer = $q.defer();
 
                 $q.all(requests).then(function(response){
@@ -135,6 +138,26 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
             },
             isFutureState:function(state){
                 return state.endsWith(".**");
+            },
+            /**
+             * Check to see if we are using entity access control or not
+             * @returns {*}
+             */
+            isEntityAccessControlled:function(){
+                var self = this;
+                return this.entityAccessControlled;
+            },
+
+            checkEntityAccessControlled:function(){
+                var self = this;
+                if(angular.isDefined(this.entityAccessControlled)){
+                    return self.entityAccessControlled;
+                }
+                else {
+                    return $http.get(CommonRestUrlService.ENTITY_ACCESS_CONTROLLED_CHECK).then(function(response){
+                        self.entityAccessControlled = response.data;
+                    });
+                }
             },
 
             /**

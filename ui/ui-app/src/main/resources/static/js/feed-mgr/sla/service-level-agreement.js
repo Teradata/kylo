@@ -80,7 +80,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         // Register Add button
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.SLA_CREATE, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton("service-level-agreements", function() {
                             self.onNewSla();
                         });
@@ -344,10 +344,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         })
 
         /**
-         * Callend when the user cancels a specific SLA
+         * Called when the user cancels a specific SLA
          */
         self.cancelEditSla = function() {
             showList();
+            applyAccessPermissions();
         }
 
         self.addNewCondition = function() {
@@ -435,6 +436,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
         self.onBackToList = function(ev) {
             showList();
+            applyAccessPermissions();
 
         }
 
@@ -631,27 +633,33 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             }
         }
 
-        //Apply the entity access permissions
-        //if its an existing SLA, check to see if we can edit it
-        if(self.editSla && !self.newSla) {
-            self.allowEdit = self.editSla.canEdit;
-        }
-        else {
-            //ensure the user has the CREATE_SLA access
-            // Fetch the allowed actions
-            AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    if(self.feed) {
-                        //ensure user has edit access on the feed
-                        $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
-                            self.allowEdit = AccessControlService.hasAction(AccessControlService.SLA_CREATE, actionSet.actions) && response;
-                        })
-                    }
-                    else {
-                        self.allowEdit = AccessControlService.hasAction(AccessControlService.SLA_CREATE, actionSet.actions);
-                    }
+        function applyAccessPermissions() {
+            //Apply the entity access permissions
+            //if its an existing SLA, check to see if we can edit it
+            if (self.editSla && !self.newSla) {
+                self.allowEdit = self.editSla.canEdit;
+            }
+            else {
+                //ensure the user has the EDIT_SLA and if editing for a feed ensure the user has access to edit that feed
+
+                var entityAccessControlled = self.feed != null && AccessControlService.isEntityAccessControlled();
+
+                //Apply the entity access permissions
+                var requests = {
+                    entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.feed) : true,
+                    functionalAccess: AccessControlService.getAllowedActions()
+                }
+                $q.all(requests).then(function (response) {
+                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.SLA_EDIT, response.functionalAccess.actions);
+                    var slaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                    var allowFeedEdit = self.feed != null ? AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
+                    self.allowEdit = response.entityEditAccess && allowEditAccess && slaAccess && allowFeedEdit;
                 });
+
+            }
         }
+
+        applyAccessPermissions();
 
 
     };

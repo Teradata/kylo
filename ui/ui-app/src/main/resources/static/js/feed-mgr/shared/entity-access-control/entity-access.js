@@ -20,9 +20,19 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         };
     };
 
-    var controller = function($q,$http, UserGroupService,EntityAccessControlService){
+    var controller = function($q,$http, UserGroupService,EntityAccessControlService, AccessControlService){
 
         var self = this;
+
+        /**
+         * are we using Entity access control
+         * @type {boolean}
+         */
+        this.enabled = false;
+
+        $q.when(AccessControlService.checkEntityAccessControlled()).then(function(){
+            self.enabled = AccessControlService.isEntityAccessControlled();
+        });
 
 
         if(angular.isUndefined(this.readOnly)){
@@ -118,7 +128,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * Flag that the user has updated the role memberships
              * @type {boolean}
              */
-            self.entity.roleMemberships.updated = true;
+            self.entity.roleMembershipsUpdated = true;
 
             var df = $q.defer();
             var request = {groups:getAllGroups(),users:getAllUsers()};
@@ -195,20 +205,17 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             return df.promise;
         }
 
-
-
-
-
-
-
         function init(){
-            EntityAccessControlService.mergeRoleAssignments(self.entity,self.entityType);
+            if(angular.isUndefined(self.entity.roleMembershipsUpdated) || self.entity.roleMembershipsUpdated == false) {
+                EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType);
+            }
+            console.info('init ',self.entity)
         }
 
 
         init();
 
-
+        console.info('ENTITY ACCESS!!!!! ',self.entity)
 
 
 
@@ -219,7 +226,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
     };
 
-    angular.module(moduleName).controller('EntityAccessControlController', ["$q","$http","UserGroupService","EntityAccessControlService",controller]);
+    angular.module(moduleName).controller('EntityAccessControlController', ["$q","$http","UserGroupService","EntityAccessControlService","AccessControlService",controller]);
     angular.module(moduleName).directive('entityAccessControl', directive);
 
 

@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function TemplateAccessControlController($scope,RegisterTemplateService) {
+    function TemplateAccessControlController($scope,RegisterTemplateService,AccessControlService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -27,12 +27,22 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         this.model = RegisterTemplateService.model;
 
+        this.allowEdit = false;
+
+        //allow edit if the user has ability to change permissions on the entity if its an existing registered template, or if it is new
+        if(this.model.id && AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.CHANGE_TEMPLATE_PERMISSIONS)){
+            self.allowEdit = true;
+        }
+        else {
+            self.allowEdit = this.model.id == undefined;
+        }
+
 
 
 
     }
 
-    angular.module(moduleName).controller("TemplateAccessControlController",["$scope","RegisterTemplateService", TemplateAccessControlController]);
+    angular.module(moduleName).controller("TemplateAccessControlController",["$scope","RegisterTemplateService", "AccessControlService","EntityAccessControlService",TemplateAccessControlController]);
 
     angular.module(moduleName).directive("thinkbigTemplateAccessControl", directive);
 });

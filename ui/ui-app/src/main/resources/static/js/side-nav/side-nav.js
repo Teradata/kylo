@@ -99,12 +99,12 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants'], function
                 function buildOpsManagerMenu() {
                        var menu = ({type:'toggle', text: "Operations",narrowText:'Ops',expanded:false});
                        var links = [];
-                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessConstants.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessConstants.SERVICES_ACCESS});
-                       links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessConstants.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessConstants.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessConstants.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.CHARTS_ACCESS});
+                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions});
+                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions});
+                       links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
+                       links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
+                       links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
+                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
                        menu.links = links;
                     menuMap[MENU_KEY.OPS_MGR] = menu;
                     return menu;

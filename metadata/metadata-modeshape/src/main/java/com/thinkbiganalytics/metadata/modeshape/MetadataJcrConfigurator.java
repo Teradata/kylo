@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.security.SimplePrincipal;
@@ -73,6 +74,9 @@ public class MetadataJcrConfigurator {
     private final AtomicBoolean configured = new AtomicBoolean(false);
     @Inject
     private MetadataAccess metadataAccess;
+
+
+
     private List<PostMetadataConfigAction> postConfigActions = new ArrayList<>();
 
     public MetadataJcrConfigurator(List<PostMetadataConfigAction> actions) {

@@ -22,7 +22,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, RestUrlService, RegisterTemplateService, StateService, AccessControlService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,RestUrlService, RegisterTemplateService, StateService, AccessControlService,EntityAccessControlService) {
 
         var self = this;
 
@@ -188,9 +188,11 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
+
+
     };
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","RestUrlService","RegisterTemplateService","StateService","AccessControlService",controller]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService","AccessControlService","EntityAccessControlService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);

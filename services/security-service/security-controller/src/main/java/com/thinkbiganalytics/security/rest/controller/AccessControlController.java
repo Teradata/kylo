@@ -78,9 +78,20 @@ public class AccessControlController {
     @Inject
     @Named("actionsModelTransform")
     private SecurityModelTransform actionsTransform;
-    
+
     @Inject
-    private AccessController accessController;
+    AccessController accessController;
+
+    @GET
+    @Path("entity-access-controlled")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Return true/false if entity access is enabled or not")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns true/false.", response = Boolean.class)
+                  })
+    public Boolean isEntityAccessControlled() {
+        return accessController.isEntityAccessControlled();
+    }
 
     @GET
     @Path("{name}/available")

@@ -52,6 +52,8 @@ import javax.jcr.security.Privilege;
  */
 public final class JcrAccessControlUtil {
 
+    private static boolean enableEntityAccessControl;
+
     private JcrAccessControlUtil() {
         throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
     }
@@ -108,11 +110,14 @@ public final class JcrAccessControlUtil {
             // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used
             // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
             // to an existing principal.  This can be considered a bug in ModeShape.
-            SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
-            boolean added = acl.addAccessControlEntry(simple, privileges);
-            acm.setPolicy(path, acl);
-
+            boolean added = false;
+            if(JcrAccessControlUtil.enableEntityAccessControl) {
+                SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
+                   added = acl.addAccessControlEntry(simple, privileges);
+                   acm.setPolicy(path, acl);
+            }
             return added;
+         //   return added;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
                                                   + Arrays.toString(privileges), e);
@@ -313,5 +318,9 @@ public final class JcrAccessControlUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove permission(s) from node tree " + node, e);
         }
+    }
+
+    public static void setEnableEntityAccessControl(boolean enableEntityAccessControl) {
+       JcrAccessControlUtil.enableEntityAccessControl = enableEntityAccessControl;
     }
 }

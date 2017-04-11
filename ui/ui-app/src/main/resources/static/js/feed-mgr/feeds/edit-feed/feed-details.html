@@ -37,7 +37,7 @@
                        <thinkbig-feed-lineage  ng-if="vm.selectedTabIndex == 2"></thinkbig-feed-lineage>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="vm.loadingFeedData">
+                <md-tab ng-disabled="vm.loadingFeedData || !vm.allowSlaAccess">
                     <md-tab-label>
                         <div>SLA</div>
                     </md-tab-label>

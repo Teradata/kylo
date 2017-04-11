@@ -48,6 +48,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         self.allowEdit = false;
 
+        /**
+         * Alow user to access the sla tab
+         * @type {boolean}
+         */
+        self.allowSlaAccess = false;
+
         this.feedId = null;
         this.selectedTabIndex = 0;
 
@@ -100,10 +106,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             loadFeed(requestedTabIndex);
             nifiRunningCheck();
 
-            AccessControlService.getAllowedActions()
-                    .then(function(actionSet) {
-                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
-                    });
+
 
 
 
@@ -204,11 +207,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.showAccessControlDialog = function(){
 
             function onCancel(){
-                console.log('CANCELLED FROM FEED DETAILS')
+
             }
 
             function onSave(){
-                console.log('SAVED FROM FEED DETAILS')
             }
 
             EntityAccessControlDialogService.showAccessControlDialog(self.model,"feed",self.model.feedName,onSave,onCancel);
@@ -374,15 +376,21 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                             self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                             FeedService.updateEditModelStateIcon();
 
-                            //Apply the entity access permissions
-                            $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
-                                self.allowEdit = response;
-                            })
+                            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+                                //Apply the entity access permissions
+                                var requests = {entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model) : true,
+                                    entityPermissionAccess:entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model) : true,
+                                    functionalAccess:AccessControlService.getAllowedActions()}
+                                $q.all(requests).then(function (response) {
+                                    var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
 
-                            //Apply the entity access permissions
-                            $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS,self.model)).then(function(response){
-                                self.allowChangePermissions = response;
-                            })
+                                    self.allowEdit = response.entityEditAccess && allowEditAccess;
+                                    self.allowChangePermissions = response.entityPermissionAccess && allowEditAccess;
+                                    self.allowAdmin = allowAdminAccess;
+                                    self.allowSlaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                });
 
                         }
                     }, function(err) {

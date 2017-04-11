@@ -529,6 +529,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
+
             boolean disabled = feedProvider.disableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
@@ -549,6 +550,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary enableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);
@@ -572,6 +575,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);

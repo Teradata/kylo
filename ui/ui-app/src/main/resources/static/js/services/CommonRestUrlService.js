@@ -49,6 +49,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return self.SECURITY_BASE_URL + "/roles/"+entityType;
         }
 
+        this.ENTITY_ACCESS_CONTROLLED_CHECK = self.SECURITY_BASE_URL+"/actions/entity-access-controlled";
+
+
 
     });
 });

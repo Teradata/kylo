@@ -92,6 +92,12 @@ public class RegisteredTemplate extends EntityAccessControl {
     @JsonIgnore
     private TemplateDTO nifiTemplate;
 
+    /**
+     * flag to indicate the template was updated
+     */
+    @JsonIgnore
+    private boolean updated;
+
     public RegisteredTemplate() {
 
     }
@@ -121,6 +127,9 @@ public class RegisteredTemplate extends EntityAccessControl {
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
         this.isStream = registeredTemplate.isStream();
+        this.setOwner(registeredTemplate.getOwner());
+        this.setRoleMemberships(registeredTemplate.getRoleMemberships());
+        this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.initializeProcessors();
     }
 
@@ -551,7 +560,12 @@ public class RegisteredTemplate extends EntityAccessControl {
 
     }
 
-
-
-
+    @JsonIgnore
+    public boolean isUpdated() {
+        return updated;
+    }
+    @JsonIgnore
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
 }

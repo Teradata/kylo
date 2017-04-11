@@ -605,6 +605,7 @@ public class RegisteredTemplateService {
 
     private RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate, boolean reorder) {
         List<String> templateOrder = registeredTemplate.getTemplateOrder();
+        registeredTemplate.setUpdated(false);
         RegisteredTemplate savedTemplate = metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
             return saveTemplate(registeredTemplate);
@@ -661,7 +662,9 @@ public class RegisteredTemplateService {
             domain = templateProvider.update(domain);
             //query it back to display to the ui
             domain = templateProvider.findById(domain.getId());
-            return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+            RegisteredTemplate updatedTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+            updatedTemplate.setUpdated(true);
+            return updatedTemplate;
         }
     }
 
@@ -724,7 +727,7 @@ public class RegisteredTemplateService {
                     }
                 });
             }
-        });
+        }, MetadataAccess.ADMIN);
 
 
     }

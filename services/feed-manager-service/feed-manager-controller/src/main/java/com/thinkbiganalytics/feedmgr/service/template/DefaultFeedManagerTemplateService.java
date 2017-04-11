@@ -20,7 +20,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
-import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
@@ -32,17 +31,15 @@ import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
-import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
-import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +56,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,13 +64,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 
 /**
  */
-public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateService {
+public class DefaultFeedManagerTemplateService implements FeedManagerTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerTemplateService.class);
 
@@ -115,7 +110,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
     private SecurityService securityService;
 
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
-       return registeredTemplateService.saveRegisteredTemplate(registeredTemplate);
+        return registeredTemplateService.saveRegisteredTemplate(registeredTemplate);
 
     }
 
@@ -123,7 +118,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
      * pass in the Template Ids in Order
      */
     public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
-   registeredTemplateService.orderTemplates(orderedTemplateIds,exclude);
+        registeredTemplateService.orderTemplates(orderedTemplateIds, exclude);
 
 
     }
@@ -133,33 +128,35 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
     public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
 
-        RegisteredTemplate template = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeAllProperties(true).build());
-       if(template != null){
-               template.initializeProcessors();
-               processorProperties.addAll(template.getInputProcessors());
-               processorProperties.addAll(template.getNonInputProcessors());
+        RegisteredTemplate
+            template =
+            registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeAllProperties(true).build());
+        if (template != null) {
+            template.initializeProcessors();
+            processorProperties.addAll(template.getInputProcessors());
+            processorProperties.addAll(template.getNonInputProcessors());
 
-               if (includeReusableProcessors && template.getReusableTemplateConnections() != null && !template.getReusableTemplateConnections().isEmpty()) {
+            if (includeReusableProcessors && template.getReusableTemplateConnections() != null && !template.getReusableTemplateConnections().isEmpty()) {
 
-                   //1 fetch ports in reusable templates
-                   Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
-                   Set<PortDTO> ports = getReusableFeedInputPorts();
-                   if (ports != null) {
-                       ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
-                   }
+                //1 fetch ports in reusable templates
+                Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
+                Set<PortDTO> ports = getReusableFeedInputPorts();
+                if (ports != null) {
+                    ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
+                }
 
-                   //match to the name
-                   List<String>
-                       matchingPortIds =
-                       template.getReusableTemplateConnections().stream().filter(conn -> reusableTemplateInputPorts.containsKey(conn.getReusableTemplateInputPortName()))
-                           .map(reusableTemplateConnectionInfo -> reusableTemplateInputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName()).getId())
-                           .collect(Collectors.toList());
+                //match to the name
+                List<String>
+                    matchingPortIds =
+                    template.getReusableTemplateConnections().stream().filter(conn -> reusableTemplateInputPorts.containsKey(conn.getReusableTemplateInputPortName()))
+                        .map(reusableTemplateConnectionInfo -> reusableTemplateInputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName()).getId())
+                        .collect(Collectors.toList());
 
-                   List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(matchingPortIds);
-                   processorProperties.addAll(reusableProcessors);
-               }
-           }
-           return processorProperties;
+                List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(matchingPortIds);
+                processorProperties.addAll(reusableProcessors);
+            }
+        }
+        return processorProperties;
 
     }
 
@@ -167,7 +164,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
      * Ensures that the {@code RegisteredTemplate#inputProcessors} list is populated not only with the processors which were defined as having user inputs, but also those that done require any input
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
-      registeredTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
+        registeredTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
     }
 
@@ -175,17 +172,21 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
         boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
-        nifiFlowCache.updateRegisteredTemplate(template);
-        //update the access control
-        registeredTemplate.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeTemplateRoleMemberships(template.getId(),roleMembershipChange));
+        if (template.isUpdated()) {
+            nifiFlowCache.updateRegisteredTemplate(template);
 
+            //only allow update to the Access control if the user has the CHANGE_PERMS permission on this template entity
+            if (accessController.isEntityAccessControlled() && template.hasAction(TemplateAccessControl.CHANGE_PERMS.getSystemName())) {
+                //update the access control
+                registeredTemplate.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeTemplateRoleMemberships(template.getId(), roleMembershipChange));
+            }
+            //notify audit of the change
 
-        //notify audit of the change
-
-        FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(template.getState());
-        FeedManagerTemplate.ID id = templateProvider.resolveId(registeredTemplate.getId());
-        MetadataChange.ChangeType changeType = isNew ? MetadataChange.ChangeType.CREATE : MetadataChange.ChangeType.UPDATE;
-        notifyTemplateStateChange(registeredTemplate,id,state,changeType);
+            FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(template.getState());
+            FeedManagerTemplate.ID id = templateProvider.resolveId(registeredTemplate.getId());
+            MetadataChange.ChangeType changeType = isNew ? MetadataChange.ChangeType.CREATE : MetadataChange.ChangeType.UPDATE;
+            notifyTemplateStateChange(registeredTemplate, id, state, changeType);
+        }
         return template;
     }
 
@@ -202,17 +203,14 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
 
 
     public RegisteredTemplate getRegisteredTemplate(final String templateId) {
-       return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
+        return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
 
     }
 
 
-
-
-
     @Override
     public List<RegisteredTemplate> getRegisteredTemplates() {
-      return registeredTemplateService.getRegisteredTemplates();
+        return registeredTemplateService.getRegisteredTemplates();
     }
 
     @Override
@@ -247,12 +245,13 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
 
     /**
      * update audit information for template changes
-     * @param template the template
+     *
+     * @param template   the template
      * @param templateId the template id
-     * @param state the new state
+     * @param state      the new state
      * @param changeType the type of change
      */
-    private void notifyTemplateStateChange(RegisteredTemplate template, FeedManagerTemplate.ID templateId,  FeedManagerTemplate.State state, MetadataChange.ChangeType changeType) {
+    private void notifyTemplateStateChange(RegisteredTemplate template, FeedManagerTemplate.ID templateId, FeedManagerTemplate.State state, MetadataChange.ChangeType changeType) {
         final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
                                     ? SecurityContextHolder.getContext().getAuthentication()
                                     : null;
@@ -260,8 +259,6 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
         TemplateChangeEvent event = new TemplateChangeEvent(change, DateTime.now(), principal);
         metadataEventService.notify(event);
     }
-
-
 
 
     /**
@@ -287,7 +284,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
      * @return the processors in RegisteredTemplate that are input processors without any incoming connections
      */
     public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(RegisteredTemplate registeredTemplate) {
-       return registeredTemplateService.getInputProcessorsInNifTemplate(registeredTemplate);
+        return registeredTemplateService.getInputProcessorsInNifTemplate(registeredTemplate);
     }
 
     /**
@@ -297,12 +294,8 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
      * @return the input processors (processors without any incoming connections) in a NiFi template object
      */
     public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(TemplateDTO nifiTemplate) {
-       return registeredTemplateService.getInputProcessorsInNifTemplate(nifiTemplate);
+        return registeredTemplateService.getInputProcessorsInNifTemplate(nifiTemplate);
     }
-
-
-
-
 
 
     /**
@@ -330,7 +323,9 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
      */
     public List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String nifiTemplateId) {
         Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForTemplate(nifiTemplateId);
-        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> registeredTemplateUtil.toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
+        List<RegisteredTemplate.Processor>
+            processorProperties =
+            processorDTOs.stream().map(processorDTO -> registeredTemplateUtil.toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
         return processorProperties;
 
     }
@@ -423,7 +418,9 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
             }
         }
 
-        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> registeredTemplateUtil.toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
+        List<RegisteredTemplate.Processor>
+            processorProperties =
+            processorDTOs.stream().map(processorDTO -> registeredTemplateUtil.toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
         return processorProperties;
     }
 
