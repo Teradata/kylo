@@ -58,11 +58,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.entity.owner = matchingUsers[0];
                     }
             })
-            /*
-            UserGroupService.getCurrentUser().then(function(user){
-                self.model.owner = user;
-            });
-            */
         }
 
 
@@ -209,21 +204,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             if(angular.isUndefined(self.entity.roleMembershipsUpdated) || self.entity.roleMembershipsUpdated == false) {
                 EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType);
             }
-            console.info('init ',self.entity)
         }
 
-
         init();
-
-        console.info('ENTITY ACCESS!!!!! ',self.entity)
-
-
-
-        //populate the self.model.groups with the query for the group access for this feed entity
-
-
-
-
     };
 
     angular.module(moduleName).controller('EntityAccessControlController', ["$q","$http","UserGroupService","EntityAccessControlService","AccessControlService",controller]);
