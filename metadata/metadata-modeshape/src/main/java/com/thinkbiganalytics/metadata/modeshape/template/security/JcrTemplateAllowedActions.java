@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.template.security;
 
 /*-
@@ -23,6 +20,18 @@ package com.thinkbiganalytics.metadata.modeshape.template.security;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
+
 import java.security.Principal;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,23 +40,12 @@ import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-import com.thinkbiganalytics.security.UsernamePrincipal;
-import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedActions;
-
 /**
  * A type of allowed actions that applies to templates.  It intercepts certain action enable/disable
  * calls related to visibility to update the underlying JCR node structure's ACL lists.
  */
 public class JcrTemplateAllowedActions extends JcrAllowedActions {
-    
+
     private JcrFeedTemplate template;
 
     /**
@@ -87,14 +85,14 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
         disableEntityAccess(principal, actions.getAvailableActions().stream());
         return super.disable(principal, actions);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
      */
     @Override
     public void setupAccessControl(UsernamePrincipal owner) {
         super.setupAccessControl(owner);
-        
+
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
         enable(JcrMetadataAccess.ADMIN, TemplateAccessControl.EDIT_TEMPLATE);
     }
@@ -102,40 +100,46 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
-            if(action.implies(FeedAccessControl.CHANGE_PERMS)) {
-                Node allowedActionsNode = ((JcrAllowedActions)this.template.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
-            }
-            else if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
+            if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+                Node allowedActionsNode = ((JcrAllowedActions) this.template.getAllowedActions()).getNode();
+                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+            } else if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
                 JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
                 JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_READ);
             }
         });
     }
-    
+
     protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        AtomicBoolean access = new AtomicBoolean(false);
-        AtomicBoolean edit = new AtomicBoolean(false);
-        
+        final AtomicBoolean access = new AtomicBoolean(false);
+        final AtomicBoolean changePerms = new AtomicBoolean(false);
+        final AtomicBoolean edit = new AtomicBoolean(false);
+
         actions.forEach(action -> {
             access.compareAndSet(false, action.implies(TemplateAccessControl.ACCESS_TEMPLATE));
+            changePerms.compareAndSet(false, action.implies(TemplateAccessControl.CHANGE_PERMS));
             edit.compareAndSet(false, action.implies(TemplateAccessControl.EDIT_TEMPLATE));
         });
-        
+
         if (edit.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         }
-        
+
         if (access.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
         }
+
+        if (changePerms.get()) {
+            final Node allowedActionsNode = ((JcrAllowedActions) this.template.getAllowedActions()).getNode();
+            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+        }
     }
-    
+
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
             if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {

@@ -1,12 +1,36 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.security;
+
+/*-
+ * #%L
+ * thinkbig-metadata-modeshape
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.security.Principal;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,34 +47,6 @@ import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
-import org.modeshape.jcr.security.SimplePrincipal;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-/*-
- * #%L
- * thinkbig-metadata-modeshape
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
-
 /**
  * Utilities to apply JCR access control changes to nodes and node hierarchies.
  */
@@ -59,7 +55,7 @@ public final class JcrAccessControlUtil {
     private JcrAccessControlUtil() {
         throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
     }
-    
+
     public Optional<UsernamePrincipal> getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
@@ -74,7 +70,7 @@ public final class JcrAccessControlUtil {
             return addPermissions(node.getSession(), node.getPath(), principal, privilegeNames);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": "
-                    + Arrays.toString(privilegeNames), e);
+                                                  + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -83,7 +79,7 @@ public final class JcrAccessControlUtil {
             return addPermissions(node.getSession(), node.getPath(), principal, privileges);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": "
-                    + Arrays.toString(privileges), e);
+                                                  + Arrays.toString(privileges), e);
         }
 
     }
@@ -93,7 +89,7 @@ public final class JcrAccessControlUtil {
             return addPermissions(session, path, principal, asPrivileges(session, privilegeNames));
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
-                    + Arrays.toString(privilegeNames), e);
+                                                  + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -119,7 +115,7 @@ public final class JcrAccessControlUtil {
             return added;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
-                    + Arrays.toString(privileges), e);
+                                                  + Arrays.toString(privileges), e);
         }
 
     }
@@ -127,10 +123,10 @@ public final class JcrAccessControlUtil {
     /**
      * Adds the specified privilege to the node hierarchy starting at a child node and proceeding through its parents until
      * the destination node is reached.
-     * 
-     * @param node the starting node on which the privilege is assigned
-     * @param principal the principal being given the privilege
-     * @param toNode the ending parent node 
+     *
+     * @param node           the starting node on which the privilege is assigned
+     * @param principal      the principal being given the privilege
+     * @param toNode         the ending parent node
      * @param privilegeNames the privilege being assigned
      * @return true if any of the nodes had their privilege change for the principle (i.e. the privilege had not already existed)
      */
@@ -141,12 +137,12 @@ public final class JcrAccessControlUtil {
             AtomicBoolean added = new AtomicBoolean(false);
             Deque<Node> stack = new ArrayDeque<>();
 
-            while (! current.equals(toNode) && ! current.equals(rootNode)) {
+            while (!current.equals(toNode) && !current.equals(rootNode)) {
                 stack.push(current);
                 current = current.getParent();
             }
 
-            if (current.equals(rootNode) && ! toNode.equals(rootNode)) {
+            if (current.equals(rootNode) && !toNode.equals(rootNode)) {
                 throw new IllegalArgumentException("addHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
             } else {
                 stack.push(current);
@@ -156,7 +152,7 @@ public final class JcrAccessControlUtil {
 
             return added.get();
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to hierarchy from node " + node + " up to " + toNode, e);
         }
     }
 
@@ -165,7 +161,7 @@ public final class JcrAccessControlUtil {
             return removePermissions(session, path, principal, asPrivileges(session, privilegeNames));
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
-                    + Arrays.toString(privilegeNames), e);
+                                                  + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -209,7 +205,7 @@ public final class JcrAccessControlUtil {
                 for (AccessControlEntry entry : acl.getAccessControlEntries()) {
                     if (entry.getPrincipal().getName().equals(principal.getName())) {
                         Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
-                            .filter(p -> ! Arrays.stream(removes).anyMatch(r -> r.equals(p)))
+                            .filter(p -> !Arrays.stream(removes).anyMatch(r -> r.equals(p)))
                             .toArray(Privilege[]::new);
 
                         if (entry.getPrivileges().length != newPrivs.length) {
@@ -231,7 +227,7 @@ public final class JcrAccessControlUtil {
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
-                    + Arrays.toString(removes), e);
+                                                  + Arrays.toString(removes), e);
         }
 
     }
@@ -242,12 +238,12 @@ public final class JcrAccessControlUtil {
             Node rootNode = toNode.getSession().getRootNode();
             boolean removed = false;
 
-            while (! current.equals(toNode) && ! current.equals(rootNode)) {
+            while (!current.equals(toNode) && !current.equals(rootNode)) {
                 removed |= removePermissions(node.getSession(), current.getPath(), principal, privilegeNames);
                 current = current.getParent();
             }
 
-            if (current.equals(rootNode) && ! toNode.equals(rootNode)) {
+            if (current.equals(rootNode) && !toNode.equals(rootNode)) {
                 throw new IllegalArgumentException("addHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
             } else {
                 removed |= removePermissions(node.getSession(), current.getPath(), principal, privilegeNames);

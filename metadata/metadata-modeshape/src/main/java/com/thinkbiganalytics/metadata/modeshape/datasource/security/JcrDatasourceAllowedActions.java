@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessCo
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrUserDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
@@ -107,7 +108,7 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
         actions.forEach(action -> {
             if (action.implies(DatasourceAccessControl.CHANGE_PERMS)) {
                 final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
+                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
                 datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
@@ -132,12 +133,14 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
         final AtomicBoolean detailsAccess = new AtomicBoolean(false);
         final AtomicBoolean summaryEdit = new AtomicBoolean(false);
         final AtomicBoolean detailsEdit = new AtomicBoolean(false);
+        final AtomicBoolean changePerms = new AtomicBoolean(false);
 
         actions.forEach(action -> {
             summaryAccess.compareAndSet(false, action.implies(DatasourceAccessControl.ACCESS_DATASOURCE));
             detailsAccess.compareAndSet(false, action.implies(DatasourceAccessControl.ACCESS_DETAILS));
             summaryEdit.compareAndSet(false, action.implies(DatasourceAccessControl.EDIT_SUMMARY));
             detailsEdit.compareAndSet(false, action.implies(DatasourceAccessControl.EDIT_DETAILS));
+            changePerms.compareAndSet(false, action.implies(DatasourceAccessControl.CHANGE_PERMS));
         });
 
         // Update JCR permissions
@@ -163,6 +166,11 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
             JcrAccessControlUtil.addHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_READ);
+        }
+
+        if (changePerms.get()) {
+            final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
+            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
         }
     }
 

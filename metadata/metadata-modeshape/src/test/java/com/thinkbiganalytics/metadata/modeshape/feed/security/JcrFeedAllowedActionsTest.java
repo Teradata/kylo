@@ -123,7 +123,6 @@ public class JcrFeedAllowedActionsTest {
     }
 
     @Test
-    @Ignore
     public void testSeeOnlyOwnFeeds() {
         int feedCnt1 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER1);
 
@@ -135,7 +134,6 @@ public class JcrFeedAllowedActionsTest {
     }
 
     @Test
-    @Ignore
     public void testSeeOwnFeedContentOnly() {
         metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
@@ -151,7 +149,6 @@ public class JcrFeedAllowedActionsTest {
     }
 
     @Test
-    @Ignore
     public void testLimitRelationshipResults() {
         metadata.commit(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
@@ -171,7 +168,6 @@ public class JcrFeedAllowedActionsTest {
     }
 
     @Test
-    @Ignore
     public void testSummaryOnlyRead() {
         metadata.commit(() -> {
             Feed feed = this.feedProvider.findById(idB);

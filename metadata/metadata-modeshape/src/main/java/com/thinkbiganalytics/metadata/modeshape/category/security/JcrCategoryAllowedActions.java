@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.category.security;
 
 /*-
@@ -28,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
@@ -39,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
@@ -101,10 +100,10 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
+            //When Change Perms comes through the user needs write access to the allowed actions tree to grant additional access
             if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
                 Node allowedActionsNode = ((JcrAllowedActions) this.category.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowedActions.NODE_TYPE, principal, Privilege.JCR_ALL);
+                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
             } else if (action.implies(CategoryAccessControl.EDIT_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
@@ -117,41 +116,50 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         });
     }
 
-    protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        AtomicBoolean summaryAccess = new AtomicBoolean(false);
-        AtomicBoolean detailsAccess = new AtomicBoolean(false);
-        AtomicBoolean summaryEdit = new AtomicBoolean(false);
-        AtomicBoolean detailsEdit = new AtomicBoolean(false);
+    protected void enableOnlyEntityAccess(@Nonnull final Principal principal, @Nonnull final Stream<? extends Action> actions) {
+        // Determine enabled permissions
+        final AtomicBoolean accessDetails = new AtomicBoolean(false);
+        final AtomicBoolean accessSummary = new AtomicBoolean(false);
+        final AtomicBoolean changePerms = new AtomicBoolean(false);
+        final AtomicBoolean editDetails = new AtomicBoolean(false);
+        final AtomicBoolean editSummary = new AtomicBoolean(false);
 
         actions.forEach(action -> {
-            summaryAccess.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_CATEGORY));
-            detailsAccess.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_DETAILS));
-            summaryEdit.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_SUMMARY));
-            detailsEdit.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_DETAILS));
+            accessDetails.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_DETAILS));
+            accessSummary.compareAndSet(false, action.implies(CategoryAccessControl.ACCESS_CATEGORY));
+            changePerms.compareAndSet(false, action.implies(CategoryAccessControl.CHANGE_PERMS));
+            editDetails.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_DETAILS));
+            editSummary.compareAndSet(false, action.implies(CategoryAccessControl.EDIT_SUMMARY));
         });
 
-        if (detailsEdit.get()) {
+        // Set permissions
+        if (editDetails.get()) {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         } else {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
         }
 
-        if (summaryEdit.get()) {
+        if (editSummary.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
         }
 
-        if (detailsAccess.get()) {
+        if (accessDetails.get()) {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         } else {
             this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
         }
 
-        if (summaryAccess.get()) {
+        if (accessSummary.get()) {
             JcrAccessControlUtil.addHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
         } else {
             JcrAccessControlUtil.removeHierarchyPermissions(category.getNode(), principal, category.getNode(), Privilege.JCR_READ);
+        }
+
+        if (changePerms.get()) {
+            final Node allowedActionsNode = ((JcrAllowedActions) category.getAllowedActions()).getNode();
+            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
         }
     }
 
