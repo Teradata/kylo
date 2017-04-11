@@ -20,9 +20,11 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -91,7 +93,14 @@ public class DatasourceModelTransform {
     /**
      * NiFi REST client
      */
+    @Nonnull
     private final NiFiRestClient nifiRestClient;
+
+    /**
+     * Security service
+     */
+    @Nonnull
+    private final SecurityService securityService;
 
     /**
      * Constructs a {@code DatasourceModelTransform}.
@@ -99,11 +108,14 @@ public class DatasourceModelTransform {
      * @param datasourceProvider the {@code Datasource} domain object provider
      * @param encryptor          the text encryptor
      * @param nifiRestClient     the NiFi REST client
+     * @param securityService    the security service
      */
-    public DatasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor encryptor, @Nonnull final NiFiRestClient nifiRestClient) {
+    public DatasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor encryptor, @Nonnull final NiFiRestClient nifiRestClient,
+                                    @Nonnull final SecurityService securityService) {
         this.datasourceProvider = datasourceProvider;
         this.encryptor = encryptor;
         this.nifiRestClient = nifiRestClient;
+        this.securityService = securityService;
     }
 
     /**
@@ -352,8 +364,14 @@ public class DatasourceModelTransform {
      * @param ds     the REST object
      */
     private void updateDomain(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain, @Nonnull final UserDatasource ds) {
+        // Update properties
         domain.setDescription(ds.getDescription());
         domain.setName(ds.getName());
         domain.setType(ds.getType());
+
+        // Update access control
+        if (domain.getAllowedActions().hasPermission(DatasourceAccessControl.CHANGE_PERMS)) {
+            ds.toRoleMembershipChangeList().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(ds.getId(), roleMembershipChange));
+        }
     }
 }

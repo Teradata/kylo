@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;

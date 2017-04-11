@@ -148,6 +148,8 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     "@type": JDBC_TYPE,
                     name: "",
                     description: "",
+                    owner: null,
+                    roleMemberships: [],
                     sourceForFeeds: [],
                     type: "",
                     databaseConnectionUrl: "",

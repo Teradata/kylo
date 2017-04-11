@@ -250,13 +250,14 @@ public class FeedManagerConfiguration {
      * @param datasourceProvider the {@link com.thinkbiganalytics.metadata.api.datasource.Datasource} provider
      * @param textEncryptor      the encryption provider
      * @param niFiRestClient     the NiFi REST client
+     * @param securityService    the security service
      * @return the model transformer
      */
     @Bean
     @Nonnull
     public DatasourceModelTransform datasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor textEncryptor,
-                                                             @Nonnull final NiFiRestClient niFiRestClient) {
-        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient);
+                                                             @Nonnull final NiFiRestClient niFiRestClient, @Nonnull final SecurityService securityService) {
+        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient, securityService);
     }
 
     /**
@@ -284,7 +285,7 @@ public class FeedManagerConfiguration {
     }
 
     @Bean
-    AccessControlledEntityTransform accessControlledEntityTransform(){
+    AccessControlledEntityTransform accessControlledEntityTransform() {
         return new AccessControlledEntityTransform();
     }
 }

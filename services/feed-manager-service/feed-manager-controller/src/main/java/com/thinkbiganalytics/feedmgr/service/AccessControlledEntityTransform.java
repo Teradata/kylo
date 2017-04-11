@@ -21,12 +21,12 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.Date;
 

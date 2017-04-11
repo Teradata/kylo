@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.rest.model;
+package com.thinkbiganalytics.security.rest.model;
 
 /*-
  * #%L
@@ -21,10 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
-import com.thinkbiganalytics.security.rest.model.RoleMembership;
-import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +74,7 @@ public class EntityAccessControl {
         return owner;
     }
 
+    @JsonProperty  // allows overloaded method in Datasource to be ignored
     public void setOwner(UserPrincipal owner) {
         this.owner = owner;
     }

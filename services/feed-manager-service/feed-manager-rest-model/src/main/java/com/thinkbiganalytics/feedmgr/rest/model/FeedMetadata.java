@@ -32,7 +32,7 @@ import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
