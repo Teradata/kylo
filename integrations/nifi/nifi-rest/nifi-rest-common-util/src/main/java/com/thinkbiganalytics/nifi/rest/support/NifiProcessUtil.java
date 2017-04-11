@@ -232,7 +232,7 @@ public class NifiProcessUtil {
     private static Map<String, ProcessGroupDTO> getProcessGroupsMap(ProcessGroupDTO group) {
         Map<String, ProcessGroupDTO> groups = new HashMap<>();
         groups.put(group.getId(), group);
-        if (group.getContents().getProcessGroups() != null) {
+        if (group.getContents() != null && group.getContents().getProcessGroups() != null) {
             for (ProcessGroupDTO groupDTO : group.getContents().getProcessGroups()) {
                 groups.putAll(getProcessGroupsMap(groupDTO));
             }
@@ -249,12 +249,14 @@ public class NifiProcessUtil {
     public static Map<String, ProcessorDTO> getProcessorsMap(ProcessGroupDTO group) {
         Map<String, ProcessorDTO> processors = new HashMap<>();
         if (group != null) {
-            for (ProcessorDTO processorDTO : group.getContents().getProcessors()) {
-                processors.put(processorDTO.getId(), processorDTO);
-            }
-            if (group.getContents().getProcessGroups() != null) {
-                for (ProcessGroupDTO groupDTO : group.getContents().getProcessGroups()) {
-                    processors.putAll(getProcessorsMap(groupDTO));
+            if(group.getContents() != null) {
+                for (ProcessorDTO processorDTO : group.getContents().getProcessors()) {
+                    processors.put(processorDTO.getId(), processorDTO);
+                }
+                if (group.getContents().getProcessGroups() != null) {
+                    for (ProcessGroupDTO groupDTO : group.getContents().getProcessGroups()) {
+                        processors.putAll(getProcessorsMap(groupDTO));
+                    }
                 }
             }
         }
@@ -281,7 +283,7 @@ public class NifiProcessUtil {
         List<ProcessorDTO> processors = new ArrayList<>();
         List<String> processorIds = NifiConnectionUtil.getInputProcessorIds(group.getContents().getConnections());
         Map<String, ProcessorDTO> map = new HashMap<>();
-        if (group.getContents().getProcessors() != null) {
+        if (group.getContents() != null && group.getContents().getProcessors() != null) {
             for (ProcessorDTO processor : group.getContents().getProcessors()) {
                 map.put(processor.getId(), processor);
             }
