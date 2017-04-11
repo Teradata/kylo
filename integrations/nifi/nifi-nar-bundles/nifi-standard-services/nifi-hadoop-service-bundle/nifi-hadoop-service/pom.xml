@@ -15,11 +15,19 @@
   <packaging>jar</packaging>
 
   <dependencies>
+
+    <dependency>
+      <groupId>org.khaleesi.carfield</groupId>
+      <artifactId>spark-job-server-client</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-nifi-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.services</groupId>
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>

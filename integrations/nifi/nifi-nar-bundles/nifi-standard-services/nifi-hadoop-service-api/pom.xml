@@ -26,6 +26,12 @@
       <artifactId>nifi-processor-utils</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.khaleesi.carfield</groupId>
+      <artifactId>spark-job-server-client</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
   </dependencies>
 </project>
 
