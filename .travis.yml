@@ -21,7 +21,7 @@ addons:
     token:
       secure: ${SONAR_TOKEN}
     github_token:
-      secure: ${GITHUB_TOKEN}
+      secure: fdb211764ad34b04d4cc2457bf00b72a48f7762c
 
 install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
 script: mvn clean install sonar:sonar -B -V
