@@ -40,12 +40,6 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-service-monitor-ambari</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-service-monitor-pipeline-db</artifactId>
       <version>${project.version}</version>
     </dependency>
