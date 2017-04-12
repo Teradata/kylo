@@ -313,20 +313,26 @@ public class DatasourceController {
                       @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
                   })
     public Response getTableNames(@PathParam("id") final String idStr, @QueryParam("schema") final String schema, @QueryParam("tableName") final String tableName) {
-        return metadata.read(() -> {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
-            final List<String> tables = Optional.ofNullable(datasource)
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+
+        // Retrieve table names using system user
+        return metadata.read(() -> {
+            final List<String> tables = id.map(datasetProvider::getDatasource)
                 .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
                 .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
-                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
+                .flatMap(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
                 .filter(JdbcDatasourceDetails.class::isInstance)
                 .map(JdbcDatasourceDetails.class::cast)
                 .map(details -> dbcpConnectionPoolTableInfo.getTableNamesForDatasource(details, schema, tableName))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
             return Response.ok(tables).build();
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     /**
@@ -348,20 +354,26 @@ public class DatasourceController {
                       @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
                   })
     public Response describeTable(@PathParam("id") final String idStr, @PathParam("tableName") final String tableName, @QueryParam("schema") final String schema) {
-        return metadata.read(() -> {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
-            final TableSchema tableSchema = Optional.ofNullable(datasource)
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+
+        // Retrieve table description using system user
+        return metadata.read(() -> {
+            final TableSchema tableSchema = id.map(datasetProvider::getDatasource)
                 .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
                 .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
-                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
+                .flatMap(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
                 .filter(JdbcDatasourceDetails.class::isInstance)
                 .map(JdbcDatasourceDetails.class::cast)
                 .map(details -> dbcpConnectionPoolTableInfo.describeTableForDatasource(details, schema, tableName))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
             return Response.ok(tableSchema).build();
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     @GET
