@@ -371,7 +371,7 @@ public class DatasourceModelTransform {
 
         // Update access control
         if (domain.getAllowedActions().hasPermission(DatasourceAccessControl.CHANGE_PERMS)) {
-            ds.toRoleMembershipChangeList().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(ds.getId(), roleMembershipChange));
+            ds.toRoleMembershipChangeList().forEach(roleMembershipChange -> securityService.changeDatasourceRoleMemberships(ds.getId(), roleMembershipChange));
         }
     }
 }
