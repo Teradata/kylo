@@ -51,7 +51,14 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                 return response.data.map(function (category) {
                     category._lowername = category.name.toLowerCase();
                     category.createFeed = false;
-                    if(AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED,category,"category")){
+                    //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
+                    //if the user doesnt have this permission they cannot create feeds under this category
+                    if(AccessControlService.isEntityAccessControlled()) {
+                        if (AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
+                            category.createFeed = true;
+                        }
+                    }
+                    else {
                         category.createFeed = true;
                     }
                     return category;

@@ -1,6 +1,6 @@
 define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName) {
 
-    var controller = function ($scope, $interval, $timeout, $http, $location, HttpService, Utils) {
+    var controller = function ($scope, $interval, $timeout, $http, $location, HttpService, Utils,AccessControlService) {
         var self = this;
         this.refreshIntervalTime = 5000;
         this.refreshedDate;
@@ -18,6 +18,12 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
         var firedJobs = {};
         var runningDisplayInterval = 3000;
         this.destroyed = false;
+
+        /**
+         * flag to allow access to the scheduler controls
+         * @type {boolean}
+         */
+        this.allowAdmin = false;
 
         this.populateSchedulerDetails = function(metadata){
 
@@ -234,6 +240,14 @@ function justFiredJob(job){
 
 
         this.init = function () {
+
+            // Fetch the allowed actions
+            AccessControlService.getAllowedActions()
+                .then(function (actionSet) {
+                    self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                });
+
+
             this.clearSchedulerDetails();
             this.fetchJobs();
             this.fetchSchedulerDetails();
@@ -260,7 +274,7 @@ function justFiredJob(job){
         });
     };
 
-    angular.module(moduleName).controller('SchedulerController', ["$scope","$interval","$timeout","$http","$location","HttpService","Utils",controller]);
+    angular.module(moduleName).controller('SchedulerController', ["$scope","$interval","$timeout","$http","$location","HttpService","Utils","AccessControlService",controller]);
 
 
 });
