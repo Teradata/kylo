@@ -36,7 +36,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
@@ -45,9 +45,13 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
@@ -85,6 +89,9 @@ public class ExportImportFeedService {
     MetadataService metadataService;
 
     @Inject
+    CategoryProvider categoryProvider;
+
+    @Inject
     MetadataAccess metadataAccess;
 
     @Inject
@@ -117,7 +124,8 @@ public class ExportImportFeedService {
      * @return object containing the zip file with data about the feed.
      */
     public ExportFeed exportFeed(String feedId) throws IOException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
+        this.metadataService.checkFeedPermission(feedId, FeedAccessControl.EXPORT);
 
         // Prepare feed metadata
         final FeedMetadata feed = metadataService.getFeedById(feedId);
@@ -141,7 +149,7 @@ public class ExportImportFeedService {
             )
             .orElse(null);
         if (userDatasources != null && !userDatasources.isEmpty()) {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_DATASOURCES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
             feed.setUserDatasources(userDatasources);
         }
 
@@ -164,7 +172,7 @@ public class ExportImportFeedService {
      * @return the feed data to import
      */
     public ImportFeed validateFeedForImport(final String fileName, byte[] content, ImportFeedOptions options) throws IOException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_FEEDS);
         ImportFeed importFeed = null;
         UploadProgressMessage feedImportStatusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating Feed import.");
         boolean isValid = ZipFileUtil.validateZipEntriesWithRequiredEntries(content, getValidZipFileEntries(), Sets.newHashSet(FEED_JSON_FILE));
@@ -352,8 +360,26 @@ public class ExportImportFeedService {
                 statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist.", false);
                 valid = false;
             } else {
-                metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
-                statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
+
+                //validate user has write access to create feeds under this category
+                //ensure the user has rights to create feeds under this category
+                if (accessController.isEntityAccessControlled()) {
+                    valid = metadataAccess.read(() -> {
+                        Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
+                        //Query for Category and ensure the user has access to create feeds on that category
+                        if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
+                            importFeed.setValid(false);
+                            statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    });
+                }
+                if (valid) {
+                    metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
+                    statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
+                }
             }
         }
         completeSection(importOptions, ImportSection.Section.VALIDATE_FEED_CATEGORY);
@@ -371,7 +397,7 @@ public class ExportImportFeedService {
      * @return the feed data to import
      */
     public ImportFeed importFeed(String fileName, byte[] content, ImportFeedOptions importOptions) throws Exception {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_FEEDS);
         UploadProgress progress = uploadProgressService.getUploadStatus(importOptions.getUploadKey());
         progress.setSections(ImportSection.sectionsForImportAsString(ImportType.FEED));
 
@@ -412,6 +438,7 @@ public class ExportImportFeedService {
                     //get/create category
                     FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
                     if (category == null) {
+                        metadata.getCategory().setId(null);
                         metadataService.saveCategory(metadata.getCategory());
                     } else {
                         metadata.setCategory(category);

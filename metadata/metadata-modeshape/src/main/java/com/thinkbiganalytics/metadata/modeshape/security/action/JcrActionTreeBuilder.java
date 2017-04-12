@@ -3,6 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
+import javax.jcr.Node;
+import javax.jcr.security.Privilege;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -26,13 +31,9 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionBuilder;
 import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-
-import javax.jcr.Node;
-import javax.jcr.security.Privilege;
 
 /**
  *
@@ -83,4 +84,8 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
         return this.parentBuilder;
     }
 
+    public AllowedActions build() {
+        
+        return null;
+    }
 }

@@ -106,7 +106,7 @@ public class AboutKyloController {
     public Response getKyloVersion() {
 
         final String VERSION_NOT_AVAILABLE = "Not Available";
-        KyloVersion kyloVersion = kyloVersionProvider.getKyloVersion();
+        KyloVersion kyloVersion = kyloVersionProvider.getCurrentVersion();
 
         if (kyloVersion != null) {
             return Response.ok(kyloVersion.getVersion()).build();

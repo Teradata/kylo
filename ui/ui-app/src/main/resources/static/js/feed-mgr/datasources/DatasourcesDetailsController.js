@@ -10,9 +10,10 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
      * @param {Object} $transition$ the URL parameters
      * @param {AccessControlService} AccessControlService the access control service
      * @param {DatasourcesService} DatasourcesService the data sources service
+     * @param {EntityAccessControlService} EntityAccessControlService the entity access control service
      * @param {StateService} StateService the page state service
      */
-    function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, DatasourcesService, StateService) {
+    function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, DatasourcesService, EntityAccessControlService, StateService) {
         var self = this;
 
         /**
@@ -22,10 +23,16 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.allowEdit = false;
 
         /**
-         * Angular Materials form.
+         * Angular Materials form for Access Control view.
          * @type {Object}
          */
-        self.datasourceForm = {};
+        self.datasourceAccessControlForm = {};
+
+        /**
+         * Angular Materials form for Details view.
+         * @type {Object}
+         */
+        self.datasourceDetailsForm = {};
 
         /**
          * The set of existing data source names.
@@ -46,10 +53,16 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.editModel = {};
 
         /**
-         * Indicates if the edit view is displayed.
+         * Indicates if the Access Control edit view is displayed.
          * @type {boolean}
          */
-        self.isEditable = false;
+        self.isAccessControlEditable = false;
+
+        /**
+         * Indicates if the Details edit view is displayed.
+         * @type {boolean}
+         */
+        self.isDetailsEditable = false;
 
         /**
          * Data source model for the read-only view.
@@ -58,12 +71,12 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.model = DatasourcesService.newJdbcDatasource();
 
         /**
-         * Indicates if the data source can be deleted. The main requirement is that the data source exists.
+         * Indicates if the data source is new and has not been saved.
          *
-         * @returns {boolean} {@code true} if the data source can be deleted, or {@code false} otherwise
+         * @returns {boolean} {@code true} if the data source is new, or {@code false} otherwise
          */
-        self.canDelete = function () {
-            return angular.isString(self.model.id);
+        self.isNew = function () {
+            return (!angular.isString(self.model.id) || self.model.id.length === 0);
         };
 
         /**
@@ -118,20 +131,56 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         };
 
         /**
-         * Saves the current data source.
+         * Saves the Access Controls for the current data source.
          */
-        self.onSave = function () {
+        self.onAccessControlSave = function () {
+            // Prepare model
+            var model = angular.copy(self.model);
+            model.roleMemberships = self.editModel.roleMemberships;
+            model.owner = self.editModel.owner;
+            EntityAccessControlService.updateEntityForSave(model);
+
+            // Save the changes
+            self.saveModel(model)
+                .then(function () {
+                    EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.DATASOURCE);
+                })
+                .catch(function () {
+                    self.isAccessControlEditable = true;
+                });
+        };
+
+        /**
+         * Saves the Details for the current data source.
+         */
+        self.onDetailsSave = function () {
+            // Prepare model
             var model = angular.copy(self.editModel);
+            model.roleMemberships = self.model.roleMemberships;
+            model.owner = self.model.owner;
+
             if (!angular.isString(model.type) || model.type.length === 0) {
                 var matches = /^(?:jdbc:)?([^:]+):/.exec(model.databaseConnectionUrl);
                 model.type = (matches !== null) ? matches[1] : model.databaseDriverClassName;
             }
 
-            DatasourcesService.save(model)
+            // Save the changes
+            self.saveModel(model)
+                .catch(function () {
+                    self.isDetailsEditable = true;
+                });
+        };
+
+        /**
+         * Saves the specified data source model.
+         *
+         * @param {JdbcDatasource} model the datasource to be saved
+         */
+        self.saveModel = function (model) {
+            return DatasourcesService.save(model)
                 .then(function (savedModel) {
                     self.model = savedModel;
                 }, function (err) {
-                    self.isEditable = true;
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
@@ -147,15 +196,15 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          * Validates the edit form.
          */
         self.validate = function () {
-            if (angular.isDefined(self.datasourceForm["datasourceName"])) {
-                self.datasourceForm["datasourceName"].$setValidity("notUnique", angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]));
+            if (angular.isDefined(self.datasourceDetailsForm["datasourceName"])) {
+                self.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]));
             }
         };
 
         // Fetch allowed permissions
         AccessControlService.getAllowedActions()
             .then(function (actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.DATASOURCE_EDIT, actionSet.actions);
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.DATASOURCE_ACCESS, actionSet.actions);
             });
 
         // Load the data source
@@ -169,7 +218,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 });
         } else {
             self.onEdit();
-            self.isEditable = true;
+            self.isDetailsEditable = true;
             self.loading = false;
         }
 
@@ -192,6 +241,6 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         });
     }
 
-    angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "DatasourcesService", "StateService",
-                                                                           DatasourcesDetailsController]);
+    angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "DatasourcesService",
+                                                                           "EntityAccessControlService", "StateService", DatasourcesDetailsController]);
 });

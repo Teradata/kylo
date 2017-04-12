@@ -53,6 +53,17 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-controller</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>ant</groupId>
+          <artifactId>ant</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
@@ -138,6 +149,17 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-hadoop-authorization-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-controller</artifactId>
       <version>${project.version}</version>
     </dependency>
 

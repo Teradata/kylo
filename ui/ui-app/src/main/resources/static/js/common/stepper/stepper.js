@@ -30,7 +30,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 showCancelButton: '@',
                 coreDataModel: '=?',
                 templateUrl: '@',
-                selectedStepIndex: '@'
+                selectedStepIndex: '@',
+                onInitialized:'&?'
             },
             controllerAs: 'vm',
             require: ['thinkbigStepper'],
@@ -69,64 +70,80 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         this.showProgress = false;
         this.height = 80;
 
-        $scope.templateUrl = this.templateUrl;
-        $scope.stepperName = this.stepperName;
-        $scope.totalSteps = this.totalSteps;
-        Utils.waitForDomElementReady('md-tab-item', function () {
-            $element.find('md-tab-item:not(:last)').addClass('arrow-tab')
-        })
 
 
 
-        this.previousStepIndex = null;
-        if (self.stepperName == undefined || self.stepperName == '') {
-            self.stepperName = StepperService.newStepperName();
-        }
-        StepperService.registerStepper(self.stepperName, self.totalSteps);
-        this.steps = StepperService.getSteps(self.stepperName);
+        function initialize() {
+            $scope.templateUrl = self.templateUrl;
+            $scope.stepperName = self.stepperName;
+            $scope.totalSteps = self.totalSteps;
+            Utils.waitForDomElementReady('md-tab-item', function () {
+                $element.find('md-tab-item:not(:last)').addClass('arrow-tab')
+            })
 
-        if (angular.isNumber(this.selectedStepIndex) || angular.isString(this.selectedStepIndex)) {
-            // Complete previous steps
-            for (var i=0; i < this.selectedStepIndex; ++i) {
-                this.steps[i].complete = true;
-                this.steps[i].disabled = false;
-                this.steps[i].visited = true;
-                this.steps[i].updateStepType();
+
+
+            this.previousStepIndex = null;
+            if (self.stepperName == undefined || self.stepperName == '') {
+                self.stepperName = StepperService.newStepperName();
             }
+            StepperService.registerStepper(self.stepperName, self.totalSteps);
+            self.steps = StepperService.getSteps(self.stepperName);
 
-            // Active current step
-            this.steps[this.selectedStepIndex].disabled = false;
-            this.steps[this.selectedStepIndex].visited = true;
-            this.steps[this.selectedStepIndex].updateStepType();
-        } else {
-            this.selectedStepIndex = 0;
-        }
-
-        $scope.$watch(function () {
-            return self.selectedStepIndex;
-        }, function (current, old) {
-            //Broadcast that we changed steps
-            BroadcastService.notify(StepperService.STEP_CHANGED_EVENT, {newStep: current, oldStep: old});
-
-            WindowUnloadService.clear();
-            self.previousStepIndex = old;
-
-            // Update step
-            var step = self.getStep(current);
-            if(step != null) {
-                var shouldSkip = (step.skip && !step.visited);
-                step.visited = true;
-                step.updateStepType();
-                BroadcastService.notify(StepperService.ACTIVE_STEP_EVENT, current);
-
-                // Skip if necessary
-                if (shouldSkip) {
-                    self.stepEnabled(step.nextActiveStepIndex);
-                    self.completeStep(step.index);
-                    ++self.selectedStepIndex;
+            if (angular.isNumber(self.selectedStepIndex) || angular.isString(self.selectedStepIndex)) {
+                // Complete previous steps
+                for (var i=0; i < this.selectedStepIndex; ++i) {
+                    self.steps[i].complete = true;
+                    self.steps[i].disabled = false;
+                    self.steps[i].visited = true;
+                    self.steps[i].updateStepType();
                 }
+
+                // Active current step
+                self.steps[this.selectedStepIndex].disabled = false;
+                self.steps[this.selectedStepIndex].visited = true;
+                self.steps[this.selectedStepIndex].updateStepType();
+            } else {
+                self.selectedStepIndex = 0;
             }
-        });
+
+
+
+            $scope.$watch(function () {
+                return self.selectedStepIndex;
+            }, function (current, old) {
+                //Broadcast that we changed steps
+                BroadcastService.notify(StepperService.STEP_CHANGED_EVENT, {newStep: current, oldStep: old});
+
+                WindowUnloadService.clear();
+                self.previousStepIndex = old;
+
+                // Update step
+                var step = self.getStep(current);
+                if(step != null) {
+                    var shouldSkip = (step.skip && !step.visited);
+                    step.visited = true;
+                    step.updateStepType();
+                    BroadcastService.notify(StepperService.ACTIVE_STEP_EVENT, current);
+
+                    // Skip if necessary
+                    if (shouldSkip) {
+                        self.stepEnabled(step.nextActiveStepIndex);
+                        self.completeStep(step.index);
+                        ++self.selectedStepIndex;
+                    }
+                }
+            });
+
+            if(self.onInitialized && angular.isFunction(self.onInitialized())) {
+                self.onInitialized()(self);
+            }
+        }
+
+        this.getCountOfActiveSteps = function(){
+            return _.filter(StepperService.getSteps(self.stepperName),function(step) { return step.active;}).length;
+        }
+
 
         this.goToFirstStep = function () {
             self.selectedStepIndex = 0;
@@ -200,6 +217,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             step.complete = false;
             step.updateStepType();
         }
+
+        initialize();
 
         $scope.$on('$destroy', function () {
             StepperService.deRegisterStepper(self.stepperName);

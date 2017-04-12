@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -176,6 +177,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                             .findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreementGroup.getRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
                                                                                                                              PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
                                                                                                                              PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
+                serviceLevelAgreementGroup.setCanEdit(modelSla.isCanEdit());
                 return serviceLevelAgreementGroup;
             }
             return null;
@@ -222,11 +224,39 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     }
 
 
+    /**
+     * In order to Save an SLA if it is related to a Feed(s) the user needs to have EDIT_DETAILS permission on the Feed(s)
+     *
+     * @param serviceLevelAgreement the sla to save
+     * @param feed                  an option Feed to relate to this SLA.  If this is not present the related feeds are also embedded in the SLA policies.  The Feed is a pointer access to the current
+     *                              feed the user is editing if they are creating an SLA from the Feed Details page. If creating an SLA from the main SLA page the feed property will not be populated.
+     */
     private ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
         return metadataAccess.commit(() -> {
 
             if (serviceLevelAgreement != null) {
                 ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+
+                //all referencing Feeds
+                List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
+                Set<Feed> slaFeeds = new HashSet<Feed>();
+                Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
+                for (String categoryAndFeed : systemCategoryAndFeedNames) {
+                    //fetch and update the reference to the sla
+                    String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
+                    String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
+                    Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
+                    if (feedEntity != null) {
+                        feedManagerFeedService.checkFeedPermission(feedEntity.getId().toString(), FeedAccessControl.EDIT_DETAILS);
+                        slaFeeds.add(feedEntity);
+                        slaFeedIds.add(feedEntity.getId());
+                    }
+                }
+
+                if (feed != null) {
+                    feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS);
+                }
+
                 if (feed != null) {
                     transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 }
@@ -257,21 +287,6 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
                 // now assign the sla checks
                 slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
-
-                //all referencing Feeds
-                List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
-                Set<Feed> slaFeeds = new HashSet<Feed>();
-                Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
-                for (String categoryAndFeed : systemCategoryAndFeedNames) {
-                    //fetch and update the reference to the sla
-                    String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
-                    String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
-                    Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
-                    if (feedEntity != null) {
-                        slaFeeds.add(feedEntity);
-                        slaFeedIds.add(feedEntity.getId());
-                    }
-                }
 
                 if (feed != null) {
                     Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());

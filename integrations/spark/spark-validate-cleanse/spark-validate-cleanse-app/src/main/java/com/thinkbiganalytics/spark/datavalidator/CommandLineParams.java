@@ -31,11 +31,13 @@ import java.util.List;
  */
 public class CommandLineParams implements Serializable {
 
+    private static final String DEFAULT_STORAGE_LEVEL = "MEMORY_AND_DISK";
+
     @Parameter(names = {"-h", "--hiveConf"}, description = "Hive configuration parameters", converter = ParameterConverter.class)
     private List<Param> hiveParams;
 
     @Parameter(names = "--storageLevel", description = "Storage for RDD persistance")
-    private String storageLevel = "MEMORY_AND_DISK";
+    private String storageLevel = DEFAULT_STORAGE_LEVEL;
 
     public List<Param> getHiveParams() {
         return hiveParams == null ? new ArrayList<Param>(0) : hiveParams;

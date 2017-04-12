@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -30,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
 import org.joda.time.DateTime;
 
@@ -51,7 +54,7 @@ import java.util.Set;
                   @JsonSubTypes.Type(JdbcDatasource.class)
               }
 )
-public class Datasource implements com.thinkbiganalytics.metadata.datasource.Datasource, Serializable {
+public class Datasource extends EntityAccessControl implements com.thinkbiganalytics.metadata.datasource.Datasource, Serializable {
 
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime creationTime;
@@ -59,7 +62,6 @@ public class Datasource implements com.thinkbiganalytics.metadata.datasource.Dat
     private String id;
     private String name;
     private String description;
-    private String owner;
     private boolean encrypted;
     private boolean compressed;
     private Set<Feed> sourceForFeeds = new HashSet<>();
@@ -111,12 +113,11 @@ public class Datasource implements com.thinkbiganalytics.metadata.datasource.Dat
         this.description = description;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    @JsonIgnore
+    public void setOwner(final String owner) {
+        final UserPrincipal user = new UserPrincipal();
+        user.setSystemName(owner);
+        setOwner(user);
     }
 
     public DateTime getCreationTime() {

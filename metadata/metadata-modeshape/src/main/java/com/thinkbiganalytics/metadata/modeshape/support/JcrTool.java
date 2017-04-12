@@ -68,6 +68,7 @@ public class JcrTool extends JcrTools {
         try {
             Node node = session.getNode(absPath);
             super.printNode(node);
+            out.flush();
         } catch (RepositoryException e) {
             e.printStackTrace(this.out);
         }
@@ -77,6 +78,7 @@ public class JcrTool extends JcrTools {
         try {
             Node node = session.getNode(absPath);
             super.printSubgraph(node);
+            out.flush();
         } catch (RepositoryException e) {
             e.printStackTrace(this.out);
         }

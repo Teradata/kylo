@@ -37,8 +37,4 @@
   <property name="delimiter.end"    value="-- delimiter placeholder |" dbms="mysql"/>
   <property name="delimiter.reset"  value="-- delimiter placeholder DELIMITER ;" dbms="mysql"/>
 
-  <property name="delimiter.start"  value="-- delimiter placeholder DELIMITER |" dbms="postgresql"/>
-  <property name="delimiter.end"    value="-- delimiter placeholder |" dbms="postgresql"/>
-  <property name="delimiter.reset"  value="-- delimiter placeholder DELIMITER ;" dbms="mysql"/>
-
 </databaseChangeLog>

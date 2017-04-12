@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/categories/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/categories/module-name'], function (angular, moduleName) {
     /**
      * Manages the Category Feed Properties section of the Category Details page.
      *
@@ -8,7 +8,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param {AccessControlService} AccessControlService the access control service
      * @param CategoriesService the category service
      */
-    function CategoryFeedPropertiesController($scope, $mdToast, AccessControlService, CategoriesService) {
+    function CategoryFeedPropertiesController($scope, $mdToast, $q, AccessControlService, EntityAccessControlService, CategoriesService) {
         var self = this;
 
         /**
@@ -34,8 +34,12 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          */
         self.isNew = true;
         $scope.$watch(
-                function() {return CategoriesService.model.id},
-                function(newValue) {self.isNew = !angular.isString(newValue)}
+            function () {
+                return CategoriesService.model.id
+            },
+            function (newValue) {
+                self.isNew = !angular.isString(newValue)
+            }
         );
 
         /**
@@ -53,20 +57,20 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         /**
          * Switches to "edit" mode.
          */
-        self.onEdit = function() {
+        self.onEdit = function () {
             self.editModel = angular.copy(self.model);
         };
 
         /**
          * Saves the category properties.
          */
-        self.onSave = function() {
+        self.onSave = function () {
             var model = angular.copy(CategoriesService.model);
             model.id = self.model.id;
             model.userFields = self.editModel.userFields;
             model.userProperties = null;
 
-            CategoriesService.save(model).then(function(response) {
+            CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
                 CategoriesService.reload();
                 $mdToast.show(
@@ -74,14 +78,29 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                         .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
+            }, function (err) {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Save Failed")
+                        .textContent("The category '" + model.name + "' could not be saved. " + err.data.message)
+                        .ariaLabel("Failed to save category")
+                        .ok("Got it!")
+                );
             });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
-                });
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS, self.model)).then(function (response) {
+            self.allowEdit = response;
+        })
+
+        /*
+         // Fetch the allowed actions
+         AccessControlService.getAllowedActions()
+         .then(function(actionSet) {
+         self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
+         });
+         */
     }
 
     /**
@@ -99,6 +118,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     }
 
-    angular.module(moduleName).controller('CategoryFeedPropertiesController', ["$scope","$mdToast","AccessControlService","CategoriesService",CategoryFeedPropertiesController]);
+    angular.module(moduleName).controller('CategoryFeedPropertiesController',
+        ["$scope", "$mdToast", "$q", "AccessControlService", "EntityAccessControlService", "CategoriesService", CategoryFeedPropertiesController]);
     angular.module(moduleName).directive('thinkbigCategoryFeedProperties', thinkbigFeedCategoryProperties);
 });

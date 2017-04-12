@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
 
 
@@ -9,7 +9,7 @@ define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angul
         //preassign modules until directives are rewritten to use the $onInit method.
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
-        $stateProvider.state('feeds', {
+        $stateProvider.state(AccessConstants.UI_STATES.FEEDS.state, {
             url: '/feeds',
             params: {
                 tab: null
@@ -27,7 +27,8 @@ define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angul
             data: {
                 breadcrumbRoot: true,
                 displayName: 'Feeds',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.FEEDS.permissions
             }
         });
 

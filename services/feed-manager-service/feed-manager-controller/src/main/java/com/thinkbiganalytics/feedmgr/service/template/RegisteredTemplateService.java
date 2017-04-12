@@ -26,11 +26,11 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform.TEMPLATE_TRANSFORMATION_TYPE;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -163,7 +163,7 @@ public class RegisteredTemplateService {
             return null;
         } else {
             return metadataAccess.read(() -> {
-                this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+                this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
 
                 RegisteredTemplate registeredTemplate = null;
                 FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
@@ -206,7 +206,7 @@ public class RegisteredTemplateService {
             return null;
         }
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
 
             RegisteredTemplate registeredTemplate = null;
             FeedManagerTemplate template = templateProvider.findByNifiTemplateId(nifiTemplateId);
@@ -238,7 +238,7 @@ public class RegisteredTemplateService {
      */
     public RegisteredTemplate findRegisteredTemplateByName(final String templateName, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
 
             RegisteredTemplate registeredTemplate = null;
             FeedManagerTemplate template = templateProvider.findByName(templateName);
@@ -320,7 +320,7 @@ public class RegisteredTemplateService {
 
     public List<RegisteredTemplate> getRegisteredTemplates() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
 
             List<RegisteredTemplate> registeredTemplates = null;
             List<FeedManagerTemplate> templates = templateProvider.findAll();
@@ -605,8 +605,9 @@ public class RegisteredTemplateService {
 
     private RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate, boolean reorder) {
         List<String> templateOrder = registeredTemplate.getTemplateOrder();
+        registeredTemplate.setUpdated(false);
         RegisteredTemplate savedTemplate = metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
             return saveTemplate(registeredTemplate);
         });
 
@@ -661,7 +662,9 @@ public class RegisteredTemplateService {
             domain = templateProvider.update(domain);
             //query it back to display to the ui
             domain = templateProvider.findById(domain.getId());
-            return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+            RegisteredTemplate updatedTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+            updatedTemplate.setUpdated(true);
+            return updatedTemplate;
         }
     }
 
@@ -707,7 +710,7 @@ public class RegisteredTemplateService {
      */
     public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
 
             if (orderedTemplateIds != null && !orderedTemplateIds.isEmpty()) {
                 IntStream.range(0, orderedTemplateIds.size()).forEach(i -> {
@@ -724,7 +727,7 @@ public class RegisteredTemplateService {
                     }
                 });
             }
-        });
+        }, MetadataAccess.ADMIN);
 
 
     }

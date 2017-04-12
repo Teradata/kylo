@@ -304,7 +304,7 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
 
         try {
             final FlowEntity flow = client.post(BASE_PATH + processGroupId + "/template-instance", entity, FlowEntity.class);
-            return toFlowSnippet(flow.getFlow());
+            return toFlowSnippet(flow.getFlow(),true);
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         } catch (final ClientErrorException e) {
@@ -374,17 +374,12 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
         // Fetch the flow
         final FlowSnippetDTO snippet;
         try {
-            snippet = toFlowSnippet(client.get("/flow/process-groups/" + processGroupId, null, ProcessGroupFlowEntity.class).getProcessGroupFlow().getFlow());
+            snippet = toFlowSnippet(client.get("/flow/process-groups/" + processGroupId, null, ProcessGroupFlowEntity.class).getProcessGroupFlow().getFlow(),recursive);
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
 
-        // Add flow for child process groups
-        if (recursive) {
-            for (final ProcessGroupDTO processGroup : snippet.getProcessGroups()) {
-                processGroup.setContents(getFlowSnippet(processGroup.getId(), true));
-            }
-        }
+
 
         // Return flow
         return snippet;
@@ -406,7 +401,7 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
      * @return the flow snippet
      */
     @Nonnull
-    private FlowSnippetDTO toFlowSnippet(@Nonnull final FlowDTO flow) {
+    private FlowSnippetDTO toFlowSnippet(@Nonnull final FlowDTO flow, boolean recursive) {
         final FlowSnippetDTO snippet = new FlowSnippetDTO();
         snippet.setConnections(flow.getConnections().stream().map(ConnectionEntity::getComponent).collect(Collectors.toSet()));
         snippet.setControllerServices(Collections.emptySet());
@@ -417,6 +412,15 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
         snippet.setProcessGroups(flow.getProcessGroups().stream().map(ProcessGroupEntity::getComponent).collect(Collectors.toSet()));
         snippet.setProcessors(flow.getProcessors().stream().map(ProcessorEntity::getComponent).collect(Collectors.toSet()));
         snippet.setRemoteProcessGroups(flow.getRemoteProcessGroups().stream().map(RemoteProcessGroupEntity::getComponent).collect(Collectors.toSet()));
+
+        // Add flow for child process groups
+        if (recursive) {
+            for (final ProcessGroupDTO processGroup : snippet.getProcessGroups()) {
+                processGroup.setContents(getFlowSnippet(processGroup.getId(), true));
+            }
+        }
+
+
         return snippet;
     }
 }

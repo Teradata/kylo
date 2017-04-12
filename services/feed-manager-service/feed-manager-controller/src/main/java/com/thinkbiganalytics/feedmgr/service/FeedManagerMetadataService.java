@@ -30,7 +30,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
@@ -41,7 +41,6 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
@@ -49,6 +48,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -109,6 +109,12 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
+    
+    
+    @Override
+    public boolean checkFeedPermission(String id, Action action, Action... more) {
+        return feedProvider.checkFeedPermission(id, action, more);
+    }
 
     @Override
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
@@ -156,7 +162,7 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         // First check if this should be allowed.
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
 
         // Step 1: Fetch feed metadata
         final FeedMetadata feed = feedProvider.getFeedById(feedId);
@@ -173,7 +179,7 @@ public class FeedManagerMetadataService implements MetadataService {
         // Step 3: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
-                FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+                Feed domainFeed = feedModelTransform.feedToDomain(feed);
                 String hdfsPaths = (String) domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
 
                 hadoopAuthorizationService.deleteHivePolicy(feed.getSystemCategoryName(), feed.getSystemFeedName());

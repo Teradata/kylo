@@ -28,8 +28,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         };
     }
 
-    var controller = function($scope, $mdDialog, $mdToast, $http, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
-                              AddButtonService, AccessControlService) {
+    var controller = function($scope, $mdDialog, $mdToast, $http, $rootScope, $q,StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
+                              AddButtonService, AccessControlService,EntityAccessControlService) {
 
         var self = this;
 
@@ -38,6 +38,12 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
          * @type {boolean}
          */
         self.allowEdit = false;
+
+        /**
+         * shows the (+) Add button when trying to assign an SLA that is not directly tied to a feed initially
+         * @type {boolean}
+         */
+        self.allowCreate = false;
 
         self.cardTitle = "Service Level Agreements";
 
@@ -74,10 +80,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         // Register Add button
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton("service-level-agreements", function() {
                             self.onNewSla();
                         });
+                        self.allowCreate = true;
                     }
                 });
 
@@ -91,7 +98,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 loadSlas();
             }
             //Requery?
-            if (self.feed == null) {
+            if (self.feed == null && self.allowCreate) {
+                //display the add button if we are not in a given feed
                 AddButtonService.showAddButton();
             }
 
@@ -302,6 +310,9 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 currentFeedValue = PolicyInputFormService.currentFeedValue(self.feed);
             }
             self.options = PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            if(self.allowCreate || self.allowEdit){
+                PolicyInputFormService.stripNonEditableFeeds(self.options);
+            }
 
         });
 
@@ -322,6 +333,10 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                     SlaService.validateSlaActionRule(action);
                 });
 
+                if(self.allowCreate || self.allowEdit){
+                    PolicyInputFormService.stripNonEditableFeeds(self.slaActionOptions);
+                }
+
             }
             else {
                 self.showActionOptions = false;
@@ -329,10 +344,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         })
 
         /**
-         * Callend when the user cancels a specific SLA
+         * Called when the user cancels a specific SLA
          */
         self.cancelEditSla = function() {
             showList();
+            applyAccessPermissions();
         }
 
         self.addNewCondition = function() {
@@ -420,6 +436,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
         self.onBackToList = function(ev) {
             showList();
+            applyAccessPermissions();
 
         }
 
@@ -464,14 +481,14 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 var sla = response.data;
 
                 _.each(sla.rules, function(rule) {
-                    rule.editable = true;
+                    rule.editable = sla.canEdit;
                     rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
                 });
 
                 _.each(sla.actionConfigurations, function(rule) {
-                    rule.editable = true;
+                    rule.editable = sla.canEdit;
                     rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
@@ -479,10 +496,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                     SlaService.validateSlaActionRule(rule)
 
                 });
-                sla.editable = true;
+                sla.editable = sla.canEdit;
                 self.editSla = sla;
-
                 self.loading = false;
+                self.allowEdit = self.editSla.canEdit;
+
             });
         }
 
@@ -615,14 +633,38 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             }
         }
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+        function applyAccessPermissions() {
+            //Apply the entity access permissions
+            //if its an existing SLA, check to see if we can edit it
+            if (self.editSla && !self.newSla) {
+                self.allowEdit = self.editSla.canEdit;
+            }
+            else {
+                //ensure the user has the EDIT_SLA and if editing for a feed ensure the user has access to edit that feed
+
+                var entityAccessControlled = self.feed != null && AccessControlService.isEntityAccessControlled();
+
+                //Apply the entity access permissions
+                var requests = {
+                    entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.feed) : true,
+                    functionalAccess: AccessControlService.getAllowedActions()
+                }
+                $q.all(requests).then(function (response) {
+                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.SLA_EDIT, response.functionalAccess.actions);
+                    var slaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                    var allowFeedEdit = self.feed != null ? AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
+                    self.allowEdit = response.entityEditAccess && allowEditAccess && slaAccess && allowFeedEdit;
                 });
+
+            }
+        }
+
+        applyAccessPermissions();
+
+
     };
 
-    angular.module(moduleName).controller('ServiceLevelAgreementController', ["$scope","$mdDialog","$mdToast","$http","$rootScope","StateService","FeedService","SlaService","PolicyInputFormService","PaginationDataService","TableOptionsService","AddButtonService","AccessControlService",controller]);
+    angular.module(moduleName).controller('ServiceLevelAgreementController', ["$scope","$mdDialog","$mdToast","$http","$rootScope","$q","StateService","FeedService","SlaService","PolicyInputFormService","PaginationDataService","TableOptionsService","AddButtonService","AccessControlService","EntityAccessControlService",controller]);
     angular.module(moduleName)
             .directive('thinkbigServiceLevelAgreement', directive);
 

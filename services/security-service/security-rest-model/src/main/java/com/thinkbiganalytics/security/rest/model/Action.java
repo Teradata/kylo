@@ -101,4 +101,22 @@ public class Action implements Serializable {
             .filter(a -> a.getSystemName().equals(name))
             .findFirst();
     }
+
+    /**
+     * Check to see if this action matches the supplied name, or if any of its children match
+     * @param name the action name to check
+     * @return true if it has the name in this action hierarchy, false if not
+     */
+    boolean hasAction(String name) {
+        boolean hasAction = this.getSystemName().equals(name) || getAction(name).isPresent();
+        if(!hasAction){
+            for(Action a: actions){
+                hasAction = a.hasAction(name);
+                if(hasAction){
+                    break;
+                }
+            }
+        }
+        return hasAction;
+    }
 }

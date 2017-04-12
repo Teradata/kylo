@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
  * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedMetadata implements UIFeed {
+public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     boolean isNew = false;
     private String id;
@@ -131,6 +132,7 @@ public class FeedMetadata implements UIFeed {
      * List of feed IDs dependent on this feed
      */
     private List<FeedSummary> usedByFeeds;
+
 
     /**
      * List of data source dependencies.

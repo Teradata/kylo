@@ -57,7 +57,7 @@ public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<Fe
         List<Feed> feeds = getFeedProvider().getFeeds(crit);
 
         if (feeds.size() > 0) {
-            Feed<?> feed = feeds.get(0);
+            Feed feed = feeds.get(0);
             List<FeedOperation> list = this.getFeedOperationsProvider().findLatestCompleted(feed.getId());
 
             if (!list.isEmpty()) {

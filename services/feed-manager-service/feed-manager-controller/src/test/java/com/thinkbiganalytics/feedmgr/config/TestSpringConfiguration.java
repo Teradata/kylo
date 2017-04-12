@@ -25,6 +25,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -48,13 +49,12 @@ import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -70,6 +70,8 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.ModeShapeEngine;
@@ -130,11 +132,6 @@ public class TestSpringConfiguration {
     @Bean
     public ModeShapeEngine modeShapeEngine() {
         return Mockito.mock(ModeShapeEngine.class);
-    }
-
-    @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider() {
-        return Mockito.mock(FeedManagerFeedProvider.class);
     }
 
     @Bean
@@ -373,8 +370,8 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    FeedManagerCategoryProvider feedManagerCategoryProvider() {
-        return new Mockito().mock(FeedManagerCategoryProvider.class);
+    CategoryProvider feedManagerCategoryProvider() {
+        return new Mockito().mock(CategoryProvider.class);
     }
 
     @Bean
@@ -425,5 +422,20 @@ public class TestSpringConfiguration {
     @Bean
     ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform() {
         return new ServiceLevelAgreementModelTransform(Mockito.mock(Model.class));
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform() {
+        return Mockito.mock(AccessControlledEntityTransform.class);
+    }
+
+    @Bean
+    SecurityModelTransform actionsTransform() {
+        return Mockito.mock(SecurityModelTransform.class);
+    }
+
+    @Bean
+    UserService userService() {
+        return Mockito.mock(UserService.class);
     }
 }

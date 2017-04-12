@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -35,17 +36,14 @@ import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,16 +66,15 @@ import javax.inject.Inject;
 public class FeedModelTransform {
 
     @Inject
-    FeedManagerCategoryProvider categoryProvider;
+    CategoryProvider categoryProvider;
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
 
     @Inject
-    private FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
     private FeedProvider feedProvider;
+    @Inject
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private TemplateModelTransform templateModelTransform;
@@ -148,10 +145,10 @@ public class FeedModelTransform {
      * @return the Metadata feed
      */
     @Nonnull
-    public FeedManagerFeed feedToDomain(@Nonnull final FeedMetadata feedMetadata) {
+    public Feed feedToDomain(@Nonnull final FeedMetadata feedMetadata) {
         //resolve the id
-        Feed.ID domainId = feedMetadata.getId() != null ? feedManagerFeedProvider.resolveId(feedMetadata.getId()) : null;
-        FeedManagerFeed domain = domainId != null ? feedManagerFeedProvider.findById(domainId) : null;
+        Feed.ID domainId = feedMetadata.getId() != null ? feedProvider.resolveId(feedMetadata.getId()) : null;
+        Feed domain = domainId != null ? feedProvider.findById(domainId) : null;
 
         FeedCategory restCategoryModel = feedMetadata.getCategory();
         Category category = null;
@@ -166,7 +163,7 @@ public class FeedModelTransform {
                 final String categoryId = (restCategoryModel != null) ? restCategoryModel.getId() : "(null)";
                 throw new RuntimeException("Category cannot be found while creating feed " + feedMetadata.getSystemFeedName() + ".  Category Id is " + categoryId);
             }
-            domain = feedManagerFeedProvider.ensureFeed(category.getId(), feedMetadata.getSystemFeedName());
+            domain = feedProvider.ensureFeed(category.getId(), feedMetadata.getSystemFeedName());
             domainId = domain.getId();
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             domain.setState(state);
@@ -229,7 +226,7 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    public FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed domain) {
+    public FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain) {
         return domainToFeedMetadata(domain, null);
     }
 
@@ -240,12 +237,12 @@ public class FeedModelTransform {
      * @return the Feed Manager feeds
      */
     @Nonnull
-    public List<FeedMetadata> domainToFeedMetadata(@Nonnull final Collection<? extends FeedManagerFeed> domain) {
+    public List<FeedMetadata> domainToFeedMetadata(@Nonnull final Collection<? extends Feed> domain) {
         final Map<Category, Set<UserFieldDescriptor>> userFieldMap = Maps.newHashMap();
         return domain.stream().map(f -> domainToFeedMetadata(f, userFieldMap)).collect(Collectors.toList());
     }
 
-    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain, boolean clearSensitiveProperties) {
+    public FeedMetadata deserializeFeedMetadata(Feed domain, boolean clearSensitiveProperties) {
         String json = domain.getJson();
         FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
         if (clearSensitiveProperties) {
@@ -254,7 +251,7 @@ public class FeedModelTransform {
         return feedMetadata;
     }
 
-    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain) {
+    public FeedMetadata deserializeFeedMetadata(Feed domain) {
         return deserializeFeedMetadata(domain, true);
     }
 
@@ -267,7 +264,7 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed<?> domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
+    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
 
         FeedMetadata feed = deserializeFeedMetadata(domain, false);
         feed.setId(domain.getId().toString());
@@ -286,7 +283,7 @@ public class FeedModelTransform {
             feed.setRegisteredTemplate(registeredTemplate);
             feed.setTemplateId(registeredTemplate.getId());
         }
-        FeedManagerCategory category = domain.getCategory();
+        Category category = domain.getCategory();
         if (category != null) {
             feed.setCategory(categoryModelTransform.domainToFeedCategorySimple(category));
         }
@@ -329,6 +326,9 @@ public class FeedModelTransform {
             feed.setUsedByFeeds(usedByFeeds);
         }
 
+        //add in access control items
+        accessControlledEntityTransform.applyAccessControlToRestModel(domain,feed);
+
         return feed;
     }
 
@@ -344,9 +344,9 @@ public class FeedModelTransform {
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());
         feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
-        if (feedManagerFeed.getCategory() instanceof FeedManagerCategory) {
-            feedSummary.setCategoryIcon(((FeedManagerCategory) feedManagerFeed.getCategory()).getIcon());
-            feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
+        if (feedManagerFeed.getCategory() instanceof Category) {
+            feedSummary.setCategoryIcon(((Category) feedManagerFeed.getCategory()).getIcon());
+            feedSummary.setCategoryIconColor(((Category) feedManagerFeed.getCategory()).getIconColor());
         }
         feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
         feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
@@ -357,14 +357,16 @@ public class FeedModelTransform {
 
         feedSummary.setState(feedManagerFeed.getState() != null ? feedManagerFeed.getState().name() : null);
 
-        if (feedManagerFeed instanceof FeedManagerFeed) {
+        if (feedManagerFeed instanceof Feed) {
 
-            FeedManagerFeed fmf = (FeedManagerFeed) feedManagerFeed;
+            Feed fmf = (Feed) feedManagerFeed;
             if (fmf.getTemplate() != null) {
                 feedSummary.setTemplateId(fmf.getTemplate().getId().toString());
                 feedSummary.setTemplateName(fmf.getTemplate().getName());
             }
         }
+        //add in access control items
+        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed,feedSummary);
         return feedSummary;
     }
 

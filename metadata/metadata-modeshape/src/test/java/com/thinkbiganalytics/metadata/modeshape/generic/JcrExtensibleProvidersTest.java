@@ -42,9 +42,8 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
-    // @formatter:off
 
     @Inject
     private ExtensibleTypeProvider typeProvider;
@@ -65,32 +64,35 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         });
         //  + Datasource + DatasourceDefinition + DerivedDatasource + DirectoryDatasource + Feed + FeedSLA + HiveTableDatasource + Metric +  +  +  + User +
         // UserGroup + UserDatasource + JdbcDatasource = 14
-        /*0 = {JcrExtensibleType@5423} "tba:sla"
-        1 = {JcrExtensibleType@5424} "tba:slaCheck"
-        2 = {JcrExtensibleType@5425} "tba:category"
-        3 = {JcrExtensibleType@5426} "tba:slaActionConfiguration"
-        4 = {JcrExtensibleType@5427} "tba:datasource"
-        5 = {JcrExtensibleType@5428} "tba:directoryDatasource"
-        6 = {JcrExtensibleType@5429} "tba:feed"
-        7 = {JcrExtensibleType@5430} "tba:user"
-        8 = {JcrExtensibleType@5431} "tba:hiveTableDatasource"
-        9 = {JcrExtensibleType@5432} "tba:derivedDatasource"
-        10 = {JcrExtensibleType@5433} "tba:metric"
-        11 = {JcrExtensibleType@5434} "tba:userGroup"
-        12 = {JcrExtensibleType@5435} "tba:datasourceDefinition"
-        13 = {JcrExtensibleType@5436} "tba:userDatasource"
-        14 = {JcrExtensibleType@5437} "tba:jdbcDatasource"
+        /*0 = {JcrExtensibleType@5455} "tba:sla"
+        1 = {JcrExtensibleType@5456} "tba:slaCheck"
+        2 = {JcrExtensibleType@5457} "tba:category"
+        3 = {JcrExtensibleType@5458} "tba:jdbcDatasourceDetails"
+        4 = {JcrExtensibleType@5459} "tba:categoryDetails"
+        5 = {JcrExtensibleType@5460} "tba:slaActionConfiguration"
+        6 = {JcrExtensibleType@5461} "tba:datasource"
+        7 = {JcrExtensibleType@5462} "tba:userDatasource"
+        8 = {JcrExtensibleType@5463} "tba:directoryDatasource"
+        9 = {JcrExtensibleType@5464} "tba:feed"
+        10 = {JcrExtensibleType@5465} "tba:datasourceDetails"
+        11 = {JcrExtensibleType@5466} "tba:user"
+        12 = {JcrExtensibleType@5467} "tba:hiveTableDatasource"
+        13 = {JcrExtensibleType@5468} "tba:derivedDatasource"
+        14 = {JcrExtensibleType@5469} "tba:feedSummary"
+        15 = {JcrExtensibleType@5470} "tba:metric"
+        16 = {JcrExtensibleType@5471} "tba:userGroup"
+        17 = {JcrExtensibleType@5472} "tba:datasourceDefinition"
         */
         //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
         //KYLO-292 will address this.  For now to get the build to pass look for result either 13 or 14
 
-
-        assertThat(size).isBetween(15,16);
+        assertThat(size).isBetween(18, 19);
     }
 
-    @Test(dependsOnMethods="testGetAllDefaultTypes")
+    @Test(dependsOnMethods = "testGetAllDefaultTypes")
     public void testCreatePersonType() {
-        String typeName = metadata.commit(new AdminCredentials(), () ->  {
+        String typeName = metadata.commit(new AdminCredentials(), () -> {
+            // @formatter:off
             ExtensibleType type = typeProvider.buildType("Person")
                             .field("name")
                                 .type(FieldDescriptor.Type.STRING)
@@ -101,6 +103,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
                             .addField("description", FieldDescriptor.Type.STRING)
                             .addField("age", FieldDescriptor.Type.LONG)
                             .build();
+            // @formatter:on
 
             return type.getName();
         });
@@ -108,10 +111,11 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
 
-    @Test(dependsOnMethods="testCreatePersonType")
+    @Test(dependsOnMethods = "testCreatePersonType")
     public void testCreateEmployeeType() {
         String typeName = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType person = typeProvider.getType("Person");
+            // @formatter:off
             ExtensibleType emp = typeProvider.buildType("Employee")
                             .supertype(person)
                             .field("name")
@@ -123,6 +127,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
                             .addField("description", FieldDescriptor.Type.STRING)
                             .addField("age", FieldDescriptor.Type.LONG)
                             .build();
+            // @formatter:on
 
             return emp.getSupertype().getName();
         });
@@ -130,7 +135,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
 
-    @Test(dependsOnMethods="testCreatePersonType")
+    @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetPersonType() {
         final ExtensibleType.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
@@ -157,7 +162,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         assertThat(fields).containsEntry("age", FieldDescriptor.Type.LONG);
     }
 
-    @Test(dependsOnMethods="testCreatePersonType")
+    @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetAllTypes() {
         int size = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleType> types = typeProvider.getTypes();
@@ -165,14 +170,14 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
 
-         //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
+        //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
         //KYLO-292 will address this.  For now to get the build to pass look for result either 15,16
 
         // 16 + Person + Employee = 18
-        assertThat(size).isBetween(17,18);
+        assertThat(size).isBetween(20, 21);
     }
 
-    @Test(dependsOnMethods="testCreatePersonType")
+    @Test(dependsOnMethods = "testCreatePersonType")
     public void testCreateEntity() {
         ExtensibleEntity.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
@@ -190,9 +195,9 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         assertThat(id).isNotNull();
     }
 
-    @Test(dependsOnMethods="testCreatePersonType")
+    @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetEntity() {
-        String typeName = metadata.commit(new AdminCredentials(), () ->  {
+        String typeName = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleEntity> list = entityProvider.getEntities();
 
             assertThat(list).isNotNull().hasSize(1);
@@ -208,6 +213,4 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
         assertThat(typeName).isEqualTo("Person");
     }
-    
-    // @formatter:on
 }

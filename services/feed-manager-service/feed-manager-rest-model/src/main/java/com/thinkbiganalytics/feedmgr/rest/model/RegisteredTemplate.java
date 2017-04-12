@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RegisteredTemplate {
+public class RegisteredTemplate extends EntityAccessControl {
 
     private List<NifiProperty> properties;
 
@@ -91,6 +92,12 @@ public class RegisteredTemplate {
     @JsonIgnore
     private TemplateDTO nifiTemplate;
 
+    /**
+     * flag to indicate the template was updated
+     */
+    @JsonIgnore
+    private boolean updated;
+
     public RegisteredTemplate() {
 
     }
@@ -120,6 +127,9 @@ public class RegisteredTemplate {
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
         this.isStream = registeredTemplate.isStream();
+        this.setOwner(registeredTemplate.getOwner());
+        this.setRoleMemberships(registeredTemplate.getRoleMemberships());
+        this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.initializeProcessors();
     }
 
@@ -140,6 +150,7 @@ public class RegisteredTemplate {
         ));
 
     }
+
 
     public List<NifiProperty> getProperties() {
         return properties;
@@ -549,7 +560,12 @@ public class RegisteredTemplate {
 
     }
 
-
-
-
+    @JsonIgnore
+    public boolean isUpdated() {
+        return updated;
+    }
+    @JsonIgnore
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
 }

@@ -7,7 +7,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param CategoriesService the category service
      * @constructor
      */
-    function CategoryDetailsController($scope, $transition$, CategoriesService) {
+    function CategoryDetailsController($scope, $transition$, CategoriesService, AccessControlService) {
         var self = this;
 
         /**
@@ -15,6 +15,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
          */
         self.loadingCategory = true;
+
+
+        self.showAccessControl = AccessControlService.isEntityAccessControlled();
 
         /**
          * Category data.
@@ -57,5 +60,5 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         }
     }
 
-    angular.module(moduleName).controller('CategoryDetailsController', ["$scope","$transition$","CategoriesService",CategoryDetailsController]);
+    angular.module(moduleName).controller('CategoryDetailsController', ["$scope","$transition$","CategoriesService","AccessControlService",CategoryDetailsController]);
 });

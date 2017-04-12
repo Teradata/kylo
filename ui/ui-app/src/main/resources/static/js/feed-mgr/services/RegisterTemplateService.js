@@ -18,7 +18,7 @@
  * #L%
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -68,7 +68,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 feedsCount: 0,
                 registeredDatasources: [],
                 isStream: false,
-                validTemplateProcessorNames: true
+                validTemplateProcessorNames: true,
+                roleMemberships:[],
+                owner:null,
+                roleMembershipsUpdated:false
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
@@ -99,7 +102,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     needsReusableTemplate: this.model.needsReusableTemplate,
                     reusableTemplateConnections: this.model.reusableTemplateConnections,
                     state: this.model.state,
-                    isStream: this.model.isStream
+                    isStream: this.model.isStream,
+                    roleMemberships:this.model.roleMemberships,
+                    owner: this.model.owner,
+                    roleMembershipsUpdated: this.model.roleMembershipsUpdated
                 }
             },
             newReusableConnectionInfo: function () {
@@ -772,6 +778,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length > 0;
                         self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
                         self.model.isStream = templateData.isStream;
+                        self.model.owner = templateData.owner;
+                        self.model.allowedActions = templateData.allowedActions;
+                        self.model.roleMemberships = templateData.roleMemberships;
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }
@@ -796,6 +805,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     return deferred.promise;
                 }
 
+            },
+            /**
+             * check if the user has access on an entity
+             * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+             * @param entity the entity to check. if its undefined it will use the current template in the model
+             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
+             */
+            hasEntityAccess:function(permissionsToCheck,entity) {
+                if(entity == undefined){
+                    entity = data.model;
+                }
+                return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.TEMPLATE);
             }
 
         };

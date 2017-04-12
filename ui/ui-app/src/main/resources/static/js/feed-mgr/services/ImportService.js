@@ -1,4 +1,4 @@
-define(['angular','services/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
     angular.module(moduleName).factory('ImportService', [function () {
 

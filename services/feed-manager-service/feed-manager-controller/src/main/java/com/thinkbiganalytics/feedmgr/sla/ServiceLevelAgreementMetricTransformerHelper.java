@@ -206,6 +206,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
             }
             slaGroup.setActionConfigurations(agreementActionUiConfigurationItems);
         }
+        slaGroup.setCanEdit(sla.isCanEdit());
         return slaGroup;
     }
 

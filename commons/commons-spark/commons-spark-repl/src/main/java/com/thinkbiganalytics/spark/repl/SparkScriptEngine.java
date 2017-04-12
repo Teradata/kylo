@@ -33,8 +33,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -55,6 +57,16 @@ import scala.tools.nsc.interpreter.Results;
 public class SparkScriptEngine extends ScriptEngine {
 
     private static final Logger log = LoggerFactory.getLogger(SparkScriptEngine.class);
+
+    /**
+     * Matches a multi-line comment in Scala
+     */
+    private static final Pattern COMMENT = Pattern.compile("/\\*.*\\*/");
+
+    /**
+     * Matches continuation lines in Scala
+     */
+    private static final Pattern LINE_CONTINUATION = Pattern.compile("^\\s*\\.");
 
     /**
      * Spark configuration
@@ -99,19 +111,33 @@ public class SparkScriptEngine extends ScriptEngine {
     protected void execute(@Nonnull final String script) throws ScriptException {
         log.debug("Executing script:\n{}", script);
 
+        // Convert script to single line (for checking security violations)
+        final StringBuilder safeScriptBuilder = new StringBuilder(script.length());
+
+        for (final String line : script.split("\n")) {
+            if (!LINE_CONTINUATION.matcher(line).find()) {
+                safeScriptBuilder.append(';');
+            }
+            safeScriptBuilder.append(line);
+        }
+
+        final String safeScript = COMMENT.matcher(safeScriptBuilder.toString()).replaceAll("");
+
+        // Check for security violations
         for (final Pattern pattern : getDenyPatterns()) {
-            if (pattern.matcher(script).find()) {
+            if (pattern.matcher(safeScript).find()) {
                 log.error("Not executing script that matches deny pattern: {}", pattern.toString());
                 throw new ScriptException("Script not executed due to security policy.");
             }
         }
 
+        // Execute script
         try {
-            getInterpreter().interpret(script);
+            getInterpreter().interpret(safeScript);
         } catch (final AssertionError e) {
             log.warn("Caught assertion error when executing script. Retrying...", e);
             reset();
-            getInterpreter().interpret(script);
+            getInterpreter().interpret(safeScript);
         }
     }
 
@@ -135,12 +161,26 @@ public class SparkScriptEngine extends ScriptEngine {
     @Nonnull
     private List<Pattern> getDenyPatterns() {
         if (denyPatterns == null) {
-            // Load deny patterns
+            // Load custom or default deny patterns
+            String resourceName = "spark-deny-patterns.conf";
+            InputStream resourceStream = getClass().getResourceAsStream("/" + resourceName);
+            if (resourceStream == null) {
+                resourceName = "spark-deny-patterns.default.conf";
+                resourceStream = getClass().getResourceAsStream(resourceName);
+            }
+
+            // Parse lines
             final List<String> denyPatternLines;
-            try {
-                denyPatternLines = IOUtils.readLines(getClass().getResourceAsStream("/spark-deny-patterns.conf"), "UTF-8");
-            } catch (final IOException e) {
-                throw new IllegalStateException("Unable to load spark-deny-patterns.conf", e);
+            if (resourceStream != null) {
+                try {
+                    denyPatternLines = IOUtils.readLines(resourceStream, "UTF-8");
+                    log.info("Loaded Spark deny patterns from {}.", resourceName);
+                } catch (final IOException e) {
+                    throw new IllegalStateException("Unable to load " + resourceName, e);
+                }
+            } else {
+                log.info("Missing default Spark deny patterns.");
+                denyPatternLines = Collections.emptyList();
             }
 
             // Compile patterns

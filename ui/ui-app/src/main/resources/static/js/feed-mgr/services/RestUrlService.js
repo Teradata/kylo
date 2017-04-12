@@ -18,8 +18,8 @@
  * #L%
  */
 
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).service('RestUrlService', function () {
+define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
+    return angular.module(moduleName).service('RestUrlService', function () {
 
         var self = this;
 
@@ -217,9 +217,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         this.ADMIN_IMPORT_FEED_URL = self.ADMIN_V2_BASE_URL + "/import-feed";
 
-        this.ADMIN_UPLOAD_STATUS_CHECK = function(key) {
-            return self.ADMIN_BASE_URL+"/upload-status/"+key;
-        }
+        this.ADMIN_UPLOAD_STATUS_CHECK = function (key) {
+            return self.ADMIN_BASE_URL + "/upload-status/" + key;
+        };
 
         // Hadoop Security Authorization
         this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
@@ -241,7 +241,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @returns {string} the URL for listing controller services
          */
         this.LIST_SERVICES_URL = function (processGroupId) {
-            return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
         };
 
         /**
@@ -268,5 +268,41 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @type {string}
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+
+        /**
+         * Get/Post roles changes for a Feed entity
+         * @param feedId the feed id
+         * @returns {string} the url to get/post feed role changes
+         */
+        this.FEED_ROLES_URL = function (feedId) {
+            return self.FEEDS_BASE_URL + "/" + feedId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_ROLES_URL = function (categoryId) {
+            return self.CATEGORIES_URL + "/" + categoryId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Template entity
+         * @param templateId the Template id
+         * @returns {string} the url to get/post Template role changes
+         */
+        this.TEMPLATE_ROLES_URL = function (templateId) {
+            return self.TEMPLATES_BASE_URL + "/registered/" + templateId + "/roles"
+        };
+
+        /**
+         * Endpoint for roles changes to a Datasource entity.
+         * @param {string} datasourceId the datasource id
+         * @returns {string} the url for datasource role changes
+         */
+        this.DATASOURCE_ROLES_URL = function (datasourceId) {
+            return self.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
+        };
     });
 });

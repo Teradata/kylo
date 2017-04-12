@@ -22,13 +22,10 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 
 import org.springframework.stereotype.Component;
@@ -48,17 +45,7 @@ public class FeedTestUtil {
     FeedProvider feedProvider;
 
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
-
-    @Inject
-    FeedManagerCategoryProvider feedManagerCategoryProvider;
-
-    @Inject
-    private JcrMetadataAccess metadata;
-
 
     /**
      * must be called within metdata.commit()
@@ -66,12 +53,12 @@ public class FeedTestUtil {
     public Category findOrCreateCategory(String categorySystemName) {
         Category category = categoryProvider.findBySystemName(categorySystemName);
         if (category == null) {
-          category = createCategory(categorySystemName);
+            category = createCategory(categorySystemName);
         }
         return category;
     }
 
-    public Category createCategory(String categorySystemName){
+    public Category createCategory(String categorySystemName) {
         JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
         cat.setDescription(categorySystemName + " desc");
         cat.setTitle(categorySystemName);
@@ -79,29 +66,29 @@ public class FeedTestUtil {
         return cat;
     }
 
-    public FeedManagerFeed findOrCreateFeed(String categorySystemName, String feedSystemName, String feedTemplate) {
+    public Feed findOrCreateFeed(String categorySystemName, String feedSystemName, String feedTemplate) {
         Category category = findOrCreateCategory(categorySystemName);
-        FeedManagerFeed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
+        Feed feed = feedProvider.ensureFeed(category.getId(), feedSystemName);
         feed.setDisplayName(feedSystemName);
         FeedManagerTemplate template = findOrCreateTemplate(feedTemplate);
         feed.setTemplate(template);
-        return feedManagerFeedProvider.update(feed);
+        return feedProvider.update(feed);
     }
 
-    public FeedManagerFeed findOrCreateFeed(Category category, String feedSystemName,FeedManagerTemplate template) {
-        FeedManagerFeed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
+    public Feed findOrCreateFeed(Category category, String feedSystemName, FeedManagerTemplate template) {
+        Feed feed = feedProvider.ensureFeed(category.getId(), feedSystemName);
         feed.setDisplayName(feedSystemName);
         feed.setTemplate(template);
         feed.setJson(sampleFeedJson());
-        return feedManagerFeedProvider.update(feed);
+        return feedProvider.update(feed);
     }
 
-    private String sampleFeedJson(){
+    private String sampleFeedJson() {
         return "";
     }
 
-    public FeedManagerFeed findFeed(String categorySystemName, String feedSystemName) {
-        FeedManagerFeed feed = feedManagerFeedProvider.findBySystemName(categorySystemName, feedSystemName);
+    public Feed findFeed(String categorySystemName, String feedSystemName) {
+        Feed feed = feedProvider.findBySystemName(categorySystemName, feedSystemName);
         return feed;
     }
 

@@ -129,12 +129,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>com.holdenkarau</groupId>
-      <artifactId>spark-testing-base_2.10</artifactId>
-      <version>${spark.version}_0.6.0</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>

@@ -27,8 +27,10 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,6 +43,8 @@ import javax.jcr.RepositoryException;
 public class JcrEntity extends JcrObject implements ExtensibleEntity {
 
     public static String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
+
+    public static String OWNER = "jcr:createdBy";
 
     /**
      *
@@ -94,6 +98,10 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity type name", e);
         }
+    }
+
+    public Principal getOwner(){
+        return new UsernamePrincipal(getProperty(OWNER, String.class));
     }
 
 

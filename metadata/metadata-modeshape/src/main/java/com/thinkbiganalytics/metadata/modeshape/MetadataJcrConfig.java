@@ -30,21 +30,16 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedUtil;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
@@ -106,13 +101,8 @@ public class MetadataJcrConfig {
     }
 
     @Bean
-    public FeedManagerCategoryProvider feedManagerCategoryProvider() {
-        return new JcrFeedManagerCategoryProvider();
-    }
-
-    @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider() {
-        return new JcrFeedManagerFeedProvider();
+    public CategoryProvider feedManagerCategoryProvider() {
+        return new JcrCategoryProvider();
     }
 
     @Bean
@@ -144,12 +134,6 @@ public class MetadataJcrConfig {
     public FeedServiceLevelAgreementProvider jcrFeedSlaProvider() {
         return new JcrFeedServiceLevelAgreementProvider();
     }
-
-    @Bean
-    public JcrFeedUtil jcrFeedUtil(){
-        return new JcrFeedUtil();
-    }
-
 
     @Bean
     public JcrMetadataAccess metadataAccess() {

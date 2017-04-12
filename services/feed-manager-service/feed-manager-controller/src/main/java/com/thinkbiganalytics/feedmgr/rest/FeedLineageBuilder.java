@@ -112,7 +112,7 @@ public class FeedLineageBuilder {
         restFeeds.put(feed.getId(), feed);
 
         @SuppressWarnings("unchecked")
-        List<com.thinkbiganalytics.metadata.api.feed.FeedSource> sources = domainFeed.getSources();
+        List<? extends com.thinkbiganalytics.metadata.api.feed.FeedSource> sources = domainFeed.getSources();
         Set<FeedSource> feedSources = new HashSet<FeedSource>();
         if (sources != null) {
 
@@ -125,7 +125,7 @@ public class FeedLineageBuilder {
         }
         feed.setSources(feedSources);
         Set<FeedDestination> feedDestinations = new HashSet<FeedDestination>();
-        List<com.thinkbiganalytics.metadata.api.feed.FeedDestination> destinations = domainFeed.getDestinations();
+        List<? extends com.thinkbiganalytics.metadata.api.feed.FeedDestination> destinations = domainFeed.getDestinations();
         if (destinations != null) {
             destinations.stream().forEach(feedDestination -> {
                 FeedDestination dest = new FeedDestination();

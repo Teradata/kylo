@@ -69,15 +69,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.model.dataTransformationFeed = template.dataTransformation;
 
             if (template.defineTable) {
-                self.totalSteps = 6;
+                self.totalSteps = 7;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html'
             }
             else if (template.dataTransformation) {
-                self.totalSteps = 8;
+                self.totalSteps = 9;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-data-transform-stepper.html'
             }
             else {
-                self.totalSteps = 4;
+                self.totalSteps = 5;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html'
             }
         }

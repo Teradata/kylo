@@ -1,4 +1,4 @@
-define(['angular','side-nav/module-name'], function (angular,moduleName) {
+define(['angular','side-nav/module-name', 'constants/AccessConstants'], function (angular,moduleName,AccessConstants) {
 
     var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService) {
         return {
@@ -80,10 +80,10 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                 function buildFeedManagerMenu() {
                     var menu = ({type:'toggle', text: "Feed Manager",narrowText:'Feed',expanded:true,elementId:'toggle_feed_manager'});
                     var links = [];
-                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessControlService.FEEDS_ACCESS});
-                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessControlService.CATEGORIES_ACCESS});
-                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessControlService.FEED_MANAGER_ACCESS});
-                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessControlService.FEEDS_ACCESS});
+                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessConstants.UI_STATES.FEEDS.permissions});
+                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
+                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.UI_STATES.TABLES.permissions});
+                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                   //  links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission: AccessControlService.FEED_MANAGER_ACCESS});
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;
@@ -93,17 +93,18 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
 
                 /**
                  * Build the Ops Manager Left Nav
+                 * TODO Switch Permissions to correct ones (i.e remove OPERATIONS_MANAGER_ACCESS, add in detailed permission AccessConstants.CHARTS_ACCESS)
                  * @param allowed
                  */
                 function buildOpsManagerMenu() {
                        var menu = ({type:'toggle', text: "Operations",narrowText:'Ops',expanded:false});
                        var links = [];
-                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
+                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions});
+                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions});
+                       links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
+                       links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
+                       links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
+                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
                        menu.links = links;
                     menuMap[MENU_KEY.OPS_MGR] = menu;
                     return menu;
@@ -118,10 +119,10 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     var menu = ({type:'toggle', text: "Admin",narrowText:'Admin',expanded:false});
                     var links = [];
                     links.push({sref: "datasources", type: "link", icon: "storage", text: "Data Sources", defaultActive: false, permission: AccessControlService.DATASOURCE_ACCESS});
-                    links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessControlService.CATEGORIES_ADMIN});
-                    links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessControlService.TEMPLATES_ACCESS});
-                    links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessControlService.USERS_ACCESS});
-                    links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessControlService.GROUP_ACCESS});
+                    links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
+                    links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
+                    links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
+                    links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
                     menu.links = links;
                     menuMap[MENU_KEY.ADMIN] = menu;
                   return menu

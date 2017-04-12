@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-feedmgr','jquery','feed-mgr/visual-query/flowchart/flowchart_directive'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-feedmgr','jquery','feed-mgr/visual-query/flowchart/flowchart_directive'], function (angular,moduleName,lazyLoadUtil, AccessConstants) {
     var module = angular.module(moduleName, ['flowChart']);
 
 
@@ -27,7 +27,8 @@ define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil'
             data:{
                 breadcrumbRoot:true,
                 displayName:'Visual Query',
-                module:moduleName
+                module:moduleName,
+                permissions:''
             }
         });
 

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.Date;
 
@@ -28,7 +29,7 @@ import java.util.Date;
  * Lightweight view of Feed Data with just the essential feed information
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedSummary implements UIFeed {
+public class FeedSummary extends EntityAccessControl implements UIFeed {
 
     private String categoryName;
     private String systemCategoryName;

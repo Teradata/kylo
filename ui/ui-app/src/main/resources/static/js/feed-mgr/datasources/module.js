@@ -1,4 +1,4 @@
-define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil", "angular-ui-router"], function(angular, moduleName, lazyLoadUtil) {
+define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil",'constants/AccessConstants', "angular-ui-router"], function(angular, moduleName, lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, []);
 
     module.config(["$stateProvider", "$compileProvider", function($stateProvider, $compileProvider) {
@@ -6,7 +6,7 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state("datasources", {
+        $stateProvider.state(AccessConstants.UI_STATES.DATASOURCES.state, {
             url: "/datasources",
             params: {},
             views: {
@@ -22,10 +22,11 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
             data: {
                 breadcrumbRoot: true,
                 displayName: "Data Sources",
-                module: moduleName
+                module: moduleName,
+                permissions:AccessConstants.UI_STATES.DATASOURCES.permissions
             }
         });
-        $stateProvider.state("datasource-details", {
+        $stateProvider.state(AccessConstants.UI_STATES.DATASOURCE_DETAILS.state, {
             url: "/datasource-details/{datasourceId}",
             params: {
                 datasourceId: null
@@ -43,7 +44,8 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
             data: {
                 breadcrumbRoot: false,
                 displayName: "Data Source Details",
-                module: moduleName
+                module: moduleName,
+                permissions:AccessConstants.UI_STATES.DATASOURCE_DETAILS.permissions
             }
         });
 

@@ -1,5 +1,4 @@
-
-define(['angular','feed-mgr/categories/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/categories/module-name'], function (angular, moduleName) {
     /**
      * Manages the Category Definition section of the Category Details page.
      *
@@ -13,7 +12,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param FeedSecurityGroups the feed security groups service
      * @param FeedService the feed service
      */
-    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
+    function CategoryDefinitionController($scope, $mdDialog, $mdToast, $q, AccessControlService, EntityAccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
         var self = this;
 
         /**
@@ -35,6 +34,12 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         self.allowEdit = false;
 
         /**
+         * Indicates the user has the permission to delete
+         * @type {boolean}
+         */
+        self.allowDelete = false;
+
+        /**
          * Category data used in "edit" mode.
          * @type {CategoryModel}
          */
@@ -45,8 +50,6 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @type {boolean} {@code true} if in "edit" mode or {@code false} if in "normal" mode
          */
         self.isEditable = !angular.isString(CategoriesService.model.id);
-
-
 
         /**
          * Category data used in "normal" mode.
@@ -60,16 +63,16 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         self.securityGroupChips.searchText = null;
         self.securityGroupsEnabled = false;
 
-        FeedSecurityGroups.isEnabled().then(function(isValid) {
+        FeedSecurityGroups.isEnabled().then(function (isValid) {
                 self.securityGroupsEnabled = isValid;
             }
-
         );
 
-
-        self.splitSecurityGroups = function() {
-            if(self.model.securityGroups) {
-                return _.map(self.model.securityGroups, function(securityGroup) { return securityGroup.name}).join(",") ;
+        self.splitSecurityGroups = function () {
+            if (self.model.securityGroups) {
+                return _.map(self.model.securityGroups, function (securityGroup) {
+                    return securityGroup.name
+                }).join(",");
             }
 
         };
@@ -78,14 +81,14 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * Indicates if the category can be deleted.
          * @return {boolean} {@code true} if the category can be deleted, or {@code false} otherwise
          */
-        self.canDelete = function() {
-            return (angular.isString(self.model.id) && (!angular.isArray(self.model.relatedFeedSummaries) || self.model.relatedFeedSummaries.length === 0));
+        self.canDelete = function () {
+            return self.allowDelete && (angular.isString(self.model.id) && (!angular.isArray(self.model.relatedFeedSummaries) || self.model.relatedFeedSummaries.length === 0));
         };
 
         /**
          * Returns to the category list page if creating a new category.
          */
-        self.onCancel = function() {
+        self.onCancel = function () {
             if (!angular.isString(self.model.id)) {
                 StateService.FeedManager().Category().navigateToCategories();
             }
@@ -94,9 +97,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         /**
          * Deletes this category.
          */
-        self.onDelete = function() {
+        self.onDelete = function () {
             var name = self.editModel.name;
-            CategoriesService.delete(self.editModel).then(function() {
+            CategoriesService.delete(self.editModel).then(function () {
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
@@ -105,7 +108,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                 );
                 //redirect
                 StateService.FeedManager().Category().navigateToCategories();
-            }, function(err) {
+            }, function (err) {
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
@@ -120,10 +123,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         /**
          * Switches to "edit" mode.
          */
-        self.onEdit = function() {
+        self.onEdit = function () {
             self.editModel = angular.copy(self.model);
         };
-
 
         /**
          * Check for duplicate system names.
@@ -132,14 +134,14 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             var exists = false;
             FeedService.getSystemName(newVal)
                 .then(function (response) {
-                            var systemName = response.data;
+                    var systemName = response.data;
                     if (self.editModel.id == undefined) {
                         self.editModel.systemName = systemName;
                     }
                     exists = _.some(CategoriesService.categories, function (category) {
                         return ((self.editModel.id == null || (self.editModel.id != null && category.id != self.editModel.id)) && (category.systemName === systemName || (newVal && category.name
                                                                                                                                                                                     == newVal)));
-                            });
+                    });
 
                     var reservedCategoryName = newVal && _.indexOf(reservedCategoryNames, newVal.toLowerCase()) >= 0;
                     if (self.categoryForm && self.categoryForm['categoryName']) {
@@ -153,7 +155,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         /**
          * Saves the category definition.
          */
-        self.onSave = function() {
+        self.onSave = function () {
             var model = angular.copy(CategoriesService.model);
             model.name = self.editModel.name;
             model.description = self.editModel.description;
@@ -162,7 +164,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             model.userProperties = (self.model.id === null) ? self.editModel.userProperties : null;
             model.securityGroups = self.editModel.securityGroups;
 
-            CategoriesService.save(model).then(function(response) {
+            CategoriesService.save(model).then(function (response) {
                 CategoriesService.reload();
                 self.model = CategoriesService.model = response.data;
                 $mdToast.show(
@@ -170,13 +172,22 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                         .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
+            }, function (err) {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Save Failed")
+                        .textContent("The category '" + model.name + "' could not be saved. " + err.data.message)
+                        .ariaLabel("Failed to save category")
+                        .ok("Got it!")
+                );
             });
         };
 
         /**
          * Shows the icon picker dialog.
          */
-        self.showIconPicker = function() {
+        self.showIconPicker = function () {
             var self = this;
             $mdDialog.show({
                 controller: 'IconPickerDialog',
@@ -188,19 +199,21 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                     iconModel: self.editModel
                 }
             })
-            .then(function(msg) {
-                if (msg) {
-                    self.editModel.icon = msg.icon;
-                    self.editModel.iconColor = msg.color;
-                }
-            });
+                .then(function (msg) {
+                    if (msg) {
+                        self.editModel.icon = msg.icon;
+                        self.editModel.iconColor = msg.color;
+                    }
+                });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
-                });
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS, self.model)).then(function (response) {
+            self.allowEdit = response;
+        });
+
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY, self.model)).then(function (response) {
+            self.allowDelete = response;
+        })
 
         // Fetch the existing categories
         CategoriesService.reload().then(function (response) {
@@ -211,8 +224,10 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
 
         // Watch for changes to name
         $scope.$watch(
-                function() {return self.editModel.name},
-                self.onNameChange
+            function () {
+                return self.editModel.name
+            },
+            self.onNameChange
         );
     }
 
@@ -231,6 +246,8 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     }
 
-    angular.module(moduleName).controller('CategoryDefinitionController', ["$scope","$mdDialog","$mdToast","AccessControlService","CategoriesService","StateService","FeedSecurityGroups","FeedService",CategoryDefinitionController]);
+    angular.module(moduleName).controller('CategoryDefinitionController',
+        ["$scope", "$mdDialog", "$mdToast", "$q", "AccessControlService", "EntityAccessControlService", "CategoriesService", "StateService", "FeedSecurityGroups", "FeedService",
+         CategoryDefinitionController]);
     angular.module(moduleName).directive('thinkbigCategoryDefinition', thinkbigCategoryDefinition);
 });

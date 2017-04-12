@@ -9,8 +9,8 @@
       </div>
     </header-section>
     <body-section>
-      <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                               editable="vm.isEditable" is-valid="vm.datasourceForm.$valid" allow-edit="vm.allowEdit">
+      <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="!vm.isNew()" on-save-edit="vm.onDetailsSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                               editable="vm.isDetailsEditable" is-valid="vm.datasourceForm.$valid" allow-edit="vm.allowEdit">
         <readonly-section>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Name</span>
@@ -85,7 +85,19 @@
         </editable-section>
       </vertical-section-layout>
 
-      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds">
+      <ng-form name="vm.datasourceAccessControlForm" ng-if="!vm.isNew()">
+        <vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew()" section-title="Access Control" on-save-edit="vm.onAccessControlSave()" on-edit="vm.onEdit()"
+                                 editable="vm.isAccessControlEditable" is-valid="vm.isValid">
+          <readonly-section>
+            <entity-access-control entity="vm.model" entity-type="datasource" the-form="vm.datasourceAccessControlForm" read-only="true"></entity-access-control>
+          </readonly-section>
+          <editable-section>
+            <entity-access-control entity="vm.editModel" entity-type="datasource" the-form="vm.datasourceAccessControlForm"></entity-access-control>
+          </editable-section>
+        </vertical-section-layout>
+      </ng-form>
+
+      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" ng-if="!vm.isNew()">
         <readonly-section>
           <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.sourceForFeeds.length > 0">
             <md-list-item>
@@ -101,7 +113,7 @@
                 </div>
               </div>
             </md-list-item>
-            <md-list-item ng-repeat="feed in vm.model.sourceForFeeds" >
+            <md-list-item ng-repeat="feed in vm.model.sourceForFeeds">
               <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
                 <div flex="50" class="md-list-item-text">
                   <md-input-container class="md-block" flex-gt-sm>

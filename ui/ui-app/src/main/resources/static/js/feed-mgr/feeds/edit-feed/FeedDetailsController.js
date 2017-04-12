@@ -17,7 +17,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
      * @param StateService
      */
     var controller = function ($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
-                               FileUpload, ConfigurationService) {
+                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -37,10 +37,22 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         self.allowAdmin = false;
 
         /**
+         * Allow the Changing of this feeds permissions
+         * @type {boolean}
+         */
+        self.allowChangePermissions = false;
+
+        /**
          * Indicates if edit operations are allowed.
          * @type {boolean}
          */
         self.allowEdit = false;
+
+        /**
+         * Alow user to access the sla tab
+         * @type {boolean}
+         */
+        self.allowSlaAccess = false;
 
         this.feedId = null;
         this.selectedTabIndex = 0;
@@ -94,11 +106,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             loadFeed(requestedTabIndex);
             nifiRunningCheck();
 
-            AccessControlService.getAllowedActions()
-                    .then(function(actionSet) {
-                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
-                        self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                    });
+
+
+
+
         };
 
         /**
@@ -177,7 +188,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
 
         this.showFeedUploadDialog = function() {
-
             $mdDialog.show({
                 controller: 'FeedUploadFileDialogController',
                 escapeToClose: false,
@@ -192,6 +202,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                         .hideDelay(3000)
                 );
             });
+        }
+
+        this.showAccessControlDialog = function(){
+
+            function onCancel(){
+
+            }
+
+            function onSave(){
+            }
+
+            EntityAccessControlDialogService.showAccessControlDialog(self.model,"feed",self.model.feedName,onSave,onCancel);
+
         }
 
 
@@ -353,6 +376,22 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                             self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                             FeedService.updateEditModelStateIcon();
 
+                            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+                                //Apply the entity access permissions
+                                var requests = {entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model) : true,
+                                    entityPermissionAccess:entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model) : true,
+                                    functionalAccess:AccessControlService.getAllowedActions()}
+                                $q.all(requests).then(function (response) {
+                                    var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+
+                                    self.allowEdit = response.entityEditAccess && allowEditAccess;
+                                    self.allowChangePermissions = response.entityPermissionAccess && allowEditAccess;
+                                    self.allowAdmin = allowAdminAccess;
+                                    self.allowSlaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                });
+
                         }
                     }, function(err) {
                         //handle err
@@ -444,7 +483,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService",controller]);
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService",controller]);
 
     angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
 });

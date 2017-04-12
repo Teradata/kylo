@@ -37,6 +37,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.security.action.Action;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -87,6 +88,12 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
             loadSavedFeedsToMetaClientStore();
         }
+    }
+    
+    @Override
+    public boolean checkFeedPermission(String id, Action action, Action... more) {
+        // Permission checking not currently implemented for the in-memory implementation
+        return true;
     }
 
     public Collection<FeedMetadata> getFeeds() {

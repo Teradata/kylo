@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -27,6 +29,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -116,6 +119,28 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#enableOnly(java.security.Principal, com.thinkbiganalytics.security.action.AllowedActions)
+     */
+    @Override
+    public boolean enableOnly(Principal principal, AllowedActions actions) {
+        return enableOnly(principal, 
+                          actions.getAvailableActions().stream()
+                              .flatMap(avail -> avail.stream())
+                              .collect(Collectors.toSet()));
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#enableAll(java.security.Principal)
+     */
+    @Override
+    public boolean enableAll(Principal principal) {
+        return enableOnly(principal, 
+                          getAvailableActions().stream()
+                              .flatMap(avail -> avail.stream())
+                              .collect(Collectors.toSet()));
+    }
+
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedActions#disableAccess(com.thinkbiganalytics.security.action.Action, java.security.Principal[])
      */
     @Override
@@ -131,6 +156,45 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
         return togglePermission(actions, principal, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#disable(java.security.Principal, com.thinkbiganalytics.security.action.AllowedActions)
+     */
+    @Override
+    public boolean disable(Principal principal, AllowedActions actions) {
+        return disable(principal, 
+                       actions.getAvailableActions().stream()
+                            .flatMap(avail -> avail.stream())
+                            .collect(Collectors.toSet()));
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#deisableAll(java.security.Principal)
+     */
+    @Override
+    public boolean disableAll(Principal principal) {
+        return disable(principal, 
+                       getAvailableActions().stream()
+                            .flatMap(avail -> avail.stream())
+                            .collect(Collectors.toSet()));
+    }
+
+    /**
+     * validate a user has a given permission(s)
+     * @param action the action to check
+     * @param more additional actions to check
+     * @return true if user has the permission(s), false if not
+     */
+    public boolean hasPermission(Action action, Action... more) {
+        Set<Action> actions = new HashSet<>(Arrays.asList(more));
+        actions.add(action);
+        try {
+            checkPermission(actions);
+        }catch(AccessControlException e){
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -153,11 +217,21 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             }
         }
     }
-
-    public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src, Principal principal, String... privilegeNames) {
+    
+    public void setupAccessControl(UsernamePrincipal owner) {
+        JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, MetadataAccess.ADMIN, Privilege.JCR_ALL);
+    }
+    
+    public JcrAllowedActions copy(Node allowedNode, Principal principal, String... privilegeNames) {
+        return copy(allowedNode, false, principal, privilegeNames);
+    }
+    
+    public JcrAllowedActions copy(Node allowedNode, boolean includeDescr, Principal principal, String... privilegeNames) {
         try {
-            for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.NODE_TYPE)) {
-                copyAction(actionNode, allowedNode, principal, privilegeNames);
+            JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
+            
+            for (Node actionNode : JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE)) {
+                copyAction(actionNode, allowedNode, includeDescr, principal, privilegeNames);
             }
 
             return new JcrAllowedActions(allowedNode);
@@ -166,39 +240,43 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
 
-    private Node copyAction(Node src, Node destParent, Principal principal, String... privilegeNames) throws RepositoryException {
+    private Node copyAction(Node src, Node destParent, boolean includeDescr, Principal principal, String... privilegeNames) throws RepositoryException {
         Node dest = JcrUtil.getOrCreateNode(destParent, src.getName(), JcrAllowableAction.NODE_TYPE);
-        JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
-        JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
+        
+        if (includeDescr) {
+            JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
+            JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
+        }
+
         JcrAccessControlUtil.addPermissions(dest, principal, privilegeNames);
 
         for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.NODE_TYPE)) {
-            copyAction(child, dest, principal, privilegeNames);
+            copyAction(child, dest, includeDescr, principal, privilegeNames);
         }
 
         return dest;
     }
 
-    private boolean togglePermission(Iterable<Action> actions, Principal principal, boolean add) {
+    private boolean togglePermission(Iterable<Action> actions, Principal principal, boolean enable) {
         boolean result = false;
 
         for (Action action : actions) {
-            result |= togglePermission(action, principal, add);
+            result |= togglePermission(action, principal, enable);
         }
 
         return result;
     }
 
-    private boolean togglePermission(Action action, Principal principal, boolean add) {
+    private boolean togglePermission(Action action, Principal principal, boolean enable) {
         return findActionNode(action)
             .map(node -> {
-                if (add) {
+                if (enable) {
                     return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
                 } else {
                     return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
                 }
             })
-            .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "endable" : "disable") + " the action: " + action));
+            .orElseThrow(() -> new AccessControlException("Not authorized to " + (enable ? "enable" : "disable") + " the action: " + action));
     }
 
     private Optional<Node> findActionNode(Action action) {

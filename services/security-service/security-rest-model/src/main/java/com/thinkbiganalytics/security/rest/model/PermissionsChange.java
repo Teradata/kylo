@@ -37,6 +37,8 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionsChange {
 
+    public enum ChangeType {ADD, REMOVE, REPLACE}
+
     private ChangeType change;
     private ActionGroup actionSet;
     private Set<String> users = new HashSet<>();
@@ -98,6 +100,4 @@ public class PermissionsChange {
     public boolean addAction(Action action) {
         return this.actionSet.addAction(action);
     }
-
-    public enum ChangeType {ADD, REMOVE, REPLACE}
 }

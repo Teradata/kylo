@@ -26,5 +26,6 @@
 
   <include file="2017-03-24-1137-audit-log-rename-column.xml" relativeToChangelogFile="true"/>
   <include file="2017-03-27-1353-kylo-alert-change-rename-column.xml" relativeToChangelogFile="true"/>
+  <include file="2017-04-05-1114-feed-acl-index.yaml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

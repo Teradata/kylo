@@ -20,7 +20,7 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -242,18 +242,33 @@ public class SparkShellProxyController {
 
         // Add data source details
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
-            accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_DATASOURCES);
+            // Verify access to data sources
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final List<Datasource> datasources = metadata.read(
+            final List<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> datasourceIds = metadata.read(
                 () -> request.getDatasources().stream()
                     .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
                     .map(datasourceProvider::resolve)
                     .map(id -> {
                         final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
                         if (datasource != null) {
-                            return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
+                            return datasource.getId();
                         } else {
                             throw new BadRequestException("No datasource exists with the given ID: " + id);
+                        }
+                    })
+                    .collect(Collectors.toList())
+            );
+
+            // Retrieve table names using system user
+            final List<Datasource> datasources = metadata.read(
+                () -> datasourceIds.stream()
+                    .map(datasourceProvider::getDatasource)
+                    .map(datasource -> {
+                        if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+                            return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
+                        } else {
+                            throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
                         }
                     })
                     .map(datasource -> {
@@ -263,7 +278,8 @@ public class SparkShellProxyController {
                             throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
                         }
                     })
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList()),
+                MetadataAccess.SERVICE);
             request.setDatasources(datasources);
         }
 

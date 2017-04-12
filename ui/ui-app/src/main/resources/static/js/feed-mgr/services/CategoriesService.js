@@ -1,5 +1,5 @@
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService", function ($q, $http, RestUrlService) {
+define(['angular','feed-mgr/module-name','constants/AccessConstants'], function (angular,moduleName) {
+    angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","AccessControlService","EntityAccessControlService", function ($q, $http, RestUrlService,AccessControlService,EntityAccessControlService) {
 
         /**
          * Create filter function for a query string
@@ -50,6 +50,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             return $http.get(RestUrlService.CATEGORIES_URL).then(function (response) {
                 return response.data.map(function (category) {
                     category._lowername = category.name.toLowerCase();
+                    category.createFeed = false;
+                    if(AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED,category,"category")){
+                        category.createFeed = true;
+                    }
                     return category;
                 });
             });
@@ -98,6 +102,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return promise;
             },
             save: function (category) {
+                //prepare access control changes if any
+                EntityAccessControlService.updateEntityForSave(category);
 
                 var promise = $http({
                     url: RestUrlService.CATEGORIES_URL,
@@ -163,7 +169,16 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @returns {CategoryModel} the new category model
              */
             newCategory: function () {
-                return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: [], securityGroups: []};
+                return {id: null,
+                        name: null,
+                        description: null,
+                        icon: null, iconColor: null,
+                        userFields: [],
+                        userProperties: [],
+                        relatedFeedSummaries: [],
+                        securityGroups: [],
+                        roleMemberships:[],
+                        owner:null};
             },
 
             /**
@@ -176,8 +191,22 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     .then(function (response) {
                         return response.data;
                     });
+            },
+            /**
+             * check if the user has access on an entity
+             * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+             * @param entity the entity to check. if its undefined it will use the current category in the model
+             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
+             */
+            hasEntityAccess:function(permissionsToCheck,entity) {
+                if(entity == undefined){
+                    entity = data.model;
+                }
+                return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.CATEGORY);
             }
         };
+
+        //EntityAccessControlService.ENTITY_ACCESS.CHANGE_CATEGORY_PERMISSIONS
         data.init();
         return data;
 

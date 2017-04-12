@@ -31,7 +31,10 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
-@JsonSubTypes(@JsonSubTypes.Type(JdbcDatasource.class))
+@JsonSubTypes({
+                  @JsonSubTypes.Type(UserDatasource.class),
+                  @JsonSubTypes.Type(JdbcDatasource.class)
+              })
 public class Datasource implements com.thinkbiganalytics.metadata.datasource.Datasource {
 
     private String id;

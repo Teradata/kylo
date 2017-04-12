@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
@@ -44,6 +45,8 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.security.DefaultSecurityService;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -134,6 +137,11 @@ public class FeedManagerConfiguration {
     @Bean
     public MetadataService metadataService() {
         return new FeedManagerMetadataService();
+    }
+
+    @Bean
+    public SecurityService securityService() {
+        return new DefaultSecurityService();
     }
 
     @Bean
@@ -242,13 +250,14 @@ public class FeedManagerConfiguration {
      * @param datasourceProvider the {@link com.thinkbiganalytics.metadata.api.datasource.Datasource} provider
      * @param textEncryptor      the encryption provider
      * @param niFiRestClient     the NiFi REST client
+     * @param securityService    the security service
      * @return the model transformer
      */
     @Bean
     @Nonnull
     public DatasourceModelTransform datasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor textEncryptor,
-                                                             @Nonnull final NiFiRestClient niFiRestClient) {
-        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient);
+                                                             @Nonnull final NiFiRestClient niFiRestClient, @Nonnull final SecurityService securityService) {
+        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient, securityService);
     }
 
     /**
@@ -273,5 +282,10 @@ public class FeedManagerConfiguration {
     @Nonnull
     public ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform(@Nonnull final Model model) {
         return new ServiceLevelAgreementModelTransform(model);
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform() {
+        return new AccessControlledEntityTransform();
     }
 }

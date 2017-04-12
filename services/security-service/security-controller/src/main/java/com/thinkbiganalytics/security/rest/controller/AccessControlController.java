@@ -24,7 +24,8 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
@@ -72,14 +73,25 @@ public class AccessControlController {
     private MetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider actionsProvider;
+    private AllowedEntityActionsProvider actionsProvider;
 
     @Inject
     @Named("actionsModelTransform")
-    private ActionsModelTransform actionsTransform;
-    
+    private SecurityModelTransform actionsTransform;
+
     @Inject
-    private AccessController accessController;
+    AccessController accessController;
+
+    @GET
+    @Path("entity-access-controlled")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Return true/false if entity access is enabled or not")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns true/false.", response = Boolean.class)
+                  })
+    public Boolean isEntityAccessControlled() {
+        return accessController.isEntityAccessControlled();
+    }
 
     @GET
     @Path("{name}/available")
@@ -93,7 +105,7 @@ public class AccessControlController {
         
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .map(this.actionsTransform.toActionGroup(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -111,14 +123,14 @@ public class AccessControlController {
                                          @QueryParam("user") Set<String> userNames,
                                          @QueryParam("group") Set<String> groupNames) {
         
-        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
+        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
         Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
         // Retrieve the allowed actions by executing the query as the specified user/groups 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .map(this.actionsTransform.toActionGroup(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         }, principals);
@@ -190,7 +202,7 @@ public class AccessControlController {
 
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
+                .map(this.actionsTransform.toPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -200,15 +212,15 @@ public class AccessControlController {
     private Set<Principal> collectPrincipals(PermissionsChange changes) {
         Set<Principal> set = new HashSet<>();
 
-        set.addAll(this.actionsTransform.toUserPrincipals(changes.getUsers()));
-        set.addAll(this.actionsTransform.toGroupPrincipals(changes.getGroups()));
+        set.addAll(this.actionsTransform.asUserPrincipals(changes.getUsers()));
+        set.addAll(this.actionsTransform.asGroupPrincipals(changes.getGroups()));
 
         return set;
     }
 
     /**
      * Creates a set of domain actions from the REST model actions.  The resulting set will
-     * contain only the leaf actions from domain action hierarchy.
+     * contain only the leaf actions from the domain action hierarchy.
      */
     private Set<Action> collectActions(PermissionsChange changes) {
         Set<Action> set = new HashSet<>();

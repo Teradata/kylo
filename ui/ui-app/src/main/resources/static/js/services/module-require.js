@@ -15,7 +15,8 @@ define(['angular',
         'services/WindowUnloadService',
         'services/Utils',
         'services/HttpService',
-        'services/NotificationService'], function (angular,moduleName) {
+        'services/NotificationService',
+'services/UserGroupService'], function (angular,moduleName) {
    return angular.module(moduleName);
 });
 

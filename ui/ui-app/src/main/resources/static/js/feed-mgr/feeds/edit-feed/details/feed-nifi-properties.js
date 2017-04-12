@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService,FeedPropertyService) {
+    var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService,FeedPropertyService) {
 
         var self = this;
 
@@ -267,14 +267,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        //Apply the entity access permissions
+        $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
+            self.allowEdit = response;
+        })
     };
 
-    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","RestUrlService","AccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService","FeedPropertyService",controller]);
+    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService","FeedPropertyService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedNifiProperties', directive);
