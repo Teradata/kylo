@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/categories/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/categories/module-name'], function (angular, moduleName) {
 
     var directive = function () {
         return {
@@ -15,7 +15,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
     };
 
-    function CategoryAccessControlController($scope,$q,$mdToast,CategoriesService,AccessControlService,EntityAccessControlService) {
+    function CategoryAccessControlController($scope, $q, $mdToast, CategoriesService, AccessControlService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -27,10 +27,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
 
         this.model = CategoriesService.model;
 
-        if(CategoriesService.model.roleMemberships == undefined){
+        if (CategoriesService.model.roleMemberships == undefined) {
             CategoriesService.model.roleMemberships = this.model.roleMemberships = [];
         }
-
 
         /**
          * Indicates if the properties may be edited.
@@ -56,10 +55,13 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         self.isNew = true;
 
         $scope.$watch(
-            function() {return CategoriesService.model.id},
-            function(newValue) {self.isNew = !angular.isString(newValue)}
+            function () {
+                return CategoriesService.model.id
+            },
+            function (newValue) {
+                self.isNew = !angular.isString(newValue)
+            }
         );
-
 
         /**
          * Category data used in "normal" mode.
@@ -70,39 +72,48 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         /**
          * Switches to "edit" mode.
          */
-        self.onEdit = function() {
+        self.onEdit = function () {
             self.editModel = angular.copy(self.model);
         };
 
         /**
          * Saves the category .
          */
-        self.onSave = function() {
+        self.onSave = function () {
             var model = angular.copy(CategoriesService.model);
             model.roleMemberships = self.editModel.roleMemberships;
             model.owner = self.editModel.owner;
             EntityAccessControlService.updateEntityForSave(model);
 
-
-            CategoriesService.save(model).then(function(response) {
+            CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
-                EntityAccessControlService.mergeRoleAssignments(self.model,EntityAccessControlService.entityTypes.CATEGORY)
+                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.CATEGORY)
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
                         .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
+            }, function (err) {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Save Failed")
+                        .textContent("The category '" + model.name + "' could not be saved. " + err.data.message)
+                        .ariaLabel("Failed to save category")
+                        .ok("Got it!")
+                );
             });
-        }
+        };
 
-        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS,self.model)).then(function(response){
+        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS, self.model)).then(function (response) {
             self.allowEdit = response;
         })
 
     }
 
-    angular.module(moduleName).controller("CategoryAccessControlController",["$scope","$q","$mdToast","CategoriesService","AccessControlService","EntityAccessControlService", CategoryAccessControlController]);
+    angular.module(moduleName).controller("CategoryAccessControlController",
+        ["$scope", "$q", "$mdToast", "CategoriesService", "AccessControlService", "EntityAccessControlService", CategoryAccessControlController]);
 
     angular.module(moduleName).directive("thinkbigCategoryAccessControl", directive);
 });
