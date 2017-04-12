@@ -38,6 +38,7 @@ import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 
 import com.thinkbiganalytics.metadata.api.MetadataException;
+import com.thinkbiganalytics.metadata.api.security.RoleNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -63,7 +64,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {
                 // TODO create new exception
-                throw new MetadataException("No role entity found with the specified name: " + entityName);
+                throw new RoleNotFoundException("No role entity found with the specified name: " + entityName);
             }
             
             Node entityNode = JcrUtil.getNode(session, rolePath.getParent().toString());
@@ -98,7 +99,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         
         if (! JcrUtil.hasNode(session, entityPath.toString())) {
             // TODO create new exception
-            throw new MetadataException("No role entity found with the specified name: " + entityName);
+            throw new RoleNotFoundException("No role entity found with the specified name: " + entityName);
         } else {
             Node entityNode = JcrUtil.getNode(session, entityPath.toString());
             NodeType type = JcrUtil.getNodeType(session, JcrSecurityRole.NODE_TYPE);
@@ -122,7 +123,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {
                 // TODO create new exception
-                throw new MetadataException("No role entity found with the specified name: " + entityName);
+                throw new RoleNotFoundException("No role entity found with the specified name: " + entityName);
             }
             
             return Optional.empty();
@@ -143,7 +144,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {
                 // TODO create new exception
-                throw new MetadataException("No role entity found with the specified name: " + entityName);
+                throw new RoleNotFoundException("No role entity found with the specified name: " + entityName);
             }
             
             return false;
@@ -174,7 +175,7 @@ public class JcrSecurityRoleProvider implements SecurityRoleProvider {
         } else {
             if (! JcrUtil.hasNode(session, rolePath.getParent().toString())) {
                 // TODO create new exception
-                throw new MetadataException("No role entity found with the specified name: " + entityName);
+                throw new RoleNotFoundException("No role entity found with the specified name: " + entityName);
             }
             
             return Optional.empty();

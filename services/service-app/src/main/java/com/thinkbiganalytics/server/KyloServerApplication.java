@@ -56,7 +56,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
-        boolean skipUpgrade = true;
+        boolean skipUpgrade = false;
         if(!skipUpgrade) {
             boolean upgradeComplete = false;
             do {

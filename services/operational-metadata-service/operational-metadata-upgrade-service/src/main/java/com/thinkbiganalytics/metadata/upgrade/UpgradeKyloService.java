@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.security.RoleNotFoundException;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
@@ -72,6 +73,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -109,20 +112,27 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
 
     public void run() {
-        upgradeCheck();
+       onMetadataStart();
     }
 
     public KyloVersion getCurrentVersion() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
-        if (version == null) {
-            version = kyloVersionProvider.getLatestVersion();
-        }
-        return new Version(version.getMajorVersion(), version.getMinorVersion());
+       if(version != null) {
+           return new Version(version.getMajorVersion(), version.getMinorVersion());
+       }
+       else {
+           return null;
+       }
     }
 
     public boolean upgradeFrom(KyloVersion startingVersion) {
-        getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
+        if(startingVersion == null){
+            setupFreshInstall();
+        }
+        else {
+            getUpgradeState(startingVersion).ifPresent(upgrade -> upgrade.upgradeFrom(startingVersion));
 
+        }
         // TODO: This current implementation assumes all upgrading occurs from the single state found above.
         // This should be changed to supporting a repeated upgrade path from starting ver->next ver->...->latest vers.
         kyloVersionProvider.updateToLatestVersion();
@@ -150,29 +160,17 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         return version.getVersion().replaceAll("[.-]", "_");
     }
 
+
+
+
     /**
-     * checks the upgrade for Kylo and updates the version if needed
+     * This code will run when the latest version is up and running
      */
-    public void upgradeCheck() {
-        KyloVersion version = kyloVersionProvider.getCurrentVersion();
-
-        if (version == null) {
-            setupFreshInstall();
-        }
-        ensureDefaultEntityRoles();
-
-        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber() < 0.4f)) {
-            version = upgradeTo0_4_0();
-        }
-        ensureFeedTemplateFeedRelationships();
-        // migrateUnusedFeedProperties();
-        version = metadataAccess.commit(() -> {
-            //ensure/update the version
-            KyloVersion kyloVersion = kyloVersionProvider.updateToLatestVersion();
-            return kyloVersion;
-        }, MetadataAccess.SERVICE);
-
-        log.info("Upgrade check complete for Kylo {}", version.getVersion());
+    private void onMetadataStart() {
+      if(kyloVersionProvider.isUpToDate()) {
+           ensureFeedTemplateFeedRelationships();
+          ensureDefaultEntityRoles();
+       }
     }
 
     private void setupFreshInstall() {
@@ -273,6 +271,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
         createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
 
+        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_CATEGORY, CategoryAccessControl.CREATE_FEED);
+
         final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
                                                                 DatasourceAccessControl.ACCESS_DATASOURCE,
                                                                 DatasourceAccessControl.EDIT_DETAILS,
@@ -284,12 +284,12 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     }
 
     private void ensureDefaultEntityRoles() {
-        createDefaultRoles();
-        metadataAccess.commit(() -> {
-            ensureFeedRoles();
-            ensureCategoryRoles();
-            ensureTemplateRoles();
-        }, MetadataAccess.SERVICE);
+            createDefaultRoles();
+            metadataAccess.commit(() -> {
+              ensureFeedRoles();
+                ensureCategoryRoles();
+                ensureTemplateRoles();
+            }, MetadataAccess.SERVICE);
     }
 
     private void ensureFeedRoles() {
@@ -414,9 +414,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      *
      * @return the Kylo version after upgrade attempt
      */
-    public KyloVersion upgradeTo0_4_0() {
+    public void upgradeTo0_4_0() {
 
-        return metadataAccess.commit(() -> metadataAccess.commit(() -> {
+        metadataAccess.commit(() -> metadataAccess.commit(() -> {
 
             for (Category category : categoryProvider.findAll()) {
                 // Ensure each category has an allowedActions (gets create if not present.)
@@ -453,9 +453,10 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 log.info("Synchronizing Feeds from Feed Manager. About to insert {} feed ids/names into Operations Manager", feedsToAdd.size());
                 opsManagerFeedProvider.save(feedsToAdd);
             }
+            return null;
 
             //update the version
-            return kyloVersionProvider.updateToLatestVersion();
+          //  return kyloVersionProvider.updateToLatestVersion();
         }), MetadataAccess.SERVICE);
     }
 
@@ -483,12 +484,17 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     }
 
     protected SecurityRole createDefaultRole(String entityName, String roleName, String title, Action... actions) {
-        return roleProvider.getRole(entityName, roleName)
-            .orElseGet(() -> {
+        Supplier<SecurityRole> createIfNotFound = () -> {
                 SecurityRole role = roleProvider.createRole(entityName, roleName, title, "");
                 role.setPermissions(actions);
                 return role;
-            });
+        };
+        try {
+            return roleProvider.getRole(entityName, roleName)
+                .orElseGet(createIfNotFound);
+        }catch (RoleNotFoundException e){
+            return createIfNotFound.get();
+        }
     }
 
     /**

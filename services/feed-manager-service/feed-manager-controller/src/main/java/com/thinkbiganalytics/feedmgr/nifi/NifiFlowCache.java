@@ -56,6 +56,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
@@ -94,6 +96,10 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
     PropertyExpressionResolver propertyExpressionResolver;
     @Inject
     private NifiConnectionService nifiConnectionService;
+
+    @Inject
+    private KyloVersionProvider kyloVersionProvider;
+
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedFlowIdProcessorMap = new ConcurrentHashMap<>();
@@ -162,8 +168,11 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      */
     @Override
     public void run() {
-        this.modeShapeAvailable = true;
-        checkAndInitializeCache();
+        boolean isLatest = kyloVersionProvider.isUpToDate();
+        if(isLatest) {
+            this.modeShapeAvailable = true;
+            checkAndInitializeCache();
+        }
     }
 
 
