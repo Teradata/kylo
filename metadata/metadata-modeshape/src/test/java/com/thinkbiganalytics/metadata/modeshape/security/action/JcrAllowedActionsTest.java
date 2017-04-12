@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 /*-
@@ -44,9 +41,6 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *
- */
 @SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class})
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 

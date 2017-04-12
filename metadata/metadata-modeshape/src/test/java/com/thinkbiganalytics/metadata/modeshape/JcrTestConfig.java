@@ -41,6 +41,7 @@ import org.modeshape.jcr.RepositoryConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
@@ -142,5 +143,10 @@ public class JcrTestConfig {
             }, MetadataAccess.SERVICE);
 
         // @formatter:on
+    }
+
+    @Bean
+    public PropertySourcesPlaceholderConfigurer placeHolderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }
