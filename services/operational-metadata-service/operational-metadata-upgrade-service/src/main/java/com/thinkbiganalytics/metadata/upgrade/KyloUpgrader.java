@@ -27,6 +27,7 @@ import javax.inject.Inject;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 /**
  * Performs all upgrade steps within a metadata transaction.
@@ -40,13 +41,18 @@ public class KyloUpgrader {
     
     @Inject
     private UpgradeKyloService upgradeService;
+
+    @Inject
+    private KyloVersionProvider kyloVersionProvider;
     
 
     public boolean upgrade() {
         return metadata.commit(() -> {
-            KyloVersion version = upgradeService.getCurrentVersion();
-            
-            return upgradeService.upgradeFrom(version);
+            if(!kyloVersionProvider.isUpToDate()) {
+                KyloVersion version = upgradeService.getCurrentVersion();
+                return upgradeService.upgradeFrom(version);
+            }
+            return true;
         }, MetadataAccess.SERVICE);
     }
 

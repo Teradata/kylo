@@ -68,7 +68,7 @@ public class UpgradeAction implements UpgradeState {
      */
     @Override
     public void upgradeFrom(KyloVersion startingVersion) {
-        if (getStartingVersion().equals(startingVersion)) {
+      //  if (getStartingVersion().equals(startingVersion)) {
             log.info("Upgrading from version: " + startingVersion);
 
             Session session = JcrMetadataAccess.getActiveSession();
@@ -148,7 +148,7 @@ public class UpgradeAction implements UpgradeState {
             }
 
             log.info("Upgrade complete for {} categories and {} feeds", categoryCount, totalFeedCount);
-        }
+      //  }
     }
 
     private void moveNode(Session session, Node node, Node parentNode) {
