@@ -10,7 +10,7 @@ define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil'
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('visual-query',{
+        $stateProvider.state(AccessConstants.UI_STATES.VISUAL_QUERY.state,{
             url:'/visual-query',
             params: {
             },
@@ -28,7 +28,7 @@ define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil'
                 breadcrumbRoot:true,
                 displayName:'Visual Query',
                 module:moduleName,
-                permissions:''
+                permissions:AccessConstants.UI_STATES.VISUAL_QUERY.permissions
             }
         });
 
