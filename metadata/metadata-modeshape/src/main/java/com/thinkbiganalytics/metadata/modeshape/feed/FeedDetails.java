@@ -66,7 +66,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
 
-    public static final String TEMPLATE = "tba:template";
+    public static final String TEMPLATE = "tba:feedTemplate";
     public static final String SLA = "tba:slas";
 
     private FeedSummary summary;
