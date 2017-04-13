@@ -420,7 +420,41 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
                 }
                 return df.promise;
+            },
+            /**
+             * Check if the user has access checking both the functional page/section access as well as entity access permission.
+             * If Entity access is not enabled for the app it will bypass the entity access check.
+             * This will return a promise with a boolean as the response/resolved value.
+             * Callers need to wrap this in $q.when.
+             *
+             * Example:
+             *
+             * $q.when(AccessControlService.hasPermission(...)).then(function(hasAccess){
+             *  if(hasAccess){
+             *
+             *  }
+             *   ...
+             * }
+             *
+             * @param functionalPermission a permission string to check
+             * @param entity the entity to check
+             * @param entityPermissions  a string or an array of entity permissions to check against the user and supplied entity
+             * @return a promise with a boolean value as the response
+             */
+            hasPermission: function(functionalPermission,entity,entityPermissions) {
+                var self = this;
+                var entityAccessControlled = entity != null && entityPermissions != null && this.isEntityAccessControlled();
+                var defer = $q.defer();
+                var requests = {
+                    entityAccess: entityAccessControlled == true ? this.hasEntityAccess(entityPermissions, entity) : true,
+                    functionalAccess: this.getAllowedActions()
+                }
+                $q.all(requests).then(function (response) {
+                    defer.resolve(response.entityAccess && self.hasAction(functionalPermission, response.functionalAccess.actions));
+                });
+                return defer.promise;
             }
+
         });
 
         return new AccessControlService();
