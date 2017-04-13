@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * This is an example repository which shows how to refer to principal roles in @Query annotations and also
- * to extend AugmentableQueryRepository which knows how to construct queries with reference to FeedAclIndex table
+ * to how secure repository methods with QueryAugmentor
  */
 @QueryAugmentorType(FeedAclIndexQueryAugmentor.class)
 public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
