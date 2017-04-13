@@ -38,15 +38,10 @@ import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
 /**
@@ -151,110 +146,11 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
 
 
 
-
-
-
-    @Override
-    public void delete(ID id) {
-        LOG.debug("AugmentableQueryRepositoryImpl.delete");
-
-        super.delete(id);
-    }
-
-    @Override
-    public void delete(T entity) {
-        LOG.debug("AugmentableQueryRepositoryImpl.delete");
-
-        super.delete(entity);
-    }
-
-    @Override
-    public void delete(Iterable<? extends T> entities) {
-        LOG.debug("AugmentableQueryRepositoryImpl.delete");
-        super.delete(entities);
-    }
-
-    @Override
-    public void deleteInBatch(Iterable<T> entities) {
-        LOG.debug("AugmentableQueryRepositoryImpl.deleteInBatch");
-        super.deleteInBatch(entities);
-    }
-
-    @Override
-    public void deleteAll() {
-        LOG.debug("AugmentableQueryRepositoryImpl.deleteAll");
-        super.deleteAll();
-    }
-
-    @Override
-    public void deleteAllInBatch() {
-        LOG.debug("AugmentableQueryRepositoryImpl.deleteAllInBatch");
-        super.deleteAllInBatch();
-    }
-
-
-
-
-    @Override
-    public List<T> findAll(Specification<T> spec, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll spec sort");
-        return super.findAll(spec, sort);
-    }
-
-    @Override
-    public <S extends T> S findOne(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findOne example");
-        return super.findOne(example);
-    }
-
-    @Override
-    public <S extends T> long count(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.count example");
-        return super.count(example);
-    }
-
-    @Override
-    public <S extends T> boolean exists(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.exists example");
-        return super.exists(example);
-    }
-
-    @Override
-    public <S extends T> List<S> findAll(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll example ");
-        return super.findAll(example);
-    }
-
-    @Override
-    public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll example sort");
-        return super.findAll(example, sort);
-    }
-
-    @Override
-    public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll example pageable");
-        return super.findAll(example, pageable);
-    }
-
     @Override
     public long count(Specification<T> spec) {
         LOG.debug("AugmentableQueryRepositoryImpl.count spec");
         return super.count(spec);
     }
-
-    @Override
-    public <S extends T> S saveAndFlush(S entity) {
-        LOG.debug("AugmentableQueryRepositoryImpl.saveAndFlush");
-        return super.saveAndFlush(entity);
-    }
-
-    @Override
-    public <S extends T> List<S> save(Iterable<S> entities) {
-        LOG.debug("AugmentableQueryRepositoryImpl.save");
-        return super.save(entities);
-    }
-
 
     @Override
     protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Pageable pageable) {
@@ -267,6 +163,52 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery spec");
         return super.getCountQuery(spec);
     }
+
+    @Override
+    public List<T> findAll(Specification<T> spec, Sort sort) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll spec sort");
+        return super.findAll(spec, sort);
+    }
+
+
+
+
+    @Override
+    public <S extends T> S findOne(Example<S> example) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findOne example");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
+    @Override
+    public <S extends T> long count(Example<S> example) {
+        LOG.debug("AugmentableQueryRepositoryImpl.count example");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
+    @Override
+    public <S extends T> boolean exists(Example<S> example) {
+        LOG.debug("AugmentableQueryRepositoryImpl.exists example");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
+    @Override
+    public <S extends T> List<S> findAll(Example<S> example) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example ");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
+    @Override
+    public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example sort");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
+    @Override
+    public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example pageable");
+        throw new IllegalStateException("Query by Example API not implemented yet");
+    }
+
 
 
 
