@@ -407,15 +407,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     })
 
                 }
+                else {
+                    errorFn(" The feed was not found.")
+                }
             }
             var errorFn = function(err) {
                 self.loadingFeedData = false;
+                var message = angular.isDefined(err) && angular.isString(err) ? err : '';
                 $mdDialog.show(
                         $mdDialog.alert()
                                 .parent(angular.element(document.querySelector('body')))
                                 .clickOutsideToClose(true)
                                 .title('Error loading feed')
-                                .textContent('Feed error ')
+                                .textContent('Error loading feed. '+message)
                                 .ariaLabel('Error loading feed')
                                 .ok('Got it!')
                         //.targetEvent(ev)

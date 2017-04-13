@@ -692,6 +692,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.partitionFormulas = functions;
                 });
 
+        validate();
+
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
         });
