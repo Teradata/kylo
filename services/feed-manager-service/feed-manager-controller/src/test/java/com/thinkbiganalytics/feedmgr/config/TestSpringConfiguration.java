@@ -49,6 +49,7 @@ import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -437,5 +438,10 @@ public class TestSpringConfiguration {
     @Bean
     UserService userService() {
         return Mockito.mock(UserService.class);
+    }
+
+    @Bean
+    KyloVersionProvider kyloVersionProvider() {
+        return Mockito.mock(KyloVersionProvider.class);
     }
 }
