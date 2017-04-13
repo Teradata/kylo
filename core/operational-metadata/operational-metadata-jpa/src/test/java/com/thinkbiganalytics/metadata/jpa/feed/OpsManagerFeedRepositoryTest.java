@@ -241,8 +241,10 @@ public class OpsManagerFeedRepositoryTest {
 
         QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
         Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name: feed-name"));
-        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("feed-name")));
+        if(accessController.isEntityAccessControlled()) {
+            Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                                   .anyMatch(it -> it.getName().equals("feed-name")));
+        }
     }
 
     @WithMockUser(username = "dladmin",
