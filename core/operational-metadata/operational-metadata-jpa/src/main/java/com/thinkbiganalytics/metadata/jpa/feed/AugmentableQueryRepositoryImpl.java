@@ -53,6 +53,7 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     implements AugmentableQueryRepository<T, ID> {
 
     private static final Logger LOG = LoggerFactory.getLogger(AugmentableQueryRepositoryImpl.class);
+    private static final String QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET = "Query by Example API not implemented yet";
 
     private final EntityManager entityManager;
     private final JpaEntityInformation<T, ID> entityInformation;
@@ -145,68 +146,40 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     }
 
 
-
-    @Override
-    public long count(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.count spec");
-        return super.count(spec);
-    }
-
-    @Override
-    protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQuery spec domainClass pageable");
-        return super.getQuery(spec, domainClass, pageable);
-    }
-
-    @Override
-    protected TypedQuery<Long> getCountQuery(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery spec");
-        return super.getCountQuery(spec);
-    }
-
-    @Override
-    public List<T> findAll(Specification<T> spec, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll spec sort");
-        return super.findAll(spec, sort);
-    }
-
-
-
-
     @Override
     public <S extends T> S findOne(Example<S> example) {
         LOG.debug("AugmentableQueryRepositoryImpl.findOne example");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
     @Override
     public <S extends T> long count(Example<S> example) {
         LOG.debug("AugmentableQueryRepositoryImpl.count example");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
     @Override
     public <S extends T> boolean exists(Example<S> example) {
         LOG.debug("AugmentableQueryRepositoryImpl.exists example");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
     @Override
     public <S extends T> List<S> findAll(Example<S> example) {
         LOG.debug("AugmentableQueryRepositoryImpl.findAll example ");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
     @Override
     public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
         LOG.debug("AugmentableQueryRepositoryImpl.findAll example sort");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
     @Override
     public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
         LOG.debug("AugmentableQueryRepositoryImpl.findAll example pageable");
-        throw new IllegalStateException("Query by Example API not implemented yet");
+        throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
 
