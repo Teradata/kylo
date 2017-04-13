@@ -77,7 +77,7 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
     @Override
     public List<FeedServiceLevelAgreement> findAllAgreements() {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] ";
+                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[mode:id] ";
         return queryToList(query, null);
 
     }
@@ -126,8 +126,8 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     public FeedServiceLevelAgreement findAgreement(ServiceLevelAgreement.ID id) {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
-                       + "WHERE sla.[jcr:uuid] = $slaId ";
+                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[mode:id] "
+                       + "WHERE sla.[mode:id] = $slaId ";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("slaId", id.toString());
         List<FeedServiceLevelAgreement> list = queryToList(query, bindParams);
@@ -141,7 +141,7 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     public List<FeedServiceLevelAgreement> findFeedServiceLevelAgreements(Feed.ID feedId) {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
+                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[mode:id] "
                        + "WHERE feedSla.[" + JcrFeedServiceLevelAgreementRelationship.FEEDS + "] IN ('" + feedId.toString() + "')";
         List<FeedServiceLevelAgreement> list = queryToList(query, null);
         return list;

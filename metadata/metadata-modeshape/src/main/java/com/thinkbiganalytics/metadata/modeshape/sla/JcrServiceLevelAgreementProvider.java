@@ -135,8 +135,8 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
             //query for the SLAs
             String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla "
-                           + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
-                           + " WHERE precondition.[jcr:uuid] is NULL ";
+                           + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[mode:id] "
+                           + " WHERE precondition.[mode:id] is NULL ";
 
             QueryResult result = JcrQueryUtil.query(getSession(), query, null);
 

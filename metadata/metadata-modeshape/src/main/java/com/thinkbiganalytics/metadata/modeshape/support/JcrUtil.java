@@ -277,7 +277,7 @@ public class JcrUtil {
         try {
             String
                 query =
-                "SELECT child.* from [" + parentNode.getPrimaryNodeType() + "] as parent inner join [" + childNodeType + "] as child ON ISCHILDNODE(child,parent) WHERE parent.[jcr:uuid]  = '"
+                "SELECT child.* from [" + parentNode.getPrimaryNodeType() + "] as parent inner join [" + childNodeType + "] as child ON ISCHILDNODE(child,parent) WHERE parent.[mode:id]  = '"
                 + parentNode.getIdentifier() + "'";
             return JcrQueryUtil.find(parentNode.getSession(), query, type);
 

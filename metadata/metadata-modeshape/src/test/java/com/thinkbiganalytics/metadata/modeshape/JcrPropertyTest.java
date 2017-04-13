@@ -248,7 +248,7 @@ public class JcrPropertyTest {
     public void queryTest() {
 
         //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
-        final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[jcr:uuid]";
+        final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[mode:id]";
 
         metadata.read(() -> {
             List<Node> feeds = ((JcrFeedProvider) feedProvider).findNodes(query);
