@@ -1,0 +1,8 @@
+${AnsiColor.GREEN} Upgrade Kylo App Banner
+${AnsiColor.RED} Upgrade Kylo App Banner
+${AnsiColor.BLUE} Upgrade Kylo App Banner
+${AnsiColor.GREEN} Upgrade Kylo App Banner
+${AnsiColor.RED} Upgrade Kylo App Banner
+${AnsiColor.BLUE} Upgrade Kylo App Banner
+
+${AnsiColor.BLUE} REPLACE WITH ASCII ART

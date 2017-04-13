@@ -61,6 +61,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
             boolean upgradeComplete = false;
             do {
                 log.info("Upgrading...");
+                System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY,"upgrade-banner.txt");
                 ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
                 KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
                 upgradeComplete = upgrader.upgrade();
@@ -68,7 +69,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
             } while (!upgradeComplete);
             log.info("Upgrading complete");
         }
-        
+        System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY,"banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
     }
 
