@@ -146,7 +146,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         });
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
                 if (AccessControlService.hasAction(AccessControlService.DATASOURCE_CREATE, actionSet.actions)) {
                     AddButtonService.registerAddButton("datasources", function () {

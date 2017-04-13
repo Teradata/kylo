@@ -188,7 +188,7 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
          */
         self.onLoad = function() {
             // Fetch allowed permissions
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                     .then(function(actionSet) {
                         self.allowAdmin = AccessControlService.hasAction(AccessControlService.GROUP_ADMIN, actionSet.actions);
                         self.allowUsers = AccessControlService.hasAction(AccessControlService.USERS_ACCESS, actionSet.actions);

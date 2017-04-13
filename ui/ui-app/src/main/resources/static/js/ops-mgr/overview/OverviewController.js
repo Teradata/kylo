@@ -30,7 +30,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
 
         // Fetch allowed permissions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
                         self.allowed = true;

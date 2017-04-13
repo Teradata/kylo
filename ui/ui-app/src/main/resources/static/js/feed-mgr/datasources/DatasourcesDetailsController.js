@@ -202,7 +202,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         };
 
         // Fetch allowed permissions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
                 self.allowEdit = AccessControlService.hasAction(AccessControlService.DATASOURCE_ACCESS, actionSet.actions);
             });

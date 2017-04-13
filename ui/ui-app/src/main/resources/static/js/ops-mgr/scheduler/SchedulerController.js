@@ -242,7 +242,7 @@ function justFiredJob(job){
         this.init = function () {
 
             // Fetch the allowed actions
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                     self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });

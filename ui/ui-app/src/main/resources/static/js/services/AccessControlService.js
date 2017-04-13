@@ -60,6 +60,30 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
 
         var currentUser = null;
 
+
+        /**
+         * Time allowed before the getAllowedActions refreshes from the server
+         * Default to refresh the cache every 3 minutes
+         */
+        var cacheUserAllowedActionsTime = 3000*60;
+
+        var lastUserAllowedCacheAccess = {};
+
+        var userAllowedActionsNeedsRefresh = function(module){
+            if(angular.isUndefined(lastUserAllowedCacheAccess[module])) {
+                return true;
+            }
+            else {
+                var diff = new Date().getTime() - lastUserAllowedCacheAccess[module];
+                if(diff > cacheUserAllowedActionsTime){
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
         /**
          * Key: Entity Type, Value: [{systemName:'ROLE1',permissions:['perm1','perm2']},...]
          * @type {{}}
@@ -89,6 +113,8 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
             executingAllowedActions: {},
 
             cachedUserAllowedActions: {},
+
+
 
             initialized: false,
 
@@ -251,8 +277,11 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 var defer = null;
 
                 var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : DEFAULT_MODULE;
+                if(angular.isUndefined(cache)){
+                    cache = true;
+                }
                 var isExecuting = self.executingAllowedActions[safeModule] != undefined;
-                if(cache == true && !isExecuting && self.cachedUserAllowedActions[safeModule] != undefined) {
+                if(cache == true && !isExecuting && self.cachedUserAllowedActions[safeModule] != undefined && !userAllowedActionsNeedsRefresh(safeModule)) {
                     defer = $q.defer();
                     defer.resolve(self.cachedUserAllowedActions[safeModule]);
                 }
@@ -267,6 +296,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                             }
                             defer.resolve(response.data);
                             //add it to the cache
+                            lastUserAllowedCacheAccess[safeModule] = new Date().getTime();
                             self.cachedUserAllowedActions[safeModule] = response.data;
                             //remove the executing request
                             delete self.executingAllowedActions[safeModule];
@@ -447,7 +477,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                 var defer = $q.defer();
                 var requests = {
                     entityAccess: entityAccessControlled == true ? this.hasEntityAccess(entityPermissions, entity) : true,
-                    functionalAccess: this.getAllowedActions()
+                    functionalAccess: this.getUserAllowedActions()
                 }
                 $q.all(requests).then(function (response) {
                     defer.resolve(response.entityAccess && self.hasAction(functionalPermission, response.functionalAccess.actions));

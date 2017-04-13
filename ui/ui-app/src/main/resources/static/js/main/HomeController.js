@@ -66,7 +66,7 @@ define(['angular'], function (angular) {
         };
 
         // Fetch the list of allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.onLoad(actionSet.actions);
                 });

@@ -78,7 +78,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         });
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton("service-level-agreements", function() {
@@ -647,7 +647,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 //Apply the entity access permissions
                 var requests = {
                     entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.feed) : true,
-                    functionalAccess: AccessControlService.getAllowedActions()
+                    functionalAccess: AccessControlService.getUserAllowedActions()
                 }
                 $q.all(requests).then(function (response) {
                     var allowEditAccess = AccessControlService.hasAction(AccessControlService.SLA_EDIT, response.functionalAccess.actions);

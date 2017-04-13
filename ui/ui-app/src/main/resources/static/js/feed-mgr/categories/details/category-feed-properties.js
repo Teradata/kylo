@@ -91,7 +91,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
         };
 
         //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function(access) {
+        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function(access) {
             self.allowEdit = access;
         });
 

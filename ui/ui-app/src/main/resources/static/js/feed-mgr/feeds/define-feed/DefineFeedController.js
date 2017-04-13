@@ -88,7 +88,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
                 self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
             });

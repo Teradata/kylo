@@ -304,7 +304,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * An error is displayed if the user does not have permissions to access categories.
          */
         this.onCategoryClick = function() {
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                     .then(function(actionSet) {
                         if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
                             StateService.FeedManager().Category().navigateToCategoryDetails(self.model.category.id);
@@ -386,7 +386,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 //Apply the entity access permissions
                                 var requests = {entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model) : true,
                                     entityPermissionAccess:entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model) : true,
-                                    functionalAccess:AccessControlService.getAllowedActions()}
+                                    functionalAccess:AccessControlService.getUserAllowedActions()}
                                 $q.all(requests).then(function (response) {
                                     var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
                                     var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);

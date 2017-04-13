@@ -473,7 +473,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
 
 
         // Fetch allowed permissions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });

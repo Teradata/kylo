@@ -213,7 +213,7 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
                     });
 
             // Load allowed permissions
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                     .then(function(actionSet) {
                         self.allowAdmin = AccessControlService.hasAction(AccessControlService.USERS_ADMIN, actionSet.actions);
                     });
