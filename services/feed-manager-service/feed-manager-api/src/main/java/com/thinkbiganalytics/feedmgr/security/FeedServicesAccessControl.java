@@ -56,7 +56,12 @@ public interface FeedServicesAccessControl {
     Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
                                                 "Administer Feeds",
                                                 "Allows the administration of a feed");
-
+    Action ACCESS_TABLES = FEEDS_SUPPORT.subAction("accessTables",
+                                                       "Access Tables",
+                                                       "Allows access to tables search");
+    Action ACCESS_VISUAL_QUERY = FEEDS_SUPPORT.subAction("accessVisualQuery",
+                                                   "Access Visual Query",
+                                                   "Allows access to visual query data wrangler ");
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",
                                                       "Allows access to feed templates");

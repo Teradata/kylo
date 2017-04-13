@@ -145,6 +145,12 @@ define([], function () {
         this.USERS_GROUPS_ACCESS = "accessUsersGroupsSupport";
 
         /**
+         * allows access to the visual query link on the left
+         * @type {string}
+         */
+        this.VISUAL_QUERY_ACCESS = "accessVisualQuery";
+
+        /**
          * Access Search
          * @type {string}
          */
@@ -241,7 +247,7 @@ define([], function () {
             USERS_DETAILS: {state: "user-details", permissions: [this.USERS_ACCESS]},
             GROUPS: {state: "groups", permissions: [this.USERS_GROUPS_ACCESS]},
             GROUP_DETAILS: {state: "group-details", permissions: [this.USERS_GROUPS_ACCESS]},
-            VISUAL_QUERY: {state: "visual-query", permissions: []},
+            VISUAL_QUERY: {state: "visual-query", permissions: [this.VISUAL_QUERY_ACCESS]},
             SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [this.SLA_ACCESS]},
             TABLES: {state: "tables", permissions: [this.TABLES_ACCESS]},
             TABLE: {state: "table", permissions: [this.TABLES_ACCESS]},
