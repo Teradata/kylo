@@ -92,12 +92,11 @@ public class SparkFileSchemaParserService {
             return toSchema(response.getResults(), fileType, tableSchemaType);
 
         } catch (Exception e) {
-            log.warn("Error parsing file {}", fileType);
+            log.error("Error parsing file {}: {}", fileType, e.getMessage());
             throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
             tempFile.delete();
         }
-
     }
     // Port: 8450
 
@@ -120,6 +119,8 @@ public class SparkFileSchemaParserService {
         switch (fileType) {
             case AVRO:
                 method = "avro";
+                sb.append("import com.databricks.spark.avro._\n");
+                sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
                 break;
             case JSON:
                 method = "json";
@@ -178,13 +179,11 @@ public class SparkFileSchemaParserService {
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
         }
-        log.info("Created temporary file {} success?", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
+        log.info("Created temporary file {} success? {}", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
         return tempFile;
     }
 
     public enum SparkFileType {
         PARQUET, AVRO, JSON, ORC
     }
-
-
 }
