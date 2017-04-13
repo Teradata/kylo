@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.upgrade.version_0_7_1;
 
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
@@ -91,9 +92,11 @@ public class UpgradeAction implements UpgradeState {
                 Node feedDataNode = JcrUtil.getOrCreateNode(feedNode, "tba:data", FEED_DATA_TYPE);
                 addMixin(feedNode, UPGRADABLE_TYPE);
 
-                moveProperty("tba:systemName", feedNode, feedSummaryNode);
+                moveProperty(JcrFeed.SYSTEM_NAME, feedNode, feedSummaryNode);
                 moveProperty("tba:category", feedNode, feedSummaryNode);
                 moveProperty("tba:tags", feedNode, feedSummaryNode);
+                moveProperty(JcrFeed.TITLE, feedNode, feedSummaryNode);
+                moveProperty(JcrFeed.DESCRIPTION, feedNode, feedSummaryNode);
 
                 if (JcrUtil.hasNode(feedNode, "tba:properties")) {
                     final Node feedPropertiesNode = JcrUtil.getNode(feedNode, "tba:properties");
