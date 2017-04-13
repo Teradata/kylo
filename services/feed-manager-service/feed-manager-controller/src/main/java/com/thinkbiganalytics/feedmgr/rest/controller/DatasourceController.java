@@ -324,12 +324,10 @@ public class DatasourceController {
         // Retrieve table names using system user
         return metadata.read(() -> {
             final List<String> tables = id.map(datasetProvider::getDatasource)
-                .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
-                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
-                .flatMap(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
-                .filter(JdbcDatasourceDetails.class::isInstance)
-                .map(JdbcDatasourceDetails.class::cast)
-                .map(details -> dbcpConnectionPoolTableInfo.getTableNamesForDatasource(details, schema, tableName))
+                .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                .filter(JdbcDatasource.class::isInstance)
+                .map(JdbcDatasource.class::cast)
+                .map(datasource -> dbcpConnectionPoolTableInfo.getTableNamesForDatasource(datasource, schema, tableName))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
             return Response.ok(tables).build();
         }, MetadataAccess.SERVICE);
@@ -365,12 +363,10 @@ public class DatasourceController {
         // Retrieve table description using system user
         return metadata.read(() -> {
             final TableSchema tableSchema = id.map(datasetProvider::getDatasource)
-                .filter(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::isInstance)
-                .map(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class::cast)
-                .flatMap(com.thinkbiganalytics.metadata.api.datasource.UserDatasource::getDetails)
-                .filter(JdbcDatasourceDetails.class::isInstance)
-                .map(JdbcDatasourceDetails.class::cast)
-                .map(details -> dbcpConnectionPoolTableInfo.describeTableForDatasource(details, schema, tableName))
+                .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                .filter(JdbcDatasource.class::isInstance)
+                .map(JdbcDatasource.class::cast)
+                .map(datasource -> dbcpConnectionPoolTableInfo.describeTableForDatasource(datasource, schema, tableName))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
             return Response.ok(tableSchema).build();
         }, MetadataAccess.SERVICE);

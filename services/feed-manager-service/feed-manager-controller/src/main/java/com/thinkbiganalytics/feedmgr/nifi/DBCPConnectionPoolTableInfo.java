@@ -24,8 +24,7 @@ import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -91,8 +90,8 @@ public class DBCPConnectionPoolTableInfo {
      * @return a list of schema.table names, or {@code null} if not accessible
      */
     @Nullable
-    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasourceDetails datasource, @Nullable final String schema, @Nullable final String tableName) {
-        final Optional<ControllerServiceDTO> controllerService = datasource.getControllerServiceId()
+    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nullable final String tableName) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
             final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
@@ -134,8 +133,8 @@ public class DBCPConnectionPoolTableInfo {
      * @param tableName  the table name
      * @return the database table and fields, or {@code null} if not found
      */
-    public TableSchema describeTableForDatasource(@Nonnull final JdbcDatasourceDetails datasource, @Nullable final String schema, @Nonnull final String tableName) {
-        final Optional<ControllerServiceDTO> controllerService = datasource.getControllerServiceId()
+    public TableSchema describeTableForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nonnull final String tableName) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
             final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
