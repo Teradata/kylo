@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.security.AccessController;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -43,10 +45,14 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
     private final EntityManager em;
     private final AutowireCapableBeanFactory beanFactory;
 
-    AugmentableQueryRepositoryFactory(EntityManager em, AutowireCapableBeanFactory beanFactory) {
+    private AccessController accessController;
+
+    AugmentableQueryRepositoryFactory(EntityManager em, AutowireCapableBeanFactory beanFactory, AccessController accessController) {
         super(em);
         this.em = em;
         this.beanFactory = beanFactory;
+        this.accessController = accessController;
+
         LOG.debug("AugmentableQueryRepositoryFactory.AugmentableQueryRepositoryFactory");
     }
 
@@ -56,7 +62,7 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
 
         Class<?> repositoryInterface = information.getRepositoryInterface();
 
-        if (isAugmentableRepository(repositoryInterface)) {
+        if (isAugmentableRepository(repositoryInterface) && accessController.isEntityAccessControlled()) {
             Class<?> domainType = information.getDomainType();
             LOG.debug("Creating AugmentableQueryRepositoryImpl for repo interface {} and domain class {}", repositoryInterface, domainType);
 
