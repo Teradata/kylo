@@ -21,8 +21,10 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.security.core.Authentication;
@@ -111,13 +113,17 @@ public final class JcrAccessControlUtil {
             // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
             // to an existing principal.  This can be considered a bug in ModeShape.
             boolean added = false;
-            if(JcrAccessControlUtil.enableEntityAccessControl) {
+            String servicesPath = "/" + SecurityPaths.SECURITY.resolve(AllowedActions.SERVICES).toString().toString();
+            boolean isServicesPath = path.startsWith(servicesPath);
+            if (isServicesPath || JcrAccessControlUtil.enableEntityAccessControl) {
                 SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
-                   added = acl.addAccessControlEntry(simple, privileges);
-                   acm.setPolicy(path, acl);
+                added = acl.addAccessControlEntry(simple, privileges);
+                acm.setPolicy(path, acl);
+            } else {
+                int i = 0;
             }
             return added;
-         //   return added;
+            //   return added;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
                                                   + Arrays.toString(privileges), e);
@@ -321,6 +327,6 @@ public final class JcrAccessControlUtil {
     }
 
     public static void setEnableEntityAccessControl(boolean enableEntityAccessControl) {
-       JcrAccessControlUtil.enableEntityAccessControl = enableEntityAccessControl;
+        JcrAccessControlUtil.enableEntityAccessControl = enableEntityAccessControl;
     }
 }
