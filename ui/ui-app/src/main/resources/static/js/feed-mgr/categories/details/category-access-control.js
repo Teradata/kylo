@@ -106,9 +106,10 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
             });
         };
 
-        $q.when(CategoriesService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS, self.model)).then(function (response) {
-            self.allowEdit = response;
-        })
+        //Apply the entity access permissions
+        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function(access) {
+            self.allowEdit = access;
+        });
 
     }
 

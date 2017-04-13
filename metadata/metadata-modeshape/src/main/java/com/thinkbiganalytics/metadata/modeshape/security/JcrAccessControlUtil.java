@@ -119,8 +119,6 @@ public final class JcrAccessControlUtil {
                 SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
                 added = acl.addAccessControlEntry(simple, privileges);
                 acm.setPolicy(path, acl);
-            } else {
-                int i = 0;
             }
             return added;
             //   return added;

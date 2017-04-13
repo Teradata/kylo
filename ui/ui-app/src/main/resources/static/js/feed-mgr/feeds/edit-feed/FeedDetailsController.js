@@ -49,6 +49,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         self.allowEdit = false;
 
         /**
+         * Indicates if export operations are allowed.
+         * @type {boolean}
+         */
+        self.allowExport = false;
+
+        /**
          * Alow user to access the sla tab
          * @type {boolean}
          */
@@ -384,12 +390,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 $q.all(requests).then(function (response) {
                                     var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
                                     var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
-                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                    var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
 
                                     self.allowEdit = response.entityEditAccess && allowEditAccess;
-                                    self.allowChangePermissions = response.entityPermissionAccess && allowEditAccess;
+                                    self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
                                     self.allowAdmin = allowAdminAccess;
-                                    self.allowSlaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                    self.allowSlaAccess = slaAccess;
+                                    self.allowExport = allowExport;
                                 });
 
                         }

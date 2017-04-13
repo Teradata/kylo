@@ -99,13 +99,6 @@ public interface MetadataService {
     NifiFeed createFeed(FeedMetadata feedMetadata);
 
     /**
-     * Save the feed metadata to Kylo
-     *
-     * @param feed metadata about the feed
-     */
-    void saveFeed(FeedMetadata feed);
-
-    /**
      * Deletes the specified feed.
      *
      * @param feedId the feed id

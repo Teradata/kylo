@@ -1,14 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -18,9 +9,9 @@ import javax.annotation.Nonnull;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,17 +30,27 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.security.action.Action;
 
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+
 /**
  * Common Feed Manager actions
  */
 public interface FeedManagerFeedService {
-    
+
     /**
-     * Checks the current security context has been granted permission to perform the specified action(s) 
+     * Checks the current security context has been granted permission to perform the specified action(s)
      * on the feed with the specified feed ID.  If the feed does not exist then no check is made.
-     * @param id the feed ID
+     *
+     * @param id     the feed ID
      * @param action an action to check
-     * @param more any additional actions to check
+     * @param more   any additional actions to check
      * @return true if the feed existed, otherwise false
      * @throws AccessControlException thrown if the feed exists and the action(s) checked are not permitted
      */
@@ -131,13 +132,6 @@ public interface FeedManagerFeedService {
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
-
-    /**
-     * Save the feed metadata to Kylo
-     *
-     * @param feed metadata about the feed
-     */
-    void saveFeed(FeedMetadata feed);
 
     /**
      * Deletes the specified feed.

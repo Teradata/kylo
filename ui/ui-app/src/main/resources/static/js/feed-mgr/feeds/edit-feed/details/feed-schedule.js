@@ -313,10 +313,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
         };
 
-        //Apply the entity access permissions
-        $q.when(FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS,self.model)).then(function(response){
-            self.allowEdit = response;
-        })
+        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
+            self.allowEdit = access;
+        });
 
         // Detect if NiFi is clustered
         $http.get(RestUrlService.NIFI_CLUSTER_SUMMARY_URL).then(function(response) {

@@ -1,9 +1,10 @@
-${AnsiColor.GREEN} Upgrade Kylo App Banner
-${AnsiColor.RED} Upgrade Kylo App Banner
-${AnsiColor.BLUE} Upgrade Kylo App Banner
-${AnsiColor.GREEN} Upgrade Kylo App Banner
-${AnsiColor.RED} Upgrade Kylo App Banner
-${AnsiColor.BLUE} Upgrade Kylo App Banner
 
-${AnsiColor.BLUE} REPLACE WITH ASCII ART
+${AnsiColor.GREEN} ██╗  ██╗██╗   ██╗██╗      ██████╗   ${AnsiColor.BLUE}  ██╗   ██╗██████╗  ██████╗ ██████╗  █████╗ ██████╗ ███████╗
+${AnsiColor.GREEN} ██║ ██╔╝╚██╗ ██╔╝██║     ██╔═══██╗  ${AnsiColor.BLUE}  ██║   ██║██╔══██╗██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██╔════╝
+${AnsiColor.GREEN} █████╔╝  ╚████╔╝ ██║     ██║   ██║  ${AnsiColor.BLUE}  ██║   ██║██████╔╝██║  ███╗██████╔╝███████║██║  ██║█████╗
+${AnsiColor.GREEN} ██╔═██╗   ╚██╔╝  ██║     ██║   ██║  ${AnsiColor.BLUE}  ██║   ██║██╔═══╝ ██║   ██║██╔══██╗██╔══██║██║  ██║██╔══╝
+${AnsiColor.GREEN} ██║  ██╗   ██║   ███████╗╚██████╔╝  ${AnsiColor.BLUE}  ╚██████╔╝██║     ╚██████╔╝██║  ██║██║  ██║██████╔╝███████╗
+${AnsiColor.GREEN} ╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ${AnsiColor.BLUE}   ╚═════╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝
+${AnsiColor.BRIGHT_BLUE}
+:: Running Kylo upgrade application
 ${AnsiColor.DEFAULT}
