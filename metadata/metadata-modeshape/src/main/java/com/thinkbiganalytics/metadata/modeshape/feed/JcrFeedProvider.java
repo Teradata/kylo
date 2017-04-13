@@ -490,8 +490,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public List<? extends Feed> findByCategoryId(Category.ID categoryId) {
 
-        String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-                       + "WHERE e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
+        String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
+                       + "INNER JOIN ['tba:feedSummary'] as summary on ISCHILDNODE(summary,e)"
+                       + "WHERE summary." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
 
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());
