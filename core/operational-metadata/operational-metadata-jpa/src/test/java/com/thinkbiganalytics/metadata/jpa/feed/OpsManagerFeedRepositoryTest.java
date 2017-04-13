@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
 import org.junit.Assert;
@@ -44,6 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import javax.inject.Inject;
+
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,6 +61,9 @@ public class OpsManagerFeedRepositoryTest {
     @Autowired
     FeedOpsAccessControlRepository aclRepo;
 
+    @Inject
+    AccessController accessController;
+
 
     @WithMockUser(username = "dladmin",
                   password = "secret",
@@ -66,10 +72,11 @@ public class OpsManagerFeedRepositoryTest {
     public void findFeedUsingPrincipalsName_MatchingUserNameAndFeedName() throws Exception {
         JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "dladmin");
         repo.save(feed);
-
-        List<String> feedNames = repo.getFeedNamesWithPrincipal();
-        Assert.assertEquals(1, feedNames.size());
-        Assert.assertEquals("dladmin", feedNames.get(0));
+        if(accessController.isEntityAccessControlled()) {
+            List<String> feedNames = repo.getFeedNamesWithPrincipal();
+            Assert.assertEquals(1, feedNames.size());
+            Assert.assertEquals("dladmin", feedNames.get(0));
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -79,9 +86,10 @@ public class OpsManagerFeedRepositoryTest {
     public void findFeedUsingPrincipalsName_NonMatchingUserNameAndFeedName() throws Exception {
         JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "non-matching-feed-name");
         repo.save(feed);
-
-        List<String> feedNames = repo.getFeedNamesWithPrincipal();
-        Assert.assertEquals(0, feedNames.size());
+        if(accessController.isEntityAccessControlled()) {
+            List<String> feedNames = repo.getFeedNamesWithPrincipal();
+            Assert.assertEquals(0, feedNames.size());
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -99,10 +107,11 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry adminGroupAcl = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(adminGroupAcl);
-
-        List<String> feedNames = repo.getFeedNames();
-        Assert.assertEquals(1, feedNames.size());
-        Assert.assertEquals("feed-name", feedNames.get(0));
+        if(accessController.isEntityAccessControlled()) {
+            List<String> feedNames = repo.getFeedNames();
+            Assert.assertEquals(1, feedNames.size());
+            Assert.assertEquals("feed-name", feedNames.get(0));
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -120,9 +129,10 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
-
-        List<String> feedNames = repo.getFeedNames();
-        Assert.assertEquals(0, feedNames.size());
+        if(accessController.isEntityAccessControlled()) {
+            List<String> feedNames = repo.getFeedNames();
+            Assert.assertEquals(0, feedNames.size());
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -143,10 +153,11 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry adminGroupAcl = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(adminGroupAcl);
-
-        List<String> feedNames = repo.getFeedNames();
-        Assert.assertEquals(1, feedNames.size());
-        Assert.assertEquals("feed-name", feedNames.get(0));
+        if(accessController.isEntityAccessControlled()) {
+            List<String> feedNames = repo.getFeedNames();
+            Assert.assertEquals(1, feedNames.size());
+            Assert.assertEquals("feed-name", feedNames.get(0));
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -176,12 +187,13 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry userGroupAcl = new JpaFeedOpsAclEntry(feedId2, "ROLE_USER", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(userGroupAcl);
+        if(accessController.isEntityAccessControlled()) {
 
-
-        List<String> feedNames = repo.getFeedNames();
-        Assert.assertEquals(2, feedNames.size());
-        Assert.assertTrue(feedNames.contains("feed1-name"));
-        Assert.assertTrue(feedNames.contains("feed2-name"));
+            List<String> feedNames = repo.getFeedNames();
+            Assert.assertEquals(2, feedNames.size());
+            Assert.assertTrue(feedNames.contains("feed1-name"));
+            Assert.assertTrue(feedNames.contains("feed2-name"));
+        }
     }
 
 
@@ -202,10 +214,11 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
-
-        Iterable<JpaOpsManagerFeed> all = repo.findAll();
-        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("feed-name")));
+        if(accessController.isEntityAccessControlled()) {
+            Iterable<JpaOpsManagerFeed> all = repo.findAll();
+            Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                                   .anyMatch(it -> it.getName().equals("feed-name")));
+        }
     }
 
 
@@ -247,16 +260,17 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
+        if(accessController.isEntityAccessControlled()) {
 
+            QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+            Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==non-matching-feed-name"));
 
-        QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-        Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==non-matching-feed-name"));
+            Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                                   .anyMatch(it -> it.getName().equals("feed-name")));
 
-        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("feed-name")));
-
-        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
+            Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                                   .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -286,16 +300,17 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry matchingRole1 = new JpaFeedOpsAclEntry(nonMatchingFeedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(matchingRole1);
+        if(accessController.isEntityAccessControlled()) {
 
+            QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+            Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==feed-name"));
 
-        QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-        Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name==feed-name"));
+            Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
+                                  .anyMatch(it -> it.getName().equals("feed-name")));
 
-        Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("feed-name")));
-
-        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
-            .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
+            Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                                   .anyMatch(it -> it.getName().equals("non-matching-feed-name")));
+        }
     }
 
 
@@ -332,13 +347,15 @@ public class OpsManagerFeedRepositoryTest {
         aclRepo.save(acl3);
 
         long count = repo.count();
-        Assert.assertEquals(2, count);
+        if(accessController.isEntityAccessControlled()) {
+            Assert.assertEquals(2, count);
 
-        List<JpaOpsManagerFeed> feeds = repo.findAll();
-        Assert.assertTrue(feeds.stream()
-                              .anyMatch(it -> it.getName().equals("feed1-name")));
-        Assert.assertTrue(feeds.stream()
-                              .anyMatch(it -> it.getName().equals("feed2-name")));
+            List<JpaOpsManagerFeed> feeds = repo.findAll();
+            Assert.assertTrue(feeds.stream()
+                                  .anyMatch(it -> it.getName().equals("feed1-name")));
+            Assert.assertTrue(feeds.stream()
+                                  .anyMatch(it -> it.getName().equals("feed2-name")));
+        }
     }
 
     @WithMockUser(username = "dladmin",
@@ -371,10 +388,11 @@ public class OpsManagerFeedRepositoryTest {
 
         JpaFeedOpsAclEntry acl3 = new JpaFeedOpsAclEntry(feed3Id, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(acl3);
-
-        Assert.assertNotNull(repo.findOne(feed1.getId()));
-        Assert.assertNotNull(repo.findOne(feed2.getId()));
-        Assert.assertNull(repo.findOne(feed3.getId()));
+if(accessController.isEntityAccessControlled()) {
+    Assert.assertNotNull(repo.findOne(feed1.getId()));
+    Assert.assertNotNull(repo.findOne(feed2.getId()));
+    Assert.assertNull(repo.findOne(feed3.getId()));
+}
     }
 
 
@@ -421,17 +439,19 @@ public class OpsManagerFeedRepositoryTest {
 
         Pageable page1Request = new PageRequest(0, 2);
         Page<JpaOpsManagerFeed> page1 = repo.findAll(page1Request);
-        Assert.assertEquals(0, page1.getNumber());
-        Assert.assertEquals(2, page1.getNumberOfElements());
-        Assert.assertEquals(2, page1.getTotalPages());
-        Assert.assertEquals(4, page1.getTotalElements());
+        if(accessController.isEntityAccessControlled()) {
+            Assert.assertEquals(0, page1.getNumber());
+            Assert.assertEquals(2, page1.getNumberOfElements());
+            Assert.assertEquals(2, page1.getTotalPages());
+            Assert.assertEquals(4, page1.getTotalElements());
 
-        Pageable page2Request = new PageRequest(1, 2);
-        Page<JpaOpsManagerFeed> page2 = repo.findAll(page2Request);
-        Assert.assertEquals(1, page2.getNumber());
-        Assert.assertEquals(2, page2.getNumberOfElements());
-        Assert.assertEquals(2, page2.getTotalPages());
-        Assert.assertEquals(4, page2.getTotalElements());
+            Pageable page2Request = new PageRequest(1, 2);
+            Page<JpaOpsManagerFeed> page2 = repo.findAll(page2Request);
+            Assert.assertEquals(1, page2.getNumber());
+            Assert.assertEquals(2, page2.getNumberOfElements());
+            Assert.assertEquals(2, page2.getTotalPages());
+            Assert.assertEquals(4, page2.getTotalElements());
+        }
 
     }
 

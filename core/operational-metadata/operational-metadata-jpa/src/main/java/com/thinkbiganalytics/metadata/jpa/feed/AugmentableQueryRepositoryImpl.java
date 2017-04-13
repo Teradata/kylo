@@ -81,21 +81,26 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     @Override
     protected <S extends T> TypedQuery<Long> getCountQuery(Specification<S> spec, Class<S> domainClass) {
         LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
-        CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, spec, domainClass);
-        return entityManager.createQuery(query);
+        if(augmentor != null) {
+            CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, spec, domainClass);
+            return entityManager.createQuery(query);
+        }
+        else {
+          return  super.getCountQuery(spec,domainClass);
+        }
     }
 
     @Override
     protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Sort sort) {
         LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
-        return super.getQuery(augmentor.augment(spec, domainClass, entityInformation), domainClass, sort);
+        return super.getQuery(augmentor != null ? augmentor.augment(spec, domainClass, entityInformation) : spec, domainClass, sort);
     }
 
     @Override
     protected JPQLQuery<?> createQuery(com.querydsl.core.types.Predicate... predicate) {
         LOG.debug("AugmentableQueryRepositoryImpl.createQuery");
 
-        return super.createQuery(augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[] {}));
+        return super.createQuery(augmentor != null ? augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[] {}) : predicate);
     }
 
     @Override
