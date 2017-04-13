@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
@@ -57,7 +58,7 @@ import javax.inject.Inject;
 /**
  * In memory implementation
  */
-public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
+public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private LegacyNifiRestClient nifiRestClient;
@@ -89,7 +90,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
             loadSavedFeedsToMetaClientStore();
         }
     }
-    
+
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
         // Permission checking not currently implemented for the in-memory implementation
@@ -210,7 +211,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     }
 
 
-    @Override
     public void saveFeed(FeedMetadata feed) {
         if (feed.getId() == null || !feeds.containsKey(feed.getId())) {
             feed.setId(UUID.randomUUID().toString());
@@ -297,5 +297,14 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Override
     public Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId) {
         return Optional.of(Collections.emptySet());
+    }
+
+    @Override
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
+        saveFeed(feedMetadata);
+        NifiFeed nifiFeed = new NifiFeed();
+        nifiFeed.setFeedMetadata(feedMetadata);
+        nifiFeed.setSuccess(true);
+        return nifiFeed;
     }
 }

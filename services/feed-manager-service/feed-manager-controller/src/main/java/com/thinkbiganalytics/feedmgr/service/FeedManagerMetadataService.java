@@ -113,7 +113,8 @@ public class FeedManagerMetadataService implements MetadataService {
     
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
-        return feedProvider.checkFeedPermission(id, action, more);
+            return feedProvider.checkFeedPermission(id, action, more);
+
     }
 
     @Override
@@ -125,10 +126,6 @@ public class FeedManagerMetadataService implements MetadataService {
     public List<NifiProperty> getTemplateProperties(String templateId) {
         return templateProvider.getTemplateProperties(templateId);
     }
-
-
-
-
 
     public void deleteRegisteredTemplate(String templateId) {
         templateProvider.deleteRegisteredTemplate(templateId);
@@ -154,10 +151,6 @@ public class FeedManagerMetadataService implements MetadataService {
 
     }
 
-    @Override
-    public void saveFeed(FeedMetadata feed) {
-        feedProvider.saveFeed(feed);
-    }
 
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
