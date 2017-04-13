@@ -29,11 +29,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
-import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.io.Serializable;
@@ -57,41 +54,13 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
 
     private final EntityManager entityManager;
     private final JpaEntityInformation<T, ID> entityInformation;
-    private final Class<?> springDataRepositoryInterface;
     private final QueryAugmentor augmentor;
-    private final PersistenceProvider provider;
 
-    /**
-     * Creates a new {@link SimpleJpaRepository} to manage objects of the given
-     * {@link JpaEntityInformation}.
-     *
-     * @param entityInformation
-     * @param entityManager
-     */
-    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager entityManager , Class<?> springDataRepositoryInterface) {
-        this(entityInformation, entityManager, springDataRepositoryInterface, null);
-        LOG.debug("AugmentableQueryRepositoryImpl.SecuredFeedRepositoryImpl_0");
-    }
-
-    /**
-     * Creates a new {@link SimpleJpaRepository} to manage objects of the given
-     * domain type.
-     *
-     * @param domainClass
-     * @param em
-     */
-    public AugmentableQueryRepositoryImpl(Class<T> domainClass, EntityManager em) {
-        this((JpaEntityInformation<T, ID>) JpaEntityInformationSupport.getEntityInformation(domainClass, em), em, null);
-        LOG.debug("AugmentableQueryRepositoryImpl.SecuredFeedRepositoryImpl_1");
-    }
-
-    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, Class<?> repositoryInterface, QueryAugmentor augmentor) {
+    AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
         super(entityInformation, em);
         this.entityInformation = entityInformation;
         this.entityManager = em;
-        this.springDataRepositoryInterface = repositoryInterface;
         this.augmentor = augmentor;
-        this.provider = PersistenceProvider.fromEntityManager(entityManager);
     }
 
     @Override
