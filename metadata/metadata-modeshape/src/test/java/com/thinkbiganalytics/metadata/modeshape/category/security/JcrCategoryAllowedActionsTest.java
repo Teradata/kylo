@@ -26,6 +26,8 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedSecurityTestConfig;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.junit.After;
@@ -44,7 +46,7 @@ import javax.inject.Inject;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class})
 public class JcrCategoryAllowedActionsTest {
 
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
