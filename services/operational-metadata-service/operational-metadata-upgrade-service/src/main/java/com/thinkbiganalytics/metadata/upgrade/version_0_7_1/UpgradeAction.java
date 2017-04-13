@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 
 import org.apache.commons.lang3.StringUtils;
+import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +146,17 @@ public class UpgradeAction implements UpgradeState {
             log.info("Completed upgrading category: " + catNode);
         }
 
-        log.info("Upgrade complete for {} categories and {} feeds", categoryCount, totalFeedCount);
+        // Update templates
+        int templateCount = 0;
+        final Node templatesNode = JcrUtil.getNode(session, "metadata/templates");
+
+        for (Node templateNode : JcrUtil.getNodesOfType(templatesNode, "tba:feedTemplate")) {
+            log.info("Starting upgrading template: [{}] {}", ++templateCount, templateNode);
+            JcrUtil.createNode(templateNode, "tba:allowedActions", "tba:allowedActions");
+            log.info("Completed upgrading template: " + templateNode);
+        }
+
+        log.info("Upgrade complete for {} categories and {} feeds and {} templates", categoryCount, totalFeedCount, templateCount);
     }
 
     /**
