@@ -96,8 +96,6 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
         LOG.debug("FeedAclIndexQueryAugmentor.augment(Predicate[])");
 
         QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
-        com.querydsl.core.types.Predicate p = null;
-
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<String> principalRoles = authentication == null ? new ArrayList<>(0) : new RoleSetExposingSecurityExpressionRoot(authentication).getRoleSet();
