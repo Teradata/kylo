@@ -79,7 +79,9 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
             }
 
             JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(domainType);
-            return new AugmentableQueryRepositoryImpl(entityInformation, em, augmentor);
+            AugmentableQueryRepositoryImpl augmentableQueryRepository = new AugmentableQueryRepositoryImpl(entityInformation, em, augmentor);
+            augmentableQueryRepository.setAugmentor(augmentor);
+            return augmentableQueryRepository;
         } else {
             return super.getTargetRepository(information);
         }
