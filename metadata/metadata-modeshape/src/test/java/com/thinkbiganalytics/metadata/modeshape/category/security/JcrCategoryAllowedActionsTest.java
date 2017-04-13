@@ -90,9 +90,18 @@ public class JcrCategoryAllowedActionsTest {
     @After
     public void cleanup() {
         metadata.commit(() -> {
-            categoryProvider.deleteById(categoryProvider.findBySystemName("testA").getId());
-            categoryProvider.deleteById(categoryProvider.findBySystemName("testB").getId());
-            categoryProvider.deleteById(categoryProvider.findBySystemName("testC").getId());
+            Category a = categoryProvider.findBySystemName("testA");
+            if(a != null) {
+                categoryProvider.deleteById(a.getId());
+            }
+            Category b = categoryProvider.findBySystemName("testB");
+            if(b != null) {
+                categoryProvider.deleteById(b.getId());
+            }
+            Category c = categoryProvider.findBySystemName("testC");
+            if(c != null) {
+                categoryProvider.deleteById(c.getId());
+            }
         }, MetadataAccess.SERVICE);
     }
 
