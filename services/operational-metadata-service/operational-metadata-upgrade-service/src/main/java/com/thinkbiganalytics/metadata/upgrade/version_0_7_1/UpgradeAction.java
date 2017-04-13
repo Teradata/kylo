@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,90 +64,88 @@ public class UpgradeAction implements UpgradeState {
      */
     @Override
     public void upgradeFrom(KyloVersion startingVersion) {
-      //  if (getStartingVersion().equals(startingVersion)) {
-            log.info("Upgrading from version: " + startingVersion);
+        log.info("Upgrading from version: " + startingVersion);
 
-            Session session = JcrMetadataAccess.getActiveSession();
-            Node feedsNode = JcrUtil.getNode(session, "metadata/feeds");
+        Session session = JcrMetadataAccess.getActiveSession();
+        Node feedsNode = JcrUtil.getNode(session, "metadata/feeds");
 
-            int categoryCount = 0;
-            int categoryFeedCount = 0;
-            int totalFeedCount = 0;
+        int categoryCount = 0;
+        int categoryFeedCount = 0;
+        int totalFeedCount = 0;
 
-            for (Node catNode : JcrUtil.getNodesOfType(feedsNode, CATEGORY_TYPE)) {
-                log.info("Starting upgrading category: [{}] {}", ++categoryCount, catNode);
+        for (Node catNode : JcrUtil.getNodesOfType(feedsNode, CATEGORY_TYPE)) {
+            log.info("Starting upgrading category: [{}] {}", ++categoryCount, catNode);
 
-                categoryFeedCount = 0;
-                Node detailsNode = JcrUtil.getOrCreateNode(catNode, "tba:details", CAT_DETAILS_TYPE);
-                moveProperty("tba:initialized", catNode, detailsNode);
-                moveProperty("tba:securityGroups", catNode, detailsNode);
+            categoryFeedCount = 0;
+            Node detailsNode = JcrUtil.getOrCreateNode(catNode, "tba:details", CAT_DETAILS_TYPE);
+            moveProperty("tba:initialized", catNode, detailsNode);
+            moveProperty("tba:securityGroups", catNode, detailsNode);
 
-                for (Node feedNode : JcrUtil.getNodesOfType(catNode, FEED_TYPE)) {
-                    moveNode(session, feedNode, detailsNode);
+            for (Node feedNode : JcrUtil.getNodesOfType(catNode, FEED_TYPE)) {
+                moveNode(session, feedNode, detailsNode);
 
-                    log.info("\tStarting upgrading feed: [{}] {}", ++categoryFeedCount, feedNode);
-                    ++totalFeedCount;
-                    Node feedSummaryNode = JcrUtil.getOrCreateNode(feedNode, "tba:summary", FEED_SUMMARY_TYPE);
-                    Node feedDataNode = JcrUtil.getOrCreateNode(feedNode, "tba:data", FEED_DATA_TYPE);
-                    addMixin(feedNode, UPGRADABLE_TYPE);
+                log.info("\tStarting upgrading feed: [{}] {}", ++categoryFeedCount, feedNode);
+                ++totalFeedCount;
+                Node feedSummaryNode = JcrUtil.getOrCreateNode(feedNode, "tba:summary", FEED_SUMMARY_TYPE);
+                Node feedDataNode = JcrUtil.getOrCreateNode(feedNode, "tba:data", FEED_DATA_TYPE);
+                addMixin(feedNode, UPGRADABLE_TYPE);
 
-                    moveProperty("tba:systemName", feedNode, feedSummaryNode);
-                    moveProperty("tba:category", feedNode, feedSummaryNode);
-                    moveProperty("tba:tags", feedNode, feedSummaryNode);
+                moveProperty("tba:systemName", feedNode, feedSummaryNode);
+                moveProperty("tba:category", feedNode, feedSummaryNode);
+                moveProperty("tba:tags", feedNode, feedSummaryNode);
 
-                    if (JcrUtil.hasNode(feedNode, "tba:properties")) {
-                        final Node feedPropertiesNode = JcrUtil.getNode(feedNode, "tba:properties");
-                        moveNode(session, feedPropertiesNode, feedSummaryNode);
-                    }
-
-                    Node feedDetailsNode = JcrUtil.getOrCreateNode(feedSummaryNode, "tba:details", FEED_DETAILS_TYPE);
-
-                    moveProperty("tba:feedTemplate", feedNode, feedDetailsNode);
-                    moveProperty("tba:slas", feedNode, feedDetailsNode);
-                    moveProperty("tba:dependentFeeds", feedNode, feedDetailsNode);
-                    moveProperty("tba:usedByFeeds", feedNode, feedDetailsNode);
-                    moveProperty("tba:json", feedNode, feedDetailsNode);
-
-                    // Loop is needed because sns is specified for node type
-                    List<Node> feedSourceNodes = JcrUtil.getNodeList(feedNode, "tba:sources");
-                    for (Node feedSourceNode : feedSourceNodes) {
-                        moveNode(session, feedSourceNode, feedDetailsNode);
-                    }
-
-                    // Loop is needed because sns is specified for node type
-                    List<Node> feedDestinationNodes = JcrUtil.getNodeList(feedNode, "tba:destinations");
-                    for (Node feedDestinationNode : feedDestinationNodes) {
-                        moveNode(session, feedDestinationNode, feedDetailsNode);
-                    }
-
-                    if (JcrUtil.hasNode(feedNode, "tba:precondition")) {
-                        Node feedPreconditionNode = JcrUtil.getNode(feedNode, "tba:precondition");
-                        moveNode(session, feedPreconditionNode, feedDetailsNode);
-                    }
-
-                    moveProperty("tba:state", feedNode, feedDataNode);
-                    moveProperty("tba:schedulingPeriod", feedNode, feedDataNode);
-                    moveProperty("tba:schedulingStrategy", feedNode, feedDataNode);
-                    moveProperty("tba:securityGroups", feedNode, feedDataNode);
-
-                    if (JcrUtil.hasNode(feedNode, "tba:highWaterMarks")) {
-                        Node feedWaterMarksNode = JcrUtil.getNode(feedNode, "tba:highWaterMarks");
-                        moveNode(session, feedWaterMarksNode, feedDataNode);
-                    }
-
-                    if (JcrUtil.hasNode(feedNode, "tba:initialization")) {
-                        Node feedInitializationNode = JcrUtil.getNode(feedNode, "tba:initialization");
-                        moveNode(session, feedInitializationNode, feedDataNode);
-                    }
-
-                    removeMixin(feedNode, UPGRADABLE_TYPE);
-                    log.info("\tCompleted upgrading feed: " + feedNode);
+                if (JcrUtil.hasNode(feedNode, "tba:properties")) {
+                    final Node feedPropertiesNode = JcrUtil.getNode(feedNode, "tba:properties");
+                    moveNode(session, feedPropertiesNode, feedSummaryNode);
                 }
-                log.info("Completed upgrading category: " + catNode);
-            }
 
-            log.info("Upgrade complete for {} categories and {} feeds", categoryCount, totalFeedCount);
-      //  }
+                Node feedDetailsNode = JcrUtil.getOrCreateNode(feedSummaryNode, "tba:details", FEED_DETAILS_TYPE);
+
+                moveProperty("tba:feedTemplate", feedNode, feedDetailsNode);
+                moveProperty("tba:slas", feedNode, feedDetailsNode);
+                moveProperty("tba:dependentFeeds", feedNode, feedDetailsNode);
+                moveProperty("tba:usedByFeeds", feedNode, feedDetailsNode);
+                moveProperty("tba:json", feedNode, feedDetailsNode);
+
+                // Loop is needed because sns is specified for node type
+                List<Node> feedSourceNodes = JcrUtil.getNodeList(feedNode, "tba:sources");
+                for (Node feedSourceNode : feedSourceNodes) {
+                    moveNode(session, feedSourceNode, feedDetailsNode);
+                }
+
+                // Loop is needed because sns is specified for node type
+                List<Node> feedDestinationNodes = JcrUtil.getNodeList(feedNode, "tba:destinations");
+                for (Node feedDestinationNode : feedDestinationNodes) {
+                    moveNode(session, feedDestinationNode, feedDetailsNode);
+                }
+
+                if (JcrUtil.hasNode(feedNode, "tba:precondition")) {
+                    Node feedPreconditionNode = JcrUtil.getNode(feedNode, "tba:precondition");
+                    moveNode(session, feedPreconditionNode, feedDetailsNode);
+                }
+
+                moveProperty("tba:state", feedNode, feedDataNode);
+                moveProperty("tba:schedulingPeriod", feedNode, feedDataNode);
+                moveProperty("tba:schedulingStrategy", feedNode, feedDataNode);
+                moveProperty("tba:securityGroups", feedNode, feedDataNode);
+
+                if (JcrUtil.hasNode(feedNode, "tba:highWaterMarks")) {
+                    Node feedWaterMarksNode = JcrUtil.getNode(feedNode, "tba:highWaterMarks");
+                    moveNode(session, feedWaterMarksNode, feedDataNode);
+                }
+
+                if (JcrUtil.hasNode(feedNode, "tba:initialization")) {
+                    Node feedInitializationNode = JcrUtil.getNode(feedNode, "tba:initialization");
+                    moveNode(session, feedInitializationNode, feedDataNode);
+                }
+
+                removeMixin(feedNode, UPGRADABLE_TYPE);
+                log.info("\tCompleted upgrading feed: " + feedNode);
+            }
+            log.info("Completed upgrading category: " + catNode);
+        }
+
+        log.info("Upgrade complete for {} categories and {} feeds", categoryCount, totalFeedCount);
     }
 
     /**
@@ -166,7 +165,7 @@ public class UpgradeAction implements UpgradeState {
     private void moveNode(Session session, Node node, Node parentNode) {
         try {
             if ((node != null) && (parentNode != null)) {
-                final String srcPath = node.getParent().getPath() + "/" + node.getName();  // Path may not be accurate if parent node moved recently
+                final String srcPath = node.getParent().getPath() + "/" + StringUtils.substringAfterLast(node.getPath(), "/");  // Path may not be accurate if parent node moved recently
                 session.move(srcPath, parentNode.getPath() + "/" + node.getName());
             }
         } catch (RepositoryException e) {
