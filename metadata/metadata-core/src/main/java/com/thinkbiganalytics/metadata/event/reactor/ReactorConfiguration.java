@@ -37,10 +37,15 @@ import reactor.bus.EventBus;
  *
  */
 @Configuration
-public class ReactorContiguration {
+public class ReactorConfiguration {
 
     @Bean(name = "reactorEnvironment")
     public Environment reactorEnvironment() {
+        //force a new environment each time the bean creates it
+        //this is needed now since the Upgrade Application creates this bean initially.  The time the final Kylo-Services app runs it has a stale environment
+       if(Environment.alive()) {
+           Environment.terminate();
+       }
         return Environment.initializeIfEmpty();
     }
 
