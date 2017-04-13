@@ -211,11 +211,12 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.ACCESS_CATEGORIES,
                                    FeedServicesAccessControl.ACCESS_FEEDS,
                                    FeedServicesAccessControl.ACCESS_TEMPLATES,
-                                   FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
-                                   FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                                   FeedServicesAccessControl.ACCESS_TABLES,
+                                   FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
                     allowed.enable(designersGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
                                    FeedServicesAccessControl.EDIT_FEEDS,
+                                   FeedServicesAccessControl.ACCESS_TABLES,
                                    FeedServicesAccessControl.IMPORT_FEEDS,
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
@@ -229,6 +230,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                     allowed.enable(analystsGroup.getRootPrincial(),
                                    OperationsAccessControl.ACCESS_OPS,
                                    FeedServicesAccessControl.EDIT_FEEDS,
+                                   FeedServicesAccessControl.ACCESS_TABLES,
                                    FeedServicesAccessControl.IMPORT_FEEDS,
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
