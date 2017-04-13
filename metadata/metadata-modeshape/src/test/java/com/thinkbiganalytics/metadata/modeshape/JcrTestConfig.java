@@ -45,6 +45,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
@@ -147,6 +148,11 @@ public class JcrTestConfig {
 
     @Bean
     public PropertySourcesPlaceholderConfigurer placeHolderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
+        final Properties properties = new Properties();
+        properties.setProperty("security.entity.access.controlled", "true");
+
+        final PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+        configurer.setProperties(properties);
+        return configurer;
     }
 }
