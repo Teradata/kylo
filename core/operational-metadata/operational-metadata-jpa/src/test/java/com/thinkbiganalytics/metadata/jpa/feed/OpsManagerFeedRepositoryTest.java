@@ -33,6 +33,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -54,10 +57,6 @@ public class OpsManagerFeedRepositoryTest {
 
     @Autowired
     FeedOpsAccessControlRepository aclRepo;
-
-
-    //TODO test counts/deletes etc
-
 
 
     @WithMockUser(username = "dladmin",
@@ -377,5 +376,65 @@ public class OpsManagerFeedRepositoryTest {
         Assert.assertNotNull(repo.findOne(feed2.getId()));
         Assert.assertNull(repo.findOne(feed3.getId()));
     }
+
+
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @Test
+    public void findAll_TwoPages() throws Exception {
+        JpaOpsManagerFeed feed1 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed1-name");
+        repo.save(feed1);
+        BaseFeed.FeedId feed1Id = new BaseFeed.FeedId(feed1.getId().getUuid());
+        JpaFeedOpsAclEntry acl1 = new JpaFeedOpsAclEntry(feed1Id, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl1);
+
+        JpaOpsManagerFeed feed2 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed2-name");
+        repo.save(feed2);
+        BaseFeed.FeedId feed2Id = new BaseFeed.FeedId(feed2.getId().getUuid());
+        JpaFeedOpsAclEntry acl2 = new JpaFeedOpsAclEntry(feed2Id, "ROLE_USER", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl2);
+
+        JpaOpsManagerFeed feed3 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed3-name");
+        repo.save(feed3);
+        BaseFeed.FeedId feed3Id = new BaseFeed.FeedId(feed3.getId().getUuid());
+        JpaFeedOpsAclEntry acl3 = new JpaFeedOpsAclEntry(feed3Id, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl3);
+
+        JpaOpsManagerFeed feed4 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed4-name");
+        repo.save(feed4);
+        BaseFeed.FeedId feed4Id = new BaseFeed.FeedId(feed4.getId().getUuid());
+        JpaFeedOpsAclEntry acl4 = new JpaFeedOpsAclEntry(feed4Id, "ROLE_USER", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl4);
+
+        JpaOpsManagerFeed feed5 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed5-name");
+        repo.save(feed5);
+        BaseFeed.FeedId feed5Id = new BaseFeed.FeedId(feed5.getId().getUuid());
+        JpaFeedOpsAclEntry acl5 = new JpaFeedOpsAclEntry(feed5Id, "ROLE_NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl5);
+
+        JpaOpsManagerFeed feed6 = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed6-name");
+        repo.save(feed6);
+        BaseFeed.FeedId feed6Id = new BaseFeed.FeedId(feed6.getId().getUuid());
+        JpaFeedOpsAclEntry acl6 = new JpaFeedOpsAclEntry(feed6Id, "ROLE_USER", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(acl6);
+
+        Pageable page1Request = new PageRequest(0, 2);
+        Page<JpaOpsManagerFeed> page1 = repo.findAll(page1Request);
+        Assert.assertEquals(0, page1.getNumber());
+        Assert.assertEquals(2, page1.getNumberOfElements());
+        Assert.assertEquals(2, page1.getTotalPages());
+        Assert.assertEquals(4, page1.getTotalElements());
+
+        Pageable page2Request = new PageRequest(1, 2);
+        Page<JpaOpsManagerFeed> page2 = repo.findAll(page2Request);
+        Assert.assertEquals(1, page2.getNumber());
+        Assert.assertEquals(2, page2.getNumberOfElements());
+        Assert.assertEquals(2, page2.getTotalPages());
+        Assert.assertEquals(4, page2.getTotalElements());
+
+    }
+
+
 
 }

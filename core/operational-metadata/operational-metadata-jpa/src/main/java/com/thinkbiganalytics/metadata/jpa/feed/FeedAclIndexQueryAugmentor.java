@@ -57,7 +57,8 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedAclIndexQueryAugmentor.class);
 
-    public <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class domainClass,
+    @Override
+    public <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class<S> domainClass,
                                         JpaEntityInformation<T, ID> entityInformation) {
         LOG.debug("QueryAugmentor.augment");
 
@@ -114,13 +115,18 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
     }
 
     @Override
-    public <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Class<S> domainClass) {
+    public <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Specification<S> spec, Class<S> domainClass) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<S> root = query.from(domainClass);
-        query.select(builder.count(root));
 
-        Specification<S> secured = this.augment(null, domainClass, entityInformation);
+        if (query.isDistinct()) {
+            query.select(builder.countDistinct(root));
+        } else {
+            query.select(builder.count(root));
+        }
+
+        Specification<S> secured = this.augment(spec, domainClass, entityInformation);
         query.where(secured.toPredicate(root, query, builder));
 
         return query;

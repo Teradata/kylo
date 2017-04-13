@@ -37,10 +37,10 @@ import javax.persistence.criteria.CriteriaQuery;
  */
 public interface QueryAugmentor {
 
-    <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class domainClass,
+    <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class<S> domainClass,
                                  JpaEntityInformation<T, ID> entityInformation);
 
     List<Predicate> augment(Predicate[] predicate);
 
-    <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Class<S> domainClass);
+    <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Specification<S> spec, Class<S> domainClass);
 }

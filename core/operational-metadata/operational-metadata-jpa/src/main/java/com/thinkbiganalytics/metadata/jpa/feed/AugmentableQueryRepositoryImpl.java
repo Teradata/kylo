@@ -101,8 +101,15 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     @Override
     public long count() {
         LOG.debug("AugmentableQueryRepositoryImpl.count");
-        CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, getDomainClass());
-        return entityManager.createQuery(query).getSingleResult();
+        TypedQuery<Long> query = this.getCountQuery(null, getDomainClass());
+        return query.getSingleResult();
+    }
+
+    @Override
+    protected <S extends T> TypedQuery<Long> getCountQuery(Specification<S> spec, Class<S> domainClass) {
+        LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
+        CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, spec, domainClass);
+        return entityManager.createQuery(query);
     }
 
     @Override
@@ -189,70 +196,51 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
 
 
     @Override
-    public List<T> findAll(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(spec);
-    }
-
-
-    @Override
-    public Page<T> findAll(Specification<T> spec, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(spec, pageable);
-    }
-
-    @Override
     public List<T> findAll(Specification<T> spec, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll spec sort");
         return super.findAll(spec, sort);
     }
 
     @Override
     public <S extends T> S findOne(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findOne");
+        LOG.debug("AugmentableQueryRepositoryImpl.findOne example");
         return super.findOne(example);
     }
 
     @Override
     public <S extends T> long count(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.count");
+        LOG.debug("AugmentableQueryRepositoryImpl.count example");
         return super.count(example);
     }
 
     @Override
     public <S extends T> boolean exists(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.exists");
+        LOG.debug("AugmentableQueryRepositoryImpl.exists example");
         return super.exists(example);
     }
 
     @Override
     public <S extends T> List<S> findAll(Example<S> example) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example ");
         return super.findAll(example);
     }
 
     @Override
     public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example sort");
         return super.findAll(example, sort);
     }
 
     @Override
     public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
+        LOG.debug("AugmentableQueryRepositoryImpl.findAll example pageable");
         return super.findAll(example, pageable);
     }
 
     @Override
     public long count(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.count");
+        LOG.debug("AugmentableQueryRepositoryImpl.count spec");
         return super.count(spec);
-    }
-
-    @Override
-    public <S extends T> S save(S entity) {
-        LOG.debug("AugmentableQueryRepositoryImpl.save");
-        return super.save(entity);
     }
 
     @Override
@@ -267,53 +255,19 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         return super.save(entities);
     }
 
-    @Override
-    public void flush() {
-        LOG.debug("AugmentableQueryRepositoryImpl.flush");
-        super.flush();
-    }
-
-    @Override
-    protected Page<T> readPage(TypedQuery<T> query, Pageable pageable, Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.readPage");
-        return super.readPage(query, pageable, spec);
-    }
-
-    @Override
-    protected <S extends T> Page<S> readPage(TypedQuery<S> query, Class<S> domainClass, Pageable pageable, Specification<S> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.readPage");
-        return super.readPage(query, domainClass, pageable, spec);
-    }
-
-    @Override
-    protected TypedQuery<T> getQuery(Specification<T> spec, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
-        return super.getQuery(spec, pageable);
-    }
 
     @Override
     protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
+        LOG.debug("AugmentableQueryRepositoryImpl.getQuery spec domainClass pageable");
         return super.getQuery(spec, domainClass, pageable);
     }
 
     @Override
-    protected TypedQuery<T> getQuery(Specification<T> spec, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
-        return super.getQuery(spec, sort);
-    }
-
-    @Override
     protected TypedQuery<Long> getCountQuery(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
+        LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery spec");
         return super.getCountQuery(spec);
     }
 
-    @Override
-    protected <S extends T> TypedQuery<Long> getCountQuery(Specification<S> spec, Class<S> domainClass) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
-        return super.getCountQuery(spec, domainClass);
-    }
 
 
 }
