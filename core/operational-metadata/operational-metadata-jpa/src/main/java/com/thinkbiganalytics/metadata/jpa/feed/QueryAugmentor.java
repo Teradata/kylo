@@ -23,10 +23,14 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.querydsl.core.types.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 
 import java.io.Serializable;
 import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaQuery;
 
 /**
  * Type which can participate in query augmentation with AugmentableRepository
@@ -37,4 +41,6 @@ public interface QueryAugmentor {
                                  JpaEntityInformation<T, ID> entityInformation);
 
     List<Predicate> augment(Predicate[] predicate);
+
+    <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Class<S> domainClass);
 }

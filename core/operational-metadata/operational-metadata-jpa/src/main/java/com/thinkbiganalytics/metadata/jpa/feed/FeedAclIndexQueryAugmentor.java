@@ -30,7 +30,6 @@ import com.thinkbiganalytics.metadata.jpa.feed.security.QJpaFeedOpsAclEntry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.security.core.Authentication;
@@ -114,4 +113,16 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
         return predicates;
     }
 
+    @Override
+    public <S, T, ID extends Serializable> CriteriaQuery<Long> getCountQuery(EntityManager entityManager, JpaEntityInformation<T, ID> entityInformation, Class<S> domainClass) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<S> root = query.from(domainClass);
+        query.select(builder.count(root));
+
+        Specification<S> secured = this.augment(null, domainClass, entityInformation);
+        query.where(secured.toPredicate(root, query, builder));
+
+        return query;
+    }
 }

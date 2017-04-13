@@ -30,9 +30,6 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
 
@@ -59,10 +56,8 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
 
         Class<?> repositoryInterface = information.getRepositoryInterface();
 
-        Class<?> domainType = information.getDomainType();
-        JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(domainType);
-
-        if (isSecuredRepository(repositoryInterface)) {
+        if (isAugmentableRepository(repositoryInterface)) {
+            Class<?> domainType = information.getDomainType();
             LOG.debug("Creating AugmentableQueryRepositoryImpl for repo interface {} and domain class {}", repositoryInterface, domainType);
 
             QueryAugmentorType annotation = AnnotationUtils.findAnnotation(repositoryInterface, QueryAugmentorType.class);
@@ -77,6 +72,7 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
                 }
             }
 
+            JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(domainType);
             return new AugmentableQueryRepositoryImpl(entityInformation, em, repositoryInterface, augmentor);
         } else {
             return super.getTargetRepository(information);
@@ -87,7 +83,7 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
     protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
         LOG.debug("AugmentableQueryRepositoryFactory.getRepositoryBaseClass");
 
-        if (isSecuredRepository(metadata.getRepositoryInterface())) {
+        if (isAugmentableRepository(metadata.getRepositoryInterface())) {
             LOG.debug("Returning AugmentableQueryRepositoryImpl.class for " + metadata.getRepositoryInterface());
             return AugmentableQueryRepositoryImpl.class;
         } else {
@@ -96,7 +92,7 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
     }
 
 
-    private boolean isSecuredRepository(Class<?> repositoryInterface) {
-        return AugmentableQueryRepository.class.isAssignableFrom(repositoryInterface);
+    private boolean isAugmentableRepository(Class<?> repositoryInterface) {
+        return AnnotationUtils.findAnnotation(repositoryInterface, QueryAugmentorType.class) != null;
     }
 }

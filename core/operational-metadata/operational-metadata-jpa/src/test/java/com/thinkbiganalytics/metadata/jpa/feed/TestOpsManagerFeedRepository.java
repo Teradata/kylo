@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 
@@ -30,7 +31,7 @@ import java.util.List;
  * to extend AugmentableQueryRepository which knows how to construct queries with reference to FeedAclIndex table
  */
 @QueryAugmentorType(FeedAclIndexQueryAugmentor.class)
-public interface TestOpsManagerFeedRepository extends AugmentableQueryRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
+public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
     @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
     List<String> getFeedNamesWithPrincipal();

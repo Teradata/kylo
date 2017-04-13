@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
@@ -40,7 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.SingularAttribute;
 
 /**
  * This repository delegates query augmentation to an instance of QueryAugmentor
@@ -56,6 +63,7 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     private final JpaEntityInformation<T, ID> entityInformation;
     private final Class<?> springDataRepositoryInterface;
     private final QueryAugmentor augmentor;
+    private final PersistenceProvider provider;
 
     /**
      * Creates a new {@link SimpleJpaRepository} to manage objects of the given
@@ -87,7 +95,56 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         this.entityManager = em;
         this.springDataRepositoryInterface = repositoryInterface;
         this.augmentor = augmentor;
+        this.provider = PersistenceProvider.fromEntityManager(entityManager);
     }
+
+    @Override
+    public long count() {
+        LOG.debug("AugmentableQueryRepositoryImpl.count");
+        CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, getDomainClass());
+        return entityManager.createQuery(query).getSingleResult();
+    }
+
+    @Override
+    protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Sort sort) {
+        LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
+        return super.getQuery(augmentor.augment(spec, domainClass, entityInformation), domainClass, sort);
+    }
+
+    @Override
+    protected JPQLQuery<?> createQuery(com.querydsl.core.types.Predicate... predicate) {
+        LOG.debug("AugmentableQueryRepositoryImpl.createQuery");
+
+        return super.createQuery(augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[] {}));
+    }
+
+    @Override
+    public T findOne(ID id) {
+        LOG.debug("AugmentableQueryRepositoryImpl.findOne");
+
+        Specification<T> spec = (root, query, cb) -> {
+            SingularAttribute<?, ?> idAttribute = entityInformation.getIdAttribute();
+            return cb.equal(root.get(idAttribute.getName()), id);
+        };
+
+        return findOne(spec);
+    }
+
+    @Override
+    public T getOne(ID id) {
+        LOG.debug("AugmentableQueryRepositoryImpl.getOne");
+        return findOne(id);
+    }
+
+    @Override
+    public boolean exists(ID id) {
+        LOG.debug("AugmentableQueryRepositoryImpl.exists");
+        return findOne(id) != null;
+    }
+
+
+
+
 
 
     @Override
@@ -128,65 +185,15 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         super.deleteAllInBatch();
     }
 
-    @Override
-    public T findOne(ID id) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findOne");
-        return super.findOne(id);
-    }
 
-    @Override
-    protected Map<String, Object> getQueryHints() {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQueryHints");
-        return super.getQueryHints();
-    }
 
-    @Override
-    public T getOne(ID id) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getOne");
-        return super.getOne(id);
-    }
-
-    @Override
-    public boolean exists(ID id) {
-        LOG.debug("AugmentableQueryRepositoryImpl.exists");
-        return super.exists(id);
-    }
-
-    @Override
-    public List<T> findAll() {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll();
-    }
-
-    @Override
-    public List<T> findAll(Iterable<ID> ids) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(ids);
-    }
-
-    @Override
-    public List<T> findAll(Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(sort);
-    }
-
-    @Override
-    public Page<T> findAll(Pageable pageable) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(pageable);
-    }
-
-    @Override
-    public T findOne(Specification<T> spec) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findOne");
-        return super.findOne(spec);
-    }
 
     @Override
     public List<T> findAll(Specification<T> spec) {
         LOG.debug("AugmentableQueryRepositoryImpl.findAll");
         return super.findAll(spec);
     }
+
 
     @Override
     public Page<T> findAll(Specification<T> spec, Pageable pageable) {
@@ -234,12 +241,6 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
         LOG.debug("AugmentableQueryRepositoryImpl.findAll");
         return super.findAll(example, pageable);
-    }
-
-    @Override
-    public long count() {
-        LOG.debug("AugmentableQueryRepositoryImpl.count");
-        return super.count();
     }
 
     @Override
@@ -303,12 +304,6 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     }
 
     @Override
-    protected <S extends T> TypedQuery<S> getQuery(Specification<S> spec, Class<S> domainClass, Sort sort) {
-        LOG.debug("AugmentableQueryRepositoryImpl.getQuery");
-        return super.getQuery(augmentor.augment(spec, domainClass, entityInformation), domainClass, sort);
-    }
-
-    @Override
     protected TypedQuery<Long> getCountQuery(Specification<T> spec) {
         LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
         return super.getCountQuery(spec);
@@ -321,16 +316,4 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     }
 
 
-    @Override
-    public List<T> findAll(com.querydsl.core.types.Predicate predicate) {
-        LOG.debug("AugmentableQueryRepositoryImpl.findAll");
-        return super.findAll(predicate);
-    }
-
-    @Override
-    protected JPQLQuery<?> createQuery(com.querydsl.core.types.Predicate... predicate) {
-        LOG.debug("AugmentableQueryRepositoryImpl.createQuery");
-
-        return super.createQuery(augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[] {}));
-    }
 }
