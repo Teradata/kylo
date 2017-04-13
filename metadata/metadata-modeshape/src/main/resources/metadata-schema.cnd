@@ -161,6 +161,9 @@
 
 /* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
 
+[tba:upgradable] mixin
+ - * (UNDEFINED) multiple
+
 [tba:genericJson] > nt:hierarchyNode
     - tba:type (STRING)
     - tba:json (STRING)

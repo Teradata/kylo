@@ -1,12 +1,4 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.upgrade.version_0_7_1;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /*-
  * #%L
@@ -28,27 +20,30 @@ import javax.jcr.Session;
  * #L%
  */
 
-import org.modeshape.jcr.api.JcrTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
-/**
- *
- */
+import javax.annotation.Nonnull;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 public class UpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);
 
     private static final String CATEGORY_TYPE = "tba:category";
     private static final String FEED_TYPE = "tba:feed";
+    private static final String UPGRADABLE_TYPE = "tba:upgradable";
 
     private static final String CAT_DETAILS_TYPE = "tba:categoryDetails";
     private static final String FEED_SUMMARY_TYPE = "tba:feedSummary";
@@ -81,17 +76,6 @@ public class UpgradeAction implements UpgradeState {
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, CATEGORY_TYPE)) {
                 log.info("Starting upgrading category: [{}] {}", ++categoryCount, catNode);
 
-                /* TODO: Debugging Info - Delete before final merge to master */
-                /*  JcrTools tools = new JcrTools();
-                tools.setDebug(true);
-                try {
-                    log.info("Printing existing sub-graph of category node: " + catNode);
-                    tools.printSubgraph(catNode);
-                }catch (Exception e) {
-                    log.error("Error while printing existing subgraph of category node: " + catNode);
-                }*/
-                /* Debugging Info Ends */
-
                 categoryFeedCount = 0;
                 Node detailsNode = JcrUtil.getOrCreateNode(catNode, "tba:details", CAT_DETAILS_TYPE);
                 moveProperty("tba:initialized", catNode, detailsNode);
@@ -104,9 +88,16 @@ public class UpgradeAction implements UpgradeState {
                     ++totalFeedCount;
                     Node feedSummaryNode = JcrUtil.getOrCreateNode(feedNode, "tba:summary", FEED_SUMMARY_TYPE);
                     Node feedDataNode = JcrUtil.getOrCreateNode(feedNode, "tba:data", FEED_DATA_TYPE);
+                    addMixin(feedNode, UPGRADABLE_TYPE);
 
                     moveProperty("tba:systemName", feedNode, feedSummaryNode);
                     moveProperty("tba:category", feedNode, feedSummaryNode);
+                    moveProperty("tba:tags", feedNode, feedSummaryNode);
+
+                    if (JcrUtil.hasNode(feedNode, "tba:properties")) {
+                        final Node feedPropertiesNode = JcrUtil.getNode(feedNode, "tba:properties");
+                        moveNode(session, feedPropertiesNode, feedSummaryNode);
+                    }
 
                     Node feedDetailsNode = JcrUtil.getOrCreateNode(feedSummaryNode, "tba:details", FEED_DETAILS_TYPE);
 
@@ -118,30 +109,37 @@ public class UpgradeAction implements UpgradeState {
 
                     // Loop is needed because sns is specified for node type
                     List<Node> feedSourceNodes = JcrUtil.getNodeList(feedNode, "tba:sources");
-                    for (Node feedSourceNode: feedSourceNodes) {
-
-                        //TODO: Fix before final merge to master
-                        //javax.jcr.PathNotFoundException for <feedSourceNode> in workspace "default"
+                    for (Node feedSourceNode : feedSourceNodes) {
                         moveNode(session, feedSourceNode, feedDetailsNode);
                     }
 
                     // Loop is needed because sns is specified for node type
                     List<Node> feedDestinationNodes = JcrUtil.getNodeList(feedNode, "tba:destinations");
-                    for (Node feedDestinationNode: feedDestinationNodes) {
+                    for (Node feedDestinationNode : feedDestinationNodes) {
                         moveNode(session, feedDestinationNode, feedDetailsNode);
                     }
 
-                    Node feedPreconditionNode = JcrUtil.getNode(feedNode, "tba:precondition");
-                    moveNode(session, feedPreconditionNode, feedDetailsNode);
+                    if (JcrUtil.hasNode(feedNode, "tba:precondition")) {
+                        Node feedPreconditionNode = JcrUtil.getNode(feedNode, "tba:precondition");
+                        moveNode(session, feedPreconditionNode, feedDetailsNode);
+                    }
 
                     moveProperty("tba:state", feedNode, feedDataNode);
                     moveProperty("tba:schedulingPeriod", feedNode, feedDataNode);
                     moveProperty("tba:schedulingStrategy", feedNode, feedDataNode);
                     moveProperty("tba:securityGroups", feedNode, feedDataNode);
-                    Node feedWaterMarksNode = JcrUtil.getNode(feedNode, "tba:highWaterMarks");
-                    moveNode(session, feedWaterMarksNode, feedDataNode);
-                    Node feedInitializationNode = JcrUtil.getNode(feedNode, "tba:initialization");
-                    moveNode(session, feedInitializationNode, feedDataNode);
+
+                    if (JcrUtil.hasNode(feedNode, "tba:highWaterMarks")) {
+                        Node feedWaterMarksNode = JcrUtil.getNode(feedNode, "tba:highWaterMarks");
+                        moveNode(session, feedWaterMarksNode, feedDataNode);
+                    }
+
+                    if (JcrUtil.hasNode(feedNode, "tba:initialization")) {
+                        Node feedInitializationNode = JcrUtil.getNode(feedNode, "tba:initialization");
+                        moveNode(session, feedInitializationNode, feedDataNode);
+                    }
+
+                    removeMixin(feedNode, UPGRADABLE_TYPE);
                     log.info("\tCompleted upgrading feed: " + feedNode);
                 }
                 log.info("Completed upgrading category: " + catNode);
@@ -151,14 +149,28 @@ public class UpgradeAction implements UpgradeState {
       //  }
     }
 
+    /**
+     * Adds the specified mixin to the specified node.
+     *
+     * @param node      the target node
+     * @param mixinName the name of the mixin
+     */
+    private void addMixin(@Nonnull final Node node, @Nonnull final String mixinName) {
+        try {
+            node.addMixin(mixinName);
+        } catch (final RepositoryException e) {
+            throw new UpgradeException("Failed to add mixin " + mixinName + " to node " + node, e);
+        }
+    }
+
     private void moveNode(Session session, Node node, Node parentNode) {
         try {
             if ((node != null) && (parentNode != null)) {
-                session.move(node.getPath(), parentNode.getPath() + "/" + node.getName());
+                final String srcPath = node.getParent().getPath() + "/" + node.getName();  // Path may not be accurate if parent node moved recently
+                session.move(srcPath, parentNode.getPath() + "/" + node.getName());
             }
         } catch (RepositoryException e) {
-            e.printStackTrace();
-            throw new UpgradeException("Failed to moved node " + node + " under parent " + parentNode);
+            throw new UpgradeException("Failed to moved node " + node + " under parent " + parentNode, e);
         }
     }
 
@@ -176,9 +188,21 @@ public class UpgradeAction implements UpgradeState {
                 }
             }
         } catch (RepositoryException e) {
-            e.printStackTrace();
-            throw new UpgradeException("Failed to moved property " + propName + " from " + fromNode + " to " + toNode);
+            throw new UpgradeException("Failed to moved property " + propName + " from " + fromNode + " to " + toNode, e);
         }
     }
 
+    /**
+     * Removes the specified mixin from the specified node.
+     *
+     * @param node      the target node
+     * @param mixinName the name of the mixin
+     */
+    private void removeMixin(@Nonnull final Node node, @Nonnull final String mixinName) {
+        try {
+            node.removeMixin(mixinName);
+        } catch (final RepositoryException e) {
+            throw new UpgradeException("Failed to remove mixin " + mixinName + " from node " + node, e);
+        }
+    }
 }
