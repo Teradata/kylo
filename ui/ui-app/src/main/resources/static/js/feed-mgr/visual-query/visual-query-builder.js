@@ -126,6 +126,7 @@ define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/mod
                             return tables;
                         }, function () {
                             self.databaseConnectionError = true;
+                            return [];
                         });
                 }
             },

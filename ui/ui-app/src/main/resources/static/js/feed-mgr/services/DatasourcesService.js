@@ -136,7 +136,9 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                         } else {
                             return tables;
                         }
-                    });
+                    }).catch(function(e){
+                            throw e;
+                       });
             },
 
             /**
