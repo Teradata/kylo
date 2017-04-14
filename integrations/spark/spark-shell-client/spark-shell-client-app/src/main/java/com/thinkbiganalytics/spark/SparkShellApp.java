@@ -20,6 +20,9 @@ package com.thinkbiganalytics.spark;
  * #L%
  */
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
 import com.thinkbiganalytics.spark.service.TransformService;
@@ -40,8 +43,15 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.support.ResourcePropertySource;
+
+import java.util.Collections;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
@@ -55,6 +65,9 @@ import scala.runtime.BoxedUnit;
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
+
+    @Autowired
+    private Environment env;
 
     @Autowired
     private TransformService service;
@@ -82,12 +95,47 @@ public class SparkShellApp {
     /**
      * Creates the Spark configuration.
      *
-     * @param sparkPort the Spark UI port
      * @return the Spark configuration
      */
     @Bean
-    public SparkConf sparkConf(@Value("${spark.ui.port:8451}") String sparkPort) {
-        return new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", sparkPort);
+    public SparkConf sparkConf() {
+        final SparkConf conf = new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", "8451");
+
+        final Iterable<Map.Entry<String, Object>> properties = FluentIterable.from(Collections.singleton(env))
+            .filter(AbstractEnvironment.class)
+            .transformAndConcat(new Function<AbstractEnvironment, Iterable<?>>() {
+                @Nullable
+                @Override
+                public Iterable<?> apply(@Nullable final AbstractEnvironment input) {
+                    return (input != null) ? input.getPropertySources() : null;
+                }
+            })
+            .filter(ResourcePropertySource.class)
+            .transform(new Function<ResourcePropertySource, Map<String, Object>>() {
+                @Nullable
+                @Override
+                public Map<String, Object> apply(@Nullable final ResourcePropertySource input) {
+                    return (input != null) ? input.getSource() : null;
+                }
+            })
+            .transformAndConcat(new Function<Map<String, Object>, Iterable<Map.Entry<String, Object>>>() {
+                @Nullable
+                @Override
+                public Iterable<Map.Entry<String, Object>> apply(@Nullable final Map<String, Object> input) {
+                    return (input != null) ? input.entrySet() : null;
+                }
+            })
+            .filter(new Predicate<Map.Entry<String, Object>>() {
+                @Override
+                public boolean apply(@Nullable final Map.Entry<String, Object> input) {
+                    return (input != null && input.getKey().startsWith("spark."));
+                }
+            });
+        for (final Map.Entry<String, Object> entry : properties) {
+            conf.set(entry.getKey(), entry.getValue().toString());
+        }
+
+        return conf;
     }
 
     /**
