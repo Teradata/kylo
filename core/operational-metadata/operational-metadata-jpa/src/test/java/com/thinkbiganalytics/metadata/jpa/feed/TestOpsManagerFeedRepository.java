@@ -30,7 +30,7 @@ import java.util.List;
  * This is an example repository which shows how to refer to principal roles in @Query annotations and also
  * to how secure repository methods with QueryAugmentor
  */
-@QueryAugmentorType(FeedAclIndexQueryAugmentor.class)
+@QueryAugmentorType(FeedSecuringQueryAugmentor.class)
 public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
     @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
@@ -42,4 +42,7 @@ public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManage
            + ")")
     List<String> getFeedNames();
 
+    Long countByName(String feedName);
+
+    List<JpaOpsManagerFeed> findByName(String name);
 }

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
@@ -78,10 +77,7 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
                 }
             }
 
-            JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(domainType);
-            AugmentableQueryRepositoryImpl augmentableQueryRepository = new AugmentableQueryRepositoryImpl(entityInformation, em, augmentor);
-            augmentableQueryRepository.setAugmentor(augmentor);
-            return augmentableQueryRepository;
+            return new AugmentableQueryRepositoryImpl(getEntityInformation(domainType), em, augmentor);
         } else {
             return super.getTargetRepository(information);
         }

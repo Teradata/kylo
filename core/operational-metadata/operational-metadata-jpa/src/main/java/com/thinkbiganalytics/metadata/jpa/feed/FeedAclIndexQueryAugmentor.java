@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.ComparablePath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
@@ -40,29 +41,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
-import javax.persistence.metamodel.SingularAttribute;
 
 /**
- * Query augmentor which checks whether access to feed is allowed by ACLs defined in FeedAclIndexEntry table by
- * adding following expression to queries: <br>
- * <code>and exists (select 1 from JpaFeedOpsAclEntry as x where {root}.id = x.feedId and x.principalName in :#{principal.roleSet})</code>
+ * Secures queries by checking whether access to them is allowed by having matching roles for current
+ * user principal in FeedAclIndex table
  */
-public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
+public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedAclIndexQueryAugmentor.class);
 
+    protected abstract <S, T, ID extends Serializable> Path<Object> getFeedId(JpaEntityInformation<T, ID> entityInformation, Root<S> root);
+
+    protected abstract ComparablePath<UUID> getFeedId();
+
     @Override
     public <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class<S> domainClass,
-                                        JpaEntityInformation<T, ID> entityInformation) {
+                                                                    JpaEntityInformation<T, ID> entityInformation) {
         LOG.debug("QueryAugmentor.augment");
 
-        return (root, query, cb) -> {
+        return (root, query, criteriaBuilder) -> {
             //and exists (select 1 from JpaFeedOpsAclEntry as x where {root}.id = x.feedId and x.principalName in :#{principal.roleSet})
 
             Subquery<Integer> subquery = query.subquery(Integer.class);
@@ -70,21 +75,19 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
             subquery.select(fromAcl.get("feedId"));
 
-            SingularAttribute<?, ?> idAttribute = entityInformation.getIdAttribute();
-            javax.persistence.criteria.Predicate rootFeedIdEqualToAclFeedId = cb.equal(root.get(idAttribute.getName()), fromAcl.get("feedId"));
+            Path<Object> feedId = getFeedId(entityInformation, root);
+            javax.persistence.criteria.Predicate rootFeedIdEqualToAclFeedId = criteriaBuilder.equal(feedId, fromAcl.get("feedId"));
 
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            Collection<String> principalRoles = authentication == null ? new ArrayList<>(0) : new RoleSetExposingSecurityExpressionRoot(authentication).getRoleSet();
-            javax.persistence.criteria.Predicate aclPrincipalNameInRoles = fromAcl.get("principalName").in(principalRoles);
+            javax.persistence.criteria.Predicate aclPrincipalNameInRoles = fromAcl.get("principalName").in(getPrincipalRoles());
 
-            javax.persistence.criteria.Predicate feedIdEqualsAndPrincipalInRoles = cb.and(rootFeedIdEqualToAclFeedId, aclPrincipalNameInRoles);
+            javax.persistence.criteria.Predicate feedIdEqualsAndPrincipalInRoles = criteriaBuilder.and(rootFeedIdEqualToAclFeedId, aclPrincipalNameInRoles);
             subquery.where(feedIdEqualsAndPrincipalInRoles);
 
-            javax.persistence.criteria.Predicate securingPredicate = cb.exists(subquery);
+            javax.persistence.criteria.Predicate securingPredicate = criteriaBuilder.exists(subquery);
 
             if (spec != null) {
-                javax.persistence.criteria.Predicate predicate = spec.toPredicate(root, query, cb);
-                return cb.and(predicate, securingPredicate);
+                javax.persistence.criteria.Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
+                return criteriaBuilder.and(predicate, securingPredicate);
             } else {
                 return securingPredicate;
             }
@@ -97,11 +100,7 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
         QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Collection<String> principalRoles = authentication == null ? new ArrayList<>(0) : new RoleSetExposingSecurityExpressionRoot(authentication).getRoleSet();
-
-        QJpaOpsManagerFeed root = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-        JPQLQuery<JpaFeedOpsAclEntry> subquery = JPAExpressions.selectFrom(aclEntry).where(aclEntry.feedId.eq(root.id.uuid).and(aclEntry.principalName.in(principalRoles)));
+        JPQLQuery<JpaFeedOpsAclEntry> subquery = JPAExpressions.selectFrom(aclEntry).where(aclEntry.feedId.eq(getFeedId()).and(aclEntry.principalName.in(getPrincipalRoles())));
 
         BooleanExpression exists = subquery.exists();
 
@@ -128,5 +127,10 @@ public class FeedAclIndexQueryAugmentor implements QueryAugmentor {
         query.where(secured.toPredicate(root, query, builder));
 
         return query;
+    }
+
+    private Collection<String> getPrincipalRoles() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null ? new ArrayList<>(0) : new RoleSetExposingSecurityExpressionRoot(authentication).getRoleSet();
     }
 }

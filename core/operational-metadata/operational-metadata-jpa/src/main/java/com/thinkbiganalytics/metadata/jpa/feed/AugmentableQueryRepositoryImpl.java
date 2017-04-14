@@ -59,16 +59,13 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     private final JpaEntityInformation<T, ID> entityInformation;
     private  QueryAugmentor augmentor;
 
-    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager entityManager) {
-        super(entityInformation, entityManager);
-        this.entityInformation = entityInformation;
-        this.entityManager = entityManager;
-    }
-    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
+    AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
         super(entityInformation, em);
         this.entityInformation = entityInformation;
         this.entityManager = em;
         this.augmentor = augmentor;
+
+
     }
 
     @Override
