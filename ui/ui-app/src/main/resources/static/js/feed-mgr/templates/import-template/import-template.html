@@ -210,7 +210,7 @@
         </div>
 
         <div layout="column">
-          <div ng-repeat="msg in vm.uploadStatusMessages" layout="row" layout-fill>
+          <div ng-repeat="msg in vm.uploadStatusMessages" layout="row">
             <div flex>
                 <span ng-if="msg.complete && msg.success">
                    <ng-md-icon icon="check" size="20" style="fill:green"></ng-md-icon>

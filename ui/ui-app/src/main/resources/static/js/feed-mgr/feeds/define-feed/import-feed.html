@@ -73,7 +73,7 @@
           </md-list>
         </div>
 
-        <div flex="100" layout="column" layout-align="start" style="padding-top:15px;"
+        <div flex layout="column" layout-align="start" style="padding-top:15px;"
              class="layout-padding-indent">
           <upload-file upload-file-model="vm.feedFile"></upload-file>
           <ng-form name="vm.importFeedForm">
@@ -113,12 +113,14 @@
                   </md-autocomplete>
                 </div>
                 <!-- Feed Data container -->
-                  <!-- validation messages -->
-                  <div ng-if="vm.feedDataImportOption.errorMessages != null && vm.feedDataImportOption.errorMessages.length >0">
-                      <div ng-repeat="message in vm.feedDataImportOption.errorMessages" layout="column">
-                        <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
-                      </div>
+                <!-- validation messages -->
+                <div ng-if="vm.feedDataImportOption.errorMessages != null && vm.feedDataImportOption.errorMessages.length >0">
+                  <div ng-repeat="message in vm.feedDataImportOption.errorMessages" layout="column">
+                    <div>
+                      <ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon>
+                      <span>{{message}}</span></div>
                   </div>
+                </div>
 
                 <div layout="row">
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom">
@@ -128,7 +130,7 @@
                     <div class="hint" style="margin-top:-10px">
                       Check to replace the feed if it already exists.
                     </div>
-                 </md-input-container>
+                  </md-input-container>
 
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom">
                     <md-checkbox ng-model="vm.disableFeedUponImport" aria-label="Disable upon import">
@@ -178,13 +180,17 @@
                 <!-- validation messages -->
                 <div ng-if="vm.templateDataImportOption.errorMessages != null && vm.templateDataImportOption.errorMessages.length >0">
                   <div ng-repeat="message in vm.templateDataImportOption.errorMessages" layout="column">
-                    <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+                    <div>
+                      <ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon>
+                      <span>{{message}}</span></div>
                   </div>
                 </div>
 
                 <div ng-if="vm.nifiTemplateImportOption.errorMessages != null && vm.nifiTemplateImportOption.errorMessages.length >0">
                   <div ng-repeat="message in vm.nifiTemplateImportOption.errorMessages" layout="column">
-                    <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+                    <div>
+                      <ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon>
+                      <span>{{message}}</span></div>
                   </div>
                 </div>
 
@@ -192,7 +198,8 @@
 
                   <md-input-container class="md-block layout-padding-bottom">
                     <label>Overwrite Feed Template</label>
-                    <md-select ng-model="vm.templateDataImportOption.overwriteSelectValue" aria-label="Overwrite if exists" class="md-no-underline" ng-change="vm.onOverwriteSelectOptionChanged(vm.templateDataImportOption)" required name="overwriteFeedTemplate">
+                    <md-select ng-model="vm.templateDataImportOption.overwriteSelectValue" aria-label="Overwrite if exists" class="md-no-underline"
+                               ng-change="vm.onOverwriteSelectOptionChanged(vm.templateDataImportOption)" required name="overwriteFeedTemplate">
                       <md-option><em>Choose</em></md-option>
                       <md-option value="true">Yes</md-option>
                       <md-option value="false">No</md-option>
@@ -223,12 +230,15 @@
                 <!-- ask to import reusable template if found -->
                 <div ng-if="vm.showReusableTemplateOptions">
                   <div ng-repeat="message in vm.reusableTemplateImportOption.errorMessages" layout="column">
-                    <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
+                    <div>
+                      <ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon>
+                      <span>{{message}}</span></div>
                   </div>
 
                   <md-input-container class="md-block layout-padding-bottom">
                     <label>Overwrite Reusable Template</label>
-                    <md-select ng-model="vm.reusableTemplateImportOption.overwriteSelectValue" placeholder="Overwrite" aria-label="Overwrite if exists" class="md-no-underline" ng-change="vm.onOverwriteSelectOptionChanged(vm.reusableTemplateImportOption)" name="overwriteReusableTemplate">
+                    <md-select ng-model="vm.reusableTemplateImportOption.overwriteSelectValue" placeholder="Overwrite" aria-label="Overwrite if exists" class="md-no-underline"
+                               ng-change="vm.onOverwriteSelectOptionChanged(vm.reusableTemplateImportOption)" name="overwriteReusableTemplate">
                       <md-option><em>Choose</em></md-option>
                       <md-option value="true">Yes</md-option>
                       <md-option value="false">No</md-option>
@@ -240,7 +250,6 @@
                       <div ng-message="required">This field is required.</div>
                     </div>
                   </md-input-container>
-
 
 
                   <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
@@ -267,48 +276,48 @@
 
             <span style="padding-top:10px"></span>
             <div layout="row" class="layout-padding-top">
-                  <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
-                             ng-disabled="(vm.uploadInProgress || vm.importFeedForm.$invalid)">
-                    Import Feed
-                  </md-button>
+              <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
+                         ng-disabled="(vm.uploadInProgress || vm.importFeedForm.$invalid)">
+                Import Feed
+              </md-button>
               <md-progress-linear flex md-mode="determinate" value="{{vm.uploadProgress}}" ng-if="vm.uploadInProgress"></md-progress-linear>
             </div>
           </ng-form>
           <div layout="column">
-              <div ng-repeat="msg in vm.uploadStatusMessages" layout="row">
-                <div flex>
+            <div ng-repeat="msg in vm.uploadStatusMessages" layout="row">
+              <div flex>
                 <span ng-if="msg.complete && msg.success">
                    <ng-md-icon icon="check" size="20" style="fill:green"></ng-md-icon>
                 </span>
                 <span ng-if="msg.complete && !msg.success">
                   <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
                 </span>
-                  <span>{{msg.message}}</span>
-                </div>
+                <span>{{msg.message}}</span>
               </div>
+            </div>
           </div>
 
 
-        <div ng-if="vm.importResult != null" class="layout-padding-top">
-          <div layout="row">
-            <ng-md-icon icon="{{vm.importResultIcon}}"
-                        style="fill:{{vm.importResultIconColor}}"></ng-md-icon>
-            <span style="padding-left:15px;">{{vm.message}}</span>
-            <span flex></span>
-          </div>
-          <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
-            <md-list-item class="md-2-line" ng-repeat="error in errors track by $index">
-              <div class="md-list-item-text">
-                <div ng-if="error.processorName != null && error.processorName != '' "
-                     style="color:grey">Processor: {{::error.processorName}}
+          <div ng-if="vm.importResult != null" class="layout-padding-top">
+            <div layout="row">
+              <ng-md-icon icon="{{vm.importResultIcon}}"
+                          style="fill:{{vm.importResultIconColor}}"></ng-md-icon>
+              <span style="padding-left:15px;">{{vm.message}}</span>
+              <span flex></span>
+            </div>
+            <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
+              <md-list-item class="md-2-line" ng-repeat="error in errors track by $index">
+                <div class="md-list-item-text">
+                  <div ng-if="error.processorName != null && error.processorName != '' "
+                       style="color:grey">Processor: {{::error.processorName}}
+                  </div>
+                  <div class="md-warn-text">{{::error.message}}</div>
                 </div>
-                <div class="md-warn-text">{{::error.message}}</div>
-              </div>
-              <md-divider ng-if="!$last"></md-divider>
-            </md-list-item>
-          </md-list>
+                <md-divider ng-if="!$last"></md-divider>
+              </md-list-item>
+            </md-list>
+          </div>
         </div>
-      </div>
       </div>
     </body-section>
   </card-layout>
