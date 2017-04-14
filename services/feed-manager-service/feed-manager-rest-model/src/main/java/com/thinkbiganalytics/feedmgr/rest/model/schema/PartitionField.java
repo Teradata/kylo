@@ -77,25 +77,26 @@ public class PartitionField {
 
     @JsonIgnore
     public String asPartitionStructure() {
-        PARTITON_FORMULA f = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
-        if (f != null) {
-            return this.field + "|" + f.dataType(this.sourceDataType);
+        try {
+            final PARTITON_FORMULA partitionFormula = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
+            return field + "|" + partitionFormula.dataType(sourceDataType);
+        } catch (final IllegalArgumentException e) {
+            return field + "|string";
         }
-        return null;
     }
 
     @JsonIgnore
     public String asPartitionSpec() {
-        PARTITON_FORMULA f = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
-        if (f != null) {
-            if (f.equals(PARTITON_FORMULA.VAL)) {
-                return this.field + "|" + f.dataType(this.sourceDataType) + "|" + this.sourceField.toLowerCase();
+        try {
+            final PARTITON_FORMULA partitionFormula = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
+            if (partitionFormula == PARTITON_FORMULA.VAL) {
+                return field + "|" + partitionFormula.dataType(sourceDataType) + "|" + sourceField.toLowerCase();
             } else {
-                return this.field + "|" + f.dataType(this.sourceDataType) + "|" + f.name().toLowerCase() + "(" + this.sourceField + ")";
+                return field + "|" + partitionFormula.dataType(sourceDataType) + "|" + partitionFormula.name().toLowerCase() + "(" + sourceField + ")";
             }
+        } catch (final IllegalArgumentException e) {
+            return field + "|string|" + getFormula() + "(" + sourceField + ")";
         }
-
-        return null;
     }
 
     public static enum PARTITON_FORMULA {
