@@ -23,10 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/**
- * Annotation which defines which QueryAugmentor should be used with AugmentableRepository
- */
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QueryAugmentorType {
-    Class<? extends QueryAugmentor> value();
+public @interface RepositoryType {
+    Class<? extends AugmentableQueryRepositoryImpl> value();
 }

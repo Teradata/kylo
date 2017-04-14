@@ -24,13 +24,17 @@ import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 import javax.persistence.EntityManager;
 
@@ -42,17 +46,12 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
     private static final Logger LOG = LoggerFactory.getLogger(AugmentableQueryRepositoryFactory.class);
 
     private final EntityManager em;
-    private final AutowireCapableBeanFactory beanFactory;
-
     private AccessController accessController;
 
-    AugmentableQueryRepositoryFactory(EntityManager em, AutowireCapableBeanFactory beanFactory, AccessController accessController) {
+    AugmentableQueryRepositoryFactory(EntityManager em, AccessController accessController) {
         super(em);
         this.em = em;
-        this.beanFactory = beanFactory;
         this.accessController = accessController;
-
-        LOG.debug("AugmentableQueryRepositoryFactory.AugmentableQueryRepositoryFactory");
     }
 
     @Override
@@ -65,21 +64,39 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
             Class<?> domainType = information.getDomainType();
             LOG.debug("Creating AugmentableQueryRepositoryImpl for repo interface {} and domain class {}", repositoryInterface, domainType);
 
-            QueryAugmentorType annotation = AnnotationUtils.findAnnotation(repositoryInterface, QueryAugmentorType.class);
-            QueryAugmentor augmentor = null;
-            if (annotation != null) {
-                Class<? extends QueryAugmentor> augmentorType = annotation.value();
-                try {
-                    augmentor = beanFactory.createBean(augmentorType);
-                } catch (Exception e) {
-                    LOG.error("Failed to create query augmentor from class name {}", augmentorType);
-                    throw new IllegalStateException("Failed to create query augmentor", e);
-                }
+            RepositoryType annotation = AnnotationUtils.findAnnotation(repositoryInterface, RepositoryType.class);
+            Class<? extends AugmentableQueryRepositoryImpl> repoType = annotation.value();
+            try {
+                assertAugmentableRepositoryImplementsDeclaredMethods(repositoryInterface, repoType);
+                Constructor<? extends AugmentableQueryRepositoryImpl> constructor = repoType.getConstructor(JpaEntityInformation.class, EntityManager.class);
+                return constructor.newInstance(getEntityInformation(domainType), em);
+            } catch (Exception e) {
+                throw new IllegalStateException(String.format("Failed to create Augmentable Repository %s", repoType), e);
             }
-
-            return new AugmentableQueryRepositoryImpl(getEntityInformation(domainType), em, augmentor);
         } else {
             return super.getTargetRepository(information);
+        }
+    }
+
+    /**
+     * Augmentable Repository must implement methods declared by repository interface, otherwise non-implemented methods will be called on default
+     * repository implementation, such as SimpleJpaRepository, which are guaranteed not to be augmented e.g. not augmented for entity level access control.
+     * Here we cannot guarantee correct implementation, but implementation is the minimum contract.
+     */
+    private void assertAugmentableRepositoryImplementsDeclaredMethods(Class<?> repositoryInterface, Class<? extends AugmentableQueryRepositoryImpl> repoType) {
+        Method[] methods = repositoryInterface.getDeclaredMethods();
+        for (Method method : methods) {
+            if (AnnotationUtils.findAnnotation(method, Query.class) != null) {
+                continue;
+            }
+            if (AnnotationUtils.findAnnotation(method, Procedure.class) != null) {
+                continue;
+            }
+            try {
+                repoType.getDeclaredMethod(method.getName(), method.getParameterTypes());
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(String.format("Augmentable Repository '%s' must implement method '%s' declared by repository interface '%s'", repoType, method.getName(), repositoryInterface));
+            }
         }
     }
 
@@ -87,9 +104,9 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
     protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
         LOG.debug("AugmentableQueryRepositoryFactory.getRepositoryBaseClass");
 
-        if (isAugmentableRepository(metadata.getRepositoryInterface())) {
-            LOG.debug("Returning AugmentableQueryRepositoryImpl.class for " + metadata.getRepositoryInterface());
-            return AugmentableQueryRepositoryImpl.class;
+        if (isAugmentableRepository(metadata.getRepositoryInterface()) && accessController.isEntityAccessControlled()) {
+            RepositoryType annotation = AnnotationUtils.findAnnotation(metadata.getRepositoryInterface(), RepositoryType.class);
+            return annotation.value();
         } else {
             return super.getRepositoryBaseClass(metadata);
         }
@@ -97,6 +114,6 @@ class AugmentableQueryRepositoryFactory<T, I extends Serializable> extends JpaRe
 
 
     private boolean isAugmentableRepository(Class<?> repositoryInterface) {
-        return AnnotationUtils.findAnnotation(repositoryInterface, QueryAugmentorType.class) != null;
+        return AnnotationUtils.findAnnotation(repositoryInterface, RepositoryType.class) != null;
     }
 }

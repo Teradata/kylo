@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Spring data repository for accessing {@link JpaOpsManagerFeed}
  */
-@QueryAugmentorType(FeedSecuringQueryAugmentor.class)
+@RepositoryType(FeedSecuringRepository.class)
 public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
 

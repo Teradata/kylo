@@ -31,9 +31,7 @@ import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
-import org.joda.time.DateTime;
 import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormat;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

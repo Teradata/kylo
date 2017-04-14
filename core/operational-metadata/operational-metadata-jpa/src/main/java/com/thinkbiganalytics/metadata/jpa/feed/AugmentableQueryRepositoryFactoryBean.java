@@ -22,8 +22,6 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.thinkbiganalytics.security.AccessController;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -40,14 +38,11 @@ public class AugmentableQueryRepositoryFactoryBean<R extends JpaRepository<T, I>
     I extends Serializable> extends JpaRepositoryFactoryBean<R, T, I> {
 
 
-    @Autowired
-    AutowireCapableBeanFactory beanFactory;
-
     @Inject
     AccessController accessController;
 
     protected RepositoryFactorySupport createRepositoryFactory(EntityManager em) {
-        return new AugmentableQueryRepositoryFactory(em, beanFactory, accessController);
+        return new AugmentableQueryRepositoryFactory(em, accessController);
     }
 
 }

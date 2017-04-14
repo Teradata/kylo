@@ -37,6 +37,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -55,17 +56,19 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     private static final Logger LOG = LoggerFactory.getLogger(AugmentableQueryRepositoryImpl.class);
     private static final String QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET = "Query by Example API not implemented yet";
 
-    private final EntityManager entityManager;
-    private final JpaEntityInformation<T, ID> entityInformation;
-    private  QueryAugmentor augmentor;
+    protected final EntityManager entityManager;
+    protected final JpaEntityInformation<T, ID> entityInformation;
+    protected QueryAugmentor augmentor;
+
+    AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em) {
+        this(entityInformation, em, null);
+    }
 
     AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
         super(entityInformation, em);
         this.entityInformation = entityInformation;
         this.entityManager = em;
         this.augmentor = augmentor;
-
-
     }
 
     @Override
@@ -78,12 +81,11 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     @Override
     protected <S extends T> TypedQuery<Long> getCountQuery(Specification<S> spec, Class<S> domainClass) {
         LOG.debug("AugmentableQueryRepositoryImpl.getCountQuery");
-        if(augmentor != null) {
+        if (augmentor != null) {
             CriteriaQuery<Long> query = augmentor.getCountQuery(entityManager, entityInformation, spec, domainClass);
             return entityManager.createQuery(query);
-        }
-        else {
-          return  super.getCountQuery(spec,domainClass);
+        } else {
+            return super.getCountQuery(spec, domainClass);
         }
     }
 
@@ -97,7 +99,7 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     protected JPQLQuery<?> createQuery(com.querydsl.core.types.Predicate... predicate) {
         LOG.debug("AugmentableQueryRepositoryImpl.createQuery");
 
-        return super.createQuery(augmentor != null ? augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[] {}) : predicate);
+        return super.createQuery(augmentor != null ? augmentor.augment(predicate).toArray(new com.querydsl.core.types.Predicate[]{}) : predicate);
     }
 
     @Override
@@ -161,7 +163,7 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
-    public void setAugmentor(QueryAugmentor augmentor) {
+    void setAugmentor(QueryAugmentor augmentor) {
         this.augmentor = augmentor;
     }
 }
