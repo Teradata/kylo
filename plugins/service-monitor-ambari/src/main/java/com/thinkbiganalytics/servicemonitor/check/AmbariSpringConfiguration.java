@@ -33,7 +33,7 @@ import org.springframework.context.annotation.PropertySource;
  * Spring configuration
  */
 @Configuration
-@PropertySource("classpath:/conf/ambari.properties")
+@PropertySource("classpath:ambari.properties")
 public class AmbariSpringConfiguration {
 
     @Bean(name = "ambariServicesStatus")
