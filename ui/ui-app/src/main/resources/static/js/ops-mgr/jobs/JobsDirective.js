@@ -456,7 +456,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('failJob', job);
             OpsManagerJobService.failJob(job.executionId, {}, function(response) {
-                updateJob(instanceId, data)
+                updateJob(instanceId, response.data)
                 triggerJobActionListener('failJob', response.data);
             })
         };
