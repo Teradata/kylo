@@ -307,15 +307,15 @@ public class DatasourceModelTransform {
                 if (StringUtils.isNotBlank(ds.getDatabaseDriverClassName())) {
                     properties.put(DatasourceConstants.DATABASE_DRIVER_CLASS_NAME, ds.getDatabaseDriverClassName());
                 }
-                if (StringUtils.isNotBlank(ds.getDatabaseDriverLocation())) {
+                if (ds.getDatabaseDriverLocation() != null) {
                     properties.put(DatasourceConstants.DATABASE_DRIVER_LOCATION, ds.getDatabaseDriverLocation());
                 }
-                if (StringUtils.isNotBlank(ds.getDatabaseUser())) {
+                if (ds.getDatabaseUser() != null) {
                     properties.put(DatasourceConstants.DATABASE_USER, ds.getDatabaseUser());
                 }
-                if (StringUtils.isNotBlank(ds.getPassword())) {
+                if (ds.getPassword() != null) {
                     details.setPassword(encryptor.encrypt(ds.getPassword()));
-                    properties.put(DatasourceConstants.PASSWORD, ds.getPassword());
+                    properties.put(DatasourceConstants.PASSWORD, StringUtils.isNotEmpty(ds.getPassword()) ? ds.getPassword() : null);
                 }
 
                 // Update or create the controller service
