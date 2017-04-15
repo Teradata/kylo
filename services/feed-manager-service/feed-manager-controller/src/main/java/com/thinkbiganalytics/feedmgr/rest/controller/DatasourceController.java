@@ -177,7 +177,7 @@ public class DatasourceController {
      *
      * @param datasource the data source
      * @return the data source
-     * @throws AccessControlException if the user does not have the {@code CREATE_DATASOURCES} permission
+     * @throws AccessControlException if the user does not have the {@code EDIT_DATASOURCES} permission
      */
     @POST
     @ApiOperation("Updates the specified data source.")
@@ -188,9 +188,7 @@ public class DatasourceController {
                   })
     public Datasource postDatasource(@Nonnull final UserDatasource datasource) {
         return metadata.commit(() -> {
-            if (datasource.getId() == null) {
-                accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.CREATE_DATASOURCES);
-            }
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_DATASOURCES);
 
             datasourceTransform.toDomain(datasource);
             if (datasource instanceof JdbcDatasource) {

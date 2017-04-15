@@ -25,10 +25,10 @@ define([], function () {
         this.DATASOURCE_ACCESS = "accessDatasources";
 
         /**
-         * Allows creating new data sources.
+         * Allows creating and editing new data sources.
          * @type {string}
          */
-        this.DATASOURCE_CREATE = "createDatasources";
+        this.DATASOURCE_EDIT = "editDatasources";
 
         /**
          * Allows access to feeds.

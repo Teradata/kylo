@@ -74,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -220,7 +219,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                    FeedServicesAccessControl.IMPORT_FEEDS,
                                    FeedServicesAccessControl.EXPORT_FEEDS,
                                    FeedServicesAccessControl.EDIT_CATEGORIES,
-                                   FeedServicesAccessControl.CREATE_DATASOURCES,
+                                   FeedServicesAccessControl.EDIT_DATASOURCES,
                                    FeedServicesAccessControl.EDIT_TEMPLATES,
                                    FeedServicesAccessControl.IMPORT_TEMPLATES,
                                    FeedServicesAccessControl.EXPORT_TEMPLATES,
