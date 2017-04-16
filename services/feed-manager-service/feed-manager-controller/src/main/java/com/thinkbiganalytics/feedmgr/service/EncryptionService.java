@@ -40,7 +40,7 @@ public class EncryptionService {
     private String encryptedPrefix = "{cipher}";
 
 
-    private boolean isEncrypted(String str){
+    public boolean isEncrypted(String str){
         return StringUtils.startsWith(str,encryptedPrefix);
     }
     public String encrypt(String str) {

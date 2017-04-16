@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.api.app;
  * #L%
  */
 
+import com.thinkbiganalytics.KyloVersion;
+
 /**
  * Provider to return/update metadata representing the current Kylo version deployed
  */

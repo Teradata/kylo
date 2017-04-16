@@ -24,7 +24,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -42,6 +42,7 @@ import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessContro
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -118,7 +119,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     public KyloVersion getCurrentVersion() {
         KyloVersion version = kyloVersionProvider.getCurrentVersion();
        if(version != null) {
-           return new Version(version.getMajorVersion(), version.getMinorVersion());
+           return new KyloVersionUtil.Version(version.getMajorVersion(), version.getMinorVersion());
        }
        else {
            return null;
@@ -519,126 +520,6 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         return createDefaultRole(entityName, roleName, title, allowedActions);
     }
 
-    public static class Version implements KyloVersion {
 
-        private String majorVersion;
-        private String minorVersion;
-        private String description;
-
-
-        public Version(KyloVersion version) {
-            this(version.getMajorVersion(), version.getMinorVersion());
-        }
-
-        /**
-         * create a new version with a supplied major and minor version
-         */
-        public Version(String majorVersion, String minorVersion) {
-            this.majorVersion = majorVersion;
-            this.minorVersion = minorVersion;
-        }
-
-        /**
-         * update this version to the new passed in version
-         *
-         * @return the newly updated version
-         */
-        public KyloVersion update(KyloVersion v) {
-            setMajorVersion(v.getMajorVersion());
-            setMinorVersion(v.getMinorVersion());
-            return this;
-        }
-
-
-        /**
-         * Return the major.minor version string
-         *
-         * @return the major.minor version string
-         */
-        @Override
-        public String getVersion() {
-            return majorVersion + "." + minorVersion;
-        }
-
-        /**
-         * Return the major version of Kylo
-         *
-         * @return the major version
-         */
-        public String getMajorVersion() {
-            return this.majorVersion;
-        }
-
-        public void setMajorVersion(String majorVersion) {
-            this.majorVersion = majorVersion;
-        }
-
-        public String getMinorVersion() {
-            return this.minorVersion;
-        }
-
-        public void setMinorVersion(String minorVersion) {
-            this.minorVersion = minorVersion;
-        }
-
-        /**
-         * @return the major version number
-         */
-        @Override
-        public Float getMajorVersionNumber() {
-            if (getMajorVersion() != null) {
-                try {
-                    return Float.parseFloat(getMajorVersion());
-                } catch (NumberFormatException e) {
-                    throw new IllegalStateException("Cannot parse major version number", e);
-                }
-            } else {
-                return null;
-            }
-        }
-
-
-        @Override
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || !(o instanceof KyloVersion)) {
-                return false;
-            }
-
-            KyloVersion that = (KyloVersion) o;
-
-            if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
-                return false;
-            }
-            return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = majorVersion != null ? majorVersion.hashCode() : 0;
-            result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
-            return result;
-        }
-
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
-        @Override
-        public String toString() {
-            return getMajorVersion() + "." + getMinorVersion();
-        }
-    }
 
 }

@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.api.app;
+package com.thinkbiganalytics;
 
 /*-
  * #%L
- * thinkbig-operational-metadata-api
+ * kylo-commons-util
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%

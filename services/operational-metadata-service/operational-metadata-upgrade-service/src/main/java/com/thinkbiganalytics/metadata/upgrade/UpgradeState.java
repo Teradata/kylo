@@ -25,7 +25,8 @@ package com.thinkbiganalytics.metadata.upgrade;
 
 import java.net.URL;
 
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.KyloVersionUtil;
 
 /**
  *
@@ -42,7 +43,7 @@ public interface UpgradeState {
     }
     
     default KyloVersion asVersion(String major, String minor) {
-        return new UpgradeKyloService.Version(major, minor);
+        return new KyloVersionUtil.Version(major, minor);
     }
 
 }

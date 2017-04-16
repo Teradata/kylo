@@ -56,7 +56,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;

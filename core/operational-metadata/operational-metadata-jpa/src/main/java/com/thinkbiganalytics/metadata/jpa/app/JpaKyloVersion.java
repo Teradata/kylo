@@ -21,14 +21,12 @@ package com.thinkbiganalytics.metadata.jpa.app;
  */
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

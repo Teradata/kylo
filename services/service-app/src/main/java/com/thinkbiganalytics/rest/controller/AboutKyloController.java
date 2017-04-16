@@ -20,7 +20,7 @@ package com.thinkbiganalytics.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;

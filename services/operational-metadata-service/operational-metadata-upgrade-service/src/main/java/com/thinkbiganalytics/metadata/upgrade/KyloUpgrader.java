@@ -26,7 +26,7 @@ package com.thinkbiganalytics.metadata.upgrade;
 import javax.inject.Inject;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 /**

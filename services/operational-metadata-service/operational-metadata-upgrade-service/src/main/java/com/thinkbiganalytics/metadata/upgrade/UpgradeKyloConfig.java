@@ -23,14 +23,8 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-
 import javax.inject.Inject;
 
-import org.modeshape.common.collection.Problems;
-import org.modeshape.jcr.RepositoryConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,15 +52,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
 
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.jpa.app.JpaKyloVersionConfig;
 import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfig;
-import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
 /**

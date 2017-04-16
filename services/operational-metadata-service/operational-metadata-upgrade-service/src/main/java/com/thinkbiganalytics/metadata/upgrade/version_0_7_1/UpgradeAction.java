@@ -20,7 +20,7 @@ package com.thinkbiganalytics.metadata.upgrade.version_0_7_1;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 
 import org.apache.commons.lang3.StringUtils;
-import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,6 +127,8 @@ public class UpgradeAction implements UpgradeState {
                     moveNode(session, feedPreconditionNode, feedDetailsNode);
                 }
 
+
+
                 moveProperty("tba:state", feedNode, feedDataNode);
                 moveProperty("tba:schedulingPeriod", feedNode, feedDataNode);
                 moveProperty("tba:schedulingStrategy", feedNode, feedDataNode);
@@ -155,9 +156,10 @@ public class UpgradeAction implements UpgradeState {
 
         for (Node templateNode : JcrUtil.getNodesOfType(templatesNode, "tba:feedTemplate")) {
             log.info("Starting upgrading template: [{}] {}", ++templateCount, templateNode);
-            JcrUtil.createNode(templateNode, "tba:allowedActions", "tba:allowedActions");
+            JcrUtil.getOrCreateNode(templateNode, "tba:allowedActions", "tba:allowedActions");
             log.info("Completed upgrading template: " + templateNode);
         }
+
 
         log.info("Upgrade complete for {} categories and {} feeds and {} templates", categoryCount, totalFeedCount, templateCount);
     }
