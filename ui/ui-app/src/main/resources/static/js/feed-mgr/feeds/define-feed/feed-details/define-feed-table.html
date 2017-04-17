@@ -150,7 +150,7 @@
                            ng-click="vm.onSelectedColumn(columnDef)">
                         <div flex="30" class="md-list-item-text  ">
                           <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
-                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldChange(columnDef)"
+                            <input ng-model="columnDef.name" placeholder="Field Name" ng-required="(columnDef.deleted == false || columnDef.deleted == undefined)" name="name_{{columnDef._id}}" ng-change="vm.onNameFieldChange(columnDef)"
                                    ng-model-options="{updateOn: 'blur'}"
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                                    ng-disabled="vm.tableLocked || columnDef.deleted"
