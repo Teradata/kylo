@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -411,9 +412,24 @@ public class JdbcCommon {
         private static final String QUOTE_STR = String.valueOf(QUOTE);
 
         /**
+         * Character for escaping values
+         */
+        private static final char BACKSLASH = '\\';
+
+        /**
+         * String for escaping values
+         */
+        private static final String BACKSLASH_STR = String.valueOf(BACKSLASH);
+
+        /**
          * Strings that, if found, require a value to be escaped
          */
         private final String[] searchStrings;
+
+        /**
+         * Replacements for the search strings found
+         */
+        private final String[] replacementStrings;
 
         /**
          * Constructs a {@code DelimiterEscaper} with the specified delimiter.
@@ -421,16 +437,17 @@ public class JdbcCommon {
          * @param delimiter the delimiter
          */
         DelimiterEscaper(@Nonnull final String delimiter) {
-            searchStrings = new String[]{delimiter, QUOTE_STR, Character.toString(CharUtils.CR), Character.toString(CharUtils.LF)};
+            searchStrings = new String[]{delimiter, QUOTE_STR, Character.toString('\n'), Character.toString('\r') };
+            replacementStrings = new String[]{delimiter, BACKSLASH_STR+QUOTE_STR, "\\\\n", "\\\\r"};
         }
 
         @Override
         public int translate(@Nonnull final CharSequence input, final int index, @Nonnull final Writer out) throws IOException {
             Preconditions.checkState(index == 0, "Unsupported translation index %d", index);
-
-            if (StringUtils.containsAny(input.toString(), searchStrings)) {
+            String inputString = input.toString();
+            if (StringUtils.containsAny(inputString, searchStrings)) {
                 out.write(QUOTE);
-                out.write(StringUtils.replace(input.toString(), QUOTE_STR, QUOTE_STR + QUOTE_STR));
+                out.write(StringUtils.replaceEach(inputString, searchStrings, replacementStrings));
                 out.write(QUOTE);
             } else {
                 out.write(input.toString());
@@ -439,4 +456,6 @@ public class JdbcCommon {
             return Character.codePointCount(input, 0, input.length());
         }
     }
+
+
 }
