@@ -77,13 +77,15 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
         if (getLatestVersion() != null) {
             KyloVersion currentVersion = getLatestVersion();
             KyloVersion existingVersion = getCurrentVersion();
+            
             if (existingVersion == null) {
-                existingVersion = new JpaKyloVersion(currentVersion.getMajorVersion(),currentVersion.getMinorVersion());
-                kyloVersionRepository.save((JpaKyloVersion) existingVersion);
+                kyloVersionRepository.save(new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion()));
+                existingVersion = currentVersion;
             } else {
                 if (!existingVersion.equals(currentVersion)) {
-                    existingVersion.update(currentVersion);
-                    kyloVersionRepository.save((JpaKyloVersion) existingVersion);
+                    JpaKyloVersion update = new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion());
+                    kyloVersionRepository.save(update);
+                    existingVersion.update(update);
                 }
             }
             return existingVersion;
