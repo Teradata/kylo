@@ -140,8 +140,13 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          */
         self.onEdit = function () {
             self.editModel = angular.copy(self.model);
-            self.editModel.password = PASSWORD_PLACEHOLDER;
-            self.hasPasswordChanged = false;
+
+            if (self.isNew()) {
+                self.hasPasswordChanged = true;
+            } else {
+                self.editModel.password = PASSWORD_PLACEHOLDER;
+                self.hasPasswordChanged = false;
+            }
         };
 
         /**
