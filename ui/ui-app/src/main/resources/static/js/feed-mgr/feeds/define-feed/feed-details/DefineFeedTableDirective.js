@@ -211,6 +211,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     return false;
                 }
 
+                if (columnDef.deleted === true) {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("required", true);
+                    self.defineFeedTableForm["datatype_" + columnDef._id].$setValidity("required", true);
+                }
+
                 // Check for reserved names
                 if (columnDef.name === "processing_dttm") {
                     self.defineFeedTableForm["name_" + columnDef._id].$setValidity("reserved", false);
@@ -549,7 +554,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
+
             if (valid) {
+                //ensure we have at least 1 field (not deleted) assigned to the model)
+                var validFields = _.filter(self.model.table.tableSchema.fields,function(field) {
+                    return field.deleted == undefined || field.deleted == false;
+                });
+                valid = validFields.length >0;
                 ensurePartitionData();
             }
             self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;

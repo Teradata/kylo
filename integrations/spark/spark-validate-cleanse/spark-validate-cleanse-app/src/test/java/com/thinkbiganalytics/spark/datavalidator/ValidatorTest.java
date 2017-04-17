@@ -90,6 +90,22 @@ public class ValidatorTest {
     }
 
     @Test
+    public void testParseRemainingParametersNumPartitions() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file", "--storageLevel", "MEMORY_ONLY", "--numPartitions", "10"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        Integer numRDDPartitions = params.getNumPartitions();
+        assertEquals("10", String.valueOf(numRDDPartitions));
+    }
+
+    @Test
+    public void testDefaultNumPartitions() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        Integer defaultRDDPartitions = params.getNumPartitions();
+        assertEquals("-1", String.valueOf(defaultRDDPartitions));
+    }
+
+    @Test
     public void testParseRemainingParameters_missingParameters() {
         String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
         CommandLineParams params = Validator.parseRemainingParameters(args, 4);

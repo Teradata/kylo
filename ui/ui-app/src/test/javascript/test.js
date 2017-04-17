@@ -110,7 +110,8 @@ require.config({
         'app': {deps: ['ocLazyLoad', 'underscore', 'angularMaterial', 'jquery', 'angular-sanitize', 'ng-text-truncate'], exports: 'app'},
         'routes': {deps: ['app'], exports: 'routes'}
     },
-    deps: ["routes", "../spec/feed-mgr/visual-query/VisualQueryBuilderControllerTest", "../spec/feed-mgr/visual-query/services/SparkDatasourceServiceTest"],
+    deps: ["routes", "../spec/common/utils/StringUtils.spec.js", "../spec/feed-mgr/visual-query/services/SparkDatasourceServiceTest", "../spec/feed-mgr/visual-query/services/SparkShellServiceTest",
+           "../spec/feed-mgr/visual-query/VisualQueryBuilderControllerTest", "../spec/feed-mgr/visual-query/VisualQueryColumnDelegateTest"],
     callback: jasmine.boot
 });
 

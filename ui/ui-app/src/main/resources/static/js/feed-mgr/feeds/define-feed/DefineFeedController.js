@@ -1,6 +1,6 @@
 define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
-    var controller = function ($scope, $http, AccessControlService, FeedService, RestUrlService, StateService) {
+    var controller = function ($scope, $http,$q, AccessControlService, FeedService, FeedSecurityGroups,RestUrlService, StateService) {
 
         var self = this;
 
@@ -87,6 +87,22 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.stepperUrl = null;
         }
 
+
+        self.onStepperInitialized = function(stepper) {
+            var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
+            $q.all(accessChecks).then(function (response) {
+                var entityAccess = AccessControlService.isEntityAccessControlled();
+                var securityGroupsAccess = response.securityGroups;
+                //disable the access control step
+                if(!entityAccess && !securityGroupsAccess) {
+                    //Access Control is second to last step 0 based array indexc
+                    stepper.deactivateStep(self.totalSteps -2);
+                }
+            });
+        }
+
+
+
         // Fetch the allowed actions
         AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
@@ -94,6 +110,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             });
     };
 
-    angular.module(moduleName).controller('DefineFeedController', ["$scope","$http","AccessControlService","FeedService","RestUrlService","StateService",controller]);
+    angular.module(moduleName).controller('DefineFeedController', ["$scope","$http","$q","AccessControlService","FeedService","FeedSecurityGroups","RestUrlService","StateService",controller]);
 
 });

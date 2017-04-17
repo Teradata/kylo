@@ -54,7 +54,7 @@
  * @property {string} script the Spark script
  * @property {string|null} table the table containing the results
  */
-define(["angular", "feed-mgr/visual-query/module-name"], function (angular, moduleName) {
+define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/module"], function (angular, moduleName) {
 angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "$q", "$timeout", "RestUrlService", "SparkDatasourceService", "SparkParserService", "VisualQueryService",
                                                          function($http, $mdDialog, $q, $timeout, RestUrlService, SparkDatasourceService, SparkParserService, VisualQueryService) {
     // URL to the API server

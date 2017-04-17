@@ -140,8 +140,13 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          */
         self.onEdit = function () {
             self.editModel = angular.copy(self.model);
-            self.editModel.password = PASSWORD_PLACEHOLDER;
-            self.hasPasswordChanged = false;
+
+            if (self.isNew()) {
+                self.hasPasswordChanged = true;
+            } else {
+                self.editModel.password = PASSWORD_PLACEHOLDER;
+                self.hasPasswordChanged = false;
+            }
         };
 
         /**
@@ -197,6 +202,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             return DatasourcesService.save(model)
                 .then(function (savedModel) {
                     self.model = savedModel;
+                    return savedModel;
                 }, function (err) {
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -206,6 +212,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                             .ariaLabel("Failed to save data source")
                             .ok("Got it!")
                     );
+                    return error;
                 });
         };
 
