@@ -144,16 +144,16 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof KyloVersion)) {
             return false;
         }
 
-        JpaKyloVersion that = (JpaKyloVersion) o;
+        KyloVersion that = (KyloVersion) o;
 
-        if (majorVersion != null ? !majorVersion.equals(that.majorVersion) : that.majorVersion != null) {
+        if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
             return false;
         }
-        return !(minorVersion != null ? !minorVersion.equals(that.minorVersion) : that.minorVersion != null);
+        return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
 
     }
 
