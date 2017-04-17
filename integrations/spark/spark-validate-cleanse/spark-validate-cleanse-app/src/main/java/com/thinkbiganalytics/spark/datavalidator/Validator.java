@@ -136,6 +136,7 @@ public class Validator implements Serializable {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
             System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
             System.out.println("You can optionally add: --storageLevel rdd_persistence_level_value");
+            System.out.println("You can optionally add: --numPartitions number_of_rdd_partitions");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
@@ -197,12 +198,26 @@ public class Validator implements Serializable {
             log.info("Persistence level: {}", params.getStorageLevel());
 
             // Validate and cleanse input rows
-            JavaRDD<CleansedRowResult> cleansedRowResultRDD = rddData.map(new Function<Row, CleansedRowResult>() {
-                @Override
-                public CleansedRowResult call(Row row) throws Exception {
-                    return cleanseAndValidateRow(row);
-                }
-            }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            JavaRDD<CleansedRowResult> cleansedRowResultRDD;
+            if (params.getNumPartitions() <= 0) {
+                cleansedRowResultRDD = rddData.map(new Function<Row, CleansedRowResult>() {
+                    @Override
+                    public CleansedRowResult call(Row row) throws Exception {
+                        return cleanseAndValidateRow(row);
+                    }
+                }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            }
+            else {
+                log.info("Partition count: " + params.getNumPartitions());
+                cleansedRowResultRDD = rddData.repartition(params.getNumPartitions()).map(new Function<Row, CleansedRowResult>() {
+                    @Override
+                    public CleansedRowResult call(Row row) throws Exception {
+                        return cleanseAndValidateRow(row);
+                    }
+                }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            }
+
+
 
             // Return a new rdd based on whether values are valid or invalid
             JavaRDD<Row> newResultsRDD = cleansedRowResultRDD.map(new Function<CleansedRowResult, Row>() {
