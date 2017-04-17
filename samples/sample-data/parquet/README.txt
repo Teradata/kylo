@@ -1,4 +1,4 @@
-userdata[1-5].par: These are sample files containing data in PARQUET format.
+userdata[1-5].parquet: These are sample files containing data in PARQUET format.
 
 -> Number of rows in each file: 1000
 -> Column details:
