@@ -202,6 +202,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             return DatasourcesService.save(model)
                 .then(function (savedModel) {
                     self.model = savedModel;
+                    return savedModel;
                 }, function (err) {
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -211,6 +212,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                             .ariaLabel("Failed to save data source")
                             .ok("Got it!")
                     );
+                    return error;
                 });
         };
 
