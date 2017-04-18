@@ -23,8 +23,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
             importComponentTypes : importComponentTypes,
 
+            /**
+             * return a new component option.
+             * Defaults to not overwrite.
+             * @param component
+             * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
+             */
             newImportComponentOption: function(component) {
-                var option = {importComponent:component,overwriteSelectValue:null,overwrite:false,userAcknowledged:false,shouldImport:true,analyzed:false,continueIfExists:false,properties:[]}
+                var option = {importComponent:component,overwriteSelectValue:"false",overwrite:false,userAcknowledged:true,shouldImport:true,analyzed:false,continueIfExists:true,properties:[]}
                 return option;
             },
             newReusableTemplateImportOption: function(){
@@ -53,9 +59,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             onOverwriteSelectOptionChanged :function(importComponentOption){
                 importComponentOption.userAcknowledged = true;
                 if(importComponentOption.overwriteSelectValue == "true"){
-                    importComponentOption.overwrite = true
-
-
+                    importComponentOption.overwrite = true;
                 }
                 else if(importComponentOption.overwriteSelectValue == "false"){
                     importComponentOption.overwrite = false;
@@ -80,11 +84,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     if(option.overwrite){
                         option.userAcknowledged = true;
                         option.shouldImport = true;
-                    }
-
-                    if(option.userAcknowledged && !option.overwrite){
                         option.continueIfExists = true;
                     }
+
+                 //   if(option.userAcknowledged && !option.overwrite){
+                  //      option.continueIfExists = true;
+                  //  }
                     //reset the errors
                     option.errorMessages = [];
                     importComponentOptions.push(option);

@@ -91,7 +91,7 @@
              class="layout-padding-indent">
           <upload-file upload-file-model="vm.templateFile"></upload-file>
 
-          <div ng-if="vm.uploadType == 'zip'" >
+          <div ng-if="vm.uploadType == 'zip'" layout-fill  >
             <!-- validation messages -->
             <div ng-if="vm.templateDataImportOption.errorMessages != null && vm.templateDataImportOption.errorMessages.length >0">
               <div ng-repeat="message in vm.templateDataImportOption.errorMessages" layout="column">
@@ -105,7 +105,9 @@
               </div>
             </div>
 
-            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+            <div layout="row" >
+
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
               <md-checkbox ng-model="vm.templateDataImportOption.overwrite" aria-label="Overwrite if exists">
                 Overwrite
               </md-checkbox>
@@ -113,6 +115,17 @@
                 Check to replace the template if it already exists.
               </div>
             </md-input-container>
+              <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
+                <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Overwrite if exists" >
+                  Replace the reusable template
+                </md-checkbox>
+
+                <div class="hint">
+                  Replace and re-initialize the reusable template, if applicable
+                </div>
+              </md-input-container>
+
+            </div>
 
             <div ng-if="vm.templateDataImportOption.properties && vm.templateDataImportOption.properties.length >0 " flex layout="column">
               <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
@@ -129,25 +142,10 @@
             </div>
 
             <!-- ask to import reusable template if found -->
-            <div ng-if="(vm.reusableTemplateImportOption.overwriteSelectValue == 'true' || vm.reusableTemplateImportOption.overwriteSelectValue == 'false' )|| (vm.reusableTemplateImportOption.errorMessages != null && vm.reusableTemplateImportOption.errorMessages.length >0)">
+            <div ng-if="(vm.templateDataImportOption.overwrite)|| (vm.reusableTemplateImportOption.errorMessages != null && vm.reusableTemplateImportOption.errorMessages.length >0)">
               <div ng-repeat="message in vm.reusableTemplateImportOption.errorMessages" layout="column">
                 <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
               </div>
-
-              <md-input-container class="md-block layout-padding-bottom">
-                <label>Overwrite Reusable Template</label>
-                <md-select ng-model="vm.reusableTemplateImportOption.overwriteSelectValue" placeholder="Overwrite" aria-label="Overwrite if exists" class="md-no-underline" ng-change="vm.onOverwriteSelectOptionChanged(vm.reusableTemplateImportOption)">
-                  <md-option><em>Choose</em></md-option>
-                  <md-option value="true">Yes</md-option>
-                  <md-option value="false">No</md-option>
-                </md-select>
-
-                <div class="hint">
-                  Overwrite the reusable template
-                </div>
-              </md-input-container>
-
-
 
               <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
                 <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
@@ -169,7 +167,7 @@
 
           </div>
 
-          <div ng-if="vm.uploadType == 'xml'" >
+          <div ng-if="vm.uploadType == 'xml'"  layout-fill>
             <div ng-if="vm.nifiTemplateImportOption.errorMessages != null && vm.nifiTemplateImportOption.errorMessages.length >0">
               <div ng-repeat="message in vm.nifiTemplateImportOption.errorMessages" layout="column">
                 <div><ng-md-icon icon="warning" size="20" class="warn"></ng-md-icon> <span>{{message}}</span></div>
@@ -177,7 +175,8 @@
             </div>
 
 
-            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+            <div layout="row">
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
               <md-checkbox ng-model="vm.nifiTemplateImportOption.overwrite" aria-label="Overwrite if exists">
                 Overwrite
               </md-checkbox>
@@ -187,7 +186,7 @@
             </md-input-container>
 
 
-            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
               <md-checkbox ng-model="vm.reusableTemplateImportOption.shouldImport" aria-label="Create a reusable flow (callable by other flows)">
                 Create Reusable Flow
               </md-checkbox>
@@ -195,6 +194,7 @@
                 Flow will be created in NiFi under the "reusable_templates" process group
               </div>
             </md-input-container>
+            </div>
 
           </div>
 

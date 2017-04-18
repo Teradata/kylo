@@ -103,18 +103,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
 
         /**
-         * flag to show the additional template options are needed
-         * @type {boolean}
-         */
-        this.showTemplateOptions = false;
-
-        /**
-         * Flag to show reusable template options
-         * @type {boolean}
-         */
-        this.showReusableTemplateOptions = false;
-
-        /**
          * The angular Form for validation
          * @type {{}}
          */
@@ -163,7 +151,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 if(!responseData.valid){
                     //Validation Error.  Additional Input is needed by the end user
                     self.additionalInputNeeded = true;
-
+/*
                     if(self.showTemplateOptions == false ) {
                        var show = (self.templateDataImportOption.overwriteSelectValue == 'true' || self.templateDataImportOption.overwriteSelectValue == 'false' ) || (self.templateDataImportOption.errorMessages != null && self.templateDataImportOption.errorMessages.length >0);
                        if(show) {
@@ -172,9 +160,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                        }
                         self.showTemplateOptions = show;
                     }
+
                     if(self.showReusableTemplateOptions == false) {
                         self.showReusableTemplateOptions = (self.reusableTemplateImportOption.overwriteSelectValue == 'true' || self.reusableTemplateImportOption.overwriteSelectValue == 'false' )|| (self.reusableTemplateImportOption.errorMessages != null && self.reusableTemplateImportOption.errorMessages.length >0);
                     }
+                    */
 
                 }
                 else {
@@ -306,9 +296,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         function setDefaultImportOptions(){
             self.nifiTemplateImportOption.continueIfExists = true;
-            self.reusableTemplateImportOption.userAcknowledged = false;
+          //  self.reusableTemplateImportOption.userAcknowledged = false;
             //it is assumed with a feed you will be importing the template with the feed
             self.templateDataImportOption.userAcknowledged=true;
+            self.feedDataImportOption.continueIfExists=false;
         }
 
         function indexImportOptions(){
@@ -350,8 +341,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             setDefaultImportOptions();
 
             self.additionalInputNeeded = false;
-            self.showTemplateOptions = false;
-            self.showReusableTemplateOptions = false;
             self.disableFeedUponImport = false;
 
         }

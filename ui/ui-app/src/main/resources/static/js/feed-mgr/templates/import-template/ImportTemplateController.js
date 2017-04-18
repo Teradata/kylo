@@ -104,6 +104,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         self.showReorderList = false;
 
 
+
         this.importTemplate = function () {
             self.showReorderList = false;
             self.uploadInProgress = true;
@@ -251,13 +252,13 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         function setDefaultImportOptions(){
            if(self.uploadType == 'zip') {
                //only if it is a zip do we continue with the niFi template
-               self.nifiTemplateImportOption.continueIfExists = true;
-               self.reusableTemplateImportOption.shouldImport = false;
-               self.reusableTemplateImportOption.userAcknowledged = false;
+               self.templateDataImportOption.continueIfExists = false;
+               self.reusableTemplateImportOption.shouldImport = true;
+               self.reusableTemplateImportOption.userAcknowledged = true;
            }
            else {
                self.nifiTemplateImportOption.continueIfExists = false;
-               self.reusableTemplateImportOption.shouldImport = false;
+               self.reusableTemplateImportOption.shouldImport = true;
                self.reusableTemplateImportOption.userAcknowledged = true;
            }
 
@@ -310,7 +311,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     option.overwriteSelectValue = ""+option.overwrite;
                 }
 
-                else if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA){
+                if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA){
                     self.templateDataImportOption= option;
                 }
                 else if(option.importComponent == ImportService.importComponentTypes.REUSABLE_TEMPLATE){
@@ -322,9 +323,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 self.importComponentOptions[option.importComponent] = option;
             });
         }
-
-
-
 
 
 
