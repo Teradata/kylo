@@ -479,7 +479,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             //fetch the SLA
             SlaService.getSlaForEditForm(slaId).then(function(response) {
                 var sla = response.data;
-
+                applyEditPermissionsToSLA(sla);
                 _.each(sla.rules, function(rule) {
                     rule.editable = sla.canEdit;
                     rule.mode = 'EDIT'
@@ -496,12 +496,33 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                     SlaService.validateSlaActionRule(rule)
 
                 });
-                sla.editable = sla.canEdit;
+                //sla.editable = sla.canEdit;
                 self.editSla = sla;
                 self.loading = false;
-                self.allowEdit = self.editSla.canEdit;
+              //  self.allowEdit = self.editSla.canEdit;
 
             });
+        }
+
+        function applyEditPermissionsToSLA(sla){
+
+            var entityAccessControlled = self.feed != null && AccessControlService.isEntityAccessControlled();
+
+           var functionalAccess = AccessControlService.getUserAllowedActions()
+        $q.when(functionalAccess).then(function (response) {
+            if(entityAccessControlled) {
+                sla.editable = sla.canEdit;
+                self.allowEdit = sla.canEdit;
+            }
+            else {
+                var allowFeedEdit = self.feed != null ? AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.actions) : true;
+                self.allowEdit =  allowFeedEdit && AccessControlService.hasAction(AccessControlService.SLA_EDIT, response.actions);
+                sla.editable = self.allowEdit;
+            }
+        });
+
+
+
         }
 
         self.onDeleteSla = function(ev) {
