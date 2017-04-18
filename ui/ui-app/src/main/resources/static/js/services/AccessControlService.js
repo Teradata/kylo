@@ -213,8 +213,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                         if (self.initialized) {
                             var allowedActions = self.cachedUserAllowedActions[DEFAULT_MODULE];
                             if(angular.isArray(requiredPermissions)){
+
                                 //find the first match
-                                 valid = self.hasAnyAction(requiredPermissions,allowedActions)
+                                 valid = requiredPermissions.length ==0 || self.hasAnyAction(requiredPermissions,allowedActions)
                             }
                             else {
                                 valid = self.hasAction(requiredPermissions,allowedActions);

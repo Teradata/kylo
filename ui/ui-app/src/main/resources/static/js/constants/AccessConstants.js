@@ -258,7 +258,7 @@ define([], function () {
             REGISTER_TEMPLATE: {state: "register-template", permissions: [this.TEMPLATES_EDIT]},
             REGISTER_TEMPLATE_COMPLETE: {state: "register-template-complete", permissions: [this.TEMPLATES_EDIT]},
             IMPORT_TEMPLATE: {state: "import-template", permissions: [this.TEMPLATES_IMPORT]},
-            SEARCH: {state: "search", permissions: [this.SERVICES_ACCESS]},
+            SEARCH: {state: "search", permissions: []},
             //Ops Manager
             ALERTS: {state: "alerts", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             ALERT_DETAILS: {state: "alert-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},

@@ -13,7 +13,10 @@ define(['angular'], function (angular) {
 
 
         self.attemptedState = $transition$.params().attemptedState;
-        if(self.attemptedState.displayName == undefined){
+        if( self.attemptedState == undefined){
+            self.attemptedState = {displayName:'the page'};
+        }
+        else if( self.attemptedState.displayName == undefined){
             self.attemptedState.displayName = self.attemptedState.name;
         }
 
