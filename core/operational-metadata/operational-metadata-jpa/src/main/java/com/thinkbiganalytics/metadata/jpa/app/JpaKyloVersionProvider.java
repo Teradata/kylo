@@ -83,6 +83,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
                 existingVersion = currentVersion;
             } else {
                 if (!existingVersion.equals(currentVersion)) {
+                    kyloVersionRepository.deleteAll();
                     JpaKyloVersion update = new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion());
                     kyloVersionRepository.save(update);
                     existingVersion.update(update);
