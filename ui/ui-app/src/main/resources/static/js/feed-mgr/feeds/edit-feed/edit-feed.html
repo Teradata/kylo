@@ -22,7 +22,7 @@
         <md-progress-circular md-mode="indeterminate"></md-progress-circular>
     </div>
 
-    <thinkbig-stepper total-steps="{{vm.totalSteps}}" stepper-name="EditFeedStepper" core-data-model="vm.model" on-cancel-stepper="vm.cancelStepper()" template-url="{{vm.stepperUrl}}"
+    <thinkbig-stepper total-steps="{{vm.totalSteps}}" stepper-name="EditFeedStepper" on-initialized="vm.onStepperInitialized" core-data-model="vm.model" on-cancel-stepper="vm.cancelStepper()" template-url="{{vm.stepperUrl}}"
                       selected-step-index="{{vm.selectedStepIndex}}" ng-if="vm.model.loaded == true">
     </thinkbig-stepper>
 </div>

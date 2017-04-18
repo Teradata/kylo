@@ -92,7 +92,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
             if (angular.isNumber(self.selectedStepIndex) || angular.isString(self.selectedStepIndex)) {
                 // Complete previous steps
-                for (var i=0; i < this.selectedStepIndex; ++i) {
+                for (var i=0; i < self.selectedStepIndex; ++i) {
                     self.steps[i].complete = true;
                     self.steps[i].disabled = false;
                     self.steps[i].visited = true;
@@ -100,9 +100,9 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 }
 
                 // Active current step
-                self.steps[this.selectedStepIndex].disabled = false;
-                self.steps[this.selectedStepIndex].visited = true;
-                self.steps[this.selectedStepIndex].updateStepType();
+                self.steps[self.selectedStepIndex].disabled = false;
+                self.steps[self.selectedStepIndex].visited = true;
+                self.steps[self.selectedStepIndex].updateStepType();
             } else {
                 self.selectedStepIndex = 0;
             }

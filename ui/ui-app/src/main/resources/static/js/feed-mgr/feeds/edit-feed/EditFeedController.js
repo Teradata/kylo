@@ -4,7 +4,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
      *
      * @constructor
      */
-    var EditFeedController = function($scope, $http, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService) {
+    var EditFeedController = function($scope, $http, $q, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService,AccessControlService,FeedSecurityGroups) {
         var self = this;
 
         /**
@@ -83,6 +83,23 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         };
 
         /**
+         * initialize the stepper and setup step display
+         * @param stepper
+         */
+        self.onStepperInitialized = function(stepper) {
+            var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
+            $q.all(accessChecks).then(function (response) {
+                var entityAccess = AccessControlService.isEntityAccessControlled();
+                var securityGroupsAccess = response.securityGroups;
+                //disable the access control step
+                if(!entityAccess && !securityGroupsAccess) {
+                    //Access Control is second to last step 0 based array indexc
+                    stepper.deactivateStep(self.totalSteps -2);
+                }
+            });
+        }
+
+        /**
          * Resets the editor state.
          */
         this.cancelStepper = function() {
@@ -95,7 +112,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         self.init();
     };
 
-    angular.module(moduleName).controller("EditFeedController", ["$scope","$http","$mdDialog","$transition$","FeedService","RestUrlService","StateService","VisualQueryService",EditFeedController]);
+    angular.module(moduleName).controller("EditFeedController", ["$scope","$http","$q","$mdDialog","$transition$","FeedService","RestUrlService","StateService","VisualQueryService","AccessControlService","FeedSecurityGroups",EditFeedController]);
 
 
 });
