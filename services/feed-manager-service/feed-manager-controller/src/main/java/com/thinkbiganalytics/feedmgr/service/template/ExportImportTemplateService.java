@@ -299,7 +299,8 @@ public class ExportImportTemplateService {
                 dto = nifiRestClient.getTemplateByName(templateName);
                 if (dto != null) {
                     template.setNifiTemplateId(dto.getId());
-                    if (!options.isUserAcknowledged(ImportComponent.NIFI_TEMPLATE) && !options.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && !options
+                    //if the template incoming is an XML template and it already exists, or if its a zip file and it exists and the user has not acknowledge to overwrite then error out
+                    if ((!options.isUserAcknowledged(ImportComponent.NIFI_TEMPLATE) || options.isUserAcknowledged(ImportComponent.NIFI_TEMPLATE) && !template.isZipFile()  )&& !options.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && !options
                         .isContinueIfExists(ImportComponent.NIFI_TEMPLATE)) {
                         template.setValid(false);
                         String msg = "Unable to import Template " + templateName
@@ -554,8 +555,8 @@ public class ExportImportTemplateService {
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA),
                  importOptions.isImport(ImportComponent.REUSABLE_TEMPLATE));
         if (importTemplate.isValid()) {
-            UploadProgressMessage startingStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Starting import of the template");
-            startingStatusMessage.complete(true);
+           // UploadProgressMessage startingStatusMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Starting import of the template");
+           // startingStatusMessage.complete(true);
             UploadProgressMessage statusMessage = null;
 
             //Get information about the import
@@ -659,6 +660,11 @@ public class ExportImportTemplateService {
                     template.setNifiTemplateId(dto.getId());
                     if (importOptions.isImportAndOverwrite(ImportComponent.NIFI_TEMPLATE) && nifiTemplateImport.isValidForImport()) {
                         nifiRestClient.deleteTemplate(dto.getId());
+                    }
+                    else if(!template.isZipFile()){
+                        //if its not a zip file we need to error out if the user has decided not to overwrite when it already exists
+                        uploadProgressService.addUploadStatus(importOptions.getUploadKey(),"The template "+templateName+" already exists in NiFi. Please choose the option to replace the template and try again.",true,false);
+                        template.setValid(false);
                     }
                 }
             } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
@@ -825,34 +831,36 @@ public class ExportImportTemplateService {
             log.info("validate NiFi Flow by creating a template instance in nifi Nifi Template: {} for file {}", templateName, fileName);
             Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
             NifiFlowCacheReusableTemplateCreationCallback reusableTemplateCreationCallback = new NifiFlowCacheReusableTemplateCreationCallback(xmlImport);
-            if (createReusableFlow) {
+            if (createReusableFlow && importTemplate.isValid()) {
                 importStatusMessage.update("Creating reusable flow instance for " + templateName);
             }
-            NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow, reusableTemplateCreationCallback);
-            importTemplate.setTemplateResults(newTemplateInstance);
-            log.info("Import finished for {}, {}... verify results", templateName, fileName);
-            if (newTemplateInstance.isSuccess()) {
-                log.info("SUCCESS! This template is valid Nifi Template: {} for file {}", templateName, fileName);
-                importTemplate.setSuccess(true);
-                if (createReusableFlow) {
-                    importStatusMessage.update("Finished creating reusable flow instance for " + templateName, true);
-                    importReusableTemplateSuccess(importTemplate);
+            if(importTemplate.isValid()) {
+                NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow, reusableTemplateCreationCallback);
+                importTemplate.setTemplateResults(newTemplateInstance);
+                log.info("Import finished for {}, {}... verify results", templateName, fileName);
+                if (newTemplateInstance.isSuccess()) {
+                    log.info("SUCCESS! This template is valid Nifi Template: {} for file {}", templateName, fileName);
+                    importTemplate.setSuccess(true);
+                    if (createReusableFlow) {
+                        importStatusMessage.update("Finished creating reusable flow instance for " + templateName, true);
+                        importReusableTemplateSuccess(importTemplate);
+                    } else {
+                        importStatusMessage.update("Validated " + templateName, true);
+                    }
                 } else {
-                    importStatusMessage.update("Validated " + templateName, true);
+                    rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
+                    importStatusMessage.update("An error occurred importing the template, " + templateName, false);
                 }
-            } else {
-                rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
-                importStatusMessage.update("An error occurred importing the template, " + templateName, false);
-            }
 
-            if (!createReusableFlow) {
-                removeTemporaryProcessGroup(importTemplate);
-                try {
-                    nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity());
-                } catch (NifiComponentNotFoundException e) {
-                    //its ok if its not found
+                if (!createReusableFlow) {
+                    removeTemporaryProcessGroup(importTemplate);
+                    try {
+                        nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity());
+                    } catch (NifiComponentNotFoundException e) {
+                        //its ok if its not found
+                    }
+                    log.info("Success cleanup: Successfully cleaned up Nifi");
                 }
-                log.info("Success cleanup: Successfully cleaned up Nifi");
             }
 
             log.info("Import NiFi Template for {} finished", fileName);
