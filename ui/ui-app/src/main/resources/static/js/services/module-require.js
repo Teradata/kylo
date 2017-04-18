@@ -16,9 +16,7 @@ define(['angular',
         'services/Utils',
         'services/HttpService',
         'services/NotificationService',
+        'services/AngularHttpInterceptor',
 'services/UserGroupService'], function (angular,moduleName) {
    return angular.module(moduleName);
 });
-
-//'services/AngularHttpInterceptor'
-
