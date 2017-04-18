@@ -118,6 +118,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, precisionScale: columnDef.precisionScale, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
         }
 
+        /**
+         * Called wehn the Method radio option is changed
+         */
+        this.updateSelectedMethod =function(method){
+            if(method == 'MANUAL' ) {
+                self.model.allowSkipHeaderOption = true;
+            }
+
+        }
+
         this.addHistoryItem = function(columnDef) {
             var historyItem = createHistoryRecord(columnDef);
             columnDef.history.push(historyItem);
@@ -669,7 +679,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.table.structured = responseData.structured;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
-                    self.model.skipHeader = true;
+                    self.model.options.skipHeader = true;
                 } else {
                     self.model.allowSkipHeaderOption = false;
                     self.model.options.skipHeader = false;

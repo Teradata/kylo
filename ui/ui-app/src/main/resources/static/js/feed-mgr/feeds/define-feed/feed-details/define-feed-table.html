@@ -59,7 +59,7 @@
                       <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
                                        ng-value="method.type"
                                        aria-label="{{method.name}}"
-                                       ng-click="vm.updateSelectedMethod()">
+                                       ng-click="vm.updateSelectedMethod(method.type)">
                         {{method.name}}
                       </md-radio-button>
                     </md-radio-group>
