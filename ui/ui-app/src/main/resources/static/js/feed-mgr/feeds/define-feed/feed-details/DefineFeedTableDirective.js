@@ -433,6 +433,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
+
+            if(columnDef.derivedDataType != 'decimal'){
+                columnDef.precisionScale = null;
+            }
             self.onFieldChange(columnDef);
 
             fieldNamesUnique(true);
