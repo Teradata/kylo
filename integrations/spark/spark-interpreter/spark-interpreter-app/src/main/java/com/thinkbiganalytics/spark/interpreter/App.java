@@ -35,9 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -70,30 +68,16 @@ public class App {
 
         // Prepare bindings
         final List<NamedParam> bindings = new ArrayList<>();
-        bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), ctx.getBean(DatasourceProvider.class)));
+        final String env = System.getenv("DATASOURCES");
+
+        if (env != null) {
+            final List<Datasource> datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
+            bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), new DatasourceProvider(datasources)));
+        }
 
         // Execute script
         final SparkScriptEngine engine = ctx.getBean(SparkScriptEngine.class);
         engine.eval(script, bindings);
-    }
-
-    /**
-     * Creates the {@link Datasource} provider.
-     *
-     * @return the data source provider
-     */
-    @Bean
-    public DatasourceProvider datasourceProvider() throws IOException {
-        final List<Datasource> datasources;
-        final String env = System.getenv("DATASOURCES");
-
-        if (env != null) {
-            datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
-        } else {
-            datasources = Collections.emptyList();
-        }
-
-        return new DatasourceProvider(datasources);
     }
 
     /**
