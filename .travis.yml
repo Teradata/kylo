@@ -19,6 +19,19 @@ addons:
 
 install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
 script: mvn clean install -B -V
+script:
+  - |
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
+      mvn clean install sonar:sonar -B -V \
+        -Dsonar.exclusions=**/SparkInterpreterBuilder211.java \
+        -Dsonar.analysis.mode=preview \
+        -Dsonar.github.pullRequest=${TRAVIS_PULL_REQUEST} \
+        -Dsonar.github.repository=${TRAVIS_REPO_SLUG} \
+        -Dsonar.github.oauth=${GITHUB_TOKEN} \
+        -Dsonar.host.url=https://sonarqube.com/
+    else
+      mvn clean install -B -V
+    fi
 
 # Cache .m2 directory for next run
 before_cache: "rm -rf $HOME/.m2/repository/com/thinkbiganalytics"
