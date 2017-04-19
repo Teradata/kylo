@@ -389,14 +389,14 @@ public class RegisteredTemplateService {
                 properties = nifiRestClient.getPropertiesForTemplate(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors());
                 //first attempt to match the properties by the processorid and processor name
                 NifiPropertyUtil
-                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
 
             if (properties != null) {
                 //match the properties to the processors by the processor name
                 //expression ${metdata.} properties will not be reset
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
-                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
             if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncNiFiTemplateId(registeredTemplate);
