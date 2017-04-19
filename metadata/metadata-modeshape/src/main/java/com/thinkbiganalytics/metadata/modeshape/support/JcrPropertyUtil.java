@@ -552,14 +552,14 @@ public class JcrPropertyUtil {
 
             if (node.hasProperty(propName)) {
                 return Arrays.stream(node.getProperty(propName).getValues())
-                    .map(v -> { 
-                            try {
-                                return (Node) JcrPropertyUtil.asValue(v, session);
-                            } catch (AccessDeniedException e) {
-                                // Not allowed to see the referenced node so return null.
-                                return null;
-                            } 
-                        })
+                    .map(v -> {
+                        try {
+                            return (Node) JcrPropertyUtil.asValue(v, session);
+                        } catch (AccessDeniedException e) {
+                            // Not allowed to see the referenced node so return null.
+                            return null;
+                        }
+                    })
                     .filter(n -> n != null)  // weak refs can produce null nodes
                     .collect(Collectors.toSet());
             } else {
@@ -638,7 +638,12 @@ public class JcrPropertyUtil {
         }
     }
 
+
     public static boolean removeFromSetProperty(Node node, String name, Object value) {
+        return removeFromSetProperty(node, name, value, false);
+    }
+
+    public static boolean removeFromSetProperty(Node node, String name, Object value, boolean weakRef) {
         try {
             JcrMetadataAccess.ensureCheckoutNode(node);
 
@@ -657,7 +662,7 @@ public class JcrPropertyUtil {
                 values = new HashSet<>();
             }
 
-            Value existingVal = createValue(node.getSession(), value);
+            Value existingVal = createValue(node.getSession(), value, weakRef);
             boolean result = values.remove(existingVal);
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return result;

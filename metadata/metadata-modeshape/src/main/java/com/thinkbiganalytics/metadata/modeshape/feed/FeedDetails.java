@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
@@ -26,9 +26,12 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
@@ -49,10 +52,15 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  */
 public class FeedDetails extends JcrPropertiesEntity {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedDetails.class);
 
     public static final String NODE_TYPE = "tba:feedDetails";
 
@@ -70,7 +78,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     public static final String SLA = "tba:slas";
 
     private FeedSummary summary;
-    
+
     /**
      * @param node
      */
@@ -82,7 +90,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     protected JcrFeed getParentFeed() {
         return this.summary.getParentFeed();
     }
-    
+
     protected FeedSummary getParentSummary() {
         return this.summary;
     }
@@ -113,12 +121,22 @@ public class FeedDetails extends JcrPropertiesEntity {
 
         return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode, true);
     }
-    
+
     public boolean removeDependentFeed(Feed feed) {
         JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
         feed.removeUsedByFeed(getParentFeed());
-        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
+
+        boolean weakRef = false;
+        Optional<Property> prop = JcrPropertyUtil.findProperty(this.node, DEPENDENTS);
+        if (prop.isPresent()) {
+            try {
+                weakRef = PropertyType.WEAKREFERENCE == prop.get().getType();
+            } catch (RepositoryException e) {
+                log.error("Error removeDependentFeed for {}.  Unable to identify if the property is a Weak Reference or not {} ", feed.getName(), e.getMessage(), e);
+            }
+        }
+        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode, weakRef);
     }
 
     public boolean addUsedByFeed(Feed feed) {
@@ -142,8 +160,16 @@ public class FeedDetails extends JcrPropertiesEntity {
     public boolean removeUsedByFeed(Feed feed) {
         JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
-
-        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
+        boolean weakRef = false;
+        Optional<Property> prop = JcrPropertyUtil.findProperty(this.node, USED_BY_FEEDS);
+        if (prop.isPresent()) {
+            try {
+                weakRef = PropertyType.WEAKREFERENCE == prop.get().getType();
+            } catch (RepositoryException e) {
+                log.error("Error removeUsedByFeed for {}.  Unable to identify if the property is a Weak Reference or not {} ", feed.getName(), e.getMessage(), e);
+            }
+        }
+        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode, weakRef);
     }
 
     public FeedSource getSource(final Datasource.ID id) {
@@ -242,12 +268,12 @@ public class FeedDetails extends JcrPropertiesEntity {
         Node feedSrcNode = JcrUtil.addNode(getNode(), FeedDetails.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
         return new JcrFeedSource(feedSrcNode, datasource);
     }
-    
+
     protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
         Node feedDestNode = JcrUtil.addNode(getNode(), FeedDetails.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
         return new JcrFeedDestination(feedDestNode, datasource);
     }
-    
+
     protected void removeFeedSource(JcrFeedSource source) {
         try {
             JcrVersionUtil.checkout(source.getNode().getParent());
@@ -256,7 +282,7 @@ public class FeedDetails extends JcrPropertiesEntity {
             throw new MetadataRepositoryException("nable to remove feed source for feed " + getParentSummary().getSystemName(), e);
         }
     }
-    
+
     protected void removeFeedDestination(JcrFeedDestination dest) {
         try {
             JcrVersionUtil.checkout(dest.getNode().getParent());
@@ -286,7 +312,7 @@ public class FeedDetails extends JcrPropertiesEntity {
             throw new MetadataRepositoryException("nable to remove feed sources for feed " + getParentSummary().getSystemName(), e);
         }
     }
-    
+
     protected void removeFeedDestinations() {
         try {
             List<? extends FeedDestination> destinations = getDestinations();

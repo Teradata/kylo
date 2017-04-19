@@ -66,6 +66,7 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -708,7 +709,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             //unschedule any SLAs
             serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
-            feedProvider.deleteById(feed.getId());
+            feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;
         });

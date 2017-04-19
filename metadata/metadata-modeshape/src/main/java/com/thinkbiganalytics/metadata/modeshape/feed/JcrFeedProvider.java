@@ -596,12 +596,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public void deleteFeed(ID feedId) {
         JcrFeed feed = (JcrFeed) getFeed(feedId);
-
-        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-
         if (feed != null) {
-            addPostFeedChangeAction(feed, ChangeType.DELETE);
-            deleteById(feedId);
+            delete(feed);
         }
     }
 
@@ -613,7 +609,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
         // Remove dependent feeds
         final Node node = ((JcrFeed) feed).getNode();
-        feed.getDependentFeeds().forEach(dep -> dep.removeDependentFeed((JcrFeed) dep));
+        feed.getDependentFeeds().forEach(dep -> feed.removeDependentFeed((JcrFeed) dep));
         JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
 
         // Delete feed

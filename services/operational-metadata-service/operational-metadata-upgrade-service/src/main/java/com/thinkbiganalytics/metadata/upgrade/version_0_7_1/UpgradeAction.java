@@ -36,6 +36,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
@@ -106,8 +107,8 @@ public class UpgradeAction implements UpgradeState {
 
                 moveProperty("tba:feedTemplate", feedNode, feedDetailsNode);
                 moveProperty("tba:slas", feedNode, feedDetailsNode);
-                moveProperty("tba:dependentFeeds", feedNode, feedDetailsNode);
-                moveProperty("tba:usedByFeeds", feedNode, feedDetailsNode);
+                moveProperty("tba:dependentFeeds", feedNode, feedDetailsNode, PropertyType.WEAKREFERENCE);
+                moveProperty("tba:usedByFeeds", feedNode, feedDetailsNode, PropertyType.WEAKREFERENCE);
                 moveProperty("tba:json", feedNode, feedDetailsNode);
 
                 // Loop is needed because sns is specified for node type
@@ -126,8 +127,6 @@ public class UpgradeAction implements UpgradeState {
                     Node feedPreconditionNode = JcrUtil.getNode(feedNode, "tba:precondition");
                     moveNode(session, feedPreconditionNode, feedDetailsNode);
                 }
-
-
 
                 moveProperty("tba:state", feedNode, feedDataNode);
                 moveProperty("tba:schedulingPeriod", feedNode, feedDataNode);
@@ -160,7 +159,6 @@ public class UpgradeAction implements UpgradeState {
             log.info("Completed upgrading template: " + templateNode);
         }
 
-
         log.info("Upgrade complete for {} categories and {} feeds and {} templates", categoryCount, totalFeedCount, templateCount);
     }
 
@@ -189,16 +187,34 @@ public class UpgradeAction implements UpgradeState {
         }
     }
 
-    private void moveProperty(String propName, Node fromNode, Node toNode) {
+    /**
+     * move a property from one node to another
+     *
+     * @param propName     the name of the property to move
+     * @param fromNode     the node to move from
+     * @param toNode       the node to move to
+     * @param propertyType Optional.  This is the new property type, or null if unchanged
+     */
+    private void moveProperty(String propName, Node fromNode, Node toNode, Integer propertyType) {
         try {
             if ((fromNode != null) && (toNode != null)) {
                 if (fromNode.hasProperty(propName)) {
                     Property prop = fromNode.getProperty(propName);
-                    if (prop.isMultiple()) {
-                        toNode.setProperty(propName, prop.getValues());
-                    } else {
-                        toNode.setProperty(propName, prop.getValue());
+
+                    if (propertyType == null) {
+                        propertyType = prop.getType();
                     }
+
+                    if (propertyType != prop.getType()) {
+                        log.info("Property type for {} on Node {} is changing from {} to {} ", propName, fromNode.getName(), prop.getType(), propertyType);
+                    }
+
+                    if (prop.isMultiple()) {
+                        toNode.setProperty(propName, prop.getValues(), propertyType);
+                    } else {
+                        toNode.setProperty(propName, prop.getValue(), propertyType);
+                    }
+
                     prop.remove();
                 }
             }
@@ -206,6 +222,19 @@ public class UpgradeAction implements UpgradeState {
             throw new UpgradeException("Failed to moved property " + propName + " from " + fromNode + " to " + toNode, e);
         }
     }
+
+
+    /**
+     * Move a property from one node to another keeping the same property type
+     *
+     * @param propName the name of the property to move
+     * @param fromNode the node to move the property from
+     * @param toNode   the new node to move it to
+     */
+    private void moveProperty(String propName, Node fromNode, Node toNode) {
+        moveProperty(propName, fromNode, toNode, null);
+    }
+
 
     /**
      * Removes the specified mixin from the specified node.
