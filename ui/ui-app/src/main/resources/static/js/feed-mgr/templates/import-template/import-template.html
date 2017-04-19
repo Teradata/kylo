@@ -112,7 +112,7 @@
                 Overwrite
               </md-checkbox>
               <div class="hint" style="margin-top:-10px">
-                Check to replace the template if it already exists.
+                If a feed template with the same name (as inside the .zip) already exists in NiFi, it will be replaced.
               </div>
             </md-input-container>
               <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
@@ -120,8 +120,8 @@
                   Replace the reusable template
                 </md-checkbox>
 
-                <div class="hint">
-                  Replace and re-initialize the reusable template, if applicable
+                <div class="hint" style="margin-top:-10px">
+                  If a reusable template with the same name (as inside the .zip) already exists in NiFi, it will be replaced and re-initialized.
                 </div>
               </md-input-container>
 
@@ -181,7 +181,7 @@
                 Overwrite
               </md-checkbox>
               <div class="hint" style="margin-top:-10px">
-                Replace any template in NiFi with same name
+                Replace any existing template in NiFi that has the same name.
               </div>
             </md-input-container>
 
@@ -191,7 +191,7 @@
                 Create Reusable Flow
               </md-checkbox>
               <div class="hint" style="margin-top:-10px">
-                Flow will be created in NiFi under the "reusable_templates" process group
+                Create a reusable flow from this template under 'reusable_templates' process group in NiFi. Other feed templates can reuse this template's flow by connecting to it.
               </div>
             </md-input-container>
             </div>
