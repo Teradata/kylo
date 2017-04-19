@@ -333,6 +333,10 @@ public class RegisteredTemplate extends EntityAccessControl {
                 if (property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
                     inputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
                 }
+                //mark the template as allowing preconditions if it has an input of TriggerFeed
+                if(NifiProcessUtil.TRIGGER_FEED_TYPE.equalsIgnoreCase(property.getProcessorType()) && !this.isAllowPreconditions()) {
+                    this.setAllowPreconditions(true);
+                }
             } else {
                 nonInputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
             }

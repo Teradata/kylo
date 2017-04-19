@@ -91,6 +91,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function initializeProperties(template) {
             RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
             self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+            self.model.allowPreconditions = template.allowPreconditions;
             //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
             //    return self.model.inputProcessorType == processor.type;
             // });

@@ -175,6 +175,7 @@ public class TemplateModelTransform {
                 template.setId(domain.getId().toString());
                 template.setState(domain.getState().name());
                 template.setNifiTemplateId(domain.getNifiTemplateId());
+                template.setAllowPreconditions(domain.isAllowPreconditions());
                 List<Feed> feeds = domain.getFeeds();
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
                 template.setStream(domain.isStream());
