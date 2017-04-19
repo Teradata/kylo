@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportSection;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
@@ -34,6 +36,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
@@ -41,6 +44,7 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -54,6 +58,8 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -114,6 +120,9 @@ public class ExportImportFeedService {
      */
     @Inject
     private DatasourceModelTransform datasourceTransform;
+
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
 
     //Export
 
@@ -454,6 +463,27 @@ public class ExportImportFeedService {
                             .flatMap(preconditionRule -> preconditionRule.getProperties().stream())
                             .filter(fieldRuleProperty -> PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name().equals(fieldRuleProperty.getType()))
                             .forEach(fieldRuleProperty -> fieldRuleProperty.setValue(metadata.getCategoryAndFeedName()));
+                    }
+
+                    ////for all those properties where the template value is != userEditable and the template value has a metadata. property, remove that property from the feed properties so it can be imported and assigned correctly
+                    RegisteredTemplate template1 = registeredTemplateService.findRegisteredTemplateById(template.getTemplateId());
+                    if (template1 != null) {
+
+                        //Find all the properties in the template that have ${metadata. and are not userEditable.
+                        //These are the properties we need to replace on the feed metadata
+                        List<NifiProperty> metadataProperties = template1.getProperties().stream().filter(nifiProperty -> {
+
+                            return nifiProperty != null && StringUtils.isNotBlank(nifiProperty.getValue()) && !nifiProperty.isUserEditable() && nifiProperty.getValue().contains("${" +
+                                                                                                                                                                                 MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix);
+                        }).collect(Collectors.toList());
+
+                        //Replace the Feed Metadata properties with those that match the template ones from above.
+                        List<NifiProperty> updatedProperties = metadata.getProperties().stream().map(nifiProperty -> {
+                            NifiProperty p = NifiPropertyUtil.findPropertyByProcessorName(metadataProperties, nifiProperty);
+                            return p != null ? p : nifiProperty;
+                        }).collect(Collectors.toList());
+                        metadata.setProperties(updatedProperties);
+
                     }
 
                     return metadataService.createFeed(metadata);

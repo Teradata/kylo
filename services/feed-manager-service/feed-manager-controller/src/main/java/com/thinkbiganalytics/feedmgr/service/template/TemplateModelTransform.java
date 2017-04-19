@@ -77,6 +77,9 @@ public class TemplateModelTransform {
 
 
     public Function<FeedManagerTemplate, RegisteredTemplate> getTransformationFunction(TEMPLATE_TRANSFORMATION_TYPE transformationType) {
+        if(transformationType== null) {
+            transformationType = TEMPLATE_TRANSFORMATION_TYPE.WITH_FEED_NAMES;
+        }
         switch (transformationType) {
             case WITH_FEED_NAMES:
                 return DOMAIN_TO_REGISTERED_TEMPLATE;
