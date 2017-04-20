@@ -24,7 +24,6 @@ import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 
 import java.util.Collection;
@@ -35,9 +34,11 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 
 /**
- * Provides instances of {@link Datasource}.
+ * A standard data source provider compatible with multiple versions of Spark.
+ *
+ * @param <T> the Spark data set type
  */
-public class DatasourceProvider {
+public abstract class AbstractDatasourceProvider<T> implements DatasourceProvider<T> {
 
     /**
      * Map of id to data source.
@@ -46,24 +47,19 @@ public class DatasourceProvider {
     private final Map<String, Datasource> datasources;
 
     /**
-     * Constructs a {@code DatasourceProvider} with the specified data sources.
+     * Constructs an {@code AbstractDatasourceProvider} with the specified data sources.
      *
      * @param datasources the data sources
      */
-    public DatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
+    public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
         this.datasources = new HashMap<>(datasources.size());
         for (final Datasource datasource : datasources) {
             this.datasources.put(datasource.getId(), datasource);
         }
     }
 
-    /**
-     * Gets the data source with the specified id.
-     *
-     * @param id the data source id
-     * @return the data source, if found
-     */
     @Nonnull
+    @Override
     public Datasource findById(@Nonnull final String id) {
         final Datasource datasource = datasources.get(id);
         if (datasource != null) {
@@ -73,17 +69,9 @@ public class DatasourceProvider {
         }
     }
 
-    /**
-     * Gets the specified table from the specified data source.
-     *
-     * @param table      the table name
-     * @param datasource the data source
-     * @param sqlContext the Spark SQL context
-     * @return the table dataset
-     * @throws IllegalArgumentException if the data source does not provide tables
-     */
     @Nonnull
-    public final DataFrame getTableFromDatasource(@Nonnull final String table, @Nonnull final Datasource datasource, @Nonnull final SQLContext sqlContext) {
+    @Override
+    public final T getTableFromDatasource(@Nonnull final String table, @Nonnull final Datasource datasource, @Nonnull final SQLContext sqlContext) {
         if (datasource instanceof JdbcDatasource) {
             final JdbcDatasource jdbcDatasource = (JdbcDatasource) datasource;
             final Properties properties = new Properties();
@@ -95,24 +83,27 @@ public class DatasourceProvider {
                 properties.put("password", jdbcDatasource.getPassword());
             }
 
-            return sqlContext.read().jdbc(jdbcDatasource.getDatabaseConnectionUrl(), table, properties);
+            return readJdbcTable(jdbcDatasource.getDatabaseConnectionUrl(), table, properties, sqlContext);
         } else {
             throw new IllegalArgumentException("Datasource does not provide tables: " + datasource);
         }
     }
 
-    /**
-     * Gets the specified table from the specified data source.
-     *
-     * @param table        the table name
-     * @param datasourceId the data source id
-     * @param sqlContext   the Spark SQL context
-     * @return the table dataset
-     * @throws IllegalArgumentException if the data source does not exist or does not provide tables
-     */
     @Nonnull
-    @SuppressWarnings("unused")  // used by generated Scala code
-    public final DataFrame getTableFromDatasource(@Nonnull final String table, @Nonnull final String datasourceId, @Nonnull final SQLContext sqlContext) {
+    @Override
+    public final T getTableFromDatasource(@Nonnull final String table, @Nonnull final String datasourceId, @Nonnull final SQLContext sqlContext) {
         return getTableFromDatasource(table, findById(datasourceId), sqlContext);
     }
+
+    /**
+     * Constructs a data set representing the specified database table accessible via JDBC.
+     *
+     * @param url        the JDBC connection URL
+     * @param table      the table reference
+     * @param properties the JDBC connection properties
+     * @param sqlContext the Spark SQL context
+     * @return the data set
+     */
+    @Nonnull
+    protected abstract T readJdbcTable(@Nonnull String url, @Nonnull String table, @Nonnull Properties properties, @Nonnull SQLContext sqlContext);
 }

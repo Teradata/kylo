@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-commons-spark-shell</artifactId>
+      <artifactId>kylo-commons-spark-shell-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

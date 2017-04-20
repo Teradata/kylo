@@ -38,6 +38,7 @@ import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
+import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -100,10 +101,18 @@ public class TransformService extends AbstractScheduledService {
      */
     @Nonnull
     private final TableCache cache = new TableCache();
+
     /**
      * Kerberos authentication configuration
      */
     private KerberosTicketConfiguration kerberosTicketConfiguration;
+
+    /**
+     * Data source provider factory
+     */
+    @Autowired
+    private DatasourceProviderFactory datasourceProviderFactory;
+
     /**
      * Script execution engine
      */
@@ -169,8 +178,8 @@ public class TransformService extends AbstractScheduledService {
         bindings.add(new NamedParamClass("tableName", "String", table));
 
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
-            final DatasourceProvider datasourceProvider = new DatasourceProvider(request.getDatasources());
-            bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), datasourceProvider));
+            final DatasourceProvider datasourceProvider = datasourceProviderFactory.getDatasourceProvider(request.getDatasources());
+            bindings.add(new NamedParamClass("datasourceProvider", datasourceProvider.getClass().getName(), datasourceProvider));
         }
 
         // Execute script

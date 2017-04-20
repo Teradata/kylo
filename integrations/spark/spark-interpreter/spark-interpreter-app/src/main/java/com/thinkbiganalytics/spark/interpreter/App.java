@@ -27,6 +27,7 @@ import com.google.common.io.Files;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
+import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.spark.SparkConf;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +36,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -68,16 +71,34 @@ public class App {
 
         // Prepare bindings
         final List<NamedParam> bindings = new ArrayList<>();
-        final String env = System.getenv("DATASOURCES");
 
-        if (env != null) {
-            final List<Datasource> datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
-            bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), new DatasourceProvider(datasources)));
-        }
+        final DatasourceProvider datasourceProvider = ctx.getBean(DatasourceProvider.class);
+        bindings.add(new NamedParamClass("datasourceProvider", datasourceProvider.getClass().getName(), datasourceProvider));
 
         // Execute script
         final SparkScriptEngine engine = ctx.getBean(SparkScriptEngine.class);
         engine.eval(script, bindings);
+    }
+
+    /**
+     * Creates a data source provider.
+     *
+     * @param datasourceProviderFactory the data source provider factory
+     * @return the data source provider
+     * @throws IOException if an I/O error occurs
+     */
+    @Bean
+    public DatasourceProvider datasourceProvider(final DatasourceProviderFactory datasourceProviderFactory) throws IOException {
+        final List<Datasource> datasources;
+        final String env = System.getenv("DATASOURCES");
+
+        if (env != null) {
+            datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
+        } else {
+            datasources = Collections.emptyList();
+        }
+
+        return datasourceProviderFactory.getDatasourceProvider(datasources);
     }
 
     /**
