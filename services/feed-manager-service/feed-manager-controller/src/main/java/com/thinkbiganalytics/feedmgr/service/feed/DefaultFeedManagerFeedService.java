@@ -438,14 +438,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             registeredTemplateService.findRegisteredTemplate(
                 new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
                     .build());
-        //TODO ensure not null... throw exception
-        List<NifiProperty> matchedProperties = NifiPropertyUtil
-            .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
-        if (matchedProperties.size() == 0) {
-            matchedProperties =
+
+        //update the template properties with the feedMetadata properties
+         List<NifiProperty> matchedProperties =
                 NifiPropertyUtil
                     .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
-        }
+
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
         //resolve any ${metadata.} properties
