@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.jpa.feed.security;
 
 /*-
@@ -23,29 +20,43 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
 /**
- *
+ * Repository for feed access control lists.
  */
 public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOpsAclEntry, JpaFeedOpsAclEntry.EntryId> {
-    
+
+    /**
+     * Predicate for selecting matching principals in WHERE clause.
+     */
+    String WHERE_PRINCIPAL_NAME = "acl.principalName in :#{principal.roleSet} ";
+
+    /**
+     * Join statement for selecting only feeds accessible to the current principal.
+     */
+    String JOIN_ACL_TO_FEED = "join JpaFeedOpsAclEntry as acl on feed.id = acl.feedId and " + WHERE_PRINCIPAL_NAME + " ";
+
+    /**
+     * Join statement for selecting only jobs accessible to the current principal.
+     */
+    String JOIN_ACL_TO_JOB = "join JpaFeedOpsAclEntry as acl on job.jobInstance.feed.id = acl.feedId and " + WHERE_PRINCIPAL_NAME + " ";
+
     @Query("select entry from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
-    List<JpaFeedOpsAclEntry> findForFeed(@Param("id") UUID feedId); 
-    
+    List<JpaFeedOpsAclEntry> findForFeed(@Param("id") UUID feedId);
+
     @Modifying
     @Query("delete from JpaFeedOpsAclEntry as entry where entry.principalName in (:names)")
-    int deleteForPrincipals(@Param("names") Set<String> principalNames); 
-    
+    int deleteForPrincipals(@Param("names") Set<String> principalNames);
+
     @Modifying
     @Query("delete from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
-    int deleteForFeed(@Param("id") UUID feedId); 
-
+    int deleteForFeed(@Param("id") UUID feedId);
 }

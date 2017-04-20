@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
@@ -36,10 +38,8 @@ public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManage
     @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
     List<String> getFeedNamesWithPrincipal();
 
-    @Query("select f.name from JpaOpsManagerFeed as f where "
-           + "exists ("
-           + "select 1 from JpaFeedOpsAclEntry as x where f.id = x.feedId and x.principalName in :#{principal.roleSet}"
-           + ")")
+    @Query("select feed.name from JpaOpsManagerFeed as feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED)
     List<String> getFeedNames();
 
     List<JpaOpsManagerFeed> findByName(String name);

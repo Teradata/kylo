@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -434,65 +433,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
     }
 
-
-    /**
-     * Find the Job Execution by the Nifi EventId and JobFlowFileId
-     */
-    @Override
-    public BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid) {
-        return jobExecutionRepository.findByEventAndFlowFile(eventId, flowfileid);
-    }
-
     @Override
     public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
         return jobExecutionRepository.findOne(jobExecutionId);
     }
-
-    /**
-     * When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
-     * ProvenanceEventReceiver already handles this event for both Batch and Streaming Jobs com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#failedJob(ProvenanceEventRecordDTO)
-     * com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#successfulJob(ProvenanceEventRecordDTO)
-     */
-    private void checkIfJobAndRelatedJobsAreFinished(BatchJobExecution jobExecution) {
-        //Check related jobs
-        if (jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
-            boolean isComplete = !jobExecutionRepository.hasRunningRelatedJobs(jobExecution.getJobExecutionId());
-
-            if (isComplete) {
-                boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
-                if (jobExecution.isFailed() || hasFailures) {
-                    log.debug("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
-                } else {
-                    log.debug("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
-                }
-            }
-        } else {
-            if (jobExecution.isFailed()) {
-                log.debug("Failed JobExecution");
-            } else if (jobExecution.isSuccess()) {
-                log.debug("Completed Job Execution");
-            }
-        }
-    }
-
-    /**
-     * check to see if any jobs related to the incoming job are still running, and if so finish them
-     **/
-    private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event, BatchJobExecution jobExecution) {
-        //Check related jobs
-        if (event.isFinalJobEvent() && jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
-
-            List<JpaBatchJobExecution> runningJobs = jobExecutionRepository.findRunningRelatedJobExecutions(jobExecution.getJobExecutionId());
-            if (runningJobs != null && !runningJobs.isEmpty()) {
-                for (JpaBatchJobExecution job : runningJobs) {
-                    job.completeOrFailJob();
-                    log.debug("Finishing related running job {} for event ", job.getJobExecutionId(), event);
-                }
-                jobExecutionRepository.save(runningJobs);
-            }
-        }
-    }
-
 
     /**
      * Find all the job executions for a feed that have been completed since a given date
@@ -549,7 +493,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             searchCriterias.remove(feedFilter.getPreviousSearchCriteria());
             String feedValue = feedFilter.getValue().toString();
             //remove any quotes around the feedValue
-            feedValue =  feedValue.replaceAll("^\"|\"$", "");
+            feedValue = feedValue.replaceAll("^\"|\"$", "");
             return findAllForFeed(feedValue, searchCriterias, pageable);
         } else {
             pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
@@ -557,18 +501,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             return findAllWithFetch(jobExecution, GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable, QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
                                     QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
         }
-
-    }
-
-    /**
-     * Finds all job Executions for a Feed, including any related Check Data Jobs
-     */
-    @Override
-    public Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable) {
-
-        List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
-        return findAllForFeed(feedName, searchCriterias, pageable);
-
 
     }
 

@@ -47,6 +47,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * Execution Context key that determines the type of job {@link com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed.FeedType}
      */
     String NIFI_KYLO_JOB_TYPE_PROPERTY = "kylo.jobType";
+
     /**
      * Execution context property name that references the name of the Feed on a job
      */
@@ -83,13 +84,6 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * @return the job execution
      */
     BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
-
-    /**
-     * find a given job exeuction using the NiFi event id and corresponding job flow file id
-     *
-     * @return the job execution
-     */
-    BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid);
 
     /**
      * find a job exeuction by its unique key
@@ -158,13 +152,6 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
     Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable);
 
     /**
-     * find all job executions for a given feed matching a particular filter string, returning a paged result set
-     *
-     * @return a paged result set of job executions matching the filter and pageable criteria
-     */
-    Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable);
-
-    /**
      * Return a list of job status objects grouped by day
      *
      * @return a list of job status objects grouped by day
@@ -192,7 +179,5 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * @param flowFileId a flowfile id
      * @return a list of related flowfile ids
      */
-    public List<String> findRelatedFlowFiles(String flowFileId);
-
-
+    List<String> findRelatedFlowFiles(String flowFileId);
 }

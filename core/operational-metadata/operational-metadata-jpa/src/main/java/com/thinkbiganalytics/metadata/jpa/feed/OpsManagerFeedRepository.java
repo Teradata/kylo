@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,21 +37,18 @@ import java.util.List;
 @RepositoryType(FeedSecuringRepository.class)
 public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
-
     JpaOpsManagerFeed findByName(String name);
 
     @Query("select feed from JpaOpsManagerFeed as feed where feed.id in(:ids)")
     List<JpaOpsManagerFeed> findByFeedIds(@Param("ids") List<OpsManagerFeed.ID> ids);
 
-
-    @Query("select feed.name from JpaOpsManagerFeed as feed")
+    @Query("SELECT feed.name FROM JpaOpsManagerFeed AS feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED)
     List<String> getFeedNames();
-
 
     @Procedure(name = "OpsManagerFeed.deleteFeedJobs")
     Integer deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
 
     @Procedure(name = "OpsManagerFeed.abandonFeedJobs")
     Integer abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage);
-
 }

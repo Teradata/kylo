@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,8 +33,9 @@ import java.util.List;
  */
 public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
 
-
-    @Query("select h from JpaOpsManagerFeedHealth as h where h.feedName = :feedName")
+    @Query("select health from JpaOpsManagerFeedHealth as health "
+           + "join JpaOpsManagerFeed as feed on feed.name = health.feedName "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + "where health.feedName =:feedName")
     List<JpaOpsManagerFeedHealth> findByFeedName(@Param("feedName") String feedName);
-
 }
