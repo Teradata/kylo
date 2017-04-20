@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
 /*-
@@ -28,14 +25,21 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
+import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
 import org.joda.time.Period;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,11 +48,13 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class})
+@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class, JpaFeedProviderTest.class})
 public class JpaFeedProviderTest {
+
+    @Inject
+    private FeedOpsAccessControlRepository aclRepo;
 
     @Inject
     private OpsFeedManagerFeedProvider feedProvider;
@@ -56,15 +62,34 @@ public class JpaFeedProviderTest {
     @Inject
     private MetadataAccess metadataAccess;
 
+    @Bean
+    public AccessController accessController() {
+        AccessController mock = Mockito.mock(AccessController.class);
+        Mockito.when(mock.isEntityAccessControlled()).thenReturn(true);
+        return mock;
+    }
 
+    @WithMockUser(username = "dladmin",
+                  password = "secret",
+                  roles = {"ADMIN", "DLADMIN", "USER"})
     @Test
     public void testFindFeedUsingGenericFilter() {
-        String name = "testCategory.testFeed";
-        metadataAccess.commit(() -> {
-            OpsManagerFeed.ID id = feedProvider.resolveId(UUID.randomUUID().toString());
-            return feedProvider.save(id, name);
+        // Create feed
+        final String name = "testCategory.testFeed";
+        final String id = metadataAccess.commit(() -> {
+            final OpsManagerFeed.ID feedId = feedProvider.resolveId(UUID.randomUUID().toString());
+            feedProvider.save(feedId, name);
+            return feedId.toString();
         });
 
+        // Add ACL entries
+        final BaseFeed.FeedId feedId = new BaseFeed.FeedId(id);
+        final JpaFeedOpsAclEntry userAcl = new JpaFeedOpsAclEntry(feedId, "USER", JpaFeedOpsAclEntry.PrincipalType.USER);
+        final JpaFeedOpsAclEntry adminAcl = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(userAcl);
+        aclRepo.save(adminAcl);
+
+        // Verify access to feeds
         metadataAccess.read(() -> {
             List<OpsManagerFeed> feeds = feedProvider.findAll("name:" + name);
             Assert.assertTrue(feeds != null && !feeds.isEmpty());
@@ -74,8 +99,6 @@ public class JpaFeedProviderTest {
 
             return feeds;
         });
-
-
     }
 
     @Test
