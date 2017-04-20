@@ -49,6 +49,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -65,6 +66,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private AccessController accessController;
 
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
@@ -90,9 +94,15 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
 
         if (newTemplate) {
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
-            this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
-                    .ifPresent(actions -> template.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            if (this.accessController.isEntityAccessControlled()) {
+                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
+                this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
+                    .ifPresent(actions -> template.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
+                .ifPresent(actions -> template.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+            }
+            
             addPostFeedChangeAction(template, ChangeType.CREATE);
         }
 

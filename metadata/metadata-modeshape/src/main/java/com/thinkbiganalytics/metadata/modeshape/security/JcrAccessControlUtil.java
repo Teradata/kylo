@@ -21,10 +21,8 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
-import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.security.core.Authentication;
@@ -53,8 +51,6 @@ import javax.jcr.security.Privilege;
  * Utilities to apply JCR access control changes to nodes and node hierarchies.
  */
 public final class JcrAccessControlUtil {
-
-    private static boolean enableEntityAccessControl;
 
     private JcrAccessControlUtil() {
         throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
@@ -90,7 +86,12 @@ public final class JcrAccessControlUtil {
 
     public static boolean addPermissions(Session session, String path, Principal principal, String... privilegeNames) {
         try {
-            return addPermissions(session, path, principal, asPrivileges(session, privilegeNames));
+            // No privileges results in a no-op.
+            if (privilegeNames.length > 0) {
+                return addPermissions(session, path, principal, asPrivileges(session, privilegeNames));
+            } else {
+                return false;
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
                                                   + Arrays.toString(privilegeNames), e);
@@ -99,29 +100,29 @@ public final class JcrAccessControlUtil {
 
     public static boolean addPermissions(Session session, String path, Principal principal, Privilege... privileges) {
         try {
-            AccessControlManager acm = session.getAccessControlManager();
-            AccessControlList acl = null;
-            AccessControlPolicyIterator it = acm.getApplicablePolicies(path);
+            // No privileges results in a no-op.
+            if (privileges.length > 0) {
+                AccessControlManager acm = session.getAccessControlManager();
+                AccessControlList acl = null;
+                AccessControlPolicyIterator it = acm.getApplicablePolicies(path);
 
-            if (it.hasNext()) {
-                acl = (AccessControlList) it.nextAccessControlPolicy();
-            } else {
-                acl = (AccessControlList) acm.getPolicies(path)[0];
-            }
+                if (it.hasNext()) {
+                    acl = (AccessControlList) it.nextAccessControlPolicy();
+                } else {
+                    acl = (AccessControlList) acm.getPolicies(path)[0];
+                }
 
-            // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used
-            // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
-            // to an existing principal.  This can be considered a bug in ModeShape.
-            boolean added = false;
-            String servicesPath = "/" + SecurityPaths.SECURITY.resolve(AllowedActions.SERVICES).toString().toString();
-            boolean isServicesPath = path.startsWith(servicesPath);
-            if (isServicesPath || JcrAccessControlUtil.enableEntityAccessControl) {
+                // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used
+                // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
+                // to an existing principal.  This can be considered a bug in ModeShape.
                 SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
-                added = acl.addAccessControlEntry(simple, privileges);
+                boolean added = acl.addAccessControlEntry(simple, privileges);
                 acm.setPolicy(path, acl);
+
+                return added;
+            } else {
+                return false;
             }
-            return added;
-            //   return added;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "
                                                   + Arrays.toString(privileges), e);
@@ -204,33 +205,38 @@ public final class JcrAccessControlUtil {
 
     public static boolean removePermissions(Session session, String path, Principal principal, Privilege... removes) {
         try {
-            AccessControlManager acm = session.getAccessControlManager();
-            AccessControlPolicy[] aclArray = acm.getPolicies(path);
+            // No privileges results in a no-op.
+            if (removes.length > 0) {
+                AccessControlManager acm = session.getAccessControlManager();
+                AccessControlPolicy[] aclArray = acm.getPolicies(path);
 
-            if (aclArray.length > 0) {
-                AccessControlList acl = (AccessControlList) aclArray[0];
-                boolean removed = false;
+                if (aclArray.length > 0) {
+                    AccessControlList acl = (AccessControlList) aclArray[0];
+                    boolean removed = false;
 
-                for (AccessControlEntry entry : acl.getAccessControlEntries()) {
-                    if (entry.getPrincipal().getName().equals(principal.getName())) {
-                        Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
-                            .filter(p -> !Arrays.stream(removes).anyMatch(r -> r.equals(p)))
-                            .toArray(Privilege[]::new);
+                    for (AccessControlEntry entry : acl.getAccessControlEntries()) {
+                        if (entry.getPrincipal().getName().equals(principal.getName())) {
+                            Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
+                                .filter(p -> !Arrays.stream(removes).anyMatch(r -> r.equals(p)))
+                                .toArray(Privilege[]::new);
 
-                        if (entry.getPrivileges().length != newPrivs.length) {
-                            if (newPrivs.length == 0) {
-                                acl.removeAccessControlEntry(entry);
-                            } else {
-                                acl.addAccessControlEntry(entry.getPrincipal(), newPrivs);
+                            if (entry.getPrivileges().length != newPrivs.length) {
+                                if (newPrivs.length == 0) {
+                                    acl.removeAccessControlEntry(entry);
+                                } else {
+                                    acl.addAccessControlEntry(entry.getPrincipal(), newPrivs);
+                                }
+                                removed = true;
                             }
-                            removed = true;
                         }
                     }
+
+                    acm.setPolicy(path, acl);
+
+                    return removed;
+                } else {
+                    return false;
                 }
-
-                acm.setPolicy(path, acl);
-
-                return removed;
             } else {
                 return false;
             }
@@ -263,6 +269,14 @@ public final class JcrAccessControlUtil {
             throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
         }
     }
+    
+    public static boolean clearPermissions(Node node) {
+        try {
+            return clearPermissions(node.getSession(), node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove all permission(s) from node " + node, e);
+        }
+    }
 
     public static boolean clearPermissions(Session session, String path) {
         try {
@@ -283,28 +297,79 @@ public final class JcrAccessControlUtil {
         }
 
     }
+    
+    public static boolean clearRecursivePermissions(Node node, String nodeType) {
+        boolean cleared = false;
+        
+        for (Node child : JcrUtil.getNodesOfType(node, nodeType)) {
+            cleared |= clearRecursivePermissions(child, nodeType);
+            cleared |= clearPermissions(child);
+        }
+        
+        return cleared;
+    }
+    
+
+    public static boolean clearHierarchyPermissions(Node node, Node toNode) {
+        try {
+            Node current = node;
+            Node rootNode = toNode.getSession().getRootNode();
+            boolean removed = false;
+
+            while (!current.equals(toNode) && !current.equals(rootNode)) {
+                removed |= clearPermissions(current);
+                current = current.getParent();
+            }
+
+            if (current.equals(rootNode) && !toNode.equals(rootNode)) {
+                throw new IllegalArgumentException("clearHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
+            } else {
+                removed |= clearPermissions(current);
+            }
+
+            return removed;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
+        }
+    }
+
 
     public static boolean addRecursivePermissions(Node node, String nodeType, Principal principal, String... privilegeNames) {
         try {
-            return addRecursivePermissions(node, nodeType, principal, asPrivileges(node.getSession(), privilegeNames));
+            // No privileges results in a no-op.
+            if (privilegeNames.length > 0) {
+                return addRecursivePermissions(node, nodeType, principal, asPrivileges(node.getSession(), privilegeNames));
+            } else {
+                return false;
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node tree " + node, e);
         }
     }
 
     public static boolean addRecursivePermissions(Node node, String nodeType, Principal principal, Privilege... privileges) {
-        boolean added = addPermissions(node, principal, privileges);
+        // No privileges results in a no-op.
+        if (privileges.length > 0) {
+            boolean added = addPermissions(node, principal, privileges);
 
-        for (Node child : JcrUtil.getNodesOfType(node, nodeType)) {
-            added |= addRecursivePermissions(child, nodeType, principal, privileges);
+            for (Node child : JcrUtil.getNodesOfType(node, nodeType)) {
+                added |= addRecursivePermissions(child, nodeType, principal, privileges);
+            }
+
+            return added;
+        } else {
+            return false;
         }
-
-        return added;
     }
 
     public static boolean removeRecursivePermissions(Node node, String nodeType, Principal principal, String... privilegeNames) {
         try {
-            return removeRecursivePermissions(node, nodeType, principal, asPrivileges(node.getSession(), privilegeNames));
+            // No privileges results in a no-op.
+            if (privilegeNames.length > 0) {
+                return removeRecursivePermissions(node, nodeType, principal, asPrivileges(node.getSession(), privilegeNames));
+            } else {
+                return false;
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove permission(s) from node tree " + node, e);
         }
@@ -312,19 +377,20 @@ public final class JcrAccessControlUtil {
 
     public static boolean removeRecursivePermissions(Node node, String nodeType, Principal principal, Privilege... privileges) {
         try {
-            boolean removed = false;
-
-            for (Node child : JcrUtil.getNodesOfType(node, nodeType)) {
-                removed |= removeRecursivePermissions(child, nodeType, principal, privileges);
+            // No privileges results in a no-op.
+            if (privileges.length > 0) {
+                boolean removed = false;
+    
+                for (Node child : JcrUtil.getNodesOfType(node, nodeType)) {
+                    removed |= removeRecursivePermissions(child, nodeType, principal, privileges);
+                }
+    
+                return removePermissions(node.getSession(), node.getPath(), principal, privileges) || removed;
+            } else {
+                return false;
             }
-
-            return removePermissions(node.getSession(), node.getPath(), principal, privileges) || removed;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove permission(s) from node tree " + node, e);
         }
-    }
-
-    public static void setEnableEntityAccessControl(boolean enableEntityAccessControl) {
-        JcrAccessControlUtil.enableEntityAccessControl = enableEntityAccessControl;
     }
 }

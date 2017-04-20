@@ -38,7 +38,7 @@ public interface AccessController {
     /**
      * The default services module name
      */
-    static final String SERVICES = AllowedActions.SERVICES;
+    String SERVICES = AllowedActions.SERVICES;
 
     /**
      * Checks whether permission is granted to perform the given action(s) defined in the named module.

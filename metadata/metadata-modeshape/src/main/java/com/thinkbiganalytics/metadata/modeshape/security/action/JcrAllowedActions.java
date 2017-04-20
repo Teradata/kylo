@@ -218,6 +218,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
     
+    public void removeAccessControl(UsernamePrincipal owner) {
+        JcrAccessControlUtil.clearRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE);
+    }
+    
     public void setupAccessControl(UsernamePrincipal owner) {
         JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, MetadataAccess.ADMIN, Privilege.JCR_ALL);
     }
@@ -228,6 +232,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions copy(Node allowedNode, boolean includeDescr, Principal principal, String... privilegeNames) {
         try {
+            for (Node existing : JcrUtil.getInterableChildren(allowedNode)) {
+                existing.remove();
+            }
+            
             JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
             
             for (Node actionNode : JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE)) {

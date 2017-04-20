@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntity
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -70,6 +71,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private AccessController accessController;
 
     /**
      * Transaction support
@@ -114,9 +118,14 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
         
         if (isNew) {
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
-            this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                    .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            if (this.accessController.isEntityAccessControlled()) {
+                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
+                        .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
+                        .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+            }
         }
         
         return category;

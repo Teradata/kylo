@@ -39,6 +39,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -108,6 +109,9 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
 
     @Inject
     private SecurityRoleProvider roleProvider;
+    
+    @Inject
+    private AccessController accessController;
 
     public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
         if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
@@ -315,9 +319,14 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                     .map(Principal::getName)
                     .map(UsernamePrincipal::new)
                     .orElse(JcrMetadataAccess.getActiveUser());
-                final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
-                actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
-                    .ifPresent(actions -> parent.get().setupAccessControl((JcrAllowedActions) actions, owner, roles));
+                if (accessController.isEntityAccessControlled()) {
+                    final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                    actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                        .ifPresent(actions -> parent.get().enableAccessControl((JcrAllowedActions) actions, owner, roles));
+                } else {
+                    actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                        .ifPresent(actions -> parent.get().disableAccessControl((JcrAllowedActions) actions, owner));
+                }
             }
 
             return Optional.of(details);
@@ -350,9 +359,14 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             J datasource = (J) findOrCreateEntity(subfolderNode.getPath(), encodedName, implType, props);
 
             if (isNew && JcrUserDatasource.class.isAssignableFrom(type)) {
-                final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
-                actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
-                    .ifPresent(actions -> ((JcrUserDatasource) datasource).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                if (this.accessController.isEntityAccessControlled()) {
+                    final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                    actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                        .ifPresent(actions -> ((JcrUserDatasource) datasource).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                } else {
+                    actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                        .ifPresent(actions -> ((JcrUserDatasource) datasource).disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                }
             }
 
             datasource.setTitle(name);

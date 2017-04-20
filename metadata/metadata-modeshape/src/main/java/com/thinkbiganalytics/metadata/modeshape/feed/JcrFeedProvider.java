@@ -75,6 +75,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -133,6 +134,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private AccessController accessController;
 
     @Inject
     private FeedOpsAccessControlProvider opsAccessProvider;
@@ -303,9 +307,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
-            this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            if (this.accessController.isEntityAccessControlled()) {
+                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
+                this.actionsProvider.getAvailableActions(AllowedActions.FEED)
+                    .ifPresent(actions -> feed.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                this.actionsProvider.getAvailableActions(AllowedActions.FEED)
+                    .ifPresent(actions -> feed.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+            }
+            
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 

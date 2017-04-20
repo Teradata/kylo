@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -53,11 +52,6 @@ public class DefaultAccessController implements AccessController {
 
     public DefaultAccessController() {
 
-    }
-
-    @PostConstruct
-    private void init() {
-        JcrAccessControlUtil.setEnableEntityAccessControl(entityAccessControlled);
     }
 
     /* (non-Javadoc)

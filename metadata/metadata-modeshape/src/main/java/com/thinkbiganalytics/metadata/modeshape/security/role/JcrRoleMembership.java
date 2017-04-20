@@ -64,6 +64,20 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
                         });
     }
     
+    public static void remove(Node parentNode, Node roleNode) {
+        JcrUtil.getNodeList(parentNode, NODE_NAME).forEach(node -> {
+            JcrRoleMembership membership = JcrUtil.getJcrObject(node, JcrRoleMembership.class, (JcrAllowedActions) null);
+            
+            if (membership.getRole().getSystemName().equals(JcrUtil.getName(roleNode))) {
+                JcrUtil.removeNode(node);
+            }
+        });
+    }
+    
+    public static void removeAll(Node parentNode) {
+        JcrUtil.getNodeList(parentNode, NODE_NAME).forEach(node -> JcrUtil.removeNode(node));
+    }
+    
     public static Optional<JcrRoleMembership> find(Node parentNode, String roleName, JcrAllowedActions allowed) {
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
                         .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, allowed))

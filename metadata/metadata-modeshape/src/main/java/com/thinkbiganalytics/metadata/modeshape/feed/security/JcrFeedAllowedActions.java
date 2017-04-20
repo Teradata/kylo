@@ -94,15 +94,20 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         return super.disable(principal, actions);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
     @Override
     public void setupAccessControl(UsernamePrincipal owner) {
         super.setupAccessControl(owner);
 
         enable(owner, FeedAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
+    }
+    
+    @Override
+    public void removeAccessControl(UsernamePrincipal owner) {
+        super.removeAccessControl(owner);
+        
+        this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), feed.getNode()));
+        this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), feed.getNode()));
     }
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {

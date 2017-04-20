@@ -86,15 +86,19 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
         return super.disable(principal, actions);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
     @Override
     public void setupAccessControl(UsernamePrincipal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
         enable(JcrMetadataAccess.ADMIN, TemplateAccessControl.EDIT_TEMPLATE);
+    }
+    
+    @Override
+    public void removeAccessControl(UsernamePrincipal owner) {
+        super.removeAccessControl(owner);
+        
+        JcrAccessControlUtil.clearPermissions(getNode());
     }
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {

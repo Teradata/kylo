@@ -87,15 +87,19 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
         return super.disable(principal, actions);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
     @Override
     public void setupAccessControl(UsernamePrincipal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, CategoryAccessControl.EDIT_DETAILS);
+    }
+    
+    @Override
+    public void removeAccessControl(UsernamePrincipal owner) {
+        super.removeAccessControl(owner);
+        
+        this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), category.getNode()));
     }
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
