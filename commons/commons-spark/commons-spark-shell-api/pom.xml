@@ -10,7 +10,7 @@
     <version>0.8.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>kylo-commons-spark-shell</artifactId>
+  <artifactId>kylo-commons-spark-shell-api</artifactId>
 
   <name>Kylo Commons Spark Shell</name>
   <description>A collection of useful helper functions for Kylo's Spark Shell.</description>

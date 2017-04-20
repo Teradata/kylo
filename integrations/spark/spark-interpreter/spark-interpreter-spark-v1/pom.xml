@@ -29,6 +29,11 @@
       <artifactId>kylo-spark-interpreter-app</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-spark-shell-v1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

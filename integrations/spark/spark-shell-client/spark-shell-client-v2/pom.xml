@@ -54,6 +54,11 @@
       <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-spark-shell-v2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Scala dependencies -->
     <dependency>
