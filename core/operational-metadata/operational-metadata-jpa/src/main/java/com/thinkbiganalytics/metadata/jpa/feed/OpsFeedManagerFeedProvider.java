@@ -27,11 +27,8 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
-import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
-import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.metadata.api.feed.*;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
@@ -39,7 +36,6 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatus
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
@@ -47,11 +43,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
 
 /**
  * Provider allowing access to feeds {@link OpsManagerFeed}
@@ -204,7 +199,8 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
             .where(jobExecution.startTime.goe(DateTime.now().minus(period))
                        .and(jobExecution.jobInstance.feed.name.eq(feedName)))
-            .groupBy(jobState, jobExecution.startYear,
+            .groupBy(jobExecution.status,
+                     jobExecution.startYear,
                      jobExecution.startMonth,
                      jobExecution.startDay);
 
@@ -223,7 +219,10 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
      * This will call the stored procedure abandon_feed_jobs
      */
     public void abandonFeedJobs(String feed) {
-        repository.abandonFeedJobs(feed);
+
+        String exitMessage = String.format("Job manually abandoned @ %s", DateTimeUtil.getNowFormattedWithTimeZone());
+
+        repository.abandonFeedJobs(feed, exitMessage);
     }
 
 

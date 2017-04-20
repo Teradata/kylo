@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-feedmgr','jquery','feed-mgr/visual-query/flowchart/flowchart_directive'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-feedmgr','jquery','feed-mgr/visual-query/flowchart/flowchart_directive'], function (angular,moduleName,lazyLoadUtil, AccessConstants) {
     var module = angular.module(moduleName, ['flowChart']);
 
 
@@ -10,7 +10,7 @@ define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil'
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('visual-query',{
+        $stateProvider.state(AccessConstants.UI_STATES.VISUAL_QUERY.state,{
             url:'/visual-query',
             params: {
             },
@@ -27,7 +27,8 @@ define(['angular', 'feed-mgr/visual-query/module-name','kylo-utils/LazyLoadUtil'
             data:{
                 breadcrumbRoot:true,
                 displayName:'Visual Query',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.VISUAL_QUERY.permissions
             }
         });
 

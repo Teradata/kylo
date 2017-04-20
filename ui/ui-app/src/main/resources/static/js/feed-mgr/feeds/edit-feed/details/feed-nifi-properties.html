@@ -18,8 +18,8 @@
   #L%
   -->
 <vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
-                         editable="vm.editableSection" keep-editable-after-save="true">
-
+                         editable="vm.editableSection" keep-editable-after-save="true"
+                         the-form="vm.feedDetailsForm">
     <readonly-section>
         <div layout="column">
             <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation == false">
@@ -39,11 +39,17 @@
             </div>
 
             <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}}</span>
+                <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
+                 <md-tooltip md-direction="right" ng-if="property.sensitive">
+                   This is a sensitive property.
+                </md-tooltip>
+                </div>
+
                 <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
 
                 <div flex>
-                    <span ng-if="property.key != 'Backoff Period'">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
                     <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
                 </div>
             </div>
@@ -62,6 +68,7 @@
 
     </readonly-section>
     <editable-section>
+        <ng-form name="vm.feedDetailsForm">
 
         <div layout="column">
             <div style="padding-bottom:10px;" ng-if="vm.model.registeredTemplate.dataTransformation == false">
@@ -83,12 +90,12 @@
                 <span flex="25" class="property-name">Query</span>
             </div>
             <div layout="row">
-                <md-button class="md-raised" href="#/edit-feed/{{vm.model.feedId}}" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Query...</md-button>
+                <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Query...</md-button>
             </div>
 
             <div flex ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
                 <div class="layout-padding-indent">
-                    <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input class="md-block layout-padding-top-bottom" property="property" flex-gt-sm
+                    <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom" property="property" flex-gt-sm
                                         ng-repeat="property in vm.editModel.inputProcessor.properties " track by property.key/>
                 </div>
             </div>
@@ -100,7 +107,7 @@
                 <div class="md-subhead">{{processor.name}}</div>
                 <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
                     <div ng-repeat="property in processor.properties track by property.key">
-                        <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input property="property" class="md-block layout-padding-top-bottom" flex-gt-sm/>
+                        <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" property="property" class="md-block layout-padding-top-bottom" flex-gt-sm/>
                     </div>
                 </div>
                 <div ng-if="processor.feedPropertiesUrl != null">
@@ -110,5 +117,6 @@
             </div>
         </div>
 
+        </ng-form>
     </editable-section>
 </vertical-section-layout>

@@ -72,7 +72,7 @@ public interface Field {
     /**
      * Can this field be set to null
      *
-     * @return true/field indicating if field can accept null value
+     * @return true/false indicating if field can accept null value
      */
     Boolean isNullable();
 

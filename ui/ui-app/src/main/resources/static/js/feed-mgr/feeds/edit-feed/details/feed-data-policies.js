@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService) {
+    var controller = function ($scope, $mdDialog, $timeout, $q,AccessControlService, EntityAccessControlService,FeedService, StateService) {
 
         var self = this;
 
@@ -113,6 +113,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         this.onChangePrimaryKey = function () {
             validateMergeStrategies();
+        }
+
+        this.navigateToEditFeedInStepper = function(){
+            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
         }
 
         this.onChangeMergeStrategy = function () {
@@ -233,14 +237,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        //Apply the entity access permissions
+        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
+            self.allowEdit = access;
+        });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","AccessControlService","FeedService",controller]);
+    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","$q","AccessControlService","EntityAccessControlService","FeedService","StateService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDataPolicies', directive);

@@ -1,6 +1,6 @@
 define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$transition$, $http,$mdToast,RegisterTemplateService, StateService) {
+    var controller = function($scope,$transition$, $http,$mdToast,RegisterTemplateService, StateService, AccessControlService) {
 
         var self = this;
 
@@ -16,7 +16,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         this.nifiTemplateId = $transition$.params().nifiTemplateId || null;
 
-
         /**
          * The model being edited/created
          */
@@ -27,6 +26,13 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             RegisterTemplateService.resetModel();
             self.stepperUrl = null;
             StateService.FeedManager().Template().navigateToRegisteredTemplates();
+        }
+
+        self.onStepperInitialized = function(stepper){
+            if(!AccessControlService.isEntityAccessControlled()){
+                //disable Access Control
+                stepper.deactivateStep(3);
+            }
         }
 
 
@@ -43,7 +49,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","RegisterTemplateService","StateService",controller]);
+    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","RegisterTemplateService","StateService","AccessControlService",controller]);
 
 
 

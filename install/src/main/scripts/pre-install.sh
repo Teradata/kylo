@@ -20,5 +20,5 @@
 # #L%
 ###
 echo "Installing Kylo"
-mkdir /opt/kylo
+mkdir -p /opt/kylo
 chown kylo:kylo /opt/kylo

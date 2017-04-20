@@ -35,7 +35,7 @@ import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.AlertInvoc
 import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
-import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
+import com.thinkbiganalytics.metadata.event.reactor.ReactorConfiguration;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.joda.time.DateTime;
@@ -78,7 +78,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ReactorContiguration.class, AggregatingAlertProviderTest.TestConfig.class})
+@SpringApplicationConfiguration(classes = {ReactorConfiguration.class, AggregatingAlertProviderTest.TestConfig.class})
 public class AggregatingAlertProviderTest {
 
     @Inject

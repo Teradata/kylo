@@ -40,6 +40,10 @@ public class NifiConnectionOrderVisitorCache {
         processGroupCache.computeIfAbsent(processGroupDTO.getId(), groupId -> processGroupDTO);
     }
 
+    public Map<String,ProcessGroupDTO> getProcessGroupCache() {
+        return processGroupCache;
+    }
+
     public Optional<ProcessGroupDTO> getProcessGroup(String processGroupId) {
         return Optional.ofNullable(processGroupCache.get(processGroupId));
     }

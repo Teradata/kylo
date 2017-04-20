@@ -92,6 +92,14 @@ public interface Category extends AccessControlled {
 
     void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
 
+    String getIcon();
+
+    void setIcon(String icon);
+
+    String getIconColor();
+
+    void setIconColor(String iconColor);
+
     interface ID extends Serializable {
 
     }

@@ -20,7 +20,7 @@ package com.thinkbiganalytics.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;
@@ -106,7 +106,7 @@ public class AboutKyloController {
     public Response getKyloVersion() {
 
         final String VERSION_NOT_AVAILABLE = "Not Available";
-        KyloVersion kyloVersion = kyloVersionProvider.getKyloVersion();
+        KyloVersion kyloVersion = kyloVersionProvider.getCurrentVersion();
 
         if (kyloVersion != null) {
             return Response.ok(kyloVersion.getVersion()).build();

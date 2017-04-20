@@ -1,4 +1,4 @@
-define(['angular',"feed-mgr/visual-query/module-name"], function (angular,moduleName) {
+define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/module"], function (angular,moduleName) {
     angular.module(moduleName).factory("VisualQueryColumnDelegate", ["$mdDialog","uiGridConstants",function ($mdDialog, uiGridConstants) {
 
         /**

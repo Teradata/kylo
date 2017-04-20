@@ -23,8 +23,7 @@ package com.thinkbiganalytics.metadata.sla;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
@@ -46,13 +45,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
  * Provides the default implementation for service level agreement scheduling.
  */
-public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
+public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, PostMetadataConfigAction {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
     @Inject
@@ -66,20 +64,13 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     private ServiceLevelAgreementChecker slaChecker;
     @Inject
     private MetadataAccess metadataAccess;
-    @Inject
-    private ModeShapeAvailability modeShapeAvailability;
 
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
 
-    @PostConstruct
-    public void scheduleServiceLevelAgreements() {
-        modeShapeAvailability.subscribe(this);
-    }
-
     @Override
-    public void modeShapeAvailable() {
+    public void run() {
         metadataAccess.read(() -> {
             List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 

@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * Spring data repository for accessing {@link JpaOpsManagerFeed}
  */
+@RepositoryType(FeedSecuringRepository.class)
 public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
 
@@ -47,9 +48,9 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
 
     @Procedure(name = "OpsManagerFeed.deleteFeedJobs")
-    void deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
+    Integer deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
 
     @Procedure(name = "OpsManagerFeed.abandonFeedJobs")
-    void abandonFeedJobs(@Param("feed") String feed);
+    Integer abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage);
 
 }

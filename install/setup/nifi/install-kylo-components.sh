@@ -14,6 +14,19 @@ then
     fi
 fi
 
+# function for determining way to handle startup scripts
+function get_linux_type {
+    # redhat
+    which chkconfig > /dev/null && echo "chkonfig" && return 0
+    # ubuntu sysv
+    which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+    echo "Couldn't recognize linux version, after installation you need to do these steps manually:"
+    echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services,kylo-spark-shell} files"
+    echo " * set them to autostart"
+}
+
+linux_type=$(get_linux_type)
+
 if [ $KYLO_OFFLINE = true ]
 then
     NIFI_SETUP_DIR=$KYLO_WORKING_DIR/nifi
@@ -62,9 +75,16 @@ chown nifi:users /var/log/nifi
 
 echo "Install the nifi service"
 cp $NIFI_SETUP_DIR/nifi /etc/init.d
-chkconfig nifi on
+
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig nifi on
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d nifi defaults 98 10
+fi
 
 echo "Starting NiFi service"
-service nifi start
+if [[ -z ${KYLO_INSTALL_NIFI_SUPPRESS_START} ]]; then
+	service nifi start
+fi
 
 echo "Installation Complete"

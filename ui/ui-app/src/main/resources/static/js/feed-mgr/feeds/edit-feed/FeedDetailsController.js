@@ -17,7 +17,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
      * @param StateService
      */
     var controller = function ($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
-                               FileUpload, ConfigurationService) {
+                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -37,10 +37,28 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         self.allowAdmin = false;
 
         /**
+         * Allow the Changing of this feeds permissions
+         * @type {boolean}
+         */
+        self.allowChangePermissions = false;
+
+        /**
          * Indicates if edit operations are allowed.
          * @type {boolean}
          */
         self.allowEdit = false;
+
+        /**
+         * Indicates if export operations are allowed.
+         * @type {boolean}
+         */
+        self.allowExport = false;
+
+        /**
+         * Alow user to access the sla tab
+         * @type {boolean}
+         */
+        self.allowSlaAccess = false;
 
         this.feedId = null;
         this.selectedTabIndex = 0;
@@ -52,6 +70,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploadFile = null;
         this.uploading = false;
         this.uploadAllowed = false;
+
+
 
         /** flag to indicate if we get a valid connection back from NiFi.  Initially to true. it will be rechecked on load **/
         this.isNiFiRunning = true;
@@ -87,14 +107,15 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         var init = function() {
             self.feedId = $transition$.params().feedId;
 
+            self.exportFeedUrl = RestUrlService.ADMIN_EXPORT_FEED_URL+"/"+self.feedId
+
             loadFeed(requestedTabIndex);
             nifiRunningCheck();
 
-            AccessControlService.getAllowedActions()
-                    .then(function(actionSet) {
-                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
-                        self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                    });
+
+
+
+
         };
 
         /**
@@ -132,7 +153,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     fullscreen: true,
                     parent: angular.element(document.body),
                     scope: $dialogScope,
-                    templateUrl: "js/feed-mgr/edit-feed/feed-details-delete-dialog.html"
+                    templateUrl: "js/feed-mgr/feeds/edit-feed/feed-details-delete-dialog.html"
                 });
             }
         };
@@ -173,7 +194,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
 
         this.showFeedUploadDialog = function() {
-
             $mdDialog.show({
                 controller: 'FeedUploadFileDialogController',
                 escapeToClose: false,
@@ -188,6 +208,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                         .hideDelay(3000)
                 );
             });
+        }
+
+        this.showAccessControlDialog = function(){
+
+            function onCancel(){
+
+            }
+
+            function onSave(){
+            }
+
+            EntityAccessControlDialogService.showAccessControlDialog(self.model,"feed",self.model.feedName,onSave,onCancel);
+
         }
 
 
@@ -244,6 +277,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             }
         };
 
+
         function mergeTemplateProperties(feed) {
             var successFn = function(response) {
                 return response;
@@ -270,7 +304,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * An error is displayed if the user does not have permissions to access categories.
          */
         this.onCategoryClick = function() {
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                     .then(function(actionSet) {
                         if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
                             StateService.FeedManager().Category().navigateToCategoryDetails(self.model.category.id);
@@ -348,6 +382,24 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                             self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                             FeedService.updateEditModelStateIcon();
 
+                            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+                                //Apply the entity access permissions
+                                var requests = {entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model) : true,
+                                    entityPermissionAccess:entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model) : true,
+                                    functionalAccess:AccessControlService.getUserAllowedActions()}
+                                $q.all(requests).then(function (response) {
+                                    var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                    var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+
+                                    self.allowEdit = response.entityEditAccess && allowEditAccess;
+                                    self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
+                                    self.allowAdmin = allowAdminAccess;
+                                    self.allowSlaAccess = slaAccess;
+                                    self.allowExport = allowExport;
+                                });
+
                         }
                     }, function(err) {
                         //handle err
@@ -355,15 +407,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     })
 
                 }
+                else {
+                    errorFn(" The feed was not found.")
+                }
             }
             var errorFn = function(err) {
                 self.loadingFeedData = false;
+                var message = angular.isDefined(err) && angular.isString(err) ? err : '';
                 $mdDialog.show(
                         $mdDialog.alert()
                                 .parent(angular.element(document.querySelector('body')))
                                 .clickOutsideToClose(true)
                                 .title('Error loading feed')
-                                .textContent('Feed error ')
+                                .textContent('Error loading feed. '+message)
                                 .ariaLabel('Error loading feed')
                                 .ok('Got it!')
                         //.targetEvent(ev)
@@ -439,7 +495,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService",controller]);
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService",controller]);
 
-    angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",controller]);
+    angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
 });

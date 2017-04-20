@@ -22,7 +22,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -609,17 +611,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
         }
 
-        JPAQuery
-            query = factory.select(
+        ConstructorExpression<JpaBatchJobExecutionStatusCounts> expr =
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
                                     jobState.as("status"),
-                                    jobExecution.count().as("count")))
-            .from(jobExecution)
-            .where(whereBuilder)
-            .groupBy(jobState);
+                                    jobExecution.jobExecutionId.count().as("count"));
+
+        JPAQuery<?> query = factory.select(expr).from(jobExecution).where(whereBuilder).groupBy(jobExecution.status);
 
         return (List<JobStatusCount>) query.fetch();
-
     }
 
     @Override
@@ -642,7 +641,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
-            .groupBy(jobState, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
+            .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 
@@ -680,7 +679,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.count().as("count")))
             .from(jobExecution)
             .where(whereBuilder)
-            .groupBy(jobState, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
+            .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 

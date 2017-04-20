@@ -30,6 +30,7 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.datavalidator.functions.SumPartitionLevelCounts;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
@@ -38,9 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.hive.HiveContext;
@@ -61,8 +60,6 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -76,6 +73,14 @@ import java.util.Vector;
 public class Validator implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(Validator.class);
+
+    @Autowired
+    IValidatorStrategy validatorStrategy;
+
+    public void setValidatorStrategy(IValidatorStrategy strategy) {
+        this.validatorStrategy = strategy;
+    }
+
     /*
     Valid validation result
      */
@@ -130,6 +135,8 @@ public class Validator implements Serializable {
         if (args.length < 4) {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
             System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
+            System.out.println("You can optionally add: --storageLevel rdd_persistence_level_value");
+            System.out.println("You can optionally add: --numPartitions number_of_rdd_partitions");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
@@ -188,13 +195,29 @@ public class Validator implements Serializable {
             StructType sourceSchema = createModifiedSchema(feedTablename);
             log.info("sourceSchema {}", sourceSchema);
 
+            log.info("Persistence level: {}", params.getStorageLevel());
+
             // Validate and cleanse input rows
-            JavaRDD<CleansedRowResult> cleansedRowResultRDD = rddData.map(new Function<Row, CleansedRowResult>() {
-                @Override
-                public CleansedRowResult call(Row row) throws Exception {
-                    return cleanseAndValidateRow(row);
-                }
-            }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            JavaRDD<CleansedRowResult> cleansedRowResultRDD;
+            if (params.getNumPartitions() <= 0) {
+                cleansedRowResultRDD = rddData.map(new Function<Row, CleansedRowResult>() {
+                    @Override
+                    public CleansedRowResult call(Row row) throws Exception {
+                        return cleanseAndValidateRow(row);
+                    }
+                }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            }
+            else {
+                log.info("Partition count: " + params.getNumPartitions());
+                cleansedRowResultRDD = rddData.repartition(params.getNumPartitions()).map(new Function<Row, CleansedRowResult>() {
+                    @Override
+                    public CleansedRowResult call(Row row) throws Exception {
+                        return cleanseAndValidateRow(row);
+                    }
+                }).persist(StorageLevel.fromString(params.getStorageLevel()));
+            }
+
+
 
             // Return a new rdd based on whether values are valid or invalid
             JavaRDD<Row> newResultsRDD = cleansedRowResultRDD.map(new Function<CleansedRowResult, Row>() {
@@ -248,7 +271,7 @@ public class Validator implements Serializable {
         log.info("Building select statement for # of policies {}", policies1.length);
         for (int i = 0; i < policies1.length; i++) {
             if (policies1[i].getField() != null) {
-                log.info("policy [{}] name {} feedName", i, policies1[i].getField(), policies1[i].getFeedField());
+                log.info("policy [{}] name {} feedName {}", i, policies1[i].getField(), policies1[i].getFeedField());
                 String feedField = StringUtils.defaultIfEmpty(policies1[i].getFeedField(), policies1[i].getField());
                 fields.add("`" + feedField + "` as `" + policies1[i].getField() + "`");
             }
@@ -321,9 +344,19 @@ public class Validator implements Serializable {
         StructField[] fields = schema.fields();
         List<StructField> fieldsList = new Vector<>();
         for (int i = 0; i < fields.length; i++) {
-            if (policyMap.containsKey(fields[i].name().toLowerCase())) {
+            //Build a list of feed field names using the policy map
+            List<String> policyMapFeedFieldNames = new ArrayList<>();
+
+            for (Map.Entry<String, FieldPolicy> policyMapItem: policyMap.entrySet()) {
+                policyMapFeedFieldNames.add(policyMapItem.getValue().getFeedField().toLowerCase());
+            }
+
+            if (policyMapFeedFieldNames.contains(fields[i].name().toLowerCase())) {
                 log.info("Adding field {}", fields[i].name());
                 fieldsList.add(fields[i]);
+            }
+            else {
+                log.warn("Feed table field {} is not present in policy map", fields[i].name().toLowerCase());
             }
         }
 
@@ -384,13 +417,13 @@ public class Validator implements Serializable {
             Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
             // Handle complex types by passing them through
 
-            if (dataType.isUnchecked() || (!(val instanceof String))) {
+            if (dataType.isUnchecked()) {
                 if (val == null) {
                     nulls++;
                 }
                 newValues[idx] = val;
             } else {
-                String fieldValue = (val != null ? val.toString() : null);
+                Object fieldValue = (val != null ? val : null);
 
                 if (fieldValue == null) {
                     nulls++;
@@ -401,7 +434,8 @@ public class Validator implements Serializable {
                 newValues[idx] = fieldValue;
 
                 // Record results in the appended columns
-                result = validateField(fieldPolicy, dataType, fieldValue);
+                String fieldValueForValidation = ((fieldValue == null) ? null:fieldValue.toString());
+                result = validateField(fieldPolicy, dataType, fieldValueForValidation);
                 if (!result.isValid()) {
                     rowValid = false;
                     results = (results == null ? new Vector<ValidationResult>() : results);
@@ -443,48 +477,10 @@ public class Validator implements Serializable {
         final int schemaLen = schemaLength;
 
         // Maps each partition in the JavaRDD<CleansedRowResults> to a long[] of invalid column counts and total valid/invalid counts
-        JavaRDD<long[]> partitionCounts = cleansedRowResultJavaRDD.mapPartitions(new FlatMapFunction<Iterator<CleansedRowResult>, long[]>() {
-
-            @Override
-            public Iterable<long[]> call(Iterator<CleansedRowResult> cleansedRowResultIterator) {
-
-                long[] validationCounts = new long[schemaLen + 2];
-
-                while (cleansedRowResultIterator.hasNext()) {
-
-                    CleansedRowResult cleansedRowResult = cleansedRowResultIterator.next();
-
-                    for (int idx = 0; idx < schemaLen; idx++) {
-                        if (!cleansedRowResult.columnsValid[idx]) {
-                            validationCounts[idx] = validationCounts[idx] + 1l;
-                        }
-                    }
-                    if (cleansedRowResult.rowIsValid) {
-                        validationCounts[schemaLen] = validationCounts[schemaLen] + 1l;
-                    } else {
-                        validationCounts[schemaLen + 1] = validationCounts[schemaLen + 1] + 1l;
-                    }
-                }
-
-                List<long[]> results = new LinkedList<long[]>();
-                results.add(validationCounts);
-                return results;
-            }
-        });
+        JavaRDD<long[]> partitionCounts = validatorStrategy.getCleansedRowResultPartitionCounts(cleansedRowResultJavaRDD, schemaLen);
 
         // Sums up all partitions validation counts into one long[]
-        long[] finalCounts = partitionCounts.reduce(new Function2<long[], long[], long[]>() {
-            @Override
-            public long[] call(long[] countsA, long[] countsB) throws Exception {
-
-                long[] countsResult = new long[countsA.length];
-
-                for (int idx = 0; idx < countsA.length; idx++) {
-                    countsResult[idx] = countsA[idx] + countsB[idx];
-                }
-                return countsResult;
-            }
-        });
+        long[] finalCounts = partitionCounts.reduce(new SumPartitionLevelCounts());
 
         return finalCounts;
     }
@@ -514,8 +510,12 @@ public class Validator implements Serializable {
 
         boolean isEmpty = (StringUtils.isEmpty(fieldValue));
         if (isEmpty) {
-            if (!fieldPolicy.isNullable()) {
-                return ValidationResult.failField("null", fieldDataType.getName(), "Cannot be null");
+            ValidationPolicy validator;
+            if ((validator = fieldPolicy.getNotNullValidator()) != null) {
+                ValidationResult result = validateValue(validator, fieldDataType, fieldValue);
+                if (result != VALID_RESULT) {
+                    return result;
+                }
             }
         } else {
 
@@ -585,16 +585,21 @@ public class Validator implements Serializable {
     /**
      * Applies the standardization policies
      */
-    protected String standardizeField(FieldPolicy fieldPolicy, String value) {
-        String newValue = value;
+    protected Object standardizeField(FieldPolicy fieldPolicy, Object value) {
+        Object newValue = value;
         List<StandardizationPolicy> standardizationPolicies = fieldPolicy.getStandardizationPolicies();
         if (standardizationPolicies != null) {
-            boolean isEmpty = (StringUtils.isEmpty(value));
+            boolean isEmpty = ((value == null) || (StringUtils.isEmpty(value.toString())));
             for (StandardizationPolicy standardizationPolicy : standardizationPolicies) {
                 if (isEmpty && !(standardizationPolicy instanceof AcceptsEmptyValues)) {
                     continue;
                 }
-                newValue = standardizationPolicy.convertValue(newValue);
+
+                if (!standardizationPolicy.accepts(value)) {
+                    continue;
+                }
+
+                newValue = standardizationPolicy.convertRawValue(newValue);
             }
         }
         return newValue;

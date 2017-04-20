@@ -1,0 +1,92 @@
+<div ng-if="!vm.enabled">
+  <span>Entity access control is not enabled for Kylo.</span>
+</div>
+<div layout-padding ng-if="vm.enabled">
+    <div layout="row">
+    <div flex>
+      <md-autocomplete flex="45" required
+                       md-input-name="owner"
+                       ng-disabled="vm.readOnly"
+                       md-selected-item="vm.entity.owner"
+                       md-search-text-change="vm.ownerAutoComplete.searchTextChanged(vm.ownerAutoComplete.searchText)"
+                       md-search-text="vm.ownerAutoComplete.searchText"
+                       md-selected-item-change="vm.ownerAutoComplete.selectedItemChange(item)"
+                       md-items="item in vm.queryUsers(vm.ownerAutoComplete.searchText)"
+                       md-item-text="item.displayName"
+                       md-min-length="1"
+                       md-floating-label="Owner">
+        <md-item-template>
+                  <span class="item-title">
+                    <span> {{item.displayName}} </span>
+                  </span>
+        </md-item-template>
+        <md-not-found>
+          No users matching "{{vm.ownerAutoComplete.searchText}}" were found.
+        </md-not-found>
+        <div class="hint">Define a user who owns this entity</div>
+        <div ng-messages="vm.theForm.owner.$error">
+          <div ng-message="required">Required.</div>
+        </div>
+      </md-autocomplete>
+
+    </div>
+  </div>
+
+
+
+  <div layout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
+    <div flex="40" style="align-self:center;">
+      <span class="item-title" style="color:grey">Roles</span>
+    </div>
+    <div flex class="">
+      <span class="item-title" style="color:grey">Members</span>
+    </div>
+  </div>
+  <div layout="column" ng-repeat="roleMembership in vm.entity.roleMemberships">
+    <div layout="row">
+      <div flex="40" style="align-self:center;">
+        {{roleMembership.role.title}}
+      </div>
+
+      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
+        <md-chips ng-model="roleMembership.members" md-autocomplete-snap
+                  readonly="vm.readOnly"
+                  md-require-match="true" class="layout-padding-top-bottom">
+          <md-autocomplete
+              md-min-length="0"
+              md-selected-item="roleMembership.ui.members.selectedItem"
+              md-search-text="roleMembership.ui.members.searchText"
+              md-items="item in vm.queryUsersAndGroups(roleMembership.ui.members.searchText)"
+              md-item-text="item.title"
+              md-no-cache="true"ap
+              placeholder="Add Group access">
+            <span md-highlight-text="roleMembership.ui.members.searchText">{{item.title}}</span>
+            <md-item-template>
+                  <span class="item-title">
+                     <ng-md-icon icon="group" style="fill:orange;" ng-if="item.type=='group'"></ng-md-icon>
+                     <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="item.type=='user'"></ng-md-icon>
+                    <span> {{item.title}} </span>
+                  </span>
+            </md-item-template>
+          </md-autocomplete>
+          <md-chip-template>
+                            <span>
+                               <ng-md-icon icon="group" style="fill:orange;" ng-if="$chip.type=='group'"></ng-md-icon>
+                               <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="$chip.type=='user'"></ng-md-icon>
+                               <strong>{{$chip.title}}</strong>
+                            </span>
+          </md-chip-template>
+        </md-chips>
+      </md-input-container>
+
+    </div>
+    <md-divider></md-divider>
+
+  </div>
+    <br/>
+    <br/>
+
+
+
+
+</div>

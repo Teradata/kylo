@@ -39,10 +39,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.jcr.Repository;
 
@@ -55,7 +52,7 @@ public class ModeShapeEngineConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
 
-    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+    public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password"
@@ -64,18 +61,6 @@ public class ModeShapeEngineConfig {
     @Inject
     private Environment environment;
 
-
-    @PreDestroy
-    public void stopEngine() throws InterruptedException, ExecutionException {
-        log.info("Stopping ModeShape engine...");
-        Future<Boolean> future = modeShapeEngine().shutdown();
-
-        if (future.get()) {
-            log.info("ModeShape engine stopped");
-        } else {
-            log.info("ModeShape engine not reported as stopped");
-        }
-    }
 
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
@@ -106,7 +91,7 @@ public class ModeShapeEngineConfig {
         return config;
     }
 
-    @Bean
+    @Bean(destroyMethod="shutdown")
     public ModeShapeEngine modeShapeEngine() {
         ModeShapeEngine engine = new ModeShapeEngine();
         log.info("Starting ModeShape engine...");

@@ -40,4 +40,20 @@ public interface StandardizationPolicy extends Serializable {
      */
     String convertValue(String value);
 
+    /**
+     * Whether a policy accepts a type of value
+     *
+     * @param value the value to transform/cleanse
+     * @return true/false indicting whether the policy can accept the type of value
+     */
+    Boolean accepts(Object value);
+
+    /**
+     * Convert an incoming {@code value} to new value
+     *
+     * @param value the value to transform/cleanse
+     * @return the new value
+     */
+    Object convertRawValue(Object value);
+
 }

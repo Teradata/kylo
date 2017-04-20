@@ -40,6 +40,8 @@ public class FieldPolicy {
 
     private List<FieldValidationRule> validation;
 
+    private boolean isPartitionColumn;  //default is false
+
     public FieldPolicy() {
 
     }
@@ -90,5 +92,13 @@ public class FieldPolicy {
 
     public void setFeedFieldName(String feedFieldName) {
         this.feedFieldName = feedFieldName;
+    }
+
+    public boolean isPartitionColumn() {
+        return isPartitionColumn;
+    }
+
+    public void setPartitionColumn(boolean isPartitionColumn) {
+        this.isPartitionColumn = isPartitionColumn;
     }
 }

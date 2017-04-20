@@ -26,6 +26,7 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
@@ -51,7 +52,7 @@ public class OperationsSecurityConfiguration {
 
         return () -> metadata.commit(() -> {
             return builder
-                            .module("services")
+                            .module(AllowedActions.SERVICES)
                                 .action(OperationsAccessControl.ACCESS_OPS)
                                 .action(OperationsAccessControl.ADMIN_OPS)
                                 .add()

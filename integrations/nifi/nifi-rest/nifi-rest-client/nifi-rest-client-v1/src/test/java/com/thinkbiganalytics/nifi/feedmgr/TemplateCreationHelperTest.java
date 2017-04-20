@@ -123,6 +123,7 @@ public class TemplateCreationHelperTest {
 
         // Mock Legacy NiFi client
         final LegacyNifiRestClient legacyRestClient = Mockito.mock(LegacyNifiRestClient.class);
+        Mockito.when(legacyRestClient.enableControllerServiceAndSetProperties(Mockito.any(), Mockito.any())).thenReturn(new ControllerServiceDTO());
         Mockito.when(legacyRestClient.getNiFiRestClient()).thenReturn(restClient);
         Mockito.when(legacyRestClient.getPropertyDescriptorTransform()).thenReturn(new MockNiFiPropertyDescriptorTransform());
         Mockito.doAnswer(invocation -> {

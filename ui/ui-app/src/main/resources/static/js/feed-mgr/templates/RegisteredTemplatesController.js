@@ -21,7 +21,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.cardTitle = 'Templates';
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         AddButtonService.registerAddButton("registered-templates", function() {
@@ -140,7 +140,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         getRegisteredTemplates();
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
                     self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);

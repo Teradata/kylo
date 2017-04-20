@@ -89,9 +89,9 @@ public class NifiIntegrationRestController {
      * Messages for the default locale
      */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
-    static final String BASE = "/v1/feedmgr/nifi";
-    static final String FLOWS = "/flows";
-    static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
+    public static final String BASE = "/v1/feedmgr/nifi";
+    public static final String FLOWS = "/flows";
+    public static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
     @Inject

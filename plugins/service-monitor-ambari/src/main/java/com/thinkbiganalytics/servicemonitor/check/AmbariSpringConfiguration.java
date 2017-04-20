@@ -27,11 +27,13 @@ import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyRestC
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * Spring configuration
  */
 @Configuration
+@PropertySource("classpath:ambari.properties")
 public class AmbariSpringConfiguration {
 
     @Bean(name = "ambariServicesStatus")

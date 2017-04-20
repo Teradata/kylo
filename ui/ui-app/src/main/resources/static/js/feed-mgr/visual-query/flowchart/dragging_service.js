@@ -1,4 +1,4 @@
-
+define(['angular'],function(angular) {
 angular.module('dragging', ['mouseCapture', ] )
 
 //
@@ -41,7 +41,7 @@ angular.module('dragging', ['mouseCapture', ] )
 						}
 
 						if (config.dragging) {
-							// First 'dragging' call to take into account that we have 
+							// First 'dragging' call to take into account that we have
 							// already moved the mouse by a 'threshold' amount.
 							config.dragging(evt.pageX, evt.pageY, evt);
 						}
@@ -103,5 +103,5 @@ angular.module('dragging', ['mouseCapture', ] )
 
 }])
 
-;
+});
 

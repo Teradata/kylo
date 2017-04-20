@@ -4,7 +4,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
      *
      * @constructor
      */
-    var EditFeedController = function($scope, $http, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService) {
+    var EditFeedController = function($scope, $http, $q, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService,AccessControlService,FeedSecurityGroups) {
         var self = this;
 
         /**
@@ -56,16 +56,16 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                 // Update stepper based on template
                 if (self.model.registeredTemplate.defineTable) {
                     self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/define-feed/define-feed-stepper.html";
-                    self.totalSteps = 6;
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-stepper.html";
+                    self.totalSteps = 7;
                 } else if (self.model.registeredTemplate.dataTransformation) {
                     VisualQueryService.resetModel();
                     self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/define-feed/define-feed-data-transform-stepper.html";
-                    self.totalSteps = 8;
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-data-transform-stepper.html";
+                    self.totalSteps = 9;
                 } else {
-                    self.stepperUrl = "js/define-feed/define-feed-no-table-stepper.html";
-                    self.totalSteps = 4;
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html";
+                    self.totalSteps = 5;
                 }
             };
             var errorFn = function() {
@@ -83,6 +83,23 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         };
 
         /**
+         * initialize the stepper and setup step display
+         * @param stepper
+         */
+        self.onStepperInitialized = function(stepper) {
+            var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
+            $q.all(accessChecks).then(function (response) {
+                var entityAccess = AccessControlService.isEntityAccessControlled();
+                var securityGroupsAccess = response.securityGroups;
+                //disable the access control step
+                if(!entityAccess && !securityGroupsAccess) {
+                    //Access Control is second to last step 0 based array indexc
+                    stepper.deactivateStep(self.totalSteps -2);
+                }
+            });
+        }
+
+        /**
          * Resets the editor state.
          */
         this.cancelStepper = function() {
@@ -95,5 +112,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         self.init();
     };
 
-    angular.module(moduleName).controller("EditFeedController", ["$scope","$http","$mdDialog","$transition$","FeedService","RestUrlService","StateService","VisualQueryService",EditFeedController]);
+    angular.module(moduleName).controller("EditFeedController", ["$scope","$http","$q","$mdDialog","$transition$","FeedService","RestUrlService","StateService","VisualQueryService","AccessControlService","FeedSecurityGroups",EditFeedController]);
+
+
 });

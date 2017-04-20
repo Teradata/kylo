@@ -1,0 +1,71 @@
+<div>
+  <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+  <card-layout header-css="filter-header" class="centered" ng-if="!vm.loading">
+    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" filter-model="vm.filter"
+                    on-selected-option="vm.selectedTableOption">
+    </header-section>
+    <body-section>
+      <div ng-show="vm.viewType == 'list'">
+        <md-list flex layout-fill class="list-item-table">
+          <md-list-item class="md-secondary" dir-paginate="datasource in vm.datasources |orderBy:vm.paginationData.sort |filter:vm.filter |itemsPerPage:vm.paginationData.rowsPerPage"
+                        pagination-id="vm.pageName">
+            <div layout="row" layout-fill>
+              <div flex="20" layout="column" class="item-column md-list-item-text" ng-click="vm.editDatasource(datasource)" title="{{datasource.name}}">
+                <span class="item-title" title="{{datasource.name}}">{{datasource.name}}</span>
+                <span class="column-title column-title-bottom">Name</span>
+              </div>
+              <div flex="20" layout="column" class="item-column md-list-item-text">
+                <span class="item-title">{{datasource.type}}</span>
+                <span class="column-title column-title-bottom">Type</span>
+              </div>
+              <div flex="40" layout="column" class="item-column md-list-item-text">
+                <span class="item-title">{{datasource.description}}</span>
+                <span class="column-title column-title-bottom">Description</span>
+              </div>
+              <div flex="20" layout="column" class="item-column md-list-item-text">
+                <span class="item-title">{{vm.getRelatedFeedsCount(datasource)}}</span>
+                <span class="column-title column-title-bottom">Related Feeds</span>
+              </div>
+            </div>
+            <md-divider ng-if="!$last"></md-divider>
+          </md-list-item>
+          <md-list-item ng-show="vm.loading == false && vm.datasources.length == 0" class="md-list-item with-padding">
+            No results found
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item layout-align="end center" layout-row class="pagination-list-item">
+            <dir-pagination-controls pagination-id="vm.pageName" auto-hide="false" max-size="5" direction-links="true" boundary-links="false"
+                                     template-url="js/common/dir-pagination/dirPagination.tpl.html" current-page="vm.currentPage" on-page-change="vm.onPaginationChange(newPageNumber)"
+                                     label="Rows per page" rows-per-page="vm.paginationData.rowsPerPage" rows-per-page-options="vm.paginationData.rowsPerPageOptions" class="pagination-row">
+            </dir-pagination-controls>
+          </md-list-item>
+        </md-list>
+      </div>
+      <div ng-show="vm.viewType == 'table'">
+        <md-table-container>
+          <table md-table>
+            <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
+            <tr md-row>
+              <th md-column name="Name" md-order-by="name">Name</th>
+              <th md-column name="Type" md-order-by="type">Type</th>
+              <th md-column name="Description" md-order-by="description">Description</th>
+              <th md-column name="Related Feeds" md-order-by="sourceForFeeds.length">Related Feeds</th>
+            </tr>
+            </thead>
+            <tbody md-body>
+            <tr md-row
+                ng-repeat="datasource in vm.datasources |orderBy:vm.paginationData.sort |filter:vm.filter |limitTo:vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
+                ng-click="vm.editDatasource(datasource)">
+              <td md-cell>{{datasource.name}}</td>
+              <td md-cell>{{datasource.type}}</td>
+              <td md-cell>{{datasource.description}}</td>
+              <td md-cell>{{vm.getRelatedFeedsCount(datasource)}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.datasources.length}}" md-on-paginate="vm.onPaginationChange"></md-table-pagination>
+      </div>
+    </body-section>
+  </card-layout>
+</div>

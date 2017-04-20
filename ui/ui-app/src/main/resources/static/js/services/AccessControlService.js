@@ -49,10 +49,46 @@
  * @property {Array.<string>} groups the groups that should have their permissions changed
  * @property {Array.<string>} users the users that should have their permissions changed
  */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).factory("AccessControlService",["$http","$q","CommonRestUrlService", function ($http, $q, CommonRestUrlService) {
+define(['angular', 'services/module-name', 'constants/AccessConstants'], function (angular, moduleName,AccessConstants) {
+
+
+
+
+    return angular.module(moduleName).factory("AccessControlService", ["$http", "$q","$timeout", "CommonRestUrlService", "UserGroupService", function ($http, $q,$timeout, CommonRestUrlService, UserGroupService) {
 
         var DEFAULT_MODULE = "services";
+
+        var currentUser = null;
+
+
+        /**
+         * Time allowed before the getAllowedActions refreshes from the server
+         * Default to refresh the cache every 3 minutes
+         */
+        var cacheUserAllowedActionsTime = 3000*60;
+
+        var lastUserAllowedCacheAccess = {};
+
+        var userAllowedActionsNeedsRefresh = function(module){
+            if(angular.isUndefined(lastUserAllowedCacheAccess[module])) {
+                return true;
+            }
+            else {
+                var diff = new Date().getTime() - lastUserAllowedCacheAccess[module];
+                if(diff > cacheUserAllowedActionsTime){
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        /**
+         * Key: Entity Type, Value: [{systemName:'ROLE1',permissions:['perm1','perm2']},...]
+         * @type {{}}
+         */
+        var ROLE_CACHE = {};
 
         /**
          * Interacts with the Access Control REST API.
@@ -62,133 +98,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         function AccessControlService() {
         }
 
-        angular.extend(AccessControlService.prototype, {
+        var svc = angular.extend(AccessControlService.prototype, AccessConstants);
 
-            /**
-             * Allows access to categories.
-             * @type {string}
-             */
-            CATEGORIES_ACCESS: "accessCategories",
-
-            /**
-             * Allows the administration of any category; even those created by others.
-             * @type {string}
-             */
-            CATEGORIES_ADMIN: "adminCategories",
-
-            /**
-             * Allows creating and editing new categories.
-             * @type {string}
-             */
-            CATEGORIES_EDIT: "editCategories",
-
-            /**
-             * Allows access to feeds.
-             * @type {string}
-             */
-            FEEDS_ACCESS: "accessFeeds",
-
-            /**
-             * Allows the administration of any feed; even those created by others.
-             * @type {string}
-             */
-            FEEDS_ADMIN: "adminFeeds",
-
-            /**
-             * Allows creating and editing new feeds.
-             * @type {string}
-             */
-            FEEDS_EDIT: "editFeeds",
-
-            /**
-             * Allows exporting feeds definitions.
-             * @type {string}
-             */
-            FEEDS_EXPORT: "exportFeeds",
-
-            /**
-             * Allows importing of previously exported feeds.
-             * @type {string}
-             */
-            FEEDS_IMPORT: "importFeeds",
-
-            /**
-             * Allows access to feeds and feed-related functions.
-             * @type {string}
-             */
-            FEED_MANAGER_ACCESS: "accessFeedsSupport",
-
-            /**
-             * Allows the ability to view existing groups.
-             * @type {string}
-             */
-            GROUP_ACCESS: "accessGroups",
-
-            /**
-             * Allows the ability to create and manage groups.
-             * @type {string}
-             */
-            GROUP_ADMIN: "adminGroups",
-
-            /**
-             * Allows access to feed templates.
-             * @type {string}
-             */
-            TEMPLATES_ACCESS: "accessTemplates",
-
-            /**
-             * Allows the administration of any feed template; even those created by others.
-             * @type {string}
-             */
-            TEMPLATES_ADMIN: "adminTemplates",
-
-            /**
-             * Allows created and editing new feed templates.
-             * @type {string}
-             */
-            TEMPLATES_EDIT: "editTemplates",
-
-            /**
-             * Allows exporting template definitions.
-             * @type {string}
-             */
-            TEMPLATES_EXPORT: "exportTemplates",
-
-            /**
-             * Allows importing of previously exported templates.
-             * @type {string}
-             */
-            TEMPLATES_IMPORT: "importTemplates",
-
-            /**
-             * Allows the ability to view existing users.
-             * @type {string}
-             */
-            USERS_ACCESS: "accessUsers",
-
-            /**
-             * Allows the ability to create and manage users.
-             * @type {string}
-             */
-            USERS_ADMIN: "adminUsers",
-
-            /**
-             * Allows access to user and group-related functions.
-             * @type {string}
-             */
-            USERS_GROUPS_ACCESS: "accessUsersGroupsSupport",
-
-            /**
-             * Allows administration of operations, such as stopping and abandoning them.
-             * @type {string}
-             */
-            OPERATIONS_ADMIN: "adminOperations",
-
-            /**
-             * Allows access to operational information like active feeds and execution history, etc.
-             * @type {string}
-             */
-            OPERATIONS_MANAGER_ACCESS: "accessOperations",
+        return angular.extend(svc, {
 
             /**
              * List of available actions
@@ -198,12 +110,129 @@ define(['angular','services/module-name'], function (angular,moduleName) {
              */
             AVAILABLE_ACTIONS_: null,
 
+            executingAllowedActions: {},
 
-            executingAllowedActions:{},
+            cachedUserAllowedActions: {},
 
 
 
+            initialized: false,
 
+            ACCESS_MODULES:{
+                SERVICES:"services"
+            },
+
+            /**
+             * Initialize the service
+             */
+            init:function(){
+                var self = this;
+
+                //build the user access and role/permission cache//  roles:self.getRoles()
+                var requests = {userActions:self.getUserAllowedActions(DEFAULT_MODULE,true),
+                    roles:self.getRoles(),
+                    currentUser:self.getCurrentUser(),
+                    entityAccessControlled:self.checkEntityAccessControlled()};
+                var defer = $q.defer();
+
+                $q.all(requests).then(function(response){
+                    self.initialized = true;
+                    currentUser= response.currentUser;
+                        defer.resolve(true);
+                });
+                return defer.promise;
+
+            },
+            hasEntityAccess:function(requiredPermissions,entity,entityType){
+                var self = this;
+
+                //all entities should have the object .allowedActions and .owner
+                if(entity == undefined){
+                    return false;
+                }
+
+                //short circuit if the owner matches
+                if(entity.owner && entity.owner.systemName == currentUser.systemName){
+                    return true;
+                }
+
+                if(!angular.isArray(requiredPermissions)){
+                    requiredPermissions = [requiredPermissions];
+                }
+
+                return self.hasAnyAction(requiredPermissions, entity.allowedActions);
+            },
+            isFutureState:function(state){
+                return state.endsWith(".**");
+            },
+            /**
+             * Check to see if we are using entity access control or not
+             * @returns {*}
+             */
+            isEntityAccessControlled:function(){
+                var self = this;
+                return this.entityAccessControlled;
+            },
+
+            checkEntityAccessControlled:function(){
+                var self = this;
+                if(angular.isDefined(this.entityAccessControlled)){
+                    return self.entityAccessControlled;
+                }
+                else {
+                    return $http.get(CommonRestUrlService.ENTITY_ACCESS_CONTROLLED_CHECK).then(function(response){
+                        self.entityAccessControlled = response.data;
+                    });
+                }
+            },
+
+            /**
+             * Determines if a user has access to a give ui-router state transition
+             * This is accessed via the 'routes.js' ui-router listener
+             * @param transition a ui-router state transition.
+             * @returns {boolean} true if has access, false if access deined
+             */
+            hasAccess: function (transition) {
+                var self = this;
+                var valid = false;
+                if (transition) {
+                    var toState = transition.to();
+                    var toStateName = toState.name;
+                    var data = toState.data;
+                    if(data == undefined){
+                        //if there is nothing there, treat it as valid
+                        return true;
+                    }
+                    var requiredPermissions = data.permissions || null;
+                    //if its a future lazy loaded state, allow it
+                    if (self.isFutureState(toStateName)) {
+                        valid = true;
+                    }else {
+                        //check to see if the user has the required permission(s) in the String or [array] from the data.permissions object
+
+                        if (self.initialized) {
+                            var allowedActions = self.cachedUserAllowedActions[DEFAULT_MODULE];
+                            if(angular.isArray(requiredPermissions)){
+
+                                //find the first match
+                                 valid = requiredPermissions.length ==0 || self.hasAnyAction(requiredPermissions,allowedActions)
+                            }
+                            else {
+                                valid = self.hasAction(requiredPermissions,allowedActions);
+                            }
+                        }
+                    }
+                }
+                return valid;
+
+            },
+            /**
+             * Gets the current user from the server
+             * @returns {*}
+             */
+            getCurrentUser: function () {
+                return UserGroupService.getCurrentUser();
+            },
             /**
              * Gets the list of allowed actions for the specified users or groups. If no users or groups are specified, then gets the allowed actions for the current user.
              *
@@ -237,20 +266,28 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 });
             },
 
-
             /**
              * Gets the list of allowed actions for the current user.
              *
              * @param {string|null} [opt_module] name of the access module, or {@code null}
+             * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            getUserAllowedActions: function (opt_module) {
+            getUserAllowedActions: function (opt_module, cache) {
                 var self = this;
-             var defer = null;
+                var defer = null;
+
                 var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : DEFAULT_MODULE;
+                if(angular.isUndefined(cache)){
+                    cache = true;
+                }
                 var isExecuting = self.executingAllowedActions[safeModule] != undefined;
-                if(!isExecuting) {
-                     defer = $q.defer();
+                if(cache == true && !isExecuting && self.cachedUserAllowedActions[safeModule] != undefined && !userAllowedActionsNeedsRefresh(safeModule)) {
+                    defer = $q.defer();
+                    defer.resolve(self.cachedUserAllowedActions[safeModule]);
+                }
+               else if (!isExecuting) {
+                    defer = $q.defer();
                     self.executingAllowedActions[safeModule] = defer;
 
                     var promise = $http.get(CommonRestUrlService.SECURITY_BASE_URL + "/actions/" + safeModule + "/allowed")
@@ -259,18 +296,19 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                                 response.data.actions = [];
                             }
                             defer.resolve(response.data);
+                            //add it to the cache
+                            lastUserAllowedCacheAccess[safeModule] = new Date().getTime();
+                            self.cachedUserAllowedActions[safeModule] = response.data;
+                            //remove the executing request
                             delete self.executingAllowedActions[safeModule];
                             return response.data;
                         });
                 }
                 else {
-
                     defer = self.executingAllowedActions[safeModule];
                 }
                 return defer.promise;
             },
-
-
 
             /**
              * Gets all available actions.
@@ -299,23 +337,22 @@ define(['angular','services/module-name'], function (angular,moduleName) {
              */
             hasAnyAction: function (names, actions) {
                 var self = this;
-                var valid = _.find(names,function(name){
-                    return self.hasAction(name.trim(),actions);
+                var valid = _.some(names, function (name) {
+                    return self.hasAction(name.trim(), actions);
                 });
-                return valid != undefined;
+                return valid;
             },
 
             /**
              * returns a promise with a value of true/false if the user has any of the required permissions
-             * @param requiredPermissions
+             * @param requiredPermissions array of required permission strings
              */
-            doesUserHavePermission: function(requiredPermissions){
+            doesUserHavePermission: function (requiredPermissions) {
                 var self = this;
                 var d = $q.defer();
 
                 self.getUserAllowedActions()
                     .then(function (actionSet) {
-
                         var allowed = self.hasAnyAction(requiredPermissions, actionSet.actions);
                         d.resolve(allowed);
                     });
@@ -334,7 +371,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 return _.some(actions, function (action) {
                     if (action.systemName === name) {
                         return true;
-                    } else if (angular.isArray(action.actions)) {
+                    }  else if (angular.isArray(action)) {
+                        return self.hasAction(name, action);
+                    }else if (angular.isArray(action.actions)) {
                         return self.hasAction(name, action.actions);
                     }
                     return false;
@@ -378,7 +417,75 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     }
                     return response.data;
                 });
+            },
+            /**
+             * Gets all roles abd populates the ROLE_CACHE
+             * @returns {*|Request}
+             */
+            getRoles:function(){
+                  return  $http.get(CommonRestUrlService.SECURITY_ROLES_URL).then(function (response) {
+                        _.each(response.data,function(roles,entityType){
+                            ROLE_CACHE[entityType] = roles;
+                        });
+                    });
+            },
+            /**
+             * For a given entity type (i.e. FEED) return the roles/permissions
+             * @param entityType the type of entity
+             */
+            getEntityRoles:function(entityType){
+                var df = $q.defer();
+                if(ROLE_CACHE[entityType] != undefined) {
+                    df.resolve(angular.copy(ROLE_CACHE[entityType]));
+                }
+                else {
+                    var rolesArr = [];
+                    $http.get(CommonRestUrlService.SECURITY_ENTITY_ROLES_URL(entityType)).then(function (response) {
+                        _.each(response.data,function(role){
+                            role.name = role.title;
+                            rolesArr.push(role);
+                        });
+                        ROLE_CACHE[entityType] = rolesArr;
+                        df.resolve(rolesArr);
+                    });
+
+                }
+                return df.promise;
+            },
+            /**
+             * Check if the user has access checking both the functional page/section access as well as entity access permission.
+             * If Entity access is not enabled for the app it will bypass the entity access check.
+             * This will return a promise with a boolean as the response/resolved value.
+             * Callers need to wrap this in $q.when.
+             *
+             * Example:
+             *
+             * $q.when(AccessControlService.hasPermission(...)).then(function(hasAccess){
+             *  if(hasAccess){
+             *
+             *  }
+             *   ...
+             * }
+             *
+             * @param functionalPermission a permission string to check
+             * @param entity the entity to check
+             * @param entityPermissions  a string or an array of entity permissions to check against the user and supplied entity
+             * @return a promise with a boolean value as the response
+             */
+            hasPermission: function(functionalPermission,entity,entityPermissions) {
+                var self = this;
+                var entityAccessControlled = entity != null && entityPermissions != null && this.isEntityAccessControlled();
+                var defer = $q.defer();
+                var requests = {
+                    entityAccess: entityAccessControlled == true ? this.hasEntityAccess(entityPermissions, entity) : true,
+                    functionalAccess: this.getUserAllowedActions()
+                }
+                $q.all(requests).then(function (response) {
+                    defer.resolve(response.entityAccess && self.hasAction(functionalPermission, response.functionalAccess.actions));
+                });
+                return defer.promise;
             }
+
         });
 
         return new AccessControlService();

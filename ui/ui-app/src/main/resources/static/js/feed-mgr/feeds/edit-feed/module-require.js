@@ -1,4 +1,5 @@
-define(['angular','angular-ui-router','kylo-feedmgr','feed-mgr/feeds/get-table-data-properties/GetTableDataPropertiesController',
+define(['angular','angular-ui-router','kylo-common','kylo-feedmgr','feed-mgr/feeds/get-table-data-properties/GetTableDataPropertiesController',
+        'feed-mgr/feeds/edit-feed/details/feed-additional-properties',
         'feed-mgr/feeds/edit-feed/details/feed-data-policies',
         'feed-mgr/feeds/edit-feed/details/feed-definition',
         'feed-mgr/feeds/edit-feed/details/feed-info',
@@ -8,6 +9,7 @@ define(['angular','angular-ui-router','kylo-feedmgr','feed-mgr/feeds/get-table-d
         'feed-mgr/feeds/edit-feed/profile-history/profile-history',
         'feed-mgr/feeds/edit-feed/profile-history/profile-invalid',
         'feed-mgr/feeds/edit-feed/profile-history/profile-stats',
-        'feed-mgr/feeds/edit-feed/profile-history/profile-valid'], function (angular) {
+        'feed-mgr/feeds/edit-feed/profile-history/profile-valid',
+        'feed-mgr/feeds/edit-feed/EditFeedController'], function (angular) {
 
 });

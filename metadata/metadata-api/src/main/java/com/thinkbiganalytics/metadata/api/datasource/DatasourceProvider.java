@@ -23,6 +23,9 @@ package com.thinkbiganalytics.metadata.api.datasource;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
 
 public interface DatasourceProvider {
 
@@ -48,5 +51,5 @@ public interface DatasourceProvider {
 
     Datasource.ID resolve(Serializable id);
 
-
+    <D extends DatasourceDetails> Optional<D> ensureDatasourceDetails(@Nonnull Datasource.ID id, @Nonnull Class<D> type);
 }

@@ -37,7 +37,7 @@ public class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsMana
 
     private static final long serialVersionUID = 6017751710414995750L;
 
-    @Column(name = "id", columnDefinition = "binary(16)")
+    @Column(name = "id")
     private UUID uuid;
 
     public OpsManagerFeedId() {

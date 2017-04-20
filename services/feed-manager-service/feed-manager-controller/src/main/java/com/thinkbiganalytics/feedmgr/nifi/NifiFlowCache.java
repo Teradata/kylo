@@ -20,38 +20,6 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.Uninterruptibles;
-import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
-import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.ReportingTaskDTO;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +38,38 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
+import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+
 /**
  * Cache processor definitions in a flow for use by the KyloProvenanceReportingTask
  *
@@ -78,26 +78,27 @@ import javax.inject.Inject;
  *
  * @see com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor
  */
-public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabilityListener, NiFiProvenanceConstants {
+public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfigAction, NiFiProvenanceConstants {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
 
-
-    @Inject
-    ModeShapeAvailability modeShapeAvailability;
 
     @Inject
     LegacyNifiRestClient nifiRestClient;
     @Inject
     MetadataService metadataService;
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
+    FeedProvider feedProvider;
     @Inject
     MetadataAccess metadataAccess;
     @Inject
     PropertyExpressionResolver propertyExpressionResolver;
     @Inject
     private NifiConnectionService nifiConnectionService;
+
+    @Inject
+    private KyloVersionProvider kyloVersionProvider;
+
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedFlowIdProcessorMap = new ConcurrentHashMap<>();
@@ -158,17 +159,19 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     @PostConstruct
     private void init() {
         nifiConnectionService.subscribeConnectionListener(this);
-        modeShapeAvailability.subscribe(this);
         initExpireTimerThread();
     }
 
     /**
-     * Modeshape is available
+     * Metadata is available
      */
     @Override
-    public void modeShapeAvailable() {
-        this.modeShapeAvailable = true;
-        checkAndInitializeCache();
+    public void run() {
+        boolean isLatest = kyloVersionProvider.isUpToDate();
+        if(isLatest) {
+            this.modeShapeAvailable = true;
+            checkAndInitializeCache();
+        }
     }
 
 

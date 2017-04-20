@@ -37,7 +37,7 @@
                             <md-list class="padding-left" ng-repeat="(severity,errors)  in feedErrorsData">
                                 <md-list-item class="md-2-line" ng-repeat="error in errors track by $index" >
                                     <div class="md-list-item-text" >
-                                        <div ng-if="error.processorName != null && error.processorName != '' " class="md-subheader">Processor: {{::error.processorName}}</div>
+                                        <div ng-if="error.processorName != null && error.processorName != '' " class="card-sub-header">Processor: {{::error.processorName}}</div>
                                         <div class="md-warn-text">{{::error.message}}</div>
                                     </div>
                                     <md-divider ng-if="!$last"></md-divider>

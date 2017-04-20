@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
@@ -63,11 +62,13 @@ public class ActiveMqConfig {
 
     @Bean
     public ConnectionFactory connectionFactory() {
-        PooledConnectionFactory pool = new PooledConnectionFactory();
-        pool.setIdleTimeout(0);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
         factory.setTrustAllPackages(true);
-        pool.setConnectionFactory(factory);
+
+        PooledConnectionFactory pool = new PooledConnectionFactory();
+        pool.setIdleTimeout(0);
+        pool.setConnectionFactory(getCredentialsAdapter(factory));
+
         log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
         return pool;
     }
@@ -85,19 +86,18 @@ public class ActiveMqConfig {
         return factory;
     }
 
-    /*
-    @Bean
-    @Profile("activemq-credentials")
-    public UserCredentialsConnectionFactoryAdapter jmsUserCredentialsConnectionFactoryAdapter(ConnectionFactory connectionFactory){
-        UserCredentialsConnectionFactoryAdapter userCredentialsConnectionFactoryAdapter = new UserCredentialsConnectionFactoryAdapter();
-        userCredentialsConnectionFactoryAdapter.setTargetConnectionFactory(connectionFactory);
+    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory){
+        UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
+        adapter.setTargetConnectionFactory(connectionFactory);
         String username = env.getProperty("jms.activemq.broker.username");
         String password = env.getProperty("jms.activemq.broker.password");
-        userCredentialsConnectionFactoryAdapter.setUsername(username);
-        userCredentialsConnectionFactoryAdapter.setUsername(password);
-        return userCredentialsConnectionFactoryAdapter;
+        adapter.setUsername(username);
+        adapter.setPassword(password);
+
+        log.info("Connecting to ActiveMQ {} ", username != null ? "as " + username : "anonymously");
+
+        return adapter;
     }
-    */
 
 
     @Bean
@@ -109,8 +109,7 @@ public class ActiveMqConfig {
     @Bean
     @Qualifier("jmsTemplate")
     public JmsMessagingTemplate jmsMessagingTemplate(ConnectionFactory connectionFactory) {
-        JmsMessagingTemplate template = new JmsMessagingTemplate(connectionFactory);
-        return template;
+        return new JmsMessagingTemplate(connectionFactory);
     }
 
 

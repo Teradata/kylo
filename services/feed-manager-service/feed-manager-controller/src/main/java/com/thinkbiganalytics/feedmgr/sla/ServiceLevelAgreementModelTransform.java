@@ -23,7 +23,9 @@ package com.thinkbiganalytics.feedmgr.sla;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.rest.Model;
+import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
@@ -37,6 +39,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -47,27 +50,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 /**
  * Transforms to/from  Domain/Rest
  */
 public class ServiceLevelAgreementModelTransform {
 
 
-    public static final Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> DOMAIN_TO_FEED_SLA
-        = new Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>() {
-        @Override
-        public com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement apply(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain) {
-            return toModel(domain, true);
-        }
-    };
+    @Inject
+    private AccessController accessController;
 
-    public static final Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> DOMAIN_TO_FEED_SLA_SHALLOW
-        = new Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>() {
-        @Override
-        public com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement apply(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain) {
-            return toModel(domain, false);
-        }
-    };
     public static final Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement> DOMAIN_TO_SLA
         = new Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement>() {
         @Override
@@ -109,16 +103,6 @@ public class ServiceLevelAgreementModelTransform {
             return slAssmt;
         }
     };
-
-    public static final List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(
-        List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
-        Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
-        if (slaList != null) {
-            list = Collections2.transform(slaList, DOMAIN_TO_FEED_SLA_SHALLOW);
-            return new ArrayList<>(list);
-        }
-        return null;
-    }
 
     public static ServiceLevelAgreement generateDomain(com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement model,
                                                        ServiceLevelAgreementProvider provider) {
@@ -200,24 +184,6 @@ public class ServiceLevelAgreementModelTransform {
         return sla;
     }
 
-
-    public static FeedServiceLevelAgreement toModel(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain, boolean deep) {
-        return toModel(domain, (Set<com.thinkbiganalytics.metadata.api.feed.Feed>) domain.getFeeds(), deep);
-    }
-
-    public static FeedServiceLevelAgreement toModel(ServiceLevelAgreement domain, Set<com.thinkbiganalytics.metadata.api.feed.Feed> feeds, boolean deep) {
-        com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain, deep);
-        FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
-        if (feeds != null && !feeds.isEmpty()) {
-            final Set<Feed> feedModels = feeds.stream()
-                .filter(feed -> feed != null)
-                .map(Model.DOMAIN_TO_FEED::apply)
-                .collect(Collectors.toSet());
-            feedServiceLevelAgreement.setFeeds(feedModels);
-        }
-        return feedServiceLevelAgreement;
-    }
-
     public static com.thinkbiganalytics.metadata.rest.model.sla.Obligation toModel(Obligation domainOb, boolean deep) {
         com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob
             = new com.thinkbiganalytics.metadata.rest.model.sla.Obligation();
@@ -228,5 +194,89 @@ public class ServiceLevelAgreementModelTransform {
         return ob;
     }
 
+    /**
+     * Feed model transformer
+     */
+    @Nonnull
+    private final Model model;
 
+    /**
+     * Constructs a {@code ServiceLevelAgreementModelTransform}.
+     *
+     * @param model the feed model transformer
+     */
+    public ServiceLevelAgreementModelTransform(@Nonnull final Model model) {
+        this.model = model;
+    }
+
+    /**
+     * Transforms the specified domain object to a REST object.
+     *
+     * @param domain the domain object
+     * @return the REST object
+     */
+    public com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement domainToFeedSlaShallow(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain) {
+        return toModel(domain, false);
+    }
+
+    /**
+     * Transforms the specified domain objects to REST objects.
+     *
+     * @param slaList the domain objects.
+     * @return the REST objects
+     */
+    public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(
+        List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
+        Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
+        if (slaList != null) {
+            list = Collections2.transform(slaList, this::domainToFeedSlaShallow);
+            return new ArrayList<>(list);
+        }
+        return null;
+    }
+
+    /**
+     * Transforms the specified domain object to a REST object.
+     *
+     * @param domain the domain
+     * @param deep   {@code true} to include action configurations
+     * @return the REST object
+     */
+    public FeedServiceLevelAgreement toModel(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain, boolean deep) {
+        return toModel(domain, (Set<com.thinkbiganalytics.metadata.api.feed.Feed>) domain.getFeeds(), deep);
+    }
+
+    /**
+     * Transforms the specified domain objects to REST objects.
+     *
+     * @param domain the SLA domain object
+     * @param feeds  the feed domain objects
+     * @param deep   {@code true} to include action configurations
+     * @return the SLA REST object
+     */
+    public FeedServiceLevelAgreement toModel(ServiceLevelAgreement domain, Set<com.thinkbiganalytics.metadata.api.feed.Feed> feeds, boolean deep) {
+        com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain, deep);
+        FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
+        boolean canEdit = false;
+        if (feeds != null && !feeds.isEmpty()) {
+            final Set<Feed> feedModels = feeds.stream()
+                .filter(feed -> feed != null)
+                .map(model::domainToFeed)
+                .collect(Collectors.toSet());
+            feedServiceLevelAgreement.setFeeds(feedModels);
+            if(accessController.isEntityAccessControlled()) {
+                //set the flag on the sla edit to true only if the user has access to edit the feeds assigned to this sla
+                canEdit = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.EDIT_DETAILS));
+            }
+            else {
+                canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+            }
+
+        }
+        else {
+           canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+        }
+        slaModel.setCanEdit(canEdit);
+        return feedServiceLevelAgreement;
+    }
 }

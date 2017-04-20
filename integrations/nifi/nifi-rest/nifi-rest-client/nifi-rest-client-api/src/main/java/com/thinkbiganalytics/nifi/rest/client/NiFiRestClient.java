@@ -140,4 +140,6 @@ public interface NiFiRestClient {
      */
     @Nonnull
     NiFiReportingTaskRestClient reportingTasks();
+
+
 }

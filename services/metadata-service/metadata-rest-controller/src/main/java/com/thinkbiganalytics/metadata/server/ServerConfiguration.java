@@ -38,7 +38,7 @@ import com.thinkbiganalytics.metadata.core.sla.feed.FeedExecutedSinceFeedAssesso
 import com.thinkbiganalytics.metadata.core.sla.feed.FeedExecutedSinceScheduleAssessor;
 import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.jms.MetadataJmsConfig;
-import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
+import com.thinkbiganalytics.metadata.event.reactor.ReactorConfiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -56,7 +56,7 @@ import java.security.Principal;
 
 @Configuration
 @EnableAutoConfiguration
-@Import({ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
+@Import({ReactorConfiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
 public class ServerConfiguration {
 
     @Bean

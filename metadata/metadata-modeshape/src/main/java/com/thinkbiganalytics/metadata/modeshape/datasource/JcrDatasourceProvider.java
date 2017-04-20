@@ -20,22 +20,29 @@ package com.thinkbiganalytics.metadata.modeshape.datasource;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.joda.time.DateTime;
@@ -45,13 +52,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.security.Principal;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -82,17 +92,22 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     static {
         Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
+        map.put(UserDatasource.class, JcrUserDatasource.class);
         DOMAIN_TYPES_MAP = map;
     }
 
     static {
         Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
+        map.put(JcrUserDatasource.NODE_TYPE, JcrUserDatasource.class);
         NODE_TYPES_MAP = map;
     }
 
     @Inject
-    private MetadataAccess metadataAccess;
+    private JcrAllowedEntityActionsProvider actionsProvider;
+
+    @Inject
+    private SecurityRoleProvider roleProvider;
 
     public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
         if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
@@ -261,7 +276,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         Datasource ds = getDatasource(id);
         if (ds != null) {
             try {
-                ((JcrMetadataAccess) metadataAccess).ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
+                JcrMetadataAccess.ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
                 ((JcrDatasource) ds).getNode().remove();
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Unable to remove Datasource: " + id);
@@ -269,13 +284,47 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         }
     }
 
-
     @Override
     public DerivedDatasource ensureGenericDatasource(String name, String descr) {
         DerivedDatasource genericDatasource = ensureDatasource(name, descr, DerivedDatasource.class);
         return genericDatasource;
     }
 
+    @Override
+    public <D extends DatasourceDetails> Optional<D> ensureDatasourceDetails(@Nonnull final Datasource.ID id, @Nonnull final Class<D> type) {
+        try {
+            // Ensure the data source exists
+            final Optional<JcrUserDatasource> parent = Optional.ofNullable(getDatasource(id))
+                .filter(JcrUserDatasource.class::isInstance)
+                .map(JcrUserDatasource.class::cast);
+            if (!parent.isPresent()) {
+                return Optional.empty();
+            }
+
+            // Create the details
+            final Class<? extends JcrDatasourceDetails> implType = JcrUserDatasource.resolveDetailsClass(type);
+            final boolean isNew = !hasEntityNode(parent.get().getPath(), JcrUserDatasource.DETAILS);
+
+            final Node node = findOrCreateEntityNode(parent.get().getPath(), JcrUserDatasource.DETAILS, implType);
+            @SuppressWarnings("unchecked") final D details = (D) JcrUtil.createJcrObject(node, implType);
+
+            // Re-assign permissions to data source
+            if (isNew) {
+                final UsernamePrincipal owner = parent
+                    .map(JcrUserDatasource::getOwner)
+                    .map(Principal::getName)
+                    .map(UsernamePrincipal::new)
+                    .orElse(JcrMetadataAccess.getActiveUser());
+                final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                    .ifPresent(actions -> parent.get().setupAccessControl((JcrAllowedActions) actions, owner, roles));
+            }
+
+            return Optional.of(details);
+        } catch (final IllegalArgumentException e) {
+            throw new MetadataException("Unable to create datasource details: " + type, e);
+        }
+    }
 
     public Datasource.ID resolveId(Serializable fid) {
         return new JcrDatasource.DatasourceId(fid);
@@ -295,9 +344,16 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             props.put(JcrDatasource.SYSTEM_NAME, name);
 
             String encodedName = org.modeshape.jcr.value.Path.DEFAULT_ENCODER.encode(name);
+            final boolean isNew = !hasEntityNode(subfolderNode.getPath(), encodedName);
 
             @SuppressWarnings("unchecked")
             J datasource = (J) findOrCreateEntity(subfolderNode.getPath(), encodedName, implType, props);
+
+            if (isNew && JcrUserDatasource.class.isAssignableFrom(type)) {
+                final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                    .ifPresent(actions -> ((JcrUserDatasource) datasource).setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            }
 
             datasource.setTitle(name);
             datasource.setDescription(descr);

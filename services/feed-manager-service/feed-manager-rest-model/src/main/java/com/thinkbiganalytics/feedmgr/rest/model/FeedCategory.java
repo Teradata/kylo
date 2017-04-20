@@ -27,6 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.metadata.MetadataField;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,7 +38,7 @@ import java.util.Set;
  * A category is a collection of zero or more feeds in the Feed Manager.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedCategory {
+public class FeedCategory extends EntityAccessControl {
 
     private String id;
     @MetadataField

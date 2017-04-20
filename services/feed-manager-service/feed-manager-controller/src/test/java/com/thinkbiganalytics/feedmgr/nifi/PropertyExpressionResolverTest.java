@@ -26,6 +26,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -68,6 +71,34 @@ public class PropertyExpressionResolverTest {
     @Inject
     private PropertyExpressionResolver resolver;
 
+    @Test
+    public void testContainsVariable() {
+        Assert.assertTrue(resolver.containsVariablesPatterns("abc 123 ${var}"));
+    }
+
+
+    @Test
+    public void testStrSubstitutor() {
+        String template1 = "${metadata.feedName}_config.xx";
+        Map<String, String> map1 = new HashMap<>();
+        map1.put("metadata.feedName", "category.feed");
+        StrSubstitutor ss1 = new StrSubstitutor(map1);
+        ss1.setEnableSubstitutionInVariables(true);
+        Assert.assertEquals("category.feed_config.xx", ss1.replace(template1));
+
+        String template2 = "$${${metadata.feedName}_config.xx}";
+        StrSubstitutor ss2 = new StrSubstitutor(map1);
+        ss2.setEnableSubstitutionInVariables(true);
+        Assert.assertEquals("${category.feed_config.xx}", ss2.replace(template2));
+
+        String template3 = "${${metadata.feedName}_config.xx}";
+        map1.put("category.feed_config.xx", "runtime value");
+        StrSubstitutor ss3 = new StrSubstitutor(map1);
+        ss3.setEnableSubstitutionInVariables(true);
+        Assert.assertEquals("runtime value", ss3.replace(template3));
+
+    }
+
     /**
      * Verifies resolving expressions in property values.
      */
@@ -79,7 +110,7 @@ public class PropertyExpressionResolverTest {
         // Verify config variable
         final NifiProperty prop1 = createProperty("${config.test.value}");
         Assert.assertTrue(resolver.resolveExpression(metadata, prop1));
-        Assert.assertEquals("Hello world!", prop1.getValue());
+        Assert.assertEquals("hello-world", prop1.getValue());
 
         // Verify metadata variable
         final NifiProperty prop2 = createProperty("${metadata.systemFeedName}");
@@ -93,7 +124,7 @@ public class PropertyExpressionResolverTest {
 
         final NifiProperty prop4 = createProperty(STATIC_KEY, "${config.test.value}");
         Assert.assertTrue(resolver.resolveExpression(metadata, prop4));
-        Assert.assertEquals("Hello world!", prop4.getValue());
+        Assert.assertEquals("hello-world", prop4.getValue());
 
         final NifiProperty prop5 = createProperty(STATIC_KEY, "");
         Assert.assertTrue(resolver.resolveExpression(metadata, prop5));
@@ -102,12 +133,22 @@ public class PropertyExpressionResolverTest {
         // Verify multiple variables
         final NifiProperty prop6 = createProperty("${metadata.systemFeedName}.${config.test.value}");
         Assert.assertTrue(resolver.resolveExpression(metadata, prop6));
-        Assert.assertEquals("myfeed.Hello world!", prop6.getValue());
+        Assert.assertEquals("myfeed.hello-world", prop6.getValue());
+
+        // Verify multiple variables
+        final NifiProperty prop7 = createProperty("$${${metadata.systemFeedName}.${config.test.value}}");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop7));
+        Assert.assertEquals("${myfeed.hello-world}", prop7.getValue());
+
+        // Verify multiple variables
+        final NifiProperty prop8 = createProperty("${config.${metadata.systemFeedName}.${config.test.value}}");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop8));
+        Assert.assertEquals("runtime value", prop8.getValue());
 
         // Verify static text
-        final NifiProperty prop7 = createProperty("config.test.value");
-        Assert.assertFalse(resolver.resolveExpression(metadata, prop7));
-        Assert.assertEquals("config.test.value", prop7.getValue());
+        final NifiProperty prop9 = createProperty("config.test.value");
+        Assert.assertFalse(resolver.resolveExpression(metadata, prop9));
+        Assert.assertEquals("config.test.value", prop9.getValue());
     }
 
     /**
@@ -189,7 +230,15 @@ public class PropertyExpressionResolverTest {
         props.add(newProperty("c", "${d}"));
 
         PropertyExpressionResolver.ResolvedVariables variables = resolver.resolveVariables("${a} - ${b} - ${test.property2}", props);
-        int i = 0;
+        Assert.assertEquals("fred - fred - ${a2}/fred", variables.getResolvedString());
+        Map<String, String> resolvedVariables = variables.getResolvedVariables();
+        Assert.assertEquals("fred", resolvedVariables.get("a"));
+        Assert.assertEquals("fred", resolvedVariables.get("b"));
+        Assert.assertEquals("fred", resolvedVariables.get("c"));
+        Assert.assertEquals("fred", resolvedVariables.get("d"));
+        Assert.assertEquals("${a2}/fred", resolvedVariables.get("test.property2"));
+        Assert.assertEquals(5, resolvedVariables.size());
+        System.out.println(resolvedVariables);
     }
 
     private NifiProperty newProperty(String key, String value) {

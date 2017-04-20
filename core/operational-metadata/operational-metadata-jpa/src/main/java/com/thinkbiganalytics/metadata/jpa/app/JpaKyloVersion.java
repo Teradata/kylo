@@ -21,13 +21,12 @@ package com.thinkbiganalytics.metadata.jpa.app;
  */
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -70,15 +69,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     public JpaKyloVersion(String majorVersion, String minorVersion) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
-    }
-
-    /**
-     * return the unique id for this version entry
-     *
-     * @return the unique id for this version entry
-     */
-    public UUID getId() {
-        return id;
     }
 
     /**
@@ -154,16 +144,16 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof KyloVersion)) {
             return false;
         }
 
-        JpaKyloVersion that = (JpaKyloVersion) o;
+        KyloVersion that = (KyloVersion) o;
 
-        if (majorVersion != null ? !majorVersion.equals(that.majorVersion) : that.majorVersion != null) {
+        if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
             return false;
         }
-        return !(minorVersion != null ? !minorVersion.equals(that.minorVersion) : that.minorVersion != null);
+        return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
 
     }
 

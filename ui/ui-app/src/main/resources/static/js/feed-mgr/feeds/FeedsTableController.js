@@ -14,7 +14,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         this.cardTitle = 'Feeds';
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton("feeds", function() {
@@ -132,7 +132,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         getFeeds();
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
                 });

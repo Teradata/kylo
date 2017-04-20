@@ -16,7 +16,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, AccessControlService, FeedService, RestUrlService) {
+    var controller = function ($scope, $http, $mdDialog, $q,AccessControlService, EntityAccessControlService,FeedService, RestUrlService) {
 
         var self = this;
 
@@ -297,7 +297,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.showPreconditionDialog = function (index) {
             $mdDialog.show({
                 controller: 'FeedPreconditionsDialogController',
-                templateUrl: 'js/define-feed/feed-details/feed-preconditions/define-feed-preconditions-dialog.html',
+                templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
@@ -313,11 +313,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
+            self.allowEdit = access;
+        });
 
         // Detect if NiFi is clustered
         $http.get(RestUrlService.NIFI_CLUSTER_SUMMARY_URL).then(function(response) {
@@ -327,7 +325,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
     };
 
 
-    angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","AccessControlService","FeedService","RestUrlService",controller]);
+    angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedSchedule', directive);

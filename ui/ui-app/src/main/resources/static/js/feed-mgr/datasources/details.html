@@ -1,0 +1,139 @@
+<div>
+  <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+  <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
+    <header-section>
+      <div layout="row" layout-align="center start">
+        <div class="card-title">Data Source Details</div>
+        <span flex></span>
+        <ng-md-icon icon="storage" style="fill:{{vm.model.iconColor}}; padding-right:16px;" size="30"></ng-md-icon>
+      </div>
+    </header-section>
+    <body-section>
+      <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="!vm.isNew()" on-save-edit="vm.onDetailsSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                               editable="vm.isDetailsEditable" is-valid="vm.datasourceForm.$valid" allow-edit="vm.allowEdit">
+        <readonly-section>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Name</span>
+            <div flex>{{vm.model.name}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Description</span>
+            <div flex>{{vm.model.description}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Type</span>
+            <div flex>{{vm.model.type}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Connection URL</span>
+            <div flex>{{vm.model.databaseConnectionUrl}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Driver Class Name</span>
+            <div flex>{{vm.model.databaseDriverClassName}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database Driver Location(s)</span>
+            <div flex>{{vm.model.databaseDriverLocation}}</div>
+          </div>
+          <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Database User</span>
+            <div flex>{{vm.model.databaseUser}}</div>
+          </div>
+        </readonly-section>
+        <editable-section>
+          <ng-form name="vm.datasourceForm">
+            <md-input-container class="md-block">
+              <label>Name</label>
+              <input required ng-model="vm.editModel.name" name="datasourceName"/>
+              <div ng-messages="vm.datasourceForm.datasourceName.$error" md-auto-hide="false">
+                <div ng-message="required">Required.</div>
+                <div ng-message="notUnique">This name is already used.</div>
+              </div>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Description</label>
+              <input ng-model="vm.editModel.description"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Database Connection URL</label>
+              <input required ng-model="vm.editModel.databaseConnectionUrl"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Database Driver Class Name</label>
+              <input required ng-model="vm.editModel.databaseDriverClassName"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Database Driver Location(s)</label>
+              <input ng-model="vm.editModel.databaseDriverLocation"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Database User</label>
+              <input ng-model="vm.editModel.databaseUser"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Password</label>
+              <input type="password" ng-model="vm.editModel.password"/>
+            </md-input-container>
+          </ng-form>
+        </editable-section>
+      </vertical-section-layout>
+
+      <ng-form name="vm.datasourceAccessControlForm" ng-if="!vm.isNew()">
+        <vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew()" section-title="Access Control" on-save-edit="vm.onAccessControlSave()" on-edit="vm.onEdit()"
+                                 editable="vm.isAccessControlEditable" is-valid="vm.isValid">
+          <readonly-section>
+            <entity-access-control entity="vm.model" entity-type="datasource" the-form="vm.datasourceAccessControlForm" read-only="true"></entity-access-control>
+          </readonly-section>
+          <editable-section>
+            <entity-access-control entity="vm.editModel" entity-type="datasource" the-form="vm.datasourceAccessControlForm"></entity-access-control>
+          </editable-section>
+        </vertical-section-layout>
+      </ng-form>
+
+      <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" ng-if="!vm.isNew()">
+        <readonly-section>
+          <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.sourceForFeeds.length > 0">
+            <md-list-item>
+              <div layout="row" layout-fill>
+                <div flex="50" class="md-list-item-text hint">
+                  Name
+                </div>
+                <div flex="10" class="md-list-item-text hint">
+                  Active
+                </div>
+                <div flex="40" class="md-list-item-text hint">
+                  Last Modified
+                </div>
+              </div>
+            </md-list-item>
+            <md-list-item ng-repeat="feed in vm.model.sourceForFeeds">
+              <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
+                <div flex="50" class="md-list-item-text">
+                  <md-input-container class="md-block" flex-gt-sm>
+                    <div>{{feed.displayName}}</div>
+                  </md-input-container>
+                </div>
+                <div flex="10" class="md-list-item-text ">
+                  <ng-md-icon icon="check" ng-if="feed.state == 'ENABLED'"></ng-md-icon>
+                </div>
+                <div flex="40" class="md-list-item-text ">
+                  {{feed.modifiedTime | date : 'MM/dd/yyyy hh:mm:ss'}}
+                </div>
+              </div>
+            </md-list-item>
+          </md-list>
+          <div ng-if="vm.model.sourceForFeeds == null || vm.model.sourceForFeeds.length === 0">
+            There are no feeds associated with this data source.
+          </div>
+        </readonly-section>
+      </vertical-section-layout>
+    </body-section>
+  </card-layout>
+</div>

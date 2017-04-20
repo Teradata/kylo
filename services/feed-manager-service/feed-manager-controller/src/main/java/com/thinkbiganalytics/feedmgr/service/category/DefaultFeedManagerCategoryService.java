@@ -24,13 +24,15 @@ import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.security.AccessController;
 
 import java.util.Collection;
@@ -42,12 +44,12 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- * An implementation of {@link FeedManagerCategoryService} backed by a {@link FeedManagerCategoryProvider}.
+ * An implementation of {@link FeedManagerCategoryService} backed by a {@link CategoryProvider}.
  */
 public class DefaultFeedManagerCategoryService implements FeedManagerCategoryService {
 
     @Inject
-    FeedManagerCategoryProvider categoryProvider;
+    CategoryProvider categoryProvider;
 
     @Inject
     CategoryModelTransform categoryModelTransform;
@@ -56,14 +58,17 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     MetadataAccess metadataAccess;
 
     @Inject
+    private SecurityService securityService;
+
+    @Inject
     private AccessController accessController;
 
     @Override
     public Collection<FeedCategory> getCategories() {
         return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
-            List<FeedManagerCategory> domainCategories = categoryProvider.findAll();
+            List<Category> domainCategories = categoryProvider.findAll();
             return categoryModelTransform.domainToFeedCategory(domainCategories);
         });
     }
@@ -71,10 +76,10 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public FeedCategory getCategoryById(final String id) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
-            final FeedManagerCategory.ID domainId = categoryProvider.resolveId(id);
-            final FeedManagerCategory domainCategory = categoryProvider.findById(domainId);
+            final Category.ID domainId = categoryProvider.resolveId(id);
+            final Category domainCategory = categoryProvider.findById(domainId);
             return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
@@ -82,17 +87,17 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public FeedCategory getCategoryBySystemName(final String name) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
-            final FeedManagerCategory domainCategory = categoryProvider.findBySystemName(name);
+            final Category domainCategory = categoryProvider.findBySystemName(name);
             return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
 
     @Override
     public void saveCategory(final FeedCategory category) {
-        final FeedManagerCategory.ID domainId = metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
+        final Category.ID domainId = metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
 
             // Determine the system name
             if (category.getId() == null) {
@@ -109,10 +114,17 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             }
 
             // Update the domain entity
-            final FeedManagerCategory domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
+            final Category domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
 
             // Repopulate identifier
             category.setId(domainCategory.getId().toString());
+
+            ///update access control
+            //TODO only do this when modifying the access control
+            if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+                category.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(category.getId(), roleMembershipChange));
+            }
+
             return domainCategory.getId();
         });
 
@@ -123,9 +135,9 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
 
-        final FeedManagerCategory.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
+        final Category.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
         categoryProvider.deleteById(domainId);
         return true;
     }
@@ -134,7 +146,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             return UserPropertyTransform.toUserFields(categoryProvider.getUserFields());
         });
@@ -142,7 +154,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_CATEGORIES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
 
         categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
@@ -151,7 +163,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public Set<UserProperty> getUserProperties() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             return UserPropertyTransform.toUserProperties(Collections.emptyMap(), categoryProvider.getUserFields());
         });

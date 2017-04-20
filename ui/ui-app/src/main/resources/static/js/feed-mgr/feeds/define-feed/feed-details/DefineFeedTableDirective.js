@@ -79,6 +79,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
         function onDataTransformSchemaLoaded() {
+            self.syncFeedsColumns();
             validate();
         }
 
@@ -115,6 +116,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         function createHistoryRecord(columnDef) {
             return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, precisionScale: columnDef.precisionScale, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
+        }
+
+        /**
+         * Called wehn the Method radio option is changed
+         */
+        this.updateSelectedMethod =function(method){
+            if(method == 'MANUAL' ) {
+                self.model.allowSkipHeaderOption = true;
+            }
+
         }
 
         this.addHistoryItem = function(columnDef) {
@@ -208,6 +219,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 // Ensure column is defined
                 if (!angular.isDefined(self.defineFeedTableForm["name_" + columnDef._id])) {
                     return false;
+                }
+
+                if (columnDef.deleted === true) {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("required", true);
+                    self.defineFeedTableForm["datatype_" + columnDef._id].$setValidity("required", true);
                 }
 
                 // Check for reserved names
@@ -417,6 +433,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
+
+            if(columnDef.derivedDataType != 'decimal'){
+                columnDef.precisionScale = null;
+            }
             self.onFieldChange(columnDef);
 
             fieldNamesUnique(true);
@@ -548,7 +568,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
+
             if (valid) {
+                //ensure we have at least 1 field (not deleted) assigned to the model)
+                var validFields = _.filter(self.model.table.tableSchema.fields,function(field) {
+                    return field.deleted == undefined || field.deleted == false;
+                });
+                valid = validFields.length >0;
                 ensurePartitionData();
             }
             self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;
@@ -657,7 +683,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.table.structured = responseData.structured;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
-                    self.model.skipHeader = true;
+                    self.model.options.skipHeader = true;
                 } else {
                     self.model.allowSkipHeaderOption = false;
                     self.model.options.skipHeader = false;
@@ -691,6 +717,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.partitionFormulas = functions;
                 });
 
+        validate();
+
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
         });
@@ -711,7 +739,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Filter formulas based on column type
             if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-                return _.without(formulas, "year", "month", "day", "hour", "minute");
+                return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
             } else {
                return formulas;
             }

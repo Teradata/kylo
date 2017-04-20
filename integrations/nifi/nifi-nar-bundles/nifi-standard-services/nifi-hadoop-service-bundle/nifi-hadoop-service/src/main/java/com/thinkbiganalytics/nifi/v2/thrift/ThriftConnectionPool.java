@@ -135,6 +135,18 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .build();
 
     /**
+     * A property to get the query to be used when testing the Datasource.
+     */
+    public static final PropertyDescriptor DB_VALIDATION_QUERY_TIMEOUT = new PropertyDescriptor.Builder()
+        .name("Validation Query Timeout")
+        .description("The amount of time, in seconds, to wait for a validation query to succeed.")
+        .defaultValue("10 s")
+        .required(true)
+        .sensitive(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
      * A property to get the maximum amount of time that the pool will wait for an available connection
      */
     public static final PropertyDescriptor MAX_WAIT_TIME = new PropertyDescriptor.Builder()
@@ -235,6 +247,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         props.add(DB_USER);
         props.add(DB_PASSWORD);
         props.add(DB_VALIDATION_QUERY);
+        props.add(DB_VALIDATION_QUERY_TIMEOUT);
         props.add(MAX_WAIT_TIME);
         props.add(MAX_TOTAL_CONNECTIONS);
         props.add(HADOOP_CONFIGURATION_RESOURCES);
@@ -273,6 +286,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         this.principal = context.getProperty(kerberosPrincipal).getValue();
         this.keytab = context.getProperty(kerberosKeytab).getValue();
         final String validationQuery = context.getProperty(DB_VALIDATION_QUERY).getValue();
+        final Long validationQueryTimeout = context.getProperty(DB_VALIDATION_QUERY_TIMEOUT).asTimePeriod(TimeUnit.SECONDS);
 
         // Optional driver URL used to get DriverClassLoader, when exist, this URL will be used to locate driver jar file location
         final String urlString = context.getProperty(DB_DRIVER_JAR_URL).getValue();
@@ -286,6 +300,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
                 .password(passw)
                 .driverClassLoader(getDriverClassLoader(urlString, drv))
                 .validationQuery(validationQuery)
+                .validationQueryTimeout(validationQueryTimeout)
                 .build();
         getLogger().info("Created new ThirftConnectionPool with Refreshable Datasource for " + urlString);
     }
@@ -331,7 +346,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
     @OnDisabled
     public void shutdown() {
         try {
-            dataSource.close();
+            if( dataSource != null ) {
+                dataSource.close();
+            }
         } catch (final SQLException e) {
             throw new ProcessException(e);
         }

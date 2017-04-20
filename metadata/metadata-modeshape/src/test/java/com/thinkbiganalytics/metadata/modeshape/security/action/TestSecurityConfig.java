@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,12 @@ public class TestSecurityConfig {
 
     @Inject
     private ActionsModuleBuilder builder;
+    
+    
+    @Bean
+    public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
+        return new JcrAllowedEntityActionsProvider();
+    }    
 
     @Bean
     public PostMetadataConfigAction configAuthorization() {
@@ -70,7 +77,7 @@ public class TestSecurityConfig {
             // tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
             return builder
-                            .module("services")
+                            .module(AllowedActions.SERVICES)
                                 .action(MANAGE_AUTH)
                                 .action(MANAGE_OPS)
                                 .action(ADMIN_OPS)

@@ -23,6 +23,9 @@ package com.thinkbiganalytics.policy;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.List;
  * Hold reference to the {@link StandardizationPolicy} and {@link ValidationPolicy} associated to a given field
  */
 public class FieldPolicy implements Serializable {
+
+    private static final Logger log = LoggerFactory.getLogger(FieldPolicy.class);
 
     private String table;
     private String field;
@@ -54,6 +59,7 @@ public class FieldPolicy implements Serializable {
     private int piiScan;
 
     private boolean profile;
+    private boolean isPartitionColumn;
 
     protected FieldPolicy() {
     }
@@ -69,6 +75,20 @@ public class FieldPolicy implements Serializable {
         this.policies = policies;
         this.typeDiscovery = typeDiscovery;
         this.piiScan = piiScan;
+    }
+
+    public FieldPolicy(String table, String field, String feedField, boolean skipSchemaValidation, boolean nullable, List<ValidationPolicy> validators,
+                       List<StandardizationPolicy> policies, boolean typeDiscovery, int piiScan, boolean isPartitionColumn) {
+        this.table = table;
+        this.field = field;
+        this.feedField = feedField;
+        this.skipSchemaValidation = skipSchemaValidation;
+        this.nullable = nullable;
+        this.validators = validators;
+        this.policies = policies;
+        this.typeDiscovery = typeDiscovery;
+        this.piiScan = piiScan;
+        this.isPartitionColumn = isPartitionColumn;
     }
 
     public static void main(String[] args) {
@@ -150,10 +170,29 @@ public class FieldPolicy implements Serializable {
         this.typeDiscovery = typeDiscovery;
     }
 
+    public boolean isPartitionColumn() {
+        return isPartitionColumn;
+    }
+
+    public void setPartitionColumn(boolean partitionColumn) {
+        this.isPartitionColumn = partitionColumn;
+    }
+
     public String toString() {
         return "FieldPolicy validators [" + (validators == null ? "NULL" : validators.size()) + "] policies [" + (policies == null
                                                                                                                   ? "NULL"
                                                                                                                   : policies.size())
                + "]";
+    }
+
+    public ValidationPolicy getNotNullValidator() {
+        if ((validators !=null) && (validators.size() > 0)) {
+            for (ValidationPolicy validationPolicy: validators) {
+                if (validationPolicy.getClass().getName().equals("com.thinkbiganalytics.policy.validation.NotNullValidator")) {
+                    return validationPolicy;
+                }
+            }
+        }
+        return null;
     }
 }

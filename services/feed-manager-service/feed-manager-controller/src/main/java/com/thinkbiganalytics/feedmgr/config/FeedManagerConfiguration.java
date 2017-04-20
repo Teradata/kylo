@@ -27,13 +27,17 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
-import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
@@ -41,20 +45,30 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.security.DefaultSecurityService;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.util.Assert;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -123,6 +137,11 @@ public class FeedManagerConfiguration {
     @Bean
     public MetadataService metadataService() {
         return new FeedManagerMetadataService();
+    }
+
+    @Bean
+    public SecurityService securityService() {
+        return new DefaultSecurityService();
     }
 
     @Bean
@@ -205,4 +224,68 @@ public class FeedManagerConfiguration {
         return new DefaultJobService();
     }
 
+    @Bean
+    public EncryptionService encryptionService() {
+        return new EncryptionService();
+    }
+
+    @Bean
+    public RegisteredTemplateService registeredTemplateService() {
+        return new RegisteredTemplateService();
+    }
+
+    @Bean
+    public RegisteredTemplateUtil registeredTemplateUtil() {
+        return new RegisteredTemplateUtil();
+    }
+
+    @Bean
+    public UploadProgressService uploadProgressService() {
+        return new UploadProgressService();
+    }
+
+    /**
+     * Transforms objects between {@link com.thinkbiganalytics.metadata.rest.model.data.Datasource} and {@link com.thinkbiganalytics.metadata.api.datasource.Datasource}.
+     *
+     * @param datasourceProvider the {@link com.thinkbiganalytics.metadata.api.datasource.Datasource} provider
+     * @param textEncryptor      the encryption provider
+     * @param niFiRestClient     the NiFi REST client
+     * @param securityService    the security service
+     * @return the model transformer
+     */
+    @Bean
+    @Nonnull
+    public DatasourceModelTransform datasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor textEncryptor,
+                                                             @Nonnull final NiFiRestClient niFiRestClient, @Nonnull final SecurityService securityService) {
+        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient, securityService);
+    }
+
+    /**
+     * Transforms objects between different feed models and domain objects.
+     *
+     * @param datasourceTransform the {@code Datasource} object transformer
+     * @return the model transformer
+     */
+    @Bean
+    @Nonnull
+    public Model model(@Nonnull final DatasourceModelTransform datasourceTransform) {
+        return new Model(datasourceTransform);
+    }
+
+    /**
+     * Transforms SLA objects between the REST model and the domain object.
+     *
+     * @param model the model transformer
+     * @return the SLA transformer
+     */
+    @Bean
+    @Nonnull
+    public ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform(@Nonnull final Model model) {
+        return new ServiceLevelAgreementModelTransform(model);
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform() {
+        return new AccessControlledEntityTransform();
+    }
 }

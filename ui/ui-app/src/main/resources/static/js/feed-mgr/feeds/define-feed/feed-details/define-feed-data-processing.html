@@ -25,10 +25,10 @@
       <header-section>
         <div layout="row" layout-align="space-between-center" flex>
           <div class="card-title" flex>Data Processing</div>
-          <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+          <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
         <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-          <div class="md-subheader" flex>Define field validation, standardization, and cleansing policies</div>
+          <div class="card-sub-header" flex>Define field validation, standardization, and cleansing policies</div>
           <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
         </div>
 
@@ -89,26 +89,26 @@
                       </div>
                       <div flex="10" class="md-list-item-text " layout="column">
                         <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
+                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex">
                           </md-checkbox>
                         </md-input-container>
                       </div>
                        <div flex="10" class="md-list-item-text " layout="column">
                          <md-input-container class="md-block" flex-gt-sm>
-                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
+                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex">
                            </md-checkbox>
                          </md-input-container>
                        </div>
                       <!-- Standardization rule -->
                       <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed ||  policy.field.dataTypeDescriptor.complex)">
+                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                             <ng-md-icon icon="add_circle_outline"></ng-md-icon>
                           </md-button>
                           ADD
                         </div>
 
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
+                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                             <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
                           </md-button>
@@ -122,13 +122,13 @@
 
                       <!-- Validation rule -->
                       <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
+                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                             <ng-md-icon icon="add_circle_outline"></ng-md-icon>
                           </md-button>
                           ADD
                         </div>
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
+                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                             <ng-md-icon icon="add_circle_outline"
                                         style="fill:#2D78B1;"></ng-md-icon>
@@ -265,7 +265,7 @@
         </div>
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
-                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove
           </md-button>
         </div>
       </body-section>

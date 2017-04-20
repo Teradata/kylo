@@ -47,7 +47,7 @@ public class AccessControlConfig {
 //    }
 
     @Bean(name = "actionsModelTransform")
-    public ActionsModelTransform modelTransform() {
-        return new ActionsModelTransform();
+    public SecurityModelTransform modelTransform() {
+        return new SecurityModelTransform();
     }
 }

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed.datasource;
  */
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
@@ -36,13 +37,16 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -119,15 +123,22 @@ public class DerivedDatasourceFactory {
             .equalsIgnoreCase(definition.getProcessorName()));
     }
 
-    private Set<Datasource.ID> ensureDataTransformationSourceDatasources(FeedMetadata feed) {
-        Set<Datasource.ID> list = new HashSet<>();
+    /**
+     * Builds the list of data sources for the specified data transformation feed.
+     *
+     * @param feed the feed
+     * @return the list of data sources
+     */
+    @Nonnull
+    private Set<Datasource.ID> ensureDataTransformationSourceDatasources(@Nonnull final FeedMetadata feed) {
+        // Build the data sources from the view model
+        final Set<Datasource.ID> datasources = new HashSet<>();
+        final Set<String> tableNames = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getTableNamesFromViewModel).orElse(Collections.emptySet());
 
-        if (feed.getDataTransformation() != null && !feed.getDataTransformation().getTableNamesFromViewModel().isEmpty()) {
-
+        if (!tableNames.isEmpty()) {
             DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
             if (datasourceDefinition != null) {
-                Set<String> hiveTableSources = feed.getDataTransformation().getTableNamesFromViewModel();
-                hiveTableSources.stream().forEach(hiveTable -> {
+                tableNames.forEach(hiveTable -> {
                     String schema = StringUtils.trim(StringUtils.substringBefore(hiveTable, "."));
                     String table = StringUtils.trim(StringUtils.substringAfterLast(hiveTable, "."));
                     String identityString = datasourceDefinition.getIdentityString();
@@ -146,17 +157,23 @@ public class DerivedDatasourceFactory {
                         datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
                                                                    new HashMap<String, Object>(props));
                     if (derivedDatasource != null) {
-                        list.add(derivedDatasource.getId());
+                        datasources.add(derivedDatasource.getId());
                     }
                 });
             }
-
         }
-        return list;
+
+        // Build the data sources from the data source ids
+        final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
+        datasourceIds.stream()
+            .map(datasourceProvider::resolve)
+            .forEach(datasources::add);
+
+        return datasources;
     }
 
     public boolean isDataTransformation(FeedMetadata feedMetadata) {
-        return feedMetadata.getDataTransformation() != null && !feedMetadata.getDataTransformation().getTableNamesFromViewModel().isEmpty();
+        return feedMetadata.getDataTransformation() != null;
     }
 
 

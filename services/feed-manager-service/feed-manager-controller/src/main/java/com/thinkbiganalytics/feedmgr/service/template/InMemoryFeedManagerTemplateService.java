@@ -24,8 +24,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+
+import org.apache.nifi.web.api.dto.PortDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +46,7 @@ import javax.inject.Inject;
 /**
  * in memory implementation of the FeedTemplateService for use in testing
  */
-public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
+public class InMemoryFeedManagerTemplateService implements FeedManagerTemplateService {
 
 
     @Inject
@@ -126,7 +130,6 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
         return null;
     }
 
-    @Override
     public RegisteredTemplate getRegisteredTemplateByName(final String templateName) {
 
         return Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
@@ -138,20 +141,6 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
     }
 
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-        RegisteredTemplate match = Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
-            @Override
-            public boolean apply(RegisteredTemplate registeredTemplate) {
-                boolean match = nifiTemplateId.equalsIgnoreCase(registeredTemplate.getNifiTemplateId());
-                if (!match && nifiTemplateName != null) {
-                    match = nifiTemplateName.equalsIgnoreCase(registeredTemplate.getTemplateName());
-                }
-                return match;
-            }
-        }).orNull();
-        return match;
-    }
 
 
     public List<String> getRegisteredTemplateIds() {
@@ -184,5 +173,30 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
     @Override
     public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
 
+    }
+
+    @Override
+    public List<NifiProperty> getTemplateProperties(String templateId) {
+        return null;
+    }
+
+    @Override
+    public Set<PortDTO> getReusableFeedInputPorts() {
+        return null;
+    }
+
+    @Override
+    public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds) {
+        return null;
+    }
+
+    @Override
+    public List<RegisteredTemplate.FlowProcessor> getNiFiTemplateFlowProcessors(String templateId, List<ReusableTemplateConnectionInfo> connectionInfo) {
+        return null;
+    }
+
+    @Override
+    public List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String templateId) {
+        return null;
     }
 }

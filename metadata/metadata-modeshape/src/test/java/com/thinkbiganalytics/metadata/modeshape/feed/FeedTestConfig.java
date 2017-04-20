@@ -28,11 +28,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeedTestConfig {
 
-
     @Bean
     public FeedTestUtil feedTestUtil() {
         return new FeedTestUtil();
     }
-
-
 }

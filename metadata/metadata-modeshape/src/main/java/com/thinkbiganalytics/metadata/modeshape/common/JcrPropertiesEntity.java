@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  */
 
 import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -191,6 +192,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         if (props != null) {
             newProps.putAll(props);
         }
+        
         JcrProperties properties = getPropertiesObject();
         for (Map.Entry<String, Object> entry : newProps.entrySet()) {
             try {

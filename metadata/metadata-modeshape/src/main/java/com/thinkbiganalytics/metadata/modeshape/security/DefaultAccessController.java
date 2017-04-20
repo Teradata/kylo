@@ -26,7 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.security.AccessControlException;
 import java.util.Arrays;
@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -45,7 +46,19 @@ public class DefaultAccessController implements AccessController {
     private MetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider actionsProvider;
+    private AllowedEntityActionsProvider actionsProvider;
+
+    @org.springframework.beans.factory.annotation.Value("${security.entity.access.controlled:false}")
+    private boolean entityAccessControlled;
+
+    public DefaultAccessController() {
+
+    }
+
+    @PostConstruct
+    private void init() {
+        JcrAccessControlUtil.setEnableEntityAccessControl(entityAccessControlled);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.AccessController#checkPermission(java.lang.String, com.thinkbiganalytics.security.action.Action, com.thinkbiganalytics.security.action.Action[])
@@ -72,4 +85,28 @@ public class DefaultAccessController implements AccessController {
         });
     }
 
+    /**
+     * Check to see if the user has an service permission for a given module
+     *
+     * @param moduleName the service module to check
+     * @param action     the permission to check
+     * @param others     additional permissions
+     * @return true if valid, false if not
+     */
+    public boolean hasPermission(String moduleName, Action action, Action... others) {
+        try {
+            checkPermission(moduleName, action, others);
+            return true;
+        } catch (AccessControlException e) {
+            return false;
+        }
+    }
+
+    public boolean isEntityAccessControlled() {
+        return entityAccessControlled;
+    }
+
+    public void setEntityAccessControlled(boolean entityAccessControlled) {
+        this.entityAccessControlled = entityAccessControlled;
+    }
 }

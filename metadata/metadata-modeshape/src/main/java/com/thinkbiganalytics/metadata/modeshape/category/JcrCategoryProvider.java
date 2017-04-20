@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -32,12 +33,18 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,19 +57,32 @@ import javax.jcr.RepositoryException;
 /**
  * A JCR provider for {@link Category} objects.
  */
-public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
+public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
 
     /**
      * JCR node type manager
      */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
+    
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     /**
      * Transaction support
      */
     @Inject
     MetadataAccess metadataAccess;
+
+
+    @Override
+    public Category update(Category category) {
+        category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
+        return super.update(category);
+    }
 
     @Override
     public Category findBySystemName(String systemName) {
@@ -90,7 +110,16 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         String path = EntityUtil.pathForCategory();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrCategory.SYSTEM_NAME, systemName);
-        return findOrCreateEntity(path, systemName, props);
+        boolean isNew = ! hasEntityNode(path, systemName);
+        JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
+        
+        if (isNew) {
+            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+            this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
+                    .ifPresent(actions -> category.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+        }
+        
+        return category;
     }
 
     @Override

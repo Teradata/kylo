@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -6,7 +6,7 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('alerts',{
+        $stateProvider.state(AccessConstants.UI_STATES.ALERTS.state,{
             url:'/alerts',
             views: {
                 'content': {
@@ -19,19 +19,28 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
             data:{
                 breadcrumbRoot:true,
                 displayName:'Alerts',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.ALERTS.permissions
             }
-        }).state("alert-details",{
-            url:"/alert-details/:alertId",
+        }).state(AccessConstants.UI_STATES.ALERT_DETAILS.state,{
+            url:"/alert-details/{alertId}",
+            views: {
+                'content': {
+                    templateUrl: 'js/ops-mgr/alerts/alert-details.html',
+                    controller:'AlertDetailsController',
+                    controllerAs:'vm'
+                }
+            },
             params: {
                 alertId: null
             },
             resolve: {
-                loadPage: lazyLoad()
+                loadMyCtrl: lazyLoadController(['ops-mgr/alerts/AlertDetailsController'])
             },
             data:{
                 displayName:'Alert Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.ALERT_DETAILS.permissions
             }
         })
 

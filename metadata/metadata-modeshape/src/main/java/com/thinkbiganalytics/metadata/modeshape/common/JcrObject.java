@@ -38,7 +38,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- */
+  */
 public class JcrObject {
 
     protected final Node node;
@@ -208,7 +208,7 @@ public class JcrObject {
         return getPropertyFromNode(this.node, name, type, allowNotFound);
     }
 
-    protected <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound) {
+    public <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound) {
         Object o = JcrPropertyUtil.getProperty(node, name, allowNotFound);
         if (allowNotFound && o == null) {
             return null;

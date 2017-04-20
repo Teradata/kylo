@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','app','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','app','angular-ui-router','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, ['ui.router']);
 
@@ -7,7 +7,7 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('categories',{
+        $stateProvider.state(AccessConstants.UI_STATES.CATEGORIES.state,{
             url:'/categories',
             params: {
             },
@@ -24,9 +24,10 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:true,
                 displayName:'Categories',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.CATEGORIES.permissions
             }
-        }).state('category-details',{
+        }).state(AccessConstants.UI_STATES.CATEGORY_DETAILS.state,{
             url:'/category-details/{categoryId}',
             params: {
                 categoryId:null
@@ -44,7 +45,8 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:false,
                 displayName:'Category Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.CATEGORY_DETAILS.permissions
             }
         })
 
