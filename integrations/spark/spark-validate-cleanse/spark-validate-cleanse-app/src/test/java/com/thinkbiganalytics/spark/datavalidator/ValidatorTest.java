@@ -20,10 +20,18 @@ package com.thinkbiganalytics.spark.datavalidator;
  * #L%
  */
 
+import com.thinkbiganalytics.policy.BaseFieldPolicy;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
+import com.thinkbiganalytics.policy.FieldPolicyBuilder;
+import com.thinkbiganalytics.policy.standardization.LowercaseStandardizer;
+import com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
+import com.thinkbiganalytics.policy.validation.CharacterValidator;
+import com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.policy.validation.LookupValidator;
 import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
@@ -48,6 +56,8 @@ import static org.junit.Assert.assertTrue;
 public class ValidatorTest {
 
     private Validator validator;
+
+
 
     @Before
     public void setUp() throws Exception {
@@ -130,25 +140,112 @@ public class ValidatorTest {
 
     private ValidationResult rangeValidate(Number min, Number max, String dataType, String value) {
         RangeValidator validatorPolicy = new RangeValidator(min, max);
-        List<ValidationPolicy> validationPolicies = new ArrayList<>();
-        validationPolicies.add(validatorPolicy);
-        List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
-        return validator.validateField(fieldPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(validatorPolicy);
+
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName("field1").feedFieldName("field1").addPolicies(policies).build();
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, value, HCatDataType.createFromDataType("field1", dataType));
+        return result.getFinalValidationResult();
     }
 
     @Test
     public void standardizeRegex() {
         SimpleRegexReplacer standardizer = new SimpleRegexReplacer("(?i)foo", "bar");
+        String fieldName = "field1";
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(standardizer);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
 
-        List<ValidationPolicy> validationPolicies = new ArrayList<>();
-        List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
-        standardizationPolicies.add(standardizer);
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
-        assertEquals(validator.standardizeField(fieldPolicy, "aafooaa"), "aabaraa");
-        assertNull(validator.standardizeField(fieldPolicy, null));
-        assertEquals(validator.standardizeField(fieldPolicy, ""), "");
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals(result.getFieldValue(),"aabaraa");
+
+        result = validator.standardizeAndValidateField(fieldPolicy, null, fieldDataType);
+        assertNull(result.getFieldValue());
+
+        result = validator.standardizeAndValidateField(fieldPolicy, "", fieldDataType);
+        assertEquals(result.getFieldValue(),"");
     }
+
+
+
+    @Test
+    public void standardizeAndValidate() {
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("aabaraa"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals(result.getFieldValue(), "aatestaa");
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+    }
+
+    @Test
+    public void invalidStandardizeAndValidate() {
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("blah"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals(result.getFieldValue(), "aatestaa");
+        assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+    }
+
+    @Test
+    public void nullValueStandardizeAndValidate() {
+        String fieldValue = null;
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("blah"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, null, fieldDataType);
+        assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+
+    }
+
+    @Test
+    public void mixedStandardizeAndValidate() {
+        String fieldValue = "TeSt_fiELd";
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(UppercaseStandardizer.instance());
+        policies.add(new CharacterValidator("UPPERCASE"));
+        policies.add(LowercaseStandardizer.instance());
+        policies.add(new CharacterValidator("LOWERCASE"));
+        policies.add(UppercaseStandardizer.instance());
+        policies.add(new CharacterValidator("UPPERCASE"));
+        policies.add(LowercaseStandardizer.instance());
+        policies.add(new CharacterValidator("LOWERCASE"));
+
+
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, fieldValue, fieldDataType);
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+        assertEquals("test_field", result.getFieldValue());
+
+    }
+
 
 
     @Test
@@ -159,7 +256,12 @@ public class ValidatorTest {
 
     private ValidationResult notNullValidate(String dataType, String value, boolean allowEmptyString, boolean trimString) {
         NotNullValidator validatorPolicy = new NotNullValidator(allowEmptyString, trimString);
-        return validator.validateValue(validatorPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(validatorPolicy);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName("field1").feedFieldName("field1").build();
+
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, value, HCatDataType.createFromDataType("field1", dataType));
+        return result.getFinalValidationResult();
     }
 
     @Test

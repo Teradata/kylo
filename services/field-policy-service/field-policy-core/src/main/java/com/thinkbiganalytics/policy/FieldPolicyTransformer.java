@@ -20,6 +20,7 @@ package com.thinkbiganalytics.policy;
  * #L%
  */
 
+import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
@@ -28,8 +29,9 @@ import com.thinkbiganalytics.standardization.transform.StandardizationAnnotation
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-
 /**
  * Transform a User Interface policy to the domain object
  */
@@ -46,20 +48,70 @@ public class FieldPolicyTransformer {
         this.listener = listener;
     }
 
-    /**
-     * Get the Standardization policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
-     */
-    public List<StandardizationPolicy> getStandardizationPolicies() {
-        List<StandardizationPolicy> policies = new ArrayList<>();
-        List<FieldStandardizationRule> rules = uiFieldPolicy.getStandardization();
-        if (rules != null) {
-            for (FieldStandardizationRule rule : rules) {
+
+
+    public List<BaseFieldPolicy> getStandardizationAndValidationPolicies() {
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        List<FieldStandardizationRule> standardization = uiFieldPolicy.getStandardization();
+        List<FieldValidationRule> validation = uiFieldPolicy.getValidation();
+        List<BaseUiPolicyRule> allUiPolicies = new ArrayList<>();
+
+        if(standardization != null){
+            allUiPolicies.addAll(standardization);
+        }
+        if(validation != null){
+            allUiPolicies.addAll(validation);
+        }
+
+        //ensure the sequence is set
+        int idx = 0;
+        for(BaseUiPolicyRule rule : allUiPolicies){
+            if(rule.getSequence() == null){
+                rule.setSequence(idx);
+            }
+            idx++;
+        }
+
+        Collections.sort(allUiPolicies, new Comparator<BaseUiPolicyRule>() {
+            @Override
+            public int compare(BaseUiPolicyRule o1, BaseUiPolicyRule o2) {
+                if(o1 == null && o2 == null ){
+                    return 0;
+                }
+                if(o1 == null && o2 != null){
+                    return 1;
+                }
+                if(o1 != null && o2 == null){
+                    return -1;
+                }
+                Integer sq1 = o1.getSequence();
+                Integer sq2 = o2.getSequence();
+               return sq1.compareTo(sq2);
+            }
+        });
+
+
+        if (allUiPolicies != null) {
+            for (BaseUiPolicyRule rule : allUiPolicies) {
                 try {
-                    StandardizationPolicy policy = StandardizationAnnotationTransformer.instance().fromUiModel(rule);
-                    policies.add(policy);
-                    if (listener != null) {
-                        listener.onAddStandardizationPolicy(policy);
+                    if(rule instanceof FieldStandardizationRule){
+                        StandardizationPolicy policy = StandardizationAnnotationTransformer.instance().fromUiModel((FieldStandardizationRule)rule);
+                        policies.add(policy);
+                        if (listener != null) {
+                            listener.onAddStandardizationPolicy(policy);
+                        }
                     }
+                    else if(rule instanceof FieldValidationRule) {
+                        ValidationPolicy policy = ValidatorAnnotationTransformer.instance().fromUiModel((FieldValidationRule)rule);
+                        policies.add(policy);
+                        if (listener != null) {
+                            listener.onAddValidationPolicy(policy);
+                        }
+                    }
+
+
+
+
                 } catch (PolicyTransformException e) {
                     throw new RuntimeException(e);
                 }
@@ -68,36 +120,13 @@ public class FieldPolicyTransformer {
         return policies;
     }
 
-    /**
-     * Get the Validation policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
-     */
-    public List<ValidationPolicy> getValidationPolicies() {
-        List<ValidationPolicy> policies = new ArrayList<>();
-        List<FieldValidationRule> rules = uiFieldPolicy.getValidation();
-        if (rules != null) {
-            for (FieldValidationRule rule : rules) {
-                try {
-                    ValidationPolicy policy = ValidatorAnnotationTransformer.instance().fromUiModel(rule);
-                    policies.add(policy);
-                    if (listener != null) {
-                        listener.onAddValidationPolicy(policy);
-                    }
-                } catch (PolicyTransformException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        return policies;
-    }
 
     /**
      * Build the domain level policies attached to the field holding both the Standardization and Validation domain objects transformed from the user interface object
      */
     public FieldPolicy buildPolicy() {
-        List<StandardizationPolicy> standardizationPolicies = getStandardizationPolicies();
-        List<ValidationPolicy> validators = getValidationPolicies();
-        return FieldPolicyBuilder.newBuilder().fieldName(uiFieldPolicy.getFieldName()).feedFieldName(uiFieldPolicy.getFeedFieldName()).setProfile(uiFieldPolicy.isProfile()).addValidators(validators)
-            .addStandardizers(standardizationPolicies).setPartitionColumn(uiFieldPolicy.isPartitionColumn()).build();
+        return FieldPolicyBuilder.newBuilder().fieldName(uiFieldPolicy.getFieldName()).feedFieldName(uiFieldPolicy.getFeedFieldName()).setProfile(uiFieldPolicy.isProfile()).addPolicies(getStandardizationAndValidationPolicies())
+           .setPartitionColumn(uiFieldPolicy.isPartitionColumn()).build();
 
     }
 

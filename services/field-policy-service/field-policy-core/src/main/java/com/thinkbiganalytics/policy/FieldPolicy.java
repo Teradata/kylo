@@ -48,6 +48,8 @@ public class FieldPolicy implements Serializable {
     private boolean nullable = true;
     private List<ValidationPolicy> validators;
     private List<StandardizationPolicy> policies;
+    private List<BaseFieldPolicy> allPolicies;
+
     /**
      * Whether attempts to automatically discover the type of field data such as email, credit card, etc.
      */
@@ -64,32 +66,6 @@ public class FieldPolicy implements Serializable {
     protected FieldPolicy() {
     }
 
-    public FieldPolicy(String table, String field, String feedField, boolean skipSchemaValidation, boolean nullable, List<ValidationPolicy> validators,
-                       List<StandardizationPolicy> policies, boolean typeDiscovery, int piiScan) {
-        this.table = table;
-        this.field = field;
-        this.feedField = feedField;
-        this.skipSchemaValidation = skipSchemaValidation;
-        this.nullable = nullable;
-        this.validators = validators;
-        this.policies = policies;
-        this.typeDiscovery = typeDiscovery;
-        this.piiScan = piiScan;
-    }
-
-    public FieldPolicy(String table, String field, String feedField, boolean skipSchemaValidation, boolean nullable, List<ValidationPolicy> validators,
-                       List<StandardizationPolicy> policies, boolean typeDiscovery, int piiScan, boolean isPartitionColumn) {
-        this.table = table;
-        this.field = field;
-        this.feedField = feedField;
-        this.skipSchemaValidation = skipSchemaValidation;
-        this.nullable = nullable;
-        this.validators = validators;
-        this.policies = policies;
-        this.typeDiscovery = typeDiscovery;
-        this.piiScan = piiScan;
-        this.isPartitionColumn = isPartitionColumn;
-    }
 
     public static void main(String[] args) {
 
@@ -176,6 +152,14 @@ public class FieldPolicy implements Serializable {
 
     public void setPartitionColumn(boolean partitionColumn) {
         this.isPartitionColumn = partitionColumn;
+    }
+
+    public List<BaseFieldPolicy> getAllPolicies() {
+        return allPolicies;
+    }
+
+    public void setAllPolicies(List<BaseFieldPolicy> allPolicies) {
+        this.allPolicies = allPolicies;
     }
 
     public String toString() {

@@ -21,6 +21,8 @@ package com.thinkbiganalytics.policy.standardization;
  */
 
 
+import com.thinkbiganalytics.policy.BaseFieldPolicy;
+
 import java.io.Serializable;
 
 /**
@@ -30,7 +32,7 @@ import java.io.Serializable;
  *
  * @see Standardizer class annotation
  */
-public interface StandardizationPolicy extends Serializable {
+public interface StandardizationPolicy extends BaseFieldPolicy, Serializable {
 
     /**
      * Convert a incoming {@code value} to new value.

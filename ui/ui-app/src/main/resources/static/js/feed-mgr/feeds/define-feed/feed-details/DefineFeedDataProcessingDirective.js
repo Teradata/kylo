@@ -44,7 +44,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         FeedService.updateEnabledMergeStrategy(self.model, self.mergeStrategies);
-        this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
 
@@ -136,7 +135,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         };
 
-        this.showFieldRuleDialog = function(field,policyParam) {
+        this.showFieldRuleDialog = function(field) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
@@ -145,8 +144,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 fullscreen: true,
                 locals : {
                     feed: self.model,
-                    field:field,
-                    policyParameter:policyParam
+                    field:field
                 }
             })
                 .then(function(msg) {

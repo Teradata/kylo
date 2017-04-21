@@ -67,11 +67,8 @@
                            Should this field be profiled?
                          </md-tooltip>
                        </div>
-                      <div flex="20" class="md-list-item-text hint">
-                        Standardize
-                      </div>
-                      <div flex="20" class="md-list-item-text hint">
-                        Validate
+                      <div flex="40" class="md-list-item-text hint">
+                        Standardize & Validate
                       </div>
                     </div>
                   </md-list-item>
@@ -81,7 +78,7 @@
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
                          ng-click="vm.onSelectedColumn($index)">
 
-                      <div flex="40" class="md-list-item-text">
+                      <div flex="60" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
                           <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
@@ -99,8 +96,8 @@
                            </md-checkbox>
                          </md-input-container>
                        </div>
-                      <!-- Standardization rule -->
-                      <div flex="20" class="md-list-item-text hint" layout-align="start center">
+                      <!--  rules -->
+                      <div flex="40" class="md-list-item-text hint" layout-align="start center">
                         <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                             <ng-md-icon icon="add_circle_outline"></ng-md-icon>
@@ -108,37 +105,18 @@
                           ADD
                         </div>
 
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!policy.field.dataTypeDescriptor.complex">
+                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                             <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
                           </md-button>
                           ADD
                         </div>
-
-                        <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
-                          {{policy.standardization.length}} Added
+                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+                          <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
+                          <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
                         </div>
                       </div>
 
-                      <!-- Validation rule -->
-                      <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
-                            <ng-md-icon icon="add_circle_outline"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                            <ng-md-icon icon="add_circle_outline"
-                                        style="fill:#2D78B1;"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
-                          {{policy.validation.length}} Added
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </md-list>

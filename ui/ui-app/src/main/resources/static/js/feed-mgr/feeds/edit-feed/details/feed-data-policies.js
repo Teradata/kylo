@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, $q,AccessControlService, EntityAccessControlService,FeedService, StateService) {
+    var controller = function ($scope, $mdDialog, $timeout, $q,AccessControlService, EntityAccessControlService,FeedService, StateService,FeedFieldPolicyRuleService) {
 
         var self = this;
 
@@ -72,7 +72,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         populateFieldNameMap();
         applyDefaults();
 
-        this.permissionGroups = ['Marketing', 'Human Resources', 'Administrators', 'IT'];
         this.compressionOptions = FeedService.allCompressionOptions();
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
@@ -168,6 +167,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         }
 
+        this.getAllFieldPolicies = function(field) {
+            return FeedFieldPolicyRuleService.getAllPolicyRules(field);
+        }
+
         this.onSave = function (ev) {
             //save changes to the model
             FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
@@ -217,7 +220,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             });
         }
 
-        this.showFieldRuleDialog = function (field, policyParam) {
+        this.showFieldRuleDialog = function (field) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
@@ -226,8 +229,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 fullscreen: true,
                 locals: {
                     feed:self.model,
-                    field: field,
-                    policyParameter: policyParam
+                    field: field
                 }
             })
                 .then(function (msg) {
@@ -243,7 +245,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","$q","AccessControlService","EntityAccessControlService","FeedService","StateService",controller]);
+    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","$q","AccessControlService","EntityAccessControlService","FeedService","StateService","FeedFieldPolicyRuleService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDataPolicies', directive);

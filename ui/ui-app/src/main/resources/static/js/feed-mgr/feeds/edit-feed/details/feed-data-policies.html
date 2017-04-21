@@ -56,7 +56,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text hint">
+          <div flex="35" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -98,10 +98,7 @@
             </md-tooltip>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            Standardize
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            Validate
+            Standardize <br/>& Validate
           </div>
         </div>
       </md-list-item>
@@ -109,7 +106,7 @@
 
       <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text">
+          <div flex="35" class="md-list-item-text">
             <div>{{policy.name}}</div>
             <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
           </div>
@@ -139,13 +136,8 @@
             <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            <ul ng-if="policy.standardization != null && policy.standardization.length >0">
-              <li ng-repeat="rule in policy.standardization">{{rule.name}}</li>
-            </ul>
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            <ul ng-if="policy.validation != null && policy.validation.length >0">
-              <li ng-repeat="rule in policy.validation">{{rule.name}}</li>
+            <ul>
+              <li ng-repeat="rule in vm.getAllFieldPolicies(policy)">{{rule.name}}</li>
             </ul>
           </div>
         </div>
@@ -268,7 +260,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text hint">
+          <div flex="35" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -312,16 +304,13 @@
           <div flex="15" class="md-list-item-text hint">
             Standardize
           </div>
-          <div flex="15" class="md-list-item-text hint">
-            Validate
-          </div>
         </div>
       </md-list-item>
 
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text">
+          <div flex="35" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
@@ -350,25 +339,16 @@
             <md-checkbox ng-model="policy.profile" aria-label="Profile" ></md-checkbox>
           </div>
           <div flex="15" class="md-list-item-text hint" layout-align="start center">
-            <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
+            <div ng-click="vm.showFieldRuleDialog(policy)" style="color:#2D78B1;">
               <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                 <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
               </md-button>
               ADD
             </div>
-            <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
-              {{policy.standardization.length}} Added
-            </div>
-          </div>
-          <div flex="15" class="md-list-item-text hint" layout-align="start center">
-            <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
-              <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-              </md-button>
-              ADD
-            </div>
-            <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
-              {{policy.validation.length}} Added
+
+            <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+              <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
+              <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
-define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'kylo-common', 'kylo-services'], function (angular, moduleName) {
-    var module = angular.module(moduleName, ['ui.codemirror']);
+define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'kylo-common', 'kylo-services', ,'jquery','angular-drag-and-drop-lists'], function (angular, moduleName) {
+    var module = angular.module(moduleName, ['ui.codemirror','dndLists']);
 
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
         $ocLazyLoad.load({
