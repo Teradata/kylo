@@ -88,23 +88,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Avro -->
-    <dependency>
-      <groupId>com.databricks</groupId>
-      <artifactId>spark-avro_${scala.binary.version}</artifactId>
-      <version>${spark.avro.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.scala-lang</groupId>
-          <artifactId>scala-library</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>avro</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
     <!-- Testing dependencies -->
     <dependency>
       <groupId>org.mockito</groupId>
