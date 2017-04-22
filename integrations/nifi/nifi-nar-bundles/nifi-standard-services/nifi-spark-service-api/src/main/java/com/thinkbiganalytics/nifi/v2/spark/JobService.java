@@ -33,33 +33,33 @@ public interface JobService extends ControllerService {
      *
      * @return the true or false
      */
-    Boolean checkIfContextExists(String ContextName);
+    boolean checkIfContextExists(String ContextName);
 
     /**
      * Creates a new Spark Context
      *
      * @return the true or false
      */
-    Boolean createContext(String ContextName, String NumExecutors, String MemPerNode, String NumCPUCores, SparkContextType ContextType);
+    boolean createContext(String ContextName, String NumExecutors, String MemPerNode, String NumCPUCores, SparkContextType ContextType, boolean Async);
 
     /**
      * Deletes a Spark Context
      *
      * @return the true or false
      */
-    Boolean deleteContext(String ContextName);
+    boolean deleteContext(String ContextName);
 
     /**
      * Uploads a Spark Job Jar
      *
      * @return the true or false
      */
-    Boolean uploadJar(String JarPath, String AppName);
+    boolean uploadJar(String JarPath, String AppName);
 
     /**
      * Executes a Spark Job
      *
      * @return true or false
      */
-    Boolean executeSparkContextJob(String AppName, String ClassPath, String ContextName, String Args);
+    boolean executeSparkContextJob(String AppName, String ClassPath, String ContextName, String Args, boolean Async);
 }

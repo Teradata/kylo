@@ -57,6 +57,13 @@
 
       <dependency>
         <groupId>com.thinkbiganalytics.nifi.services</groupId>
+        <artifactId>kylo-nifi-spark-service-api</artifactId>
+        <version>${project.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.thinkbiganalytics.nifi.services</groupId>
         <artifactId>kylo-nifi-core-service-api</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
