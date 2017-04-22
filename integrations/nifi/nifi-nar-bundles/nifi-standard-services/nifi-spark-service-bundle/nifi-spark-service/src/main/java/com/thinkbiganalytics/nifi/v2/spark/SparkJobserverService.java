@@ -25,7 +25,7 @@ import javax.annotation.Nonnull;
 
 /*-
  * #%L
- * kylo-nifi-spark-service
+ * thinkbig-nifi-spark-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
