@@ -80,6 +80,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-spark-service-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-launcher_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
