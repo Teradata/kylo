@@ -5,6 +5,7 @@ ln -f -s /opt/nifi/data/lib/kylo-nifi-standard-services-nar-*.nar /opt/nifi/curr
 
 ln -f -s /opt/nifi/data/lib/kylo-nifi-core-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-core-nar.nar
 ln -f -s /opt/nifi/data/lib/kylo-nifi-spark-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-spark-nar.nar
+ln -f -s /opt/nifi/data/lib/kylo-nifi-spark-service-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-spark-service-nar.nar
 ln -f -s /opt/nifi/data/lib/kylo-nifi-hadoop-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-hadoop-nar.nar
 ln -f -s /opt/nifi/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-hadoop-service-nar.nar
 ln -f -s /opt/nifi/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-provenance-repo-nar.nar
