@@ -149,6 +149,7 @@ public class CreateSparkContext extends AbstractNiFiProcessor {
         pds.add(NUM_CPU_CORES);
         pds.add(MEM_PER_NODE);
         pds.add(JOB_SERVICE);
+        pds.add(ASYNC);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }

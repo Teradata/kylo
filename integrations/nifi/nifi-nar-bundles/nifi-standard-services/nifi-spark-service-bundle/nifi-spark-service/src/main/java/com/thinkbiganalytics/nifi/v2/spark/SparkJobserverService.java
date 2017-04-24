@@ -9,10 +9,10 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
-import org.khaleesi.carfield.tools.sparkjobserver.api.ISparkJobServerClient;
-import org.khaleesi.carfield.tools.sparkjobserver.api.ISparkJobServerClientConstants;
-import org.khaleesi.carfield.tools.sparkjobserver.api.SparkJobResult;
-import org.khaleesi.carfield.tools.sparkjobserver.api.SparkJobServerClientFactory;
+import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
+import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
+import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
+import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,11 +59,23 @@ public class SparkJobserverService extends AbstractControllerService implements 
         .build();
 
     /**
+     * A property to set the default timeout for Sync Spark Jobserver calls
+     */
+    public static final PropertyDescriptor SYNC_TIMEOUT = new PropertyDescriptor.Builder()
+        .name("Sync Timeout")
+        .description("Number of seconds before timeout for Sync Spark Jobserver calls.")
+        .defaultValue("60")
+        .addValidator(StandardValidators.LONG_VALIDATOR)
+        .required(false)
+        .build();
+
+    /**
      * List of properties
      */
     private List<PropertyDescriptor> properties;
     private volatile ISparkJobServerClient client;
     private volatile String jobServerUrl;
+    private volatile String syncTimeout;
 
     @Override
     protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
@@ -71,6 +83,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         // Create list of properties
         final List<PropertyDescriptor> props = new ArrayList<>();
         props.add(JOBSERVER_URL);
+        props.add(SYNC_TIMEOUT);
         properties = Collections.unmodifiableList(props);
     }
 
@@ -103,6 +116,8 @@ public class SparkJobserverService extends AbstractControllerService implements 
                 SparkJobServerClientFactory
                     .getInstance()
                     .createSparkJobServerClient(jobServerUrl);
+
+            syncTimeout = context.getProperty(SYNC_TIMEOUT).getValue();
 
         } catch (Exception ex) {
 
@@ -158,6 +173,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
                     params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
                 } else {
                     params.put(ISparkJobServerClientConstants.PARAM_SYNC, "true");
+                    params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
                 }
 
                 getLogger().info(String
@@ -228,6 +244,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
                 params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
             } else {
                 params.put(ISparkJobServerClientConstants.PARAM_SYNC, "true");
+                params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
             }
 
             jobResult = client.startJob(Args, params);

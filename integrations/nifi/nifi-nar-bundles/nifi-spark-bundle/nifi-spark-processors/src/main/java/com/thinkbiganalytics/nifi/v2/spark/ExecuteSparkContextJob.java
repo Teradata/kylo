@@ -131,6 +131,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         pds.add(CONTEXT_NAME);
         pds.add(ARGS);
         pds.add(JOB_SERVICE);
+        pds.add(ASYNC);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
