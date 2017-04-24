@@ -588,7 +588,7 @@ public class Fields {
      * @param comment The comment
      */
     @JsonProperty("comment")
-    public void setComments(Comments comment) {
+    public void setComments(Comments comments) {
         this.comments = comments;
     }
 
