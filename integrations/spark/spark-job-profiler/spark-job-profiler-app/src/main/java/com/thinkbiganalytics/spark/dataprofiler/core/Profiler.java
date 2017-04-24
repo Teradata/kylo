@@ -111,7 +111,7 @@ public class Profiler {
         }
 
         /* Initialize and configure Spark */
-        conf = new SparkConf().setAppName(ProfilerConfiguration.APP_NAME);
+        conf = new SparkConf();
 
         if (ProfilerConfiguration.SERIALIZER.equals("kryo")) {
             conf = configureEfficientSerialization(conf);
