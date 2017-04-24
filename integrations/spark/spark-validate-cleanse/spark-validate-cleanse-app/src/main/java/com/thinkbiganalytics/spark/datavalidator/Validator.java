@@ -643,6 +643,7 @@ public class Validator implements Serializable {
                 //only need to add those that are invalid
                 if (validationResult != VALID_RESULT) {
                     result.addValidationResult(validationResult);
+                    break; //exit out of processing if invalid records found.
                 }
             }
 
