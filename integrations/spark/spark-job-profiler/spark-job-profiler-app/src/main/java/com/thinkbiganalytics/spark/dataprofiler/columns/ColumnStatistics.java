@@ -322,4 +322,11 @@ public abstract class ColumnStatistics implements Serializable {
 
     public abstract String getVerboseStatistics();
 
+    /*
+     * Check if all values are null
+     */
+    boolean allNulls() {
+        return (totalCount == nullCount);
+    }
+
 }
