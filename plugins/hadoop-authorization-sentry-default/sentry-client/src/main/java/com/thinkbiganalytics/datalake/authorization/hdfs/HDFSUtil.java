@@ -49,10 +49,6 @@ public class HDFSUtil {
     final private static String EXECUTE = "execute";
     final private static String ALL = "all";
     final private static String NONE = "none";
-    private static String modelDBPath = "/model.db/";
-    private static String appBasePath = "/app/warehouse/";
-    private static String etlBasePath = "/etl/";
-    private static String archiveBasePath = "/archive/";
 
     /**
      * @param configResources : Hadoop configuration resource
@@ -71,7 +67,7 @@ public class HDFSUtil {
         if (!foundResources) {
             // check that at least 1 non-default resource is available on the classpath
             String configStr = config.toString();
-            for (String resource : configStr.substring(configStr.indexOf(":") + 1).split(",")) {
+            for (String resource : configStr.substring(configStr.indexOf(':') + 1).split(",")) {
                 if (!resource.contains("default") && config.getResource(resource.trim()) != null) {
                     foundResources = true;
                     break;
@@ -85,31 +81,6 @@ public class HDFSUtil {
         return config;
     }
 
-    /**
-     * @param category_name    : Category Name
-     * @param feed_name        : Feed Name
-     * @param permission_level : Level At Which Permission Needs to be granted.
-     * @return : Returns list of HDFS of Path
-     */
-    public String constructResourceforPermissionHDFS(String category_name, String feed_name, String permission_level) {
-        String final_resource_path = "";
-
-        //Check level at which permission needs to be defined.
-        if (permission_level.equalsIgnoreCase("category")) {
-            String modeldb = modelDBPath + category_name;
-            String appPath = appBasePath + category_name;
-            String etlPath = etlBasePath + category_name;
-            String archivePath = archiveBasePath + category_name;
-            final_resource_path = modeldb + "," + appPath + "," + etlPath + "," + archivePath;
-        } else {
-            String modeldb = modelDBPath + category_name + "/" + feed_name;
-            String appPath = appBasePath + category_name + "/" + feed_name;
-            String etlPath = etlBasePath + category_name + "/" + feed_name;
-            String archivePath = archiveBasePath + category_name + "/" + feed_name;
-            final_resource_path = modeldb + "," + appPath + "," + etlPath + "," + archivePath;
-        }
-        return final_resource_path;
-    }
 
     /**
      * @param allPathForAclCreation : Each Kylo internal path
@@ -118,7 +89,7 @@ public class HDFSUtil {
      * @param groupList             : List of group for granting permission
      */
     public void splitPathListAndApplyPolicy(String allPathForAclCreation, Configuration conf, FileSystem fileSystem, String groupList, String hdfs_permission) throws IOException {
-        String allKyloIntermediatePath[] = allPathForAclCreation.split(",");
+        String []allKyloIntermediatePath = allPathForAclCreation.split(",");
         for (int pathCounter = 0; pathCounter < allKyloIntermediatePath.length; pathCounter++) {
             try {
                 individualIntermediatePathApplyPolicy(conf, fileSystem, allKyloIntermediatePath[pathCounter], groupList, hdfs_permission);
@@ -130,7 +101,7 @@ public class HDFSUtil {
     }
 
     public void splitPathListAndFlushPolicy(String allPathForAclCreation, Configuration conf, FileSystem fileSystem) throws IOException {
-        String allKyloIntermediatePath[] = allPathForAclCreation.split(",");
+        String []allKyloIntermediatePath = allPathForAclCreation.split(",");
         for (int pathCounter = 0; pathCounter < allKyloIntermediatePath.length; pathCounter++) {
             try {
                 individualIntermediatePathFlushPolicy(conf, fileSystem, allKyloIntermediatePath[pathCounter]);
@@ -193,7 +164,7 @@ public class HDFSUtil {
 
             // Apply ACL recursively on each file/directory.
             if (status.isDirectory()) {
-                String groupListForPermission[] = groups.split(",");
+                String []groupListForPermission = groups.split(",");
                 for (int groupCounter = 0; groupCounter < groupListForPermission.length; groupCounter++) {
 
                     // Create HDFS ACL for each for each Path on HDFS
@@ -211,7 +182,7 @@ public class HDFSUtil {
                 // Recursive call made to apply acl on each sub directory
                 listAllDirAndApplyPolicy(fileSystem, status.getPath(), groups, hdfsPermission);
             } else {
-                String groupListForPermission[] = groups.split(",");
+                String []groupListForPermission = groups.split(",");
                 for (int groupCounter = 0; groupCounter < groupListForPermission.length; groupCounter++) {
 
                     // Create HDFS ACL for each for each Path on HDFS
@@ -264,9 +235,9 @@ public class HDFSUtil {
 
     private FsAction getFinalPermission(String hdfsPermission) {
 
-        HashMap<String, Integer> standardPermissionMap = new HashMap<String, Integer>();
+        HashMap<String, Integer> standardPermissionMap = new HashMap<>();
 
-        String permissions[] = hdfsPermission.split(",");
+        String []permissions = hdfsPermission.split(",");
         standardPermissionMap.put(READ, 0);
         standardPermissionMap.put(WRITE, 0);
         standardPermissionMap.put(EXECUTE, 0);

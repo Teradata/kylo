@@ -37,23 +37,24 @@ import org.slf4j.LoggerFactory;
 public class UnixGroupList {
 
     private static final Logger log = LoggerFactory.getLogger(UnixGroupList.class);
-    
-    private static final String FILENAME = "/etc/group";
+
     private String OWNER = "kylo";
     private String DESCRIPTION = "Kylo Authorization Group";
-    
+
     private HashMap<String , String> groupInfo ;
     SentryGroup sentryGroup ;
     public void  generateGroupList(String groupFilePath) 
     {
         String[] splitedUnixGroup ;
         BufferedReader bufferedReader = null;
+        FileReader fileReader = null;
         List<String> groupList = new ArrayList<>();
         groupInfo = new HashMap<>();
 
         try 
         {
-            bufferedReader = new BufferedReader(new FileReader(groupFilePath));
+            fileReader = new FileReader(groupFilePath);
+            bufferedReader = new BufferedReader(fileReader);
             StringBuilder stringBuilder = new StringBuilder();
             String line = bufferedReader.readLine();
 
@@ -86,12 +87,17 @@ public class UnixGroupList {
             throw new RuntimeException(e);
         }
         finally {
-
             try {
-                bufferedReader.close();
+                if(bufferedReader==null ){}
+                else
+                    bufferedReader.close();
+
+                if(fileReader==null ){}
+                else
+                    fileReader.close();
+
             } catch (IOException ioe) {
-                log.warn("I/O error closing buffered reader for stream" + ioe.getMessage());
-                throw new RuntimeException(ioe);
+                log.warn("I/O error closing buffered reader for stream" + ioe.getMessage() +ioe);
             }
         }
     }

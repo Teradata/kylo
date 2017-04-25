@@ -59,7 +59,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     private static final String HIVE_REPOSITORY_TYPE = "hive";
     private static final String TABLE = "TABLE";
     private static final String KYLO_POLICY_PREFIX = "kylo";
-
+    private static final String UserGroupObjectError = "Unble to get User Group Information Object. Please check Kerberos settings.";
 
     SentryClient sentryClientObject;
     SentryConnection sentryConnection;
@@ -125,7 +125,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             try {
                 UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
                 if(ugi==null){
-                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                    log.error(UserGroupObjectError);
                 }
                 else    {
                     ugi.doAs(new PrivilegedExceptionAction<Void>() {
@@ -173,17 +173,16 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             try {
                 UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
                 if(ugi==null){
-                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                    log.error(UserGroupObjectError);
                 }
                 else    {
-               
-                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        createReadOnlyHdfsPolicy(categoryName, feedName, hadoopAuthorizationGroups, hdfsPaths);
-                        return null;
-                    }
-                });}
+                    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            createReadOnlyHdfsPolicy(categoryName, feedName, hadoopAuthorizationGroups, hdfsPaths);
+                            return null;
+                        }
+                    });}
             } catch (Exception e) {
                 log.error("Error Creating Sentry HDFS Policy using Kerberos Authentication" + e.getMessage());
                 throw new RuntimeException(e);
@@ -303,68 +302,69 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             try {
                 UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
                 if(ugi==null){
-                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                    log.error(UserGroupObjectError);
                 }
                 else    {
-                ugi.doAs(new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
+                    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
 
-                        if (securityGroupNames == null || securityGroupNames.isEmpty()) {
+                            if (securityGroupNames == null || securityGroupNames.isEmpty()) {
 
-                            // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
-                            String sentryPolicyName = getHivePolicyName(categoryName, feedName);
-                            if ((sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
-                                deleteHivePolicy(categoryName, feedName);
-                            }
-                            if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
-                                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                                deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
-                            }
-
-                        } else {
-
-                            if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
-                                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                                createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
-                            }
-
-                            String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
-                            if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
-                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
-                                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                    List<String>
-                                    hiveTables =
-                                    Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-                                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                                // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
+                                String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+                                if ((sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
+                                    deleteHivePolicy(categoryName, feedName);
+                                }
+                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                                    String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                                    List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                                    deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
                                 }
 
                             } else {
 
-                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
-                                    try {
-                                        sentryClientObject.dropRole(sentryHivePolicyName);
-                                    } catch (SentryClientException e) {
-                                        throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                                    String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                                    List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                                    createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                                }
+
+                                String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
+                                if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
+                                    if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                        String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                                        List<String>
+                                        hiveTables =
+                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                        String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                                        createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                                     }
 
-                                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                    List<String>
-                                    hiveTables =
-                                    Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-                                    List<String> hivePermissions = new ArrayList();
-                                    hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
-                                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                                } else {
+
+                                    if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                        try {
+                                            sentryClientObject.dropRole(sentryHivePolicyName);
+                                        } catch (SentryClientException e) {
+                                            log.error("Unable to delete Hive policy  " + sentryHivePolicyName + " in Sentry   " + e.getMessage());
+                                            throw new RuntimeException(e);
+                                        }
+
+                                        String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                                        List<String>
+                                        hiveTables =
+                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); 
+                                        String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                                        List<String> hivePermissions = new ArrayList();
+                                        hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
+                                        createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                                    }
                                 }
                             }
+                            return null;
                         }
-                        return null;
-                    }
-                }); }
+                    }); }
             } catch (Exception e) {
                 log.error("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
                 throw new RuntimeException(e);
@@ -406,7 +406,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                         try {
                             sentryClientObject.dropRole(sentryHivePolicyName);
                         } catch (SentryClientException e) {
-                            log.error("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                            log.error("Unable to delete Hive policy  " + sentryHivePolicyName + " in Sentry   " + e.getMessage());
                             throw new RuntimeException(e);
                         }
                         String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
@@ -429,24 +429,24 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
                 UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
                 if(ugi==null){
-                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                    log.error(UserGroupObjectError);
                 }
                 else    {
-               ugi.doAs(new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
-                        if (sentryClientObject.checkIfRoleExists(sentryPolicyName)) {
-                            try {
-                                sentryClientObject.dropRole(sentryPolicyName);
-                            } catch (SentryClientException e) {
-                                log.error("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
-                                throw new RuntimeException(e);
+                    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+                            if (sentryClientObject.checkIfRoleExists(sentryPolicyName)) {
+                                try {
+                                    sentryClientObject.dropRole(sentryPolicyName);
+                                } catch (SentryClientException e) {
+                                    log.error("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
+                                    throw new RuntimeException(e);
+                                }
                             }
+                            return null;
                         }
-                        return null;
-                    }
-                });}
+                    });}
             } catch (Exception e) {
                 log.error("Failed to Delete Hive Policy With Kerberos" + e.getMessage());
                 throw new RuntimeException(e);

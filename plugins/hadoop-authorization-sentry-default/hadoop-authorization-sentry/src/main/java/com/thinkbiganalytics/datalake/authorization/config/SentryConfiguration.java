@@ -42,8 +42,6 @@ import org.springframework.ldap.core.support.LdapContextSource;
 @PropertySource("classpath:authorization.sentry.properties")
 public class SentryConfiguration {
 
-    private static Logger log = LoggerFactory.getLogger(SentryConfiguration.class);
-
     @Bean(name = "hadoopAuthorizationService")
     public HadoopAuthorizationService getAuthorizationService(@Value("${beeline.connection.url}") String connectionURL
                                                               , @Value("${beeline.drive.name}") String driverURL
@@ -64,7 +62,7 @@ public class SentryConfiguration {
         sentryConnection.setDriverName(driverURL);
         sentryConnection.setSentryGroups(sentryGroups);
         sentryConnection.setHadoopConfiguration(hadoopConfiguration);
-        sentryConnection.setDataSource(dataSource(connectionURL, driverURL, userName, password));
+        sentryConnection.setDataSource(dataSource(connectionURL, userName, password));
         sentryConnection.setKerberosTicketConfiguration(createKerberosTicketConfiguration(kerberosEnabled, hadoopConfiguration, kerberosPrincipal, kerberosKeytabLocation));
         sentryConnection.setAuthorizationGroupType(authorizationGroupType); 
         sentryConnection.setLinuxGroupFilePath(linuxGroupFilePath);
@@ -77,7 +75,6 @@ public class SentryConfiguration {
     }
 
     public DataSource dataSource(String connectionURL
-                                 , String driverURL
                                  , String userName
                                  , String password) {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();

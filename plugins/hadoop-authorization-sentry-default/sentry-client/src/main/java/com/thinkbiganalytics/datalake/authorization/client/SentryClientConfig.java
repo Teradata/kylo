@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
-
-
 /*-
  * #%L
  * thinkbig-sentry-client

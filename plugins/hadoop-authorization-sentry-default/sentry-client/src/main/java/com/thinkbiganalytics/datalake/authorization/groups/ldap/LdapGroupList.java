@@ -39,7 +39,7 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 public class LdapGroupList {
 
     private static final Logger log = LoggerFactory.getLogger(LdapGroupList.class);
-    
+
     private String OWNER = "kylo";
     private String DESCRIPTION = "Kylo Authorization Group";
     private String DEFAULT_ID="1";
@@ -55,7 +55,7 @@ public class LdapGroupList {
         }
         catch(NamingException e)
         {
-           log.error("Unable to Groups from LDAP " + e.getMessage());
+            log.error("Unable to Groups from LDAP " + e.getMessage());
             throw new RuntimeException(e);
         }
 
