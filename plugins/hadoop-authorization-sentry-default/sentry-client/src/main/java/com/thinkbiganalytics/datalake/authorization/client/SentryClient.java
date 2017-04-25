@@ -91,24 +91,9 @@ public class SentryClient {
      * @param roleName : Role to be deleted.
      */
     public boolean dropRole(String roleName) throws SentryClientException {
-        String dropRoleStmt= "drop role  ? " ;
-       // this.sentryJdbcTemplate.execute(dropRoleStmt);
+        String dropRoleStmt= "drop role " + roleName;
+        this.sentryJdbcTemplate.execute(dropRoleStmt);
         log.info("Role  {} dropped successfully " ,roleName);
-        
-        
-       
-        this.sentryJdbcTemplate.execute(new PreparedStatementCreator() {
-            @Override
-            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                PreparedStatement ps = connection.prepareStatement(dropRoleStmt, Statement.RETURN_GENERATED_KEYS);
-                ps.setString( 1, roleName);
-                
-                return ps;
-            }
-        });
- 
-        
-        
         return true;
     }
 
