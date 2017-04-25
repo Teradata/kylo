@@ -430,6 +430,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
 
+        //store ref to the originalFeedProperties before resolving and merging with the template
+        List<NifiProperty> orignialFeedProperties = feedMetadata.getProperties();
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -445,9 +447,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
+
+
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
 
+        /*
         //store all input related properties as well
         List<NifiProperty> inputProperties = NifiPropertyUtil
             .findInputProperties(registeredTemplate.getProperties());
@@ -458,12 +463,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         List<NifiProperty> modifiedProperties = registeredTemplate.findModifiedDefaultProperties();
         if (modifiedProperties != null) {
+             propertyExpressionResolver.resolvePropertyExpressions(modifiedProperties,feedMetadata);
             updatedProperties.addAll(modifiedProperties);
         }
         updatedProperties.addAll(matchedProperties);
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
+
+        */
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
@@ -507,6 +515,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             entity = feedBuilder.build();
 
         feed = new NifiFeed(feedMetadata, entity);
+        //set the original feedProperties back to the feed
+        feedMetadata.setProperties(orignialFeedProperties);
         //encrypt the metadata properties
         feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
         if (entity.isSuccess()) {
