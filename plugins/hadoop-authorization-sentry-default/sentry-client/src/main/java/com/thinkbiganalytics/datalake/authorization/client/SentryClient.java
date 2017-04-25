@@ -1,5 +1,24 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.ldap.core.LdapTemplate;
+
+import com.thinkbiganalytics.datalake.authorization.groups.ldap.LdapGroupList;
+import com.thinkbiganalytics.datalake.authorization.groups.unix.UnixGroupList;
+
 /*-
  * #%L
  * thinkbig-sentry-client
@@ -25,19 +44,6 @@ import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGro
 import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
 import com.thinkbiganalytics.datalake.authorization.model.SentrySearchPolicy;
 import com.thinkbiganalytics.datalake.authorization.model.SentrySearchPolicyMapper;
-import com.thinkbiganalytics.datalake.authorization.groups.ldap.LdapGroupList;
-import com.thinkbiganalytics.datalake.authorization.groups.unix.UnixGroupList;
-
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.ldap.core.LdapTemplate;
 
 
 /**
@@ -50,7 +56,7 @@ public class SentryClient {
     private SentryClientConfig clientConfig;
     private JdbcTemplate sentryJdbcTemplate;
     private LdapTemplate ldapTemplate;
-
+    
     public SentryClient() {
     }
 
@@ -58,7 +64,6 @@ public class SentryClient {
         this.clientConfig = config;
         this.sentryJdbcTemplate = config.getSentryJdbcTemplate();
         this.ldapTemplate = new LdapTemplate( config.getLdapContextSource());
-
         try {
             setDriverClass(config.getDriverName());
         } catch (ClassNotFoundException e) {
@@ -86,9 +91,24 @@ public class SentryClient {
      * @param roleName : Role to be deleted.
      */
     public boolean dropRole(String roleName) throws SentryClientException {
-        String dropRoleStmt= "drop role  " + roleName;
-        this.sentryJdbcTemplate.execute(dropRoleStmt);
+        String dropRoleStmt= "drop role  ? " ;
+       // this.sentryJdbcTemplate.execute(dropRoleStmt);
         log.info("Role  {} dropped successfully " ,roleName);
+        
+        
+       
+        this.sentryJdbcTemplate.execute(new PreparedStatementCreator() {
+            @Override
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(dropRoleStmt, Statement.RETURN_GENERATED_KEYS);
+                ps.setString( 1, roleName);
+                
+                return ps;
+            }
+        });
+ 
+        
+        
         return true;
     }
 

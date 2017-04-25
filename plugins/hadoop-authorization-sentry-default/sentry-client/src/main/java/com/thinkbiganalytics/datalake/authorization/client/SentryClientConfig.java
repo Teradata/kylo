@@ -52,8 +52,8 @@ public class SentryClientConfig {
     private String ldapURL;
     private String ldapAdmin;
     private String ldapAdminPassword;
-    private LdapContextSource LdapContextSource;
-    private String LdapGroupDnPattern;
+    private LdapContextSource ldapContextSource;
+    private String ldapGroupDnPattern;
 
 
 
@@ -208,23 +208,20 @@ public class SentryClientConfig {
         this.ldapAdminPassword = ldapAdminPassword;
     }
 
-    public LdapContextSource getLdapContextSource() {
-        return LdapContextSource;
-    }
-
-    public void setLdapContextSource(LdapContextSource ldapContextSource) {
-        LdapContextSource = ldapContextSource;
-    }
-
     public String getLdapGroupDnPattern() {
-        return LdapGroupDnPattern;
+        return ldapGroupDnPattern;
     }
 
     public void setLdapGroupDnPattern(String ldapGroupDnPattern) {
-        LdapGroupDnPattern = ldapGroupDnPattern;
+        this.ldapGroupDnPattern = ldapGroupDnPattern;
     }
 
+    public LdapContextSource getLdapContextSource() {
+        return ldapContextSource;
+    }
 
-
+    public void setLdapContextSource(LdapContextSource ldapContextSource) {
+        this.ldapContextSource = ldapContextSource;
+    }
 
 }
