@@ -61,6 +61,7 @@ import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -347,6 +348,49 @@ public class FeedRestController {
 
         return Response.ok(feed).build();
     }
+
+    @GET
+    @Path("/by-name/{feedName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the feed.", response = FeedMetadata.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getFeedByName(@PathParam("feedName") String feedName) {
+        String categorySystemName = FeedNameUtil.category(feedName);
+        String feedSystemName = FeedNameUtil.feed(feedName);
+        if (StringUtils.isNotBlank(categorySystemName) && StringUtils.isNotBlank(feedSystemName)) {
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            return Response.ok(feed).build();
+        } else {
+            throw new NotFoundException("Unable to find the feed for name: " + feedName);
+        }
+    }
+
+    @GET
+    @Path("/by-name/{feedName}/field-policies")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the feed field policies (List<FieldPolicy>) as json.", response = List.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getFeedFieldPoliciesByName(@PathParam("feedName") String feedName) {
+        String categorySystemName = FeedNameUtil.category(feedName);
+        String feedSystemName = FeedNameUtil.feed(feedName);
+        if (StringUtils.isNotBlank(categorySystemName) && StringUtils.isNotBlank(feedSystemName)) {
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            if (feed != null && feed.getTable() != null) {
+                return Response.ok(feed.getTable().getFieldPoliciesJson()).build();
+            } else {
+                throw new NotFoundException("Unable to find the feed field policies for name: " + feedName);
+            }
+        } else {
+            throw new NotFoundException("Unable to find the feed field policies for name: " + feedName);
+        }
+    }
+
 
     /**
      * Deletes the specified feed.
