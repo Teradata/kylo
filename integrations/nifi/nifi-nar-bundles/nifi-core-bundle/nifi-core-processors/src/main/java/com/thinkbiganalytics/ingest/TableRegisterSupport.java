@@ -133,10 +133,10 @@ public class TableRegisterSupport {
                 tables.add(rs.getString(1));
                 logger.info("Found existing table " + rs.getString(1));
             }
-            return tables;
         } catch (final SQLException e) {
             throw new RuntimeException("Failed to query tables", e);
         }
+        return tables;
     }
 
     public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions) {
