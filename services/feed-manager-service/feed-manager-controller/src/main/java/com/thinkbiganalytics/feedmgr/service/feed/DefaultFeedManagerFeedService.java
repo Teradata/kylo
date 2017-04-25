@@ -66,7 +66,6 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -183,6 +182,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     NifiFlowCache nifiFlowCache;
     @Inject
     private LegacyNifiRestClient nifiRestClient;
+
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -429,8 +429,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
-        //decrypt the metadata
-        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
+
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -465,6 +464,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
+
+        //decrypt the metadata
+        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
         FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
         try {
@@ -505,6 +507,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             entity = feedBuilder.build();
 
         feed = new NifiFeed(feedMetadata, entity);
+        //encrypt the metadata properties
+        feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
         if (entity.isSuccess()) {
             feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
 
