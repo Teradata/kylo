@@ -173,7 +173,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void onMetadataStart() {
       if(kyloVersionProvider.isUpToDate()) {
            ensureFeedTemplateFeedRelationships();
-          ensureDefaultEntityRoles();
+      //    ensureDefaultEntityRoles();
        }
     }
 
