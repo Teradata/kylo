@@ -37,19 +37,18 @@ import org.slf4j.LoggerFactory;
 public class UnixGroupList {
 
     private static final Logger log = LoggerFactory.getLogger(UnixGroupList.class);
+    
     private static final String FILENAME = "/etc/group";
     private String OWNER = "kylo";
     private String DESCRIPTION = "Kylo Authorization Group";
-    private List<String> groupList ;
-    private List<String> groupId ;
+    
     private HashMap<String , String> groupInfo ;
     SentryGroup sentryGroup ;
-    public void  generateGroupList(String groupFilePath)
+    public void  generateGroupList(String groupFilePath) 
     {
         String[] splitedUnixGroup ;
         BufferedReader bufferedReader = null;
-        groupList = new ArrayList<>();
-        groupId = new ArrayList<>();
+        List<String> groupList = new ArrayList<>();
         groupInfo = new HashMap<>();
 
         try 
@@ -83,16 +82,16 @@ public class UnixGroupList {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error parsing unix group {}", e);
+            log.error("Error parsing unix group {}", e.getMessage());
+            throw new RuntimeException(e);
         }
         finally {
 
             try {
                 bufferedReader.close();
             } catch (IOException ioe) {
-                log.warn("I/O error closing buffered reader for stream");
-                ioe.printStackTrace();
+                log.warn("I/O error closing buffered reader for stream" + ioe.getMessage());
+                throw new RuntimeException(ioe);
             }
         }
     }

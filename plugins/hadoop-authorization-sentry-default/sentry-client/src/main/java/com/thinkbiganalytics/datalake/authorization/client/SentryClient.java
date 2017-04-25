@@ -118,8 +118,8 @@ public class SentryClient {
             log.info("Successfully assigned priviledge " + previledge + " to role " + roleName + " on " + objectName + ".");
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
-            log.error("Failed to obtain database name from " + objectName + ". Routing to failure.");
-            throw new ArrayIndexOutOfBoundsException("Failed to obtain database name from " + objectName + ". Routing to failure." + e.getMessage());
+            log.error("Failed to obtain database name from " + objectName + ". Routing to failure." + e.getMessage());
+            throw new ArrayIndexOutOfBoundsException();
         }
     }
 
@@ -177,7 +177,8 @@ public class SentryClient {
             hdfsUtil.splitPathListAndApplyPolicy(allPathForAclCreation, conf, sentryConfig.getFileSystem(), groups, hdfsPermission);
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create ACL " + e);
+            log.error("Unable to create ACL " + e);
+            throw new RuntimeException(e);
 
         }
     }
@@ -200,7 +201,8 @@ public class SentryClient {
             return true;
 
         } catch (IOException e) {
-            throw new RuntimeException("Unable to flush ACL " + e);
+            log.error("Unable to flush ACL " + e);
+            throw new RuntimeException(e);
 
         }
 

@@ -36,6 +36,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -119,24 +123,32 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
         if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
-                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
-                        if (!(sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
-                            createReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
-                        } else {
-                            try {
-                                updateReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to update Hive Policy" + e.getMessage());
+                UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
+                if(ugi==null){
+                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                }
+                else    {
+                    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+                            if (!(sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
+                                createReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
+                            } else {
+                                try {
+                                    updateReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
+                                } catch (Exception e) {
+                                    log.error("Failed to update Hive Policy" + e.getMessage());
+                                    throw new RuntimeException(e);
+                                }
                             }
+                            return null;
                         }
-                        return null;
-                    }
-                });
-            } catch (Exception e) {
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+                    });}
+            }  
+            catch (Exception e) {
+                log.error("Error Creating Sentry Hive Policy using Kerberos Authentication" + e.getMessage());
+                throw new RuntimeException(e);
             }
         } else {
             String sentryPolicyName = getHivePolicyName(categoryName, feedName);
@@ -146,7 +158,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                 try {
                     updateReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to update Hive Policy" + e.getMessage());
+                    log.error("Failed to update Hive Policy" + e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -158,15 +171,22 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
         if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
+                UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
+                if(ugi==null){
+                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                }
+                else    {
+               
                 authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
                         createReadOnlyHdfsPolicy(categoryName, feedName, hadoopAuthorizationGroups, hdfsPaths);
                         return null;
                     }
-                });
+                });}
             } catch (Exception e) {
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+                log.error("Error Creating Sentry HDFS Policy using Kerberos Authentication" + e.getMessage());
+                throw new RuntimeException(e);
             }
         } else {
             createReadOnlyHdfsPolicy(categoryName, feedName, hadoopAuthorizationGroups, hdfsPaths);
@@ -184,7 +204,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             try {
                 sentryClientObject.dropRole(sentryPolicyName);
             } catch (SentryClientException e1) {
-                throw new RuntimeException("Failed to update policy in sentry" + e1.getMessage());
+                log.error("Failed to update policy in sentry" + e1.getMessage());
+                throw new RuntimeException(e1);
             }
         }
 
@@ -200,7 +221,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             }
 
         } catch (SentryClientException e) {
-            throw new RuntimeException("Failed to create Sentry policy" + sentryPolicyName);
+            log.error("Failed to create Sentry policy" + sentryPolicyName);
+            throw new RuntimeException(e);
         }
 
     }
@@ -216,7 +238,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         try {
             sentryClientObject.createAcl(sentryConnection.getHadoopConfiguration(), groupListStringyfied, hdfsPathForACLCreation, HDFS_READ_ONLY_PERMISSION);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to apply ACL in HDFS Kylo directories " + e.getMessage());
+            log.error("Failed to apply ACL in HDFS Kylo directories " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -245,7 +268,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
             }
 
         } catch (SentryClientException e) {
-            throw new RuntimeException("Failed to create Sentry policy" + sentryPolicyName);
+            log.error("Failed to create Sentry policy" + sentryPolicyName);
+            throw new RuntimeException(e);
         }
 
 
@@ -264,7 +288,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         try {
             sentryClientObject.createAcl(sentryConnection.getHadoopConfiguration(), groupListStringyfied, hdfsPathForACLCreation, HDFS_READ_ONLY_PERMISSION);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to apply ACL in HDFS Kylo directories " + e.getMessage());
+            log.error("Failed to apply ACL in HDFS Kylo directories " + e.getMessage());
+            throw new RuntimeException(e);
         }
 
     }
@@ -276,7 +301,12 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, Object> feedProperties) {
         if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
-                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
+                UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
+                if(ugi==null){
+                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                }
+                else    {
+                ugi.doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
 
@@ -334,9 +364,10 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                         }
                         return null;
                     }
-                });
+                }); }
             } catch (Exception e) {
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+                log.error("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+                throw new RuntimeException(e);
             }
         } else {
             if (securityGroupNames == null || securityGroupNames.isEmpty()) {
@@ -375,7 +406,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                         try {
                             sentryClientObject.dropRole(sentryHivePolicyName);
                         } catch (SentryClientException e) {
-                            throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                            log.error("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                            throw new RuntimeException(e);
                         }
                         String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                         List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
@@ -394,7 +426,13 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     public void deleteHivePolicy(String categoryName, String feedName) {
         if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
-                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
+
+                UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
+                if(ugi==null){
+                    log.error("Unble to get User Group Information Object. Please check Kerberos settings.");
+                }
+                else    {
+               ugi.doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
                         String sentryPolicyName = getHivePolicyName(categoryName, feedName);
@@ -402,14 +440,16 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                             try {
                                 sentryClientObject.dropRole(sentryPolicyName);
                             } catch (SentryClientException e) {
-                                throw new RuntimeException("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
+                                log.error("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
+                                throw new RuntimeException(e);
                             }
                         }
                         return null;
                     }
-                });
+                });}
             } catch (Exception e) {
-                throw new RuntimeException("Failed to Delete Hive Policy With Kerberos" + e.getMessage());
+                log.error("Failed to Delete Hive Policy With Kerberos" + e.getMessage());
+                throw new RuntimeException(e);
             }
         } else {
             String sentryPolicyName = getHivePolicyName(categoryName, feedName);
@@ -417,7 +457,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                 try {
                     sentryClientObject.dropRole(sentryPolicyName);
                 } catch (SentryClientException e) {
-                    throw new RuntimeException("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
+                    log.error("Unable to delete policy  " + sentryPolicyName + " in Sentry  " + e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -433,29 +474,37 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
          */
         if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
-                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
-                        try {
-                            sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
-                        } catch (Exception e) {
-                            throw new RuntimeException("Unable to remove ACL from HDFS Paths" + e.getMessage());
+
+                UserGroupInformation ugi = authenticatePolicyCreatorWithKerberos(); 
+                if(ugi==null){}
+                else    {
+                    ugi.doAs(new PrivilegedExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
+                            try {
+                                sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
+                            } catch (Exception e) {
+                                log.error("Unable to remove ACL from HDFS Paths" + e.getMessage());
+                                throw new RuntimeException(e);
+                            }
+
+                            return null;
                         }
 
-                        return null;
-                    }
-
-                });
+                    });
+                }
             } catch (Exception e) {
-                throw new RuntimeException("Failed to clear HDFS ACL policy with Kerberos" + e.getMessage());
+                log.error("Failed to clear HDFS ACL policy with Kerberos" + e.getMessage());
+                throw new RuntimeException(e);
             }
         } else {
             String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
             try {
                 sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
             } catch (Exception e) {
-                throw new RuntimeException("Unable to remove ACL from HDFS Paths" + e.getMessage());
+                log.error("Unable to remove ACL from HDFS Paths" + e.getMessage());
+                throw new RuntimeException(e);
             }
 
         }
@@ -470,6 +519,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         return KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
     }
 
+    @CheckForNull
     private UserGroupInformation authenticatePolicyCreatorWithKerberos() {
         /**
          * Kerberos Authentication Before Enabling Sentry Policy
@@ -482,7 +532,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                 log.info("Kerberos Authentication is successfull.");
                 return userGroupInformation;
             } catch (IOException e) {
-                throw new RuntimeException("Unable to authenticate with Kerberos while creating Sentry Policy  " + e.getMessage());
+                log.error("Unable to authenticate with Kerberos while creating Sentry Policy  " + e.getMessage());
+                throw new RuntimeException(e);
             }
         }
         return userGroupInformation;

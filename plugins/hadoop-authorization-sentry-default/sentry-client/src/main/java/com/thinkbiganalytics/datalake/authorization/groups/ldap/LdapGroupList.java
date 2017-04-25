@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.datalake.authorization.groups.ldap;
 
+import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
+
 /*-
  * #%L
  * thinkbig-sentry-client
@@ -26,6 +28,9 @@ import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ldap.NamingException;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
@@ -33,6 +38,8 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 public class LdapGroupList {
 
+    private static final Logger log = LoggerFactory.getLogger(LdapGroupList.class);
+    
     private String OWNER = "kylo";
     private String DESCRIPTION = "Kylo Authorization Group";
     private String DEFAULT_ID="1";
@@ -48,7 +55,8 @@ public class LdapGroupList {
         }
         catch(NamingException e)
         {
-            throw new RuntimeException("Unable to Groups from LDAP " + e.getMessage());
+           log.error("Unable to Groups from LDAP " + e.getMessage());
+            throw new RuntimeException(e);
         }
 
     }

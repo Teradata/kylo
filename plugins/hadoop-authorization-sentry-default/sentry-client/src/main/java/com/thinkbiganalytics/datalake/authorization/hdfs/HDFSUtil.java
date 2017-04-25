@@ -123,7 +123,8 @@ public class HDFSUtil {
             try {
                 individualIntermediatePathApplyPolicy(conf, fileSystem, allKyloIntermediatePath[pathCounter], groupList, hdfs_permission);
             } catch (IOException e) {
-                throw new IOException("Unable to iterate on HDFS directories " + e.getMessage());
+                log.error("Unable to iterate on HDFS directories " + e.getMessage());
+                throw new IOException(e);
             }
         }
     }
@@ -134,7 +135,8 @@ public class HDFSUtil {
             try {
                 individualIntermediatePathFlushPolicy(conf, fileSystem, allKyloIntermediatePath[pathCounter]);
             } catch (IOException e) {
-                throw new IOException("Unable to iterate on HDFS directories " + e.getMessage());
+                log.error("Unable to iterate on HDFS directories " + e.getMessage());
+                throw new IOException(e);
             }
         }
     }
@@ -236,7 +238,8 @@ public class HDFSUtil {
         try {
             fileSystem.modifyAclEntries(path, Lists.newArrayList(aclEntry));
         } catch (IOException e) {
-            throw new IOException("Unable to apply HDFS Policy for " + path.toString() + " " + e.getMessage());
+            log.error("Unable to apply HDFS Policy for " + path.toString() + " " + e.getMessage());
+            throw new IOException(e);
         }
     }
 
@@ -248,7 +251,8 @@ public class HDFSUtil {
         try {
             fileSystem.removeAcl(path);
         } catch (IOException e) {
-            throw new IOException("Unable to flush HDFS Policy for " + path.toString() + " " + e.getMessage());
+            log.error("Unable to flush HDFS Policy for " + path.toString() + " " + e.getMessage());
+            throw new IOException(e);
         }
 
     }
