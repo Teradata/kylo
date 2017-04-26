@@ -138,6 +138,13 @@ public class BigDecimalColumnStatistics extends ColumnStatistics {
         writeStatisticsCommon();
 
         rows = new ArrayList<>();
+
+        if (allNulls()) {
+            min = BigDecimal.ZERO;
+            max = BigDecimal.ZERO;
+            sum = BigDecimal.ZERO;
+        }
+
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));

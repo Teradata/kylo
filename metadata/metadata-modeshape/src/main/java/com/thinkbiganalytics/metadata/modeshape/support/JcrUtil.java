@@ -223,6 +223,14 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to create the Node named " + name, e);
         }
     }
+    
+    public static void removeNode(Node node) {
+        try {
+            node.remove();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove the node " + node, e);
+        }
+    }
 
     public static boolean removeNode(Node parentNode, String name) {
         try {
@@ -233,7 +241,7 @@ public class JcrUtil {
                 return false;
             }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named " + name, e);
+            throw new MetadataRepositoryException("Failed to remove the Node named " + name, e);
         }
     }
 

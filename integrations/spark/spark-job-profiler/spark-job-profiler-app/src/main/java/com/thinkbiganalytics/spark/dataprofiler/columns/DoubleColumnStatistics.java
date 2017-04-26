@@ -198,6 +198,16 @@ public class DoubleColumnStatistics extends ColumnStatistics {
         writeStatisticsCommon();
 
         rows = new ArrayList<>();
+
+        if (allNulls()) {
+            min = 0;
+            max = 0;
+            sum = 0;
+            mean = 0;
+            stddev = 0;
+            variance = 0;
+        }
+
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));

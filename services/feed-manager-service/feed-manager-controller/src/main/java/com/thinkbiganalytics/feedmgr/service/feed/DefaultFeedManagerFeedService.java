@@ -66,7 +66,6 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -183,6 +182,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     NifiFlowCache nifiFlowCache;
     @Inject
     private LegacyNifiRestClient nifiRestClient;
+
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -429,8 +429,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
-        //decrypt the metadata
-        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
+
+        //store ref to the originalFeedProperties before resolving and merging with the template
+        List<NifiProperty> orignialFeedProperties = feedMetadata.getProperties();
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -446,9 +447,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
+
+
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
 
+        /*
         //store all input related properties as well
         List<NifiProperty> inputProperties = NifiPropertyUtil
             .findInputProperties(registeredTemplate.getProperties());
@@ -459,12 +463,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         List<NifiProperty> modifiedProperties = registeredTemplate.findModifiedDefaultProperties();
         if (modifiedProperties != null) {
+             propertyExpressionResolver.resolvePropertyExpressions(modifiedProperties,feedMetadata);
             updatedProperties.addAll(modifiedProperties);
         }
         updatedProperties.addAll(matchedProperties);
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
+
+        */
+
+        //decrypt the metadata
+        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
         FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
         try {
@@ -505,6 +515,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             entity = feedBuilder.build();
 
         feed = new NifiFeed(feedMetadata, entity);
+        //set the original feedProperties back to the feed
+        feedMetadata.setProperties(orignialFeedProperties);
+        //encrypt the metadata properties
+        feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
         if (entity.isSuccess()) {
             feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
 

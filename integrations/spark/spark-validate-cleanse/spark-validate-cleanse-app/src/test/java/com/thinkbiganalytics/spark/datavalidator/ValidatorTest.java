@@ -199,7 +199,7 @@ public class ValidatorTest {
 
         HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
         StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
-        assertEquals(result.getFieldValue(), "aatestaa");
+        assertEquals("aabaraa",result.getFieldValue() );
         assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
     }
 

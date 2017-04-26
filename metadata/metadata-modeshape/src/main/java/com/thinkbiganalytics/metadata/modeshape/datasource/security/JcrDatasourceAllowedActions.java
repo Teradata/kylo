@@ -97,6 +97,13 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
         enable(owner, DatasourceAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, DatasourceAccessControl.EDIT_DETAILS);
     }
+    
+    @Override
+    public void removeAccessControl(UsernamePrincipal owner) {
+        super.removeAccessControl(owner);
+        
+        JcrAccessControlUtil.clearPermissions(getNode());
+    }
 
     /**
      * Enables the specified actions for the specified principal.

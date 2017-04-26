@@ -31,12 +31,17 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.DefaultAccessController;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+
+import static org.mockito.Mockito.when;
 
 import javax.inject.Inject;
 
@@ -86,6 +91,13 @@ public class JcrFeedSecurityTestConfig {
         }, MetadataAccess.SERVICE);
     }
     
+    
+    @Bean
+    public AccessController accessController() {
+        AccessController ctlr = Mockito.mock(DefaultAccessController.class);
+        when(ctlr.isEntityAccessControlled()).thenReturn(true);
+        return ctlr;
+    }
 
     @Bean
     @Primary

@@ -115,7 +115,7 @@ public class FeedModelTransform {
         feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(""));
     }
 
-    private void encryptSensitivePropertyValues(FeedMetadata feedMetadata) {
+    public void encryptSensitivePropertyValues(FeedMetadata feedMetadata) {
         List<String> encrypted = new ArrayList<>();
         feedMetadata.getSensitiveProperties().stream().forEach(nifiProperty -> {
             nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue()));

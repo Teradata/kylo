@@ -540,11 +540,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         //only set the sourceFields if its the first time creating this feed
                         if (model.id == null) {
                             model.table.sourceTableSchema.fields = sourceFields;
+                            model.table.feedTableSchema.fields = feedFields;
                         }
                         if (model.table.feedTableSchema == undefined) {
                             model.table.feedTableSchema = {name: null, fields: []};
                         }
-                        model.table.feedTableSchema.fields = feedFields;
+
 
                         //remove any extra columns in the policies
                         /*

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security.mixin;
 
+import java.util.Collections;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -72,8 +74,24 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
         Node allowedNode = JcrUtil.getNode(getNode(), JcrAllowedActions.NODE_NAME);
         return JcrUtil.createJcrObject(allowedNode, getJcrAllowedActionsType());
     }
+    
+    default void disableAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner) {
+        disableAccessControl(prototype, owner, Collections.emptyList());
+    }
+    
+    default void disableAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner, List<SecurityRole> roles) {
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        prototype.copy(allowed.getNode(), owner);
+        allowed.removeAccessControl(owner);
+        
+        if (roles.isEmpty()) {
+            JcrRoleMembership.removeAll(getNode());
+        } else {
+            roles.forEach(role -> JcrRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode()));
+        }
+    }
 
-    default void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner, List<SecurityRole> roles) {
+    default void enableAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner, List<SecurityRole> roles) {
         JcrAllowedActions allowed = getJcrAllowedActions();
         prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);
