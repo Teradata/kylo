@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
+import javax.inject.Inject;
+
 /*-
  * #%L
  * kylo-metadata-rest-controller
@@ -26,14 +28,45 @@ package com.thinkbiganalytics.metadata.rest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
+
 /**
  * Configuration related to translation between the domain and REST models.
  */
 @Configuration
-public class ModelConfiguration {
+public class MetadataServiceConfiguration {
+
+    @Inject
+    private MetadataAccess metadata;
+
+    @Inject
+    private ActionsModuleBuilder builder;
+
 
     @Bean(name = "metadataModelTransform")
     public MetadataModelTransform metadataTransform() {
         return new MetadataModelTransform();
     }
+    
+
+    @Bean
+    public PostMetadataConfigAction metadataSecurityConfigAction() {
+        //@formatter:off
+
+        return () -> metadata.commit(() -> {
+            return builder
+                            .module(AllowedActions.SERVICES)
+                                .action(MetadataAccessControl.ACCESS_METADATA)
+                                .action(MetadataAccessControl.ADMIN_METADATA)
+                                .add()
+                            .build();
+            }, MetadataAccess.SERVICE);
+
+        // @formatter:on
+    }
+
 }
