@@ -32,7 +32,7 @@ public class StandardizationAndValidationResult {
 
     private List<ValidationResult> validationResults = null;
 
-    private Object fieldValue = null;;
+    private Object fieldValue = null;
 
     public StandardizationAndValidationResult(Object value){
         fieldValue = value;
@@ -71,9 +71,6 @@ public class StandardizationAndValidationResult {
     public List<ValidationResult> getValidationResults() {
         return validationResults;
     }
-
-
-
 
     public String getFieldValueForValidation(){
         return((fieldValue == null) ? null:fieldValue.toString());
