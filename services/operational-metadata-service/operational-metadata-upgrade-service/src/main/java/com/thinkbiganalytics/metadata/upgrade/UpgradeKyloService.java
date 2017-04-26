@@ -292,7 +292,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void ensureDefaultEntityRoles() {
             createDefaultRoles();
             metadataAccess.commit(() -> {
-              ensureFeedRoles();
+                ensureFeedRoles();
                 ensureCategoryRoles();
                 ensureTemplateRoles();
             }, MetadataAccess.SERVICE);
