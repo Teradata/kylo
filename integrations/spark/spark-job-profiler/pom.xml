@@ -23,7 +23,8 @@
     <module>spark-job-profiler-spark-v1</module>
     <module>spark-job-profiler-spark-v2</module>
     <module>spark-job-profiler-tests</module>
+    <module>spark-job-profiler-api</module>
+    <module>spark-job-profiler-core</module>
+    <module>spark-job-profiler-model</module>
   </modules>
-
-
 </project>

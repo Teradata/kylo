@@ -20,10 +20,10 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
-import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
-import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 
 import org.apache.spark.sql.types.DataTypes;
 import org.joda.time.DateTime;
@@ -55,8 +55,10 @@ public class TimestampColumnCase2Test extends ProfilerTest {
      */
     @Test
     public void accomodate() {
+        final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+
         // Test with a null value
-        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
+        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
         stats.accomodate(null, 1L);
         Assert.assertNull(stats.getMaxTimestamp());
         Assert.assertNull(stats.getMinTimestamp());
@@ -88,9 +90,11 @@ public class TimestampColumnCase2Test extends ProfilerTest {
      */
     @Test
     public void combine() {
+        final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+
         // Test when 'this' is empty
-        TimestampColumnStatistics other = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
-        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
+        TimestampColumnStatistics other = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
+        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
         other.accomodate("2016-06-27 14:04:30", 1L);
         stats.combine(other);
 
@@ -99,7 +103,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
         Assert.assertEquals(ts1, stats.getMinTimestamp());
 
         // Test when other is empty
-        other = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
+        other = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
         stats.combine(other);
 
         Assert.assertEquals(ts1, stats.getMaxTimestamp());
@@ -127,8 +131,10 @@ public class TimestampColumnCase2Test extends ProfilerTest {
      */
     @Test
     public void getVerboseStatistics() {
+        final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+
         // Test when empty
-        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
+        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
 
         String expected = "{\nColumnInfo [name=ts, datatype=timestamp, nullable=true, metadata={}]\n"
                           + "CommonStatistics [nullCount=0, totalCount=0, uniqueCount=0, percNullValues=0, percUniqueValues=0, percDuplicateValues=0]\n"
@@ -155,11 +161,11 @@ public class TimestampColumnCase2Test extends ProfilerTest {
      */
     @Test
     public void writeStatistics() {
+        final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+
         // Test when empty
-        List<OutputRow> rows = OutputWriter.getInstance().getOutputRows();
-        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true));
-        rows.clear();
-        stats.writeStatistics();
+        TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
+        List<OutputRow> rows = stats.getStatistics();
 
         Assert.assertEquals(12, rows.size());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=COLUMN_DATATYPE, metricValue=TimestampType]", rows.get(0).toString());
@@ -176,13 +182,12 @@ public class TimestampColumnCase2Test extends ProfilerTest {
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MIN_TIMESTAMP, metricValue=]", rows.get(11).toString());
 
         // Test with multiple values
-        rows.clear();
         stats.accomodate("", 1L);
         stats.accomodate("2016-06-27 14:04:29", 1L);
         stats.accomodate("2016-06-27 14:04:30", 1L);
         stats.accomodate("2016-06-27 14:04:31", 1L);
         stats.accomodate(null, 1L);
-        stats.writeStatistics();
+        rows = stats.getStatistics();
 
         Assert.assertEquals(12, rows.size());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=COLUMN_DATATYPE, metricValue=TimestampType]", rows.get(0).toString());

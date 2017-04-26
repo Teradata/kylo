@@ -22,13 +22,13 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
+import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
+import com.thinkbiganalytics.spark.dataprofiler.StatisticsModel;
+import com.thinkbiganalytics.spark.dataprofiler.columns.StandardColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.config.ProfilerConfig;
 
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SQLContext;
@@ -38,7 +38,6 @@ import org.apache.spark.sql.types.StructType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,12 +47,15 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@ContextConfiguration(classes = {Profiler.class, SpringTestConfigV1.class, SpringTestConfigV2.class})
+@ContextConfiguration(classes = {ProfilerConfig.class, SpringTestConfigV1.class, SpringTestConfigV2.class})
 @ActiveProfiles("spark-v1")
 public abstract class ProfilerTest {
 
@@ -61,16 +63,20 @@ public abstract class ProfilerTest {
     public static final double epsilon = 0.0001d;
     public static final double epsilon2 = 3000.0d; //only used for long-variance, since they are extremely large numbers
     //columnStatsMap is static to be shared between multiple sub-classes
-    protected static Map<Integer, ColumnStatistics> columnStatsMap;
+    protected static Map<Integer, StandardColumnStatistics> columnStatsMap;
     private JavaSparkContext sc;
-    @Autowired
-    private Profiler profiler;
 
-    @SuppressWarnings("SpringJavaAutowiringInspection") //IntelliJ can't autowire for some reason
-    @Autowired
+    @Inject
+    private com.thinkbiganalytics.spark.dataprofiler.Profiler profiler;
+
+    @Inject
     private SparkContextService scs;
 
+    @Inject
+    private SQLContext sqlContext;
+
     @Before
+    @SuppressWarnings("unchecked")
     public void setUp() {
         if (columnStatsMap == null) {
             StructField[] schemaFields = new StructField[15];
@@ -264,13 +270,8 @@ public abstract class ProfilerTest {
                 new BigDecimal(String.valueOf(4.343)),
                 "Cat"));
 
-            String SPARK_MASTER = "local[*]";
-            String APP_NAME = "Profiler Test";
-            SparkConf conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);
-            sc = new JavaSparkContext(conf);
-            SQLContext sqlContext = new SQLContext(sc);
-
-            JavaRDD<Row> dataRDD = sc.parallelize(rows);
+            final JavaSparkContext javaSparkContext = JavaSparkContext.fromSparkContext(sqlContext.sparkContext());
+            JavaRDD<Row> dataRDD = javaSparkContext.parallelize(rows);
             DataSet dataDF = scs.toDataSet(sqlContext.createDataFrame(dataRDD, schema));
 
             /* Enable to debug contents of test data */
@@ -279,9 +280,8 @@ public abstract class ProfilerTest {
                 System.out.println(r.toString());
             }
             */
-            Broadcast<Map<Integer, StructField>> map = profiler.populateAndBroadcastSchemaMap(dataDF, sc);
-            StatisticsModel statsModel = profiler.profileStatistics(dataDF, map);
-            columnStatsMap = statsModel.getColumnStatisticsMap();
+            StatisticsModel statsModel = profiler.profile(dataDF, new ProfilerConfiguration());
+            columnStatsMap = (statsModel != null) ? (Map) statsModel.getColumnStatisticsMap() : (Map<Integer, StandardColumnStatistics>) Collections.EMPTY_MAP;
         }
     }
 
