@@ -190,7 +190,7 @@ public final class JcrAccessControlUtil {
         try {
             return removePermissions(node.getSession(), node.getPath(), principal, privilegeNames);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + Arrays.toString(privilegeNames), e);
         }
     }
 
@@ -198,7 +198,7 @@ public final class JcrAccessControlUtil {
         try {
             return removePermissions(node.getSession(), node.getPath(), principal, privileges);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + privileges, e);
+            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + Arrays.toString(privileges), e);
         }
 
     }
