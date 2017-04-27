@@ -94,6 +94,7 @@
     <!--<liquibase.version>3.3.5</liquibase.version>-->
     <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
     <liquibase-hibernate4.version>3.5</liquibase-hibernate4.version>
+    <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -880,7 +881,7 @@
         <plugin>
           <groupId>org.scala-tools</groupId>
           <artifactId>maven-scala-plugin</artifactId>
-          <version>2.15.2</version>
+          <version>${maven.scala.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

@@ -24,8 +24,10 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.metadata.rest.ExtensiblesModel;
 import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.catalina.connector.Response;
 import org.springframework.stereotype.Component;
@@ -54,6 +56,9 @@ import io.swagger.annotations.Api;
 @Component
 @Path("/v1/metadata/extension")
 public class ExtensionsController {
+    
+    @Inject
+    private AccessController accessController;
 
     @Inject
     private MetadataAccess metadata;
@@ -71,6 +76,8 @@ public class ExtensionsController {
     @Produces(MediaType.APPLICATION_JSON)
     public List<ExtensibleTypeDescriptor> getTypes() {
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
             List<ExtensibleType> list = this.typeProvider.getTypes();
             return new ArrayList<>(Collections2.transform(list, ExtensiblesModel.DOMAIN_TO_TYPE));
         });
@@ -87,6 +94,8 @@ public class ExtensionsController {
     @Produces(MediaType.APPLICATION_JSON)
     public ExtensibleTypeDescriptor getType(@PathParam("nameOrId") String id) {
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
             ExtensibleType.ID domainId = null;
             String name = null;
             ExtensibleType type = null;
@@ -121,6 +130,8 @@ public class ExtensionsController {
     @Produces(MediaType.APPLICATION_JSON)
     public void deleteType(@PathParam("id") String id) {
         metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             ExtensibleType.ID domainId = this.typeProvider.resolve(id);
 
             return this.typeProvider.deleteType(domainId);
@@ -139,6 +150,8 @@ public class ExtensionsController {
     @Produces(MediaType.APPLICATION_JSON)
     public ExtensibleTypeDescriptor createType(ExtensibleTypeDescriptor descr) {
         return metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             ExtensibleType type = ExtensiblesModel.createType(descr, this.typeProvider);
 
             return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);
@@ -159,6 +172,8 @@ public class ExtensionsController {
     public ExtensibleTypeDescriptor updateType(@PathParam("id") String id,
                                                ExtensibleTypeDescriptor descr) {
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             ExtensibleType.ID domainId = this.typeProvider.resolve(id);
             ExtensibleType type = ExtensiblesModel.updateType(descr, domainId, this.typeProvider);
 

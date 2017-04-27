@@ -43,6 +43,20 @@ import java.util.regex.Pattern;
  */
 public class ConfigurationPropertyReplacer {
 
+
+    public static final String NIF_EL_PROPERTY_REPLACEMENT_PREFIX = "$nifi{";
+
+    /**
+     * returns a new str in lowercase replacing spaces with _
+     * @param str a string to parse
+     * @return  a new str in lowercase replacing spaces with _
+     */
+    private static String toPropertyName(String str) {
+        return str.toLowerCase().trim().replaceAll(" +", "_");
+    }
+
+
+
     /**
      * return the application.properties property key for the specific property using the proocessor type as the key reference
      *
@@ -50,9 +64,22 @@ public class ConfigurationPropertyReplacer {
      * @return the property key prepended with the "nifi.<processor type>."
      */
     public static String getProcessorPropertyConfigName(NifiProperty property) {
-        String processorTypeName = "nifi." + (StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey()).toLowerCase().trim().replaceAll(" +", "_");
+        String processorTypeName = "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey());
         return processorTypeName;
     }
+
+
+    /**
+     * return the application.properties property key for the specific property using the proocessor type as the key reference
+     *
+     * @param property the nifi property
+     * @return the property key prepended with the "nifi.<processor type>[<processor name>]."
+     */
+    public static String getProcessorNamePropertyConfigName(NifiProperty property) {
+        String processorTypeName = "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "["+property.getProcessorName()+"]." + property.getKey());
+        return processorTypeName;
+    }
+
 
     /**
      * Return the application.properties property key for 'all_processors' matching the supplied NiFi property.
@@ -61,7 +88,7 @@ public class ConfigurationPropertyReplacer {
      * @return the property key prepended with the "nifi.all_processors."
      */
     public static String getGlobalAllProcessorsPropertyConfigName(NifiProperty property) {
-        String processorTypeName = "nifi.all_processors." + property.getKey().toLowerCase().trim().replaceAll(" +", "_");
+        String processorTypeName = "nifi.all_processors." + toPropertyName(property.getKey());
         return processorTypeName;
     }
 

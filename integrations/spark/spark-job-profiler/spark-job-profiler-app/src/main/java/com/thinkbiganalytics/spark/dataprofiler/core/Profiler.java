@@ -23,67 +23,42 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
-import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.DateColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.DoubleColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.FloatColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.LongColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ShortColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.UnsupportedColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.model.SchemaInfo;
-import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
-import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
+import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
+import com.thinkbiganalytics.spark.dataprofiler.StatisticsModel;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
-import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
-import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.sql.hive.HiveContext;
-import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import scala.Tuple2;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Generate data profile statistics for a table/query, and write result to a table
  */
-@Configuration
 public class Profiler {
 
     private static final Logger log = LoggerFactory.getLogger(Profiler.class);
-    /* Schema lookup table */
-    private Broadcast<Map<Integer, StructField>> bSchemaMap;
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
-    private ProfilerSparkContextService sparkContextService;
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
-    private ProfilerStrategy profilerStrategy;
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
+
     private FieldPolicyLoader loader;
-    private Map<String, FieldPolicy> policyMap = new HashMap<>();
+
+    private com.thinkbiganalytics.spark.dataprofiler.Profiler profiler;
+
+    private ProfilerConfiguration profilerConfiguration;
+
+    private SparkContextService sparkContextService;
+
+    private SQLContext sqlContext;
 
     /**
      * Main entry point into program
@@ -91,17 +66,23 @@ public class Profiler {
      * @param args: list of args
      */
     public static void main(String[] args) {
-        ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
-        Profiler app = ctx.getBean(Profiler.class);
-        app.profile(args);
+        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
+        final Profiler profiler = new Profiler(ctx.getBean(FieldPolicyLoader.class), ctx.getBean(com.thinkbiganalytics.spark.dataprofiler.Profiler.class), ctx.getBean(ProfilerConfiguration.class),
+                                               ctx.getBean(SparkContextService.class), ctx.getBean(SQLContext.class));
+        profiler.run(args);
     }
 
-    private void profile(String[] args) {
+    public Profiler(FieldPolicyLoader loader, com.thinkbiganalytics.spark.dataprofiler.Profiler profiler, ProfilerConfiguration profilerConfiguration,
+                    SparkContextService sparkContextService, SQLContext sqlContext) {
+        this.loader = loader;
+        this.profiler = profiler;
+        this.profilerConfiguration = profilerConfiguration;
+        this.sparkContextService = sparkContextService;
+        this.sqlContext = sqlContext;
+    }
 
+    public void run(String[] args) {
         /* Variables */
-        SparkConf conf;
-        JavaSparkContext sc;
-        HiveContext hiveContext;
         DataSet resultDF;
         String queryString;
 
@@ -110,44 +91,23 @@ public class Profiler {
             return;
         }
 
-        /* Initialize and configure Spark */
-        conf = new SparkConf();
-
-        if (ProfilerConfiguration.SERIALIZER.equals("kryo")) {
-            conf = configureEfficientSerialization(conf);
-        }
-
-        sc = new JavaSparkContext(conf);
-        hiveContext = new HiveContext(sc.sc());
-        hiveContext.setConf("spark.sql.dialect", ProfilerConfiguration.SQL_DIALECT);
 
         /* Run query and get result */
-        log.info("[PROFILER-INFO] Analyzing profile statistics for: [" + queryString + "]");
-        resultDF = sparkContextService.sql(hiveContext, queryString);
-
-        /* Update schema map and broadcast it*/
-        bSchemaMap = populateAndBroadcastSchemaMap(resultDF, sc);
+        log.info("[PROFILER-INFO] Analyzing profile statistics for: [{}]", queryString);
+        resultDF = sparkContextService.sql(sqlContext, queryString);
 
         /* Get profile statistics and write to table */
-        StatisticsModel statisticsModel = profileStatistics(resultDF, bSchemaMap);
+        final StatisticsModel statisticsModel = profiler.profile(resultDF, profilerConfiguration);
 
         if (statisticsModel != null) {
-            statisticsModel.writeModel(sc, hiveContext, sparkContextService);
-        }
-        else {
+            OutputWriter.writeModel(statisticsModel, profilerConfiguration, sqlContext, sparkContextService);
+        } else {
             log.info("[PROFILER-INFO] No data to process. Hence, no profile statistics generated.");
         }
 
         /* Wrap up */
         log.info("[PROFILER-INFO] Profiling finished.");
-        sc.close();
     }
-
-
-    public StatisticsModel profileStatistics(DataSet resultDF, Broadcast<Map<Integer, StructField>> bSchemaMap) {
-        return profilerStrategy.profileStatistics(resultDF, bSchemaMap);
-    }
-
 
     /**
      * Check command line arguments
@@ -155,10 +115,14 @@ public class Profiler {
      * @param args list of command line arguments
      * @return query to run (null if invalid arguments)
      */
-    public String checkCommandLineArgs(String[] args) {
-        log.info("Running Spark Profiler with the following command line " + args.length + " args (comma separated): " + StringUtils.join(args, ","));
+    @Nullable
+    private String checkCommandLineArgs(final String[] args) {
+        if (log.isInfoEnabled()) {
+            log.info("Running Spark Profiler with the following command line {} args (comma separated): {}", args.length, StringUtils.join(args, ","));
+        }
+
         if (args.length < 5) {
-            log.error("Invalid number of command line arguments (" + args.length + ")");
+            log.error("Invalid number of command line arguments ({})", args.length);
             showCommandLineArgs();
             return null;
         }
@@ -170,7 +134,7 @@ public class Profiler {
         Integer n = Integer.valueOf(args[2]);
         String profileOutputTable = args[3];
         String fieldPolicyJsonPath = args[4];
-        policyMap = loader.loadFieldPolicy(fieldPolicyJsonPath);
+        Map<String, FieldPolicy> policyMap = loader.loadFieldPolicy(fieldPolicyJsonPath);
 
         String inputAndOutputTablePartitionKey = "ALL";
 
@@ -195,7 +159,7 @@ public class Profiler {
                 if (!profiledColumns.isEmpty()) {
                     retVal = "select " + StringUtils.join(profiledColumns, ',') + " from " + safeTable;
                     if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
-                        retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
+                        retVal += " where " + HiveUtils.quoteIdentifier(profilerConfiguration.getInputTablePartitionColumnName()) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
                     }
                 } else {
                     retVal = null;
@@ -205,26 +169,26 @@ public class Profiler {
                 retVal = profileObjectDesc;
                 break;
             default:
-                log.error("Illegal command line argument for object type (" + profileObjectType + ")");
+                log.error("Illegal command line argument for object type ({})", profileObjectType);
                 showCommandLineArgs();
                 return null;
         }
 
         if (n <= 0) {
-            log.error("Illegal command line argument for n for top_n values (" + n + ")");
+            log.error("Illegal command line argument for n for top_n values ({})", n);
             showCommandLineArgs();
             return null;
         } else {
-            ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES = n;
+            profilerConfiguration.setNumberOfTopNValues(n);
         }
 
-        if (!setOutputTableDBAndName(profileOutputTable)) {
-            log.error("Illegal command line argument for output table (" + profileOutputTable + ")");
+        if (!setOutputTableDBAndName(profileOutputTable, profilerConfiguration)) {
+            log.error("Illegal command line argument for output table ({})", profileOutputTable);
             showCommandLineArgs();
             return null;
         }
 
-        ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = inputAndOutputTablePartitionKey;
+        profilerConfiguration.setInputAndOutputTablePartitionKey(inputAndOutputTablePartitionKey);
 
         return retVal;
     }
@@ -233,17 +197,17 @@ public class Profiler {
     /*
      * Set output database and table
      */
-    private boolean setOutputTableDBAndName(String profileOutputTable) {
+    private boolean setOutputTableDBAndName(@Nonnull final String profileOutputTable, @Nonnull final ProfilerConfiguration profilerConfiguration) {
 
         Boolean retVal = true;
         String[] tableNameParts = profileOutputTable.split("\\.");
 
         if (tableNameParts.length == 1) {
             //output db remains as 'default'
-            ProfilerConfiguration.OUTPUT_TABLE_NAME = tableNameParts[0];
+            profilerConfiguration.setOutputTableName(tableNameParts[0]);
         } else if (tableNameParts.length == 2) {
-            ProfilerConfiguration.OUTPUT_DB_NAME = tableNameParts[0];
-            ProfilerConfiguration.OUTPUT_TABLE_NAME = tableNameParts[1];
+            profilerConfiguration.setOutputDbName(tableNameParts[0]);
+            profilerConfiguration.setOutputTableName(tableNameParts[1]);
         } else {
             retVal = false;
         }
@@ -251,97 +215,10 @@ public class Profiler {
         return retVal;
     }
 
-
-    /*
-     * Configure efficient serialization via kryo
+    /**
+     * Show required command-line arguments.
      */
-    private SparkConf configureEfficientSerialization(SparkConf conf) {
-
-        List<Class<?>> serializeClassesList;
-        Class<?>[] serializeClassesArray;
-
-        conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-
-        serializeClassesList = new ArrayList<>();
-        serializeClassesList.add(ColumnStatistics.class);
-        serializeClassesList.add(BigDecimalColumnStatistics.class);
-        serializeClassesList.add(BooleanColumnStatistics.class);
-        serializeClassesList.add(ByteColumnStatistics.class);
-        serializeClassesList.add(DateColumnStatistics.class);
-        serializeClassesList.add(DoubleColumnStatistics.class);
-        serializeClassesList.add(FloatColumnStatistics.class);
-        serializeClassesList.add(IntegerColumnStatistics.class);
-        serializeClassesList.add(LongColumnStatistics.class);
-        serializeClassesList.add(ShortColumnStatistics.class);
-        serializeClassesList.add(StringColumnStatistics.class);
-        serializeClassesList.add(TimestampColumnStatistics.class);
-        serializeClassesList.add(UnsupportedColumnStatistics.class);
-        serializeClassesList.add(StatisticsModel.class);
-        serializeClassesList.add(TopNDataItem.class);
-        serializeClassesList.add(TopNDataList.class);
-        serializeClassesList.add(OutputRow.class);
-        serializeClassesList.add(OutputWriter.class);
-
-        serializeClassesArray = new Class[serializeClassesList.size()];
-        for (int i = 0; i < serializeClassesList.size(); i++) {
-            serializeClassesArray[i] = serializeClassesList.get(i);
-        }
-
-        conf.registerKryoClasses(serializeClassesArray);
-        return conf;
-    }
-
-
-    /*
-     *  Print column value counts
-     *  Only use for debugging, since output can be quite large in volume
-     */
-    @SuppressWarnings("unused")
-    private void printColumnValueCounts(JavaPairRDD<Tuple2<Integer, Object>, Integer> columnValueCounts) {
-
-        for (Tuple2<Tuple2<Integer, Object>, Integer> columnValueCount : columnValueCounts.collect()) {
-            System.out.println(columnValueCount);
-        }
-
-    }
-
-
-    /* Populate schema map */
-    Broadcast<Map<Integer, StructField>> populateAndBroadcastSchemaMap(DataSet df, JavaSparkContext sc) {
-
-        for (int i = 0; i < df.schema().fields().length; i++) {
-            SchemaInfo.schemaMap.put(i, df.schema().fields()[i]);
-        }
-
-        bSchemaMap = sc.broadcast(SchemaInfo.schemaMap);
-        return bSchemaMap;
-    }
-
-
-    /*
-     * Print schema of query result
-     * Only use for debugging, since this is already written out as result of profiling
-     */
-    @SuppressWarnings("unused")
-    private void printSchema(StructField[] schemaFields) {
-
-        System.out.println("=== Schema ===");
-        System.out.println("[Field#\tName\tDataType\tNullable?\tMetadata]");
-        for (int i = 0; i < schemaFields.length; i++) {
-            String output = "Field #" + i + "\t"
-                            + schemaFields[i].name() + "\t"
-                            + schemaFields[i].dataType() + "\t"
-                            + schemaFields[i].nullable() + "\t"
-                            + schemaFields[i].metadata();
-
-            System.out.println(output);
-        }
-    }
-
-
-    /* Show required command-line arguments */
     private void showCommandLineArgs() {
-
         log.info("*** \nInfo: Required command line arguments:\n"
                  + "1. object type: valid values are {table, query}\n"
                  + "2. object description: valid values are {<database.table>, <query>}\n"

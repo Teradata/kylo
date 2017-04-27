@@ -258,19 +258,44 @@ public class PropertyExpressionResolver {
         }
     }
 
+    /**
+     * Find a property in the env properties matching one of the following:
+     * 1) nifi.<processorType>[<processorName>].<property key>
+     * 2)    nifi.<processorType>.<property key>
+     * 3) nifi.all_processors.<property key>
+     * @param property
+     * @param propertyKey
+     * @return
+     */
     private String getConfigurationPropertyValue(NifiProperty property, String propertyKey) {
         if (StringUtils.isNotBlank(propertyKey) && propertyKey.startsWith(configPropertyPrefix)) {
-            return environmentProperties.getPropertyValueAsString(propertyKey);
+            return fixNiFiExpressionPropertyValue(environmentProperties.getPropertyValueAsString(propertyKey));
         } else {
             //see if the processorType is configured
-            String processorTypeProperty = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
-            String value = environmentProperties.getPropertyValueAsString(processorTypeProperty);
-            if (StringUtils.isBlank(value)) {
-                String globalPropertyType = ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigName(property);
-                value = environmentProperties.getPropertyValueAsString(globalPropertyType);
+            String processorTypeWithProcessorNameProperty = ConfigurationPropertyReplacer.getProcessorNamePropertyConfigName(property);
+            String value = environmentProperties.getPropertyValueAsString(processorTypeWithProcessorNameProperty);
+            if(StringUtils.isBlank(value)) {
+                String processorTypeProperty = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
+                value = environmentProperties.getPropertyValueAsString(processorTypeProperty);
+                if (StringUtils.isBlank(value)) {
+                    String globalPropertyType = ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigName(property);
+                    value = environmentProperties.getPropertyValueAsString(globalPropertyType);
+                }
             }
-            return value;
+            return fixNiFiExpressionPropertyValue(value);
         }
+    }
+
+    /**
+     * Replace the $nifi{} with ${}
+     * @param value the property value
+     * @return the replaced value
+     */
+    private String fixNiFiExpressionPropertyValue(String value){
+        if(StringUtils.isNotBlank(value)) {
+            return StringUtils.replace(value, ConfigurationPropertyReplacer.NIF_EL_PROPERTY_REPLACEMENT_PREFIX, "${");
+        }
+        return value;
     }
 
     /**
@@ -280,15 +305,21 @@ public class PropertyExpressionResolver {
      * @return the result of the transformation
      */
     private ResolveResult resolveStaticConfigProperty(@Nonnull final NifiProperty property) {
-        final String name = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
-        final String processorTypePropertyValue = environmentProperties.getPropertyValueAsString(name);
+        final String processTypeAndProcessNameProperty = ConfigurationPropertyReplacer.getProcessorNamePropertyConfigName(property);
+        final String processTypeAndProcessNamePropertyValue = environmentProperties.getPropertyValueAsString(processTypeAndProcessNameProperty);
+
+
+        final String processorTypeProperty = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
+        final String processorTypePropertyValue = environmentProperties.getPropertyValueAsString(processorTypeProperty);
 
         final String globalName = ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigName(property);
         final String globalPropertyValue = environmentProperties.getPropertyValueAsString(globalName);
 
-        final String value = StringUtils.isBlank(processorTypePropertyValue) ? globalPropertyValue : processorTypePropertyValue;
+        //value first == processorTypeAndProcessNamePropertyValue, thne processorTypePropertyValue,  finally globalPropertyValue
+        String value = StringUtils.isBlank(processTypeAndProcessNamePropertyValue) ?  ( StringUtils.isBlank(processorTypePropertyValue) ? globalPropertyValue : processorTypePropertyValue) : processTypeAndProcessNamePropertyValue;
 
         if (value != null) {
+            value = fixNiFiExpressionPropertyValue(value);
             property.setValue(value);
             return new ResolveResult(true, true);
         }

@@ -63,6 +63,16 @@ public interface SparkContextService extends Serializable {
     DataSet toDataSet(SQLContext context, JavaRDD<Row> rdd, StructType schema);
 
     /**
+     * Creates a data set from a Spark RDD.
+     *
+     * @param context   the Spark SQL context
+     * @param rdd       the Spark RDD
+     * @param beanClass the type of RDD
+     * @return a data set
+     */
+    DataSet toDataSet(SQLContext context, JavaRDD<?> rdd, Class<?> beanClass);
+
+    /**
      * Creates a data set from the specified Hive query.
      *
      * @param context the Hive context

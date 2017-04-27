@@ -162,6 +162,10 @@ public class FieldPolicy implements Serializable {
         this.allPolicies = allPolicies;
     }
 
+    public boolean hasStandardizationPolicies(){
+        return policies != null && !policies.isEmpty();
+    }
+
     public String toString() {
         return "FieldPolicy validators [" + (validators == null ? "NULL" : validators.size()) + "] policies [" + (policies == null
                                                                                                                   ? "NULL"

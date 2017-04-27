@@ -1,7 +1,7 @@
 require.config({
     waitSeconds: 0,
     baseUrl: "js",
-    urlArgs: "ver=v0.8.0",
+    urlArgs: "ver=0.8.1-snapshot",
     paths: {
         "angular":"../bower_components/angular/angular.min",
         "angular-drag-and-drop-lists":"../bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min",

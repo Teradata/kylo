@@ -99,7 +99,9 @@ public class TableRegisterSupport {
         columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
-        ColumnSpec[] useColumnSpecs = (tableType == TableType.FEED ? feedColumnSpecs : columnSpecs);
+        //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
+        //_valid and the final feed table should use the target schema
+        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED || tableType == TableType.INVALID) ? feedColumnSpecs : columnSpecs);
 
         // Register the database
         if (registerDatabase && !registerDatabase(source)) {
