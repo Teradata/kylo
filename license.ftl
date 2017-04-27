@@ -140,6 +140,10 @@
   <@postgresqlLicense/>
 <#elseif project.groupId == "xmlenc">
   <@xmlencLicense/>
+<#elseif project.groupId == "javax.mail">
+  <@generalLicense "Common Development and Distribution License Version 1.1"/>
+<#elseif project.groupId == "com.microsoft.sqlserver">
+  <@mitLicense/>
 <#elseif licenses?seq_contains("Public Domain")>
   <@publicDomain/>
 <#elseif licenses?seq_contains("Creative Commons CC0 1.0 Universal")>

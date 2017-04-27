@@ -48,4 +48,12 @@
     <createProcedure path="postgresql/delete-feed-jobs.sql" relativeToChangelogFile="true"/>
   </changeSet>
 
+  <changeSet id="5" author="ll186048" runOnChange="true" dbms="mssql">
+    <createProcedure path="sqlserver/abandon-feed-jobs.sql" relativeToChangelogFile="true"/>
+  </changeSet>
+
+  <changeSet id="6"  author="ll186048" runOnChange="true" dbms="mssql">
+    <createProcedure path="sqlserver/delete-feed-jobs.sql" relativeToChangelogFile="true"/>
+  </changeSet>
+
 </databaseChangeLog>

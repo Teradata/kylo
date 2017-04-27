@@ -653,36 +653,34 @@
         </createIndex>
     </changeSet>
     <changeSet author="ru186002 (generated)" id="1490096811017-69">
+        <preConditions onFail="CONTINUE">
+            <not><dbms type="mssql"/></not>
+        </preConditions>
+
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_CTX_VALS" constraintName="BATCH_JOB_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-70">
         <addForeignKeyConstraint baseColumnNames="FEED_ID" baseTableName="BATCH_JOB_INSTANCE" constraintName="BATCH_JOB_INSTANCE_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="FEED"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-71">
         <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-72">
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-73">
         <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-74">
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-75">
         <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-76">
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-77">
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_PARAMS" constraintName="JOB_EXEC_PARAMS_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-78">
         <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION" constraintName="JOB_EXEC_STEP_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
-    </changeSet>
-    <changeSet author="ru186002 (generated)" id="1490096811017-79">
         <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_JOB_EXECUTION" constraintName="JOB_INST_EXEC_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
+    </changeSet>
+    <!-- valid for SQL Server only -->
+    <changeSet author="ll186048 (SQL Server)" id="1490096811017-70" dbms="mssql">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_CTX_VALS" constraintName="BATCH_JOB_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="FEED_ID" baseTableName="BATCH_JOB_INSTANCE" constraintName="BATCH_JOB_INSTANCE_FK1" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="FEED"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK1" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK2" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK1" deferrable="false" initiallyDeferred="false" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK2" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK2" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_PARAMS" constraintName="JOB_EXEC_PARAMS_FK" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION" constraintName="JOB_EXEC_STEP_FK" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+        <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_JOB_EXECUTION" constraintName="JOB_INST_EXEC_FK" deferrable="false" initiallyDeferred="false" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
     </changeSet>
 </databaseChangeLog>

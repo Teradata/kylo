@@ -9,7 +9,7 @@
   <artifactId>kylo-metadata-modeshape</artifactId>
 
   <properties>
-    <modeshape.version>5.2.0.Final</modeshape.version>
+    <modeshape.version>5.4.1.Final</modeshape.version>
     <jdbc.h2.version>1.2.124</jdbc.h2.version>
     <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -107,6 +107,18 @@
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
       <version>1.5.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <version>6.1.0.jre8</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.microsoft.azure</groupId>
+          <artifactId>azure-keyvault</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
