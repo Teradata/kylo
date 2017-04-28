@@ -204,9 +204,8 @@ public class JdbcCommon {
     }
 
 
-    public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
+    public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor, final Schema schema) throws SQLException, IOException {
         int dateConversionWarning = 0;
-        final Schema schema = createSchema(rs);
         final GenericRecord rec = new GenericData.Record(schema);
 
         final DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
@@ -457,5 +456,134 @@ public class JdbcCommon {
         }
     }
 
+    /**
+     * Get schema in the format for setting up the feed table
+     * @param schema Avro Schema
+     * @return formatted schema for setting up feed table
+     */
+    public static String getAvroSchemaForFeedSetup (Schema schema) {
+        if (schema == null) {
+            return "";
+        }
+
+        final String PIPE = "|";
+        final String description = "";
+        final String primaryKey = "0";
+        final String createdTracker = "0";
+        final String updatedTracker = "0";
+        final String newLine = "\n";
+
+        StringBuffer retVal = new StringBuffer();
+
+        int totalFields = schema.getFields().size();
+        int counter = 1;
+
+        for (Schema.Field field: schema.getFields()) {
+            String name = field.name().toLowerCase();
+            String dataType = field.schema().getType().name().toLowerCase();
+
+            if (dataType.equals("union")) {
+                    for (Schema fieldSchemaType: field.schema().getTypes()) {
+                        if (!fieldSchemaType.getName().toLowerCase().equals("null")) {
+                            dataType = getHiveTypeForAvroType(fieldSchemaType.getName().toLowerCase());
+                            break;
+                        }
+                    }
+
+                    if (dataType.equals("union")) {
+                        dataType = "void";
+                    }
+                }
+            else {
+                dataType = getHiveTypeForAvroType(dataType);
+            }
+
+            retVal.append(name)
+                .append(PIPE)
+                .append(dataType)
+                .append(PIPE)
+                .append(description)
+                .append(PIPE)
+                .append(primaryKey)
+                .append(PIPE)
+                .append(createdTracker)
+                .append(PIPE)
+                .append(updatedTracker);
+
+            if (counter++ < totalFields) {
+                retVal.append(newLine);
+            }
+        }
+
+        return retVal.toString();
+    }
+
+    /*
+     * Mapping of Avro's data types to Hive's data types
+     */
+    private static String getHiveTypeForAvroType(String avroType) {
+
+        String hiveType;
+
+        switch (avroType) {
+            case "null":
+                hiveType = "void";
+                break;
+
+            case "boolean":
+                hiveType = "boolean";
+                break;
+
+            case "int":
+                hiveType = "int";
+                break;
+
+            case "long":
+                hiveType = "bigint";
+                break;
+
+            case "float":
+                hiveType = "float";
+                break;
+
+            case "double":
+                hiveType = "double";
+                break;
+
+            case "bytes":
+                hiveType = "binary";
+                break;
+
+            case "string":
+                hiveType = "string";
+                break;
+
+            case "record":
+                hiveType = "struct";
+                break;
+
+            case "map":
+                hiveType = "map";
+                break;
+
+            case "list":
+                hiveType = "array";
+                break;
+
+            case "enum":
+                hiveType = "string";
+                break;
+
+            case "fixed":
+                hiveType = "binary";
+                break;
+
+            default:
+                hiveType = "string";
+                break;
+        }
+
+        return hiveType;
+    }
 
 }

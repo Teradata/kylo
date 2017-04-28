@@ -27,12 +27,15 @@ import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
 import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.JdbcCommon;
 
+import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
 import org.apache.nifi.annotation.behavior.TriggerWhenEmpty;
+import org.apache.nifi.annotation.behavior.WritesAttribute;
+import org.apache.nifi.annotation.behavior.WritesAttributes;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -79,12 +82,19 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 @Tags({"thinkbig", "table", "jdbc", "query", "database"})
 @CapabilityDescription(
     "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to a delimited format, or to Avro if specified. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
+@WritesAttributes({
+        @WritesAttribute(attribute = "db.table.output.format", description = "Output format for database table ingested"),
+        @WritesAttribute(attribute = "db.table.avro.schema", description = "Avro schema for the database table ingested")
+    })
 
 // Implements strategies outlined by https://thebibackend.wordpress.com/2011/05/18/incremental-load-part-i-overview/
 public class GetTableData extends AbstractNiFiProcessor {
+    private Schema avroSchema = null;
 
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
     public static final String RESULT_ROW_COUNT = "source.row.count";
+    public static final String EMPTY_STRING = "";
+
     public static final Relationship REL_NO_DATA = new Relationship.Builder()
         .name("nodata")
         .description("Successful but no new data to process.")
@@ -315,8 +325,11 @@ public class GetTableData extends AbstractNiFiProcessor {
 
                         if (GetTableDataSupport.OutputType.DELIMITED.equals(GetTableDataSupport.OutputType.valueOf(outputType))) {
                             nrOfRows.set(JdbcCommon.convertToDelimitedStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null), delimiter));
+                        } else if (GetTableDataSupport.OutputType.AVRO.equals(GetTableDataSupport.OutputType.valueOf(outputType))){
+                            avroSchema = JdbcCommon.createSchema(rs);
+                            nrOfRows.set(JdbcCommon.convertToAvroStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null), avroSchema));
                         } else {
-                            nrOfRows.set(JdbcCommon.convertToAvroStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null)));
+                            throw new RuntimeException("Unsupported output format type [" + outputType + "]");
                         }
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
@@ -337,6 +350,11 @@ public class GetTableData extends AbstractNiFiProcessor {
 
             // set attribute how many rows were selected
             outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, Long.toString(nrOfRows.get()));
+
+            //set output format type and avro schema for feed setup, if available
+            outgoing = session.putAttribute(outgoing, "db.table.output.format", outputType);
+            String avroSchemaForFeedSetup = (avroSchema != null) ? JdbcCommon.getAvroSchemaForFeedSetup(avroSchema) : EMPTY_STRING;
+            outgoing = session.putAttribute(outgoing, "db.table.avro.schema", avroSchemaForFeedSetup);
 
             session.getProvenanceReporter().modifyContent(outgoing, "Retrieved " + nrOfRows.get() + " rows", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
 
