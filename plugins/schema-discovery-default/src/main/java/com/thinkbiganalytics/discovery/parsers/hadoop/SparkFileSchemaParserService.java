@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -62,6 +64,10 @@ public class SparkFileSchemaParserService {
     private static final Logger log = LoggerFactory.getLogger(SparkFileSchemaParserService.class);
     @Inject
     private SparkShellProcessManager shellProcessManager;
+
+
+    private static String DATATYPE_PRECISION_SCALE_REGEX = "(.*)((\\([0-9]+,[0-9]\\))|(\\([0-9]+\\)))";
+
     /**
      * Communicates with Spark Shell processes
      */
@@ -148,6 +154,26 @@ public class SparkFileSchemaParserService {
         }
     }
 
+    /**
+     * Strip out the (precision,scale) from the datatype and assign it to the proper field.precisionScale property
+     * @param field the field to inspect
+     */
+    private void setPrecisionAndScale(DefaultField field) {
+        String dataType = field.getDerivedDataType();
+        Pattern pattern = Pattern.compile(DATATYPE_PRECISION_SCALE_REGEX);
+        Matcher matcher = pattern.matcher(dataType);
+        if (matcher.find()) {
+            //group 1 is the string datatype
+            //group 2 is the precision and scale
+            String newDataType = matcher.group(1);
+            String precisionAndScale = matcher.group(2);
+            //replace the ()
+            precisionAndScale = precisionAndScale.replaceAll("\\(|\\)", "");
+            field.setDerivedDataType(newDataType);
+            field.setPrecisionScale(precisionAndScale);
+        }
+    }
+
     private DefaultHiveSchema toHiveSchema(QueryResult result, SparkFileType fileType) {
         DefaultHiveSchema schema = new DefaultHiveSchema();
         schema.setHiveFormat("STORED AS " + fileType);
@@ -160,6 +186,8 @@ public class SparkFileSchemaParserService {
             field.setNativeDataType(column.getDataType());
             field.setDerivedDataType(column.getDataType());
             field.setDataTypeDescriptor(ParserHelper.hiveTypeToDescriptor(column.getDataType()));
+            //strip the precisionScale and assign to the field property
+            setPrecisionAndScale(field);
             // Add sample values
             List<Map<String, Object>> values = result.getRows();
             for (Map<String, Object> colMap : values) {

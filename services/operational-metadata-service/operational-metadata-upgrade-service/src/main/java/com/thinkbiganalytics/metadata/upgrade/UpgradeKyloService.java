@@ -173,7 +173,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void onMetadataStart() {
       if(kyloVersionProvider.isUpToDate()) {
            ensureFeedTemplateFeedRelationships();
-      //    ensureDefaultEntityRoles();
+           ensureDefaultEntityRoles();
        }
     }
 
@@ -292,7 +292,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void ensureDefaultEntityRoles() {
             createDefaultRoles();
             metadataAccess.commit(() -> {
-              ensureFeedRoles();
+                ensureFeedRoles();
                 ensureCategoryRoles();
                 ensureTemplateRoles();
             }, MetadataAccess.SERVICE);
@@ -304,10 +304,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
             feeds.stream().forEach(feed -> {
-                roleProvider.getEntityRoles(SecurityRole.FEED).stream().forEach(securityRole -> {
-                    allowedActions
-                        .ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
-                });
+                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             });
         }
     }
@@ -318,10 +315,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY);
             categories.stream().forEach(category -> {
-                roleProvider.getEntityRoles(SecurityRole.CATEGORY).stream().forEach(securityRole -> {
-                    allowedActions
-                        .ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
-                });
+                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             });
         }
     }
@@ -332,10 +326,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE);
             templates.stream().forEach(template -> {
-                roleProvider.getEntityRoles(SecurityRole.TEMPLATE).stream().forEach(securityRole -> {
-                    allowedActions
-                        .ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
-                });
+                allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             });
         }
     }

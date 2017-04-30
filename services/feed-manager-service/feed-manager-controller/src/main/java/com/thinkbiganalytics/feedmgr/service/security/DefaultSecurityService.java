@@ -56,8 +56,15 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 /**
- *
+ * Default service implementation for changing the permissions and role memberships of 
+ * various metadata entities.
+ * 
  */
+//=====================
+// TODO!! Currently all permission and role changing methods are synchronized as a temporary
+// fix for KYLO-518.  The synchronization should be removed when that issue is corrected
+// in a more appropriate way.
+//=====================
 public class DefaultSecurityService implements SecurityService {
 
     @Inject
@@ -97,7 +104,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<ActionGroup> changeFeedPermissions(String id, PermissionsChange changes) {
+    public synchronized Optional<ActionGroup> changeFeedPermissions(String id, PermissionsChange changes) {
         return changePermissions(changes, supplyFeedActions(id));
     }
 
@@ -107,7 +114,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change) {
+    public synchronized Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change) {
         return changeRoleMemberships(change, supplyFeedRoleMembership(id, change.getRoleName()));
     }
 
@@ -124,7 +131,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<ActionGroup> changeCategoryPermissions(String id, PermissionsChange changes) {
+    public synchronized Optional<ActionGroup> changeCategoryPermissions(String id, PermissionsChange changes) {
         return changePermissions(changes, supplyCategoryActions(id));
     }
 
@@ -134,7 +141,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change) {
+    public synchronized Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change) {
         return changeRoleMemberships(change, supplyCategoryRoleMembership(id, change.getRoleName()));
     }
 
@@ -151,7 +158,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<ActionGroup> changeTemplatePermissions(String id, PermissionsChange changes) {
+    public synchronized Optional<ActionGroup> changeTemplatePermissions(String id, PermissionsChange changes) {
         return changePermissions(changes, supplyTemplateActions(id));
     }
 
@@ -161,7 +168,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change) {
+    public synchronized Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change) {
         return changeRoleMemberships(change, supplyTemplateRoleMembership(id, change.getRoleName()));
     }
 
@@ -176,7 +183,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<ActionGroup> changeDatasourcePermissions(String id, PermissionsChange changes) {
+    public synchronized Optional<ActionGroup> changeDatasourcePermissions(String id, PermissionsChange changes) {
         return changePermissions(changes, supplyDatasourceActions(id));
     }
 
@@ -186,7 +193,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<RoleMembership> changeDatasourceRoleMemberships(String id, RoleMembershipChange change) {
+    public synchronized Optional<RoleMembership> changeDatasourceRoleMemberships(String id, RoleMembershipChange change) {
         return changeRoleMemberships(change, supplyDatasourceRoleMembership(id, change.getRoleName()));
     }
 
