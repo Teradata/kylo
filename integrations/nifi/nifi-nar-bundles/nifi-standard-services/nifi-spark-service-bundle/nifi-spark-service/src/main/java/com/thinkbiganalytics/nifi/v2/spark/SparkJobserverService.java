@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
+import org.apache.nifi.annotation.lifecycle.OnShutdown;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
@@ -14,12 +15,13 @@ import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.annotation.Nonnull;
 
@@ -66,7 +68,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         .description("Number of seconds before timeout for Sync Spark Jobserver calls.")
         .defaultValue("60")
         .addValidator(StandardValidators.LONG_VALIDATOR)
-        .required(false)
+        .required(true)
         .build();
 
     /**
@@ -76,6 +78,9 @@ public class SparkJobserverService extends AbstractControllerService implements 
     private volatile ISparkJobServerClient client;
     private volatile String jobServerUrl;
     private volatile String syncTimeout;
+    private volatile Timer contextTimeoutTimer = new Timer();
+    private volatile Map<String, TimeoutContext> timeoutContexts = Collections.synchronizedMap(new HashMap<String, TimeoutContext>());
+    private volatile Map<String, String> contextLocks = Collections.synchronizedMap(new HashMap<String, String>());
 
     @Override
     protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
@@ -118,9 +123,9 @@ public class SparkJobserverService extends AbstractControllerService implements 
                     .createSparkJobServerClient(jobServerUrl);
 
             syncTimeout = context.getProperty(SYNC_TIMEOUT).getValue();
+            setupContextTimeoutTask();
 
         } catch (Exception ex) {
-
             getLogger().error(ex.getMessage());
         }
         getLogger().info("Created new connection to Spark Jobserver: " + jobServerUrl);
@@ -150,7 +155,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean createContext(String ContextName, String NumExecutors, String MemPerNode, String NumCPUCores, SparkContextType ContextType, boolean Async) {
+    public boolean createContext(String ContextName, String NumExecutors, String MemPerNode, String NumCPUCores, SparkContextType ContextType, int ContextTimeout, boolean Async) {
 
         Boolean contextRunning = checkIfContextExists(ContextName);
 
@@ -176,10 +181,12 @@ public class SparkJobserverService extends AbstractControllerService implements 
                     params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
                 }
 
-                getLogger().info(String
-                                     .format("Creating %s %s with %s executors, %s cores and %s memory per core on Spark Jobserver %s", ContextType, ContextName, NumExecutors, MemPerNode, NumCPUCores,
+                getLogger().info(String.format("Creating %s %s with %s executors, %s cores and %s memory per executor on Spark Jobserver %s", ContextType, ContextName, NumExecutors, NumCPUCores, MemPerNode,
                                              jobServerUrl));
                 contextRunning = client.createContext(ContextName, params);
+                if (ContextTimeout != 0) {
+                    timeoutContexts.put(ContextName, new TimeoutContext(ContextName, ContextTimeout));
+                }
 
                 getLogger().info(String.format("Created %s %s on Spark Jobserver %s", ContextType, ContextName, jobServerUrl));
 
@@ -210,24 +217,13 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean uploadJar(String JarPath, String AppName) {
-
-        Boolean success = false;
-
-        try {
-            getLogger().info(String.format("Uploading jar %s with app name %s to Spark Jobserver %s",  JarPath, AppName, jobServerUrl));
-            File jar = new File(JarPath);
-            success = client.uploadSparkJobJar(jar, AppName);
-            getLogger().info(String.format("Uploaded jar %s to Spark Jobserver %s", JarPath, jobServerUrl));
-        } catch (Exception ex) {
-            getLogger().error(ex.getMessage());
-        }
-        return success;
-    }
-
-    @Override
     public boolean executeSparkContextJob(String AppName, String ClassPath, String ContextName, String Args, boolean Async) {
 
+        String id = ContextName + System.nanoTime();
+
+        if (timeoutContexts.containsKey(ContextName)) {
+            contextLocks.put(id, ContextName);
+        }
         SparkJobResult jobResult = null;
         Boolean success = false;
 
@@ -249,15 +245,57 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
             jobResult = client.startJob(Args, params);
 
-            getLogger().info(String.format("Completed %s %s on context %s with args %s on Spark Jobserver %s", AppName, ClassPath, ContextName, Args, jobServerUrl));
+            getLogger().info(String.format("Completed %s %s on context %s on Spark Jobserver %s", AppName, ClassPath, ContextName, jobServerUrl));
 
         } catch (Exception ex) {
             getLogger().error(ex.getMessage());
+        }
+        finally {
+            if (timeoutContexts.containsKey(ContextName)) {
+                timeoutContexts.get(ContextName).resetTimeout();
+                contextLocks.remove(id);
+            }
         }
 
         if (jobResult != null && jobResult.getStatus() != "ERROR") {
             success = true;
         }
         return success;
+    }
+
+    private void setupContextTimeoutTask() {
+
+        getLogger().info("Creating context timeout task");
+        TimerTask contextTimeoutTask = new TimerTask() {
+            @Override
+            public void run() {
+                final long currentTime = System.nanoTime();
+                if (!timeoutContexts.isEmpty()) {
+                    for (TimeoutContext timeoutContext: timeoutContexts.values()) {
+                        if (!contextLocks.containsValue(timeoutContext.ContextName) && timeoutContext.hasTimedOut()) {
+                            getLogger().info(String.format("Found timeout context %s which timed out at %s", timeoutContext.ContextName, timeoutContext.getTimeoutTime()));
+                            deleteContext(timeoutContext.ContextName);
+                            contextLocks.values().remove(timeoutContext.ContextName);
+                            timeoutContexts.remove(timeoutContext.ContextName);
+                        }
+                    }
+                }
+            }
+        };
+        long delay = 0;
+        long intevalPeriod = 1000;
+
+        // schedules the task to be run in an interval
+        contextTimeoutTimer.scheduleAtFixedRate(contextTimeoutTask, delay,
+                                  intevalPeriod);
+        getLogger().info("Created and scheduled context timeout task");
+    }
+
+    @OnShutdown
+    public void shutdown() {
+        contextTimeoutTimer.cancel();
+        for (TimeoutContext timeoutContext: timeoutContexts.values()) {
+            deleteContext(timeoutContext.ContextName);
+        }
     }
 }
