@@ -25,6 +25,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
+
+import java.util.List;
 
 /**
  * The result of a Spark transformation.
@@ -37,19 +40,28 @@ public class TransformResponse {
      * Error message
      */
     private String message;
+
+    /**
+     * Profiled column statistics.
+     */
+    private List<OutputRow> profile;
+
     /**
      * Progress of the transformation
      */
     private Double progress;
+
     /**
      * Result of a transformation
      */
     @JsonDeserialize(as = DefaultQueryResult.class)
     private QueryResult results;
+
     /**
      * Success status of a transformation
      */
     private Status status;
+
     /**
      * Table name with the results
      */
@@ -71,6 +83,24 @@ public class TransformResponse {
      */
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    /**
+     * Gets the column statistics.
+     *
+     * @return the column statistics
+     */
+    public List<OutputRow> getProfile() {
+        return profile;
+    }
+
+    /**
+     * Sets the column statistics.
+     *
+     * @param profile the column statistics
+     */
+    public void setProfile(List<OutputRow> profile) {
+        this.profile = profile;
     }
 
     /**
