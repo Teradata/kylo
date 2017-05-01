@@ -21,10 +21,9 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  */
 
 import com.thinkbiganalytics.spark.dataprofiler.ColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 
@@ -121,9 +120,9 @@ public abstract class StandardColumnStatistics implements ColumnStatistics, Seri
      * Write column's schema information for output result table
      */
     private void writeColumnSchemaInformation(@Nonnull final List<OutputRow> rows) {
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_DATATYPE), String.valueOf(columnField.dataType())));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_NULLABLE), String.valueOf(columnField.nullable())));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_METADATA), String.valueOf(columnField.metadata())));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_DATATYPE), String.valueOf(columnField.dataType())));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_NULLABLE), String.valueOf(columnField.nullable())));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_METADATA), String.valueOf(columnField.metadata())));
     }
 
 
@@ -147,7 +146,7 @@ public abstract class StandardColumnStatistics implements ColumnStatistics, Seri
      * Write top n rows in column for output result table
      */
     private void writeTopNInformation(@Nonnull final List<OutputRow> rows) {
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.TOP_N_VALUES), topNValues.printTopNItems()));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TOP_N_VALUES), topNValues.printTopNItems()));
     }
 
 
@@ -171,12 +170,12 @@ public abstract class StandardColumnStatistics implements ColumnStatistics, Seri
 
         writeColumnSchemaInformation(rows);
 
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.NULL_COUNT), String.valueOf(nullCount)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.TOTAL_COUNT), String.valueOf(totalCount)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.UNIQUE_COUNT), String.valueOf(uniqueCount)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.PERC_NULL_VALUES), df.format(percNullValues)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.PERC_UNIQUE_VALUES), df.format(percUniqueValues)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.PERC_DUPLICATE_VALUES), df.format(percDuplicateValues)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.NULL_COUNT), String.valueOf(nullCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TOTAL_COUNT), String.valueOf(totalCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.UNIQUE_COUNT), String.valueOf(uniqueCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.PERC_NULL_VALUES), df.format(percNullValues)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.PERC_UNIQUE_VALUES), df.format(percUniqueValues)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.PERC_DUPLICATE_VALUES), df.format(percDuplicateValues)));
 
         writeTopNInformation(rows);
     }

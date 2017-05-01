@@ -36,7 +36,7 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.UnsupportedColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 
@@ -97,7 +97,7 @@ public class ProfilerApp {
         serializeClassesList.add(StatisticsModel.class);
         serializeClassesList.add(TopNDataItem.class);
         serializeClassesList.add(TopNDataList.class);
-        serializeClassesList.add(StandardOutputRow.class);
+        serializeClassesList.add(OutputRow.class);
         serializeClassesList.add(OutputWriter.class);
 
         serializeClassesArray = new Class[serializeClassesList.size()];

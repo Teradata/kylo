@@ -66,7 +66,7 @@ public class SparkFileSchemaParserService {
     private SparkShellProcessManager shellProcessManager;
 
 
-    private static String DATATYPE_PRECISION_SCALE_REGEX = "(.*)((\\([0-9]+,[0-9]\\))|(\\([0-9]+\\)))";
+    private static String DATATYPE_PRECISION_SCALE_REGEX = "(.*)((\\([0-9]+,[0-9]+\\))|(\\([0-9]+\\)))";
 
     /**
      * Communicates with Spark Shell processes

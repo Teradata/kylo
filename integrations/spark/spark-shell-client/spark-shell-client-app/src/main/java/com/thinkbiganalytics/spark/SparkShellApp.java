@@ -23,18 +23,20 @@ package com.thinkbiganalytics.spark;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.spark.dataprofiler.Profiler;
+import com.thinkbiganalytics.spark.metadata.TransformScript;
+import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
+import com.thinkbiganalytics.spark.service.TransformJobTracker;
 import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.util.ShutdownHookManager;
+import org.apache.spark.sql.SQLContext;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
@@ -42,6 +44,7 @@ import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfigurati
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
@@ -50,27 +53,18 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
-import scala.Function0;
-import scala.runtime.AbstractFunction0;
-import scala.runtime.BoxedUnit;
 
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
+@ComponentScan("com.thinkbiganalytics.spark")
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
-
-    @Autowired
-    private Environment env;
-
-    @Autowired
-    private TransformService service;
 
     /**
      * Instantiates the REST server with the specified arguments.
@@ -93,12 +87,40 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the resource configuration for setting up Jersey.
+     *
+     * @return the Jersey configuration
+     */
+    @Bean
+    public ResourceConfig jerseyConfig(final TransformService service) {
+        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bindFactory(new Factory<TransformService>() {
+                    @Override
+                    public void dispose(TransformService instance) {
+                        // nothing to do
+                    }
+
+                    @Override
+                    public TransformService provide() {
+                        return service;
+                    }
+                }).to(TransformService.class).in(RequestScoped.class);
+            }
+        });
+
+        return config;
+    }
+
+    /**
      * Creates the Spark configuration.
      *
      * @return the Spark configuration
      */
     @Bean
-    public SparkConf sparkConf() {
+    public SparkConf sparkConf(final Environment env) {
         final SparkConf conf = new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", "8451");
 
         final Iterable<Map.Entry<String, Object>> properties = FluentIterable.from(Collections.singleton(env))
@@ -139,79 +161,33 @@ public class SparkShellApp {
     }
 
     /**
-     * Gets the resource configuration for setting up Jersey.
+     * Gets the Spark SQL context.
      *
-     * @return the Jersey configuration
+     * @param engine the Spark script engine
+     * @return the Spark SQL context
      */
     @Bean
-    public ResourceConfig getJerseyConfig(@Value("${kerberos.spark.kerberosEnabled:false}") String kerberosEnabled,
-                                          @Value("${kerberos.spark.hadoopConfigurationResources}") String hadoopConfigurationResources,
-                                          @Value("${kerberos.spark.kerberosPrincipal}") String kerberosPrincipal,
-                                          @Value("${kerberos.spark.keytabLocation}") String keytabLocation) {
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
-        startTransformationService(createKerberosTicketConfiguration(kerberosEnabled, hadoopConfigurationResources, kerberosPrincipal, keytabLocation));
-        config.register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bindFactory(new Factory<TransformService>() {
-                    @Override
-                    public void dispose(TransformService instance) {
-                        // nothing to do
-                    }
-
-                    @Override
-                    public TransformService provide() {
-                        return service;
-                    }
-                }).to(TransformService.class).in(RequestScoped.class);
-            }
-        });
-
-        return config;
+    public SQLContext sqlContext(final SparkScriptEngine engine) {
+        return engine.getSQLContext();
     }
 
     /**
-     * Gets the Kerberos configuration.
+     * Gets the transform service.
      *
-     * @param kerberosEnabled              {@code true} if Kerberos authentication is enabled, or {@code false} otherwise
-     * @param hadoopConfigurationResources the paths to the Hadoop configuration files
-     * @param kerberosPrincipal            the Kerberos principal for authentication
-     * @param keytabLocation               the path to the keytab file
-     * @return the Kerberos configuration
-     */
-    private KerberosTicketConfiguration createKerberosTicketConfiguration(@Nonnull final String kerberosEnabled, @Nonnull final String hadoopConfigurationResources,
-                                                                          @Nonnull final String kerberosPrincipal, @Nonnull final String keytabLocation) {
-        KerberosTicketConfiguration config = new KerberosTicketConfiguration();
-        config.setKerberosEnabled("true".equals(kerberosEnabled));
-        config.setHadoopConfigurationResources(hadoopConfigurationResources);
-        config.setKerberosPrincipal(kerberosPrincipal);
-        config.setKeytabLocation(keytabLocation);
-        return config;
-    }
-
-    /**
-     * Create a transform service using the specified script engine.
-     *
+     * @param transformScriptClass      the transform script class
+     * @param engine                    the Spark script engine
+     * @param sparkContextService       the Spark context service
+     * @param tracker                   the transform job tracker
+     * @param datasourceProviderFactory the data source provider factory
+     * @param profiler                  the profiler
      * @return the transform service
      */
-    private TransformService startTransformationService(KerberosTicketConfiguration kerberosThinkbigConfiguration) {
-        // Start the service
-        service.setKerberosTicketConfiguration(kerberosThinkbigConfiguration);
-        service.startAsync();
-
-        // Add a shutdown hook
-        Function0<BoxedUnit> hook = new AbstractFunction0<BoxedUnit>() {
-            @Override
-            public BoxedUnit apply() {
-                service.stopAsync();
-                service.awaitTerminated();
-                return BoxedUnit.UNIT;
-            }
-        };
-        ShutdownHookManager.addShutdownHook(hook);
-
-        // Wait for service to start
-        service.awaitRunning();
+    @Bean
+    public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
+                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler) {
+        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
+        service.setDatasourceProviderFactory(datasourceProviderFactory);
+        service.setProfiler(profiler);
         return service;
     }
 }

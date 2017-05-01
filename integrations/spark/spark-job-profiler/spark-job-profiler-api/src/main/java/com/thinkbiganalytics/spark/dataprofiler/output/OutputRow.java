@@ -20,8 +20,6 @@ package com.thinkbiganalytics.spark.dataprofiler.output;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
-
 import java.io.Serializable;
 
 /**
@@ -31,22 +29,20 @@ import java.io.Serializable;
  * ColumnName, MetricType, MetricValue
  */
 @SuppressWarnings({"unused", "serial"})
-public class StandardOutputRow implements OutputRow, Serializable {
+public class OutputRow implements Serializable {
 
     private String columnName;
     private String metricType;
     private String metricValue;
 
-
     /**
      * No-argument constructor
      */
-    public StandardOutputRow() {
+    public OutputRow() {
         columnName = null;
         metricType = null;
         metricValue = null;
     }
-
 
     /**
      * Three-argument constructor to create a new row
@@ -55,18 +51,20 @@ public class StandardOutputRow implements OutputRow, Serializable {
      * @param metricType  metric type
      * @param metricValue metric value
      */
-    public StandardOutputRow(String columnName, String metricType, String metricValue) {
+    public OutputRow(String columnName, String metricType, String metricValue) {
         this.columnName = columnName;
         this.metricType = metricType;
         this.metricValue = metricValue;
     }
 
-
-    @Override
+    /**
+     * Get the column name
+     *
+     * @return column name
+     */
     public String getColumnName() {
         return columnName;
     }
-
 
     /**
      * Set the column name
@@ -77,12 +75,14 @@ public class StandardOutputRow implements OutputRow, Serializable {
         this.columnName = columnName;
     }
 
-
-    @Override
+    /**
+     * Get the metric type
+     *
+     * @return metric type
+     */
     public String getMetricType() {
         return metricType;
     }
-
 
     /**
      * Set the metric type
@@ -93,12 +93,14 @@ public class StandardOutputRow implements OutputRow, Serializable {
         this.metricType = metricType;
     }
 
-
-    @Override
+    /**
+     * Get the metric value
+     *
+     * @return metric value
+     */
     public String getMetricValue() {
         return metricValue;
     }
-
 
     /**
      * Set the metric value
@@ -108,7 +110,6 @@ public class StandardOutputRow implements OutputRow, Serializable {
     public void setMetricValue(String metricValue) {
         this.metricValue = metricValue;
     }
-
 
     /**
      * Set values for the row
@@ -122,7 +123,6 @@ public class StandardOutputRow implements OutputRow, Serializable {
         this.metricType = metricType;
         this.metricValue = metricValue;
     }
-
 
     /**
      * Print verbose description of row to console

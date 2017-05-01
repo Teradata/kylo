@@ -59,6 +59,11 @@
       <artifactId>kylo-commons-spark-shell-v2</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-job-profiler-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Scala dependencies -->
     <dependency>

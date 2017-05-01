@@ -43,5 +43,10 @@
       <artifactId>kylo-schema-discovery-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-job-profiler-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 </project>

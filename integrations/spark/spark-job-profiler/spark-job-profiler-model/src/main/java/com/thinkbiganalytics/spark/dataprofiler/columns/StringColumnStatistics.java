@@ -20,10 +20,9 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.types.StructField;
 
@@ -244,16 +243,16 @@ public class StringColumnStatistics extends StandardColumnStatistics {
 
         writeStatisticsCommon(rows);
 
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MAX_LENGTH), String.valueOf(maxLength)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MIN_LENGTH), String.valueOf(minLength)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.LONGEST_STRING), String.valueOf(longestString)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.SHORTEST_STRING), String.valueOf(shortestString)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.EMPTY_COUNT), String.valueOf(emptyCount)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.PERC_EMPTY_VALUES), df.format(percEmptyValues)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_CASE), String.valueOf(minStringCase)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_CASE), String.valueOf(maxStringCase)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_ICASE), String.valueOf(minStringICase)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_ICASE), String.valueOf(maxStringICase)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_LENGTH), String.valueOf(maxLength)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_LENGTH), String.valueOf(minLength)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.LONGEST_STRING), String.valueOf(longestString)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SHORTEST_STRING), String.valueOf(shortestString)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.EMPTY_COUNT), String.valueOf(emptyCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.PERC_EMPTY_VALUES), df.format(percEmptyValues)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_CASE), String.valueOf(minStringCase)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_CASE), String.valueOf(maxStringCase)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_ICASE), String.valueOf(minStringICase)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_ICASE), String.valueOf(maxStringICase)));
         return rows;
     }
 

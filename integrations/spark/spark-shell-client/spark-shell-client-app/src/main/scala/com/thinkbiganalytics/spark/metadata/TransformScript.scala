@@ -1,62 +1,46 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
-import com.thinkbiganalytics.discovery.schema.{QueryResult, QueryResultColumn}
-import com.thinkbiganalytics.hive.util.HiveUtils
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
-import com.thinkbiganalytics.spark.util.DataTypeUtils
-
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
-import org.slf4j.LoggerFactory
-
 import java.util
 import java.util.concurrent.Callable
 import java.util.regex.Pattern
 
-import scala.collection.JavaConversions
+import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
+import com.thinkbiganalytics.discovery.schema.{QueryResult, QueryResultColumn}
+import com.thinkbiganalytics.spark.DataSet
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow
+import com.thinkbiganalytics.spark.dataprofiler.{Profiler, ProfilerConfiguration}
+import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import com.thinkbiganalytics.spark.util.DataTypeUtils
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
+
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /** Wraps a transform script into a function that can be evaluated.
   *
   * @param destination the name of the destination Hive table
-  * @param sqlContext  the Spark SQL context
   */
-abstract class TransformScript(destination: String, sendResults: Boolean, sqlContext: SQLContext) {
-
-    private[this] val log = LoggerFactory.getLogger(classOf[TransformScript])
-
-    /** Evaluates this transform script and stores the result in a Hive table. */
-    def run(): Any = {
-        if (sendResults) new QueryResultCallable else new InsertHiveCallable
-    }
+abstract class TransformScript(destination: String, profiler: Profiler) {
 
     /** Evaluates the transform script.
       *
       * @return the transformation result
       */
-    protected[metadata] def dataFrame: DataFrame
+    protected[metadata] def dataFrame: Object
 
     /** Fetches or re-generates the results of the parent transformation, if available.
       *
       * @return the parent results
       */
-    protected def parent: DataFrame = {
-        try {
-            sqlContext.read.table(parentTable)
-        }
-        catch {
-            case e: Exception =>
-                log.trace("Exception reading parent table: {}", e.toString)
-                log.debug("Parent table not found: {}", parentTable)
-                parentDataFrame
-        }
-    }
+    protected def parent: Object
 
     /** Re-generates the parent transformation.
       *
       * @return the parent transformation
       */
-    protected def parentDataFrame: DataFrame = {
+    protected def parentDataFrame: Object = {
         throw new UnsupportedOperationException
     }
 
@@ -68,64 +52,37 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         throw new UnsupportedOperationException
     }
 
-    /** Writes the `DataFrame` results to a Hive table.
-      *
-      * @deprecated Replaced with `QueryResultCallable`
-      */
-    @Deprecated
-    private[metadata] class InsertHiveCallable extends Callable[Unit] {
-        override def call(): Unit = {
-            val df = dataFrame
-            sqlContext.sql(toSQL(df.schema))
-            df.write.mode(SaveMode.Overwrite).insertInto(destination)
-        }
-
-        /** Converts the specified DataFrame schema to a CREATE TABLE statement.
-          *
-          * @param schema the DataFrame schema
-          * @return the CREATE TABLE statement
-          */
-        private[metadata] def toSQL(schema: StructType): String = {
-            var first = true
-            val sql = new StringBuilder
-
-            sql.append("CREATE TABLE ")
-            sql.append(HiveUtils.quoteIdentifier(destination))
-            sql.append('(')
-
-            for (field <- schema.fields) {
-                if (first) first = false
-                else sql.append(", ")
-                sql.append(HiveUtils.quoteIdentifier(field.name))
-                sql.append(' ')
-                sql.append(DataTypeUtils.getHiveObjectInspector(field.dataType).getTypeName)
-            }
-
-            sql.append(") STORED AS ORC")
-            sql.toString()
-        }
-    }
-
     /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
-    private class QueryResultCallable extends Callable[TransformResponse] {
-        override def call(): TransformResponse = {
-            // Cache data frame
-            val cache = dataFrame.cache
-            cache.registerTempTable(destination)
+    protected abstract class QueryResultCallable extends Callable[TransformResponse] {
 
-            // Build result object
+        /** Builds a response model from a data set result.
+          *
+          * @param dataset the data set
+          * @return the response model
+          */
+        private[metadata] def toResponse(dataset: DataSet) = {
+            // Build the result set
             val result = new DefaultQueryResult("SELECT * FROM " + destination)
 
-            val transform = new QueryResultRowTransform(cache.schema)
-            result.setColumns(JavaConversions.seqAsJavaList(transform.columns))
-            cache.collect().foreach(r => result.addRow(transform.apply(r)))
+            val transform = new QueryResultRowTransform(dataset.schema())
+            result.setColumns(transform.columns.toSeq)
+            for (row <- dataset.collectAsList()) {
+                result.addRow(transform.apply(row))
+            }
 
-            // Build response object
+            // Generate the column statistics
+            val profile: Option[util.List[OutputRow]] = Option(profiler)
+                .map(_.profile(dataset, new ProfilerConfiguration))
+                .map(_.getColumnStatisticsMap.asScala)
+                .map(_.flatMap(_._2.getStatistics))
+                .map(_.toSeq)
+
+            // Build the response
             val response = new TransformResponse
+            response.setProfile(profile.orNull)
             response.setResults(result)
             response.setStatus(TransformResponse.Status.SUCCESS)
             response.setTable(destination)
-
             response
         }
     }
@@ -136,12 +93,12 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         val DISPLAY_NAME_PREFIX = "col"
 
         /** Pattern for field names */
-        val FIELD_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+        val FIELD_PATTERN: Pattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
     }
 
     private class QueryResultRowTransform(schema: StructType) extends (Row => util.HashMap[String, Object]) {
         /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
-        val columns = {
+        val columns: Array[DefaultQueryResultColumn] = {
             var index = 1
             schema.fields.map(field => {
                 val column = new DefaultQueryResultColumn
@@ -164,7 +121,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
                             schema(name)
                             name = null
                         } catch {
-                            case e: IllegalArgumentException =>
+                            case _: IllegalArgumentException => // ignored
                         }
                     } while (name == null)
 
@@ -177,7 +134,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         }
 
         /** Array of Spark SQL object to Hive object converters */
-        val converters = schema.fields.map(field => DataTypeUtils.getHiveObjectConverter(field.dataType))
+        val converters: Array[ObjectInspectorConverters.Converter] = schema.fields.map(field => DataTypeUtils.getHiveObjectConverter(field.dataType))
 
         override def apply(row: Row): util.HashMap[String, Object] = {
             val map = new util.HashMap[String, Object]()
@@ -185,4 +142,5 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             map
         }
     }
+
 }
