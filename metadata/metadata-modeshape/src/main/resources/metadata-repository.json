@@ -34,6 +34,8 @@
             "driver": "${modeshape.datasource.driverClassName}",
             "username": "${modeshape.datasource.username}",
             "password": "${modeshape.datasource.password}",
+            "poolSize" : 5,
+            "maxPoolSize" : 20,
             "createOnStart" : true,
             "dropOnExit" : false
         },
