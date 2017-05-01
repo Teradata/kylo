@@ -73,6 +73,12 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-spark-service-v1-nar</artifactId>
+      <version>0.8.1-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
       <artifactId>kylo-nifi-standard-services-nar</artifactId>
       <version>0.8.1-SNAPSHOT</version>
       <type>nar</type>
@@ -573,6 +579,12 @@
                   </includes>
                 </source>
                 <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-spark-service-bundle/nifi-spark-service-v1-nar/target</location>
+                  <includes>
+                    <include>kylo-nifi-spark-service-v1-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-standard-services-nar/target</location>
                   <includes>
                     <include>kylo-nifi-standard-services-nar-${project.version}.nar</include>
@@ -1041,6 +1053,7 @@
                     <path>${project.basedir}/../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target/kylo-nifi-spark-v1-nar-${project.version}.nar</path>
                     <path>${project.basedir}/../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-core-service-bundle/nifi-core-service-nar/target/kylo-nifi-core-service-nar-${project.version}.nar</path>
                     <path>${project.basedir}/../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v1-nar/target/kylo-nifi-hadoop-service-v1-nar-${project.version}.nar</path>
+                    <path>${project.basedir}/../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-spark-service-bundle/nifi-spark-service-v1-nar/target/kylo-nifi-spark-service-v1-nar-${project.version}.nar</path>
                     <path>${project.basedir}/../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-standard-services-nar/target/kylo-nifi-standard-services-nar-${project.version}.nar</path>
                     <path>${project.basedir}/../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v1/target/kylo-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar</path>
                     <path>${project.basedir}/../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v2/target/kylo-spark-job-profiler-spark-v2-${project.version}-jar-with-dependencies.jar</path>
