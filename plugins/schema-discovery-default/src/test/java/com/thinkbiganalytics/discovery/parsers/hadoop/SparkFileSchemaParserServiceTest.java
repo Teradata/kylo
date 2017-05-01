@@ -52,7 +52,7 @@ public class SparkFileSchemaParserServiceTest {
 
     private List<QueryResultColumn> decimalColumns() {
         List<QueryResultColumn> columns = new ArrayList<>();
-        columns.add(newColumn("decimalColumn", "decimal(10,2)"));
+        columns.add(newColumn("decimalColumn", "decimal(17,12)"));
         columns.add(newColumn("stringColumn", "string"));
         return columns;
     }
@@ -112,8 +112,8 @@ public class SparkFileSchemaParserServiceTest {
             Field decimalField = decimalSchema.getFields().stream().filter(field -> field.getName().equalsIgnoreCase("decimalColumn")).findFirst().orElse(null);
             assertNotNull(decimalField);
             assertEquals("decimal", decimalField.getDerivedDataType());
-            assertEquals("10,2", decimalField.getPrecisionScale());
-            assertEquals("decimal(10,2)", decimalField.getDataTypeWithPrecisionAndScale());
+            assertEquals("17,12", decimalField.getPrecisionScale());
+            assertEquals("decimal(17,12)", decimalField.getDataTypeWithPrecisionAndScale());
 
         } catch (Exception e) {
             e.printStackTrace();
