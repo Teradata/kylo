@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.dataprofiler;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
+
 import java.util.List;
 
 /**

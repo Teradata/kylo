@@ -7,7 +7,8 @@ import java.util.regex.Pattern
 import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
 import com.thinkbiganalytics.discovery.schema.{QueryResult, QueryResultColumn}
 import com.thinkbiganalytics.spark.DataSet
-import com.thinkbiganalytics.spark.dataprofiler.{OutputRow, Profiler, ProfilerConfiguration}
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow
+import com.thinkbiganalytics.spark.dataprofiler.{Profiler, ProfilerConfiguration}
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
 import com.thinkbiganalytics.spark.util.DataTypeUtils
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters

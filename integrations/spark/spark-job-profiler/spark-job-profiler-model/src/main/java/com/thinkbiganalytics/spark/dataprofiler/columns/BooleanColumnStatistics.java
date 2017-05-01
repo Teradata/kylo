@@ -20,10 +20,9 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.types.StructField;
 
@@ -125,8 +124,8 @@ public class BooleanColumnStatistics extends StandardColumnStatistics {
 
         writeStatisticsCommon(rows);
 
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.TRUE_COUNT), String.valueOf(trueCount)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.FALSE_COUNT), String.valueOf(falseCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TRUE_COUNT), String.valueOf(trueCount)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.FALSE_COUNT), String.valueOf(falseCount)));
         return rows;
     }
 

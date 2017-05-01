@@ -21,8 +21,8 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  */
 
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.types.StructField;
 

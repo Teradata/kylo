@@ -20,10 +20,9 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.types.StructField;
@@ -133,8 +132,8 @@ public class TimestampColumnStatistics extends StandardColumnStatistics {
         writeStatisticsCommon(rows);
 
         // Write timestamp-specific statistics
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MAX_TIMESTAMP), (maxTimestamp != null) ? maxTimestamp.toString() : ""));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MIN_TIMESTAMP), (minTimestamp != null) ? minTimestamp.toString() : ""));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_TIMESTAMP), (maxTimestamp != null) ? maxTimestamp.toString() : ""));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_TIMESTAMP), (minTimestamp != null) ? minTimestamp.toString() : ""));
         return rows;
     }
 

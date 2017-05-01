@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import java.util.List;
 

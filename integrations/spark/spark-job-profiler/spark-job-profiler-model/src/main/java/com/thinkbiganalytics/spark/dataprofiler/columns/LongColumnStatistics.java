@@ -20,10 +20,9 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
-import com.thinkbiganalytics.spark.dataprofiler.output.StandardOutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.types.StructField;
 
@@ -216,12 +215,12 @@ public class LongColumnStatistics extends StandardColumnStatistics {
             variance = 0;
         }
 
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
-        rows.add(new StandardOutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
         return rows;
     }
 

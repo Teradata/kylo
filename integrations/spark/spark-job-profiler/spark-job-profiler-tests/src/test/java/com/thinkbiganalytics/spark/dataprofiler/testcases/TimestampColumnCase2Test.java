@@ -20,10 +20,10 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.types.DataTypes;
 import org.joda.time.DateTime;
