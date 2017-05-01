@@ -66,7 +66,7 @@ public class SparkFileSchemaParserService {
     private SparkShellProcessManager shellProcessManager;
 
 
-    private static String DATATYPE_PRECISION_SCALE_REGEX = "(.*)((\\([0-9]+,[0-9]\\))|(\\([0-9]+\\)))";
+    private static String DATATYPE_PRECISION_SCALE_REGEX = "(.*)((\\([0-9]+,[0-9]+\\))|(\\([0-9]+\\)))";
 
     /**
      * Communicates with Spark Shell processes
@@ -155,6 +155,7 @@ public class SparkFileSchemaParserService {
     }
 
     /**
+     * for decimal(17,17) =.  Found ?
      * Strip out the (precision,scale) from the datatype and assign it to the proper field.precisionScale property
      * @param field the field to inspect
      */
@@ -162,6 +163,7 @@ public class SparkFileSchemaParserService {
         String dataType = field.getDerivedDataType();
         Pattern pattern = Pattern.compile(DATATYPE_PRECISION_SCALE_REGEX);
         Matcher matcher = pattern.matcher(dataType);
+        log.info("Checking the prevision and scale to be for [{}] =.  Found ? {} ",dataType,matcher.find());
         if (matcher.find()) {
             //group 1 is the string datatype
             //group 2 is the precision and scale
@@ -171,6 +173,7 @@ public class SparkFileSchemaParserService {
             precisionAndScale = precisionAndScale.replaceAll("\\(|\\)", "");
             field.setDerivedDataType(newDataType);
             field.setPrecisionScale(precisionAndScale);
+            log.info("Set the prevision and scale to be {} for {} ",precisionAndScale,newDataType);
         }
     }
 
