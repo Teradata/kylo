@@ -37,7 +37,8 @@ public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOps
     /**
      * Predicate for selecting matching principals in WHERE clause.
      */
-    String WHERE_PRINCIPAL_NAME = "acl.principalName in :#{principal.roleSet} ";
+    String WHERE_PRINCIPAL_NAME = " (acl.principalName in :#{principal.roleSet} and acl.principalType = 'GROUP' ) "
+                    + "OR (acl.principalName = :#{principal.name} and acl.principalType = 'USER' ) ";
 
     /**
      * Join statement for selecting only feeds accessible to the current principal.
