@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.v2.spark;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /*-
@@ -24,28 +26,44 @@ import java.util.concurrent.TimeUnit;
 public class TimeoutContext {
 
     public String ContextName;
-    private int reapTimeoutSeconds;
-    private long reapTime;
+    private int timeoutSeconds;
+    private long timeoutTime;
+    public boolean isRunning;
+    private List<String> executionLocks = new ArrayList<String>();
 
-    public TimeoutContext(String contextName, int reapTimeoutSeconds) {
+    public TimeoutContext(String contextName) {
         this.ContextName = contextName;
-        this.reapTimeoutSeconds = reapTimeoutSeconds;
-        resetTimeout();
+        this.timeoutSeconds = 0;
+        isRunning = false;
     }
 
-    public void resetTimeout() {
-        reapTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(reapTimeoutSeconds);
+    public void setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+        resetTimeoutTime();
+    }
+
+    public void resetTimeoutTime() {
+        this.timeoutTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
     }
 
     public boolean hasTimedOut() {
-        if (System.nanoTime() > reapTime) {
+        if (timeoutTime != 0 && System.nanoTime() > timeoutTime) {
             return true;
         } else {
             return false;
         }
     }
 
-    public long getTimeoutTime() {
-        return reapTime;
+    public boolean isLocked() {
+        if (!executionLocks.isEmpty()) return true;
+        else return false;
+    }
+
+    public void addExecutionLock(String id) {
+        executionLocks.add(id);
+    }
+
+    public void removeExecutionLock(String id) {
+        executionLocks.remove(id);
     }
 }

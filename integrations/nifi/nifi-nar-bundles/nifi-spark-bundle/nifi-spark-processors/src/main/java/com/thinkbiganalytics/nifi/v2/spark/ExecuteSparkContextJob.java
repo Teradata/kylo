@@ -120,7 +120,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
     public static final PropertyDescriptor NUM_EXECUTORS = new PropertyDescriptor.Builder()
         .name("Number of Executors")
         .description("Number of executors in Spark Context")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .defaultValue("1")
@@ -129,7 +129,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
     public static final PropertyDescriptor NUM_CPU_CORES = new PropertyDescriptor.Builder()
         .name("Number of CPU Cores")
         .description("CPU Cores allocated to each executor in Spark Context")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .defaultValue("2")
@@ -138,7 +138,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
     public static final PropertyDescriptor MEM_PER_NODE = new PropertyDescriptor.Builder()
         .name("Memory Per Node")
         .description("Memory allocated to each executor in Spark Context")
-        .required(true)
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .defaultValue("512mb")
@@ -185,11 +185,11 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         pds.add(CONTEXT_NAME);
         pds.add(ARGS);
         pds.add(JOB_SERVICE);
-        pds.add(NUM_EXECUTORS);
-        pds.add(NUM_CPU_CORES);
-        pds.add(MEM_PER_NODE);
         pds.add(CONTEXT_TIMEOUT);
         pds.add(ASYNC);
+        pds.add(NUM_EXECUTORS);
+        pds.add(MEM_PER_NODE);
+        pds.add(NUM_CPU_CORES);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -227,10 +227,10 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         final String classPath = context.getProperty(CLASS_PATH).evaluateAttributeExpressions(flowFile).getValue().trim();
         final String contextName = context.getProperty(CONTEXT_NAME).evaluateAttributeExpressions(flowFile).getValue().trim();
         final SparkContextType contextType = SparkContextType.valueOf(context.getProperty(CONTEXT_TYPE).getValue());
+        final JobService jobService = context.getProperty(JOB_SERVICE).asControllerService(JobService.class);
         final String numExecutors = context.getProperty(NUM_EXECUTORS).evaluateAttributeExpressions(flowFile).getValue().trim();
         final String memPerNode = context.getProperty(MEM_PER_NODE).evaluateAttributeExpressions(flowFile).getValue().trim();
         final String numCPUCores = context.getProperty(NUM_CPU_CORES).evaluateAttributeExpressions(flowFile).getValue().trim();
-        final JobService jobService = context.getProperty(JOB_SERVICE).asControllerService(JobService.class);
         final int contextTimeout = context.getProperty(CONTEXT_TIMEOUT).evaluateAttributeExpressions(flowFile).asInteger();
         final boolean async = context.getProperty(ASYNC).asBoolean();
 
