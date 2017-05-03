@@ -1,0 +1,138 @@
+<div layout="row" layout-xs="column" flex="100" class="layout-padding">
+  <div flex="15" flex-xs="100">
+    <md-checkbox ng-model="vm.showOnlyProfiled" aria-label="Profiled"><span class="hint">Show Only Profiled</span></md-checkbox>
+
+    <md-list class="list-item-table">
+      <md-virtual-repeat-container browser-height browser-height-offset="20" browser-height-scroll-y="false">
+        <md-list-item md-ink-ripple md-virtual-repeat="row in vm.sorted | filter:vm.hasProfile" class="md-secondary" flex>
+          <md-button flex ng-class="vm.getClass(row)" ng-click="vm.selectRowAndUpdateCharts($event, row)" class="profile column button">
+            <div flex layout="row" layout-align="start end">
+              {{row[vm.columns.columnName]}}
+              <span flex> </span>
+              <ng-md-icon ng-if="vm.isProfiled(row)" md-icon="" icon="insert_chart" size="10px" class="profile column icon"></ng-md-icon>
+            </div>
+            <md-divider ng-if="!$last"></md-divider>
+          </md-button>
+        </md-list-item>
+        <md-list-item ng-show="vm.data.length == 0">No results found</md-list-item>
+      </md-virtual-repeat-container>
+    </md-list>
+  </div>
+  <div flex="85" flex-xs="100" class="layout-padding-left profile">
+    <div layout="column">
+
+      <div ng-if="vm.selectedRow.columnName == '(ALL)'" layout="row" flex="100">
+        <div layout="column" flex="33" class="summary">
+          <div flex="100" class="bars">
+            <div class="md-subhead">Summary</div>
+            <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="vm.selectedRow.columnName != '(ALL)'" layout="row" layout-xs="column" flex="100">
+        <div layout="column" flex="33" flex-xs="100" class="summary">
+          <div flex="100" class="bars">
+            <div class="md-subhead">Summary</div>
+            <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
+          </div>
+        </div>
+        <div layout="column" flex="33" flex-xs="100" class="stats">
+          <div class="md-subhead">Relative Statistics</div>
+          <div class="percents">
+            <nvd3 flex options="vm.percOptions" data="vm.percData" api="vm.percApi"></nvd3>
+          </div>
+        </div>
+
+        <div layout="column" flex="33" flex-xs="100" class="top-value">
+
+          <!-- Top Values -->
+          <div class="md-subhead">Top Values</div>
+          <md-list class="list-item-table">
+            <md-list-item class="md-secondary">
+              <div flex="90" layout="row">
+                <div flex="90" class="item-column md-list-item-text">
+                  <span class="hint">Value</span>
+                </div>
+                <div flex="10" class="item-column md-list-item-text">
+                  <span class="hint">Count</span>
+                </div>
+              </div>
+              <md-divider></md-divider>
+            </md-list-item>
+            <md-list-item class="md-secondary" dir-paginate="row in vm.topvalues | itemsPerPage: 10" pagination-id="profile_stats_1">
+              <div flex="90" layout="row">
+                <div flex="90" class="item-column md-list-item-text">
+                  <span class="">{{::row['value']}}</span>
+
+                </div>
+                <div flex="10" class="item-column md-list-item-text">
+                  <span class="">{{::row['count']}}</span>
+                </div>
+              </div>
+              <md-divider ng-if="!$last"></md-divider>
+            </md-list-item>
+            <md-list-item ng-show="vm.topvalues.length == 0">No results found</md-list-item>
+          </md-list>
+
+          <!-- Numeric stats -->
+          <div ng-if="vm.selectedRow.profile == 'Numeric'" layout="column" flex="100" class="numeric-stats2">
+            <div class="md-subhead">Numeric Stats</div>
+            <md-list class="list-item-table">
+              <md-list-item class="md-secondary" dir-paginate="row in vm.numericvalues | itemsPerPage: 6" pagination-id="profile_stats_3">
+                <div layout="row" flex="90">
+                  <div flex="30" class="item-column md-list-item-text">
+                    <span class="hint">{{::row['name']}}</span>
+                  </div>
+                  <div flex="70" class="item-column md-list-item-text">
+                    <span class="" title="{{::row['value']}}">{{::row['value']}}</span>
+                  </div>
+                </div>
+                <md-divider ng-if="!$last"></md-divider>
+              </md-list-item>
+              <md-list-item ng-show="vm.numericvalues.length == 0">No results found</md-list-item>
+            </md-list>
+          </div>
+
+          <!-- String stats -->
+          <div ng-if="vm.selectedRow.profile == 'String'" layout="column" flex="100" class="string-stats2">
+            <div class="md-subhead">String Stats</div>
+            <md-list class="list-item-table">
+              <md-list-item class="md-secondary" dir-paginate="row in vm.stringvalues | itemsPerPage: 6" pagination-id="profile_stats_3">
+                <div layout="row" flex="90">
+                  <div flex="30" class="item-column md-list-item-text">
+                    <span class="hint">{{::row['name']}}</span>
+                  </div>
+                  <div flex="70" class="item-column md-list-item-text">
+                    <span class="" title="{{::row['value']}}">{{::row['value'] | characters:50}}</span>
+                  </div>
+                </div>
+                <md-divider ng-if="!$last"></md-divider>
+              </md-list-item>
+              <md-list-item ng-show="vm.stringvalues.length == 0">No results found</md-list-item>
+            </md-list>
+
+            <!-- Numeric stats -->
+            <div ng-if="vm.selectedRow.profile == 'Time'" layout="column" flex="100" class="time-stats2">
+              <div class="md-subhead">Time Stats</div>
+              <md-list class="list-item-table">
+                <md-list-item class="md-secondary" dir-paginate="row in vm.timevalues | itemsPerPage: 2" pagination-id="profile_stats_2">
+                  <div layout="row" flex="100">
+                    <div flex="40" class="item-column md-list-item-text">
+                      <span class="hint">{{::row['name']}}</span>
+                    </div>
+                    <div flex="60" class="item-column md-list-item-text">
+                      <span class="">{{::row['value']}}</span>
+                    </div>
+                  </div>
+                  <md-divider ng-if="!$last"></md-divider>
+                </md-list-item>
+                <md-list-item ng-show="vm.timevalues.length == 0">No results found</md-list-item>
+              </md-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

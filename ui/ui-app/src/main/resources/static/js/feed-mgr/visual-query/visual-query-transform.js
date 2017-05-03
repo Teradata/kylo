@@ -127,6 +127,22 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             self.isShowFunctionHistory = false;
         };
 
+        /**
+         * Displays the column statistics dialog.
+         */
+        this.showProfileDialog = function () {
+            $mdDialog.show({
+                clickOutsideToClose: false,
+                controller: "VisualQueryProfileStatsController",
+                fullscreen: true,
+                locals: {
+                    profile: self.sparkShellService.getProfile()
+                },
+                parent: angular.element(document.body),
+                templateUrl: "js/feed-mgr/visual-query/profile-stats-dialog.html"
+            });
+        };
+
         //Callback when Codemirror has been loaded (reference is in the html page at:
         // ui-codemirror="{ onLoad : vm.codemirrorLoaded }"
         this.codemirrorLoaded = function(_editor) {

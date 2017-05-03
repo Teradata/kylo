@@ -52,6 +52,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.upgrade.version_0_7_1.UpgradeAction;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -110,6 +111,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private PasswordEncoder passwordEncoder;
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
+
+    @Inject
+    private AccessController accessController;
 
 
     public void run() {
@@ -173,7 +177,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void onMetadataStart() {
       if(kyloVersionProvider.isUpToDate()) {
            ensureFeedTemplateFeedRelationships();
-           ensureDefaultEntityRoles();
+           if(accessController.isEntityAccessControlled()) {
+               ensureDefaultEntityRoles();
+           }
        }
     }
 

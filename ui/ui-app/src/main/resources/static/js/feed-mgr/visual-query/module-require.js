@@ -9,5 +9,6 @@ define(['angular',
         'feed-mgr/visual-query/visual-query-builder',
         'feed-mgr/visual-query/visual-query-store',
         'feed-mgr/visual-query/visual-query-transform',
-        'feed-mgr/visual-query/VisualQueryColumnDelegate'], function () {
+        'feed-mgr/visual-query/VisualQueryColumnDelegate',
+        'feed-mgr/visual-query/VisualQueryProfileStats'], function () {
 });

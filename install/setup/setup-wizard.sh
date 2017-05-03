@@ -99,7 +99,7 @@ done
 while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
     echo "Please choose an option to configure Java"
     echo "1) I already have Java 8 or higher installed as the system Java and want to use that"
-    echo "2) Download and install Java 8 in the /opt/java folder for me and use that one"
+    echo "2) Install Java 8 in the /opt/java folder for me and use that one"
     echo "3) I have Java 8 or higher installed in another location already. I will provide the location"
     echo "4) Java is already setup. No changes necessary"
     read -p "> " java_type;

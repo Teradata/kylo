@@ -24,7 +24,7 @@ package com.thinkbiganalytics.auth;
  */
 
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
@@ -32,21 +32,19 @@ import java.security.Principal;
 import java.util.Set;
 
 /**
- * A granter that, when presented with a GroupPrincipal, returns a set containing the name of that principal (the role's name)
- * and another name constructed by prefixing "ROLE_" to the upper case principal name (Spring's default role name format.)
+ * A granter that, when presented with a UsernamePrincipal, returns a set containing its name and the "ROLE_USER" role name.
  */
-public class RolePrincipalAuthorityGranter implements AuthorityGranter {
+public class UserPrincipalAuthorityGranter implements AuthorityGranter {
 
     /* (non-Javadoc)
      * @see org.springframework.security.authentication.jaas.AuthorityGranter#grant(java.security.Principal)
      */
     @Override
     public Set<String> grant(Principal principal) {
-        if (principal instanceof GroupPrincipal) {
+        if (principal instanceof UsernamePrincipal) {
             String name = principal.getName();
-            String springRole = name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
 
-            return Sets.newHashSet(name, springRole);
+            return Sets.newHashSet(name, "ROLE_USER");
         } else {
             return null;
         }

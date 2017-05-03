@@ -31,7 +31,8 @@ define(['angular',
         'feed-mgr/shared/cron-expression-preview/cron-expression-preview',
         'feed-mgr/services/DatasourcesService',
         'feed-mgr/shared/entity-access-control/entity-access',
-        'feed-mgr/shared/entity-access-control/EntityAccessControlService'],function() {
+        'feed-mgr/shared/entity-access-control/EntityAccessControlService',
+        'feed-mgr/shared/profile-stats/ProfileStats'],function() {
 
 });
 

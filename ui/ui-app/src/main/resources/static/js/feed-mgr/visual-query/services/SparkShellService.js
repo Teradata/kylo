@@ -291,6 +291,23 @@ angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "
         },
 
         /**
+         * Gets the column statistics for the current transformation.
+         *
+         * @returns {Array.<Object>}
+         */
+        getProfile: function() {
+            var profile = [];
+            var state = this.getState();
+
+            profile.push({columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0},
+                {columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length},
+                {columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0});
+            profile.push.apply(profile, angular.copy(state.profile));
+
+            return profile;
+        },
+
+        /**
          * Gets the rows after applying the current transformation.
          *
          * @returns {Array.<Object.<string,*>>|null} the rows or {@code null} if the transformation has not been applied
@@ -542,6 +559,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "
                     deferred.reject("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
                 } else {
                     state.columns = response.data.results.columns;
+                    state.profile = response.data.profile;
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
                     deferred.resolve(true);

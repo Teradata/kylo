@@ -194,7 +194,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (renderGetTableData) {
                 self.model.table.method = 'EXISTING_TABLE';
                 self.model.options.skipHeader = true;
-                self.model.allowSkipHeaderOption = false;
+                self.model.allowSkipHeaderOption = true;
+
             } else {
                 self.model.table.method = 'SAMPLE_FILE';
                 self.model.table.tableSchema.fields = [];
