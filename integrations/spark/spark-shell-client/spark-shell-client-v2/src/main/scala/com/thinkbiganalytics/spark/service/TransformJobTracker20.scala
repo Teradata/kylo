@@ -8,7 +8,7 @@ import org.apache.spark.scheduler._
 import org.slf4j.LoggerFactory
 
 /** Tracks the progress of executing and recently completed jobs.  */
-class TransformJobTracker20 extends TransformJobTracker {
+class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJobTracker(contextClassLoader) {
 
     private[this] val log = LoggerFactory.getLogger(classOf[TransformJobTracker20])
 

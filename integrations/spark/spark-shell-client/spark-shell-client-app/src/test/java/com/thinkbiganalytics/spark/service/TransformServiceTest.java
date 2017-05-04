@@ -192,6 +192,13 @@ public class TransformServiceTest {
      */
     private static class MockTransformJobTracker extends TransformJobTracker {
 
+        /**
+         * Constructs a {@code MockTransformJobTracker}.
+         */
+        MockTransformJobTracker() {
+            super(Thread.currentThread().getContextClassLoader());
+        }
+
         @Override
         public void addSparkListener(@Nonnull SparkScriptEngine engine) {
             // ignored
