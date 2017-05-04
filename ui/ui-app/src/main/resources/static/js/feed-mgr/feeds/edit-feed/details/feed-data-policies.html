@@ -109,7 +109,7 @@
           <div flex="35" class="md-list-item-text">
             <div>{{policy.name}}</div>
             <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
-            <md-tooltip md-direction="left">
+            <md-tooltip md-direction="left" ng-if="vm.fieldNameMap[policy.name].description">
               {{vm.fieldNameMap[policy.name].description}}
             </md-tooltip>
            </div>
@@ -305,7 +305,7 @@
             </md-tooltip>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            Standardize
+            Standardize <br/>& Validate
           </div>
         </div>
       </md-list-item>
@@ -317,7 +317,7 @@
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
-              <md-tooltip md-direction="left">
+              <md-tooltip md-direction="left" ng-if="vm.fieldNameMap[policy.name].description">
                 {{vm.fieldNameMap[policy.name].description}}
               </md-tooltip>
             </md-input-container>
