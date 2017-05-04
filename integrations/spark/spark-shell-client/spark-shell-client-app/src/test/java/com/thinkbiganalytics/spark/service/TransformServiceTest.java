@@ -144,7 +144,7 @@ public class TransformServiceTest {
         Assert.assertEquals("String", bindings.get(2).tpe());
         Assert.assertTrue(((String) bindings.get(2).value()).matches("^[0-9a-f]{32}$"));
         Assert.assertEquals("datasourceProvider", bindings.get(3).name());
-        Assert.assertEquals("com.thinkbiganalytics.spark.shell.DatasourceProvider", bindings.get(3).tpe());
+        Assert.assertEquals("com.thinkbiganalytics.spark.shell.DatasourceProvider[org.apache.spark.sql.DataFrame]", bindings.get(3).tpe());
         Assert.assertEquals(datasourceProvider, bindings.get(3).value());
     }
 
