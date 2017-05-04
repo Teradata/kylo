@@ -21,7 +21,7 @@ package com.thinkbiganalytics.feedmgr.config;
  */
 
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.rest.Model;

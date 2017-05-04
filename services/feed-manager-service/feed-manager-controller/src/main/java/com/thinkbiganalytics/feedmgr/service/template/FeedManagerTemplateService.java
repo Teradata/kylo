@@ -59,7 +59,12 @@ public interface FeedManagerTemplateService {
     RegisteredTemplate getRegisteredTemplate(String templateId);
 
 
-
+    /**
+     * finds a template by its name
+     * @param templateName the template name
+     * @return a registered template
+     */
+    RegisteredTemplate findRegisteredTemplateByName(final String templateName);
 
     /**
      * Deletes a template

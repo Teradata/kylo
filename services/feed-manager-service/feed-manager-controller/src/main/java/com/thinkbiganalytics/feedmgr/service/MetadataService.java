@@ -91,6 +91,13 @@ public interface MetadataService {
     List<RegisteredTemplate> getRegisteredTemplates();
 
     /**
+     * Finds a template by its name
+     * @param templateName the name of the template to look for
+     * @return the template
+     */
+    RegisteredTemplate findRegisteredTemplateByName(final String templateName);
+
+    /**
      * Create a new Feed in NiFi
      *
      * @param feedMetadata metadata about the feed

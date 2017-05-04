@@ -20,9 +20,10 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -34,7 +35,9 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -65,6 +68,9 @@ public class NifiProvenanceRestController {
     private AccessController accessController;
     @Autowired
     private NifiFeedProcessorStatisticsProvider statsProvider;
+
+    @Autowired
+    private NifiEventProvider eventProvider;
 
     @GET
     @Path("/nifi-flow-cache/get-flow-updates")
@@ -151,6 +157,26 @@ public class NifiProvenanceRestController {
     }
 
 
+    @POST
+    @Path("/reset-max-event-id/{clusterNodeId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Resets the max event id if NiFi rolls over the cache")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the cache status.", response = Boolean.class)
+    )
+    public Response resetMaxEventId(@PathParam("clusterNodeId") String clusterNodeId) {
+        Long eventId =  metadataAccess.commit(() -> {
+            Long lastEventId = statsProvider.findLastProcessedEventId();
+            Long evId= statsProvider.resetLastProcessedEventId(clusterNodeId);
+            eventProvider.resetLastProcessedEventId(clusterNodeId);
+            log.info("NiFi Provenance processing: Resetting the last event Id from {} to {} ",lastEventId,evId);
+            return evId;
+        },MetadataAccess.SERVICE);
+        return Response.ok(eventId).build();
+    }
+
+
+
     @GET
     @Path("/max-event-id")
     @Produces(MediaType.APPLICATION_JSON)
@@ -158,13 +184,13 @@ public class NifiProvenanceRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
     )
-    public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
+    public Response findLastProcessedEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
         return metadataAccess.read(() -> {
             Long maxId = 0L;
             if (StringUtils.isNotBlank(clusterNodeId)) {
-                maxId = statsProvider.findMaxEventId(clusterNodeId);
+                maxId = statsProvider.findLastProcessedEventId(clusterNodeId);
             } else {
-                maxId = statsProvider.findMaxEventId();
+                maxId = statsProvider.findLastProcessedEventId();
             }
             if (maxId == null) {
                 maxId = -1L;
