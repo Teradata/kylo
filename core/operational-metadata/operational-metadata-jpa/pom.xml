@@ -145,6 +145,12 @@
     </dependency>
 
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-cluster-manager-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Testing -->
     <dependency>
       <groupId>org.assertj</groupId>
@@ -185,6 +191,7 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
     </dependency>
+    
   </dependencies>
 
 
