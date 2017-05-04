@@ -33,13 +33,18 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerEvent;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,7 +73,11 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
-
+    /**
+     * Called on startup as part of the PostMetadataConfigAction.
+     * this will not be necessary if its a DB managed cluster.
+     *
+     */
     @Override
     public void run() {
         metadataAccess.read(() -> {
@@ -168,6 +177,16 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         return jobIdentifier;
     }
 
+    private TriggerIdentifier triggerIdentifier(JobIdentifier jobIdentifier) {
+        TriggerIdentifier triggerIdentifier = new DefaultTriggerIdentifier(jobIdentifier.getName(), jobIdentifier.getGroup());
+        return triggerIdentifier;
+    }
+
+    private TriggerIdentifier triggerIdentifier(String name) {
+        TriggerIdentifier triggerIdentifier = new DefaultTriggerIdentifier(name, "SLA");
+        return triggerIdentifier;
+    }
+
     private ServiceLevelAgreement.ID slaIdForJobIdentifier(JobIdentifier jobIdentifier) {
         String jobIdentifierName = jobIdentifier.getName();
         return scheduledJobNames.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(jobIdentifierName)).map(entry -> entry.getKey()).findFirst().orElse(null);
@@ -175,7 +194,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     }
 
     /**
-     * Used to disable the schedule of the SLA, so that it no longer executes until subsequently re-enabled via {@link enableServiceLevelAgreement}
+     * Used to disable the schedule of the SLA, so that it no longer executes until subsequently re-enabled
      *
      * @param sla The SLA to disable
      */
@@ -192,7 +211,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     }
 
     /**
-     * Used to enable the schedule of the SLA, so that once again executes after a being disabled via {@link disableServiceLevelAgreement}
+     * Used to enable the schedule of the SLA, so that once again executes after a being disabled
      *
      * @param sla The SLA to enable
      */
@@ -210,49 +229,52 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     }
 
     /**
+     * Schedule the SlaQuartzJobBean for the given sla
+     * @param jobIdentifier the job identifier for this schedule
+     * @param slaId the SLA id
+     */
+    private void scheduleSlaJob(JobIdentifier jobIdentifier, ServiceLevelAgreement.ID slaId){
+
+        QuartzScheduler scheduler = (QuartzScheduler)jobScheduler;
+        TriggerIdentifier triggerIdentifier =triggerIdentifier(jobIdentifier);
+        Map<String,Object> map = new HashMap<String,Object>();
+        map.put(SlaQuartzJobBean.SLA_ID_PARAM,slaId);
+        try {
+            scheduler.scheduleJob(jobIdentifier, triggerIdentifier, SlaQuartzJobBean.class, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron), map);
+        }catch(SchedulerException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
      * Schedules an SLA to be run
      *
      * @param sla The SLA to schedule
      */
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
-        try {
+       // try {
             //Delete any jobs with this SLA if they already exist
             if (scheduledJobNames.containsKey(sla.getId())) {
                 unscheduleServiceLevelAgreement(sla);
             }
             JobIdentifier jobIdentifier = slaJobName(sla);
+
             ServiceLevelAgreement.ID slaId = sla.getId();
 
-            jobScheduler.scheduleWithCronExpression(jobIdentifier, new Runnable() {
-                @Override
-                public void run() {
-                    //query for this SLA
-                    metadataAccess.commit(() -> {
-                        ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
-                        if (sla == null) {
-                            ///Unable to find the SLA... Remove the SLA from teh schedule
-                            unscheduleServiceLevelAgreement(slaId);
-
-                        }
-                        if (sla.isEnabled()) {
-                            slaChecker.checkAgreement(sla);
-                        } else {
-                            log.info("SLA {} will not fire since it is disabled ", sla.getName());
-                        }
-                    }, MetadataAccess.SERVICE);
-                }
-            }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
+            scheduleSlaJob(jobIdentifier,slaId);
 
             log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
-        } catch (JobSchedulerException e) {
-            throw new RuntimeException(e);
-        }
+      //  } catch (JobSchedulerException e) {
+      //      throw new RuntimeException(e);
+    //    }
 
         if (!sla.isEnabled()) {
             disableServiceLevelAgreement(sla);
         }
     }
+
 
     /**
      * Called be the framework when the job is scheduled this is where we manage the life cycle of the SLAs
