@@ -44,6 +44,7 @@ public class NifiFeedProcessorStats {
     protected Long processorsFailed = 0L;
     protected Long flowFilesStarted = 0L;
     protected Long flowFilesFinished = 0L;
+    protected Long maxEventId;
     private String id;
     private String feedName;
     private String processorId;
@@ -227,5 +228,13 @@ public class NifiFeedProcessorStats {
 
     public void setResultSetCount(Long resultSetCount) {
         this.resultSetCount = resultSetCount;
+    }
+
+    public Long getMaxEventId() {
+        return maxEventId;
+    }
+
+    public void setMaxEventId(Long maxEventId) {
+        this.maxEventId = maxEventId;
     }
 }

@@ -102,14 +102,21 @@ public interface NifiFeedProcessorStatisticsProvider {
      *
      * @return the max event id processed by kylo
      */
-    Long findMaxEventId();
+    Long findLastProcessedEventId();
 
     /**
      * find the max event id processed by kylo for the given cluster id
-     *
+     * @param clusterNodeId the cluseer node id
      * @return the max event id processed by kylo for the given cluster id
      */
-    Long findMaxEventId(String clusterNodeId);
+    Long findLastProcessedEventId(String clusterNodeId);
+
+    /**
+     * Resets the value of the last processed event id for this cluster
+     * @param clusterNodeId the cluseer node id
+     * @return the reset value for this (should be 0L)
+     */
+    Long resetLastProcessedEventId(String clusterNodeId);
 
     /**
      * allow for specifying a time to look back from when querying for statistical information

@@ -47,6 +47,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -106,6 +107,12 @@ public class MetadataClient {
     private static final Function<UriComponentsBuilder, UriComponentsBuilder> ALL_FEEDS = new TargetFeedCriteria();
 
     private final URI base;
+
+    /**
+     * The base uri to access anything under the /proxy folder for Kylo
+     */
+    private final URI proxyBase;
+
     private final RestTemplate template;
     private String category;
 
@@ -155,7 +162,7 @@ public class MetadataClient {
     public MetadataClient(URI base, CredentialsProvider credsProvider, SSLContext sslContext) {
         super();
         this.base = base;
-
+        this.proxyBase = URI.create(this.base.getScheme()+"://"+this.base.getHost()+"/proxy");
         if (credsProvider != null) {
             HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
                 .setSSLContext(sslContext != null ? sslContext : null)
@@ -367,6 +374,7 @@ public class MetadataClient {
         }
     }
 
+
     /**
      * get the feed matching the id given
      *
@@ -380,12 +388,13 @@ public class MetadataClient {
     /**
      * get the feed matching the named feed in the category given
      *
-     * @param categoryName the name of the category
-     * @param feedName     the name of the feed
+     * @param category the name of the category
+     * @param feed     the name of the feed
      */
-    public Feed getFeed(String categoryName, String feedName) {
-        return get(path("feed"), Feed.class);
+    public Feed getFeed(String category,String feed) {
+        return get(path("feeds","name",category+"."+feed), Feed.class);
     }
+
 
     /**
      * get the feed
@@ -625,7 +634,20 @@ public class MetadataClient {
      */
     public Long findNiFiMaxEventId(String clusterNodeId) {
         log.info("findNifiMaxEventId ", clusterNodeId);
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
         return get(path("nifi-provenance", "max-event-id"), new MaxNifiEventParameters(clusterNodeId), Long.class);
+    }
+
+    /**
+     * reset the max event for NiFi
+     *
+     * @param clusterNodeId the NifI cluster to query
+     * @return the id of the most recent event
+     */
+    public Long resetNiFiMaxEventId(String clusterNodeId) {
+        log.info("resetMaxEventId ", clusterNodeId);
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
+        return post(path("nifi-provenance", "reset-max-event-id",clusterNodeId), null, Long.class);
     }
 
     /**
@@ -662,13 +684,27 @@ public class MetadataClient {
         return UriComponentsBuilder.fromUri(this.base).path("/").path(path.toString());
     }
 
+    private UriComponentsBuilder baseProxy(Path path) {
+        return UriComponentsBuilder.fromUri(this.proxyBase).path("/").path(path.toString());
+    }
+
     private <R> R get(Path path, Class<R> resultType) {
         return get(path, null, resultType);
+    }
+
+    private <R> R getProxy(Path path, Class<R> resultType) {
+        return getProxy(path, null, resultType);
     }
 
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
         return this.template.getForObject(
             (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
+            resultType);
+    }
+
+    private <R> R getProxy(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
+        return this.template.getForObject(
+            (filterFunct != null ? filterFunct.apply(baseProxy(path)) : baseProxy(path)).build().toUri(),
             resultType);
     }
 
@@ -1167,6 +1203,7 @@ public class MetadataClient {
         }
 
     }
+
 
 
 }
