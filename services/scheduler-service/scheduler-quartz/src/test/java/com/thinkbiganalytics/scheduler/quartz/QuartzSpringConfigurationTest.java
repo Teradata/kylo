@@ -25,6 +25,7 @@ import com.thinkbiganalytics.scheduler.QuartzSpringConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertNotNull;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = QuartzSpringConfiguration.class)
+@ContextConfiguration(classes = {QuartzSpringConfiguration.class, QuartzTestConfiguration.class})
 public class QuartzSpringConfigurationTest {
 
     @Autowired
