@@ -608,7 +608,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * Called after someone updates/Registers a template in the UI using the template stepper
      * This is used to update the feed marker for streaming/batch feeds
      */
-    public synchronized void updateRegisteredTemplate(RegisteredTemplate template, boolean notifyClustgerMembers) {
+    public synchronized void updateRegisteredTemplate(RegisteredTemplate template, boolean notifyClusterMembers) {
 
         populateTemplateMappingCache(template, null);
 
@@ -622,9 +622,11 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
         } else {
             streamingFeeds.removeAll(feedNames);
         }
-        if(notifyClustgerMembers) {
+        if(notifyClusterMembers) {
             //mark the persistent table that this was updated
-            nifiFlowCacheClusterManager.updateTemplate(template.getTemplateName());
+            if(nifiFlowCacheClusterManager.isClustered()) {
+                nifiFlowCacheClusterManager.updateTemplate(template.getTemplateName());
+            }
             lastUpdated = DateTime.now();
         }
 
@@ -664,7 +666,9 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
 
         if(notifyClusterMembers) {
-            nifiFlowCacheClusterManager.updateProcessors(processors);
+            if(nifiFlowCacheClusterManager.isClustered()) {
+                nifiFlowCacheClusterManager.updateProcessors(processors);
+            }
             lastUpdated = DateTime.now();
         }
     }
@@ -693,7 +697,9 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
         this.connectionIdToConnectionMap.putAll(toConnectionIdMap(connectionIdToConnectionMap.values()));
 
         if(notifyClusterMembers) {
-            nifiFlowCacheClusterManager.updateConnections(connections);
+            if(nifiFlowCacheClusterManager.isClustered()) {
+                nifiFlowCacheClusterManager.updateConnections(connections);
+            }
             lastUpdated = DateTime.now();
         }
     }
@@ -766,7 +772,9 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
 
         //notify others of the cache update only if we are not doing a full refresh
         if(loaded && notifyClusterMembers){
-           nifiFlowCacheClusterManager.updateFeed(feedName,isStream,feedProcessGroupId,processors,connections);
+            if(nifiFlowCacheClusterManager.isClustered()) {
+                nifiFlowCacheClusterManager.updateFeed(feedName, isStream, feedProcessGroupId, processors, connections);
+            }
             lastUpdated = DateTime.now();
         }
 
