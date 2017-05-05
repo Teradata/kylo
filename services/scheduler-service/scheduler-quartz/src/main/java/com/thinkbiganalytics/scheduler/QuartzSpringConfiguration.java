@@ -23,6 +23,8 @@ package com.thinkbiganalytics.scheduler;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 import javax.inject.Inject;
@@ -40,6 +42,13 @@ public class QuartzSpringConfiguration {
     public SchedulerFactoryBean schedulerFactoryBean() {
         SchedulerFactoryBean scheduler = new SchedulerFactoryBean();
         scheduler.setApplicationContextSchedulerContextKey("applicationContext");
+        Resource resource = new ClassPathResource("quartz.properties");
+        if(resource.exists()) {
+            scheduler.setConfigLocation(resource);
+        }
+        else {
+            //log not using quartz.properties
+        }
         //Enable autowiring of Beans inside each QuartzJobBean
         AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
@@ -48,5 +57,15 @@ public class QuartzSpringConfiguration {
         return scheduler;
     }
 
+
+    @Bean
+    public QuartzClusterMessageReceiver quartzClusterMessageReceiver(){
+        return new QuartzClusterMessageReceiver();
+    }
+
+    @Bean
+    public QuartzClusterMessageSender quartzClusterMessageSender(){
+        return new QuartzClusterMessageSender();
+    }
 
 }

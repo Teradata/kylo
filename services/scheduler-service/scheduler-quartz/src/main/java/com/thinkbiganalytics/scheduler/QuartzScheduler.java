@@ -21,12 +21,14 @@ package com.thinkbiganalytics.scheduler;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultJobInfo;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerInfo;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
@@ -43,6 +45,9 @@ import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -56,8 +61,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -72,6 +81,9 @@ public class QuartzScheduler implements JobScheduler {
     @Autowired
     @Qualifier("schedulerFactoryBean")
     SchedulerFactoryBean schedulerFactoryBean;
+
+    @Inject
+    private  QuartzClusterMessageSender clusterMessageSender;
 
     private Set<JobSchedulerListener> listeners = new HashSet<>();
 
@@ -105,6 +117,7 @@ public class QuartzScheduler implements JobScheduler {
         bean.afterPropertiesSet();
         return bean.getObject();
     }
+
 
     @Override
     public void scheduleWithCronExpressionInTimeZone(JobIdentifier jobIdentifier, Runnable task, String cronExpression,
@@ -257,6 +270,7 @@ public class QuartzScheduler implements JobScheduler {
     public void startScheduler() throws JobSchedulerException {
         try {
             getScheduler().start();
+            clusterMessageSender.notifySchedulerResumed();
             triggerListeners(JobSchedulerEvent.schedulerStartedEvent());
         } catch (SchedulerException e) {
             throw new JobSchedulerException("Unable to Start the Scheduler", e);
@@ -270,6 +284,7 @@ public class QuartzScheduler implements JobScheduler {
     public void pauseScheduler() throws JobSchedulerException {
         try {
             getScheduler().standby();
+            clusterMessageSender.notifySchedulerPaused();
         } catch (SchedulerException e) {
             throw new JobSchedulerException("Unable to Pause the Scheduler", e);
         }
@@ -299,6 +314,7 @@ public class QuartzScheduler implements JobScheduler {
                     }
                 }
                 triggerListeners(JobSchedulerEvent.pauseJobEvent(jobIdentifier));
+                clusterMessageSender.notifyJobPaused(jobIdentifier);
             }
         } catch (SchedulerException e) {
             throw new JobSchedulerException("Unable to pause Active Triggers the Job " + jobIdentifier, e);
@@ -319,6 +335,7 @@ public class QuartzScheduler implements JobScheduler {
                     }
                 }
                 triggerListeners(JobSchedulerEvent.resumeJobEvent(jobIdentifier));
+                clusterMessageSender.notifyJobResumed(jobIdentifier);
             }
         } catch (SchedulerException e) {
             throw new JobSchedulerException("Unable to resume paused Triggers the Job " + jobIdentifier, e);
@@ -509,7 +526,6 @@ public class QuartzScheduler implements JobScheduler {
         }
         return false;
     }
-
 
     public SchedulerMetaData getSchedulerMetaData() throws SchedulerException {
         return getScheduler().getMetaData();

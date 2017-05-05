@@ -20,6 +20,9 @@ package com.thinkbiganalytics.cluster;
  * #L%
  */
 
+/**
+ * Types of items that should by synchronized across Kylo clustered nodes
+ */
 public enum NiFiFlowCacheUpdateType {
 
     CONNECTION,PROCESSOR,FEED,TEMPLATE
