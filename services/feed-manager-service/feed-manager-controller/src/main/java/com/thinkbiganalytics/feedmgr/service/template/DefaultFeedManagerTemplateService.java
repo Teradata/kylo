@@ -20,7 +20,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
@@ -173,7 +173,7 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
         boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
         if (template.isUpdated()) {
-            nifiFlowCache.updateRegisteredTemplate(template);
+            nifiFlowCache.updateRegisteredTemplate(template,true);
 
             //only allow update to the Access control if the user has the CHANGE_PERMS permission on this template entity
             if (accessController.isEntityAccessControlled() && template.hasAction(TemplateAccessControl.CHANGE_PERMS.getSystemName())) {
@@ -201,6 +201,9 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
     }
 
+    public RegisteredTemplate findRegisteredTemplateByName(final String templateName){
+       return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(templateName));
+    }
 
     public RegisteredTemplate getRegisteredTemplate(final String templateId) {
         return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));

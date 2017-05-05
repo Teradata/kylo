@@ -165,6 +165,14 @@ public abstract class ScriptEngine {
     }
 
     /**
+     * Gets the class loader used by the interpreter.
+     *
+     * @return the class loader
+     */
+    @Nonnull
+    public abstract ClassLoader getClassLoader();
+
+    /**
      * Gets the {@code SparkContext} available to scripts as {@code sc}.
      *
      * @return the Spark context

@@ -175,6 +175,15 @@
     "connectionType": "SOURCE"
   },
   {
+    "processorType": "org.apache.nifi.processors.aws.s3.ListS3",
+    "datasourcePropertyKeys": [
+      "Bucket",
+      "Region"
+    ],
+    "datasourceType": "S3Datasource",
+    "connectionType": "SOURCE"
+  },
+  {
     "processorType":"com.thinkbiganalytics.nifi.v2.ingest.MergeTable",
     "datasourcePropertyKeys":["Target schema","Target table"],
     "datasourceType":"HiveDatasource",

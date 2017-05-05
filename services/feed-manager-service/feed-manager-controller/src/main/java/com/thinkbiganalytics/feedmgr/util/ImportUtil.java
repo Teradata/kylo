@@ -116,7 +116,15 @@ public class ImportUtil {
                     option.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey()
                         .equalsIgnoreCase(importFeedProperty.getPropertyKey())).findFirst().orElse(null);
                 //deal with nulls?
-                nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                if(userSuppliedValue == null) {
+                    //attempt to find it via the name
+                    userSuppliedValue =
+                        option.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorName().equalsIgnoreCase(importFeedProperty.getProcessorName()) && nifiProperty.getKey()
+                            .equalsIgnoreCase(importFeedProperty.getPropertyKey())).findFirst().orElse(null);
+                }
+                if(userSuppliedValue != null) {
+                    nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                }
             });
             return true;
         }

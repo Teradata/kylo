@@ -77,6 +77,12 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-cluster-manager-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -58,4 +58,6 @@ public interface KyloNiFiFlowProvider {
      */
     Long findNiFiMaxEventId(String clusterNodeId);
 
+    Long resetNiFiMaxEventId(String clusterNodeId);
+
 }

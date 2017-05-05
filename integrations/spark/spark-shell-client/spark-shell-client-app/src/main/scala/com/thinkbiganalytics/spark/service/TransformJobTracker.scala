@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.spark.service
 
-import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
+import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory, TimeUnit}
 import javax.annotation.Nonnull
 
 import com.google.common.cache.{Cache, CacheBuilder, RemovalListener, RemovalNotification}
@@ -17,10 +17,10 @@ object TransformJobTracker {
     val SPARK_JOB_GROUP_ID = "spark.jobGroup.id"
 }
 
-abstract class TransformJobTracker {
+abstract class TransformJobTracker(contextClassLoader: ClassLoader) {
 
     /** Executes jobs in separate threads */
-    private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(2, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("transform-job-%d").build())
+    private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory)
 
     /** Map of group id to job */
     protected val groups: Cache[String, TransformJob] = CacheBuilder.newBuilder()
@@ -76,5 +76,25 @@ abstract class TransformJobTracker {
     def submitJob(@Nonnull job: TransformJob): Unit = {
         groups.put(job.groupId, job)
         executor.execute(job)
+    }
+
+    /** Creates a thread factory for running transform jobs.
+      *
+      * @return the thread factory
+      */
+    private def threadFactory = {
+        val parentThreadFactory = new ThreadFactory {
+            override def newThread(r: Runnable): Thread = {
+                val thread = Executors.defaultThreadFactory().newThread(r)
+                thread.setContextClassLoader(contextClassLoader)
+                thread
+            }
+        }
+
+        new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("transform-job-%d")
+            .setThreadFactory(parentThreadFactory)
+            .build()
     }
 }

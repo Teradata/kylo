@@ -20,8 +20,11 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
@@ -30,13 +33,17 @@ import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -146,9 +153,8 @@ public class AdminController {
 
 
     /**
-     * This is deprecated.  Please use the AdminControllerV2 class
+     * This is used for quick import via a script.  The UI uses the AdminControllerV2 class
      */
-    @Deprecated
     @POST
     @Path(IMPORT_FEED)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -163,7 +169,9 @@ public class AdminController {
                                @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                @FormDataParam("overwriteFeedTemplate") @DefaultValue("false") boolean overwriteFeedTemplate,
                                @FormDataParam("categorySystemName") String categorySystemName,
-                               @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportTemplateOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
+                               @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportTemplateOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
+                               @FormDataParam("templateProperties") @DefaultValue("") String templateProperties,
+                               @FormDataParam("feedProperties") @DefaultValue("") String feedProperties)
         throws Exception {
         ImportFeedOptions options = new ImportFeedOptions();
         String uploadKey = uploadProgressService.newUpload();
@@ -188,6 +196,18 @@ public class AdminController {
 
         options.setCategorySystemName(categorySystemName);
 
+        if(StringUtils.isNotBlank(templateProperties)) {
+            List<ImportProperty> properties = ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
+            });
+            options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setProperties(properties);
+        }
+
+        if(StringUtils.isNotBlank(feedProperties)) {
+            List<ImportProperty> properties = ObjectMapperSerializer.deserialize(feedProperties, new TypeReference<List<ImportProperty>>() {
+            });
+            options.findImportComponentOption(ImportComponent.FEED_DATA).setProperties(properties);
+        }
+
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
 
@@ -196,9 +216,8 @@ public class AdminController {
 
 
     /**
-     * This is deprecated.  Please use the AdminControllerV2 class
+     * This is used for quick import via scripts.  The UI uses the AdminControllerV2 class
      */
-    @Deprecated
     @POST
     @Path(IMPORT_TEMPLATE)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -212,7 +231,8 @@ public class AdminController {
                                     @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                     @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                     @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportTemplateOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
-                                    @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)
+                                    @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow,
+                                    @FormDataParam("templateProperties") @DefaultValue("") String templateProperties)
         throws Exception {
 
         ImportTemplateOptions options = new ImportTemplateOptions();
@@ -240,6 +260,11 @@ public class AdminController {
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwrite);
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(true);
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(true);
+        if(StringUtils.isNotBlank(templateProperties)) {
+            List<ImportProperty> properties = ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
+            });
+            options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setProperties(properties);
+        }
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
         ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);

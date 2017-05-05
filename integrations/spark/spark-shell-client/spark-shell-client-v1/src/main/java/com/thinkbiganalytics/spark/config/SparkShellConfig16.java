@@ -37,7 +37,7 @@ public class SparkShellConfig16 {
 
     @Bean
     public TransformJobTracker transformJobTracker(final SparkScriptEngine sparkScriptEngine) {
-        final TransformJobTracker16 transformJobTracker = new TransformJobTracker16();
+        final TransformJobTracker16 transformJobTracker = new TransformJobTracker16(sparkScriptEngine.getClassLoader());
         transformJobTracker.addSparkListener(sparkScriptEngine);
         return transformJobTracker;
     }

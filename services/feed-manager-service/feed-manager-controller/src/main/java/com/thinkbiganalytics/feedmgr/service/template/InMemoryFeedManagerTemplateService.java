@@ -199,4 +199,9 @@ public class InMemoryFeedManagerTemplateService implements FeedManagerTemplateSe
     public List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String templateId) {
         return null;
     }
+
+    @Override
+    public RegisteredTemplate findRegisteredTemplateByName(String templateName) {
+        return null;
+    }
 }

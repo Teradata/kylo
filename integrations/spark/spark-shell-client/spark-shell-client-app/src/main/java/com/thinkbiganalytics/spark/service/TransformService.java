@@ -155,7 +155,7 @@ public class TransformService {
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
             if (datasourceProviderFactory != null) {
                 final DatasourceProvider datasourceProvider = datasourceProviderFactory.getDatasourceProvider(request.getDatasources());
-                bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName(), datasourceProvider));
+                bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", datasourceProvider));
             } else {
                 final ScriptException e = new ScriptException("Script cannot be executed because no data source provider factory is available.");
                 log.error("Throwing {}", e);

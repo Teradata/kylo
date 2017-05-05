@@ -20,10 +20,13 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
@@ -58,6 +61,7 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
+import com.thinkbiganalytics.metadata.jpa.cluster.NiFiFlowCacheClusterUpdateProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -443,5 +447,19 @@ public class TestSpringConfiguration {
     @Bean
     KyloVersionProvider kyloVersionProvider() {
         return Mockito.mock(KyloVersionProvider.class);
+    }
+
+    @Bean
+    ClusterService clusterService() {
+        return new JGroupsClusterService();
+    }
+
+    @Bean
+    NifiFlowCacheClusterManager nifiFlowCacheClusterManager() {
+        return Mockito.mock(NifiFlowCacheClusterManager.class);
+    }
+    @Bean
+    NiFiFlowCacheClusterUpdateProvider niFiFlowCacheClusterUpdateProvider(){
+        return Mockito.mock(NiFiFlowCacheClusterUpdateProvider.class);
     }
 }

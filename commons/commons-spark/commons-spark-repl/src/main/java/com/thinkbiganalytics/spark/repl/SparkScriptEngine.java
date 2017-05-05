@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.repl;
  */
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.thinkbiganalytics.spark.SparkInterpreterBuilder;
 
 import org.apache.commons.io.IOUtils;
@@ -38,6 +39,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
@@ -91,13 +93,34 @@ public class SparkScriptEngine extends ScriptEngine {
 
     @Nonnull
     @Override
+    public ClassLoader getClassLoader() {
+        // Get current context class loader
+        final Thread currentThread = Thread.currentThread();
+        final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+
+        // Get interpreter class loader from context
+        getInterpreter().setContextClassLoader();
+        final ClassLoader interpreterClassLoader = currentThread.getContextClassLoader();
+
+        // Reset context
+        currentThread.setContextClassLoader(contextClassLoader);
+        return interpreterClassLoader;
+    }
+
+    @Nonnull
+    @Override
     protected SparkContext createSparkContext() {
         // Allow interpreter to modify Thread context for Spark
-        getInterpreter();
+        getInterpreter().setContextClassLoader();
 
-        // TODO The SparkContext ClassLoader is needed during initialization (only for YARN master)
-        log.info("Creating spark context with spark conf {}", conf);
-        return new SparkContext(this.conf);
+        // The SparkContext ClassLoader is needed during initialization (only for YARN master)
+        return executeWithSparkClassLoader(new Callable<SparkContext>() {
+            @Override
+            public SparkContext call() throws Exception {
+                log.info("Creating spark context with spark conf {}", conf);
+                return new SparkContext(conf);
+            }
+        });
     }
 
     @Override
@@ -119,7 +142,7 @@ public class SparkScriptEngine extends ScriptEngine {
         // Check for security violations
         for (final Pattern pattern : getDenyPatterns()) {
             if (pattern.matcher(safeScript).find()) {
-                log.error("Not executing script that matches deny pattern: {}", pattern.toString());
+                log.error("Not executing script that matches deny pattern: {}", pattern);
                 throw new ScriptException("Script not executed due to security policy.");
             }
         }
@@ -142,6 +165,36 @@ public class SparkScriptEngine extends ScriptEngine {
         if (interpreter != null) {
             interpreter.close();
             interpreter = null;
+        }
+    }
+
+    /**
+     * Executes the specified callable after replacing the current context class loader.
+     *
+     * <p>This is a work-around to avoid {@link ClassCastException} issues caused by conflicts between Hadoop and Kylo Spark Shell. Spark uses the context class loader when loading Hadoop components
+     * for running Spark on YARN. When both Hadoop and Kylo Spark Shell provide the same class then both classes are loaded when creating a {@link SparkContext}. The fix is to set the context class
+     * loader to the same class loader that was used to load the {@link SparkContext} class.</p>
+     *
+     * @param callable the function to be executed
+     * @param <T>      the return type
+     * @return the return value
+     */
+    private <T> T executeWithSparkClassLoader(@Nonnull final Callable<T> callable) {
+        // Set context class loader
+        final Thread currentThread = Thread.currentThread();
+        final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+
+        final ClassLoader sparkClassLoader = new ForwardingClassLoader(SparkContext.class.getClassLoader(), contextClassLoader);
+        currentThread.setContextClassLoader(sparkClassLoader);
+
+        // Execute callable
+        try {
+            return callable.call();
+        } catch (final Exception e) {
+            throw Throwables.propagate(e);
+        } finally {
+            // Reset context class loader
+            currentThread.setContextClassLoader(contextClassLoader);
         }
     }
 
@@ -197,21 +250,21 @@ public class SparkScriptEngine extends ScriptEngine {
     private IMain getInterpreter() {
         if (this.interpreter == null) {
             // Determine engine settings
-            Settings settings = getSettings();
+            final Settings settings = getSettings();
 
             // Initialize engine
             final ClassLoader parentClassLoader = getClass().getClassLoader();
-            SparkInterpreterBuilder b = this.builder.withSettings(settings);
-            b = b.withPrintWriter(getPrintWriter());
-            b = b.withClassLoader(parentClassLoader);
-            IMain interpreter = b.newInstance();
+            final SparkInterpreterBuilder b = this.builder.withSettings(settings)
+                .withPrintWriter(getPrintWriter())
+                .withClassLoader(parentClassLoader);
+            final IMain interpreter = b.newInstance();
 
             interpreter.setContextClassLoader();
             interpreter.initializeSynchronous();
 
             // Setup environment
-            scala.collection.immutable.List<String> empty = JavaConversions.asScalaBuffer(new ArrayList<String>()).toList();
-            Results.Result result = interpreter.bind("engine", SparkScriptEngine.class.getName(), this, empty);
+            final scala.collection.immutable.List<String> empty = JavaConversions.asScalaBuffer(new ArrayList<String>()).toList();
+            final Results.Result result = interpreter.bind("engine", SparkScriptEngine.class.getName(), this, empty);
             if (result instanceof Results.Error$) {
                 throw new IllegalStateException("Failed to initialize interpreter");
             }
@@ -221,12 +274,17 @@ public class SparkScriptEngine extends ScriptEngine {
         return this.interpreter;
     }
 
+    /**
+     * Gets the settings for the interpreter.
+     *
+     * @return the interpreter settings
+     */
+    @Nonnull
     private Settings getSettings() {
-        Settings settings = new Settings();
+        final Settings settings = new Settings();
 
         if (settings.classpath().isDefault()) {
-            String classPath = Joiner.on(':').join(((URLClassLoader) getClass().getClassLoader()).getURLs()) + ":" + System
-                .getProperty("java.class.path");
+            final String classPath = Joiner.on(':').join(((URLClassLoader) getClass().getClassLoader()).getURLs()) + ":" + System.getProperty("java.class.path");
             settings.classpath().value_$eq(classPath);
         }
         return settings;

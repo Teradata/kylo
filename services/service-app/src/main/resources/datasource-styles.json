@@ -18,6 +18,13 @@
         "size": 18
       }
     },
+   "S3Datasource": {
+     "shape": "icon",
+     "icon": {
+       "code": "\uf270",
+       "color": "#607D8B"
+     }
+   },
     "DirectoryDatasource": {
       "shape": "icon",
       "icon": {

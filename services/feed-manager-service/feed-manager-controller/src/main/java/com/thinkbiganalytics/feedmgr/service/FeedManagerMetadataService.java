@@ -136,6 +136,12 @@ public class FeedManagerMetadataService implements MetadataService {
         return templateProvider.getRegisteredTemplates();
     }
 
+
+    @Override
+    public RegisteredTemplate findRegisteredTemplateByName(String templateName) {
+        return templateProvider.findRegisteredTemplateByName(templateName);
+    }
+
     @Override
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
