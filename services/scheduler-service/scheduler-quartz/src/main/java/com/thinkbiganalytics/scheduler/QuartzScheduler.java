@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
@@ -54,6 +55,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -84,6 +86,7 @@ public class QuartzScheduler implements JobScheduler {
 
     @Inject
     private  QuartzClusterMessageSender clusterMessageSender;
+
 
     private Set<JobSchedulerListener> listeners = new HashSet<>();
 
@@ -117,6 +120,8 @@ public class QuartzScheduler implements JobScheduler {
         bean.afterPropertiesSet();
         return bean.getObject();
     }
+
+
 
 
     @Override

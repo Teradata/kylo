@@ -45,7 +45,7 @@ public class QuartzSpringConfigurationTest {
     @Test
     public void testSchedulerFactoryBean() throws Exception {
         assertNotNull(configuration);
-        assertNotNull(configuration.schedulerFactoryBean());
+        assertNotNull(configuration.schedulerFactoryBean(null));
     }
 }
 

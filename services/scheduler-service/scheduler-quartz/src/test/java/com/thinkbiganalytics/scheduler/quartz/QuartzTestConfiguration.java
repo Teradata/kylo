@@ -28,6 +28,8 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
+
 @Configuration
 public class QuartzTestConfiguration {
 
@@ -39,6 +41,11 @@ public class QuartzTestConfiguration {
     @Bean
     ClusterService clusterService(){
         return Mockito.mock(ClusterService.class);
+    }
+
+    @Bean(name="dataSource")
+    DataSource dataSource(){
+        return Mockito.mock(DataSource.class);
     }
 
 }

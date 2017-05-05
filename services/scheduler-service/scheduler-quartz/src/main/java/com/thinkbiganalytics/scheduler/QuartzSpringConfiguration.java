@@ -20,6 +20,9 @@ package com.thinkbiganalytics.scheduler;
  * #L%
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +31,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 import javax.inject.Inject;
+import javax.sql.DataSource;
 
 /**
  * Spring configuration to setup the Quartz scheduler
@@ -35,19 +39,19 @@ import javax.inject.Inject;
 @Configuration
 public class QuartzSpringConfiguration {
 
+    private static final Logger log = LoggerFactory.getLogger(QuartzSpringConfiguration.class);
+
     @Inject
     private ApplicationContext applicationContext;
 
     @Bean(name = "schedulerFactoryBean")
-    public SchedulerFactoryBean schedulerFactoryBean() {
+    public SchedulerFactoryBean schedulerFactoryBean( @Qualifier( "dataSource") DataSource dataSource) {
         SchedulerFactoryBean scheduler = new SchedulerFactoryBean();
         scheduler.setApplicationContextSchedulerContextKey("applicationContext");
         Resource resource = new ClassPathResource("quartz.properties");
         if(resource.exists()) {
             scheduler.setConfigLocation(resource);
-        }
-        else {
-            //log not using quartz.properties
+            scheduler.setDataSource(dataSource);
         }
         //Enable autowiring of Beans inside each QuartzJobBean
         AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
@@ -68,4 +72,8 @@ public class QuartzSpringConfiguration {
         return new QuartzClusterMessageSender();
     }
 
+    @Bean
+    public QuartzSchedulerClusterListener quartzSchedulerClusterListener() {
+        return new QuartzSchedulerClusterListener();
+    }
 }
