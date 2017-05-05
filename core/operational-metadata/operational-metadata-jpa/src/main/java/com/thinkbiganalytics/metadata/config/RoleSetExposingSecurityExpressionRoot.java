@@ -20,23 +20,18 @@ package com.thinkbiganalytics.metadata.config;
  * #L%
  */
 
-import org.springframework.security.access.expression.SecurityExpressionRoot;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
-
-import java.util.Collection;
-import java.util.HashSet;
+import java.security.acl.Group;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.security.access.expression.SecurityExpressionRoot;
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
+import org.springframework.security.core.Authentication;
 
 /**
  * Created by ru186002 on 07/04/2017.
  */
 public class RoleSetExposingSecurityExpressionRoot extends SecurityExpressionRoot {
-
-    private Set<String> roles;
-    private RoleHierarchy roleHierarchy;
 
     /**
      * Creates a new instance
@@ -47,26 +42,22 @@ public class RoleSetExposingSecurityExpressionRoot extends SecurityExpressionRoo
         super(authentication);
     }
 
-    @Override
-    public void setRoleHierarchy(RoleHierarchy roleHierarchy) {
-        super.setRoleHierarchy(roleHierarchy);
-        this.roleHierarchy = roleHierarchy;
+    
+    public Set<String> getGroups() {
+        return authentication.getAuthorities().stream()
+                        .filter(a -> a instanceof JaasGrantedAuthority)
+                        .map(JaasGrantedAuthority.class::cast)
+                        .filter(jga -> jga.getPrincipal() instanceof Group)
+                        .map(jga -> jga.getAuthority())
+                        .filter(a -> ! a.startsWith("ROLE_"))
+                        .collect(Collectors.toSet());
     }
 
-    @SuppressWarnings("unused") //this method is used dynamically in @Query annotations, e.g. "... and x.principalName in :#{principal.roleSet}"
-    public Set<String> getRoleSet() {
-        if (roles == null) {
-            roles = new HashSet<>();
-            Collection<? extends GrantedAuthority> userAuthorities = authentication.getAuthorities();
-
-            if (roleHierarchy != null) {
-                userAuthorities = roleHierarchy.getReachableGrantedAuthorities(userAuthorities);
-            }
-
-            roles = AuthorityUtils.authorityListToSet(userAuthorities);
-        }
-
-        return roles;
+    public String getName() {
+        return authentication.getName();
     }
-
+    
+    public Object getUser() {
+        return this;
+    }
 }

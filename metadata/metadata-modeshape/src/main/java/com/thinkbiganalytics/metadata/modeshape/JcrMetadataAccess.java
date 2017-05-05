@@ -237,12 +237,10 @@ public class JcrMetadataAccess implements MetadataAccess {
                 try {
                     txnMgr.begin();
 
-                    R result = cmd.execute();
+                    R result = execute(creds, cmd);
 
                     activeSession.get().session.save();
-
                     checkinNodes();
-
                     txnMgr.commit();
                     performPostTransactionActions(true);
                     return result;
@@ -328,7 +326,7 @@ public class JcrMetadataAccess implements MetadataAccess {
                 try {
                     txnMgr.begin();
 
-                    return cmd.execute();
+                    return execute(creds, cmd);
                 } finally {
                     try {
                         txnMgr.rollback();
@@ -358,6 +356,28 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     }
 
+
+    /**
+     * Execute the command in the context of the given credentials.
+     */
+    private <R> R execute(Credentials creds, MetadataCommand<R> cmd) throws Exception {
+        if (creds instanceof OverrideCredentials) {
+            // If using override credentials first replace any existing Authentication (might be null) with
+            // the Authentication built from the overriding principals.
+            OverrideCredentials overrideCreds = (OverrideCredentials) creds;
+            Authentication initialAuth = SecurityContextHolder.getContext().getAuthentication();
+            
+            SecurityContextHolder.getContext().setAuthentication(overrideCreds.getAuthentication());
+            try {
+                return cmd.execute();
+            } finally {
+                // Set the current Authentication back to what it was originally.
+                SecurityContextHolder.getContext().setAuthentication(initialAuth);
+            }
+        } else {
+            return cmd.execute();
+        }
+    }
 
     /**
      * Invokes all of the post-commit consumers; passing the transaction success flag to each.

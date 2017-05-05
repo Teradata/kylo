@@ -39,10 +39,12 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
     JpaOpsManagerFeed findByName(String name);
 
-    @Query("select feed from JpaOpsManagerFeed as feed where feed.id in(:ids)")
+    @Query("select feed from JpaOpsManagerFeed as feed "
+                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+                    + " where feed.id in(:ids)")
     List<JpaOpsManagerFeed> findByFeedIds(@Param("ids") List<OpsManagerFeed.ID> ids);
 
-    @Query("SELECT feed.name FROM JpaOpsManagerFeed AS feed "
+    @Query("SELECT distinct feed.name FROM JpaOpsManagerFeed AS feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED)
     List<String> getFeedNames();
 
