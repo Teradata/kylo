@@ -18,7 +18,7 @@
 -- #L%
 -- -
 
-CREATE PROCEDURE [dbo].[delete_feed_jobs](@category varchar(255), @feed varchar(255))
+CREATE PROCEDURE [dbo].[delete_feed_jobs](@category varchar(255), @feed varchar(255), @result integer)
 AS
 
 DECLARE @jobName VARCHAR(255) = CONCAT(@category,'.',@feed);

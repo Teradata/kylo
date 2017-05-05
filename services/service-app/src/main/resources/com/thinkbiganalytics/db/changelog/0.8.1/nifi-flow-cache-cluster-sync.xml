@@ -23,8 +23,9 @@
 
   <property name="clob.type" value="clob" dbms="oracle"/>
   <property name="clob.type" value="text" dbms="mysql,postgresql"/>
+  <property name="clob.type" value="VARCHAR(max)" dbms="mssql"/>
 
-   <changeSet author="sr186054" id="kylo_0.8.1-nifi-flow-cache-1">
+  <changeSet author="sr186054" id="kylo_0.8.1-nifi-flow-cache-1">
     <createTable tableName="NIFI_FLOW_CACHE_CLUSTER_SYNC">
       <column name="KYLO_CLUSTER_ADDRESS" type="VARCHAR(45)">
         <constraints nullable="false"/>

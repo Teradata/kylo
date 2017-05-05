@@ -23,6 +23,7 @@
 
   <property name="clob.type" value="clob" dbms="oracle"/>
   <property name="clob.type" value="text" dbms="mysql,postgres"/>
+  <property name="clob.type" value="VARCHAR(max)" dbms="mssql"/>
 
   <changeSet author="sr186054" id="kylo_0.8.1-item-last-mod-1">
     <createTable tableName="ITEM_LAST_MODIFIED">
