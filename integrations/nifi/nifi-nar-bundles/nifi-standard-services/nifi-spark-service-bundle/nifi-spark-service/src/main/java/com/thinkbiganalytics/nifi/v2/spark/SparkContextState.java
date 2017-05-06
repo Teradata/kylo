@@ -25,11 +25,11 @@ import java.util.concurrent.TimeUnit;
  */
 class SparkContextState {
 
-    public String ContextName;
+    public final String ContextName;
     private int timeoutSeconds;
     private long timeoutTime;
-    public boolean isRunning;
-    private List<String> executionLocks = new ArrayList<String>();
+    private boolean isRunning;
+    private List<String> executionLocks = new ArrayList<>();
 
     public SparkContextState(String contextName) {
         this.ContextName = contextName;
@@ -47,16 +47,11 @@ class SparkContextState {
     }
 
     public boolean hasTimedOut() {
-        if (timeoutTime != 0 && System.nanoTime() > timeoutTime) {
-            return true;
-        } else {
-            return false;
-        }
+        return (timeoutTime != 0 && System.nanoTime() > timeoutTime);
     }
 
     public boolean isLocked() {
-        if (!executionLocks.isEmpty()) return true;
-        else return false;
+        return !executionLocks.isEmpty();
     }
 
     public void addExecutionLock(String id) {
@@ -65,5 +60,13 @@ class SparkContextState {
 
     public void removeExecutionLock(String id) {
         executionLocks.remove(id);
+    }
+
+    public void setStateAsRunning() {
+        isRunning = true;
+    }
+
+    public boolean getRunningState() {
+        return isRunning;
     }
 }
