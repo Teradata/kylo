@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * limitations under the License.
  * #L%
  */
-public class TimeoutContext {
+class SparkContextState {
 
     public String ContextName;
     private int timeoutSeconds;
@@ -31,7 +31,7 @@ public class TimeoutContext {
     public boolean isRunning;
     private List<String> executionLocks = new ArrayList<String>();
 
-    public TimeoutContext(String contextName) {
+    public SparkContextState(String contextName) {
         this.ContextName = contextName;
         this.timeoutSeconds = 0;
         isRunning = false;
