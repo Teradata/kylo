@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.nifi.annotation.lifecycle.OnDisabled;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.annotation.lifecycle.OnShutdown;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -15,7 +16,6 @@ import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     public static final PropertyDescriptor SYNC_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Sync Timeout")
         .description("Number of seconds before timeout for Sync Spark Jobserver calls.")
-        .defaultValue("60")
+        .defaultValue("6000")
         .addValidator(StandardValidators.LONG_VALIDATOR)
         .required(true)
         .build();
@@ -80,7 +80,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     private volatile String jobServerUrl;
     private volatile String syncTimeout;
     private volatile Timer contextTimeoutTimer = new Timer();
-    private volatile Map<String, TimeoutContext> timeoutContexts = Collections.synchronizedMap(new HashMap<String, TimeoutContext>());
+    private volatile Map<String, SparkContextState> sparkContextsStates = Collections.synchronizedMap(new HashMap<String, SparkContextState>());
 
     @Override
     protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
@@ -105,6 +105,9 @@ public class SparkJobserverService extends AbstractControllerService implements 
      * This operation makes no guarantees that the actual connection could be
      * made since the underlying system may still go off-line during normal
      * operation of the service.
+     *
+     * A Context Timeout task is also created to delete any contexts which have
+     * been inactive for some time.
      *
      * @param context the configuration context
      * @throws InitializationException if unable to create a Spark Jobserver connection
@@ -132,17 +135,17 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean checkIfContextExists(String ContextName) {
+    public boolean checkIfContextExists(String contextName) {
 
         Boolean contextExists = false;
 
         try {
-            contextExists = client.getContexts().contains(ContextName);
+            contextExists = client.getContexts().contains(contextName);
 
             if (!contextExists) {
-                getLogger().info(String.format("Context %s not found on Spark Jobserver %s", ContextName, jobServerUrl));
+                getLogger().info(String.format("Context %s not found on Spark Jobserver %s", contextName, jobServerUrl));
             } else {
-                getLogger().info(String.format("Context %s exists on Spark Jobserver %s", ContextName, jobServerUrl));
+                getLogger().info(String.format("Context %s exists on Spark Jobserver %s", contextName, jobServerUrl));
                 contextExists = true;
             }
 
@@ -153,28 +156,28 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean createContext(String ContextName, String NumExecutors, String MemPerNode, String NumCPUCores, SparkContextType ContextType, int ContextTimeout, boolean Async) {
+    public boolean createContext(String contextName, String numExecutors, String memPerNode, String numCPUCores, SparkContextType contextType, int contextTimeout, boolean async) {
 
-        boolean newContext = isNewContext(ContextName);
+        boolean newContext = isNewContext(contextName);
 
         if (newContext) {
-            Boolean contextRunning = checkIfContextExists(ContextName);
+            Boolean contextRunning = checkIfContextExists(contextName);
             if (!contextRunning) {
                 try {
                     Map<String, String> params = new HashMap<String, String>();
-                    params.put(ISparkJobServerClientConstants.PARAM_NUM_EXECUTORS, NumExecutors);
-                    params.put(ISparkJobServerClientConstants.PARAM_SPARK_EXECUTOR_MEMORY, MemPerNode);
-                    params.put(ISparkJobServerClientConstants.PARAM_NUM_CPU_CORES, NumCPUCores);
+                    params.put(ISparkJobServerClientConstants.PARAM_NUM_EXECUTORS, numExecutors);
+                    params.put(ISparkJobServerClientConstants.PARAM_SPARK_EXECUTOR_MEMORY, memPerNode);
+                    params.put(ISparkJobServerClientConstants.PARAM_NUM_CPU_CORES, numCPUCores);
 
-                    if (ContextType != SparkContextType.SPARK_CONTEXT) {
-                        if (ContextType == SparkContextType.SQL_CONTEXT) {
+                    if (contextType != SparkContextType.SPARK_CONTEXT) {
+                        if (contextType == SparkContextType.SQL_CONTEXT) {
                             params.put(ISparkJobServerClientConstants.PARAM_CONTEXT_TYPE, "spark.jobserver.context.SQLContextFactory");
-                        } else if (ContextType == SparkContextType.HIVE_CONTEXT) {
+                        } else if (contextType == SparkContextType.HIVE_CONTEXT) {
                             params.put(ISparkJobServerClientConstants.PARAM_CONTEXT_TYPE, "spark.jobserver.context.HiveContextFactory");
                         }
                     }
 
-                    if (Async) {
+                    if (async) {
                         params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
                     } else {
                         params.put(ISparkJobServerClientConstants.PARAM_SYNC, "true");
@@ -182,22 +185,23 @@ public class SparkJobserverService extends AbstractControllerService implements 
                     }
 
                     getLogger().info(
-                        String.format("Creating %s %s with %s executors, %s cores and %s memory per executor on Spark Jobserver %s", ContextType, ContextName, NumExecutors, NumCPUCores, MemPerNode,
+                        String.format("Creating %s %s with %s executors, %s cores and %s memory per executor on Spark Jobserver %s", contextType, contextName, numExecutors, numCPUCores, memPerNode,
                                       jobServerUrl));
-                    contextRunning = client.createContext(ContextName, params);
-                    synchronized (timeoutContexts) {
-                        if (contextRunning) {
-                            timeoutContexts.get(ContextName).isRunning = true;
-                            timeoutContexts.get(ContextName).setTimeoutSeconds(ContextTimeout);
-                        } else {
-                            timeoutContexts.remove(ContextName);
-                        }
-                        timeoutContexts.notifyAll();
-                    }
-                    getLogger().info(String.format("Created %s %s on Spark Jobserver %s", ContextType, ContextName, jobServerUrl));
+                    contextRunning = client.createContext(contextName, params);
+                    getLogger().info(String.format("Created %s %s on Spark Jobserver %s", contextType, contextName, jobServerUrl));
 
                 } catch (Exception ex) {
                     getLogger().error(ex.getMessage());
+                } finally {
+                    synchronized (sparkContextsStates) {
+                        if (contextRunning) {
+                            sparkContextsStates.get(contextName).isRunning = true;
+                            sparkContextsStates.get(contextName).setTimeoutSeconds(contextTimeout);
+                        } else {
+                            sparkContextsStates.remove(contextName);
+                        }
+                        sparkContextsStates.notifyAll();
+                    }
                 }
             }
             return contextRunning;
@@ -207,17 +211,17 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean deleteContext(String ContextName) {
+    public boolean deleteContext(String contextName) {
 
-        Boolean contextDeleted = !checkIfContextExists(ContextName);
+        Boolean contextDeleted = !checkIfContextExists(contextName);
 
         if (!contextDeleted) {
             try {
-                synchronized (timeoutContexts) {
-                    contextDeleted = client.deleteContext(ContextName);
+                synchronized (sparkContextsStates) {
+                    contextDeleted = client.deleteContext(contextName);
                     if (contextDeleted){
-                        timeoutContexts.remove(ContextName);
-                        getLogger().info(String.format("Deleted context %s from Spark Jobserver %s", ContextName, jobServerUrl));
+                        sparkContextsStates.remove(contextName);
+                        getLogger().info(String.format("Deleted context %s from Spark Jobserver %s", contextName, jobServerUrl));
                     }
                 }
             } catch (Exception ex) {
@@ -228,13 +232,13 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean executeSparkContextJob(String AppName, String ClassPath, String ContextName, String Args, boolean Async) {
+    public boolean executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
 
-        String id = ContextName + System.nanoTime();
+        String id = contextName + System.nanoTime();
 
-        synchronized (timeoutContexts) {
-            if (timeoutContexts.containsKey(ContextName)) {
-                timeoutContexts.get(ContextName).addExecutionLock(id);
+        synchronized (sparkContextsStates) {
+            if (sparkContextsStates.containsKey(contextName)) {
+                sparkContextsStates.get(contextName).addExecutionLock(id);
             }
         }
 
@@ -242,33 +246,33 @@ public class SparkJobserverService extends AbstractControllerService implements 
         Boolean success = false;
 
         try {
-            getLogger().info(String.format("Executing Spark App %s %s on context %s with args %s on Spark Jobserver %s", AppName, ClassPath, ContextName, Args, jobServerUrl));
+            getLogger().info(String.format("Executing Spark App %s %s on context %s with args %s on Spark Jobserver %s", appName, classPath, contextName, args, jobServerUrl));
 
             Map<String, String> params = new HashMap<String, String>();
 
-            params.put(ISparkJobServerClientConstants.PARAM_APP_NAME, AppName);
-            params.put(ISparkJobServerClientConstants.PARAM_CLASS_PATH, ClassPath);
-            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT, ContextName);
+            params.put(ISparkJobServerClientConstants.PARAM_APP_NAME, appName);
+            params.put(ISparkJobServerClientConstants.PARAM_CLASS_PATH, classPath);
+            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT, contextName);
 
-            if (Async) {
+            if (async) {
                 params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
             } else {
                 params.put(ISparkJobServerClientConstants.PARAM_SYNC, "true");
                 params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
             }
 
-            jobResult = client.startJob(Args, params);
+            jobResult = client.startJob(args, params);
 
-            getLogger().info(String.format("Executed %s %s on context %s on Spark Jobserver %s", AppName, ClassPath, ContextName, jobServerUrl));
+            getLogger().info(String.format("Executed %s %s on context %s on Spark Jobserver %s", appName, classPath, contextName, jobServerUrl));
 
         } catch (Exception ex) {
             getLogger().error(ex.getMessage());
         }
         finally {
-            synchronized (timeoutContexts) {
-                if (timeoutContexts.containsKey(ContextName)) {
-                    timeoutContexts.get(ContextName).resetTimeoutTime();
-                    timeoutContexts.get(ContextName).removeExecutionLock(id);
+            synchronized (sparkContextsStates) {
+                if (sparkContextsStates.containsKey(contextName)) {
+                    sparkContextsStates.get(contextName).resetTimeoutTime();
+                    sparkContextsStates.get(contextName).removeExecutionLock(id);
                 }
             }
         }
@@ -279,19 +283,22 @@ public class SparkJobserverService extends AbstractControllerService implements 
         return success;
     }
 
+    /**
+     * Using a timer task to periodically delete Spark contexts which have timed out
+     */
     private void setupContextTimeoutTask() {
 
         getLogger().info("Creating context timeout task");
         TimerTask contextTimeoutTask = new TimerTask() {
             @Override
             public void run() {
-                synchronized (timeoutContexts) {
+                synchronized (sparkContextsStates) {
                     final long currentTime = System.nanoTime();
-                    if (!timeoutContexts.isEmpty()) {
-                        for (TimeoutContext timeoutContext: timeoutContexts.values()) {
-                            if (!timeoutContext.isLocked() && timeoutContext.hasTimedOut()) {
-                                getLogger().info(String.format("Found context %s which timed out", timeoutContext.ContextName));
-                                deleteContext(timeoutContext.ContextName);
+                    if (!sparkContextsStates.isEmpty()) {
+                        for (SparkContextState sparkContextState: sparkContextsStates.values()) {
+                            if (!sparkContextState.isLocked() && sparkContextState.hasTimedOut()) {
+                                getLogger().info(String.format("Found context %s which timed out", sparkContextState.ContextName));
+                                deleteContext(sparkContextState.ContextName);
                             }
                         }
                     }
@@ -307,30 +314,37 @@ public class SparkJobserverService extends AbstractControllerService implements 
         getLogger().info("Created and scheduled context timeout task");
     }
 
-    @OnShutdown
+    /**
+     * Stop timer task and kill all running Spark contexts.
+     */
+    @OnDisabled
     public void shutdown() {
         contextTimeoutTimer.cancel();
-        for (TimeoutContext timeoutContext: timeoutContexts.values()) {
-            deleteContext(timeoutContext.ContextName);
+        for (SparkContextState sparkContextState: sparkContextsStates.values()) {
+            deleteContext(sparkContextState.ContextName);
         }
     }
 
+    /**
+     * Checks to see if a Spark Context is new on the Controller Service
+     * @param ContextName the name of the Context
+     * @return true or false
+     */
     private boolean isNewContext(String ContextName) {
         boolean newContext = false;
-        synchronized (timeoutContexts) {
+        synchronized (sparkContextsStates) {
             try {
                 boolean exit = false;
                 while (true) {
-                    if (!timeoutContexts.containsKey(ContextName)) {
-                        getLogger().info("its a new context: " + ContextName);
-                        timeoutContexts.put(ContextName, new TimeoutContext(ContextName));
+                    if (!sparkContextsStates.containsKey(ContextName)) {
+                        getLogger().info(String.format("Context: %s is a new Context in Controller service", ContextName));
+                        sparkContextsStates.put(ContextName, new SparkContextState(ContextName));
                         newContext = true;
                         break;
-                    } else if (!timeoutContexts.get(ContextName).isRunning){
-                        getLogger().info("its being created so waiting context: " + ContextName);
-                        timeoutContexts.wait();
+                    } else if (!sparkContextsStates.get(ContextName).isRunning){
+                        getLogger().info(String.format("Context: %s is being created... waiting", ContextName));
+                        sparkContextsStates.wait();
                     } else {
-                        getLogger().info("its already running: " + ContextName);
                         break;
                     }
                 }
