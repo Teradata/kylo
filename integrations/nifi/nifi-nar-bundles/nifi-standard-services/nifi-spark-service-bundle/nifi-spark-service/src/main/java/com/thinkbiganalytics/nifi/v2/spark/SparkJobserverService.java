@@ -317,7 +317,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     /**
      * Stop timer task and kill all running Spark contexts.
      */
-    @OnDisabled
+    @OnShutdown
     public void shutdown() {
         contextTimeoutTimer.cancel();
         for (SparkContextState sparkContextState: sparkContextsStates.values()) {
