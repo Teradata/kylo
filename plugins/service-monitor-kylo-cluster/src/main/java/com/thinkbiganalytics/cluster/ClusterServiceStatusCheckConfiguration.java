@@ -29,6 +29,6 @@ public class ClusterServiceStatusCheckConfiguration {
 
     @Bean
     ClusterServiceStatusCheck clusterServiceStatusCheck(){
-        return new ClusterServiceStatusCheck()
+        return new ClusterServiceStatusCheck();
     }
 }
