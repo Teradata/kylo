@@ -297,12 +297,25 @@
             <md-tooltip md-direction="top">
               Define what should be sent to "Global Search"
             </md-tooltip>
+            <md-input-container class="md-block" flex-gt-sm>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.indexCheckAll.isChecked"
+                           md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                           ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
+            </md-input-container>
           </div>
           <div flex="10" class="md-list-item-text hint">
             Profile
             <md-tooltip md-direction="top">
               Should this field be profiled?
             </md-tooltip>
+            <md-input-container class="md-block" flex-gt-sm>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.profileCheckAll.isChecked"
+                           md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                           ng-click="vm.profileCheckAll.toggleAll()">
+              </md-checkbox>
+            </md-input-container>
           </div>
           <div flex="15" class="md-list-item-text hint">
             Standardize <br/>& Validate
@@ -340,10 +353,10 @@
                          ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.index" aria-label="Index"></md-checkbox>
+            <md-checkbox ng-model="policy.index" aria-label="Index" ng-click="vm.indexCheckAll.clicked(!policy.index)"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.profile" aria-label="Profile" ></md-checkbox>
+            <md-checkbox ng-model="policy.profile" aria-label="Profile" ng-click="vm.profileCheckAll.clicked(!policy.index)"></md-checkbox>
           </div>
           <div flex="15" class="md-list-item-text hint" layout-align="start center">
             <div ng-click="vm.showFieldRuleDialog(policy)" style="color:#2D78B1;">

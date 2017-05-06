@@ -29,6 +29,107 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.stepNumber = parseInt(this.stepIndex)+1
         this.selectedColumn = {};
 
+
+        var checkAll = {
+            isChecked:true,
+            isIndeterminate: false,
+            totalChecked:0,
+            clicked:function(checked){
+                if(checked){
+                    this.totalChecked++;
+                }
+                else {
+                    this.totalChecked--;
+                }
+                this.markChecked();
+            },
+            markChecked:function(){
+                if(this.totalChecked == self.model.table.fieldPolicies.length){
+                    this.isChecked = true;
+                    this.isIndeterminate = false;
+                }
+                else if(this.totalChecked >0) {
+                    this.isChecked = false;
+                    this.isIndeterminate = true;
+                }
+                else if(this.totalChecked == 0){
+                    this.isChecked = false;
+                    this.isIndeterminate = false;
+                }
+            }
+        }
+
+        /**
+         * Toggle Check All/None on Profile column
+         * Default it to true
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.profileCheckAll = angular.extend({
+            isChecked:true,
+            isIndeterminate: false,
+            toggleAll: function() {
+            var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    field.profile = checked;
+                });
+                if(checked){
+                    this.totalChecked = self.model.table.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                 self.profileCheckAll.totalChecked = 0;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    if(field.profile){
+                        self.profileCheckAll.totalChecked++;
+                    }
+                });
+                self.profileCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+        /**
+         *
+         * Toggle check all/none on the index column
+         *
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.indexCheckAll = angular.extend({
+            isChecked:false,
+            isIndeterminate: false,
+            toggleAll: function() {
+                var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    field.index = checked;
+                });
+                this.isChecked = checked;
+
+                if(checked){
+                    this.totalChecked = self.model.table.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                self.indexCheckAll.totalChecked = 0;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    if(field.index){
+                        self.indexCheckAll.totalChecked++;
+                    }
+                });
+                self.indexCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+
+
         /**
          * The form in angular
          * @type {{}}
@@ -57,6 +158,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     var policy = self.model.table.fieldPolicies[idx];
                     policy.name = columnDef.name;
                 });
+
+                self.profileCheckAll.setup();
+
+                self.indexCheckAll.setup();
 
             }
         }
@@ -116,6 +221,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             self.isValid = validRollingSync && validPK;
         }
+
+
 
         this.getSelectedColumn = function () {
             return self.selectedColumn;
