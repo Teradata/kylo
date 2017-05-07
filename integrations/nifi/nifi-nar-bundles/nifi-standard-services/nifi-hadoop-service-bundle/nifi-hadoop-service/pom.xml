@@ -20,7 +20,6 @@
       <artifactId>kylo-nifi-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.services</groupId>
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>
