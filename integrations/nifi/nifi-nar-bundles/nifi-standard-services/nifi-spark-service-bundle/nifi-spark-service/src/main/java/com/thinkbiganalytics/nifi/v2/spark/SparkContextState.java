@@ -23,16 +23,20 @@ import java.util.concurrent.TimeUnit;
  * limitations under the License.
  * #L%
  */
+
+/**
+ * This class is not thread safe. Thread saftey is handled in the controller service
+ */
 class SparkContextState {
 
-    public final String ContextName;
+    public final String contextName;
     private int timeoutSeconds;
     private long timeoutTime;
     private boolean isRunning;
     private List<String> executionLocks = new ArrayList<>();
 
     public SparkContextState(String contextName) {
-        this.ContextName = contextName;
+        this.contextName = contextName;
         this.timeoutSeconds = 0;
         isRunning = false;
     }

@@ -10,6 +10,7 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
+
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
@@ -18,6 +19,7 @@ import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -116,7 +118,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
         jobServerUrl = context.getProperty(JOBSERVER_URL).getValue();
 
-        getLogger().info("Creating a new connection to Spark Jobserver: " + jobServerUrl);
+        getLogger().info("Creating a new connection to Spark Jobserver: {}", new Object[]{jobServerUrl});
 
         try {
             client =
@@ -128,9 +130,9 @@ public class SparkJobserverService extends AbstractControllerService implements 
             setupContextTimeoutTask();
 
         } catch (Exception ex) {
-            getLogger().error(ex.getMessage());
+            getLogger().trace(ex.getMessage(), ex);
         }
-        getLogger().info("Created new connection to Spark Jobserver: " + jobServerUrl);
+        getLogger().info("Created new connection to Spark Jobserver: {}", new Object[]{jobServerUrl});
     }
 
     @Override
@@ -142,14 +144,14 @@ public class SparkJobserverService extends AbstractControllerService implements 
             contextExists = client.getContexts().contains(contextName);
 
             if (!contextExists) {
-                getLogger().info(String.format("Context %s not found on Spark Jobserver %s", contextName, jobServerUrl));
+                getLogger().info("Context {} not found on Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
             } else {
-                getLogger().info(String.format("Context %s exists on Spark Jobserver %s", contextName, jobServerUrl));
+                getLogger().info("Context {} exists on Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
                 contextExists = true;
             }
 
         } catch (Exception ex) {
-            getLogger().error(ex.getMessage());
+            getLogger().trace(ex.getMessage(), ex);
         }
         return contextExists;
     }
@@ -159,54 +161,41 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
         boolean newContext = isNewContext(contextName);
 
-        if (newContext) {
-            Boolean contextRunning = checkIfContextExists(contextName);
-            if (!contextRunning) {
-                try {
-                    Map<String, String> params = new HashMap<>();
-                    params.put(ISparkJobServerClientConstants.PARAM_NUM_EXECUTORS, numExecutors);
-                    params.put(ISparkJobServerClientConstants.PARAM_SPARK_EXECUTOR_MEMORY, memPerNode);
-                    params.put(ISparkJobServerClientConstants.PARAM_NUM_CPU_CORES, numCPUCores);
+        Boolean contextRunning = checkIfContextExists(contextName);
+        try {
+            if (newContext && !contextRunning) {
 
-                    if (contextType != SparkContextType.SPARK_CONTEXT) {
-                        if (contextType == SparkContextType.SQL_CONTEXT) {
-                            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT_TYPE, "spark.jobserver.context.SQLContextFactory");
-                        } else if (contextType == SparkContextType.HIVE_CONTEXT) {
-                            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT_TYPE, "spark.jobserver.context.HiveContextFactory");
-                        }
-                    }
+                Map<String, String> params = new HashMap<>();
+                params.put(ISparkJobServerClientConstants.PARAM_NUM_EXECUTORS, numExecutors);
+                params.put(ISparkJobServerClientConstants.PARAM_SPARK_EXECUTOR_MEMORY, memPerNode);
+                params.put(ISparkJobServerClientConstants.PARAM_NUM_CPU_CORES, numCPUCores);
+                params.put(ISparkJobServerClientConstants.PARAM_CONTEXT_TYPE, getContextFactoryParam(contextType));
+                params.put(ISparkJobServerClientConstants.PARAM_SYNC, async ? "false" : "true");
+                params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
 
-                    if (async) {
-                        params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
-                    } else {
-                        params.put(ISparkJobServerClientConstants.PARAM_SYNC, "true");
-                        params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
-                    }
+                getLogger().info("Creating {} {} with {} executors, {} cores and {} memory per executor on Spark Jobserver {}",
+                                 new Object[]{contextType, contextName, numExecutors, numCPUCores, memPerNode, jobServerUrl});
+                contextRunning = client.createContext(contextName, params);
 
-                    getLogger().info(
-                        String.format("Creating %s %s with %s executors, %s cores and %s memory per executor on Spark Jobserver %s", contextType, contextName, numExecutors, numCPUCores, memPerNode,
-                                      jobServerUrl));
-                    contextRunning = client.createContext(contextName, params);
-                    getLogger().info(String.format("Created %s %s on Spark Jobserver %s", contextType, contextName, jobServerUrl));
-
-                } catch (Exception ex) {
-                    getLogger().error(ex.getMessage());
-                } finally {
-                    synchronized (sparkContextsStates) {
-                        if (contextRunning) {
-                            sparkContextsStates.get(contextName).setStateAsRunning();
-                            sparkContextsStates.get(contextName).setTimeoutSeconds(contextTimeout);
-                        } else {
-                            sparkContextsStates.remove(contextName);
-                        }
-                        sparkContextsStates.notifyAll();
-                    }
+                if (contextRunning) {
+                    getLogger().info("Created {} {} on Spark Jobserver {}",
+                                     new Object[]{contextType, contextName, jobServerUrl});
                 }
             }
-            return contextRunning;
-        } else {
-            return true;
+        } catch (Exception ex) {
+            getLogger().trace(ex.getMessage(), ex);
+        } finally {
+            synchronized (sparkContextsStates) {
+                if (contextRunning) {
+                    sparkContextsStates.get(contextName).setStateAsRunning();
+                    sparkContextsStates.get(contextName).setTimeoutSeconds(contextTimeout);
+                } else {
+                    sparkContextsStates.remove(contextName);
+                }
+                sparkContextsStates.notifyAll();
+            }
         }
+        return contextRunning;
     }
 
     @Override
@@ -217,14 +206,16 @@ public class SparkJobserverService extends AbstractControllerService implements 
         if (!contextDeleted) {
             try {
                 synchronized (sparkContextsStates) {
-                    contextDeleted = client.deleteContext(contextName);
-                    if (contextDeleted){
-                        sparkContextsStates.remove(contextName);
-                        getLogger().info(String.format("Deleted context %s from Spark Jobserver %s", contextName, jobServerUrl));
+                    if (sparkContextsStates.containsKey(contextName)) {
+                        contextDeleted = client.deleteContext(contextName);
+                        if (contextDeleted) {
+                            sparkContextsStates.remove(contextName);
+                            getLogger().info("Deleted context {} from Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
+                        }
                     }
                 }
             } catch (Exception ex) {
-                getLogger().error(ex.getMessage());
+                getLogger().trace(ex.getMessage(), ex);
             }
         }
         return contextDeleted;
@@ -245,7 +236,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         Boolean success = false;
 
         try {
-            getLogger().info(String.format("Executing Spark App %s %s on context %s with args %s on Spark Jobserver %s", appName, classPath, contextName, args, jobServerUrl));
+            getLogger().info("Executing Spark App {} {} on context {} with args {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, args, jobServerUrl});
 
             Map<String, String> params = new HashMap<>();
 
@@ -262,12 +253,11 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
             jobResult = client.startJob(args, params);
 
-            getLogger().info(String.format("Executed %s %s on context %s on Spark Jobserver %s", appName, classPath, contextName, jobServerUrl));
+            getLogger().info("Executed {} {} on context {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, jobServerUrl});
 
         } catch (Exception ex) {
-            getLogger().error(ex.getMessage());
-        }
-        finally {
+            getLogger().trace(ex.getMessage(), ex);
+        } finally {
             synchronized (sparkContextsStates) {
                 if (sparkContextsStates.containsKey(contextName)) {
                     sparkContextsStates.get(contextName).resetTimeoutTime();
@@ -291,15 +281,21 @@ public class SparkJobserverService extends AbstractControllerService implements 
         TimerTask contextTimeoutTask = new TimerTask() {
             @Override
             public void run() {
-                synchronized (sparkContextsStates) {
-                    if (!sparkContextsStates.isEmpty()) {
-                        for (SparkContextState sparkContextState: sparkContextsStates.values()) {
-                            if (!sparkContextState.isLocked() && sparkContextState.hasTimedOut()) {
-                                getLogger().info(String.format("Found context %s which timed out", sparkContextState.ContextName));
-                                deleteContext(sparkContextState.ContextName);
+                try {
+                    synchronized (sparkContextsStates) {
+                        Map<String, SparkContextState> tempSparkContextsStates = new HashMap<>();
+                        tempSparkContextsStates.putAll(sparkContextsStates);
+                        if (!sparkContextsStates.isEmpty()) {
+                            for (SparkContextState sparkContextState: tempSparkContextsStates.values()) {
+                                if (!sparkContextState.isLocked() && sparkContextState.hasTimedOut()) {
+                                    getLogger().info("Found context {} which timed out", new Object[]{sparkContextState.contextName});
+                                    deleteContext(sparkContextState.contextName);
+                                }
                             }
                         }
                     }
+                } catch (Exception ex) {
+                    getLogger().trace(ex.getMessage(), ex);
                 }
             }
         };
@@ -318,13 +314,14 @@ public class SparkJobserverService extends AbstractControllerService implements 
     @OnShutdown
     public void shutdown() {
         contextTimeoutTimer.cancel();
-        for (SparkContextState sparkContextState: sparkContextsStates.values()) {
-            deleteContext(sparkContextState.ContextName);
+        for (SparkContextState sparkContextState : sparkContextsStates.values()) {
+            deleteContext(sparkContextState.contextName);
         }
     }
 
     /**
      * Checks to see if a Spark Context is new on the Controller Service
+     *
      * @param contextName the name of the Context
      * @return true or false
      */
@@ -332,22 +329,41 @@ public class SparkJobserverService extends AbstractControllerService implements 
         boolean newContext = false;
         synchronized (sparkContextsStates) {
             try {
-                while (true) {
+                boolean contextInitializing = true;
+                while (contextInitializing) {
                     if (!sparkContextsStates.containsKey(contextName)) {
-                        getLogger().info(String.format("Context: %s is a new Context in Controller service", contextName));
+                        getLogger().info("Context: {} is a new Context in Controller service", new Object[]{contextName});
                         sparkContextsStates.put(contextName, new SparkContextState(contextName));
                         newContext = true;
-                    } else if (!sparkContextsStates.get(contextName).getRunningState()){
-                        getLogger().info(String.format("Context: %s is being created... waiting", contextName));
+                        contextInitializing = false;
+                    } else if (!sparkContextsStates.get(contextName).getRunningState()) {
+                        getLogger().info("Context: {} is being created... waiting", new Object[]{contextName});
                         sparkContextsStates.wait();
                     } else {
-                        break;
+                        contextInitializing = false;
                     }
                 }
             } catch (Exception ex) {
-                getLogger().error(ex.getMessage());
+                getLogger().trace(ex.getMessage(), ex);
             }
-        };
+        }
+        ;
         return newContext;
+    }
+
+    /**
+     * Gets the context-factory parameter based of the type of Spark Context  to be created
+     *
+     * @param contextType the type of Spark Context
+     * @return true or false
+     */
+    private String getContextFactoryParam(SparkContextType contextType) {
+        if (contextType == SparkContextType.SQL_CONTEXT) {
+            return "spark.jobserver.context.SQLContextFactory";
+        } else if (contextType == SparkContextType.HIVE_CONTEXT) {
+            return "spark.jobserver.context.HiveContextFactory";
+        } else {
+            return "spark.jobserver.context.DefaultSparkContextFactory";
+        }
     }
 }
