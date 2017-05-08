@@ -25,10 +25,12 @@ import com.thinkbiganalytics.metadata.api.cluster.NiFiFlowCacheClusterUpdateItem
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring data repository for {@link JpaNifiFeedProcessorStats}
@@ -56,4 +58,18 @@ public interface NiFiFlowCacheClusterUpdateRepository extends JpaRepository<JpaN
     List<JpaNiFiFlowCacheClusterSync> findStaleClusterUpdates(@Param("clusterAddresses") List<String>clusterAddresses);
 
 
+
+    @Query("select cache.updateKey from JpaNiFiFlowCacheClusterSync as cache where cache.clusterAddress not in(:clusterAddresses)")
+    Set<String> findStaleClusterUpdateItemKeys(@Param("clusterAddresses") List<String>clusterAddresses);
+
+
+    @Modifying
+    @Query("DELETE FROM JpaNiFiFlowCacheClusterSync as cache "
+           + "where cache.clusterAddress not in(:clusterAddresses)")
+    void deleteStaleCacheClusterSync(@Param("clusterAddresses") List<String>clusterAddresses);
+
+    @Modifying
+    @Query("DELETE FROM JpaNiFiFlowCacheClusterUpdateItem as item "
+            + "where item.updateKey in (:updateKeys)")
+    void deleteStaleClusterUpdateItems(@Param("updateKeys") Set<String>updateKeys);
 }
