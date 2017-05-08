@@ -99,7 +99,9 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         super.setupAccessControl(owner);
 
         enable(owner, FeedAccessControl.EDIT_DETAILS);
+        enable(owner, FeedAccessControl.ACCESS_OPS);
         enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
+        enable(JcrMetadataAccess.ADMIN, FeedAccessControl.ACCESS_OPS);
     }
     
     @Override
