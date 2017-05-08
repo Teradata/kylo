@@ -23,11 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-
-import java.security.Principal;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -110,6 +106,15 @@ public class JcrFeedOpsPermissionTest {
     
     @Test
     public void testGrantOpsPermission() {
+        metadata.commit(() -> {
+            this.feedProvider.findById(idA).getAllowedActions().enable(TEST_USER1, FeedAccessControl.ACCESS_OPS);
+        }, JcrMetadataAccess.SERVICE);
+        
+        verify(this.opsAccessProvider).grantAccess(idA, TEST_USER1);
+    }
+    
+    @Test
+    public void testRevokeOpsPermission() {
         metadata.commit(() -> {
             this.feedProvider.findById(idA).getAllowedActions().disable(TEST_USER1, FeedAccessControl.ACCESS_OPS);
         }, JcrMetadataAccess.SERVICE);

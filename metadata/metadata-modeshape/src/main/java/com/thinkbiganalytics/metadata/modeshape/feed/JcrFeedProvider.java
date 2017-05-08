@@ -627,6 +627,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         if (template != null) {
             template.removeFeed(feed);
         }
+        
+        // Remove all Ops access control entries
+        this.opsAccessProvider.revokeAllAccess(feed.getId());
 
         super.delete(feed);
     }

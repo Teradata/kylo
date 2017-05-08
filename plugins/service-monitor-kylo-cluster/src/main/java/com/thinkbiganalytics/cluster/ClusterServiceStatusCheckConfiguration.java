@@ -1,17 +1,17 @@
-package com.thinkbiganalytics.scheduler;
+package com.thinkbiganalytics.cluster;
 
 /*-
  * #%L
- * thinkbig-scheduler-api
+ * kylo-service-monitor-kylo-cluster
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,25 +20,15 @@ package com.thinkbiganalytics.scheduler;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.io.Serializable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-/**
- * A base identifier for a scheduled item
- */
-public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier>, Serializable {
+@Configuration
+public class ClusterServiceStatusCheckConfiguration {
 
-    /**
-     * A name identifying the schedule item
-     */
-    String getName();
-
-    /**
-     * A group describing/categorizing this item
-     */
-    String getGroup();
-
-    @JsonIgnore
-    String getUniqueName();
+    @Bean
+    ClusterServiceStatusCheck clusterServiceStatusCheck(){
+        return new ClusterServiceStatusCheck();
+    }
 }

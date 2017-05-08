@@ -291,10 +291,12 @@ public class DefaultServiceComponent implements ServiceComponent {
         }
 
         public Builder addAlert(ServiceAlert alert) {
-            if (this.alerts == null) {
-                this.alerts = new ArrayList<>();
+            if(alert != null) {
+                if (this.alerts == null) {
+                    this.alerts = new ArrayList<>();
+                }
+                this.alerts.add(alert);
             }
-            this.alerts.add(alert);
             return this;
         }
 

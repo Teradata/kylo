@@ -22,6 +22,9 @@ package com.thinkbiganalytics.metadata.sla;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.cluster.ClusterMessage;
+import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
@@ -55,9 +58,14 @@ import javax.inject.Inject;
 /**
  * Provides the default implementation for service level agreement scheduling.
  */
-public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, PostMetadataConfigAction {
+public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, PostMetadataConfigAction, ClusterServiceMessageReceiver {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
+
+    public static String QTZ_JOB_SCHEDULED_MESSAGE_TYPE = "QTZ_JOB_SCHEDULED";
+
+    public static String QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE = "QTZ_JOB_UNSCHEDULED";
+
     @Inject
     ServiceLevelAgreementProvider slaProvider;
     private String DEFAULT_CRON = "0 0/5 * 1/1 * ? *";// every 5 min
@@ -70,6 +78,8 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     @Inject
     private MetadataAccess metadataAccess;
 
+    @Inject
+    private ClusterService clusterService;
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
@@ -80,17 +90,21 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
      */
     @Override
     public void run() {
-        metadataAccess.read(() -> {
-            List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+        //Only Schedule the jobs if we are running in a non clustered mode.
+        //Clustered mode will just JDBC persistence to store the jobs in the database.
+         if(!clusterService.isClustered()) {
+             metadataAccess.read(() -> {
+                 List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
-            if (agreements != null) {
-                for (ServiceLevelAgreement agreement : agreements) {
-                    scheduleServiceLevelAgreement(agreement);
-                }
-            }
+                 if (agreements != null) {
+                     for (ServiceLevelAgreement agreement : agreements) {
+                         scheduleServiceLevelAgreement(agreement);
+                     }
+                 }
 
-            return null;
-        }, MetadataAccess.SERVICE);
+                 return null;
+             }, MetadataAccess.SERVICE);
+         }
     }
 
     private String getUniqueName(String name) {
@@ -153,6 +167,9 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
                 jobScheduler.deleteJob(scheduledJobId);
                 scheduledJobNames.remove(slaId);
                 unscheduled = true;
+                if(clusterService.isClustered()) {
+                    clusterService.sendMessageToOthers(QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE,new ScheduledServiceLevelAgreementClusterMessage(slaId,scheduledJobId));
+                }
             }
         } catch (JobSchedulerException e) {
             log.error("Unable to delete the SLA Job " + scheduledJobId);
@@ -253,22 +270,19 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
      * @param sla The SLA to schedule
      */
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
-       // try {
-            //Delete any jobs with this SLA if they already exist
             if (scheduledJobNames.containsKey(sla.getId())) {
                 unscheduleServiceLevelAgreement(sla);
             }
             JobIdentifier jobIdentifier = slaJobName(sla);
-
             ServiceLevelAgreement.ID slaId = sla.getId();
-
+            //schedule the job
             scheduleSlaJob(jobIdentifier,slaId);
-
             log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
-      //  } catch (JobSchedulerException e) {
-      //      throw new RuntimeException(e);
-    //    }
+            //notify the other schedulers in the cluster of the scheduled job name
+            if(clusterService.isClustered()) {
+                clusterService.sendMessageToOthers(QTZ_JOB_SCHEDULED_MESSAGE_TYPE, new ScheduledServiceLevelAgreementClusterMessage(slaId, jobIdentifier));
+            }
 
         if (!sla.isEnabled()) {
             disableServiceLevelAgreement(sla);
@@ -346,4 +360,25 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
         return Optional.ofNullable(sla);
     }
+
+
+    /**
+     * Keep the job name cache in sync across clusters
+     * @param from cluser address sending the message
+     * @param message the message
+     */
+    @Override
+    public void onMessageReceived(String from, ClusterMessage message) {
+
+        if(QTZ_JOB_SCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())){
+            ScheduledServiceLevelAgreementClusterMessage msg = (ScheduledServiceLevelAgreementClusterMessage) message.getMessage();
+            scheduledJobNames.put(msg.getSlaId(),msg.getJobIdentifier().getName());
+        }
+        else if(QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())) {
+            ScheduledServiceLevelAgreementClusterMessage msg = (ScheduledServiceLevelAgreementClusterMessage) message.getMessage();
+            scheduledJobNames.remove(msg.getSlaId());
+        }
+    }
+
+
 }

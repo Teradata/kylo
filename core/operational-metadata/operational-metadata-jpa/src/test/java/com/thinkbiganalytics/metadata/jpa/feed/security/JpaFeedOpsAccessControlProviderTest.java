@@ -96,6 +96,7 @@ public class JpaFeedOpsAccessControlProviderTest {
     public void testMultiGrantAccess()   {
         metadata.commit(() -> {
             this.opsAccessProvider.grantAccess(FEED_ID1, USER1, USER2);
+            this.opsAccessProvider.grantAccess(FEED_ID1, USER1, USER2);
         }, MetadataAccess.SERVICE);
         
         metadata.commit(() -> {

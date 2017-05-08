@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -64,6 +65,12 @@ public class QuartzSchedulerTest {
     QuartzScheduler toTest;
 
     @Mock
+    QuartzClusterMessageSender clusterMessageSender;
+
+    @Mock
+    QuartzClusterMessageReceiver clusterMessageReceiver;
+
+    @Mock
     JobIdentifier jobIdentifier;
     @Mock
     SchedulerFactoryBean schedulerFactoryBean;
@@ -83,8 +90,10 @@ public class QuartzSchedulerTest {
 
         when(schedulerFactoryBean.getScheduler()).thenReturn(scheduler);
 
+
         toTest = new QuartzScheduler();
         toTest.schedulerFactoryBean = schedulerFactoryBean;
+        Whitebox.setInternalState(toTest, "clusterMessageSender", clusterMessageSender);
         mockJobIdentifier("job-name", "group");
     }
 
