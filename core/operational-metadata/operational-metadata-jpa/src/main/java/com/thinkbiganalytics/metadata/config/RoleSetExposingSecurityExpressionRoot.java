@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import java.security.acl.Group;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,17 +45,25 @@ public class RoleSetExposingSecurityExpressionRoot extends SecurityExpressionRoo
 
     
     public Set<String> getGroups() {
-        return authentication.getAuthorities().stream()
-                        .filter(a -> a instanceof JaasGrantedAuthority)
-                        .map(JaasGrantedAuthority.class::cast)
-                        .filter(jga -> jga.getPrincipal() instanceof Group)
-                        .map(jga -> jga.getAuthority())
-                        .filter(a -> ! a.startsWith("ROLE_"))
-                        .collect(Collectors.toSet());
+        if (authentication != null) {
+            return authentication.getAuthorities().stream()
+                            .filter(a -> a instanceof JaasGrantedAuthority)
+                            .map(JaasGrantedAuthority.class::cast)
+                            .filter(jga -> jga.getPrincipal() instanceof Group)
+                            .map(jga -> jga.getAuthority())
+                            .filter(a -> ! a.startsWith("ROLE_"))
+                            .collect(Collectors.toSet());
+        } else {
+            return Collections.singleton("NULL");
+        }
     }
 
     public String getName() {
-        return authentication.getName();
+        if (authentication != null) {
+            return authentication.getName();
+        } else {
+            return "";
+        }
     }
     
     public Object getUser() {

@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepo
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
+import com.thinkbiganalytics.test.security.WithMockJaasUser;
 
 import org.joda.time.Period;
 import org.junit.Assert;
@@ -39,7 +40,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -68,10 +68,11 @@ public class JpaFeedProviderTest {
         Mockito.when(mock.isEntityAccessControlled()).thenReturn(true);
         return mock;
     }
+    
 
-    @WithMockUser(username = "dladmin",
-                  password = "secret",
-                  roles = {"ADMIN", "DLADMIN", "USER"})
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testFindFeedUsingGenericFilter() {
         // Create feed
@@ -84,8 +85,8 @@ public class JpaFeedProviderTest {
 
         // Add ACL entries
         final BaseFeed.FeedId feedId = new BaseFeed.FeedId(id);
-        final JpaFeedOpsAclEntry userAcl = new JpaFeedOpsAclEntry(feedId, "USER", JpaFeedOpsAclEntry.PrincipalType.USER);
-        final JpaFeedOpsAclEntry adminAcl = new JpaFeedOpsAclEntry(feedId, "ROLE_ADMIN", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        final JpaFeedOpsAclEntry userAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        final JpaFeedOpsAclEntry adminAcl = new JpaFeedOpsAclEntry(feedId, "admin", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(userAcl);
         aclRepo.save(adminAcl);
 

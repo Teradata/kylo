@@ -28,8 +28,8 @@ import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.jpa.test.TestPersistenceConfiguration;
 import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
-import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
 import org.joda.time.DateTime;
 import org.mockito.Mock;
