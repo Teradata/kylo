@@ -85,7 +85,11 @@
                       </div>
                     </div>
                   </md-list-item>
-
+                  <div layout="row" layout-fill flex>
+                    <span style="margin-top:-10px;" layout-fill flex>
+                      <md-divider style="border-top-color:grey"></md-divider>
+                    </span>
+                  </div>
                   <div id="define-feed-data-processing-container">
                     <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
