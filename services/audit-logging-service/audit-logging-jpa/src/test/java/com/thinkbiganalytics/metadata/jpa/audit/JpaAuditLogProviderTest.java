@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
-import com.thinkbiganalytics.jpa.test.TestPersistenceConfiguration;
-
 /*-
  * #%L
  * thinkbig-audit-logging-jpa
@@ -29,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.TestPropertySource;
