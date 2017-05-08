@@ -1,5 +1,22 @@
 package com.thinkbiganalytics.metadata.modeshape.security;
 
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.jcr.Credentials;
+
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+
+import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -23,14 +40,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.jcr.Credentials;
-
 /**
  * Credentials used to override those derived from the current security context.
  */
@@ -40,11 +49,17 @@ public class OverrideCredentials implements Credentials {
 
     private final Principal userPrincipal;
     private final Set<Principal> rolePrincipals;
+    private final Authentication authentication;
 
     public OverrideCredentials(Principal userPrincipal, Set<Principal> rolePrincipals) {
         super();
         this.userPrincipal = userPrincipal;
         this.rolePrincipals = Collections.unmodifiableSet(new HashSet<>(rolePrincipals));
+        
+        Collection<? extends GrantedAuthority> authorities = Stream.concat(Stream.of(this.userPrincipal), this.rolePrincipals.stream())
+                        .map(p -> new JaasGrantedAuthority(p.getName(), p))
+                        .collect(Collectors.toSet());
+        this.authentication = new UsernameAuthenticationToken(userPrincipal, authorities);
     }
 
     public static OverrideCredentials create(Principal... principals) {
@@ -86,4 +101,7 @@ public class OverrideCredentials implements Credentials {
         return rolePrincipals;
     }
 
+    public Authentication getAuthentication() {
+        return authentication;
+    }
 }

@@ -1,17 +1,17 @@
-package com.thinkbiganalytics.scheduler;
+package com.thinkbiganalytics.cluster;
 
 /*-
  * #%L
- * thinkbig-scheduler-api
+ * kylo-cluster-manager-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,25 +20,12 @@ package com.thinkbiganalytics.scheduler;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.io.Serializable;
-
 /**
- * A base identifier for a scheduled item
+ * Receive messages from the kylo cluster
+ * subscribe via the ClusterService
  */
-public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier>, Serializable {
+public interface ClusterServiceMessageReceiver {
 
-    /**
-     * A name identifying the schedule item
-     */
-    String getName();
+    void onMessageReceived(String from, ClusterMessage message);
 
-    /**
-     * A group describing/categorizing this item
-     */
-    String getGroup();
-
-    @JsonIgnore
-    String getUniqueName();
 }

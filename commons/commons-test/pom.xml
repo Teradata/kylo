@@ -17,6 +17,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
       <groupId>org.apache.ant</groupId>
       <artifactId>ant-jsch</artifactId>
       <version>1.10.1</version>
@@ -62,7 +68,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
