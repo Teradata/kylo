@@ -181,12 +181,70 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * This code will run when the latest version is up and running
      */
     private void onMetadataStart() {
-      if(kyloVersionProvider.isUpToDate()) {
+      if (kyloVersionProvider.isUpToDate()) {
            ensureFeedTemplateFeedRelationships();
-           if(accessController.isEntityAccessControlled()) {
+           fixDefaultGroupNames();
+           
+           if (accessController.isEntityAccessControlled()) {
                ensureDefaultEntityRoles();
            }
        }
+    }
+
+    private void fixDefaultGroupNames() {
+        metadataAccess.commit(() -> {
+            this.userProvider.findGroupByName("designer")
+                .ifPresent(oldGrp -> {
+                    UserGroup designersGroup = createDefaultGroup("designers", "Designers");
+                    
+                    oldGrp.getUsers().forEach(user -> designersGroup.addUser(user));
+                    
+                    actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+                        .ifPresent((allowed) -> {
+                            allowed.enable(designersGroup.getRootPrincial(),
+                                           OperationsAccessControl.ACCESS_OPS,
+                                           FeedServicesAccessControl.EDIT_FEEDS,
+                                           FeedServicesAccessControl.ACCESS_TABLES,
+                                           FeedServicesAccessControl.IMPORT_FEEDS,
+                                           FeedServicesAccessControl.EXPORT_FEEDS,
+                                           FeedServicesAccessControl.EDIT_CATEGORIES,
+                                           FeedServicesAccessControl.EDIT_DATASOURCES,
+                                           FeedServicesAccessControl.EDIT_TEMPLATES,
+                                           FeedServicesAccessControl.IMPORT_TEMPLATES,
+                                           FeedServicesAccessControl.EXPORT_TEMPLATES,
+                                           FeedServicesAccessControl.ADMIN_TEMPLATES,
+                                           FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                           FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                            });
+        
+                    this.userProvider.deleteGroup(oldGrp);
+                });
+            
+            this.userProvider.findGroupByName("analyst")
+                .ifPresent(oldGrp -> {
+                    UserGroup analystsGroup = createDefaultGroup("analysts", "Analysts");
+                    
+                    oldGrp.getUsers().forEach(user -> analystsGroup.addUser(user));
+                    
+                    actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+                    .ifPresent((allowed) -> {
+                        allowed.enable(analystsGroup.getRootPrincial(),
+                                       OperationsAccessControl.ACCESS_OPS,
+                                       FeedServicesAccessControl.EDIT_FEEDS,
+                                       FeedServicesAccessControl.ACCESS_TABLES,
+                                       FeedServicesAccessControl.IMPORT_FEEDS,
+                                       FeedServicesAccessControl.EXPORT_FEEDS,
+                                       FeedServicesAccessControl.EDIT_CATEGORIES,
+                                       FeedServicesAccessControl.ACCESS_TEMPLATES,
+                                       FeedServicesAccessControl.ACCESS_DATASOURCES,
+                                       FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                       FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                    });
+                    
+                    this.userProvider.deleteGroup(oldGrp);
+                });
+        }, MetadataAccess.SERVICE);
+        
     }
 
     private void setupFreshInstall() {
@@ -199,8 +257,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             // Create default groups if they don't exist.
             UserGroup adminsGroup = createDefaultGroup("admin", "Administrators");
             UserGroup opsGroup = createDefaultGroup("operations", "Operations");
-            UserGroup designersGroup = createDefaultGroup("designer", "Designers");
-            UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
+            UserGroup designersGroup = createDefaultGroup("designers", "Designers");
+            UserGroup analystsGroup = createDefaultGroup("analysts", "Analysts");
             UserGroup usersGroup = createDefaultGroup("user", "Users");
 
 
