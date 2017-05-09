@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
+import org.modeshape.jcr.ModeShapeRoles;
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -110,6 +111,12 @@ public final class JcrAccessControlUtil {
                     acl = (AccessControlList) it.nextAccessControlPolicy();
                 } else {
                     acl = (AccessControlList) acm.getPolicies(path)[0];
+                }
+                
+                // Ensure admin is always included in the ACL
+                if (acl.getAccessControlEntries().length == 0) {
+                    SimplePrincipal simple = SimplePrincipal.newInstance(ModeShapeRoles.ADMIN);
+                    acl.addAccessControlEntry(simple, asPrivileges(session, Privilege.JCR_ALL));
                 }
 
                 // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used

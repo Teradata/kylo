@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template.security;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
@@ -28,7 +27,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableActi
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -87,7 +85,7 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
@@ -95,7 +93,7 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         JcrAccessControlUtil.clearPermissions(getNode());

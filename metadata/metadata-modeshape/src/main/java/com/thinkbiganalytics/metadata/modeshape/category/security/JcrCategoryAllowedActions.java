@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -88,7 +87,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
@@ -96,7 +95,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), category.getNode()));

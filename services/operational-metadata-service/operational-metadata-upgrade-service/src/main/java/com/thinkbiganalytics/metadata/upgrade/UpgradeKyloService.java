@@ -69,6 +69,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -303,9 +304,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void ensureDefaultEntityRoles() {
             createDefaultRoles();
             metadataAccess.commit(() -> {
-                ensureFeedRoles();
-                ensureCategoryRoles();
                 ensureTemplateRoles();
+                ensureCategoryRoles();
+                ensureFeedRoles();
             }, MetadataAccess.SERVICE);
     }
 
@@ -315,7 +316,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
             feeds.stream().forEach(feed -> {
-                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = feed.getOwner() != null ? feed.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
@@ -326,7 +328,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY);
             categories.stream().forEach(category -> {
-                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = category.getOwner() != null ? category.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
@@ -337,7 +340,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE);
             templates.stream().forEach(template -> {
-                allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = template.getOwner() != null ? template.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
