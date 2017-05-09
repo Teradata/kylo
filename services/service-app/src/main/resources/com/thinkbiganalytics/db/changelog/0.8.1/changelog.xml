@@ -25,5 +25,6 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
   <include file="item-last-modified-table.xml" relativeToChangelogFile="true"/>
   <include file="nifi-flow-cache-cluster-sync.xml" relativeToChangelogFile="true"/>
+  <include file="nifi-flow-cache-cluster-sync2.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

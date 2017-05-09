@@ -85,26 +85,26 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     /**
      * Called on startup as part of the PostMetadataConfigAction.
-     * this will not be necessary if its a DB managed cluster.
      *
      */
     @Override
     public void run() {
-        //Only Schedule the jobs if we are running in a non clustered mode.
-        //Clustered mode will just JDBC persistence to store the jobs in the database.
-         if(!clusterService.isClustered()) {
-             metadataAccess.read(() -> {
+           metadataAccess.read(() -> {
                  List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
                  if (agreements != null) {
                      for (ServiceLevelAgreement agreement : agreements) {
-                         scheduleServiceLevelAgreement(agreement);
+                         JobIdentifier jobIdentifier = slaJobName(agreement);
+                         QuartzScheduler scheduler = (QuartzScheduler)jobScheduler;
+                         if(!scheduler.jobExists(jobIdentifier)) {
+                             scheduleServiceLevelAgreement(agreement);
+                         }
                      }
                  }
 
                  return null;
              }, MetadataAccess.SERVICE);
-         }
+
     }
 
     private String getUniqueName(String name) {
