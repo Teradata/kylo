@@ -47,6 +47,9 @@ public interface ClusterService {
      */
     void start() throws Exception;
 
+
+    void stop() throws Exception;
+
     /**
      *
      * @return Returns the current node address in the cluster
