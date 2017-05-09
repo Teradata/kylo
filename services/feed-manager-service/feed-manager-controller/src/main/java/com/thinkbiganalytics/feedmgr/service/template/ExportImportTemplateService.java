@@ -43,6 +43,7 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -250,8 +251,9 @@ public class ExportImportTemplateService {
                 validateReusableTemplate(template, options);
 
                 validateRegisteredTemplate(template, options);
-
-                validateNiFiTemplateImport(template);
+                if(template.isValid()) {
+                    validateNiFiTemplateImport(template);
+                }
             } else {
                 template = getNewNiFiTemplateImport(fileName, inputStream);
                 template.setImportOptions(options);
@@ -346,8 +348,10 @@ public class ExportImportTemplateService {
             RegisteredTemplate registeredTemplate = template.getTemplateToImport();
 
             //validate unique
-            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
+            //1 find if the template exists in the system running as a service account
+            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateName(registeredTemplate.getTemplateName()).isFeedEdit(true).build());
             if (existingTemplate != null) {
+
                 if (options.stopProcessingAlreadyExists(ImportComponent.TEMPLATE_DATA)) {
                     template.setValid(false);
                     String msg = "Unable to import the template " + registeredTemplate.getTemplateName() + " It is already registered.";
@@ -361,6 +365,26 @@ public class ExportImportTemplateService {
                     statusMessage.complete(true);
                 }
                 registeredTemplate.setId(existingTemplate.getId());
+
+
+                //validate entity access
+                if (accessController.isEntityAccessControlled()) {
+                    //requery as the currently logged in user
+                    statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating template entity access");
+                    existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
+                    //ensure the user can Edit this template
+                    boolean valid = existingTemplate != null && existingTemplate.getAllowedActions().hasAction(TemplateAccessControl.EDIT_TEMPLATE.getSystemName());
+                    if(!valid){
+                        template.setValid(false);
+                        validForImport = false;
+                        statusMessage.update("Validation error: You do not have edit access for the template " + registeredTemplate.getTemplateName(), false);
+                        template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Validation error: You do not have edit access for the template ");
+                    }
+                    else {
+                        statusMessage.complete(valid);
+                    }
+                }
+
             } else {
                 //reset it so it gets the new id upon import
                 registeredTemplate.setId(null);
@@ -511,7 +535,7 @@ public class ExportImportTemplateService {
      * @return the template data to import along with status/messages/error information if it was valid and if was successfully imported
      */
     public ImportTemplate importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
-        return metadataAccess.commit(() -> {
+       // return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
 
             ImportTemplate template = null;
@@ -535,7 +559,7 @@ public class ExportImportTemplateService {
             }
             template.setImportOptions(importOptions);
             return template;
-        });
+       // });
     }
 
     /**
@@ -687,10 +711,10 @@ public class ExportImportTemplateService {
     }
 
 
-    private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) throws Exception {
+    private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
         ImportTemplate importTemplate = validateTemplateForImport(fileName, content, importOptions);
-        return importZip(importTemplate);
+        return metadataAccess.commit(() -> importZip(importTemplate));
     }
 
 

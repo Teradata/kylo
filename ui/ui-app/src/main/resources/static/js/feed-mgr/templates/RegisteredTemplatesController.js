@@ -1,6 +1,6 @@
 define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope, $http, $mdDialog, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
+    var controller = function($scope, $http, $mdDialog, $q,AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
 
         var self = this;
 
@@ -99,16 +99,18 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.templateDetails = function(event, template) {
             if (self.allowEdit && template != undefined) {
                 RegisterTemplateService.resetModel();
-                StateService.FeedManager().Template().navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
+
+                $q.when(RegisterTemplateService.hasEntityAccess([AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE],template)).then(function(hasAccess){
+                    if(hasAccess){
+                        StateService.FeedManager().Template().navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
+                    }
+                    else {
+                        RegisterTemplateService.accessDeniedDialog();
+                    }
+                });
+
             } else {
-                $mdDialog.show(
-                        $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title("Access Denied")
-                                .textContent("You do not have access to edit templates.")
-                                .ariaLabel("Access denied to edit templates")
-                                .ok("OK")
-                );
+                RegisterTemplateService.accessDeniedDialog();
             }
         };
 
@@ -147,6 +149,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 });
     };
 
-    angular.module(moduleName).controller('RegisteredTemplatesController', ["$scope","$http","$mdDialog","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","StateService","RegisterTemplateService",controller]);
+    angular.module(moduleName).controller('RegisteredTemplatesController', ["$scope","$http","$mdDialog","$q","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","StateService","RegisterTemplateService",controller]);
 
 });

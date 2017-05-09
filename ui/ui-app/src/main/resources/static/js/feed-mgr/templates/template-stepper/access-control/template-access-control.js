@@ -30,7 +30,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.allowEdit = false;
 
         //allow edit if the user has ability to change permissions on the entity if its an existing registered template, or if it is new
-        if(this.model.id && AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.CHANGE_TEMPLATE_PERMISSIONS)){
+        if(this.model.id && RegisterTemplateService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.CHANGE_TEMPLATE_PERMISSIONS)){
             self.allowEdit = true;
         }
         else {

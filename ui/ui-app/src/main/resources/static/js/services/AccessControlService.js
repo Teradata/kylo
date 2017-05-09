@@ -134,7 +134,6 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
                     currentUser:self.getCurrentUser(),
                     entityAccessControlled:self.checkEntityAccessControlled()};
                 var defer = $q.defer();
-
                 $q.all(requests).then(function(response){
                     self.initialized = true;
                     currentUser= response.currentUser;
@@ -435,7 +434,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants'], functio
              */
             getEntityRoles:function(entityType){
                 var df = $q.defer();
-                if(ROLE_CACHE[entityType] != undefined) {
+                var useCache = false; // disable the cache for now
+
+                if(useCache && ROLE_CACHE[entityType] != undefined) {
                     df.resolve(angular.copy(ROLE_CACHE[entityType]));
                 }
                 else {

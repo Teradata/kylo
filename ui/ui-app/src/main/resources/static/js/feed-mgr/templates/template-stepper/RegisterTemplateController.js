@@ -1,6 +1,6 @@
 define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$transition$, $http,$mdToast,RegisterTemplateService, StateService, AccessControlService) {
+    var controller = function($scope,$transition$, $http,$mdToast,$q,RegisterTemplateService, StateService, AccessControlService) {
 
         var self = this;
 
@@ -40,16 +40,20 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             self.loading = true;
                 //Wait for the properties to come back before allowing the user to go to the next step
                 RegisterTemplateService.loadTemplateWithProperties(self.registeredTemplateId, self.nifiTemplateId).then(function(response) {
-
                     self.loading = false;
                     RegisterTemplateService.warnInvalidProcessorNames();
+                    $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(response) {
+                      if(!response.isValid) {
+                          //PREVENT access
+                      }
+                    });
                 });
         }
         init();
 
     }
 
-    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","RegisterTemplateService","StateService","AccessControlService",controller]);
+    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService",controller]);
 
 
 
