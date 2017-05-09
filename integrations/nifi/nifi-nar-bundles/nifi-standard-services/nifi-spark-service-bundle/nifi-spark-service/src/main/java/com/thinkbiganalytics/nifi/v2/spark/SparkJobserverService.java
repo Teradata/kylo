@@ -19,7 +19,6 @@ import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -58,7 +57,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         .name("Jobserver URL")
         .description("A URL used to connect to Spark jobserver.")
         .defaultValue(null)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .addValidator(StandardValidators.URL_VALIDATOR)
         .required(true)
         .build();
 
