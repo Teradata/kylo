@@ -301,7 +301,8 @@
               <md-checkbox aria-label="Select All"
                            ng-checked="vm.indexCheckAll.isChecked"
                            md-indeterminate="vm.indexCheckAll.isIndeterminate"
-                           ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
+                           ng-click="vm.indexCheckAll.toggleAll()"
+                           style="margin-left:-1px;"></md-checkbox>
             </md-input-container>
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -313,7 +314,8 @@
               <md-checkbox aria-label="Select All"
                            ng-checked="vm.profileCheckAll.isChecked"
                            md-indeterminate="vm.profileCheckAll.isIndeterminate"
-                           ng-click="vm.profileCheckAll.toggleAll()">
+                           ng-click="vm.profileCheckAll.toggleAll()"
+              style="margin-left:-1px;">
               </md-checkbox>
             </md-input-container>
           </div>
@@ -322,6 +324,11 @@
           </div>
         </div>
       </md-list-item>
+      <div layout="row" layout-fill flex>
+        <span style="margin-top:-10px;" layout-fill flex>
+           <md-divider style="border-top-color:grey"></md-divider>
+        </span>
+      </div>
 
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">

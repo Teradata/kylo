@@ -28,6 +28,7 @@ import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 @Service
@@ -50,6 +51,16 @@ public class ClusterServiceStartupListener implements ServicesApplicationStartup
     @PostConstruct
     private void init() {
         startup.subscribe(this);
+    }
+
+
+    @PreDestroy
+    private void destroy(){
+        try {
+        clusterService.stop();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

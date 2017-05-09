@@ -83,6 +83,7 @@ public class ActiveMqConfig {
         factory.setConcurrency("1-1");
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
+        factory.setSessionTransacted(true);
         return factory;
     }
 

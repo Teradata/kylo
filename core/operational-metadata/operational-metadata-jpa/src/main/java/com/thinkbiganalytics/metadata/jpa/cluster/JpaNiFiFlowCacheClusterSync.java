@@ -53,7 +53,7 @@ public class JpaNiFiFlowCacheClusterSync implements NiFiFlowCacheClusterSync {
     private String updateKey;
 
 
-    @ManyToOne(targetEntity = JpaNiFiFlowCacheClusterUpdateItem.class, cascade = CascadeType.REMOVE,fetch=FetchType.LAZY)
+    @ManyToOne(targetEntity = JpaNiFiFlowCacheClusterUpdateItem.class, fetch=FetchType.LAZY)
     @JoinColumn(name = "UPDATE_KEY", nullable = false,insertable = false,updatable = false)
     private NiFiFlowCacheClusterUpdateItem updateItem;
 

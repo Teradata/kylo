@@ -35,10 +35,10 @@ import java.util.List;
 @RepositoryType(TestFeedSecuringRepository.class)
 public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 
-    @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{principal.username}")
-    List<String> getFeedNamesWithPrincipal();
+    @Query("select feed.name from JpaOpsManagerFeed as feed where feed.name = :#{user.name}")
+    List<String> getFeedNamesForCurrentUser();
 
-    @Query("select feed.name from JpaOpsManagerFeed as feed "
+    @Query("select distinct feed.name from JpaOpsManagerFeed as feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED)
     List<String> getFeedNames();
 

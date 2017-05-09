@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 /**
  * Created by ru186002 on 07/04/2017.
@@ -46,13 +47,20 @@ public class RoleSetExposingSecurityExpressionRoot extends SecurityExpressionRoo
     
     public Set<String> getGroups() {
         if (authentication != null) {
+            // Currently we have more than one AuthenticationProvider registered and not all produce authorities of type JaasGrantedAuthority.
+            // For now we must test all authorities (which will include the username) as potential groups since we can't determine what kind each is.
             return authentication.getAuthorities().stream()
-                            .filter(a -> a instanceof JaasGrantedAuthority)
-                            .map(JaasGrantedAuthority.class::cast)
-                            .filter(jga -> jga.getPrincipal() instanceof Group)
-                            .map(jga -> jga.getAuthority())
+                            .map(GrantedAuthority.class::cast)
+                            .map(ga -> ga.getAuthority())
                             .filter(a -> ! a.startsWith("ROLE_"))
                             .collect(Collectors.toSet());
+//            return authentication.getAuthorities().stream()
+//                            .filter(a -> a instanceof JaasGrantedAuthority)
+//                            .map(JaasGrantedAuthority.class::cast)
+//                            .filter(jga -> jga.getPrincipal() instanceof Group)
+//                            .map(jga -> jga.getAuthority())
+//                            .filter(a -> ! a.startsWith("ROLE_"))
+//                            .collect(Collectors.toSet());
         } else {
             return Collections.singleton("NULL");
         }
