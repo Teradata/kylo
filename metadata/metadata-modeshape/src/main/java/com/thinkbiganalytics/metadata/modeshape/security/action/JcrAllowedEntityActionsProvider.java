@@ -89,15 +89,12 @@ public class JcrAllowedEntityActionsProvider implements AllowedEntityActionsProv
              .map(protoAllowed -> { 
                      Principal mgmtPrincipal = new ModeShapeAdminPrincipal();
                      JcrAllowedActions jcrProtoAllowed = (JcrAllowedActions) protoAllowed;
-                     Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-                     Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
+                     JcrAllowedActions entityAllowed = jcrProtoAllowed.copy(destActionsNode, mgmtPrincipal, Privilege.JCR_ALL);
                      
-                     JcrAllowedActions entityAllowed = jcrProtoAllowed.copy(svcAllowedNode, mgmtPrincipal, Privilege.JCR_ALL);
+                     JcrAccessControlUtil.addPermissions(destActionsNode, mgmtPrincipal, Privilege.JCR_ALL);
+                     JcrAccessControlUtil.addPermissions(destActionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
                      
-                     JcrAccessControlUtil.addPermissions(svcAllowedNode, mgmtPrincipal, Privilege.JCR_ALL);
-                     JcrAccessControlUtil.addPermissions(svcAllowedNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
-                     
-                     for (Node actionNode : JcrUtil.getNodesOfType(svcAllowedNode, JcrAllowableAction.NODE_TYPE)) {
+                     for (Node actionNode : JcrUtil.getNodesOfType(destActionsNode, JcrAllowableAction.NODE_TYPE)) {
                          // Initially only allow the mgmt principal access to the actions themselves
                          JcrAccessControlUtil.addPermissions(actionNode, mgmtPrincipal, Privilege.JCR_ALL);
                      }

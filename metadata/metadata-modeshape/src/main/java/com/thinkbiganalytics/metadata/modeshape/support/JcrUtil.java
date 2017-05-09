@@ -156,7 +156,7 @@ public class JcrUtil {
      */
     public static List<Node> getNodeList(Node parent, String name) {
         return StreamSupport
-            .stream(getInterableChildren(parent, name).spliterator(), false)
+            .stream(getIterableChildren(parent, name).spliterator(), false)
             .collect(Collectors.toList());
     }
     
@@ -263,11 +263,11 @@ public class JcrUtil {
         }
     }
 
-    public static Iterable<Node> getInterableChildren(Node parent) {
-        return getInterableChildren(parent, null);
+    public static Iterable<Node> getIterableChildren(Node parent) {
+        return getIterableChildren(parent, null);
     }
 
-    public static Iterable<Node> getInterableChildren(Node parent, String name) {
+    public static Iterable<Node> getIterableChildren(Node parent, String name) {
         @SuppressWarnings("unchecked")
         Iterable<Node> itr = () -> {
             try {

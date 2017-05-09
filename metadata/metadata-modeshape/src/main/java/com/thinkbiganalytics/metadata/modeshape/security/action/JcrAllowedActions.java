@@ -232,9 +232,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions copy(Node allowedNode, boolean includeDescr, Principal principal, String... privilegeNames) {
         try {
-            for (Node existing : JcrUtil.getInterableChildren(allowedNode)) {
-                existing.remove();
-            }
+            // TODO Remove extraneous nodes in destination
+//            for (Node existing : JcrUtil.getIterableChildren(allowedNode)) {
+//                existing.remove();
+//            }
             
             JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
             

@@ -89,6 +89,11 @@ import javax.jcr.RepositoryException;
 @Order(PostMetadataConfigAction.LATE_ORDER + 100)
 public class UpgradeKyloService implements PostMetadataConfigAction {
 //public class UpgradeKyloService {
+    
+//    public static final KyloVersion[] UPGRADE_VERSIONS = new KyloVersion[] 
+//                    {
+//                     KyloVersionUtil.version("0.7.")
+//                    };
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
     @Inject
