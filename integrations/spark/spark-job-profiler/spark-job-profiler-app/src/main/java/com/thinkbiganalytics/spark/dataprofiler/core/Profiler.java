@@ -91,7 +91,6 @@ public class Profiler {
             return;
         }
 
-
         /* Run query and get result */
         log.info("[PROFILER-INFO] Analyzing profile statistics for: [{}]", queryString);
         resultDF = sparkContextService.sql(sqlContext, queryString);
