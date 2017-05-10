@@ -344,7 +344,7 @@ public class ExportImportFeedService {
             FeedMetadata userAccessFeed = metadataAccess.read(() -> {
                 return metadataService.getFeedByName(feedCategory, importingFeed.getSystemFeedName());
             });
-            if(userAccessFeed == null){
+            if(userAccessFeed == null || !userAccessFeed.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName())){
                 //error
                 feed.setValid(false);
                 if(feed.getTemplate() == null) {
@@ -357,9 +357,28 @@ public class ExportImportFeedService {
                 feed.setValid(false);
                 return false;
             }
+            else {
+                return true;
+            }
 
         }
-        return true;
+        else {
+            //if the feed is new ensure the user has write access to create feeds under this category
+                return metadataAccess.read(() -> {
+                    Category domainCategory = categoryProvider.findBySystemName(feedCategory);
+                    //Query for Category and ensure the user has access to create feeds on that category
+                    if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
+                        String msg = "Access Denied. You do not have access to create feeds under the category " + FeedNameUtil.fullName(feedCategory,importingFeed.getSystemFeedName()) + ".";
+                        feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                        feed.addErrorMessage(existingFeed, msg);
+                        feed.setValid(false);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                });
+
+        }
     }
 
     private boolean validateOverwriteExistingFeed(FeedMetadata existingFeed, FeedMetadata importingFeed, ImportFeed feed) {
@@ -395,25 +414,9 @@ public class ExportImportFeedService {
             FeedCategory optionsCategory = metadataService.getCategoryBySystemName(importOptions.getCategorySystemName());
             if (optionsCategory == null) {
                 importFeed.setValid(false);
-                statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist.", false);
+                statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist, or you dont have access to it.", false);
                 valid = false;
             } else {
-
-                //validate user has write access to create feeds under this category
-                //ensure the user has rights to create feeds under this category
-                if (accessController.isEntityAccessControlled()) {
-                    valid = metadataAccess.read(() -> {
-                        Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
-                        //Query for Category and ensure the user has access to create feeds on that category
-                        if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
-                            importFeed.setValid(false);
-                            statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    });
-                }
                 if (valid) {
                     metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
                     statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
