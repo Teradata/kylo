@@ -31,9 +31,9 @@ import org.json.simple.JSONObject;
 
 /**
  * Data Quality Rule to ensure that: <br>
- * Number of Invalid rows <= invalid threshold defined by the INVALID_THRESHOLD_ATTRIBUTE
+ * Number of Invalid rows less than or equal to invalid threshold defined by the INVALID_THRESHOLD_ATTRIBUTE
  * 
- * If no threshold attribute is defined, the default value is used which is 0 i.e. no invalid roes
+ * If no threshold attribute is defined, the default value is used which is 0 i.e. no invalid rows
  */
 public class InvalidRowTotalCountRuleImpl implements DataQualityRule {
     private static final Logger log = LoggerFactory.getLogger(InvalidRowTotalCountRuleImpl.class);
@@ -47,7 +47,7 @@ public class InvalidRowTotalCountRuleImpl implements DataQualityRule {
 
     public InvalidRowTotalCountRuleImpl() {
         this.name = "INVALID_ROW_TOTAL_COUNT_RULE";
-        this.description = "Number of invalid rows less than set threshold value in " +
+        this.description = "Number of invalid rows less than or equal to the set threshold value in " +
                            DataQualityConstants.DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE;
         this.status = false;
     }
@@ -103,7 +103,7 @@ public class InvalidRowTotalCountRuleImpl implements DataQualityRule {
             status = (invalidRowCount <= invalidThreshold);
 
             if (!status) {
-                log.error("Invalid Row Count = " + invalidRowCount
+                log.warn("Invalid Row Count = " + invalidRowCount
                           +
                           " Invalid Threshold = "
                           + invalidThreshold);

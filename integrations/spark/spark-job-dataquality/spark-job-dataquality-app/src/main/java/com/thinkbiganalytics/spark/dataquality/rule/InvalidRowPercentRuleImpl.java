@@ -31,10 +31,10 @@ import org.json.simple.JSONObject;
 
 /**
  * Data Quality Rule to ensure that: <br>
- * Percent of Invalid rows out of all rows < invalid threshold defined by
+ * Percent of Invalid rows out of all rows less than invalid threshold defined by
  * DQ_INVALID_ALLOWED_PERCENT_ATTRIBUTE
  * 
- * If no threshold attribute is defined, the default value is used which is 0% i.e. no invalid roes
+ * If no threshold attribute is defined, the default value is used which is 0% i.e. no invalid rows.
  */
 public class InvalidRowPercentRuleImpl implements DataQualityRule {
 
@@ -51,7 +51,7 @@ public class InvalidRowPercentRuleImpl implements DataQualityRule {
 
     public InvalidRowPercentRuleImpl() {
         this.name = "INVALID_ROW_PERCENT_RULE";
-        this.description = "Percent of (Invalid rows / Total rows) < " +
+        this.description = "Percent of (Invalid rows / Total rows) <= " +
                            DataQualityConstants.DEFAULT_INVALID_ALLOWED_PERCENT_VALUE;
         this.status = false;
         this.pctInvalid = Double.MAX_VALUE;
@@ -113,7 +113,7 @@ public class InvalidRowPercentRuleImpl implements DataQualityRule {
             status = (pctInvalid <= invalidThreshold);
 
             if (!status) {
-                log.error("Invalid Row Count = " + invalidRowCount
+                log.warn("Invalid Row Count = " + invalidRowCount
                           +
                           " Invalid Threshold = "
                           + invalidThreshold

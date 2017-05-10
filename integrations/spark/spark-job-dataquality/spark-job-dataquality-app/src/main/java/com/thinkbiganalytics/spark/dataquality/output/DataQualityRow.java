@@ -33,9 +33,17 @@ import com.thinkbiganalytics.spark.dataquality.rule.DataQualityRule;
 @SuppressWarnings("serial")
 public class DataQualityRow implements Serializable {
 
+    /**
+     * Need to suppress squid:S00116 because these variables
+     * names need to align with Hive table column names
+     */
+    @SuppressWarnings("squid:S00116")
     private String rule_name;
+    @SuppressWarnings("squid:S00116")
     private String rule_description;
+    @SuppressWarnings("squid:S00116")
     private boolean status;
+    @SuppressWarnings("squid:S00116")
     private String rule_resultdetail;
 
     /**
@@ -50,6 +58,9 @@ public class DataQualityRow implements Serializable {
 
 
     /**
+     * Constructor which populates using passed in Data Quality Rule.
+     * 
+     * @param rule DataQualityRule to use to populate object
      */
     public DataQualityRow(DataQualityRule rule) {
         this.rule_name = rule.getName();
@@ -60,7 +71,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Get the rule name
+     * Get the rule name.
      *
      * @return rule name
      */
@@ -70,7 +81,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule name
+     * Set the rule name.
      *
      * @param ruleName name of the rule
      */
@@ -80,7 +91,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Get the rule description
+     * Get the rule description.
      *
      * @return rule description
      */
@@ -90,7 +101,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule description
+     * Set the rule description.
      *
      * @param description description of the data quality rule
      */
@@ -99,7 +110,7 @@ public class DataQualityRow implements Serializable {
     }
 
     /**
-     * Get the rule status
+     * Get the rule status.
      *
      * @return rule status
      */
@@ -109,7 +120,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule status
+     * Set the rule status.
      *
      * @param status The status of the rule (pass or fail)
      */
@@ -119,7 +130,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule result details
+     * Set the rule result details.
      *
      * @return rule result details
      */
@@ -129,7 +140,7 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule result details
+     * Set the rule result details.
      *
      * @param resultDetail The result details
      */

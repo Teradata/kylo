@@ -44,7 +44,7 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
 
     public SourceToFeedCountRuleImpl() {
         this.name = "SOURCE_TO_FEED_COUNT_RULE";
-        this.description = "Source Row Count = Feed Row Count";
+        this.description = "Number of rows from the Source table equals the number of rows in the Feed table";
         this.status = false;
     }
 
@@ -54,7 +54,7 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
             feedRowCount = flowAttr.getAttributeValueLong(DataQualityConstants.DQ_FEED_ROW_COUNT_ATTRIBUTE);
             sourceRowCount = flowAttr.getAttributeValueLong(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE);
         } catch (MissingAttributeException e) {
-            log.error("Required attributes missing");
+            log.error("Required attributes missing", e);
             return false;
         }
         return true;
@@ -96,10 +96,7 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
         try {
             status = (feedRowCount == sourceRowCount);
             if (!status) {
-                log.error("Feed Row Count = " + feedRowCount
-                          +
-                          " Source Row Count = "
-                          + sourceRowCount);
+                log.warn("Feed Row Count = %f Source Row Count = %f" , feedRowCount, sourceRowCount);
             }
             return status;
         } catch (Exception e) {

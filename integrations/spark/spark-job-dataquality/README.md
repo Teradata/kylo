@@ -79,7 +79,7 @@ This is the current set of available rules:
 * **ROW_COUNT_TOTAL_RULE** - Ensures that the total number of source rows is equal to the total number of valid and invalid rows
 * **SOURCE_TO_FEED_COUNT_RULE** - Ensures that the total number of source rows is equal to the total number of feed rows
 
-### Activate rules
+### Activate Rules
 To enable/disable a rule within a Nifi flow, update the **dq.active.rules** with the name of the rules that are active. This attribute is a comma-separated value with the name of the active rules.
 
 
@@ -98,7 +98,7 @@ These optional Nifi attributes are used by the current set of rules. Each has a 
   * ex: 10
 * **dq.invalid.allowpct** - This sets the threshold for the allowed percentage of invalid rows. The default is set to 0
   * ex: 11
-* **dq.active.rules** - This is a comma-separated value of all the active rules that will be executed. The current set of rules are provided above. By default, all rules are executed.
+* **dq.active.rules** - This is a comma-separated value of all the active rules that will be executed. The current set of rules are provided above. By default, no rules are executed.
   * ex: INVALID_ROW_PERCENT_RULE,INVALID_ROW_TOTAL_COUNT_RULE,ROW_COUNT_TOTAL_RULE,SOURCE_TO_FEED_COUNT_RULE
 
 ### Adding Spark Job to standard-ingest

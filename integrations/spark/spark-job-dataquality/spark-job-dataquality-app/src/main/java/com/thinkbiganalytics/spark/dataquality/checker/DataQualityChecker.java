@@ -61,7 +61,8 @@ import java.util.Map;
  * This class takes in one argument which is the path of the JSON file which contains all the
  * flowfile attributes<br>
  * <br>
- * Failure is considered to be if any of the rules failed.<br>
+ * Failure is considered to be if any of the rules failed. If at least one of the rules fails, the 
+ * overall execution is considered a failure. The execution is an all or nothing process.<br>
  * <br>
  * Please refer to README for commands to run application.<br>
  */
@@ -78,7 +79,7 @@ public class DataQualityChecker {
     private List<DataQualityRule> ruleList;
 
     public static void main(String[] args) {
-        log.info("Running DataQualityChecker with these command line args: " + StringUtils.join(args, ","));
+        log.info("Running DataQualityChecker with these command line args: %s ", StringUtils.join(args, ","));
 
         if (args.length < 1) {
             System.out.println("Expected command line args: <path-to-attribute-file>");
@@ -102,22 +103,22 @@ public class DataQualityChecker {
             }
 
         } catch (MissingRuleException e) {
-            log.error("One or more rules are not available: {}", e.getMessage());
+            log.error("One or more rules are not available: {}", e);
             System.exit(1);
         } catch (Exception e) {
-            log.error("Failed to perform data quality checks: {}", e.getMessage());
+            log.error("Failed to perform data quality checks: {}", e);
             System.exit(1);
         }
     }
 
     public DataQualityChecker() {
         flowAttributes = new FlowAttributes();
-        ruleList = new ArrayList<DataQualityRule>();
+        ruleList = new ArrayList<>();
         availableRules = new HashMap<>();
     }
 
     /**
-     * Add all the available rules Adds all the data quality rules used by the checker
+     * Adds all the data quality rules used by the checker
      */
     protected void setAvailableRules() {
         addAvailableRule(new SourceToFeedCountRuleImpl());
@@ -128,11 +129,10 @@ public class DataQualityChecker {
 
     /**
      * Sets the active rules based on the available rule list. The flow attribute dq.active.rules is
-     * used to specify active rules. If this attribute does not exist, all available rules are
-     * used.<br>
+     * used to specify active rules. If this attribute does not exist, no rules are used.<br>
      * If any rule does not exist, an exception is thrown
      * 
-     * @throws MissingRuleException
+     * @throws MissingRuleException Exception thrown when the Data Quality rule is missing
      */
     protected void setActiveRules() throws MissingRuleException {
 
@@ -140,6 +140,9 @@ public class DataQualityChecker {
                                                                 DataQualityConstants.DEFAULT_DQ_ACTIVE_RULES_VALUE);
 
         if (activeRuleStr.equals(DataQualityConstants.DEFAULT_DQ_ACTIVE_RULES_VALUE)) {
+            log.info("No rules are set. No rules will be used");
+            ruleList.clear();
+        } else if (activeRuleStr.equals(DataQualityConstants.ALL_DQ_ACTIVE_RULES_VALUES)) {
             log.info("All available Data Quality Rules will be used");
             ruleList = new ArrayList<>(availableRules.values());
         } else {
@@ -155,6 +158,8 @@ public class DataQualityChecker {
      * Main method that conducts the data quality check. This is done by getting row counts and
      * iterate through each data quality check. The results summary is provided after all are
      * executed. The results are written to log as well as hive
+     * 
+     * @return Boolean value is the checks were successful
      */
     protected boolean doDataQualityChecks() {
 
@@ -162,12 +167,18 @@ public class DataQualityChecker {
         try {
             String databaseName = flowAttributes.getAttributeValue(DataQualityConstants.CATEGORY_ATTRIBUTE);
             String tableName = flowAttributes.getAttributeValue(DataQualityConstants.FEED_ATTRIBUTE);
-            String processing_dttm = flowAttributes.getAttributeValue(DataQualityConstants.PROCESSING_DTTM_ATTRIBUTE);
+            String processingDttm = flowAttributes.getAttributeValue(DataQualityConstants.PROCESSING_DTTM_ATTRIBUTE);
+            
+            if (processingDttm.isEmpty()) {
+                String msg = "Required attribute processing_dttm is empty. Failing DQ";
+                log.error(msg);
+                throw new MissingAttributeException(msg);
+            }
 
             String feedTableName = tableName + DataQualityConstants.FEED_TABLE_SUFFIX;
             String invalidTableName = tableName + DataQualityConstants.INVALID_TABLE_SUFFIX;
             String validTableName = tableName + DataQualityConstants.VALID_TABLE_SUFFIX;
-            String whereClause = DataQualityConstants.PROCESSING_DTTM_COLUMN + " = '" + processing_dttm + "'";
+            String whereClause = DataQualityConstants.PROCESSING_DTTM_COLUMN + " = '" + processingDttm + "'";
 
             setSourceRowCount();
 
@@ -182,7 +193,7 @@ public class DataQualityChecker {
             flowAttributes.addAttribute(DataQualityConstants.DQ_VALID_ROW_COUNT_ATTRIBUTE, String.valueOf(rowCount));
 
             // Execute Data Quality rules
-            boolean rulePass;
+            boolean rulePass = true;
             boolean dqAllRulePass = true;
             for (DataQualityRule rule : ruleList) {
 
@@ -217,7 +228,7 @@ public class DataQualityChecker {
             }
 
         } catch (MissingAttributeException e) {
-            log.error("Required Attribute missing from passed in data");
+            log.error("Required Attribute missing from passed in data", e);
             isSuccessful = false;
         } catch (Exception e) {
             log.error("Generic exception in doQualityCheck()", e);
@@ -241,7 +252,7 @@ public class DataQualityChecker {
                 flowAttributes.addAttribute(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE, sqoopRowCount);
             }
         } catch (MissingAttributeException e) {
-            log.error("Required Attribute missing");
+            log.error("Required Attribute missing", e);
         }
     }
 
@@ -264,29 +275,28 @@ public class DataQualityChecker {
                            + tableName
                            + " ";
 
-            if (whereClause != "") {
+            if (!whereClause.equals("")) {
                 query = query + "WHERE " + whereClause;
             }
 
-            log.info("Executing hive query: " + query);
+            log.info("Executing hive query: %s", query);
 
             DataFrame countDF = hiveContext.sql(query);
 
             // Only take the first value which contains the row count
-            Long rowCount = countDF.collect()[0].getLong(0);
-
-            return rowCount;
+            return countDF.collect()[0].getLong(0);
 
         } catch (Exception e) {
-            log.error("ERROR - Error while getting row count. Parameters were " +
-                      " database = "
-                      + databaseName
-                      +
-                      " table = "
-                      + tableName
-                      +
-                      " whereClause = "
-                      + whereClause, e);
+            String errMessage = "ERROR - Error while getting row count. Parameters were " +
+                            " database = "
+                            + databaseName
+                            +
+                            " table = "
+                            + tableName
+                            +
+                            " whereClause = "
+                            + whereClause;
+            log.error(errMessage, e);
 
             throw e;
         }
@@ -301,7 +311,7 @@ public class DataQualityChecker {
             String databaseName = flowAttributes.getAttributeValue(DataQualityConstants.CATEGORY_ATTRIBUTE);
             String tableName = flowAttributes.getAttributeValue(DataQualityConstants.FEED_ATTRIBUTE);
             String dqTableName = tableName + DataQualityConstants.DQ_TABLE_SUFFIX;
-            String processing_dttm = flowAttributes.getAttributeValue(DataQualityConstants.PROCESSING_DTTM_ATTRIBUTE);
+            String processingDttm = flowAttributes.getAttributeValue(DataQualityConstants.PROCESSING_DTTM_ATTRIBUTE);
 
             SparkContext sparkContext = SparkContext.getOrCreate();
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
@@ -316,10 +326,10 @@ public class DataQualityChecker {
 
             dqWriter.writeResultToTable(scs,
                                         databaseName + "." + dqTableName,
-                                        processing_dttm);
+                                        processingDttm);
 
         } catch (MissingAttributeException e) {
-            log.error("Required Attribute missing from passed in data");
+            log.error("Required Attribute missing from passed in data", e);
         } catch (Exception e) {
             log.error("Generic exception in outputToHive()", e);
         }
@@ -337,7 +347,7 @@ public class DataQualityChecker {
         for (DataQualityRule rule : ruleList) {
             summaryJSON.put(rule.getName(), rule.getSummary());
         }
-        log.info("Data Quality Summary - " + summaryJSON.toJSONString());
+        log.info("Data Quality Summary - %s", summaryJSON.toJSONString());
 
     }
 
@@ -353,7 +363,7 @@ public class DataQualityChecker {
     /**
      * Add a Data Quality rule to the rule list
      * 
-     * @param rule
+     * @param rule Data Quality rule to add
      */
     protected void addDataQualityRule(DataQualityRule rule) {
         ruleList.add(rule);
@@ -362,7 +372,7 @@ public class DataQualityChecker {
     /**
      * Add to the available Data Quality rules
      * 
-     * @param rule
+     * @param rule Data Quality rule to add
      */
     protected void addAvailableRule(DataQualityRule rule) {
         availableRules.put(rule.getName(), rule);
@@ -374,7 +384,7 @@ public class DataQualityChecker {
      * 
      * @param ruleName Name of the rule
      * @return DataQualityRule object
-     * @throws MissingRuleException
+     * @throws MissingRuleException Exception thrown when rule is not part of the available set
      */
     protected DataQualityRule getAvailableRule(String ruleName) throws MissingRuleException {
         DataQualityRule rule = availableRules.get(ruleName);

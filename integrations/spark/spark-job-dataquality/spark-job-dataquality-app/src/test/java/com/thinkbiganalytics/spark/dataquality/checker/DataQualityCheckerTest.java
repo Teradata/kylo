@@ -54,12 +54,12 @@ public class DataQualityCheckerTest {
             int availableRulesCount = dqChecker.getAvailableRules().size();
             int activeRuleCount = dqChecker.getRuleList().size();
 
-            assertTrue("All rules not loaded",
+            assertTrue("Not all rules loaded. Active count does not equal available count",
                        availableRulesCount == activeRuleCount);
 
         } catch (MissingRuleException e) {
+            System.out.println("Missing Rule Exception thrown. Check stacktrace");
             e.printStackTrace();
-            System.out.println("Missing Rule");
         }
     }
 
@@ -76,15 +76,15 @@ public class DataQualityCheckerTest {
 
             List<DataQualityRule> activeRuleList = dqChecker.getRuleList();
 
-            assertTrue("Rules not all loaded. Rule List size = " + activeRuleList.size(),
+            assertTrue("Not all rules loaded. Rule List size = " + activeRuleList.size(),
                        activeRuleList.size() == 2);
 
             assertTrue("Rules not loaded properly",
                        activeRuleList.get(0).getName().equals("ROW_COUNT_TOTAL_RULE"));
 
         } catch (MissingRuleException e) {
+            System.out.println("Missing Rule Exception thrown. Check stacktrace");
             e.printStackTrace();
-            System.out.println("Missing Rule");
         }
     }
 
@@ -104,6 +104,6 @@ public class DataQualityCheckerTest {
             assert (true);
         }
 
-        assertTrue("Did not fail due to bad rule", true);
+        assertTrue("Test passed with exception being properly handled", true);
     }
 }

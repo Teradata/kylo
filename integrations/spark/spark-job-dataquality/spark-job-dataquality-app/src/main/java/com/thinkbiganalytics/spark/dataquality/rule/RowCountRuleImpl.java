@@ -45,7 +45,7 @@ public class RowCountRuleImpl implements DataQualityRule {
 
     public RowCountRuleImpl() {
         this.name = "ROW_COUNT_TOTAL_RULE";
-        this.description = "Source Row Count == (Valid and Invalid Row Counts)";
+        this.description = "Number of rows within the Source table equals the sum of the number of Valid and Invalid rows";
         this.status = false;
     }
 
@@ -102,7 +102,7 @@ public class RowCountRuleImpl implements DataQualityRule {
         try {
             status = (sourceRowCount == (invalidRowCount + validRowCount));
             if (!status) {
-                log.error("Source Row Count = " + sourceRowCount
+                log.warn("Source Row Count = " + sourceRowCount
                           +
                           " Valid Row Count = "
                           + validRowCount

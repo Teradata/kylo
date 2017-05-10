@@ -1,9 +1,0 @@
-USE {DATABASE_NAME};
-
-CREATE TABLE IF NOT EXISTS {FEED_NAME}
-	rulename	STRING,
-	description	STRING,
-	status		BOOLEAN,
-	comments	STRING
-PARTITIONED BY (processing_dttm	STRING)
-;

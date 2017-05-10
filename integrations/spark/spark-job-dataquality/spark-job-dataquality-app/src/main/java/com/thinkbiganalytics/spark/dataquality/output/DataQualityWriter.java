@@ -135,7 +135,7 @@ public class DataQualityWriter implements Serializable {
         } else if (hiveContext == null) {
             log.error("Error writing result: Hive context is not available.");
         } else if (dqRows.isEmpty()) {
-            log.error("Error writing results: No data to write");
+            log.info("Error writing results: No data to write");
         } else {
 
             JavaRDD<DataQualityRow> dqRowsRDD = sc.parallelize(dqRows);
@@ -165,6 +165,7 @@ public class DataQualityWriter implements Serializable {
                                 + "(rule_name STRING, rule_description STRING, status BOOLEAN, rule_resultdetail STRING)\n"
                                 + "PARTITIONED BY ( processing_dttm STRING)\n";
 
+        log.info("Executing: " + createTableSQL);
         scs.sql(hiveContext, createTableSQL);
     }
 
@@ -185,6 +186,7 @@ public class DataQualityWriter implements Serializable {
                                 + " FROM "
                                 + tempTable;
 
+        log.info("Executing: " + insertTableSQL);
         scs.sql(hiveContext, insertTableSQL);
     }
 }

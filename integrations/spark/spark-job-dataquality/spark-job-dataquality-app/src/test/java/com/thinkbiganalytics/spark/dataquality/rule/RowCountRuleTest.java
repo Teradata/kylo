@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.thinkbiganalytics.spark.dataquality.rule.RowCountRuleImpl;
+import com.thinkbiganalytics.spark.dataquality.util.DataQualityConstants;
 import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 
 public class RowCountRuleTest extends DataQualityRuleTest {
@@ -42,5 +43,15 @@ public class RowCountRuleTest extends DataQualityRuleTest {
 
         assertTrue("Source Row Count not matching Valid and Invalid Row Count",
                    runRule(rowCountRuleImpl));
+    }
+    
+    @Test
+    public void testRowCountMismatch() {
+
+        flowAttributes.addAttribute(DataQualityConstants.DQ_VALID_ROW_COUNT_ATTRIBUTE, "100");
+        flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ROW_COUNT_ATTRIBUTE, "10");
+        
+        assertTrue("Source Row Count should not equal Valid + Invalid Row Count",
+                   !runRule(rowCountRuleImpl));
     }
 }

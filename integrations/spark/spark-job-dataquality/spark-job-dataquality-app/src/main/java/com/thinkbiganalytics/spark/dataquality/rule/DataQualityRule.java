@@ -29,8 +29,8 @@ import org.json.simple.JSONObject;
 public interface DataQualityRule {
 
     /**
-     * Sets the attributes based on the passed in parameter
-     * If a required attribute is missing, this will return false
+     * Sets the attributes based on the passed in parameter.
+     * If a required attribute is missing, this will return false.
      * 
      * @param flowAttr Attributes coming from the Flow file
      * @return Boolean indicating result of the load
@@ -38,21 +38,21 @@ public interface DataQualityRule {
     boolean loadAttributes(FlowAttributes flowAttr);
 
     /**
-     * Get the rule name
+     * Get the rule name.
      * 
      * @return Name of the rule
      */
     String getName();
 
     /**
-     * Gets the status of the rule (pass or fail)
+     * Gets the status of the rule (pass or fail).
      * 
      * @return Status of the rule
      */
     boolean getStatus();
 
     /**
-     * Returns a string description of the rule
+     * Returns a string description of the rule.
      * 
      * @return Description of the rule
      */
@@ -67,7 +67,7 @@ public interface DataQualityRule {
     JSONObject getSummary();
 
     /**
-     * Evaluates the data quality rule
+     * Evaluates the data quality rule.
      * 
      * @return Boolean indicating the result of the evaluation
      */

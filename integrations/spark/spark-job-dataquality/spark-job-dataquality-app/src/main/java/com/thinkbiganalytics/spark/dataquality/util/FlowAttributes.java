@@ -40,20 +40,42 @@ public class FlowAttributes {
     private static final Logger log = LoggerFactory.getLogger(FlowAttributes.class);
 
     // Stores the flow attributes
-    private Map<String, String> attributeMap = new HashMap<String, String>();
+    private Map<String, String> attributeMap = new HashMap<>();
 
+    /**
+     * Checks if the passed in attribute exists.
+     * 
+     * @param attribute Attribute to check
+     * @return True if attribute exists else false
+     */
     public boolean containsAttribute(String attribute) {
         return attributeMap.containsKey(attribute);
     }
 
+    /**
+     * Returns all the attributes in a Map object.
+     * 
+     * @return Map object representing the attributes
+     */
     public Map<String, String> getAttributes() {
         return attributeMap;
     }
 
+    /**
+     * Add an attribute to the existing list.
+     * 
+     * @param attribute Key name of attribute
+     * @param value Value of the attribute
+     */
     public void addAttribute(String attribute, String value) {
         attributeMap.put(attribute, value);
     }
 
+    /**
+     * Return the number of attributes.
+     * 
+     * @return Number of attributes
+     */
     public int count() {
         return attributeMap.size();
     }
@@ -64,7 +86,7 @@ public class FlowAttributes {
      * 
      * @param attribute Name of the attribute
      * @return String value of the attribute
-     * @throws MissingAttributeException
+     * @throws MissingAttributeException Exception thrown when attribute does not exist
      */
     public String getAttributeValue(String attribute) throws MissingAttributeException {
         String val = attributeMap.get(attribute);
@@ -102,7 +124,7 @@ public class FlowAttributes {
      * @param attribute Name of the attribute
      * @return Long value of the attribute. If the value is not converted, Long.MIN_VALUE is
      *         returned
-     * @throws MissingAttributeException
+     * @throws MissingAttributeException Exception thrown when attribute does not exist
      */
     public long getAttributeValueLong(String attribute) throws MissingAttributeException {
         String val = getAttributeValue(attribute);
@@ -114,9 +136,9 @@ public class FlowAttributes {
      * Converts the string value of an attribute to data type long
      * 
      * @param attribute Name of the attribute
+     * @param defaultValue Default value to use if attribute does not exist
      * @return Long value of the attribute. If the value is not converted, Long.MIN_VALUE is
      *         returned
-     * @throws MissingAttributeException
      */
     public long getAttributeValueLong(String attribute, String defaultValue) {
         String val = getAttributeValue(attribute, defaultValue);
@@ -128,7 +150,7 @@ public class FlowAttributes {
      * This method takes a location of a JSON file and parses it and sets the attributes as
      * key/value pairs
      * 
-     * @param attributesJsonPath
+     * @param attributesJsonPath Absolute path of JSON file containing all the attributes
      */
     public void setAttributes(String attributesJsonPath) {
 
@@ -147,13 +169,19 @@ public class FlowAttributes {
         } catch (ParseException e ) {
             log.error("Error while parsing JSON file. Check " + attributesJsonPath, e);
         } catch (FileNotFoundException e ) {
-            log.error("File not found. Checing path " + attributesJsonPath, e);
+            log.error("File not found. Checking path " + attributesJsonPath, e);
         } catch (Exception e) {
             log.error("Error setting attributes. Check JSON in path: " + attributesJsonPath, e);
         }
 
     }
     
+    /**
+     * Converts a String value to Long
+     * @param attrName Attribute name
+     * @param val String value of the attribute
+     * @return Long value of the attribute
+     */
     private long convertStringtoLong(String attrName, String val) {
         long longVal = Long.MIN_VALUE;
         try {

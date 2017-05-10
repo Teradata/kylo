@@ -54,7 +54,7 @@ public class InvalidRowTotalCountRuleTest extends DataQualityRuleTest {
     }
     
     @Test
-    public void testAcceptablePercentInvalidRows() {
+    public void testInvalidRowsThreshold() {
         flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ROW_COUNT_ATTRIBUTE, "10");
         flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE, "10");
         

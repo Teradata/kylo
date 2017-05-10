@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.spark.dataquality.rule;
 
-import static org.junit.Assert.assertTrue;
 
 /*-
  * #%L
@@ -27,7 +26,7 @@ import org.junit.Before;
 import com.thinkbiganalytics.spark.dataquality.util.DataQualityConstants;
 import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 
-public class DataQualityRuleTest {
+public abstract class DataQualityRuleTest {
 
     FlowAttributes flowAttributes = new FlowAttributes();
 
@@ -45,7 +44,7 @@ public class DataQualityRuleTest {
     /**
      * Generic method to run rules and print summary
      * 
-     * @param rule
+     * @param rule Rule that will be executed
      * @return pass/fail of rule
      */
     public boolean runRule(DataQualityRule rule) {

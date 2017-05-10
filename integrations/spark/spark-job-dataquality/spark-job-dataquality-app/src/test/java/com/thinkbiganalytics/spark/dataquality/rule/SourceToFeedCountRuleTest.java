@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.thinkbiganalytics.spark.dataquality.util.DataQualityConstants;
 import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 
 public class SourceToFeedCountRuleTest extends DataQualityRuleTest {
@@ -37,9 +38,28 @@ public class SourceToFeedCountRuleTest extends DataQualityRuleTest {
     }
 
     @Test
-    public void sourceToFeedCountRule() {
+    public void testSourceFeedCountMatch() {
+        
+        assertTrue("Source Row Count not matching Feed Row Count",
+                   runRule(sourceToFeedCountRuleImpl));
+    }
+    
+    @Test
+    public void testSourceToFeedCountMismatch() {
+        
+        this.flowAttributes.addAttribute(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE, "90");
+        
+        assertTrue("Source Row Count should not match Feed Row Count",
+                   !runRule(sourceToFeedCountRuleImpl));
+    }
+    
+    @Test
+    public void testZeroSourceRowCount() {
+                
+        this.flowAttributes.addAttribute(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE, "0");
+        this.flowAttributes.addAttribute(DataQualityConstants.DQ_FEED_ROW_COUNT_ATTRIBUTE, "0");
 
-        assertTrue("Source Row Count not matching Valid and Invalid Row Count",
+        assertTrue("Source Row Count not matching Feed Row Count",
                    runRule(sourceToFeedCountRuleImpl));
     }
 }

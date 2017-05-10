@@ -16,6 +16,7 @@
   <properties>
     <mainClass.name>com.thinkbiganalytics.spark.dataquality.checker.DataQualityChecker</mainClass.name>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+    <json-simple.version>1.1.1</json-simple.version>
   </properties>
 
   <modules>
