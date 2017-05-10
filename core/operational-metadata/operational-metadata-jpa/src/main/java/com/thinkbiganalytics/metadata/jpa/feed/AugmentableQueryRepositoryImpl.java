@@ -60,11 +60,11 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     protected final JpaEntityInformation<T, ID> entityInformation;
     protected QueryAugmentor augmentor;
 
-    AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em) {
+    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em) {
         this(entityInformation, em, null);
     }
 
-    AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
+    public AugmentableQueryRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager em, QueryAugmentor augmentor) {
         super(entityInformation, em);
         this.entityInformation = entityInformation;
         this.entityManager = em;
@@ -163,7 +163,7 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
         throw new IllegalStateException(QUERY_BY_EXAMPLE_API_NOT_IMPLEMENTED_YET);
     }
 
-    void setAugmentor(QueryAugmentor augmentor) {
+    public void setAugmentor(QueryAugmentor augmentor) {
         this.augmentor = augmentor;
     }
 }

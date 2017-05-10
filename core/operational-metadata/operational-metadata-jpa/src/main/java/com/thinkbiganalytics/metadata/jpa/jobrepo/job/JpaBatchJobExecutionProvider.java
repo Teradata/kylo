@@ -43,6 +43,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
@@ -521,17 +522,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private Predicate augment(QOpsManagerFeedId id) {
         //TODO this is almost a copy from FeedAclIndexQueryAugmentor.augment(Predicate[] predicate)
         //TODO make sure this can be switched on and off with security.entity.access.controlled property
-        RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
-        QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
-        JPQLQuery<JpaFeedOpsAclEntry> subquery =
-            JPAExpressions.selectFrom(aclEntry)
-                .where(aclEntry.feed.id.eq(id)
-                           .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(
-                               JpaFeedOpsAclEntry.PrincipalType.GROUP))
-                                    .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(
-                                        JpaFeedOpsAclEntry.PrincipalType.USER))))
-                );
-        return subquery.exists();
+        return FeedAclIndexQueryAugmentor.generateExistsExpression(id);
     }
 
 
@@ -547,13 +538,16 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
         JPQLQuery checkFeedQuery = JPAExpressions.select(checkDataFeed.id).from(feed).join(feed.checkDataFeeds, checkDataFeed).where(feed.name.eq(feedName));
 
+
         JPAQuery
             query = factory.select(jobExecution)
             .from(jobExecution)
             .join(jobExecution.jobInstance, jobInstance)
             .join(jobInstance.feed, feed)
             .where((feed.name.eq(feedName).or(feed.id.in(checkFeedQuery)))
-                       .and(GenericQueryDslFilter.buildFilter(jobExecution, filters))).fetchAll();
+                       .and(GenericQueryDslFilter.buildFilter(jobExecution, filters)
+                       .and(augment(feed.id))))
+                .fetchAll();
 
         pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
         return findAll(query, pageable);
