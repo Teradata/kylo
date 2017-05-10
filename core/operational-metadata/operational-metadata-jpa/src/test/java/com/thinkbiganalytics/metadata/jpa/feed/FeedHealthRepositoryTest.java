@@ -21,36 +21,130 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
+import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
+import com.thinkbiganalytics.test.security.WithMockJaasUser;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.StreamSupport;
+
+import javax.inject.Inject;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class})
+@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class,
+                                           OperationalMetadataConfig.class,
+                                           TestJpaConfiguration.class,
+                                           FeedHealthRepositoryTest.class})
 @Transactional
+@Configuration
 public class FeedHealthRepositoryTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedHealthRepositoryTest.class);
 
-    @Autowired
+    @Bean
+    public AccessController accessController() {
+        AccessController mock = Mockito.mock(AccessController.class);
+        Mockito.when(mock.isEntityAccessControlled()).thenReturn(true);
+        return mock;
+    }
+
+    @Inject
     FeedHealthRepository repo;
+
+    @Inject
+    FeedOpsAccessControlRepository aclRepo;
 
     @Test
     public void testFindAll() {
         List<JpaOpsManagerFeedHealth> all = repo.findAll();
         LOG.debug("all = " + all);
     }
+
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin", "user"})
+    @Test
+    public void findAll_NoMatchingGroupAclEntry() throws Exception {
+        UUID uuid = UUID.randomUUID();
+
+        JpaOpsManagerFeedHealth health = new JpaOpsManagerFeedHealth();
+        health.setFeedId(new JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId(uuid));
+
+        repo.save(health);
+
+        BaseFeed.FeedId healthId = new BaseFeed.FeedId(uuid);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(healthId, "NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(nonMatching);
+
+        Iterable<JpaOpsManagerFeedHealth> all = repo.findAll();
+        Assert.assertFalse(StreamSupport.stream(all.spliterator(), false)
+                               .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
+    }
+
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin", "user"})
+    @Test
+    public void findAll_WithMatchingGroupAclEntry() throws Exception {
+        UUID uuid = UUID.randomUUID();
+
+        JpaOpsManagerFeedHealth health = new JpaOpsManagerFeedHealth();
+        health.setFeedId(new JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId(uuid));
+
+        repo.save(health);
+
+        BaseFeed.FeedId healthId = new BaseFeed.FeedId(uuid);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(healthId, "admin", JpaFeedOpsAclEntry.PrincipalType.GROUP);
+        aclRepo.save(nonMatching);
+
+        Iterable<JpaOpsManagerFeedHealth> all = repo.findAll();
+        Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
+                               .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
+    }
+
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin", "user"})
+    @Test
+    public void findAll_WithMatchingUserAclEntry() throws Exception {
+        UUID uuid = UUID.randomUUID();
+
+        JpaOpsManagerFeedHealth health = new JpaOpsManagerFeedHealth();
+        health.setFeedId(new JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId(uuid));
+
+        repo.save(health);
+
+        BaseFeed.FeedId healthId = new BaseFeed.FeedId(uuid);
+
+        JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(healthId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
+        aclRepo.save(nonMatching);
+
+        Iterable<JpaOpsManagerFeedHealth> all = repo.findAll();
+        Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
+                               .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
+    }
+
 }

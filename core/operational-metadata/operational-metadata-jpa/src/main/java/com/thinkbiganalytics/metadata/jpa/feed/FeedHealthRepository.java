@@ -31,6 +31,7 @@ import java.util.List;
 /**
  * Spring data repository to access the {@link JpaOpsManagerFeedHealth}
  */
+@RepositoryType(FeedHealthSecuringRepository.class)
 public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
 
     @Query("select health from JpaOpsManagerFeedHealth as health "
