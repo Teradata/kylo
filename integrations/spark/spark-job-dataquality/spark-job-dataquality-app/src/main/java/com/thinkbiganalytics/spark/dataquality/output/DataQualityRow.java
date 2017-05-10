@@ -33,27 +33,19 @@ import com.thinkbiganalytics.spark.dataquality.rule.DataQualityRule;
 @SuppressWarnings("serial")
 public class DataQualityRow implements Serializable {
 
-    /**
-     * Need to suppress squid:S00116 because these variables
-     * names need to align with Hive table column names
-     */
-    @SuppressWarnings("squid:S00116")
-    private String rule_name;
-    @SuppressWarnings("squid:S00116")
-    private String rule_description;
-    @SuppressWarnings("squid:S00116")
+    private String ruleName;
+    private String ruleDescription;
     private boolean status;
-    @SuppressWarnings("squid:S00116")
-    private String rule_resultdetail;
+    private String resultDetail;
 
     /**
      * No-argument constructor
      */
     public DataQualityRow() {
-        rule_name = null;
-        rule_description = null;
+        ruleName = null;
+        ruleDescription = null;
         status = false;
-        rule_resultdetail = null;
+        resultDetail = null;
     }
 
 
@@ -63,10 +55,10 @@ public class DataQualityRow implements Serializable {
      * @param rule DataQualityRule to use to populate object
      */
     public DataQualityRow(DataQualityRule rule) {
-        this.rule_name = rule.getName();
-        this.rule_description = rule.getDescription();
+        this.ruleName = rule.getName();
+        this.ruleDescription = rule.getDescription();
         this.status = rule.getStatus();
-        this.rule_resultdetail = rule.getSummary().toJSONString();
+        this.resultDetail = rule.getSummary().toJSONString();
     }
 
 
@@ -76,7 +68,7 @@ public class DataQualityRow implements Serializable {
      * @return rule name
      */
     public String getRuleName() {
-        return rule_name;
+        return ruleName;
     }
 
 
@@ -86,7 +78,7 @@ public class DataQualityRow implements Serializable {
      * @param ruleName name of the rule
      */
     public void setRuleName(String ruleName) {
-        this.rule_name = ruleName;
+        this.ruleName = ruleName;
     }
 
 
@@ -96,7 +88,7 @@ public class DataQualityRow implements Serializable {
      * @return rule description
      */
     public String getDescription() {
-        return rule_description;
+        return ruleDescription;
     }
 
 
@@ -106,7 +98,7 @@ public class DataQualityRow implements Serializable {
      * @param description description of the data quality rule
      */
     public void setDescription(String description) {
-        this.rule_description = description;
+        this.ruleDescription = description;
     }
 
     /**
@@ -135,7 +127,7 @@ public class DataQualityRow implements Serializable {
      * @return rule result details
      */
     public String getResultDetail() {
-        return rule_resultdetail;
+        return resultDetail;
     }
 
 
@@ -145,7 +137,7 @@ public class DataQualityRow implements Serializable {
      * @param resultDetail The result details
      */
     public void setResultDetail(String resultDetail) {
-        this.rule_resultdetail = resultDetail;
+        this.resultDetail = resultDetail;
     }
 
 
@@ -154,13 +146,13 @@ public class DataQualityRow implements Serializable {
      */
     @Override
     public String toString() {
-        return "DataQualityRow [ruleName=" + rule_name
+        return "DataQualityRow [ruleName=" + ruleName
                + ", description="
-               + rule_description
+               + ruleDescription
                + ", status="
                + status
                + ", resultDetail ="
-               + rule_resultdetail
+               + resultDetail
                + "]";
     }
 

@@ -113,12 +113,8 @@ public class InvalidRowPercentRuleImpl implements DataQualityRule {
             status = (pctInvalid <= invalidThreshold);
 
             if (!status) {
-                log.warn("Invalid Row Count = " + invalidRowCount
-                          +
-                          " Invalid Threshold = "
-                          + invalidThreshold
-                          + " Percent Invalid = "
-                          + pctInvalid);
+                log.warn("Invalid Row Count = {} Invalid Threshold = {} Percent Invalid = {}",
+                         invalidRowCount, invalidThreshold, pctInvalid);
             }
 
             return status;

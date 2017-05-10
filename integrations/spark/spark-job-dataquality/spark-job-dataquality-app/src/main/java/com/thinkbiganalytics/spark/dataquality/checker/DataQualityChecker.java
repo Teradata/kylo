@@ -79,7 +79,7 @@ public class DataQualityChecker {
     private List<DataQualityRule> ruleList;
 
     public static void main(String[] args) {
-        log.info("Running DataQualityChecker with these command line args: %s ", StringUtils.join(args, ","));
+        log.info("Running DataQualityChecker with these command line args: {}", StringUtils.join(args, ","));
 
         if (args.length < 1) {
             System.out.println("Expected command line args: <path-to-attribute-file>");
@@ -347,7 +347,7 @@ public class DataQualityChecker {
         for (DataQualityRule rule : ruleList) {
             summaryJSON.put(rule.getName(), rule.getSummary());
         }
-        log.info("Data Quality Summary - %s", summaryJSON.toJSONString());
+        log.info("Data Quality Summary - {}", summaryJSON.toJSONString());
 
     }
 

@@ -103,10 +103,8 @@ public class InvalidRowTotalCountRuleImpl implements DataQualityRule {
             status = (invalidRowCount <= invalidThreshold);
 
             if (!status) {
-                log.warn("Invalid Row Count = " + invalidRowCount
-                          +
-                          " Invalid Threshold = "
-                          + invalidThreshold);
+                log.warn("Invalid Row Count = {} Invalid Threshold = {} ",
+                         invalidRowCount, invalidThreshold);
             }
             return status;
         } catch (Exception e) {

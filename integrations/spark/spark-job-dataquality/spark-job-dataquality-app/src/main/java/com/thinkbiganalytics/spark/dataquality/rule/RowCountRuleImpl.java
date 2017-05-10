@@ -102,13 +102,8 @@ public class RowCountRuleImpl implements DataQualityRule {
         try {
             status = (sourceRowCount == (invalidRowCount + validRowCount));
             if (!status) {
-                log.warn("Source Row Count = " + sourceRowCount
-                          +
-                          " Valid Row Count = "
-                          + validRowCount
-                          +
-                          " Invalid Row Count = "
-                          + invalidRowCount);
+                log.warn("Source Row Count = {} Valid Row Count = {} Invalid Row Count = {}",
+                         sourceRowCount, validRowCount, invalidRowCount);
             }
             return status;
         } catch (Exception e) {

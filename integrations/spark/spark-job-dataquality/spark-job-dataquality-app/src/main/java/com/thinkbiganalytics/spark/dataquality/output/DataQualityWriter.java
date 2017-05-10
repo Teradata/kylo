@@ -165,7 +165,7 @@ public class DataQualityWriter implements Serializable {
                                 + "(rule_name STRING, rule_description STRING, status BOOLEAN, rule_resultdetail STRING)\n"
                                 + "PARTITIONED BY ( processing_dttm STRING)\n";
 
-        log.info("Executing: " + createTableSQL);
+        log.info("Executing: {}", createTableSQL);
         scs.sql(hiveContext, createTableSQL);
     }
 
@@ -186,7 +186,7 @@ public class DataQualityWriter implements Serializable {
                                 + " FROM "
                                 + tempTable;
 
-        log.info("Executing: " + insertTableSQL);
+        log.info("Executing: {}", insertTableSQL);
         scs.sql(hiveContext, insertTableSQL);
     }
 }
