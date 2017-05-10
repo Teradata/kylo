@@ -1052,6 +1052,19 @@
                 </data>
                 <data>
                   <type>files</type>
+                  <dst>${rpm.install.dir}/setup/plugins</dst>
+                  <mapper>
+                    <type>perm</type>
+                    <filemode>${file.permissions}</filemode>
+                    <user>${rpm.user}</user>
+                    <group>${rpm.user}</group>
+                  </mapper>
+                  <paths>
+                    <path>${project.basedir}/../plugins/service-monitor-ambari/target/kylo-service-monitor-ambari-${project.version}.jar</path>
+                  </paths>
+                </data>
+                <data>
+                  <type>files</type>
                   <dst>${rpm.install.dir}/setup/nifi</dst>
                   <mapper>
                     <type>perm</type>
@@ -1078,7 +1091,7 @@
                   </paths>
                 </data>
                 <data>
-                <type>file</type>
+                  <type>file</type>
                   <src>target/generated-sources/license/THIRD-PARTY.txt</src>
                   <dst>${rpm.install.dir}/THIRD-PARTY.txt</dst>
                   <missingSrc>fail</missingSrc>
@@ -1089,7 +1102,6 @@
                     <group>${rpm.user}</group>
                   </mapper>
                 </data>
-
               </dataSet>
             </configuration>
           </execution>
