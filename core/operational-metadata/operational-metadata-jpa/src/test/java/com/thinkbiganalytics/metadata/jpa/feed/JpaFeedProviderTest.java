@@ -102,6 +102,9 @@ public class JpaFeedProviderTest {
         });
     }
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testFeedHealth() {
         metadataAccess.read(() -> {
