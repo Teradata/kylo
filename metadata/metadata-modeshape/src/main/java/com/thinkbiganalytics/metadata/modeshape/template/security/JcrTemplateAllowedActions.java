@@ -88,14 +88,14 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
 
     @Override
     public void setupAccessControl(Principal owner) {
-        super.setupAccessControl(owner);
-
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
         //Granting everyone access to Modify properties on a template.
         //this is needed since when a feed is created it needs to set the template bi-directional relationship.
         //Kylo will handle the explicitly permission checks to modify a template using its permissions rather than JCR privileges.
         JcrAccessControlUtil.addPermissions(template.getNode(), SimplePrincipal.EVERYONE,Privilege.JCR_MODIFY_PROPERTIES);
         enable(JcrMetadataAccess.ADMIN, TemplateAccessControl.EDIT_TEMPLATE);
+
+        super.setupAccessControl(owner);
     }
     
     @Override
