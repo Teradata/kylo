@@ -260,7 +260,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
          * Fills and style a cell div.
          *
          * @param {HTMLElement} cellDiv the cell <div> element
-         * @param {VisualQueryTableCell} cell the cell object
+         * @param {VisualQueryTableCell|null} cell the cell object
          */
         fillCell: function (cellDiv, cell) {
             // Adjust padding based on column number
@@ -286,11 +286,11 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
          * Fills and style a column div.
          *
          * @param {HTMLElement} headerDiv the header <div> element
-         * @param {VisualQueryTableHeader} header the column header
+         * @param {VisualQueryTableHeader|null} header the column header
          */
         fillHeader: function (headerDiv, header) {
             // Adjust padding based on column number
-            if (header.index === 0) {
+            if (header !== null && header.index === 0) {
                 headerDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
                 headerDiv.style.paddingRight = 0 + PIXELS;
             } else {
@@ -336,18 +336,22 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
          * Gets the header of the specified column.
          *
          * @param {number} j the column number
-         * @returns {VisualQueryTableHeader} the column header
+         * @returns {VisualQueryTableHeader|null} the column header
          */
         getHeaderSync: function (j) {
-            var self = this;
-            return angular.extend(this.columns_[j], {
-                field: this.columns_[j].name,
-                index: j,
-                sort: {
-                    direction: (this.sortIndex_ === j) ? this.sortDirection_ : null
-                },
-                unsort: angular.bind(self, self.unsort)
-            });
+            if (j >= 0 && j < this.columns_.length) {
+                var self = this;
+                return angular.extend(this.columns_[j], {
+                    field: this.columns_[j].name,
+                    index: j,
+                    sort: {
+                        direction: (this.sortIndex_ === j) ? this.sortDirection_ : null
+                    },
+                    unsort: angular.bind(self, self.unsort)
+                });
+            } else {
+                return null;
+            }
         },
 
         /**
