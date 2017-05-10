@@ -396,6 +396,22 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
+
+            //If the feed is New we need to ensure the user has CREATE_FEED entity permission under the feeds category
+            if (accessController.isEntityAccessControlled()) {
+                //ensure the user has rights to create feeds under this category
+                metadataAccess.read(() -> {
+                    Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
+                    if (domainCategory == null) {
+                        //throw exception
+                        throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
+                    }
+                    //Query for Category and ensure the user has access to create feeds on that category
+                    domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+
+                });
+            }
+
         } else if (accessController.isEntityAccessControlled()) {
             metadataAccess.read(() -> {
                 //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
@@ -407,19 +423,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             });
         }
 
-        if (accessController.isEntityAccessControlled()) {
-            //ensure the user has rights to create feeds under this category
-            metadataAccess.read(() -> {
-                Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
-                if (domainCategory == null) {
-                    //throw exception
-                    throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
-                }
-                //Query for Category and ensure the user has access to create feeds on that category
-                domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
 
-            });
-        }
 
         //replace expressions with values
         if (feedMetadata.getTable() != null) {

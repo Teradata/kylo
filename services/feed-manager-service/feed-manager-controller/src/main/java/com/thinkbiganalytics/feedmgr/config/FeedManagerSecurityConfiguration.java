@@ -103,7 +103,7 @@ public class FeedManagerSecurityConfiguration {
                                 .action(TemplateAccessControl.EDIT_TEMPLATE)
                                 .action(TemplateAccessControl.DELETE)
                                 .action(TemplateAccessControl.EXPORT)
-                                .action(TemplateAccessControl.CREATE_FEED)
+                                .action(TemplateAccessControl.CREATE_FEED) //not currently used now.  if you have access to read the template you can create a feed on it provided you have the proper create feed permissions
                                 .action(TemplateAccessControl.CHANGE_PERMS)
                                 .add()
                             .module(AllowedActions.DATASOURCE)
