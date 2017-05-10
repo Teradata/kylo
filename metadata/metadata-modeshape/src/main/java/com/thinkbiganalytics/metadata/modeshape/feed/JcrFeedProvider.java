@@ -193,7 +193,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed update(Feed feed) {
 
-        feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+     //   feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
         return super.update(feed);
     }
 

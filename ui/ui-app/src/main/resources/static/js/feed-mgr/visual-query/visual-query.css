@@ -185,3 +185,22 @@ md-menu-item > .md-menu > .md-button span {
 md-menu-item > div > md-input-container {
     margin: 0;
 }
+
+/** Visual Query Table */
+visual-query-table .fattable-viewport > div {
+    border-bottom: 1px solid rgba(0, 0, 0, .24);
+    padding: 0 28px;
+    vertical-align: middle;
+}
+visual-query-table .fattable-header-container .fattable-viewport > div {
+    color: rgba(0, 0, 0, .54);
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
+    padding-left: 24px;
+    padding-right: 0;
+}
+visual-query-table .fattable-body-container .fattable-viewport > div {
+    letter-spacing: .01em;
+}

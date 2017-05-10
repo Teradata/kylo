@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -368,7 +369,7 @@ public class ExportImportTemplateService {
 
 
                 //validate entity access
-                if (accessController.isEntityAccessControlled()) {
+                if (accessController.isEntityAccessControlled() && registeredTemplateOption.isOverwrite()) {
                     //requery as the currently logged in user
                     statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating template entity access");
                     existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
@@ -377,8 +378,8 @@ public class ExportImportTemplateService {
                     if(!valid){
                         template.setValid(false);
                         validForImport = false;
-                        statusMessage.update("Validation error: You do not have edit access for the template " + registeredTemplate.getTemplateName(), false);
-                        template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Validation error: You do not have edit access for the template ");
+                        statusMessage.update("Access Denied: You do not have edit access for the template " + registeredTemplate.getTemplateName(), false);
+                        template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Access Denied: You do not have edit access for the template ");
                     }
                     else {
                         statusMessage.complete(valid);
@@ -386,9 +387,15 @@ public class ExportImportTemplateService {
                 }
 
             } else {
-                //reset it so it gets the new id upon import
+                //template doesnt exist.. it is new ensure the user is allowed to create templates
+                boolean editAccess = accessController.hasPermission(AccessController.SERVICES,FeedServicesAccessControl.EDIT_TEMPLATES);
+
+                if(!editAccess) {
+                    statusMessage.update("Access Denied: You are not allowed to create the template " + registeredTemplate.getTemplateName(), false);
+                    template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Access Denied: You are not allowed to create the template ");
+                }
                 registeredTemplate.setId(null);
-                statusMessage.complete(true);
+                statusMessage.complete(editAccess);
             }
             validForImport &= !registeredTemplateOption.hasErrorMessages();
 

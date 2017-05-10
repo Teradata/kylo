@@ -37,7 +37,7 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  * An immutable implementation of AllowedActions suitable for making a snapshot of another
- * AllowedActions.  This implementation does not support changing any permissions of for
+ * AllowedActions.  This implementation does not support changing any permissions of 
  * its contained AllowableActions.
  */
 public class ImmutableAllowedActions implements AllowedActions {
