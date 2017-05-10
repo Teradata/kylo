@@ -327,7 +327,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         //admin can do everything the editor does + change perms
         createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
+        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only",
+                          FeedAccessControl.ACCESS_DETAILS,
+                          FeedAccessControl.ACCESS_OPS);
 
         SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
                                                         TemplateAccessControl.ACCESS_TEMPLATE,
