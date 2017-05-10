@@ -1,0 +1,37 @@
+{
+  "name": "fattable",
+  "main": "fattable.js",
+  "homepage": "https://github.com/fulmicoton/fattable",
+  "authors": [
+    "Paul Masurel <paul.masurel@gmail.com>"
+  ],
+  "description": "Infinite table with column headers. No dependancy. VanillaJS all the way.",
+  "keywords": [
+    "infinite",
+    "table"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "*.coffee",
+    "*.less",
+    "Makefile",
+    "closure",
+    ".readymade"
+  ],
+  "_release": "833904c0ec",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "833904c0ecff3b2ccf17c4a8e03b053b0b74a164"
+  },
+  "_source": "https://github.com/fulmicoton/fattable.git",
+  "_target": "*",
+  "_originalSource": "fulmicoton/fattable",
+  "_direct": true
+}
