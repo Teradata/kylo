@@ -277,6 +277,7 @@ public class ServiceLevelAgreementModelTransform {
            canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         }
         slaModel.setCanEdit(canEdit);
+        feedServiceLevelAgreement.setCanEdit(canEdit);
         return feedServiceLevelAgreement;
     }
 }

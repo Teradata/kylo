@@ -163,7 +163,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 UserGroupService.getGroups()
                     .then(function(groups) {
                         allGroups =  _.map(groups,function (item) {
-                            item._lowername = item.title.toLowerCase();
+                            item._lowername = (item.title == null || angular.isUndefined(item.title)) ? item.systemName.toLowerCase() : item.title.toLowerCase();
                             item.type = 'group'
                             return item;
                         });

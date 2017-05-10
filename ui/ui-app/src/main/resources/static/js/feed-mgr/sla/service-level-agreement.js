@@ -501,12 +501,24 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 self.loading = false;
               //  self.allowEdit = self.editSla.canEdit;
 
+            }, function(err){
+                var msg = err.data.message || 'Error loading the SLA';
+                self.loading = false;
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Error loading the SLA")
+                        .textContent(msg)
+                        .ariaLabel("Access denied to edit the SLA")
+                        .ok("OK")
+                );
+
             });
         }
 
         function applyEditPermissionsToSLA(sla){
 
-            var entityAccessControlled = self.feed != null && AccessControlService.isEntityAccessControlled();
+            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
 
            var functionalAccess = AccessControlService.getUserAllowedActions()
         $q.when(functionalAccess).then(function (response) {

@@ -48,7 +48,7 @@
 
     <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
       <label>{{property.displayName}}</label>
-      <input required ng-model="property.value" name="{{property.formKey}}"
+      <input required ng-model="property.value" name="{{property.formKey}}" ng-disabled="!vm.rule.editable"
              cron-expression-validator
              ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 
