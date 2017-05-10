@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -41,9 +42,13 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
+import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
+import com.thinkbiganalytics.metadata.jpa.feed.security.QJpaFeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
@@ -63,6 +68,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -498,10 +505,39 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         } else {
             pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
             QJpaBatchJobInstance jobInstancePath = new QJpaBatchJobInstance("jobInstance");
-            return findAllWithFetch(jobExecution, GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable, QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
-                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
+            QJpaOpsManagerFeed feedPath = new QJpaOpsManagerFeed("feed");
+
+            return findAllWithFetch(jobExecution,
+                                    GenericQueryDslFilter.buildFilter(jobExecution, filter).and(augment(feedPath.id)),
+                                    pageable,
+                                    QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
+                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath),
+                                    QueryDslFetchJoin.innerJoin(jobInstancePath.feed, feedPath)
+            );
         }
 
+    }
+
+    private Predicate augment(QOpsManagerFeedId id) {
+        //TODO this is almost a copy from FeedAclIndexQueryAugmentor.augment(Predicate[] predicate)
+        //TODO make sure this can be switched on and off with security.entity.access.controlled property
+        RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
+        QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
+        JPQLQuery<JpaFeedOpsAclEntry> subquery =
+            JPAExpressions.selectFrom(aclEntry)
+                .where(aclEntry.feed.id.eq(id)
+                           .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(
+                               JpaFeedOpsAclEntry.PrincipalType.GROUP))
+                                    .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(
+                                        JpaFeedOpsAclEntry.PrincipalType.USER))))
+                );
+        return subquery.exists();
+    }
+
+
+    private RoleSetExposingSecurityExpressionRoot getUserContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return new RoleSetExposingSecurityExpressionRoot(authentication);
     }
 
     private Page<? extends BatchJobExecution> findAllForFeed(String feedName, List<SearchCriteria> filters, Pageable pageable) {
