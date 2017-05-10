@@ -123,7 +123,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Edit access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
@@ -144,7 +144,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Read access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()

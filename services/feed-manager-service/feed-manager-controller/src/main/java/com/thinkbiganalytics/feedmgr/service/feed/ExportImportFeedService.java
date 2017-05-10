@@ -211,11 +211,17 @@ public class ExportImportFeedService {
             //verify if we should overwrite the feed if it already exists
             String feedCategory = StringUtils.isNotBlank(options.getCategorySystemName()) ? options.getCategorySystemName() : metadata.getSystemCategoryName();
             //query for this feed.
-            FeedMetadata existingFeed = metadataAccess.read(() -> metadataService.getFeedByName(feedCategory, metadata.getSystemFeedName()));
-
+            //first read in the feed as a service account
+            FeedMetadata existingFeed = metadataAccess.read(() -> { return metadataService.getFeedByName(feedCategory, metadata.getSystemFeedName()); },MetadataAccess.SERVICE);
             if (!validateOverwriteExistingFeed(existingFeed, metadata, importFeed)) {
                 //exit
                 return importFeed;
+            }
+
+            if(accessController.isEntityAccessControlled()){
+                if(!validateEntityAccess(existingFeed,feedCategory,metadata,importFeed)){
+                    return importFeed;
+                }
             }
 
             //sensitive properties
@@ -331,6 +337,29 @@ public class ExportImportFeedService {
 
         completeSection(importFeed.getImportOptions(), ImportSection.Section.VALIDATE_USER_DATASOURCES);
         return valid;
+    }
+
+    private boolean validateEntityAccess(FeedMetadata existingFeed, String feedCategory,FeedMetadata importingFeed, ImportFeed feed) {
+        if(existingFeed != null ) {
+            FeedMetadata userAccessFeed = metadataAccess.read(() -> {
+                return metadataService.getFeedByName(feedCategory, importingFeed.getSystemFeedName());
+            });
+            if(userAccessFeed == null){
+                //error
+                feed.setValid(false);
+                if(feed.getTemplate() == null) {
+                    ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(feed.getFileName());
+                    feed.setTemplate(importTemplate);
+                }
+                String msg = "Access Denied.  You do not have access to edit this feed.";
+                feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                feed.addErrorMessage(existingFeed, msg);
+                feed.setValid(false);
+                return false;
+            }
+
+        }
+        return true;
     }
 
     private boolean validateOverwriteExistingFeed(FeedMetadata existingFeed, FeedMetadata importingFeed, ImportFeed feed) {
