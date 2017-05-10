@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
@@ -178,7 +179,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                             .flatMap(avail -> avail.stream())
                             .collect(Collectors.toSet()));
     }
-
+    
     /**
      * validate a user has a given permission(s)
      * @param action the action to check
