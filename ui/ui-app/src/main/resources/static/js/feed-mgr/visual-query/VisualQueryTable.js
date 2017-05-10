@@ -528,24 +528,16 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             var headerWidths = _.map(this.columns_, function (column, index) {
                 var textWidth = context.measureText(column.displayName).width;
                 var padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
-                return textWidth + padding + MENU_WIDTH;
+                return Math.ceil(textWidth + padding + MENU_WIDTH);
             });
 
             // Determine column widths based on row sampling
             context.font = this.getRowFont();
-            var maxRows = angular.isArray(this.rows_) ? Math.min(10, this.rows_.length) : 0;
-            var sampleSize = Math.min(Math.max(Math.floor(1000 / this.columns_.length), 1), maxRows);
 
             var rowWidths = _.map(this.columns_, function (column, index) {
+                var textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
                 var padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
-                var width = COLUMN_WIDTH_MIN;
-
-                for (var i = 0; i < sampleSize; ++i) {
-                    var textWidth = context.measureText(self.rows_[i][column.name]).width;
-                    width = Math.max(textWidth + padding, width);
-                }
-
-                return Math.ceil(width);
+                return Math.ceil(textWidth + padding);
             });
 
             // Calculate total width
@@ -553,7 +545,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             var totalWidth = 0;
 
             for (var i = 0; i < this.columns_.length; ++i) {
-                var width = Math.min(Math.max(headerWidths[i], rowWidths[i]), COLUMN_WIDTH_MAX);
+                var width = Math.min(Math.max(headerWidths[i], rowWidths[i], COLUMN_WIDTH_MIN), COLUMN_WIDTH_MAX);
                 columnWidths.push(width);
                 totalWidth += width;
             }

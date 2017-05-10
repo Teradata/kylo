@@ -339,18 +339,21 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
         function updateGrid() {
             //transform the result to the agGrid model
             var columns = [];
+            var profile = self.sparkShellService.getProfile();
 
             angular.forEach(self.sparkShellService.getColumns(), function (col) {
                 var delegate = new VisualQueryColumnDelegate(col.dataType, self);
+                var longestValue = _.find(profile, function (row) {
+                    return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
+                });
+
                 columns.push({
                     delegate: delegate,
                     displayName: col.displayName,
                     filters: delegate.filters,
-                    headerCellTemplate: "visual-query/grid-header-cell",
                     headerTooltip: col.hiveColumnLabel,
-                    minWidth: 150,
-                    name: col.displayName,
-                    queryResultColumn: col
+                    longestValue: (longestValue !== null) ? longestValue.metricValue : null,
+                    name: col.displayName
                 });
             });
 
