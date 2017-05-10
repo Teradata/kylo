@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -71,12 +72,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -347,7 +350,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
         createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
 
-        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_CATEGORY, CategoryAccessControl.CREATE_FEED);
+        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
 
         final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
                                                                 DatasourceAccessControl.ACCESS_DATASOURCE,
@@ -559,9 +562,21 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 role.setPermissions(actions);
                 return role;
         };
+
+        Function<SecurityRole,SecurityRole> ensureActions = (role) -> {
+            if(actions != null) {
+                List<Action> actionsList = Arrays.asList(actions);
+                boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));
+                if(needsUpdate){
+                    role.setPermissions(actions);
+                }
+            }
+            return role;
+        };
+
         try {
-            return roleProvider.getRole(entityName, roleName)
-                .orElseGet(createIfNotFound);
+            return roleProvider.getRole(entityName, roleName).map(ensureActions).orElseGet(createIfNotFound);
+
         }catch (RoleNotFoundException e){
             return createIfNotFound.get();
         }

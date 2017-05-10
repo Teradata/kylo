@@ -30,6 +30,8 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
+import org.modeshape.jcr.security.SimplePrincipal;
+
 import java.security.Principal;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,6 +91,10 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
+        //Granting everyone access to Modify properties on a template.
+        //this is needed since when a feed is created it needs to set the template bi-directional relationship.
+        //Kylo will handle the explicitly permission checks to modify a template using its permissions rather than JCR privileges.
+        JcrAccessControlUtil.addPermissions(template.getNode(), SimplePrincipal.EVERYONE,Privilege.JCR_MODIFY_PROPERTIES);
         enable(JcrMetadataAccess.ADMIN, TemplateAccessControl.EDIT_TEMPLATE);
     }
     

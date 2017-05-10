@@ -26,5 +26,6 @@
   <include file="item-last-modified-table.xml" relativeToChangelogFile="true"/>
   <include file="nifi-flow-cache-cluster-sync.xml" relativeToChangelogFile="true"/>
   <include file="nifi-flow-cache-cluster-sync2.xml" relativeToChangelogFile="true"/>
+  <include file="kylo-609-remove-fk-constriant.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
