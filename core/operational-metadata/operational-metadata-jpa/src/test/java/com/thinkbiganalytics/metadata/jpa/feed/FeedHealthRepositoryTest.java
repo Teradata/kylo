@@ -60,8 +60,6 @@ import javax.inject.Inject;
 @Configuration
 public class FeedHealthRepositoryTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeedHealthRepositoryTest.class);
-
     @Bean
     public AccessController accessController() {
         AccessController mock = Mockito.mock(AccessController.class);
@@ -74,12 +72,6 @@ public class FeedHealthRepositoryTest {
 
     @Inject
     FeedOpsAccessControlRepository aclRepo;
-
-    @Test
-    public void testFindAll() {
-        List<JpaOpsManagerFeedHealth> all = repo.findAll();
-        LOG.debug("all = " + all);
-    }
 
     @WithMockJaasUser(username = "dladmin",
                       password = "secret",
