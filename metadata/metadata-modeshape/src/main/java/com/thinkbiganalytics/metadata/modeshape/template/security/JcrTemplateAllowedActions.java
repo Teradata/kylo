@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template.security;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
@@ -28,9 +27,10 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableActi
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
+
+import org.modeshape.jcr.security.SimplePrincipal;
 
 import java.security.Principal;
 import java.util.Set;
@@ -87,15 +87,19 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), TemplateAccessControl.EDIT_TEMPLATE);
+        //Granting everyone access to Modify properties on a template.
+        //this is needed since when a feed is created it needs to set the template bi-directional relationship.
+        //Kylo will handle the explicitly permission checks to modify a template using its permissions rather than JCR privileges.
+        JcrAccessControlUtil.addPermissions(template.getNode(), SimplePrincipal.EVERYONE,Privilege.JCR_MODIFY_PROPERTIES);
         enable(JcrMetadataAccess.ADMIN, TemplateAccessControl.EDIT_TEMPLATE);
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         JcrAccessControlUtil.clearPermissions(getNode());

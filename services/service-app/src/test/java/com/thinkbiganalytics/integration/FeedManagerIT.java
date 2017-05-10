@@ -22,6 +22,7 @@ package com.thinkbiganalytics.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.base.CharMatcher;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -47,6 +48,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
@@ -58,6 +60,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 import com.thinkbiganalytics.test.IntegrationTest;
 
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -73,7 +76,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -84,7 +89,7 @@ public class FeedManagerIT extends IntegrationTest {
     private static final Logger LOG = LoggerFactory.getLogger(FeedManagerIT.class);
 
     private static final String SAMPLES_DIR = "/samples";
-    private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/";
+    private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final String VAR_DROPZONE = "/var/dropzone";
@@ -124,17 +129,6 @@ public class FeedManagerIT extends IntegrationTest {
         email.setDescription("Valid email address");
         email.setObjectClassType("com.thinkbiganalytics.policy.validation.EmailValidator");
         email.setObjectShortClassType("EmailValidator");
-
-
-        //TODO assert validator has ran by verifying all first names are in upper case
-
-
-        //TODO assert standardiser has ran by verifying there are 16 known empty names
-
-
-        //TODO assert data is in Hive table by looking at Table tab preview or maybe even executing count all query
-
-        //TODO delete feed
     }
 
     @Test
@@ -165,13 +159,15 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void copyDataToDropzone() {
+        LOG.info("Copying data to dropzone");
+
         //drop files in dropzone to run the feed
         scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
         ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
     }
 
     public void assertExecutedJobs(FeedMetadata feed) throws IOException {
-        //assert there are 3 completed jobs: userdata ingest job, schema and text system jobs
+        LOG.info("Asserting there are 3 completed jobs: userdata ingest job, schema and text system jobs");
         DefaultExecutedJob[] jobs = getJobs();
         Assert.assertEquals(3, jobs.length);
 
@@ -179,18 +175,128 @@ public class FeedManagerIT extends IntegrationTest {
         Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());
         Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), ingest.getExitCode());
 
-        //assert user data jobs has expected number of steps
+        LOG.info("Asserting user data jobs has expected number of steps");
         DefaultExecutedJob job = getJobWithSteps(ingest.getExecutionId());
         Assert.assertEquals(ingest.getExecutionId(), job.getExecutionId());
         List<ExecutedStep> steps = job.getExecutedSteps();
-        Assert.assertEquals(23, steps.size());
+        Assert.assertEquals(24, steps.size());
         for (ExecutedStep step : steps) {
             Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
         }
 
-        //assert data in hive
+        LOG.info("Asserting number of total/valid/invalid rows");
+        Assert.assertEquals(1001, getTotalNumberOfRecords(feed.getFeedId()));
+        Assert.assertEquals(984, getNumberOfValidRecords(feed.getFeedId()));
+        Assert.assertEquals(17, getNumberOfInvalidRecords(feed.getFeedId()));
 
+        assertNamesAreInUppercase(feed.getFeedId());
+
+        assertHiveData();
+
+
+        //TODO delete feed
     }
+
+//    @Test
+    public void temp() {
+        assertHiveData();
+    }
+
+    private void assertHiveData() {
+        assertHiveTables("functional_tests", "users1");
+        assertHiveSchema("functional_tests", "users1");
+        assertHiveQuery("functional_tests", "users1");
+    }
+
+    private void assertHiveQuery(String schemaName, String tableName) {
+        LOG.info("Asserting hive query");
+
+        int limit = 10;
+        Response response = given(HiveRestController.BASE)
+            .when()
+            .get("/query-result?query=SELECT * FROM " + schemaName + "." + tableName + " LIMIT " + limit);
+
+        response.then().statusCode(200);
+
+        List rows = JsonPath.from(response.asString()).getList("rows");
+        Assert.assertEquals(limit, rows.size());
+    }
+
+    private void assertHiveSchema(String schemaName, String tableName) {
+        LOG.info("Asserting hive schema");
+
+        Response response = given(HiveRestController.BASE)
+            .when()
+            .get(String.format("/schemas/%s/tables/%s", schemaName, tableName));
+
+        response.then().statusCode(200);
+    }
+
+    private void assertHiveTables(final String schemaName, final String tableName) {
+        LOG.info("Asserting hive tables");
+
+        Response response = given(HiveRestController.BASE)
+            .when()
+            .get("/tables");
+
+        response.then().statusCode(200);
+
+        String[] tables = response.as(String[].class);
+        Assert.assertEquals(5, tables.length);
+
+        List<String> tableNames = Arrays.asList(tables);
+        Assert.assertTrue(tableNames.contains(schemaName + "." + tableName));
+        Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_feed"));
+        Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_profile"));
+        Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_valid"));
+        Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_invalid"));
+    }
+
+    private void assertNamesAreInUppercase(String feedId) {
+        LOG.info("Asserting all names are in upper case");
+
+        String processingDttm = getProcessingDttm(feedId);
+
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
+
+        response.then().statusCode(200);
+
+        String topN = JsonPath.from(response.asString()).getString("find {entry ->entry.metrictype == 'TOP_N_VALUES' && entry.columnname == 'first_name'}.metricvalue");
+        Assert.assertTrue(CharMatcher.JAVA_LOWER_CASE.matchesNoneOf(topN));
+    }
+
+    private int getTotalNumberOfRecords(String feedId) {
+        return getMetricvalueOfMetricType(feedId, "TOTAL_COUNT");
+    }
+
+    private int getNumberOfValidRecords(String feedId) {
+        return getMetricvalueOfMetricType(feedId, "VALID_COUNT");
+    }
+
+    private int getNumberOfInvalidRecords(String feedId) {
+        return getMetricvalueOfMetricType(feedId, "INVALID_COUNT");
+    }
+
+    private String getProcessingDttm(String feedId) {
+        return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
+    }
+
+    private int getMetricvalueOfMetricType(String feedId, String metricType) {
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + metricType + "'}.metricvalue"));
+    }
+
+    private String getJsonPathOfProfileSummary(String feedId, String path) {
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-summary", feedId));
+
+        response.then().statusCode(200);
+
+        return JsonPath.from(response.asString()).getString(path);
+    }
+
 
     private DefaultExecutedJob getJobWithSteps(long executionId) {
         //http://localhost:8400/proxy/v1/jobs
@@ -215,6 +321,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private ExportImportTemplateService.ImportTemplate importFeedTemplate(String templateName) {
+        LOG.info("Importing feed template {}", templateName);
+
         //get number of templates already there
         int existingTemplateNum = getRegisteredTemplates().length;
 
@@ -244,6 +352,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     public void deleteExistingReusableVersionedFlows() {
+        LOG.info("Deleting existing reusable versioned flows");
+
         //otherwise if we don't delete each time we import a new template
         // exiting templates are versioned off and keep piling up
         PortDTO[] ports = getReusableInputPorts();
@@ -253,6 +363,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteVersionedNifiFlow(String groupId) {
+        LOG.info("Deleting versioned nifi flow {}", groupId);
+
         Response response = given(NifiIntegrationRestController.BASE)
             .when()
             .get("/cleanup-versions/" + groupId);
@@ -271,6 +383,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteExistingCategories() {
+        LOG.info("Deleting existing categories");
+
         //start clean - delete all categories if there
         FeedCategory[] categories = getCategories();
         for (FeedCategory category : categories) {
@@ -281,6 +395,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteExistingTemplates() {
+        LOG.info("Deleting existing templates");
+
         //start clean - delete all templates if there
         RegisteredTemplate[] templates = getRegisteredTemplates();
         for (RegisteredTemplate template : templates) {
@@ -292,6 +408,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     public void disableExistingFeeds() {
+        LOG.info("Disabling existing feeds");
+
         //start clean - disable all feeds before deleting them - this
         // will give time for processors to stop before they are deleted, otherwise
         // will get an error if processor is still running while we try to delete the process group
@@ -311,6 +429,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteExistingFeeds() {
+        LOG.info("Deleting existing feeds");
+
         //start clean - delete all feeds
         FeedSummary[] feeds = getFeeds();
         for (FeedSummary feed : feeds) {
@@ -334,18 +454,24 @@ public class FeedManagerIT extends IntegrationTest {
         NifiProperty fileFilter = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "File Filter", USERDATA1_CSV);
         fileFilter.setProcessGroupName("NiFi Flow");
         fileFilter.setProcessorName("Filesystem");
+        fileFilter.setProcessorType("org.apache.nifi.processors.standard.GetFile");
         fileFilter.setTemplateValue("mydata\\d{1,3}.csv");
         fileFilter.setInputProperty(true);
         fileFilter.setUserEditable(true);
         properties.add(fileFilter);
+
         NifiProperty inputDir = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "Input Directory", VAR_DROPZONE);
         inputDir.setProcessGroupName("NiFi Flow");
         inputDir.setProcessorName("Filesystem");
+        inputDir.setProcessorType("org.apache.nifi.processors.standard.GetFile");
         inputDir.setInputProperty(true);
         inputDir.setUserEditable(true);
         properties.add(inputDir);
+
         NifiProperty loadStrategy = new NifiProperty("305363d8-015a-1000-0000-000000000000", "6aeabec7-ec36-4ed5-0000-000000000000", "Load Strategy", "FULL_LOAD");
+        loadStrategy.setProcessorType("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         properties.add(loadStrategy);
+
         feed.setProperties(properties);
 
         FeedSchedule schedule = new FeedSchedule();
@@ -415,10 +541,21 @@ public class FeedManagerIT extends IntegrationTest {
         tags.add(new Tag("registrations"));
         feed.setTags(tags);
 
+        UserPrincipal owner = new UserPrincipal();
+        owner.setSystemName("dladmin");
+        owner.setDisplayName("Data Lake Admin");
+        Set<String> groups = new HashSet<>();
+        groups.add("admin");
+        groups.add("user");
+        owner.setGroups(groups);
+        feed.setOwner(owner);
+
         return feed;
     }
 
     private FeedMetadata createFeed(FeedMetadata feed) {
+        LOG.info("Creating feed {}", feed.getFeedName());
+
         Response response = given(FeedRestController.BASE)
             .body(feed)
             .when()
@@ -503,6 +640,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteCategory(String id) {
+        LOG.info("Deleting category {}", id);
+
         String url = String.format("/%s", id);
         Response response = given(FeedCategoryRestController.BASE)
             .when()
@@ -512,6 +651,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private FeedCategory createCategory(String name) {
+        LOG.info("Creating category {}", name);
+
         FeedCategory category = new FeedCategory();
         category.setName(name);
         category.setDescription("this category was created by functional test");
@@ -530,6 +671,8 @@ public class FeedManagerIT extends IntegrationTest {
 
 
     private ExportImportFeedService.ImportFeed importFeed(String feedName) {
+        LOG.info("Importing feed {}", feedName);
+
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
             .multiPart(new File(feedsPath + feedName))
@@ -567,6 +710,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void disableFeed(String feedId) {
+        LOG.info("Disabling feed {}", feedId);
+
         String url = String.format("/disable/%s", feedId);
         Response response = given(FeedRestController.BASE)
             .when()
@@ -578,6 +723,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteFeed(String feedId) {
+        LOG.info("Deleting feed {}", feedId);
+
         String url = String.format("/%s", feedId);
         Response response = given(FeedRestController.BASE)
             .when()
@@ -592,6 +739,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void stopFeed(String feedId) {
+        LOG.info("Stopping feed {}", feedId);
+
         //this is a workaround to stop all processors in a feed - delete call fails to delete, but stops all processors
         given(FeedRestController.BASE)
             .when()
@@ -608,6 +757,8 @@ public class FeedManagerIT extends IntegrationTest {
     }
 
     private void deleteTemplate(String templateId) {
+        LOG.info("Deleting template {}", templateId);
+
         String url = String.format("/registered/%s/delete", templateId);
         Response response = given(TemplatesRestController.BASE)
             .when()

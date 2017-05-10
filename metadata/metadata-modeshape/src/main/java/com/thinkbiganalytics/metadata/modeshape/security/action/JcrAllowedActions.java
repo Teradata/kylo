@@ -29,7 +29,6 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -218,11 +217,11 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
     
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         JcrAccessControlUtil.clearRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE);
     }
     
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, MetadataAccess.ADMIN, Privilege.JCR_ALL);
     }
     
@@ -232,9 +231,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions copy(Node allowedNode, boolean includeDescr, Principal principal, String... privilegeNames) {
         try {
-            for (Node existing : JcrUtil.getInterableChildren(allowedNode)) {
-                existing.remove();
-            }
+            // TODO Remove extraneous nodes in destination
+//            for (Node existing : JcrUtil.getIterableChildren(allowedNode)) {
+//                existing.remove();
+//            }
             
             JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
             

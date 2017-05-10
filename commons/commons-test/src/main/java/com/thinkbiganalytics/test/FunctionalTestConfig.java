@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
-@ImportResource("classpath:application.xml")
+@ImportResource("classpath:int-test-application.xml")
 public class FunctionalTestConfig {
 
 

@@ -161,8 +161,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function setSecurityGroups(newVal) {
             if(newVal) {
                 var category = self.categoriesService.findCategoryByName(newVal)
-                var securityGroups = category.securityGroups;
-                self.model.securityGroups = securityGroups;
+                if(category != null) {
+                    var securityGroups = category.securityGroups;
+                    self.model.securityGroups = securityGroups;
+                }
             }
         }
 

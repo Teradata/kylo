@@ -62,8 +62,14 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
 
     private List<ClusterServiceListener> listeners = new ArrayList<>();
 
+    private List<ClusterServiceMessageReceiver> messageReceivers = new ArrayList<>();
+
     public void subscribe(ClusterServiceListener listener){
         listeners.add(listener);
+    }
+
+    public void subscribe(ClusterServiceMessageReceiver messageReceiver){
+        messageReceivers.add(messageReceiver);
     }
 
     /**
@@ -88,6 +94,14 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                 log.error("Unable to find the jgroups cluster configuration file {}.  Kylo is not clustered ",jgroupsConfigFile);
             }
         }
+    }
+
+    public void stop() throws  Exception {
+        if(channel != null){
+            log.info("Stopping {} ",getAddressAsString());
+            channel.disconnect();
+        }
+
     }
 
     @Override
@@ -142,6 +156,11 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
      */
     public void receive(Message msg) {
         log.info("Receiving {} : {} ",msg.getSrc(),msg.getObject());
+        messageReceivers.stream().forEach(messageReceiver -> {
+            ClusterMessage clusterMessage = (ClusterMessage) msg.getObject();
+            messageReceiver.onMessageReceived(msg.getSrc().toString(),clusterMessage);
+        });
+
     }
 
 
@@ -169,12 +188,17 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         }
     }
 
+    /**
+     * All messages are converted to a ClusterMessage
+     * @param message a message to send
+     */
     @Override
-    public void sendMessage(Serializable message){
+    public void sendMessage(String type, Serializable message){
         clusterEnabled();
         try {
             log.info("Sending {} from {} ",message,this.channel.getAddressAsString());
-            channel.send(null, message);
+            ClusterMessage msg = new StandardClusterMessage(type,message);
+            channel.send(null, msg);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -183,12 +207,13 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
     }
 
     @Override
-    public void sendMessageToOthers(Serializable message){
+    public void sendMessageToOthers(String type,Serializable message){
         clusterEnabled();
         try {
             for(Address address : getOtherMembers()){
                 log.info("Sending message to {} from {} ",address,this.channel.getAddressAsString());
-                channel.send(address, message);
+                ClusterMessage msg = new StandardClusterMessage(type,message);
+                channel.send(address, msg);
             }
         }
         catch (Exception e){

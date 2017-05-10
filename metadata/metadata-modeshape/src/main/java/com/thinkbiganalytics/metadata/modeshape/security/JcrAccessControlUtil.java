@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
+import org.modeshape.jcr.ModeShapeRoles;
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -111,12 +112,19 @@ public final class JcrAccessControlUtil {
                 } else {
                     acl = (AccessControlList) acm.getPolicies(path)[0];
                 }
+                
+                // Ensure admin is always included in the ACL
+                if (acl.getAccessControlEntries().length == 0) {
+                    SimplePrincipal simple = SimplePrincipal.newInstance(ModeShapeRoles.ADMIN);
+                    acl.addAccessControlEntry(simple, asPrivileges(session, Privilege.JCR_ALL));
+                }
 
                 // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used
                 // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
                 // to an existing principal.  This can be considered a bug in ModeShape.
                 SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
                 boolean added = acl.addAccessControlEntry(simple, privileges);
+//                validate(acl);
                 acm.setPolicy(path, acl);
 
                 return added;
@@ -128,6 +136,57 @@ public final class JcrAccessControlUtil {
                                                   + Arrays.toString(privileges), e);
         }
 
+    }
+
+    /**
+     * Validate that the given policy will not result in a frozen access control state.
+     * I.e. verifies that at least one entry exists with the the JCR_MODIFY_ACCESS_CONTROL
+     * privilege; either directly or via an aggregate privilege.
+     */
+    private static void validate(AccessControlList acl) {
+        try {
+            for (AccessControlEntry entry : acl.getAccessControlEntries()) {
+                if (impliesAny(entry.getPrivileges(), Privilege.JCR_MODIFY_ACCESS_CONTROL)) {
+                    return;
+                }
+            }
+            
+            throw new IllegalStateException("The specified ACL will result in a frozed access control state: " + acl);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access ACL: " + acl, e);
+        }
+    }
+
+    /**
+     * Tests if the specified privilege implies, either directly or as an aggregate, the named privilege.
+     * @param checked the privilege being checked
+     * @param implied the name of the privilege to be implied
+     * @return true if the check privilege implies the given privilege name
+     */
+    private static boolean implies(Privilege checked, String implied) {
+        if (checked.getName().equals(implied)) {
+            return true;
+        } else if (checked.isAggregate()) {
+            return impliesAny(checked.getAggregatePrivileges(), implied);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Tests if any of the specified privileges imply, either directly or as an aggregate, the named privilege.
+     * @param privileges an array of privileges
+     * @param implied the name of the privilege to be implied
+     * @return true if the any of the privileges implies the given privilege name
+     */
+    public static boolean impliesAny(Privilege[] privileges, String implied) {
+        for (Privilege checked : privileges) {
+            if (implies(checked, implied)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**

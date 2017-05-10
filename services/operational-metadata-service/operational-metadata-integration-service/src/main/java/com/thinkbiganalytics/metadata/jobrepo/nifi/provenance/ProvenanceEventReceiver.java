@@ -182,7 +182,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
-        log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
+        log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(),events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
         events.getEvents().stream()
             .filter(this::isRegisteredWithFeedManager)
             .filter(this::ensureNewEvent)

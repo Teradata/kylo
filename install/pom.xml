@@ -639,6 +639,27 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/setup/config/kylo-cluster</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../metadata/metadata-modeshape/src/main/resources</location>
+                  <includes>
+                    <include>modeshape-local-test-jgroups-config.xml</include>
+                    <include>modeshape-s3-jgroups-config.xml</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../core/cluster-manager/cluster-manager-core/src/main/resources/kylo-cluster-jgroups-config-example.xml</location>
+                </source>
+                <source>
+                  <location>../services/scheduler-service/scheduler-quartz/src/main/resources/quartz-cluster-example.properties</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/setup/activemq</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
@@ -681,6 +702,12 @@
                   <location>../plugins/service-monitor-ambari/target</location>
                   <includes>
                     <include>kylo-service-monitor-ambari-${project.version}.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/service-monitor-kylo-cluster/target</location>
+                  <includes>
+                    <include>kylo-service-monitor-kylo-cluster-${project.version}.jar</include>
                   </includes>
                 </source>
               </sources>

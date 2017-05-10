@@ -263,13 +263,13 @@ public class PropertyExpressionResolver {
      * 1) nifi.<processorType>[<processorName>].<property key>
      * 2)    nifi.<processorType>.<property key>
      * 3) nifi.all_processors.<property key>
-     * @param property
-     * @param propertyKey
+     * @param property the property
+     * @param propertyKey a config. environment property to match on
      * @return
      */
     private String getConfigurationPropertyValue(NifiProperty property, String propertyKey) {
         if (StringUtils.isNotBlank(propertyKey) && propertyKey.startsWith(configPropertyPrefix)) {
-            return fixNiFiExpressionPropertyValue(environmentProperties.getPropertyValueAsString(propertyKey));
+            return ConfigurationPropertyReplacer.fixNiFiExpressionPropertyValue(environmentProperties.getPropertyValueAsString(propertyKey));
         } else {
             //see if the processorType is configured
             String processorTypeWithProcessorNameProperty = ConfigurationPropertyReplacer.getProcessorNamePropertyConfigName(property);
@@ -282,21 +282,11 @@ public class PropertyExpressionResolver {
                     value = environmentProperties.getPropertyValueAsString(globalPropertyType);
                 }
             }
-            return fixNiFiExpressionPropertyValue(value);
+            return ConfigurationPropertyReplacer.fixNiFiExpressionPropertyValue(value);
         }
     }
 
-    /**
-     * Replace the $nifi{} with ${}
-     * @param value the property value
-     * @return the replaced value
-     */
-    private String fixNiFiExpressionPropertyValue(String value){
-        if(StringUtils.isNotBlank(value)) {
-            return StringUtils.replace(value, ConfigurationPropertyReplacer.NIF_EL_PROPERTY_REPLACEMENT_PREFIX, "${");
-        }
-        return value;
-    }
+
 
     /**
      * Resolves the value of the specified property using static configuration properties.
@@ -319,7 +309,7 @@ public class PropertyExpressionResolver {
         String value = StringUtils.isBlank(processTypeAndProcessNamePropertyValue) ?  ( StringUtils.isBlank(processorTypePropertyValue) ? globalPropertyValue : processorTypePropertyValue) : processTypeAndProcessNamePropertyValue;
 
         if (value != null) {
-            value = fixNiFiExpressionPropertyValue(value);
+            value = ConfigurationPropertyReplacer.fixNiFiExpressionPropertyValue(value);
             property.setValue(value);
             return new ResolveResult(true, true);
         }

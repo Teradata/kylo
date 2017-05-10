@@ -34,11 +34,21 @@ public interface ClusterService {
      */
     void subscribe(ClusterServiceListener listener);
 
+
+    /**
+     * Subscribe to cluster message events
+     * @param messageReceiver a receiver of a message sent by another cluster member
+     */
+    void subscribe(ClusterServiceMessageReceiver messageReceiver);
+
     /**
      * Adds this node to the cluster
      * @throws Exception
      */
     void start() throws Exception;
+
+
+    void stop() throws Exception;
 
     /**
      *
@@ -54,15 +64,17 @@ public interface ClusterService {
 
     /**
      * Send a message to everyone in the cluster, including this node
+     * @param type the type describing the message
      * @param message a message to send
      */
-    void sendMessage(Serializable message);
+    void sendMessage(String type, Serializable message);
 
     /**
      * Send a message to everyone else in the cluster, not including this node
+     * @param type the type describing the message
      * @param message a message to send
      */
-    void sendMessageToOthers(Serializable message);
+    void sendMessageToOthers(String type,Serializable message);
 
     /**
      *

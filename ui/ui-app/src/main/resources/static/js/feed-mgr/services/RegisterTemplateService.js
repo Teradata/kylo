@@ -556,6 +556,59 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 }
             },
 
+            accessDeniedDialog:function() {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Access Denied")
+                        .textContent("You do not have access to edit templates.")
+                        .ariaLabel("Access denied to edit templates")
+                        .ok("OK")
+                );
+            },
+
+            /**
+             * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
+             */
+            checkTemplateAccess:function(model){
+                var self = data;
+                if(model == undefined){
+                    model = self.model;
+                }
+                model.errorMessage = '';
+
+                var entityAccessControlled = model.id != null && AccessControlService.isEntityAccessControlled();
+                var deferred = $q.defer();
+                var requests = {
+                    entityEditAccess: entityAccessControlled == true ? self.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE,model) : true,
+                    entityAdminAccess: entityAccessControlled == true ? self.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE,model) : true,
+                    functionalAccess: AccessControlService.getUserAllowedActions()
+                }
+
+                $q.all(requests).then(function (response) {
+
+                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
+                    var allowAdminAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+
+                    var allowEdit = response.entityEditAccess && allowEditAccess
+                    var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
+                    var accessAllowed = allowEdit || allowAdmin;
+                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed};
+                    if(!result.isValid){
+                        if(!accessAllowed) {
+                            model.errorMessage = "Access Denied.  You are unable to edit the template. "
+                            self.accessDeniedDialog();
+                        }
+                        else {
+                            model.errorMessage = "Unable to proceeed";
+                        }
+                    }
+                    deferred.resolve(result);
+
+                });
+                return deferred.promise;
+            },
+
             /**
              * Assigns the model properties and render types
              * Returns a promise

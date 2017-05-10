@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -88,7 +87,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         super.setupAccessControl(owner);
 
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
@@ -96,7 +95,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         this.category.getDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), category.getNode()));
@@ -112,6 +111,9 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
+            } else if (action.implies(CategoryAccessControl.CREATE_FEED)) {
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addPermissions(details.getNode(), principal, Privilege.JCR_ALL));
+               JcrAccessControlUtil.addPermissions(category.getNode(), principal,  Privilege.JCR_MODIFY_PROPERTIES);
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.ACCESS_CATEGORY)) {
@@ -178,6 +180,9 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL));
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL);
+            }  else if (action.implies(CategoryAccessControl.CREATE_FEED) ) {
+                JcrAccessControlUtil.removePermissions(category.getNode(), principal,  Privilege.JCR_MODIFY_PROPERTIES);
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_ALL));
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.ACCESS_CATEGORY)) {

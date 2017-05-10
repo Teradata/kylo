@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -95,15 +94,17 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
+    public void setupAccessControl(Principal owner) {
         super.setupAccessControl(owner);
 
         enable(owner, FeedAccessControl.EDIT_DETAILS);
+        enable(owner, FeedAccessControl.ACCESS_OPS);
         enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
+        enable(JcrMetadataAccess.ADMIN, FeedAccessControl.ACCESS_OPS);
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), feed.getNode()));
@@ -122,7 +123,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Edit access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
@@ -143,7 +144,7 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Read access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()

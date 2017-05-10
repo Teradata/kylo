@@ -167,7 +167,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         options: {skipHeader: false},
                         active: true,
                         roleMemberships:[],
-                        owner:null
+                        owner:null,
+                        roleMembershipsUpdated:false
                     };
                 },
                 /**
@@ -500,7 +501,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             var feedField = angular.copy(columnDef);
 
                             sourceField.name = columnDef.origName;
-
+                            sourceField.derivedDataType = columnDef.origDataType;
                             // structured files must use the original names
                             if (model.table.structured == true) {
                                 feedField.name = columnDef.origName;

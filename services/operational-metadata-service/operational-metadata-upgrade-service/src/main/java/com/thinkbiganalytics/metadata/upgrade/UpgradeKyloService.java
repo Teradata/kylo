@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -69,13 +70,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -89,6 +93,11 @@ import javax.jcr.RepositoryException;
 @Order(PostMetadataConfigAction.LATE_ORDER + 100)
 public class UpgradeKyloService implements PostMetadataConfigAction {
 //public class UpgradeKyloService {
+    
+//    public static final KyloVersion[] UPGRADE_VERSIONS = new KyloVersion[] 
+//                    {
+//                     KyloVersionUtil.version("0.7.")
+//                    };
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
     @Inject
@@ -175,12 +184,70 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * This code will run when the latest version is up and running
      */
     private void onMetadataStart() {
-      if(kyloVersionProvider.isUpToDate()) {
+      if (kyloVersionProvider.isUpToDate()) {
            ensureFeedTemplateFeedRelationships();
-           if(accessController.isEntityAccessControlled()) {
+           fixDefaultGroupNames();
+           
+           if (accessController.isEntityAccessControlled()) {
                ensureDefaultEntityRoles();
            }
        }
+    }
+
+    private void fixDefaultGroupNames() {
+        metadataAccess.commit(() -> {
+            this.userProvider.findGroupByName("designer")
+                .ifPresent(oldGrp -> {
+                    UserGroup designersGroup = createDefaultGroup("designers", "Designers");
+                    
+                    oldGrp.getUsers().forEach(user -> designersGroup.addUser(user));
+                    
+                    actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+                        .ifPresent((allowed) -> {
+                            allowed.enable(designersGroup.getRootPrincial(),
+                                           OperationsAccessControl.ACCESS_OPS,
+                                           FeedServicesAccessControl.EDIT_FEEDS,
+                                           FeedServicesAccessControl.ACCESS_TABLES,
+                                           FeedServicesAccessControl.IMPORT_FEEDS,
+                                           FeedServicesAccessControl.EXPORT_FEEDS,
+                                           FeedServicesAccessControl.EDIT_CATEGORIES,
+                                           FeedServicesAccessControl.EDIT_DATASOURCES,
+                                           FeedServicesAccessControl.EDIT_TEMPLATES,
+                                           FeedServicesAccessControl.IMPORT_TEMPLATES,
+                                           FeedServicesAccessControl.EXPORT_TEMPLATES,
+                                           FeedServicesAccessControl.ADMIN_TEMPLATES,
+                                           FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                           FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                            });
+        
+                    this.userProvider.deleteGroup(oldGrp);
+                });
+            
+            this.userProvider.findGroupByName("analyst")
+                .ifPresent(oldGrp -> {
+                    UserGroup analystsGroup = createDefaultGroup("analysts", "Analysts");
+                    
+                    oldGrp.getUsers().forEach(user -> analystsGroup.addUser(user));
+                    
+                    actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+                    .ifPresent((allowed) -> {
+                        allowed.enable(analystsGroup.getRootPrincial(),
+                                       OperationsAccessControl.ACCESS_OPS,
+                                       FeedServicesAccessControl.EDIT_FEEDS,
+                                       FeedServicesAccessControl.ACCESS_TABLES,
+                                       FeedServicesAccessControl.IMPORT_FEEDS,
+                                       FeedServicesAccessControl.EXPORT_FEEDS,
+                                       FeedServicesAccessControl.EDIT_CATEGORIES,
+                                       FeedServicesAccessControl.ACCESS_TEMPLATES,
+                                       FeedServicesAccessControl.ACCESS_DATASOURCES,
+                                       FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
+                                       FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                    });
+                    
+                    this.userProvider.deleteGroup(oldGrp);
+                });
+        }, MetadataAccess.SERVICE);
+        
     }
 
     private void setupFreshInstall() {
@@ -193,8 +260,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             // Create default groups if they don't exist.
             UserGroup adminsGroup = createDefaultGroup("admin", "Administrators");
             UserGroup opsGroup = createDefaultGroup("operations", "Operations");
-            UserGroup designersGroup = createDefaultGroup("designer", "Designers");
-            UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
+            UserGroup designersGroup = createDefaultGroup("designers", "Designers");
+            UserGroup analystsGroup = createDefaultGroup("analysts", "Analysts");
             UserGroup usersGroup = createDefaultGroup("user", "Users");
 
 
@@ -260,7 +327,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         //admin can do everything the editor does + change perms
         createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only", FeedAccessControl.ACCESS_DETAILS);
+        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only",
+                          FeedAccessControl.ACCESS_DETAILS,
+                          FeedAccessControl.ACCESS_OPS);
 
         SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
                                                         TemplateAccessControl.ACCESS_TEMPLATE,
@@ -283,7 +352,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
         createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
 
-        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_CATEGORY, CategoryAccessControl.CREATE_FEED);
+        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
 
         final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
                                                                 DatasourceAccessControl.ACCESS_DATASOURCE,
@@ -298,9 +367,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void ensureDefaultEntityRoles() {
             createDefaultRoles();
             metadataAccess.commit(() -> {
-                ensureFeedRoles();
-                ensureCategoryRoles();
                 ensureTemplateRoles();
+                ensureCategoryRoles();
+                ensureFeedRoles();
             }, MetadataAccess.SERVICE);
     }
 
@@ -310,7 +379,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
             feeds.stream().forEach(feed -> {
-                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = feed.getOwner() != null ? feed.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
@@ -321,7 +391,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY);
             categories.stream().forEach(category -> {
-                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = category.getOwner() != null ? category.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
@@ -332,7 +403,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE);
             templates.stream().forEach(template -> {
-                allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                Principal owner = template.getOwner() != null ? template.getOwner() : JcrMetadataAccess.getActiveUser();
+                allowedActions.ifPresent(actions -> ((JcrFeedTemplate) template).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }
@@ -492,9 +564,21 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 role.setPermissions(actions);
                 return role;
         };
+
+        Function<SecurityRole,SecurityRole> ensureActions = (role) -> {
+            if(actions != null) {
+                List<Action> actionsList = Arrays.asList(actions);
+                boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));
+                if(needsUpdate){
+                    role.setPermissions(actions);
+                }
+            }
+            return role;
+        };
+
         try {
-            return roleProvider.getRole(entityName, roleName)
-                .orElseGet(createIfNotFound);
+            return roleProvider.getRole(entityName, roleName).map(ensureActions).orElseGet(createIfNotFound);
+
         }catch (RoleNotFoundException e){
             return createIfNotFound.get();
         }

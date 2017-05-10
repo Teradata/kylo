@@ -60,19 +60,36 @@
                         <md-tooltip md-direction="top">
                           Specifies fields available for global indexing for search and discovery
                         </md-tooltip>
+                        <md-input-container class="md-block" flex-gt-sm>
+                          <md-checkbox aria-label="Select All"
+                                       ng-checked="vm.indexCheckAll.isChecked"
+                                       md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                                       ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
+                        </md-input-container>
                       </div>
                        <div flex="10" class="md-list-item-text hint">
                           Profile
                          <md-tooltip md-direction="top">
                            Should this field be profiled?
                          </md-tooltip>
+                         <md-input-container class="md-block" flex-gt-sm>
+                           <md-checkbox aria-label="Select All"
+                                        ng-checked="vm.profileCheckAll.isChecked"
+                                        md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                                        ng-click="vm.profileCheckAll.toggleAll()">
+                           </md-checkbox>
+                         </md-input-container>
                        </div>
                       <div flex="40" class="md-list-item-text hint">
                         Standardize & Validate
                       </div>
                     </div>
                   </md-list-item>
-
+                  <div layout="row" layout-fill flex>
+                    <span style="margin-top:-10px;" layout-fill flex>
+                      <md-divider style="border-top-color:grey"></md-divider>
+                    </span>
+                  </div>
                   <div id="define-feed-data-processing-container">
                     <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
@@ -86,13 +103,13 @@
                       </div>
                       <div flex="10" class="md-list-item-text " layout="column">
                         <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex">
+                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
                           </md-checkbox>
                         </md-input-container>
                       </div>
                        <div flex="10" class="md-list-item-text " layout="column">
                          <md-input-container class="md-block" flex-gt-sm>
-                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex">
+                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
                            </md-checkbox>
                          </md-input-container>
                        </div>

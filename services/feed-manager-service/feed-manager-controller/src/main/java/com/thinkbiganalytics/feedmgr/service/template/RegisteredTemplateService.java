@@ -119,7 +119,7 @@ public class RegisteredTemplateService {
         RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId, transformationType, principals);
         //if it is null check to see if the template exists in nifi and is already registered
         if (registeredTemplate == null) {
-            log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
+          //  log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
             registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId, transformationType, principals);
         }
         if (registeredTemplate == null) {
@@ -139,7 +139,6 @@ public class RegisteredTemplateService {
         }
         return registeredTemplate;
     }
-
 
     /**
      * Find a template by the Kylo Id

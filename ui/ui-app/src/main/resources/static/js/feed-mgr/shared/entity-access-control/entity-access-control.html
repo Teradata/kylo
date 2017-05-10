@@ -4,9 +4,10 @@
 <div layout-padding ng-if="vm.enabled">
     <div layout="row">
     <div flex>
+      <!-- for 0.8.1 disable access to change the owner -->
       <md-autocomplete flex="45" required
                        md-input-name="owner"
-                       ng-disabled="vm.readOnly"
+                       ng-disabled="true"
                        md-selected-item="vm.entity.owner"
                        md-search-text-change="vm.ownerAutoComplete.searchTextChanged(vm.ownerAutoComplete.searchText)"
                        md-search-text="vm.ownerAutoComplete.searchText"

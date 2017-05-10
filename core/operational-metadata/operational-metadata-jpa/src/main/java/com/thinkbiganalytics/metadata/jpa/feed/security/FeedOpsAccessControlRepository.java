@@ -37,17 +37,18 @@ public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOps
     /**
      * Predicate for selecting matching principals in WHERE clause.
      */
-    String WHERE_PRINCIPAL_NAME = "acl.principalName in :#{principal.roleSet} ";
+    String WHERE_PRINCIPALS_MATCH = " (acl.principalType = 'USER' AND acl.principalName = :#{user.name}) "
+                    + " OR (acl.principalType = 'GROUP' AND acl.principalName in :#{user.groups}) ";
 
     /**
      * Join statement for selecting only feeds accessible to the current principal.
      */
-    String JOIN_ACL_TO_FEED = "join JpaFeedOpsAclEntry as acl on feed.id = acl.feedId and " + WHERE_PRINCIPAL_NAME + " ";
+    String JOIN_ACL_TO_FEED = "join JpaFeedOpsAclEntry as acl on feed.id = acl.feedId and " + WHERE_PRINCIPALS_MATCH + " ";
 
     /**
      * Join statement for selecting only jobs accessible to the current principal.
      */
-    String JOIN_ACL_TO_JOB = "join JpaFeedOpsAclEntry as acl on job.jobInstance.feed.id = acl.feedId and " + WHERE_PRINCIPAL_NAME + " ";
+    String JOIN_ACL_TO_JOB = "join JpaFeedOpsAclEntry as acl on job.jobInstance.feed.id = acl.feedId and " + WHERE_PRINCIPALS_MATCH + " ";
 
     @Query("select entry from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
     List<JpaFeedOpsAclEntry> findForFeed(@Param("id") UUID feedId);
