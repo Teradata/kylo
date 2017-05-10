@@ -264,7 +264,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
          */
         fillCell: function (cellDiv, cell) {
             // Adjust padding based on column number
-            if (cell.column === 0) {
+            if (cell !== null && cell.column === 0) {
                 cellDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
                 cellDiv.style.paddingRight = 0 + PIXELS;
             } else {
@@ -302,12 +302,14 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             var $scope = $(headerDiv).scope();
             var self = this;
 
-            this.$timeout_(function () {
-                $scope.$apply(function () {
-                    $scope.header = header;
-                    $scope.table = self;
-                });
-            }, 0);
+            if ($scope.header !== header) {
+                this.$timeout_(function () {
+                    $scope.$apply(function () {
+                        $scope.header = header;
+                        $scope.table = self;
+                    });
+                }, 0);
+            }
         },
 
         /**
@@ -319,7 +321,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
          */
         getCellSync: function (i, j) {
             var column = this.columns_[j];
-            if (i < this.table_.nbRows) {
+            if (i >= 0 && i < this.rows_.length) {
                 return {
                     column: j,
                     row: i,
@@ -453,6 +455,13 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
 
             // Rebuild table
             this.table_.setup();
+        },
+
+        /**
+         * Refreshes the contents of rows.
+         */
+        refreshRows: function () {
+            this.table_.refreshAllContent(true);
         },
 
         /**

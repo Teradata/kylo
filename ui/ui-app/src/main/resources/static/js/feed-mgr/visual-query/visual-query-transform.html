@@ -89,7 +89,8 @@
 
       <md-progress-linear md-mode="query" ng-show="vm.executingQuery && vm.queryProgress == 0"></md-progress-linear>
       <md-progress-linear md-mode="determinate" ng-value="vm.queryProgress" ng-show="vm.executingQuery && vm.queryProgress > 0"></md-progress-linear>
-      <visual-query-table table-columns="vm.tableColumns" table-rows="vm.tableRows" table-options="vm.tableOptions" style="width: 100%; height: 500px; position: relative;"></visual-query-table>
+      <visual-query-table table-columns="vm.tableColumns" table-rows="vm.tableRows" table-options="vm.tableOptions" style="width: 100%; height: 500px; position: relative;" browser-height
+                          browser-height-scroll-y="false" browser-height-offset="284"></visual-query-table>
     </div>
   </div>
 </div>

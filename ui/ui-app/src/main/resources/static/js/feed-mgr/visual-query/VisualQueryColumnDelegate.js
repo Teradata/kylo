@@ -335,7 +335,7 @@ define(['angular', "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/m
                     delete filter.regex;
                 }
                 table.onRowsChange();
-                table.refresh();
+                table.refreshRows();
             },
 
             /**
