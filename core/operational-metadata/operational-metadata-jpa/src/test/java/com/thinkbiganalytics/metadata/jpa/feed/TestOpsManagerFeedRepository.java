@@ -39,7 +39,8 @@ public interface TestOpsManagerFeedRepository extends JpaRepository<JpaOpsManage
     List<String> getFeedNamesForCurrentUser();
 
     @Query("select distinct feed.name from JpaOpsManagerFeed as feed "
-           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED)
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           +" where "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<String> getFeedNames();
 
     List<JpaOpsManagerFeed> findByName(String name);

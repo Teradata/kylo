@@ -50,6 +50,7 @@ public interface BatchStepExecutionRepository extends JpaRepository<JpaBatchStep
     @Query("select step from JpaBatchStepExecution as step "
            + "join JpaBatchJobExecution as job on job.jobExecutionId = step.jobExecution.jobExecutionId "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB
-           + "where step.jobExecution.jobExecutionId = :jobExecutionId")
+           + "where step.jobExecution.jobExecutionId = :jobExecutionId "
+           + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<JpaBatchStepExecution> findSteps(@Param("jobExecutionId") Long jobExecutionId);
 }
