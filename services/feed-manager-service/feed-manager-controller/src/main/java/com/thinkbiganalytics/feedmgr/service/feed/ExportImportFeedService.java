@@ -366,7 +366,7 @@ public class ExportImportFeedService {
             //ensure the user can create under the category
             Category category = metadataAccess.read(() -> {
                 return categoryProvider.findBySystemName(feedCategory);
-            });
+            }, MetadataAccess.SERVICE);
 
             if(category == null) {
                 //ensure the user has functional access to create categories
@@ -486,7 +486,7 @@ public class ExportImportFeedService {
                 feed.setTemplate(template);
                 //now that we have the Feed object we need to create the instance of the feed
                 UploadProgressMessage uploadProgressMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Saving  and creating feed instance in NiFi");
-                NifiFeed nifiFeed = metadataAccess.commit(() -> {
+
                     metadata.setIsNew(existingFeed == null ? true : false);
                     metadata.setFeedId(existingFeed != null ? existingFeed.getFeedId() : null);
                     metadata.setId(existingFeed != null ? existingFeed.getId() : null);
@@ -538,8 +538,8 @@ public class ExportImportFeedService {
 
                     }
 
-                    return metadataService.createFeed(metadata);
-                });
+                NifiFeed nifiFeed =  metadataService.createFeed(metadata);
+
                 if (nifiFeed != null) {
                     feed.setFeedName(nifiFeed.getFeedMetadata().getCategoryAndFeedName());
                     uploadProgressMessage.update("Successfully saved the feed " + feed.getFeedName(), true);
