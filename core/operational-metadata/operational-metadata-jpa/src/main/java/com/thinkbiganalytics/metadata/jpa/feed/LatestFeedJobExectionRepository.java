@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -28,12 +30,13 @@ import java.util.List;
 /**
  * Spring data repository for {@link JpaLatestFeedJobExecution}
  */
+@RepositoryType(LatestFeedJobExectionSecuringRepository.class)
 public interface LatestFeedJobExectionRepository extends JpaRepository<JpaLatestFeedJobExecution, Long> {
 
-
-    List<JpaLatestFeedJobExecution> findByFeedType(String feedType);
-
-    @Query("select v from JpaLatestFeedJobExecution as v where v.feedType = 'CHECK'")
+    @Query("select jobExecution from JpaLatestFeedJobExecution as jobExecution "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB_EXECUTION
+           + "where jobExecution.feedType = 'CHECK' "
+           + "and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<JpaLatestFeedJobExecution> findCheckDataJobs();
 
 }
