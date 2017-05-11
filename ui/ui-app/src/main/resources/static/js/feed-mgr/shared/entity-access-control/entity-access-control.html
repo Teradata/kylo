@@ -47,6 +47,9 @@
     <div layout="row">
       <div flex="40" style="align-self:center;">
         {{roleMembership.role.title}}
+        <md-tooltip md-direction="top" ng-if="roleMembership.role.description">
+         {{roleMembership.role.description}}
+        </md-tooltip>
       </div>
 
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>

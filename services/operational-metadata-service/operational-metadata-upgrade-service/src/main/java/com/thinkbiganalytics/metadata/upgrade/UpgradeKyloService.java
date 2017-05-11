@@ -50,6 +50,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.upgrade.version_0_7_1.UpgradeAction;
@@ -318,29 +319,30 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void createDefaultRoles() {
         metadataAccess.commit(() -> {
         // Create default roles
-        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor",
+        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Feed Editor Description",
                                                     FeedAccessControl.EDIT_DETAILS,
                                                     FeedAccessControl.DELETE,
                                                     FeedAccessControl.ACCESS_OPS,
                                                     FeedAccessControl.ENABLE_DISABLE,
                                                     FeedAccessControl.EXPORT);
-        //admin can do everything the editor does + change perms
-        createDefaultRole(SecurityRole.FEED, "admin", "Admin", feedEditor, FeedAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only",
+        //admin can do everything the editor does + change perms
+        createDefaultRole(SecurityRole.FEED, "admin", "Admin","Feed Admin Description", feedEditor, FeedAccessControl.CHANGE_PERMS);
+
+        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only","Feed Read only Description",
                           FeedAccessControl.ACCESS_DETAILS,
                           FeedAccessControl.ACCESS_OPS);
 
-        SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor",
+        SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor","Template Editor Description",
                                                         TemplateAccessControl.ACCESS_TEMPLATE,
                                                         TemplateAccessControl.EDIT_TEMPLATE,
                                                         TemplateAccessControl.CREATE_FEED,
                                                         TemplateAccessControl.EXPORT);
-        createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", templateEditor, TemplateAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", "Template Admin Description",templateEditor, TemplateAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", TemplateAccessControl.ACCESS_TEMPLATE);
+        createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", "Template Read only Description",TemplateAccessControl.ACCESS_TEMPLATE);
 
-        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor",
+        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor","Category Editor Description",
                                                         CategoryAccessControl.ACCESS_CATEGORY,
                                                         CategoryAccessControl.EDIT_DETAILS,
                                                         CategoryAccessControl.EDIT_SUMMARY,
@@ -348,19 +350,19 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                         CategoryAccessControl.CREATE_FEED,
                                                         CategoryAccessControl.DELETE);
 
-        createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", "Category Admin Description", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", CategoryAccessControl.ACCESS_CATEGORY);
+        createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", "Category Read only Description",CategoryAccessControl.ACCESS_CATEGORY);
 
-        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
+        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", "Feed Creator Description",CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
 
-        final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor",
+        final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor","Datasource Editor Description",
                                                                 DatasourceAccessControl.ACCESS_DATASOURCE,
                                                                 DatasourceAccessControl.EDIT_DETAILS,
                                                                 DatasourceAccessControl.EDIT_SUMMARY,
                                                                 DatasourceAccessControl.DELETE);
-        createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
-        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", DatasourceAccessControl.ACCESS_DATASOURCE);
+        createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", "Datasource Admin Description",datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Datasource Readonly Description",DatasourceAccessControl.ACCESS_DATASOURCE);
         }, MetadataAccess.SERVICE);
     }
 
@@ -558,14 +560,15 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         return newGroup;
     }
 
-    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, Action... actions) {
+    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, String desc, Action... actions) {
         Supplier<SecurityRole> createIfNotFound = () -> {
-                SecurityRole role = roleProvider.createRole(entityName, roleName, title, "");
+                SecurityRole role = roleProvider.createRole(entityName, roleName, title, desc);
                 role.setPermissions(actions);
                 return role;
         };
 
         Function<SecurityRole,SecurityRole> ensureActions = (role) -> {
+            ((JcrSecurityRole)role).setDescription(desc);
             if(actions != null) {
                 List<Action> actionsList = Arrays.asList(actions);
                 boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));
@@ -594,11 +597,11 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * @param actions    additional actions for this role
      * @return the security role
      */
-    protected SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title, @Nonnull final SecurityRole baseRole,
+    protected SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title,final String desc, @Nonnull final SecurityRole baseRole,
                                              final Action... actions) {
         final Stream<Action> baseActions = baseRole.getAllowedActions().getAvailableActions().stream().flatMap(AllowableAction::stream);
         final Action[] allowedActions = Stream.concat(baseActions, Stream.of(actions)).toArray(Action[]::new);
-        return createDefaultRole(entityName, roleName, title, allowedActions);
+        return createDefaultRole(entityName, roleName, title,desc, allowedActions);
     }
 
 
