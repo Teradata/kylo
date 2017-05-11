@@ -21,6 +21,8 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
+import com.thinkbiganalytics.metadata.jpa.feed.FeedHealthSecuringRepository;
+import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.joda.time.DateTime;
@@ -35,6 +37,7 @@ import java.util.Set;
 /**
  * Spring data repository for accessing {@link JpaBatchJobExecution}
  */
+@RepositoryType(BatchJobExecutionSecuringRepository.class)
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 
     @Query(value = "select job from JpaBatchJobExecution as job "

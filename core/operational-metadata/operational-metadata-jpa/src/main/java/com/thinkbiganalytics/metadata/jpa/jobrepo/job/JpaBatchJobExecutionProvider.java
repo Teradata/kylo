@@ -520,8 +520,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     private Predicate augment(QOpsManagerFeedId id) {
-        //TODO this is almost a copy from FeedAclIndexQueryAugmentor.augment(Predicate[] predicate)
-        //TODO make sure this can be switched on and off with security.entity.access.controlled property
         return FeedAclIndexQueryAugmentor.generateExistsExpression(id);
     }
 
@@ -562,6 +560,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
 
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
         com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
@@ -578,7 +580,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobState.as("status"),
                                     jobExecution.jobExecutionId.count().as("count"));
 
-        JPAQuery<?> query = factory.select(expr).from(jobExecution).where(whereBuilder).groupBy(jobExecution.status);
+        JPAQuery<?> query = factory.select(expr)
+            .from(jobExecution)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(whereBuilder
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
+            .groupBy(jobExecution.status);
 
         return (List<JobStatusCount>) query.fetch();
     }
@@ -587,6 +595,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public List<JobStatusCount> getJobStatusCountByDate() {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
@@ -603,6 +615,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
@@ -618,6 +633,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
@@ -640,7 +659,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
-            .where(whereBuilder)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(whereBuilder
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
