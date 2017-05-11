@@ -26,18 +26,16 @@
 
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:functional-test.properties"/>
+        <property name="location" value="classpath:integration-test.properties"/>
     </bean>
 
-    <bean class="com.thinkbiganalytics.test.KyloConfig">
+    <bean class="com.thinkbiganalytics.integration.KyloConfig">
         <property name="host" value="${kylo.host}"/>
         <property name="port" value="${kylo.port}"/>
         <property name="basePath" value="${kylo.basePath}"/>
-        <property name="username" value="${kylo.username}"/>
-        <property name="password" value="${kylo.password}"/>
     </bean>
 
-    <bean class="com.thinkbiganalytics.test.SshConfig">
+    <bean class="com.thinkbiganalytics.integration.SshConfig">
         <property name="host" value="${ssh.host}"/>
         <property name="port" value="${ssh.port}"/>
         <property name="username" value="${ssh.username}"/>

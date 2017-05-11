@@ -65,9 +65,11 @@ import io.swagger.annotations.Tag;
  */
 @Component
 @Api(tags = "Security - Access Control", produces = "application/json")
-@Path("/v1/security/actions")
+@Path(AccessControlController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Security - Access Control", description = "manage access controls"))
 public class AccessControlController {
+
+    public static final String BASE = "/v1/security/actions";
 
     @Inject
     private MetadataAccess metadata;
