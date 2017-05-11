@@ -24,7 +24,7 @@
       <!-- <span class="md-caption" layout-align="end top">Job {{vm.relatedJobIndex+1}} of {{vm.relatedJobs.length}}</span> -->
     </header-section>
     <body-section transclude-to="body" transclude-replace="true">
-      <md-content>
+      <md-content ng-if="vm.unableToFindJob == false">
         <div layout="column" class="layout-padding-bottom layout-padding-left-16">
           <div layout="row">
 
@@ -215,10 +215,17 @@
 
 
       </md-content>
+      <md-content ng-if="vm.unableToFindJob == true" style="min-height:300px">
+        <div layout="column" layout-align="center center" flex>
+        <span class="md-subhead">
+        Unable to find the job.  This job either doesn't exist or you do not have access to view this job.
+          </span>
+        </div>
+      </md-content>
     </body-section>
   </card-layout>
 
-  <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body">
+  <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body" ng-if="vm.unableToFindJob == false">
     <header-section transclude-to="head" flex layout>
       <div style="white-space:nowrap" class="card-title">Job Details</div>
       <span flex></span>

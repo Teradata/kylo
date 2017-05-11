@@ -3,8 +3,8 @@
  */
 define(['angular'], function (angular) {
 
-        var controller = function ($scope, $http, $location, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions,StateService, ElasticSearchService,
-                                   SideNavService) {
+        var controller = function ($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions,$mdDialog,StateService, ElasticSearchService,
+                                   SideNavService,AccessControlService) {
             var self = this;
             /**
              * Function to toggle the left nav
@@ -44,6 +44,12 @@ define(['angular'], function (angular) {
              * Media object to help size the panels on the screen when shrinking/growing the window
              */
             $scope.$mdMedia = $mdMedia;
+
+            /**
+             * Time to wait before initializing the loading dialog
+             * @type {number}
+             */
+            var LOADING_DIALOG_WAIT_TIME = 100;
 
 
             /*
@@ -94,6 +100,28 @@ define(['angular'], function (angular) {
                 }
             };
 
+            var loading = false;
+
+            function showLoadingDialog() {
+                loading = true;
+
+                $mdDialog.show({
+                    templateUrl: 'js/main/loading-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: true
+                });
+            }
+
+            /**
+             * Show a loading dialog if the load takes longer than xx ms
+             */
+          var loadingTimeout =  $timeout(function() {
+                showLoadingDialog();
+
+            },LOADING_DIALOG_WAIT_TIME);
+
+
 
             /**
              * Set the ui-router states to the $rootScope for easy access
@@ -109,12 +137,23 @@ define(['angular'], function (angular) {
                 $rootScope.previousState = transition.from().name;
                 $rootScope.currentState = transition.to().name;
 
+                //hide the loading dialog
+                if(!AccessControlService.isFutureState(self.currentState.name)){
+                    if(loadingTimeout != null){
+                        $timeout.cancel(loadingTimeout);
+                        loadingTimeout = null;
+                    }
+                    if(loading) {
+                        loading = false;
+                        $mdDialog.hide();
+                    }
+                }
 
             });
 
         };
 
-     return   angular.module("kylo").controller('IndexController', controller);
+     return   angular.module("kylo").controller('IndexController', ["$scope","$http","$location","$timeout","$window","$mdSidenav","$mdMedia","$mdBottomSheet","$log","$q","$element","$rootScope","$transitions","$mdDialog","StateService","ElasticSearchService","SideNavService","AccessControlService",controller]);
 
 
 });
