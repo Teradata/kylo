@@ -96,6 +96,8 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
          */
         self.users = [];
 
+        self.groupId = $transition$.params().groupId;
+
         // Update isValid when $error is updated
         $scope.$watch(
                 function() {return self.$error},
@@ -232,6 +234,7 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
             UserService.saveGroup(model)
                     .then(function() {
                         self.model = model;
+                        self.groupId = self.model.systemName;
                     });
         };
 
