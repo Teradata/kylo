@@ -54,13 +54,13 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
         echo "Which database (Enter the number)?"
         echo "1) MySQL"
         echo "2) PostgresSQL"
-        echo "3) SQLServer"
+        echo "3) SQL Server"
         read -p "> " database_type;
     done
 
     while : ; do
         if [ "$database_type" == "3"  ] ; then
-            echo "Please make sure that the sqlcmd tool is installed."
+            hash sqlcmd 2>/dev/null || { echo >&2 "The required tool sqlcmd is not present in PATH. Aborting."; exit 1; }
         fi
 
         echo
@@ -90,7 +90,7 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
         fi
         if [ "$database_type" == "3"  ] ; then
             echo "Creating SQLServer database 'kylo'"
-            ! /opt/mssql-tools/bin/sqlcmd -S ${hostname} -U ${username} -P ${password} -Q "CREATE DATABASE kylo ${azure_options}" || break;
+            ! sqlcmd -S ${hostname} -U ${username} -P ${password} -Q "CREATE DATABASE kylo ${azure_options}" || break;
         fi
     done
 fi
