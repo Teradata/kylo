@@ -319,7 +319,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     private void createDefaultRoles() {
         metadataAccess.commit(() -> {
         // Create default roles
-        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Feed Editor Description",
+        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Allows a user to edit, enable/disable, delete, export, and access job operations.",
                                                     FeedAccessControl.EDIT_DETAILS,
                                                     FeedAccessControl.DELETE,
                                                     FeedAccessControl.ACCESS_OPS,
@@ -327,22 +327,22 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                     FeedAccessControl.EXPORT);
 
         //admin can do everything the editor does + change perms
-        createDefaultRole(SecurityRole.FEED, "admin", "Admin","Feed Admin Description", feedEditor, FeedAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.FEED, "admin", "Admin","All capabilities defined in the 'Editor' role along with the ability to change the permissions", feedEditor, FeedAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only","Feed Read only Description",
+        createDefaultRole(SecurityRole.FEED, "readOnly", "Read-Only","Allows a user to view the feed and access job operations",
                           FeedAccessControl.ACCESS_DETAILS,
                           FeedAccessControl.ACCESS_OPS);
 
-        SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor","Template Editor Description",
+        SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor","Allows a user to edit,export a template",
                                                         TemplateAccessControl.ACCESS_TEMPLATE,
                                                         TemplateAccessControl.EDIT_TEMPLATE,
                                                         TemplateAccessControl.CREATE_FEED,
                                                         TemplateAccessControl.EXPORT);
-        createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", "Template Admin Description",templateEditor, TemplateAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions",templateEditor, TemplateAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", "Template Read only Description",TemplateAccessControl.ACCESS_TEMPLATE);
+        createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", "Allows a user to view the template",TemplateAccessControl.ACCESS_TEMPLATE);
 
-        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor","Category Editor Description",
+        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor","Allows a user to edit, export, delete, and create feeds using this category",
                                                         CategoryAccessControl.ACCESS_CATEGORY,
                                                         CategoryAccessControl.EDIT_DETAILS,
                                                         CategoryAccessControl.EDIT_SUMMARY,
@@ -350,19 +350,19 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                         CategoryAccessControl.CREATE_FEED,
                                                         CategoryAccessControl.DELETE);
 
-        createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", "Category Admin Description", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.CATEGORY, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions", categoryEditor, CategoryAccessControl.CHANGE_PERMS);
 
-        createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", "Category Read only Description",CategoryAccessControl.ACCESS_CATEGORY);
+        createDefaultRole(SecurityRole.CATEGORY, "readOnly", "Read-Only", "Allows a user to view the category",CategoryAccessControl.ACCESS_CATEGORY);
 
-        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", "Feed Creator Description",CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
+        createDefaultRole(SecurityRole.CATEGORY, "feedCreator", "Feed Creator", "Allows a user to create a new feed using this category",CategoryAccessControl.ACCESS_DETAILS,  CategoryAccessControl.CREATE_FEED);
 
-        final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor","Datasource Editor Description",
+        final SecurityRole datasourceEditor = createDefaultRole(SecurityRole.DATASOURCE, "editor", "Editor","Allows a user to edit,delete datasources",
                                                                 DatasourceAccessControl.ACCESS_DATASOURCE,
                                                                 DatasourceAccessControl.EDIT_DETAILS,
                                                                 DatasourceAccessControl.EDIT_SUMMARY,
                                                                 DatasourceAccessControl.DELETE);
-        createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", "Datasource Admin Description",datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
-        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Datasource Readonly Description",DatasourceAccessControl.ACCESS_DATASOURCE);
+        createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions",datasourceEditor, DatasourceAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Allows a user to view the datasource",DatasourceAccessControl.ACCESS_DATASOURCE);
         }, MetadataAccess.SERVICE);
     }
 
@@ -568,7 +568,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         };
 
         Function<SecurityRole,SecurityRole> ensureActions = (role) -> {
-            ((JcrSecurityRole)role).setDescription(desc);
+            role.setDescription(desc);
             if(actions != null) {
                 List<Action> actionsList = Arrays.asList(actions);
                 boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));

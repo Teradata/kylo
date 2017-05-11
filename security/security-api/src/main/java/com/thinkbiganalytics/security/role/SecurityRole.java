@@ -51,6 +51,8 @@ public interface SecurityRole {
 
     String getDescription();
 
+    void setDescription(String description);
+
     AllowedActions getAllowedActions();
 
     void setPermissions(Action... actions);
