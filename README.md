@@ -5,11 +5,21 @@ Kylo is an enterprise-ready data lake management software platform for Hadoop an
 Visit [http://kylo.io](http://kylo.io) and unlock the power of Kylo today!
 
 ## Quick Start
+
 You can download a pre-configured sandbox and get started with Kylo in no time.
 To get started visit the [Quick Start](http://kylo.io/quickstart.html) page.
 
 ## Documentation
+
 Please visit [Kylo documentation](http://kylo.readthedocs.io/) to learn more.  
+
+## Issues and Support
+
+To raise issues with Kylo, please register and visit the [Jira instance](https://kylo-io.atlassian.net/projects/KYLO).
+
+For support, questions can be asked on the [Google Groups group](https://groups.google.com/forum/#!forum/kylo-community).
+
+There is also the #kylo IRC channel on irc.freenode.net.
 
 ## Code Structure
 
