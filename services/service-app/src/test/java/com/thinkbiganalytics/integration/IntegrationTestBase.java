@@ -125,6 +125,9 @@ public class IntegrationTestBase {
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
 
+    protected void runAs(UserContext.User user) {
+        UserContext.setUser(user);
+    }
 
     @Before
     public void setupRestAssured() throws URISyntaxException {
@@ -201,7 +204,7 @@ public class IntegrationTestBase {
         LOG.info("Making request as " + username);
 
         return RestAssured.given()
-            .log().method().log().path().log().body()
+            .log().method().log().path()
             .auth().preemptive().basic(username, UserContext.getUser().getPassword())
             .contentType("application/json");
     }
