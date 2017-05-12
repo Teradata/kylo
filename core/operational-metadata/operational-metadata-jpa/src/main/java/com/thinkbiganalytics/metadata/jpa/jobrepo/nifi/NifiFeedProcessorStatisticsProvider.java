@@ -28,6 +28,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -137,6 +139,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -148,7 +151,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
@@ -161,6 +166,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -172,7 +180,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorName)
@@ -183,6 +193,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -196,9 +209,12 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
+
             .groupBy(stats.feedName, stats.maxEventTime)
             .orderBy(stats.maxEventTime.asc());
 

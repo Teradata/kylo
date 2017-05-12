@@ -338,11 +338,15 @@ public class FeedModelTransform {
      * @param feedManagerFeed the Metadata feed
      * @return the Feed Manager feed summary
      */
-    @Nonnull
     public FeedSummary domainToFeedSummary(@Nonnull final Feed feedManagerFeed) {
+        Category category = feedManagerFeed.getCategory();
+        if (category == null) {
+            return null;
+        }
         FeedSummary feedSummary = new FeedSummary();
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());
+
         feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
         if (feedManagerFeed.getCategory() instanceof Category) {
             feedSummary.setCategoryIcon(((Category) feedManagerFeed.getCategory()).getIcon());
@@ -366,8 +370,10 @@ public class FeedModelTransform {
             }
         }
         //add in access control items
-        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed,feedSummary);
+        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed, feedSummary);
+
         return feedSummary;
+
     }
 
     /**
@@ -378,7 +384,7 @@ public class FeedModelTransform {
      */
     @Nonnull
     public List<FeedSummary> domainToFeedSummary(@Nonnull final Collection<? extends Feed> domain) {
-        return domain.stream().map(this::domainToFeedSummary).collect(Collectors.toList());
+        return domain.stream().map(this::domainToFeedSummary).filter(feedSummary -> feedSummary != null).collect(Collectors.toList());
     }
 
     /**

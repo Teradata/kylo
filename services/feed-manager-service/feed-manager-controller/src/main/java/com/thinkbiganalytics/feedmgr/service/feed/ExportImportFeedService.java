@@ -363,12 +363,31 @@ public class ExportImportFeedService {
 
         }
         else {
-            //if the feed is new ensure the user has write access to create feeds under this category
+            //ensure the user can create under the category
+            Category category = metadataAccess.read(() -> {
+                return categoryProvider.findBySystemName(feedCategory);
+            }, MetadataAccess.SERVICE);
+
+            if(category == null) {
+                //ensure the user has functional access to create categories
+                boolean hasPermission = accessController.hasPermission(AccessController.SERVICES,FeedServicesAccessControl.EDIT_CATEGORIES);
+                if(!hasPermission) {
+                    String msg = "Access Denied. The category for this feed,"+feedCategory+", doesn't exist and you do not have access to create a new category.";
+                    feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                    feed.addErrorMessage(existingFeed, msg);
+                    feed.setValid(false);
+                    return false;
+                }
+                return true;
+            }
+            else {
+                //if the feed is new ensure the user has write access to create feeds under this category
                 return metadataAccess.read(() -> {
                     Category domainCategory = categoryProvider.findBySystemName(feedCategory);
+
                     //Query for Category and ensure the user has access to create feeds on that category
-                    if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
-                        String msg = "Access Denied. You do not have access to create feeds under the category " + FeedNameUtil.fullName(feedCategory,importingFeed.getSystemFeedName()) + ".";
+                    if (domainCategory == null || (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED))) {
+                        String msg = "Access Denied. You do not have access to create feeds under the category " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
                         feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
                         feed.addErrorMessage(existingFeed, msg);
                         feed.setValid(false);
@@ -377,6 +396,7 @@ public class ExportImportFeedService {
                         return true;
                     }
                 });
+            }
 
         }
     }
@@ -466,7 +486,7 @@ public class ExportImportFeedService {
                 feed.setTemplate(template);
                 //now that we have the Feed object we need to create the instance of the feed
                 UploadProgressMessage uploadProgressMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Saving  and creating feed instance in NiFi");
-                NifiFeed nifiFeed = metadataAccess.commit(() -> {
+
                     metadata.setIsNew(existingFeed == null ? true : false);
                     metadata.setFeedId(existingFeed != null ? existingFeed.getFeedId() : null);
                     metadata.setId(existingFeed != null ? existingFeed.getId() : null);
@@ -518,8 +538,8 @@ public class ExportImportFeedService {
 
                     }
 
-                    return metadataService.createFeed(metadata);
-                });
+                NifiFeed nifiFeed =  metadataService.createFeed(metadata);
+
                 if (nifiFeed != null) {
                     feed.setFeedName(nifiFeed.getFeedMetadata().getCategoryAndFeedName());
                     uploadProgressMessage.update("Successfully saved the feed " + feed.getFeedName(), true);
