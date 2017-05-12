@@ -33,60 +33,76 @@ public interface FeedServicesAccessControl {
 
     Action ACCESS_CATEGORIES = FEEDS_SUPPORT.subAction("accessCategories",
                                                        "Access Categories",
-                                                       "Allows access to categories");
+                                                       "Allows access to categories and their metadata");
+
     Action EDIT_CATEGORIES = ACCESS_CATEGORIES.subAction("editCategories",
                                                          "Edit Categories",
-                                                         "Allows creating and editing new categories");
+                                                         "Allows creating, updating and deleting categories");
+
     Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
                                                           "Administer Categories",
-                                                          "Allows the administration of a category");
+                                                          "Allows updating category metadata");
 
     Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
                                                   "Access Feeds",
-                                                  "Allows access to feeds");
+                                                  "Allows access to feeds and their metadata");
+
     Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
                                                  "Edit Feeds",
-                                                 "Allows editing of feeds");
+                                                 "Allows creating, updating, enabling and disabling feeds");
+
     Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
                                                  "Import Feeds",
-                                                 "Allows importing of previously exported feeds");
+                                                 "Allows importing of previously exported feeds (.zip files)");
+
     Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
                                                  "Export Feeds",
-                                                 "Allows exporting feeds definitions");
+                                                 "Allows exporting feeds definitions (.zip files)");
+
     Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
                                                 "Administer Feeds",
-                                                "Allows the administration of a feed");
+                                                "Allows deleting feeds and editing feed metadata");
+
     Action ACCESS_TABLES = FEEDS_SUPPORT.subAction("accessTables",
                                                        "Access Tables",
-                                                       "Allows access to tables search");
+                                                       "Allows listing and querying Hive tables");
+
     Action ACCESS_VISUAL_QUERY = FEEDS_SUPPORT.subAction("accessVisualQuery",
                                                    "Access Visual Query",
-                                                   "Allows access to visual query data wrangler ");
+                                                   "Allows access to visual query data wrangler");
+
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",
                                                       "Allows access to feed templates");
+
     Action EDIT_TEMPLATES = ACCESS_TEMPLATES.subAction("editTemplates",
                                                        "Edit Templates",
-                                                       "Allows creating and editing new feed templates");
+                                                       "Allows creating, updating, deleting and sequencing feed templates");
+
     Action IMPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("importTemplates",
                                                          "Import Templates",
-                                                         "Allows importing of previously exported templates");
+                                                         "Allows importing of previously exported templates (.xml and .zip files)");
+
     Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates",
                                                          "Export Templates",
-                                                         "Allows exporting template definitions");
+                                                         "Allows exporting template definitions (.zip files)");
+
     Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
                                                         "Administer Templates",
-                                                        "Allows the administration of a feed template (enable/disable/delete)");
+                                                        "Allows enabling and disabling feed templates");
+
 
     Action ACCESS_DATASOURCES = FEEDS_SUPPORT.subAction("accessDatasources",
                                                         "Access Data Sources",
-                                                        "Allows access to data sources");
+                                                        "Allows (a) access to data sources (b) viewing tables and schemas from a data source (c) using a data source in transformation feed");
+
     Action EDIT_DATASOURCES = ACCESS_DATASOURCES.subAction("editDatasources",
                                                            "Edit Data Sources",
-                                                           "Allows creating and editing new data sources");
+                                                           "Allows creating and editing data sources");
+
     Action ADMIN_DATASOURCES = ACCESS_DATASOURCES.subAction("adminDatasources",
                                                             "Administer Data Sources",
-                                                            "Allows the administration of data sources");
+                                                            "Allows getting data source details with sensitive info");
 
     Action ACCESS_SERVICE_LEVEL_AGREEMENTS = FEEDS_SUPPORT.subAction("accessServiceLevelAgreements",
                                                                      "Access Service Level Agreements",
@@ -94,5 +110,5 @@ public interface FeedServicesAccessControl {
 
     Action EDIT_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("editServiceLevelAgreements",
                                                                                      "Edit Service Level Agreements",
-                                                                                     "Allows create service level agreements");
+                                                                                     "Allows creating and editing service level agreements");
 }
