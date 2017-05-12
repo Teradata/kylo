@@ -19,8 +19,6 @@ To raise issues with Kylo, please register and visit the [Jira instance](https:/
 
 For support, questions can be asked on the [Google Groups group](https://groups.google.com/forum/#!forum/kylo-community).
 
-There is also the #kylo IRC channel on irc.freenode.net.
-
 ## Code Structure
 
 The layout of code in the following subtrees follows particular reasoning described below: 
