@@ -84,9 +84,14 @@ public class ImmutableSecurityRole implements SecurityRole {
         return this.description;
     }
 
+    @Override
+    public void setDescription(String description) {
+        throw new UnsupportedOperationException("Updating the description on this immutable role is not supported");
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.role.SecurityRole#getAllowedActions()
-     */
+         * @see com.thinkbiganalytics.security.role.SecurityRole#getAllowedActions()
+         */
     @Override
     public AllowedActions getAllowedActions() {
         return this.allowedActions;

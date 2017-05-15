@@ -18,3 +18,5 @@
 -- #L%
 -- -
 CREATE ALIAS abandon_feed_jobs FOR "com.thinkbiganalytics.metadata.jpa.feed.AbandonFeedJobsStoredProcedureMock.call"
+
+SET foreign_key_checks = 0

@@ -45,6 +45,7 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
+import java.security.AccessControlException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -164,25 +165,46 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
      * get a SLA and convert it to the editable SLA form object
      */
     public ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId) {
-        return metadataAccess.read(() -> {
 
-            FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = metadataAccess.read(() -> {
+
+            FeedServiceLevelAgreement agreement =  feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
             if (agreement != null) {
-                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = serviceLevelAgreementTransform.toModel(agreement, true);
-                ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
-                ServiceLevelAgreementGroup serviceLevelAgreementGroup = transformer.toServiceLevelAgreementGroup(modelSla);
-                feedManagerFeedService
-                    .applyFeedSelectOptions(
-                        ServiceLevelAgreementMetricTransformer.instance()
-                            .findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreementGroup.getRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                             PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
-                                                                                                                             PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
-                serviceLevelAgreementGroup.setCanEdit(modelSla.isCanEdit());
-                return serviceLevelAgreementGroup;
+               return serviceLevelAgreementTransform.toModel(agreement, true);
             }
             return null;
+        },MetadataAccess.SERVICE);
 
-        });
+        if(systemSla != null) {
+
+
+            return metadataAccess.read(() -> {
+                 //read it in as the current user
+                FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
+                //ensure the feed count match
+                if(agreement.getFeeds().size() != systemSla.getFeeds().size()){
+                    throw new AccessControlException("Unable to access the SLA "+agreement.getName()+".  You dont have proper access to one or more of the feeds associated with this SLA");
+                }
+                if (agreement != null) {
+                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = serviceLevelAgreementTransform.toModel(agreement, true);
+                    ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+                    ServiceLevelAgreementGroup serviceLevelAgreementGroup = transformer.toServiceLevelAgreementGroup(modelSla);
+                    feedManagerFeedService
+                        .applyFeedSelectOptions(
+                            ServiceLevelAgreementMetricTransformer.instance()
+                                .findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreementGroup.getRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                                 PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
+                                                                                                                                 PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
+                    serviceLevelAgreementGroup.setCanEdit(modelSla.isCanEdit());
+                    return serviceLevelAgreementGroup;
+                }
+                return null;
+
+            });
+        }
+        else {
+            return null;
+        }
     }
 
     public boolean removeAndUnscheduleAgreement(String id) {

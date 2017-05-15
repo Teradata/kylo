@@ -1,5 +1,5 @@
-define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/module"], function (angular,moduleName) {
-    angular.module(moduleName).factory("VisualQueryColumnDelegate", ["$mdDialog","uiGridConstants",function ($mdDialog, uiGridConstants) {
+define(['angular', "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/module"], function (angular, moduleName) {
+    angular.module(moduleName).factory("VisualQueryColumnDelegate", ["$mdDialog", "uiGridConstants", function ($mdDialog, uiGridConstants) {
 
         /**
          * The UI context for a transformation.
@@ -249,15 +249,13 @@ define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/mod
              * @param {ui.grid.Grid} grid the grid with the column
              */
             hideColumn: function (column, grid) {
-                column.colDef.visible = false;
                 column.visible = false;
 
                 var formula = "drop(\"" + StringUtils.quote(column.field) + "\")";
                 this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + column.displayName});
 
-                grid.queueGridRefresh();
-                grid.api.core.notifyDataChange("column");
-                grid.api.core.raise.columnVisibilityChanged(column);
+                grid.onColumnsChange();
+                grid.refresh();
             },
 
             /**
@@ -328,11 +326,16 @@ define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/mod
              * Validates the specified filter.
              *
              * @param {Object} filter the filter to be validated
+             * @param {VisualQueryTable} table the visual query table
              */
-            validateFilter: function (filter) {
+            validateFilter: function (filter, table) {
                 if (filter.term == "") {
                     filter.term = null;
+                } else {
+                    delete filter.regex;
                 }
+                table.onRowsChange();
+                table.refreshRows();
             },
 
             /**

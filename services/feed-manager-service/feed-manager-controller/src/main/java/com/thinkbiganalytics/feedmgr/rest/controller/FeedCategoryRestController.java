@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
@@ -129,7 +130,9 @@ public class FeedCategoryRestController {
                   })
     public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
-        return Response.ok(feedCategory).build();
+        //requery it to get the allowed actions
+        FeedCategory savedCategory = getMetadataService().getCategoryBySystemName(feedCategory.getSystemName());
+        return Response.ok(savedCategory).build();
     }
 
     @DELETE

@@ -75,6 +75,9 @@ public class RoleMembershipChange {
     public Set<String> getGroups() {
         return groups;
     }
-    
-    
+
+    public void addGroup(String groupName) {
+        groups.add(groupName);
+    }
+
 }

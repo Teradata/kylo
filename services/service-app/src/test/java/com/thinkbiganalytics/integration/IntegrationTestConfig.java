@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.test;
+package com.thinkbiganalytics.integration;
 
 /*-
  * #%L
@@ -24,8 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @Configuration
-@ImportResource("classpath:int-test-application.xml")
-public class FunctionalTestConfig {
+@ImportResource("classpath:integration-test-application.xml")
+public class IntegrationTestConfig {
 
 
 }

@@ -63,6 +63,8 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
     protected abstract ComparablePath<UUID> getFeedId();
 
+    protected abstract QOpsManagerFeedId getOpsManagerFeedId();
+
     @Override
     public <S, T, ID extends Serializable> Specification<S> augment(Specification<S> spec, Class<S> domainClass,
                                                                     JpaEntityInformation<T, ID> entityInformation) {
@@ -105,20 +107,33 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
     @Override
     public List<Predicate> augment(Predicate[] predicate) {
         LOG.debug("FeedAclIndexQueryAugmentor.augment(Predicate[])");
+        QOpsManagerFeedId feed = getOpsManagerFeedId();
 
-        RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
-        QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
-        JPQLQuery<JpaFeedOpsAclEntry> subquery = JPAExpressions.selectFrom(aclEntry).where(aclEntry.feedId.eq(getFeedId())
-                                                                                           .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(PrincipalType.GROUP))
-                                                                                                .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(PrincipalType.USER))))
-                                                                                           );
-        BooleanExpression exists = subquery.exists();
+        BooleanExpression exists = generateExistsExpression(feed);
 
         List<Predicate> predicates = new ArrayList<>();
         predicates.addAll(Arrays.asList(predicate));
         predicates.add(exists);
 
         return predicates;
+    }
+
+    /**
+     * Generates the Exist expression for the feed to feedacl table
+     * TODO need to check if access control is disabled then return a 1=1 else return this exists
+     * @param feedId
+     * @return
+     */
+    public static BooleanExpression generateExistsExpression(QOpsManagerFeedId feedId) {
+        LOG.debug("FeedAclIndexQueryAugmentor.generateExistsExpression(QOpsManagerFeedId)");
+
+        RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
+        QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
+        JPQLQuery<JpaFeedOpsAclEntry> subquery = JPAExpressions.selectFrom(aclEntry).where(aclEntry.feed.id.eq(feedId)
+                                                                                               .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(PrincipalType.GROUP))
+                                                                                                        .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(PrincipalType.USER))))
+        );
+       return subquery.exists();
     }
 
     @Override
@@ -139,7 +154,7 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
         return query;
     }
     
-    private RoleSetExposingSecurityExpressionRoot getUserContext() {
+    private static RoleSetExposingSecurityExpressionRoot getUserContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return new RoleSetExposingSecurityExpressionRoot(authentication);
     }

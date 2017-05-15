@@ -50,4 +50,8 @@ public class FeedSecuringQueryAugmentor extends FeedAclIndexQueryAugmentor {
         return root.id.uuid;
     }
 
+    @Override
+    protected QOpsManagerFeedId getOpsManagerFeedId() {
+       return QJpaOpsManagerFeed.jpaOpsManagerFeed.id;
+    }
 }

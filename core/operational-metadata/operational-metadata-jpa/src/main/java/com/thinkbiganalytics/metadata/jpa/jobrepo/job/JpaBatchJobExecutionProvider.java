@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -41,9 +42,14 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
+import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
+import com.thinkbiganalytics.metadata.jpa.feed.security.QJpaFeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
@@ -63,6 +69,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -498,10 +506,27 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         } else {
             pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
             QJpaBatchJobInstance jobInstancePath = new QJpaBatchJobInstance("jobInstance");
-            return findAllWithFetch(jobExecution, GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable, QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
-                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
+            QJpaOpsManagerFeed feedPath = new QJpaOpsManagerFeed("feed");
+
+            return findAllWithFetch(jobExecution,
+                                    GenericQueryDslFilter.buildFilter(jobExecution, filter).and(augment(feedPath.id)),
+                                    pageable,
+                                    QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
+                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath),
+                                    QueryDslFetchJoin.innerJoin(jobInstancePath.feed, feedPath)
+            );
         }
 
+    }
+
+    private Predicate augment(QOpsManagerFeedId id) {
+        return FeedAclIndexQueryAugmentor.generateExistsExpression(id);
+    }
+
+
+    private RoleSetExposingSecurityExpressionRoot getUserContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return new RoleSetExposingSecurityExpressionRoot(authentication);
     }
 
     private Page<? extends BatchJobExecution> findAllForFeed(String feedName, List<SearchCriteria> filters, Pageable pageable) {
@@ -511,13 +536,16 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
         JPQLQuery checkFeedQuery = JPAExpressions.select(checkDataFeed.id).from(feed).join(feed.checkDataFeeds, checkDataFeed).where(feed.name.eq(feedName));
 
+
         JPAQuery
             query = factory.select(jobExecution)
             .from(jobExecution)
             .join(jobExecution.jobInstance, jobInstance)
             .join(jobInstance.feed, feed)
             .where((feed.name.eq(feedName).or(feed.id.in(checkFeedQuery)))
-                       .and(GenericQueryDslFilter.buildFilter(jobExecution, filters))).fetchAll();
+                       .and(GenericQueryDslFilter.buildFilter(jobExecution, filters)
+                       .and(augment(feed.id))))
+                .fetchAll();
 
         pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
         return findAll(query, pageable);
@@ -531,6 +559,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public List<JobStatusCount> getJobStatusCount(String filter) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
@@ -548,7 +580,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobState.as("status"),
                                     jobExecution.jobExecutionId.count().as("count"));
 
-        JPAQuery<?> query = factory.select(expr).from(jobExecution).where(whereBuilder).groupBy(jobExecution.status);
+        JPAQuery<?> query = factory.select(expr)
+            .from(jobExecution)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(whereBuilder
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
+            .groupBy(jobExecution.status);
 
         return (List<JobStatusCount>) query.fetch();
     }
@@ -557,6 +595,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public List<JobStatusCount> getJobStatusCountByDate() {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
@@ -573,6 +615,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
@@ -588,6 +633,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
@@ -610,7 +659,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
-            .where(whereBuilder)
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
+            .where(whereBuilder
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();

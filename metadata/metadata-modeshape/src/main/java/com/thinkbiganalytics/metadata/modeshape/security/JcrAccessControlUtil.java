@@ -280,9 +280,9 @@ public final class JcrAccessControlUtil {
                                 .toArray(Privilege[]::new);
 
                             if (entry.getPrivileges().length != newPrivs.length) {
-                                if (newPrivs.length == 0) {
-                                    acl.removeAccessControlEntry(entry);
-                                } else {
+                                acl.removeAccessControlEntry(entry);
+                                
+                                if (newPrivs.length != 0) {
                                     acl.addAccessControlEntry(entry.getPrincipal(), newPrivs);
                                 }
                                 removed = true;

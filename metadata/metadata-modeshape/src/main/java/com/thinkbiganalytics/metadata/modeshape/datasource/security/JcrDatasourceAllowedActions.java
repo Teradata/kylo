@@ -91,10 +91,10 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
 
     @Override
     public void setupAccessControl(Principal owner) {
-        super.setupAccessControl(owner);
-
         enable(owner, DatasourceAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, DatasourceAccessControl.EDIT_DETAILS);
+
+        super.setupAccessControl(owner);
     }
     
     @Override

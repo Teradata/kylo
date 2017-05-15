@@ -115,6 +115,9 @@ public class JpaFeedProviderTest {
     }
 
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testJobStatusCountFromNow() {
         String feedName = "movies.new_releases";

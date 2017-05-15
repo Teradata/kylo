@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.test;
+package com.thinkbiganalytics.integration;
 
 /*-
  * #%L
@@ -21,15 +21,15 @@ package com.thinkbiganalytics.test;
  */
 
 /**
- * Configuration required to connect to host which runs Nifi
+ * Configuration required to connect to running Kylo instance
  */
-public class SshConfig {
+public class KyloConfig {
 
     private String host;
-    private Integer port;
+    private int port;
+    private String basePath;
     private String username;
     private String password;
-    private String knownHosts;
 
     public String getHost() {
         return host;
@@ -39,12 +39,20 @@ public class SshConfig {
         this.host = host;
     }
 
-    public Integer getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
     }
 
     public String getUsername() {
@@ -61,13 +69,5 @@ public class SshConfig {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getKnownHosts() {
-        return knownHosts;
-    }
-
-    public void setKnownHosts(String knownHosts) {
-        this.knownHosts = knownHosts;
     }
 }

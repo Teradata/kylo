@@ -88,10 +88,10 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
 
     @Override
     public void setupAccessControl(Principal owner) {
-        super.setupAccessControl(owner);
-
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, CategoryAccessControl.EDIT_DETAILS);
+
+        super.setupAccessControl(owner);
     }
     
     @Override
@@ -112,7 +112,11 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
             } else if (action.implies(CategoryAccessControl.EDIT_SUMMARY)) {
                 JcrAccessControlUtil.addPermissions(category.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             } else if (action.implies(CategoryAccessControl.CREATE_FEED)) {
-                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addPermissions(details.getNode(), principal, Privilege.JCR_ALL));
+                // Privilege.JCR_MODIFY_ACCESS_CONTROL is needed here since anyone creating a new feed will inherit the ACL access from this parent 
+                // category details node before the access control is update in the new feed node, and the new feed owner needs rights to change
+                // the access control of the feed it is creating.  TODO: Perhaps we should refactor in a future release to create a simple child node 
+                // that the feed nodes attach to so that that node only can have Privilege.JCR_MODIFY_ACCESS_CONTROL for the user
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addPermissions(details.getNode(), principal, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_MODIFY_ACCESS_CONTROL));
                JcrAccessControlUtil.addPermissions(category.getNode(), principal,  Privilege.JCR_MODIFY_PROPERTIES);
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, category.getNode(), Privilege.JCR_READ));
@@ -182,7 +186,7 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal, Privilege.JCR_ALL);
             }  else if (action.implies(CategoryAccessControl.CREATE_FEED) ) {
                 JcrAccessControlUtil.removePermissions(category.getNode(), principal,  Privilege.JCR_MODIFY_PROPERTIES);
-                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_ALL));
+                this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_MODIFY_ACCESS_CONTROL));
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
                 this.category.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
             } else if (action.implies(CategoryAccessControl.ACCESS_CATEGORY)) {

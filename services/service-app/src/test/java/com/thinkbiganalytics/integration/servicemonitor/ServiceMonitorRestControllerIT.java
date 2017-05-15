@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.servicemonitor.rest.controller;
+package com.thinkbiganalytics.integration.servicemonitor;
 
 /*-
  * #%L
@@ -20,14 +20,15 @@ package com.thinkbiganalytics.servicemonitor.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.test.IntegrationTest;
+import com.thinkbiganalytics.integration.IntegrationTestBase;
+import com.thinkbiganalytics.servicemonitor.rest.controller.ServiceMonitorRestController;
 
 import org.junit.Test;
 
 /**
  * Functional Test
  */
-public class ServiceMonitorRestControllerIT extends IntegrationTest {
+public class ServiceMonitorRestControllerIT extends IntegrationTestBase {
 
     @Test
     public void basicPingTest() {

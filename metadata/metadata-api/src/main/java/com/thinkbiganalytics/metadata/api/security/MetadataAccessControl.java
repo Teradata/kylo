@@ -29,9 +29,10 @@ public interface MetadataAccessControl {
 
     Action ACCESS_METADATA = Action.create("accessMetadata",
                                       "Access Kylo Metadata",
-                                      "Allows the ability to view directly the data in the Kylo metadata store");
+                                      "Allows the ability to view and query directly the data in the Kylo metadata store, including extensible types");
+
     Action ADMIN_METADATA = ACCESS_METADATA.subAction("adminMetadata",
                                                       "Administer Kylo Metadata",
-                                                      "Allows the ability to directly manage the data in the Kylo metadata store");
+                                                      "Allows the ability to directly manage the data in the Kylo metadata store (edit raw metadata, create/update/delete extensible types, update feed status events)");
 
 }

@@ -45,8 +45,12 @@
   </div>
   <div layout="column" ng-repeat="roleMembership in vm.entity.roleMemberships">
     <div layout="row">
-      <div flex="40" style="align-self:center;">
-        {{roleMembership.role.title}}
+      <div flex="40" style="align-self:center;" layout="column">
+        <span>{{roleMembership.role.title}}</span>
+        <div class="hint" ng-if="roleMembership.role.description" class="layout-padding-top" ng-bind-html="roleMembership.role.description">
+        </div>
+
+
       </div>
 
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
