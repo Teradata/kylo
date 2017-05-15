@@ -209,7 +209,8 @@ public interface BatchJobExecution {
         STOPPED,
         FAILED,
         ABANDONED,
-        UNKNOWN;
+        UNKNOWN,
+        RUNNING     // artificial state used in status queries only
     }
 
 }
