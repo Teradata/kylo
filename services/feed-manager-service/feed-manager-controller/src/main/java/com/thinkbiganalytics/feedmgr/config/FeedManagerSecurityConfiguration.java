@@ -75,6 +75,7 @@ public class FeedManagerSecurityConfiguration {
                                 .action(FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS)
                                 .action(FeedServicesAccessControl.EDIT_DATASOURCES)
                                 .action(FeedServicesAccessControl.ADMIN_DATASOURCES)
+                                .action(FeedServicesAccessControl.ACCESS_GLOBAL_SEARCH)
                                 .add()
                             .module(AllowedActions.FEED)
                                 .action(FeedAccessControl.ACCESS_FEED)

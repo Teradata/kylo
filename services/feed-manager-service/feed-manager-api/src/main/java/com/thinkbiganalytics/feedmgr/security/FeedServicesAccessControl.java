@@ -48,8 +48,8 @@ public interface FeedServicesAccessControl {
                                                   "Allows access to feeds and their metadata");
 
     Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
-                                                 "Edit Feeds",
-                                                 "Allows creating, updating, enabling and disabling feeds");
+                                               "Edit Feeds",
+                                               "Allows creating, updating, enabling and disabling feeds");
 
     Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
                                                  "Import Feeds",
@@ -64,12 +64,12 @@ public interface FeedServicesAccessControl {
                                                 "Allows deleting feeds and editing feed metadata");
 
     Action ACCESS_TABLES = FEEDS_SUPPORT.subAction("accessTables",
-                                                       "Access Tables",
-                                                       "Allows listing and querying Hive tables");
+                                                   "Access Tables",
+                                                   "Allows listing and querying Hive tables");
 
     Action ACCESS_VISUAL_QUERY = FEEDS_SUPPORT.subAction("accessVisualQuery",
-                                                   "Access Visual Query",
-                                                   "Allows access to visual query data wrangler");
+                                                         "Access Visual Query",
+                                                         "Allows access to visual query data wrangler");
 
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",
@@ -111,4 +111,8 @@ public interface FeedServicesAccessControl {
     Action EDIT_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("editServiceLevelAgreements",
                                                                                      "Edit Service Level Agreements",
                                                                                      "Allows creating and editing service level agreements");
+
+    Action ACCESS_GLOBAL_SEARCH = FEEDS_SUPPORT.subAction("accessSearch",
+                                                          "Access Global Search",
+                                                          "Allows access to search all indexed columns");
 }
