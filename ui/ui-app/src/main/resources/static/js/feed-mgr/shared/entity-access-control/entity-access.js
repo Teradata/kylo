@@ -48,6 +48,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             this.entity.roleMemberships = [];
         }
 
+        if(angular.isUndefined(this.queryForEntityAccess)){
+            this.queryForEntityAccess = false;
+        }
+
         if(angular.isUndefined(this.entity.owner) || this.entity.owner == null){
             this.entity.owner = null;
             //assign it the current user
@@ -64,9 +68,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * Flag that the user has updated the role memberships
          * @type {boolean}
          */
-        self.entity.roleMembershipsUpdated = false;
+        self.entity.roleMembershipsUpdated = angular.isUndefined(self.entity.roleMembershipsUpdated) ? false : self.entity.roleMembershipsUpdated;
 
-        self.rolesInitialized = false;
+        /**
+         * Flag to indicate we should query for the roles from the server.
+         * If the entity has already been marked as being updated then mark this as initialized so it doesnt loose the in-memory settings the user has applied
+         * @type {boolean}
+         */
+        self.rolesInitialized = self.queryForEntityAccess == true ? false : (self.entity.roleMembershipsUpdated == true ? true : false);
 
 
         /**

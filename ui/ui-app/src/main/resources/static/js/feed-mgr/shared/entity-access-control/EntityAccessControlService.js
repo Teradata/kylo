@@ -111,6 +111,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                         roleMembership.members = [];
                         _.each(roleMembership.groups, function (group) {
                             group.type = 'group';
+                            group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
                             roleMembership.members.push(group)
                         });
                         _.each(roleMembership.users, function (user) {
