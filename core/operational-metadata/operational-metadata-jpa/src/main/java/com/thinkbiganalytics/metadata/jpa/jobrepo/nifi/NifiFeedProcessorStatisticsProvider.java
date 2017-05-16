@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -60,6 +61,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     @Inject
     private NifiEventProvider nifiEventProvider;
+
+    @Inject
+    private AccessController controller;
 
     @Autowired
     public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository, NifiEventRepository nifiEventRepository) {
@@ -153,7 +157,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
@@ -182,7 +186,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorName)
@@ -211,7 +215,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
 

@@ -58,6 +58,7 @@ import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -118,6 +119,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Inject
     private BatchStepExecutionProvider batchStepExecutionProvider;
 
+    @Inject
+    private AccessController controller;
 
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
@@ -520,7 +523,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     private Predicate augment(QOpsManagerFeedId id) {
-        return FeedAclIndexQueryAugmentor.generateExistsExpression(id);
+        return FeedAclIndexQueryAugmentor.generateExistsExpression(id, controller.isEntityAccessControlled());
     }
 
 
@@ -585,7 +588,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
             .where(whereBuilder
-            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled())))
             .groupBy(jobExecution.status);
 
         return (List<JobStatusCount>) query.fetch();
@@ -617,7 +620,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .from(jobExecution)
             .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
-            .where(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id))
+            .where(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
@@ -662,7 +665,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
             .where(whereBuilder
-            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
+            .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled())))
             .groupBy(jobExecution.status, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();

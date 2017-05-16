@@ -23,6 +23,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparablePath;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
@@ -40,7 +42,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,6 +59,8 @@ import javax.persistence.criteria.Subquery;
 public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedAclIndexQueryAugmentor.class);
+    private static final StringTemplate CONSTANT_ONE = Expressions.stringTemplate("1");
+    private static final BooleanExpression ONE_EQUALS_ONE = CONSTANT_ONE.eq(CONSTANT_ONE);
 
     protected abstract <S, T, ID extends Serializable> Path<Object> getFeedId(JpaEntityInformation<T, ID> entityInformation, Root<S> root);
 
@@ -120,11 +123,10 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
     /**
      * Generates the Exist expression for the feed to feedacl table
-     * TODO need to check if access control is disabled then return a 1=1 else return this exists
      * @param feedId
-     * @return
+     * @return exists expression
      */
-    public static BooleanExpression generateExistsExpression(QOpsManagerFeedId feedId) {
+    private static BooleanExpression generateExistsExpression(QOpsManagerFeedId feedId) {
         LOG.debug("FeedAclIndexQueryAugmentor.generateExistsExpression(QOpsManagerFeedId)");
 
         RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
@@ -134,6 +136,14 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
                                                                                                         .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(PrincipalType.USER))))
         );
        return subquery.exists();
+    }
+
+    public static BooleanExpression generateExistsExpression(QOpsManagerFeedId id, boolean entityAccessControlled) {
+        if (entityAccessControlled) {
+            return generateExistsExpression(id);
+        } else {
+            return ONE_EQUALS_ONE;
+        }
     }
 
     @Override

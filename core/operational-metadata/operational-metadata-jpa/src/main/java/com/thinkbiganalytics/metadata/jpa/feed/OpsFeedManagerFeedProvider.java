@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatus
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
@@ -65,6 +66,9 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     @Autowired
     private JPAQueryFactory factory;
+
+    @Inject
+    private AccessController controller;
 
     /**
      * list of delete feed listeners
@@ -205,7 +209,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
             .where(jobExecution.startTime.goe(DateTime.now().minus(period))
                        .and(feed.name.eq(feedName))
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id)))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled())))
             .groupBy(jobExecution.status,
                      jobExecution.startYear,
                      jobExecution.startMonth,
