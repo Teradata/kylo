@@ -97,7 +97,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         }
 
         this.isLoading = function(){
-            return self.loadingTemplate || self.fetchingTemplateList;
+            return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
         }
 
         /**
@@ -213,6 +213,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html"
             });
         };
+
+        $scope.$watch(function(){
+            return self.model.loading;
+        },function(newVal){
+            if(newVal == false) {
+                hideProgress();
+            }
+
+        })
+
 
         this.getTemplates();
 

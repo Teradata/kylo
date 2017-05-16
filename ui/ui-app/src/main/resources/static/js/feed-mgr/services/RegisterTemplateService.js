@@ -515,9 +515,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @param nifiTemplateId
              * @param reusableTemplateConnections
              * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
-     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
-     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
-     *            request:{connectionInfo:reusableTemplateConnections}}
+             *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+             *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+             *            request:{connectionInfo:reusableTemplateConnections}}
              */
             getNiFiTemplateFlowInformation: function (nifiTemplateId, reusableTemplateConnections) {
                 var deferred = $q.defer();
