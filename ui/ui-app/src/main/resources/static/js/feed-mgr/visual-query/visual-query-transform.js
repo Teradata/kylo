@@ -352,7 +352,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
                     displayName: col.displayName,
                     filters: delegate.filters,
                     headerTooltip: col.hiveColumnLabel,
-                    longestValue: (longestValue !== null) ? longestValue.metricValue : null,
+                    longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
                     name: col.displayName
                 });
             });
