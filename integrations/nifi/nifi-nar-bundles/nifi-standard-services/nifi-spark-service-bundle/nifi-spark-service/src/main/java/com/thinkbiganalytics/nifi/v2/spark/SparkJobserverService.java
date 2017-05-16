@@ -113,7 +113,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
      * @throws InitializationException if unable to create a Spark Jobserver connection
      */
     @OnEnabled
-    public void onConfigured(final ConfigurationContext context) throws InitializationException {
+    public void onConfigured(final ConfigurationContext context) {
 
         jobServerUrl = context.getProperty(JOBSERVER_URL).getValue();
 
@@ -345,8 +345,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
             } catch (Exception ex) {
                 getLogger().trace(ex.getMessage(), ex);
             }
-        }
-        ;
+        };
         return newContext;
     }
 
