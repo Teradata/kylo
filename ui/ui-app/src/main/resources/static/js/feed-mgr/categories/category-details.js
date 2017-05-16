@@ -40,7 +40,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         self.onLoad = function () {
             if (angular.isString($transition$.params().categoryId)) {
                 self.model = CategoriesService.model = CategoriesService.findCategory($transition$.params().categoryId);
-                CategoriesService.getRelatedFeeds(CategoriesService.model);
+                if(angular.isDefined(CategoriesService.model)) {
+                    CategoriesService.getRelatedFeeds(CategoriesService.model);
+                }
                 self.loadingCategory = false;
             } else {
                 CategoriesService.getUserFields()
