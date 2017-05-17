@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module',"feed-mgr/feeds/define-feed/module",'angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
       // load vis in the global state
@@ -45,7 +45,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                     }
                 },
                resolve: {
-                   loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController'])
+                   loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController', "feed-mgr/feeds/define-feed/module-require"])
                },
                 data:{
                     breadcrumbRoot: false,
