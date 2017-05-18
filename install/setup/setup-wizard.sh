@@ -1,29 +1,7 @@
 #!/bin/bash
 
-
-validate-system() {
-	if [ -z ${SPARK_PROFILE} ] && ! which spark-submit;  then 
-		>&2 echo "Spark not installed or version not found.  Install spark and try again";
-		exit 1
-	fi	
-	if ! id kylo >/dev/null 2>&1 ; then
-		>&2 echo "user 'kylo' not found.  Create user and try again"
-		exit 1
-	fi
-	if ! id nifi >/dev/null 2>&1; then
-		>&2 echo "user 'nifi' not found.  Create user and try again"
-		exit 1
-	fi
-	if ! id activemq >/dev/null 2>&1; then
-		>&2 echo "user 'activemq' not found.  Create user and try again"
-		exit 1
-	fi
-}
-
-validate-system
-
 offline=false
-if [ $# > 1 ]
+if [ $# -gt 1 ]
 then
     if [ "$1" = "-o" ] || [ "$1" = "-O" ]
     then
@@ -129,6 +107,22 @@ fi
 #
 #fi
 
+if [ "$java_type" == "1" ] ; then
+    echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
+    ./java/remove-default-kylo-java-home.sh
+elif [ "$java_type" == "2" ] ; then
+    if [ $offline = true ]
+    then
+        ./java/install-java8.sh -O $current_dir
+    else
+        ./java/install-java8.sh
+    fi
+
+elif [ "$java_type" == "3" ] ; then
+    ./java/remove-default-kylo-java-home.sh
+    ./java/change-kylo-java-home.sh $java_home
+fi
+
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
     if [ $offline = true ]
@@ -148,22 +142,6 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
         ./activemq/install-activemq.sh
     fi
 
-fi
-
-if [ "$java_type" == "1" ] ; then
-    echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
-    ./java/remove-default-kylo-java-home.sh
-elif [ "$java_type" == "2" ] ; then
-    if [ $offline = true ]
-    then
-        ./java/install-java8.sh -O $current_dir
-    else
-        ./java/install-java8.sh
-    fi
-
-elif [ "$java_type" == "3" ] ; then
-    ./java/remove-default-kylo-java-home.sh
-    ./java/change-kylo-java-home.sh $java_home
 fi
 
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
