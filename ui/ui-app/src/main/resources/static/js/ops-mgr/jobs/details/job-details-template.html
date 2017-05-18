@@ -244,10 +244,10 @@
             </md-button>
             -->
           <md-button class="border-btn action-btn"
-                     ng-if="vm.jobData.status  && vm.jobData.status !='COMPLETED' && vm.jobData.status !='FAILED'"
+                     ng-if="vm.jobData.status  && vm.jobData.status !='COMPLETED' && vm.jobData.status !='FAILED' && vm.allowAdmin"
                      ng-click="vm.failJob($event)">FAIL
           </md-button>
-          <md-button class="border-btn action-btn" ng-if="vm.jobData.status && vm.jobData.status =='FAILED'"
+          <md-button class="border-btn action-btn" ng-if="vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin"
                      ng-click="vm.abandonJob($event)">ABANDON
           </md-button>
         </div>
