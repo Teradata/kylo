@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,6 +67,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Provides access to category, feed, and template metadata stored in the metadata store.
@@ -73,6 +75,9 @@ import javax.inject.Inject;
 public class FeedManagerMetadataService implements MetadataService {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerMetadataService.class);
+
+    @Value("${kylo.feed.mgr.cleanup.timeout:60000}")
+    private long cleanupTimeout;
 
     @Inject
     FeedManagerCategoryService categoryProvider;
@@ -257,7 +262,15 @@ public class FeedManagerMetadataService implements MetadataService {
 
     public FeedSummary enableFeed(String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+
+            if (feedMetadata == null) {
+                //feed will not be found when user is allowed to export feeds but has no entity access to feed with feed id
+                throw new NotFoundException("Feed not found for id " + feedId);
+            }
+
             if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
                 FeedSummary feedSummary = feedProvider.enableFeed(feedId);
 
@@ -275,7 +288,14 @@ public class FeedManagerMetadataService implements MetadataService {
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+
+            if (feedMetadata == null) {
+                throw new NotFoundException("Feed not found for id " + feedId);
+            }
+
             if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
                 FeedSummary feedSummary = feedProvider.disableFeed(feedId);
                 boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
@@ -363,7 +383,7 @@ public class FeedManagerMetadataService implements MetadataService {
             eventService.notify(new CleanupTriggerEvent(feedProvider.resolveFeed(feed.getId())));
 
             // Wait for completion
-            long remaining = 60000L;
+            long remaining = cleanupTimeout;
             while (remaining > 0 && (listener.getState() == null || listener.getState() == FeedOperation.State.STARTED)) {
                 final long start = System.currentTimeMillis();
                 try {

@@ -115,6 +115,8 @@ public class DefaultSecurityService implements SecurityService {
 
     @Override
     public synchronized Optional<RoleMembership> changeFeedRoleMemberships(String id, RoleMembershipChange change) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         return changeRoleMemberships(change, supplyFeedRoleMembership(id, change.getRoleName()));
     }
 

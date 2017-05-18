@@ -42,9 +42,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Basic Feed Integration Test which imports two system feeds, creates category, imports data ingest template,
@@ -81,7 +84,7 @@ public class FeedIT extends IntegrationTestBase {
 
         //create standard ingest feed
         FeedMetadata feed = getCreateFeedRequest(category, ingest, "Users1");
-        FeedMetadata response = createFeed(feed);
+        FeedMetadata response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
         waitForFeedToComplete();
@@ -147,7 +150,7 @@ public class FeedIT extends IntegrationTestBase {
             .when()
             .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         String topN = JsonPath.from(response.asString()).getString("find {entry ->entry.metrictype == 'TOP_N_VALUES' && entry.columnname == 'first_name'}.metricvalue");
         Assert.assertTrue(CharMatcher.JAVA_LOWER_CASE.matchesNoneOf(topN));

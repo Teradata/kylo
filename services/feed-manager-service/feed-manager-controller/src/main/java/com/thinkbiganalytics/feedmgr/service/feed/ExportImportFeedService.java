@@ -81,6 +81,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Service used to export and import feeds
@@ -138,6 +139,11 @@ public class ExportImportFeedService {
 
         // Prepare feed metadata
         final FeedMetadata feed = metadataService.getFeedById(feedId);
+
+        if (feed == null) {
+            //feed will not be found when user is allowed to export feeds but has no entity access to feed with feed id
+            throw new NotFoundException("Feed not found for id " + feedId);
+        }
 
         final List<Datasource> userDatasources = Optional.ofNullable(feed.getDataTransformation())
             .map(FeedDataTransformation::getDatasourceIds)

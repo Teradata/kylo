@@ -27,7 +27,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -100,4 +103,23 @@ public class PermissionsChange {
     public boolean addAction(Action action) {
         return this.actionSet.addAction(action);
     }
+
+    public void union(ActionGroup otherGroup) {
+        List<Action> existingActions = actionSet.getActions();
+        List<Action> otherActions = otherGroup.getActions();
+
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action otherAction : otherActions) {
+            Optional<Action> existingAction = actionSet.getAction(otherAction.getSystemName());
+            if (existingAction.isPresent()) {
+                existingAction.get().union(otherAction);
+            } else {
+                newActions.add(otherAction);
+            }
+        }
+
+        existingActions.addAll(newActions);
+    }
+
 }

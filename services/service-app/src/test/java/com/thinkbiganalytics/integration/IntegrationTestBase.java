@@ -92,6 +92,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
  * Superclass for all functional tests.
  */
@@ -110,6 +113,7 @@ public class IntegrationTestBase {
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
 
+
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
     private KyloConfig kyloConfig;
@@ -118,9 +122,9 @@ public class IntegrationTestBase {
     @Inject
     private SshConfig sshConfig;
 
-    protected String feedsPath;
-    protected String templatesPath;
-    protected String usersDataPath;
+    private String feedsPath;
+    private String templatesPath;
+    private String usersDataPath;
 
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
@@ -179,8 +183,8 @@ public class IntegrationTestBase {
         cleanup();
     }
 
-    protected void startClean() {
-        teardown();
+    private void startClean() {
+        cleanup();
     }
 
     /**
@@ -263,7 +267,7 @@ public class IntegrationTestBase {
             .when()
             .get(NifiIntegrationRestController.REUSABLE_INPUT_PORTS);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return response.as(PortDTO[].class);
     }
@@ -346,7 +350,7 @@ public class IntegrationTestBase {
             .when()
             .get("/cleanup-versions/" + groupId);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
     }
 
     protected ExportImportTemplateService.ImportTemplate importDataIngestTemplate() {
@@ -400,7 +404,7 @@ public class IntegrationTestBase {
             .when()
             .get(String.format("/%s/profile-summary", feedId));
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return JsonPath.from(response.asString()).getString(path);
     }
@@ -412,7 +416,7 @@ public class IntegrationTestBase {
             .when()
             .get(String.format("/%s?includeSteps=true", executionId));
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return response.as(DefaultExecutedJob.class);
     }
@@ -423,12 +427,12 @@ public class IntegrationTestBase {
             .when()
             .get();
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return JsonPath.from(response.asString()).getObject("data", DefaultExecutedJob[].class);
     }
 
-    protected FeedMetadata createFeed(FeedMetadata feed) {
+    protected NifiFeed createFeed(FeedMetadata feed) {
         LOG.info("Creating feed {}", feed.getFeedName());
 
         Response response = given(FeedRestController.BASE)
@@ -436,10 +440,9 @@ public class IntegrationTestBase {
             .when()
             .post();
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
-        NifiFeed nifiFeed = response.as(NifiFeed.class);
-        return nifiFeed.getFeedMetadata();
+        return response.as(NifiFeed.class);
     }
 
     protected PartitionField byYear(String fieldName) {
@@ -505,7 +508,7 @@ public class IntegrationTestBase {
 
 
     protected FeedCategory[] getCategories() {
-        Response response = getCategoriesExpectingStatus(200);
+        Response response = getCategoriesExpectingStatus(HTTP_OK);
         return response.as(FeedCategory[].class);
     }
 
@@ -526,7 +529,7 @@ public class IntegrationTestBase {
             .when()
             .delete(url);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
     }
 
     protected FeedCategory createCategory(String name) {
@@ -543,7 +546,7 @@ public class IntegrationTestBase {
             .when()
             .post();
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return response.as(FeedCategory.class);
     }
@@ -559,7 +562,7 @@ public class IntegrationTestBase {
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_FEED);
 
-        post.then().statusCode(200);
+        post.then().statusCode(HTTP_OK);
 
         return post.as(ExportImportFeedService.ImportFeed.class);
     }
@@ -573,13 +576,13 @@ public class IntegrationTestBase {
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_TEMPLATE);
 
-        post.then().statusCode(200);
+        post.then().statusCode(HTTP_OK);
 
         return post.as(ExportImportTemplateService.ImportTemplate.class);
     }
 
     protected FeedSummary[] getFeeds() {
-        return getFeedsExpectingStatus(200).as(FeedSummary[].class);
+        return getFeedsExpectingStatus(HTTP_OK).as(FeedSummary[].class);
     }
 
     protected Response getFeedsExpectingStatus(int expectedStatusCode) {
@@ -599,9 +602,22 @@ public class IntegrationTestBase {
             .when()
             .post(url);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
         FeedSummary feed = response.as(FeedSummary.class);
         Assert.assertEquals(Feed.State.DISABLED.name(), feed.getState());
+    }
+
+    protected void enableFeed(String feedId) {
+        LOG.info("Enabling feed {}", feedId);
+
+        String url = String.format("/enable/%s", feedId);
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .post(url);
+
+        response.then().statusCode(HTTP_OK);
+        FeedSummary feed = response.as(FeedSummary.class);
+        Assert.assertEquals(Feed.State.ENABLED.name(), feed.getState());
     }
 
     protected void deleteFeed(String feedId) {
@@ -616,7 +632,7 @@ public class IntegrationTestBase {
 //            RestResponseStatus responseStatus = response.body().as(RestResponseStatus.class);
         //todo find id of referring feed and delete it if failed here because the feed is referenced by other feed
 //        } else {
-        response.then().statusCode(204);
+        response.then().statusCode(HTTP_NO_CONTENT);
 //        }
     }
 
@@ -630,7 +646,7 @@ public class IntegrationTestBase {
     }
 
     protected RegisteredTemplate[] getTemplates() {
-        return getTemplatesExpectingStatus(200).as(RegisteredTemplate[].class);
+        return getTemplatesExpectingStatus(HTTP_OK).as(RegisteredTemplate[].class);
     }
 
     protected Response getTemplatesExpectingStatus(int expectedStatusCode) {
@@ -649,7 +665,7 @@ public class IntegrationTestBase {
             .when()
             .delete(url);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
     }
 
     protected void assertHiveSchema(String schemaName, String tableName) {
@@ -659,7 +675,7 @@ public class IntegrationTestBase {
             .when()
             .get(String.format("/schemas/%s/tables/%s", schemaName, tableName));
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
     }
 
     protected void assertHiveTables(final String schemaName, final String tableName) {
@@ -669,7 +685,7 @@ public class IntegrationTestBase {
             .when()
             .get("/tables");
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         String[] tables = response.as(String[].class);
         Assert.assertEquals(5, tables.length);
@@ -690,7 +706,7 @@ public class IntegrationTestBase {
             .when()
             .get("/query-result?query=SELECT * FROM " + schemaName + "." + tableName + " LIMIT " + limit);
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         List rows = JsonPath.from(response.asString()).getList("rows");
         Assert.assertEquals(limit, rows.size());
@@ -817,26 +833,54 @@ public class IntegrationTestBase {
         ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
     }
 
+    protected ActionGroup getServicePermissions(String group) {
+        Response allowed = given(AccessControlController.BASE)
+            .when()
+            .get("/services/allowed?group=" + group);
+
+        allowed.then().statusCode(HTTP_OK);
+        return allowed.as(ActionGroup.class);
+    }
+
     protected ActionGroup setServicePermissions(PermissionsChange permissionsChange) {
         Response response = given(AccessControlController.BASE)
             .body(permissionsChange)
             .when()
             .post("/services/allowed");
 
-        response.then().statusCode(200);
+        response.then().statusCode(HTTP_OK);
 
         return response.as(ActionGroup.class);
     }
 
     protected ActionGroup setFeedEntityPermissions(RoleMembershipChange roleChange, String feedId) {
+        Response response = setFeedEntityPermissionsExpectingStatus(roleChange, feedId, HTTP_OK);
+        return response.as(ActionGroup.class);
+    }
+
+    protected Response setFeedEntityPermissionsExpectingStatus(RoleMembershipChange roleChange, String feedId, int httpStatus) {
         Response response = given(FeedRestController.BASE)
             .body(roleChange)
             .when()
             .post(String.format("/%s/roles", feedId));
 
-        response.then().statusCode(200);
+        response.then().statusCode(httpStatus);
+        return response;
+    }
 
+    protected ActionGroup setCategoryEntityPermissions(RoleMembershipChange roleChange, String categoryId) {
+        Response response = setCategoryEntityPermissionsExpectingStatus(roleChange, categoryId, HTTP_OK);
         return response.as(ActionGroup.class);
+    }
+
+    protected Response setCategoryEntityPermissionsExpectingStatus(RoleMembershipChange roleChange, String categoryId, int httpStatus) {
+        Response response = given(FeedCategoryRestController.BASE)
+            .body(roleChange)
+            .when()
+            .post(String.format("/%s/roles", categoryId));
+
+        response.then().statusCode(httpStatus);
+        return response;
     }
 
 
