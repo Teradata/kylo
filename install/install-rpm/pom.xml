@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>kylo-install</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.8.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>kylo-install-rpm</artifactId>
+  <properties>
+    <!-- override using property -Drpm.install.dir -->
+    <rpm.install.dir>/opt/kylo</rpm.install.dir>
+    <!-- override using property -Drpm.user -->
+    <rpm.user>kylo</rpm.user>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
+
+  <build>
+    <plugins>
+      <!-- Build RPM -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>2.1.5</version>
+        <executions>
+          <execution>
+            <id>generate-rpm</id>
+            <goals>
+              <goal>rpm</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <name>kylo</name>
+          <license>Think Big 2015</license>
+          <distribution>Think Big 2015</distribution>
+          <group>com.thinkbiganalytics</group>
+          <icon></icon>
+          <packager>Think Big</packager>
+          <defineStatements>
+            <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+          </defineStatements>
+          <needarch>noarch</needarch>
+          <targetOS>linux</targetOS>
+          <mappings>
+            <mapping>
+              <directory>${rpm.install.dir}</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../install-tar/target/kylo-${project.version}-dependencies.tar.gz</location>
+                </source>
+              </sources>
+            </mapping>
+          </mappings>
+          <preinstallScriptlet>
+            <scriptFile>../scripts/pre-install.sh</scriptFile>
+          </preinstallScriptlet>
+          <postinstallScriptlet>
+            <scriptFile>../scripts/post-install.sh</scriptFile>
+          </postinstallScriptlet>
+          <preremoveScriptlet>
+            <scriptFile>../scripts/pre-remove.sh</scriptFile>
+          </preremoveScriptlet>
+          <postremoveScriptlet>
+            <scriptFile>../scripts/post-remove.sh</scriptFile>
+          </postremoveScriptlet>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

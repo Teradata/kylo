@@ -20,6 +20,19 @@
 # #L%
 ###
 
+INSTALL_HOME=/opt/kylo
+INSTALL_USER=kylo
+INSTALL_GROUP=users
+
+echo "Installing to $INSTALL_HOME as the user $INSTALL_USER"
+
+if [ $# -gt 1 ]
+then
+    INSTALL_HOME=$1
+    INSTALL_USER=$2
+    INSTALL_GROUP=$3
+fi
+
 # function for determining way to handle startup scripts
 function get_linux_type {
 # redhat
@@ -34,49 +47,46 @@ echo " * set them to autostart"
 linux_type=$(get_linux_type)
 echo "Type of init scripts management tool determined as $linux_type"
 
-chown -R kylo:users /opt/kylo
+chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
-rpmInstallDir=/opt/kylo
 pgrepMarkerKyloUi=kylo-ui-pgrep-marker
 pgrepMarkerKyloServices=kylo-services-pgrep-marker
 pgrepMarkerKyloSparkShell=kylo-spark-shell-pgrep-marker
 rpmLogDir=/var/log
 
 echo "    - Install kylo-ui application"
-tar -xf $rpmInstallDir/kylo-ui/kylo-ui-app-*.tar.gz -C $rpmInstallDir/kylo-ui --strip-components=1
-rm -rf $rpmInstallDir/kylo-ui/kylo-ui-app-*.tar.gz
 
 jwtkey=$(head -c 64 /dev/urandom | md5sum |cut -d' ' -f1)
-sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/kylo-ui/conf/application.properties
-echo "   - Installed kylo-ui to '$rpmInstallDir/kylo-ui'"
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $INSTALL_HOME/kylo-ui/conf/application.properties
+echo "   - Installed kylo-ui to '$INSTALL_HOME/kylo-ui'"
 
-if ! [ -f $rpmInstallDir/encrypt.key ]
+if ! [ -f $INSTALL_HOME/encrypt.key ]
 then
-    head -c64 < /dev/urandom | base64 > $rpmInstallDir/encrypt.key
-    chmod 400 $rpmInstallDir/encrypt.key
-    chown kylo:users $rpmInstallDir/encrypt.key
+    head -c64 < /dev/urandom | base64 > $INSTALL_HOME/encrypt.key
+    chmod 400 $INSTALL_HOME/encrypt.key
+    chown $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME/encrypt.key
 fi
 
-cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
+cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
-[ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-java \$KYLO_UI_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
+[ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
+java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
-cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
+cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
-[ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
+[ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
-chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
-chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
-echo "   - Created kylo-ui script '$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh'"
+chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
+chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
+echo "   - Created kylo-ui script '$INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh'"
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
@@ -101,7 +111,7 @@ EOF
 fi
 
 cat << EOF >> /etc/init.d/kylo-ui
-RUN_AS_USER=kylo
+RUN_AS_USER=$INSTALL_USER
 
 debug() {
     if pgrep -f kylo-ui-pgrep-marker >/dev/null 2>&1
@@ -109,8 +119,8 @@ debug() {
         echo Already running.
       else
         echo Starting kylo-ui in debug mode...
-        grep 'address=' $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh"
+        grep 'address=' $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh"
     fi
 }
 
@@ -120,7 +130,7 @@ start() {
         echo Already running.
       else
         echo Starting kylo-ui ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh"
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh"
     fi
 }
 
@@ -184,37 +194,33 @@ echo "    - Completed kylo-ui install"
 
 echo "    - Install kylo-services application"
 
-tar -xf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
-tar -xf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
-rm -rf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz
-rm -rf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz
-rm -f $rpmInstallDir/kylo-services/lib/jetty*
-rm -f $rpmInstallDir/kylo-services/lib/servlet-api*
-sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/kylo-services/conf/application.properties
-echo "   - Installed kylo-services to '$rpmInstallDir/kylo-services'"
+rm -f $INSTALL_HOME/kylo-services/lib/jetty*
+rm -f $INSTALL_HOME/kylo-services/lib/servlet-api*
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $INSTALL_HOME/kylo-services/conf/application.properties
+echo "   - Installed kylo-services to '$INSTALL_HOME/kylo-services'"
 
-cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
+cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
-[ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
-java \$KYLO_SERVICES_OPTS -cp $rpmInstallDir/kylo-services/conf:$rpmInstallDir/kylo-services/lib/*:$rpmInstallDir/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$rpmInstallDir/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
+[ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
+KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties | grep -o nifi-v.)
+java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
-cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
+cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
-[ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
+[ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
-java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-services/conf:$rpmInstallDir/kylo-services/lib/*:$rpmInstallDir/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$rpmInstallDir/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
+KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties | grep -o nifi-v.)
+java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
-chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
-chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
-echo "   - Created kylo-services script '$rpmInstallDir/kylo-services/bin/run-kylo-services.sh'"
+chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
+chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
+echo "   - Created kylo-services script '$INSTALL_HOME/kylo-services/bin/run-kylo-services.sh'"
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
@@ -239,7 +245,7 @@ EOF
 fi
 
 cat << EOF >> /etc/init.d/kylo-services
-RUN_AS_USER=kylo
+RUN_AS_USER=$INSTALL_USER
 
 debug() {
     if pgrep -f kylo-services-pgrep-marker >/dev/null 2>&1
@@ -247,8 +253,8 @@ debug() {
         echo Already running.
       else
         echo Starting kylo-services in debug mode...
-        grep 'address=' $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh"
+        grep 'address=' $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh"
     fi
 }
 
@@ -258,7 +264,7 @@ start() {
         echo Already running.
       else
         echo Starting kylo-services ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-services.sh"
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-services/bin/run-kylo-services.sh"
     fi
 }
 
@@ -324,7 +330,7 @@ echo "    - Completed kylo-services install"
 
 echo "    - Install kylo-spark-shell application"
 
-cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
+cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 
 if ! which spark-submit >/dev/null 2>&1; then
@@ -333,7 +339,7 @@ if ! which spark-submit >/dev/null 2>&1; then
 fi
 
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-KYLO_DRIVER_CLASS_PATH=/opt/kylo/kylo-services/conf:/opt/nifi/mysql/*
+KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-services/conf:/opt/nifi/mysql/*
 if [[ -n \$SPARK_CONF_DIR ]]; then
         if [ -r \$SPARK_CONF_DIR/spark-defaults.conf ]; then
 		CLASSPATH_FROM_SPARK_CONF=\$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
@@ -342,10 +348,10 @@ if [[ -n \$SPARK_CONF_DIR ]]; then
 		fi
 	fi
 fi
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties /opt/kylo/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
 EOF
-chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
-echo "   - Created kylo-spark-shell script '$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh'"
+chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
+echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
@@ -372,7 +378,7 @@ fi
 cat << EOF >> /etc/init.d/kylo-spark-shell
 stdout_log="/var/log/kylo-services/kylo-spark-shell.log"
 stderr_log="/var/log/kylo-services/kylo-spark-shell.err"
-RUN_AS_USER=kylo
+RUN_AS_USER=$INSTALL_USER
 
 start() {
     if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
@@ -380,7 +386,7 @@ start() {
         echo Already running.
       else
         echo Starting kylo-spark-shell ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh >> \$stdout_log 2>> \$stderr_log" &
+        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh >> \$stdout_log 2>> \$stderr_log" &
     fi
 }
 
@@ -439,24 +445,24 @@ echo "   - Added service 'kylo-spark-shell'"
 echo "    - Completed kylo-spark-shell install"
 
 {
-echo "    - Create an RPM Removal script at: $rpmInstallDir/remove-kylo.sh"
-touch $rpmInstallDir/remove-kylo.sh
+echo "    - Create an RPM Removal script at: $INSTALL_HOME/remove-kylo.sh"
+touch $INSTALL_HOME/remove-kylo.sh
 if [ "$linux_type" == "chkonfig" ]; then
     lastRpm=$(rpm -qa | grep kylo)
-    echo "rpm -e $lastRpm " > $rpmInstallDir/remove-kylo.sh
+    echo "rpm -e $lastRpm " > $INSTALL_HOME/remove-kylo.sh
 elif [ "$linux_type" == "update-rc.d" ]; then
-    echo "apt-get remove kylo" > $rpmInstallDir/remove-kylo.sh
+    echo "apt-get remove kylo" > $INSTALL_HOME/remove-kylo.sh
 fi
-chmod +x $rpmInstallDir/remove-kylo.sh
+chmod +x $INSTALL_HOME/remove-kylo.sh
 
 }
 
-chown -R kylo:kylo /opt/kylo
+chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
 chmod 744 $rpmLogDir/kylo*
 
-chown kylo:kylo $rpmLogDir/kylo*
+chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
 echo "   INSTALL COMPLETE"
-echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/kylo-ui/conf' and '$rpmInstallDir/kylo-services/conf' folder.  See deployment guide for details."
-echo "   - To remove kylo run $rpmInstallDir/remove-kylo.sh "
+echo "   - Please configure the application using the property files and scripts located under the '$INSTALL_HOME/kylo-ui/conf' and '$INSTALL_HOME/kylo-services/conf' folder.  See deployment guide for details."
+echo "   - To remove kylo run $INSTALL_HOME/remove-kylo.sh "

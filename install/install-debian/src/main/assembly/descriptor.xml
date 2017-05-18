@@ -24,26 +24,10 @@
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/3.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
   <id>dependencies</id>
   <formats>
-    <format>dir</format>
+    <format>tar.gz</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
   <baseDirectory>install/target</baseDirectory>
-  <dependencySets>
-    <dependencySet>
-      <outputDirectory>active-mq-lib</outputDirectory>
-      <includes>
-        <include>org.apache.activemq:activemq-client:jar:${activemq.version}</include>
-        <include>org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:jar:1.0.1</include>
-        <include>org.fusesource.hawtbuf:hawtbuf:jar:1.11</include>
-      </includes>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>kylo-services-lib</outputDirectory>
-      <includes>
-        <include>com.thinkbiganalytics.datalake:kylo-jira-rest-client</include>
-      </includes>
-    </dependencySet>
-  </dependencySets>
   <files>
     <file>
       <source>${project.basedir}/src/deb/control/control</source>
@@ -51,25 +35,25 @@
       <filtered>true</filtered>
     </file>
     <file>
-      <source>${project.basedir}/src/main/scripts/post-install.sh</source>
+      <source>${project.basedir}/../scripts/post-install.sh</source>
       <destName>postinst</destName>
       <outputDirectory>deb-control</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
-      <source>${project.basedir}/src/main/scripts/pre-install.sh</source>
+      <source>${project.basedir}/../scripts/pre-install.sh</source>
       <destName>preinst</destName>
       <outputDirectory>deb-control</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
-      <source>${project.basedir}/src/main/scripts/post-remove.sh</source>
+      <source>${project.basedir}/../scripts/post-remove.sh</source>
       <destName>postrm</destName>
       <outputDirectory>deb-control</outputDirectory>
       <filtered>true</filtered>
     </file>
     <file>
-      <source>${project.basedir}/src/main/scripts/pre-remove.sh</source>
+      <source>${project.basedir}/../scripts/pre-remove.sh</source>
       <destName>prerm</destName>
       <outputDirectory>deb-control</outputDirectory>
       <filtered>true</filtered>
