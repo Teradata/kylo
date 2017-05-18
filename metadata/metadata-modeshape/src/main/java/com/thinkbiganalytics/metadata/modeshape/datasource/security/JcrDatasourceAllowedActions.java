@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource.security;
 
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -24,7 +26,6 @@ import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessCo
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrUserDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
@@ -32,8 +33,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -61,32 +63,37 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        enableEntityAccess(principal, actions);
-        return super.enable(principal, actions);
+        boolean changed = super.enable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        enableOnlyEntityAccess(principal, actions);
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        enableOnlyEntityAccess(principal, actions.getAvailableActions());
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        disableEntityAccess(principal, actions);
-        return super.disable(principal, actions);
+        boolean changed = super.disable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean disable(Principal principal, AllowedActions actions) {
-        disableEntityAccess(principal, actions.getAvailableActions());
-        return super.disable(principal, actions);
+        boolean changed = super.disable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
@@ -110,98 +117,31 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
      * @param principal the subject
      * @param actions   the allowed actions
      */
-    protected void enableEntityAccess(@Nonnull final Principal principal, @Nonnull final Collection<? extends Action> actions) {
+    protected void updateEntityAccess(@Nonnull final Principal principal, @Nonnull final Collection<? extends Action> actions) {
+        Set<String> detailPrivs = new HashSet<>();
+        Set<String> summaryPrivs = new HashSet<>();
+        
         actions.forEach(action -> {
             if (action.implies(DatasourceAccessControl.CHANGE_PERMS)) {
-                final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+                Collections.addAll(detailPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
+                Collections.addAll(summaryPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
-                datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+                detailPrivs.add(Privilege.JCR_ALL); 
             } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
-                JcrAccessControlUtil.addPermissions(datasource.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
+                summaryPrivs.add(Privilege.JCR_ALL); 
             } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS)) {
-                datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_READ));
+                detailPrivs.add(Privilege.JCR_READ); 
             } else if (action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
-                JcrAccessControlUtil.addPermissions(datasource.getNode(), principal, Privilege.JCR_READ);
+                summaryPrivs.add(Privilege.JCR_READ); 
             }
         });
+        
+        JcrAccessControlUtil.setPermissions(this.datasource.getNode(), principal, summaryPrivs);
+        this.datasource.getDetails().ifPresent(d -> JcrAccessControlUtil.setPermissions(d.getNode(), principal, detailPrivs));
     }
-
-    /**
-     * Enables the specified actions and disables all others for the specified principal.
-     *
-     * @param principal the subject
-     * @param actions   the allowed actions
-     */
-    protected void enableOnlyEntityAccess(@Nonnull final Principal principal, @Nonnull final Collection<? extends Action> actions) {
-        // Determine the allowed actions
-        final AtomicBoolean summaryAccess = new AtomicBoolean(false);
-        final AtomicBoolean detailsAccess = new AtomicBoolean(false);
-        final AtomicBoolean summaryEdit = new AtomicBoolean(false);
-        final AtomicBoolean detailsEdit = new AtomicBoolean(false);
-        final AtomicBoolean changePerms = new AtomicBoolean(false);
-
-        actions.forEach(action -> {
-            summaryAccess.compareAndSet(false, action.implies(DatasourceAccessControl.ACCESS_DATASOURCE));
-            detailsAccess.compareAndSet(false, action.implies(DatasourceAccessControl.ACCESS_DETAILS));
-            summaryEdit.compareAndSet(false, action.implies(DatasourceAccessControl.EDIT_SUMMARY));
-            detailsEdit.compareAndSet(false, action.implies(DatasourceAccessControl.EDIT_DETAILS));
-            changePerms.compareAndSet(false, action.implies(DatasourceAccessControl.CHANGE_PERMS));
-        });
-
-        // Update JCR permissions
-        if (detailsEdit.get()) {
-            datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
-        } else {
-            datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
-        }
-
-        if (summaryEdit.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
-        } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
-        }
-
-        if (detailsAccess.get()) {
-            datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.addHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_READ));
-        } else {
-            datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.removeHierarchyPermissions(details.getNode(), principal, datasource.getNode(), Privilege.JCR_READ));
-        }
-
-        if (summaryAccess.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_READ);
-        } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(datasource.getNode(), principal, datasource.getNode(), Privilege.JCR_READ);
-        }
-
-        final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
-        if (changePerms.get()) {
-            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        } else {
-            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        }
-    }
-
-    /**
-     * Disables the specified actions for the specified principal.
-     *
-     * @param principal the subject
-     * @param actions   the allowed actions
-     */
-    protected void disableEntityAccess(@Nonnull final Principal principal, @Nonnull final Collection<? extends Action> actions) {
-        actions.forEach(action -> {
-            if (action.implies(DatasourceAccessControl.CHANGE_PERMS)) {
-                final Node allowedActionsNode = ((JcrAllowedActions) datasource.getAllowedActions()).getNode();
-                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-            } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
-                datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL));
-            } else if (action.implies(DatasourceAccessControl.EDIT_SUMMARY)) {
-                JcrAccessControlUtil.removePermissions(datasource.getNode(), principal, Privilege.JCR_ALL);
-            } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS)) {
-                datasource.getDetails().ifPresent(details -> JcrAccessControlUtil.removePermissions(details.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
-            } else if (action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
-                JcrAccessControlUtil.removePermissions(datasource.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
-            }
-        });
+    
+    @Override
+    protected boolean isAdminAction(Action action) {
+        return action.implies(DatasourceAccessControl.CHANGE_PERMS);
     }
 }

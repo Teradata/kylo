@@ -53,9 +53,16 @@ import javax.jcr.security.Privilege;
  *
  */
 public class JcrAllowedActions extends JcrObject implements AllowedActions {
-
+    
     public static final String NODE_NAME = "tba:allowedActions";
     public static final String NODE_TYPE = "tba:allowedActions";
+    
+    /** The normal privileges used when a principal is having an action permission granted or revoked */
+    private static final String[] GRANT_PRIVILEGES = new String[] { Privilege.JCR_READ };
+    /** The privileges used when a principal is having an action permission granted or revoked that 
+     * enables management of the actions (i.e. enable permissions for other principals) */
+    // TODO: Replace with just JCR_ALL
+    private static final String[] ADMIN_PRIVILEGES = new String[] { Privilege.JCR_READ, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL, Privilege.JCR_ALL };
 
 
     public JcrAllowedActions(Node allowedActionsNode) {
@@ -248,6 +255,13 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             throw new MetadataException("Failed to copy allowed actions", e);
         }
     }
+    
+    protected Set<Action> getEnabledActions(Principal principal) {
+        return getAvailableActions().stream()
+                        .flatMap(avail -> avail.stream())
+                        .filter(action -> JcrAccessControlUtil.hasAnyPermission(((JcrAllowableAction) action).getNode(), principal, Privilege.JCR_READ, Privilege.JCR_ALL))
+                        .collect(Collectors.toSet());
+    }
 
     private Node copyAction(Node src, Node destParent, boolean includeDescr, Principal principal, String... privilegeNames) throws RepositoryException {
         Node dest = JcrUtil.getOrCreateNode(destParent, src.getName(), JcrAllowableAction.NODE_TYPE);
@@ -277,15 +291,35 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     }
 
     private boolean togglePermission(Action action, Principal principal, boolean enable) {
-        return findActionNode(action)
-            .map(node -> {
-                if (enable) {
-                    return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
-                } else {
-                    return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
-                }
-            })
-            .orElseThrow(() -> new AccessControlException("Not authorized to " + (enable ? "enable" : "disable") + " the action: " + action));
+        // If this actions is a permission management action then grant this principal admin privileges to the whole tree.
+        if (isAdminAction(action)) {
+            if (enable) {
+                return JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, principal, ADMIN_PRIVILEGES);
+            } else {
+                return JcrAccessControlUtil.removeRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, principal, ADMIN_PRIVILEGES);
+            }
+        } else {
+            return findActionNode(action)
+                    .map(node -> {
+                        if (enable) {
+                            return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, GRANT_PRIVILEGES);
+                        } else {
+                            return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, GRANT_PRIVILEGES);
+                        }
+                    })
+                    .orElseThrow(() -> new AccessControlException("Not authorized to " + (enable ? "enable" : "disable") + " the action: " + action));
+        }
+    }
+
+    /**
+     * return true if the specified action represents the ability to manage the permissions 
+     * of this object on behalf of other principals.  The default is false.  Subclasses
+     * should override this method to indicate which of their specific actions are
+     * considered admin actions.
+     */
+    protected boolean isAdminAction(Action action) {
+        // Assume false
+        return false;
     }
 
     private Optional<Node> findActionNode(Action action) {

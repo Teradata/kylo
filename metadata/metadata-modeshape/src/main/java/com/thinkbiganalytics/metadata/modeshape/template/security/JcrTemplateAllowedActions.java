@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.template.security;
 
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -23,7 +25,6 @@ package com.thinkbiganalytics.metadata.modeshape.template.security;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
@@ -33,9 +34,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import org.modeshape.jcr.security.SimplePrincipal;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -58,32 +59,37 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        enableEntityAccess(principal, actions.stream());
-        return super.enable(principal, actions);
+        boolean changed = super.enable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        enableOnlyEntityAccess(principal, actions.stream());
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        enableOnlyEntityAccess(principal, actions.getAvailableActions().stream());
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        disableEntityAccess(principal, actions.stream());
-        return super.disable(principal, actions);
+        boolean changed = super.disable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean disable(Principal principal, AllowedActions actions) {
-        disableEntityAccess(principal, actions.getAvailableActions().stream());
-        return super.disable(principal, actions);
+        boolean changed = super.disable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
@@ -105,61 +111,25 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
         JcrAccessControlUtil.clearPermissions(getNode());
     }
 
-    protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
+    protected void updateEntityAccess(Principal principal, Set<? extends Action> actions) {
+        Set<String> privs = new HashSet<>();
+
         actions.forEach(action -> {
             //When Change Perms comes through the user needs write access to the allowed actions tree to grant additonal access
             if (action.implies(TemplateAccessControl.CHANGE_PERMS)) {
-                final Node allowedActionsNode = ((JcrAllowedActions) this.template.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+                Collections.addAll(privs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
-                JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
+                privs.add(Privilege.JCR_ALL); 
             } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
-                JcrAccessControlUtil.addPermissions(template.getNode(), principal, Privilege.JCR_READ);
+                privs.add(Privilege.JCR_READ); 
             }
         });
+        
+        JcrAccessControlUtil.setPermissions(this.template.getNode(), principal, privs);
     }
-
-    protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        final AtomicBoolean access = new AtomicBoolean(false);
-        final AtomicBoolean changePerms = new AtomicBoolean(false);
-        final AtomicBoolean edit = new AtomicBoolean(false);
-
-        actions.forEach(action -> {
-            access.compareAndSet(false, action.implies(TemplateAccessControl.ACCESS_TEMPLATE));
-            changePerms.compareAndSet(false, action.implies(TemplateAccessControl.CHANGE_PERMS));
-            edit.compareAndSet(false, action.implies(TemplateAccessControl.EDIT_TEMPLATE));
-        });
-
-        if (edit.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
-        } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ);
-        }
-
-        if (access.get()) {
-            JcrAccessControlUtil.addHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
-        } else {
-            JcrAccessControlUtil.removeHierarchyPermissions(template.getNode(), principal, template.getNode(), Privilege.JCR_READ);
-        }
-
-        final Node allowedActionsNode = ((JcrAllowedActions) this.template.getAllowedActions()).getNode();
-        if (changePerms.get()) {
-            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        } else {
-            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        }
-    }
-
-    protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        actions.forEach(action -> {
-            if (action.implies(TemplateAccessControl.CHANGE_PERMS)) {
-                final Node allowedActionsNode = ((JcrAllowedActions) this.template.getAllowedActions()).getNode();
-                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-            } else if (action.implies(TemplateAccessControl.EDIT_TEMPLATE)) {
-                JcrAccessControlUtil.removePermissions(template.getNode(), principal, Privilege.JCR_ALL);
-            } else if (action.implies(TemplateAccessControl.ACCESS_TEMPLATE)) {
-                JcrAccessControlUtil.removePermissions(template.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
-            }
-        });
+    
+    @Override
+    protected boolean isAdminAction(Action action) {
+        return action.implies(TemplateAccessControl.CHANGE_PERMS);
     }
 }

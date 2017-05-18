@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -161,10 +162,11 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
 
     protected void enable(Principal principal) {
         JcrAllowedActions roleAllowed = (JcrAllowedActions) getRole().getAllowedActions();
-        
-        roleAllowed.getAvailableActions().stream()
+        Set<Action> actions = roleAllowed.getAvailableActions().stream()
                 .flatMap(avail -> avail.stream())
-                .forEach(action -> this.allowedActions.enable(principal, action));
+                .collect(Collectors.toSet());
+        
+        this.allowedActions.enable(principal, actions);
     }
 
     protected void disable(Principal principal) {
@@ -182,10 +184,12 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
                         .collect(Collectors.toSet());
             
         // Disable only the actions not permitted by any other role memberships for this principal
-        thisRole.getAllowedActions().getAvailableActions().stream()
+        Set<Action> disabled = thisRole.getAllowedActions().getAvailableActions().stream()
                         .flatMap(avail -> avail.stream())
                         .filter(action -> ! otherAllowables.contains(action))
-                        .forEach(action -> this.allowedActions.disable(principal, action));
+                        .collect(Collectors.toSet());
+        
+        this.allowedActions.disable(principal, disabled);
     }
 
     @Override
