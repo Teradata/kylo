@@ -25,11 +25,10 @@ package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import javax.inject.Inject;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -47,7 +46,6 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.security.UsernamePrincipal;
@@ -59,6 +57,7 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 /**
  *
  */
+@Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class })
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
@@ -108,8 +107,6 @@ public class JcrFeedRolesTest {
             return cat.getName();
         }, JcrMetadataAccess.SERVICE);
         
-        metadata.commit(() -> tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata/security/roles/feed"), JcrMetadataAccess.SERVICE);
-        
         this.idA = metadata.commit(() -> {
             Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedA");
             feed.setDescription("Feed A");
@@ -135,7 +132,7 @@ public class JcrFeedRolesTest {
         }, JcrMetadataAccess.SERVICE);
     }
     
-//    @Test
+    @Test
     public void testSeeOnlyOwnFeeds() {
         metadata.commit(() -> {
             this.feedProvider.findById(idA).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER1));
@@ -157,7 +154,7 @@ public class JcrFeedRolesTest {
         assertThat(feedCnt3).isEqualTo(0);
     }
     
-//    @Test
+    @Test
     public void testAddMembership() {
         metadata.read(() -> {
             Feed feedA = this.feedProvider.getFeed(idA);
@@ -216,6 +213,8 @@ public class JcrFeedRolesTest {
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
+metadata.commit(() -> tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata/security/roles/feed"), JcrMetadataAccess.SERVICE);
+
             Feed feedA = this.feedProvider.getFeed(idA);
             
             assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");
