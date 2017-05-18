@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.template.security;
 
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -80,13 +78,6 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        boolean changed = super.disable(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
-    }
-
-    @Override
-    public boolean disable(Principal principal, AllowedActions actions) {
         boolean changed = super.disable(principal, actions);
         updateEntityAccess(principal, getEnabledActions(principal));
         return changed;

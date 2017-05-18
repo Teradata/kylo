@@ -558,9 +558,9 @@ public final class JcrAccessControlUtil {
             
             if (privileges.length > 0) {
                 changed |= addEntry(session, acl, principal, privileges);
-                acm.setPolicy(path, acl);
             }
             
+            acm.setPolicy(path, acl);
             return changed;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": "

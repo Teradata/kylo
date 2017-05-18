@@ -57,7 +57,6 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 /**
  *
  */
-@Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, ModeShapeAuthConfig.class, JcrFeedSecurityTestConfig.class })
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
@@ -130,6 +129,8 @@ public class JcrFeedRolesTest {
             feed.setState(State.ENABLED);
             return feed.getId();
         }, JcrMetadataAccess.SERVICE);
+        
+//        metadata.commit(() -> tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata/feeds/test"), JcrMetadataAccess.SERVICE);
     }
     
     @Test
@@ -213,8 +214,6 @@ public class JcrFeedRolesTest {
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
-metadata.commit(() -> tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata/security/roles/feed"), JcrMetadataAccess.SERVICE);
-
             Feed feedA = this.feedProvider.getFeed(idA);
             
             assertThat(feedA.getDescription()).isNotNull().isEqualTo("Feed A");

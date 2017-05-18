@@ -82,13 +82,6 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
     }
 
     @Override
-    public boolean disable(Principal principal, AllowedActions actions) {
-        boolean changed = super.disable(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
-    }
-
-    @Override
     public void setupAccessControl(Principal owner) {
         enable(JcrMetadataAccess.getActiveUser(), CategoryAccessControl.EDIT_DETAILS);
         enable(JcrMetadataAccess.ADMIN, CategoryAccessControl.EDIT_DETAILS);

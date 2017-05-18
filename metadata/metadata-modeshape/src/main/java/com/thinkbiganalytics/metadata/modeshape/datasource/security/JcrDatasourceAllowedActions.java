@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource.security;
 
-import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
-
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -84,13 +82,6 @@ public class JcrDatasourceAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        boolean changed = super.disable(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
-    }
-
-    @Override
-    public boolean disable(Principal principal, AllowedActions actions) {
         boolean changed = super.disable(principal, actions);
         updateEntityAccess(principal, getEnabledActions(principal));
         return changed;
