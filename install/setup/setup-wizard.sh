@@ -21,7 +21,7 @@ echo " "
 yes_no="^[yYnN]{1}$"
 # (1) prompt user, and read command line argument
 while [[ ! $install_db =~ $yes_no ]]; do
-    read -p "Would you like to install the database scripts to a local database instance? Please enter y/n: " install_db
+    read -p "Would you like to install the database scripts in a database instance? Please enter y/n: " install_db
 done
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
@@ -127,7 +127,7 @@ if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
     if [ $offline = true ]
     then
-        ./elasticsearch/install-elasticsearch.sh -O $current_dir
+        ./elasticsearch/install-elasticsearch.sh $current_dir -O
     else
         ./elasticsearch/install-elasticsearch.sh
     fi

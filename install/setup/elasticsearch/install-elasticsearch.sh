@@ -1,15 +1,27 @@
 #!/bin/bash
+
+#########
+#  Example 1: ./install-elasticsearch /opt/kylo-dev/setup
+#  Example 2: ./install-elasticsearch /tmp/offline-install -o
+#########
 echo "Installing Elasticsearch"
 offline=false
-working_dir=$2
+SETUP_FOLDER=/opt/kylo/setup
 
-if [ $# > 1 ]
+if [ $# -eq 0 ]
 then
-    if [ "$1" = "-o" ] || [ "$1" = "-O" ]
-    then
-        echo "Working in offline mode"
+    echo "No setup folder specified. Defaulting to /opt/kylo/setup"
+elif [ $# -eq 1 ]
+then
+    echo "The setup folder is $1 "
+    SETUP_FOLDER=$1
+elif [ $# -eq 2 ] && ([ "$2" = "-o" ] || [ "$2" = "-O" ])
+then
+    echo "Working in offline mode"
         offline=true
-    fi
+else
+    echo "Unknown arguments. The first argument should be the path to the setup folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
+    exit 1
 fi
 
 # function for determining way to handle startup scripts
@@ -27,7 +39,7 @@ linux_type=$(get_linux_type)
 
 if [ $offline = true ]
 then
-    cd $working_dir/elasticsearch
+    cd $SETUP_FOLDER/elasticsearch
 
     if [ "$linux_type" == "chkonfig" ]; then
         echo "Executing RPM"
@@ -36,9 +48,9 @@ then
         echo "Executing DEB"
         rpm -ivh elasticsearch-2.3.0.deb
     fi
-    cp $working_dir/elasticsearch/elasticsearch.yml /etc/elasticsearch/
+    cp $SETUP_FOLDER/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 else
-    cd /opt
+    cd $SETUP_FOLDER/elasticsearch
 
     if [ "$linux_type" == "chkonfig" ]; then
         echo "Downloading RPM"
@@ -61,9 +73,7 @@ else
         update-rc.d elasticsearch defaults 95 10
     fi
 
-    cp /opt/kylo/setup/elasticsearch/elasticsearch.yml /etc/elasticsearch/
-    echo "Installing HQ plugin"
-    /usr/share/elasticsearch/bin/plugin install royrusso/elasticsearch-HQ
+    cp $SETUP_FOLDER/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 fi
 
 echo "Starting Elasticsearch"
