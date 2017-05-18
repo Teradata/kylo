@@ -35,9 +35,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -125,8 +128,8 @@ public class AccessControlController {
                                          @QueryParam("user") Set<String> userNames,
                                          @QueryParam("group") Set<String> groupNames) {
         
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
         Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
         // Retrieve the allowed actions by executing the query as the specified user/groups 
@@ -214,8 +217,8 @@ public class AccessControlController {
     private Set<Principal> collectPrincipals(PermissionsChange changes) {
         Set<Principal> set = new HashSet<>();
 
-        set.addAll(this.actionsTransform.asUserPrincipals(changes.getUsers()));
-        set.addAll(this.actionsTransform.asGroupPrincipals(changes.getGroups()));
+        Collections.addAll(set, this.actionsTransform.asUserPrincipals(changes.getUsers()));
+        Collections.addAll(set, this.actionsTransform.asGroupPrincipals(changes.getGroups()));
 
         return set;
     }

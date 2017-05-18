@@ -44,6 +44,7 @@ import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import java.security.Principal;
 import java.security.acl.Group;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -381,17 +382,16 @@ public class DefaultSecurityService implements SecurityService {
             return domainSupplier.get().map(domain -> {
                 switch (change.getChange()) {
                     case ADD:
-                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
-                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+                        Arrays.stream(securityTransform.asUserPrincipals(change.getUsers())).forEach(p -> domain.addMember(p));
+                        Arrays.stream(securityTransform.asGroupPrincipals(change.getGroups())).forEach(p -> domain.addMember(p));
                         break;
                     case REMOVE:
-                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.removeMember(p));
-                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.removeMember(p));
+                        Arrays.stream(securityTransform.asUserPrincipals(change.getUsers())).forEach(p -> domain.removeMember(p));
+                        Arrays.stream(securityTransform.asGroupPrincipals(change.getGroups())).forEach(p -> domain.removeMember(p));
                         break;
                     case REPLACE:
-                        domain.removeAllMembers();
-                        securityTransform.asUserPrincipals(change.getUsers()).forEach(p -> domain.addMember(p));
-                        securityTransform.asGroupPrincipals(change.getGroups()).forEach(p -> domain.addMember(p));
+                        domain.setMemebers(securityTransform.asUserPrincipals(change.getUsers()));
+                        domain.setMemebers(securityTransform.asGroupPrincipals(change.getGroups()));
                         break;
                     default:
                         break;

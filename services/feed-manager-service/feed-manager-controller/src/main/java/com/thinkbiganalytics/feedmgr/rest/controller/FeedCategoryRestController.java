@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -230,8 +231,8 @@ public class FeedCategoryRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for category: {}", categoryIdStr);
         
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedCategoryActions(categoryIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -273,8 +274,8 @@ public class FeedCategoryRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createCategoryPermissionChange(categoryIdStr, 
                                                                ChangeType.valueOf(changeType.toUpperCase()), 

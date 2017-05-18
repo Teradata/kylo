@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
  */
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +47,9 @@ import com.thinkbiganalytics.security.role.SecurityRole;
  *
  */
 public class JcrRoleMembership extends JcrObject implements RoleMembership {
+    
+    private static final UsernamePrincipal[] NO_USERS = new UsernamePrincipal[0];
+    private static final GroupPrincipal[] NO_GROUPS = new GroupPrincipal[0];
 
     public static final String NODE_NAME = "tba:roleMemberships";
     public static final String NODE_TYPE = "tba:roleMembership";
@@ -119,9 +123,43 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
      */
     @Override
     public Set<Principal> getMembers() {
-        Stream<Principal> groups = JcrPropertyUtil.<String>getSetProperty(getNode(), GROUPS).stream().map(GroupPrincipal::new);
-        Stream<Principal> users = JcrPropertyUtil.<String>getSetProperty(getNode(), USERS).stream().map(UsernamePrincipal::new);
+        Stream<? extends Principal> groups = streamGroups();
+        Stream<? extends Principal> users = streamUsers();
         return Stream.concat(groups, users).collect(Collectors.toSet());
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#setMemebers(com.thinkbiganalytics.security.UsernamePrincipal[])
+     */
+    @Override
+    public void setMemebers(UsernamePrincipal... principals) {
+        Set<UsernamePrincipal> newMembers = Arrays.stream(principals).collect(Collectors.toSet());
+        Set<UsernamePrincipal> oldMembers = streamUsers().collect(Collectors.toSet());
+        
+        newMembers.stream()
+            .filter(u -> ! oldMembers.contains(u))
+            .forEach(this::addMember);
+        
+        oldMembers.stream()
+            .filter(u -> ! newMembers.contains(u))
+            .forEach(this::removeMember);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#setMemebers(com.thinkbiganalytics.security.GroupPrincipal[])
+     */
+    @Override
+    public void setMemebers(GroupPrincipal... principals) {
+        Set<GroupPrincipal> newMembers = Arrays.stream(principals).collect(Collectors.toSet());
+        Set<GroupPrincipal> oldMembers = streamGroups().collect(Collectors.toSet());
+        
+        newMembers.stream()
+            .filter(u -> ! oldMembers.contains(u))
+            .forEach(this::addMember);
+        
+        oldMembers.stream()
+            .filter(u -> ! newMembers.contains(u))
+            .forEach(this::removeMember);
     }
 
     /* (non-Javadoc)
@@ -130,6 +168,15 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
     @Override
     public void addMember(GroupPrincipal principal) {
         JcrPropertyUtil.addToSetProperty(getNode(), GROUPS, principal.getName());
+        enable(principal);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#addMember(com.thinkbiganalytics.security.UsernamePrincipal)
+     */
+    @Override
+    public void addMember(UsernamePrincipal principal) {
+        JcrPropertyUtil.addToSetProperty(getNode(), USERS, principal.getName());
         enable(principal);
     }
 
@@ -143,15 +190,6 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#addMember(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
-    @Override
-    public void addMember(UsernamePrincipal principal) {
-        JcrPropertyUtil.addToSetProperty(getNode(), USERS, principal.getName());
-        enable(principal);
-    }
-
-    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#removeMember(com.thinkbiganalytics.security.UsernamePrincipal)
      */
     @Override
@@ -159,6 +197,12 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
         disable(principal);
         JcrPropertyUtil.removeFromSetProperty(getNode(), USERS, principal.getName());
     }
+
+    @Override
+        public void removeAllMembers() {
+            setMemebers(NO_USERS);
+            setMemebers(NO_GROUPS);
+        }
 
     protected void enable(Principal principal) {
         JcrAllowedActions roleAllowed = (JcrAllowedActions) getRole().getAllowedActions();
@@ -192,15 +236,11 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
         this.allowedActions.disable(principal, disabled);
     }
 
-    @Override
-    public void removeAllMembers() {
-        getMembers().stream().forEach(member -> {
-            if(member instanceof UsernamePrincipal){
-                removeMember((UsernamePrincipal)member);
-            }
-            else if(member instanceof GroupPrincipal){
-                removeMember((GroupPrincipal)member);
-            }
-        });
+    private Stream<UsernamePrincipal> streamUsers() {
+        return JcrPropertyUtil.<String>getSetProperty(getNode(), USERS).stream().map(UsernamePrincipal::new);
+    }
+
+    private Stream<GroupPrincipal> streamGroups() {
+        return JcrPropertyUtil.<String>getSetProperty(getNode(), GROUPS).stream().map(GroupPrincipal::new);
     }
 }
