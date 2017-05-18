@@ -18,7 +18,8 @@ then
 elif [ $# -eq 2 ] && ([ "$2" = "-o" ] || [ "$2" = "-O" ])
 then
     echo "Working in offline mode"
-        offline=true
+    offline=true
+    SETUP_FOLDER=$1
 else
     echo "Unknown arguments. The first argument should be the path to the setup folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
     exit 1

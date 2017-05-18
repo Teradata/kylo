@@ -1,14 +1,24 @@
 #!/bin/bash
 
-ln -f -s /opt/nifi/data/lib/kylo-nifi-core-service-nar-*.nar /opt/nifi/current/lib/kylo-nifi-core-service-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-standard-services-nar-*.nar /opt/nifi/current/lib/kylo-nifi-standard-services-nar.nar
+if [ $# -ne 3 ]
+then
+    echo "Wrong number of arguments. You must pass in the NIFI_HOME location, NIFI_USER, and NIFI_GROUP"
+    exit 1
+fi
 
-ln -f -s /opt/nifi/data/lib/kylo-nifi-core-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-core-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-spark-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-spark-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-hadoop-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-hadoop-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-hadoop-service-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-provenance-repo-nar.nar
-ln -f -s /opt/nifi/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar /opt/nifi/current/lib/kylo-nifi-elasticsearch-nar.nar
+NIFI_HOME=$1
+NIFI_USER=$2
+NIFI_GROUP=$3
+
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-core-service-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-core-service-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-standard-services-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-standard-services-nar.nar
+
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-core-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-core-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-spark-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-spark-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-service-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-elasticsearch-nar.nar
 
 if [ -z ${SPARK_PROFILE} ]; then
         SPARK_SUBMIT=$(which spark-submit)
@@ -28,9 +38,9 @@ else
         fi
 fi
 
-ln -f -s /opt/nifi/data/lib/app/kylo-spark-validate-cleanse-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/kylo-spark-validate-cleanse-jar-with-dependencies.jar
-ln -f -s /opt/nifi/data/lib/app/kylo-spark-job-profiler-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
-ln -f -s /opt/nifi/data/lib/app/kylo-spark-interpreter-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
+ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-validate-cleanse-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-validate-cleanse-jar-with-dependencies.jar
+ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-job-profiler-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
+ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-interpreter-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
 
-chown -h nifi:users /opt/nifi/current/lib/kylo*.nar
-chown -h nifi:users /opt/nifi/current/lib/app/kylo*.jar
+chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/kylo*.nar
+chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/app/kylo*.jar
