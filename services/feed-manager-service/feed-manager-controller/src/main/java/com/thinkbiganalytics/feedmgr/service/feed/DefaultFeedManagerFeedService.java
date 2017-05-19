@@ -115,6 +115,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
@@ -419,6 +420,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 Feed domainFeed = feedProvider.findById(domainId);
                 if (domainFeed != null) {
                     domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+                } else {
+                    throw new NotFoundException("Feed not found for id " + feedMetadata.getId());
                 }
             });
         }

@@ -59,6 +59,9 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private static final String PERMISSION_ADMIN = "admin";
     private static final String PERMISSION_FEED_CREATOR = "feedCreator";
 
+    private static final String FEED_EDIT_FORBIDDEN = "Error saving Feed Not authorized to perform the action: Edit Feeds";
+    private static final String FEED_NOT_FOUND = "Error saving Feed Feed not found for id";
+
     private FeedCategory category;
     private ExportImportTemplateService.ImportTemplate ingestTemplate;
     private FeedMetadata feed;
@@ -86,7 +89,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         createFeedWithAdmin();
         assertAnalystCantAccessFeeds();
-        assertAnalystCantEditFeed();
+        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
@@ -95,7 +98,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantAccessFeedsToAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
-        assertAnalystCantEditFeed();
+        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
@@ -103,7 +106,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_READ_ONLY);
         assertAnalystCanSeeFeed();
-        assertAnalystCantEditFeed();
+        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
@@ -111,10 +114,10 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_EDITOR);
         assertAnalystCanSeeFeed();
-        assertAnalystCantEditFeed(); //cant edit feed until required service permissions are added for feed, category, template and entity access to category
+        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN); //cant edit feed until required service permissions are added for feed, category, template and entity access to category
         grantEditFeedsToAnalysts();
         grantCategoryEntityPermissionToAnalysts(PERMISSION_FEED_CREATOR);
-//        assertAnalystCanEditFeed(); //todo strangely this works at this point via UI, but doesn't work here
+        assertAnalystCanEditFeed();
         assertAnalystCanDisableEnableFeed();
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         grantTemplateAndFeedExportToAnalysts();
@@ -124,7 +127,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_ADMIN);
         assertAnalystCanSeeFeed();
-//        assertAnalystCanEditFeed();
+        assertAnalystCanEditFeed();
         assertAnalystCanExportFeed();
         assertAnalystCanDisableEnableFeed();
 
@@ -133,7 +136,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         revokeFeedEntityPermissionsFromAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
-//        assertAnalystCantEditFeed();
+        assertAnalystCantEditFeed(FEED_NOT_FOUND);
         assertAnalystCantExportFeed(HTTP_NOT_FOUND);
         assertAnalystCantDisableEnableFeed(HTTP_NOT_FOUND);
         assertAnalystCantEditFeedPermissions(HTTP_NOT_FOUND);
@@ -167,21 +170,17 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 //    @Test
     public void temp() {
 //        category = new FeedCategory();
-//        category.setId("c6464487-1507-4ae1-a723-f15fd8bd716a");
+//        category.setId("67d5fd01-096d-41bf-a0b0-e0a0fe8d4587");
+//        category.setSystemName("entity_access_tests");
+//
+//        ingestTemplate = new ExportImportTemplateService.ImportTemplate();
+//        ingestTemplate.setTemplateId("57ca6102-39bc-42d7-9eff-754663fc4f4b");
+//        ingestTemplate.setTemplateName("Data Ingest");
 //
 //        feed = new FeedMetadata();
-//        feed.setFeedId("dcaf6be9-009c-4215-b50b-05d8207a0e18");
-
-//        createCategoryWithAdmin();
-//        grantAccessCategoriesToAnalysts();
-//        createTemplateWithAdmin();
-//        grantAccessTemplatesToAnalysts();
-//        createFeedWithAdmin();
-//        grantFeedEntityPermissionToAnalysts(PERMISSION_ADMIN);
-//        grantEditFeedsToAnalysts(); //so that user can disable feed
-//        grantAdminFeedsToAnalysts(); //so that user can delete
-//        grantCategoryEntityPermissionToAnalysts(PERMISSION_EDITOR);
-//        assertAnalystCanDeleteFeed();
+//        feed.setId("c39209c8-cc50-421e-a5de-25e93cf22c5d");
+//        feed.setFeedId("c39209c8-cc50-421e-a5de-25e93cf22c5d");
+//        feed.setFeedName("Feed A");
 
     }
 
@@ -252,16 +251,16 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         exportFeed(feed.getFeedId());
     }
 
-    private void assertAnalystCantEditFeed() {
+    private void assertAnalystCantEditFeed(String errorMessage) {
         LOG.debug("EntityLevelAccessIT.assertAnalystCantEditFeed");
 
         runAs(ANALYST);
 
-        FeedMetadata createFeedRequest = getCreateFeedRequest(category, ingestTemplate, feed.getFeedName());
-        createFeedRequest.setDescription("New Description");
-        NifiFeed feed = createFeed(createFeedRequest);
+        FeedMetadata editFeedRequest = getEditFeedRequest();
+        NifiFeed feed = createFeed(editFeedRequest);
         Assert.assertEquals(1, feed.getErrorMessages().size());
-        Assert.assertEquals("Error saving Feed Not authorized to perform the action: Edit Feeds", feed.getErrorMessages().get(0));
+        Assert.assertTrue(feed.getErrorMessages().get(0).startsWith(errorMessage));
+
     }
 
     private void assertAnalystCanEditFeed() {
@@ -269,13 +268,18 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         runAs(ANALYST);
 
+        FeedMetadata editFeedRequest = getEditFeedRequest();
+        NifiFeed feed = createFeed(editFeedRequest);
+        Assert.assertTrue(feed.getErrorMessages() == null);
+    }
+
+    private FeedMetadata getEditFeedRequest() {
         FeedMetadata editFeedRequest = getCreateFeedRequest(category, ingestTemplate, feed.getFeedName());
         editFeedRequest.setId(feed.getId());
         editFeedRequest.setFeedId(feed.getFeedId());
         editFeedRequest.setDescription("New Description");
         editFeedRequest.setIsNew(false);
-        NifiFeed feed = createFeed(editFeedRequest);
-        Assert.assertEquals(0, feed.getErrorMessages().size());
+        return editFeedRequest;
     }
 
     private void assertAnalystCanAccessFeedsButCantSeeFeed() {
