@@ -91,6 +91,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
 
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -289,7 +290,6 @@ public class IntegrationTestBase {
         FeedSummary[] feeds = getFeeds();
         for (FeedSummary feed : feeds) {
             disableFeed(feed.getFeedId());
-            stopFeed(feed.getFeedId());
         }
         //give time for processors to stop
         waitFor(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS, "for processors to stop");
@@ -597,32 +597,47 @@ public class IntegrationTestBase {
     protected void disableFeed(String feedId) {
         LOG.info("Disabling feed {}", feedId);
 
+        Response response = disableFeedExpecting(feedId, HTTP_OK);
+
+        FeedSummary feed = response.as(FeedSummary.class);
+        Assert.assertEquals(Feed.State.DISABLED.name(), feed.getState());
+    }
+
+    protected Response disableFeedExpecting(String feedId, int statusCode) {
         String url = String.format("/disable/%s", feedId);
         Response response = given(FeedRestController.BASE)
             .when()
             .post(url);
 
-        response.then().statusCode(HTTP_OK);
-        FeedSummary feed = response.as(FeedSummary.class);
-        Assert.assertEquals(Feed.State.DISABLED.name(), feed.getState());
+        response.then().statusCode(statusCode);
+        return response;
     }
 
     protected void enableFeed(String feedId) {
         LOG.info("Enabling feed {}", feedId);
 
+        Response response = enableFeedExpecting(feedId, HTTP_OK);
+
+        FeedSummary feed = response.as(FeedSummary.class);
+        Assert.assertEquals(Feed.State.ENABLED.name(), feed.getState());
+    }
+
+    protected Response enableFeedExpecting(String feedId, int statusCode) {
         String url = String.format("/enable/%s", feedId);
         Response response = given(FeedRestController.BASE)
             .when()
             .post(url);
 
-        response.then().statusCode(HTTP_OK);
-        FeedSummary feed = response.as(FeedSummary.class);
-        Assert.assertEquals(Feed.State.ENABLED.name(), feed.getState());
+        response.then().statusCode(statusCode);
+        return response;
     }
 
     protected void deleteFeed(String feedId) {
         LOG.info("Deleting feed {}", feedId);
+        deleteFeedExpecting(feedId, HTTP_NO_CONTENT);
+    }
 
+    protected void deleteFeedExpecting(String feedId, int statusCode) {
         String url = String.format("/%s", feedId);
         Response response = given(FeedRestController.BASE)
             .when()
@@ -632,17 +647,22 @@ public class IntegrationTestBase {
 //            RestResponseStatus responseStatus = response.body().as(RestResponseStatus.class);
         //todo find id of referring feed and delete it if failed here because the feed is referenced by other feed
 //        } else {
-        response.then().statusCode(HTTP_NO_CONTENT);
+        response.then().statusCode(statusCode);
 //        }
     }
 
-    protected void stopFeed(String feedId) {
-        LOG.info("Stopping feed {}", feedId);
+    protected void exportFeed(String feedId) {
+        Response response = exportFeedExpecting(feedId, HTTP_OK);
+        response.then().contentType(MediaType.APPLICATION_OCTET_STREAM);
+    }
 
-        //this is a workaround to stop all processors in a feed - delete call fails to delete, but stops all processors
-        given(FeedRestController.BASE)
+    protected Response exportFeedExpecting(String feedId, int code) {
+        Response response = given(AdminController.BASE)
             .when()
-            .delete(String.format("/%s", feedId));
+            .get("/export-feed/" + feedId);
+
+        response.then().statusCode(code);
+        return response;
     }
 
     protected RegisteredTemplate[] getTemplates() {

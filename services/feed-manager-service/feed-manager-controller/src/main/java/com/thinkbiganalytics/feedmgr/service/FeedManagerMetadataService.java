@@ -79,6 +79,9 @@ public class FeedManagerMetadataService implements MetadataService {
     @Value("${kylo.feed.mgr.cleanup.timeout:60000}")
     private long cleanupTimeout;
 
+    @Value("${kylo.feed.mgr.cleanup.delay:300}")
+    private long cleanupDelay;
+
     @Inject
     FeedManagerCategoryService categoryProvider;
 
@@ -208,7 +211,7 @@ public class FeedManagerMetadataService implements MetadataService {
         if (needsCleanup) {
             // Wait for input processor to start
             try {
-                Thread.sleep(300);
+                Thread.sleep(cleanupDelay);
             } catch (InterruptedException e) {
                 // ignored
             }

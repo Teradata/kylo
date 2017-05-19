@@ -133,7 +133,13 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
      * Identifier for this feed
      */
     @Nullable
-    private String feedId;
+    private String category;
+
+    /**
+     * Identifier for this feed
+     */
+    @Nullable
+    private String feed;
 
     @Override
     public Set<Relationship> getRelationships() {
@@ -152,16 +158,12 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
      */
     @OnScheduled
     public void onScheduled(@Nonnull final ProcessContext context) {
-        // Get the feed id
-        String category = context.getProperty(CATEGORY_NAME).getValue();
-        String feed = context.getProperty(FEED_NAME).getValue();
+        getLog().debug("Scheduled");
 
-        try {
-            feedId = getMetadataService(context).getProvider().getFeedId(category, feed);
-        } catch (Exception e) {
-            getLog().warn("Failure retrieving metadata for feed: {}.{}", new Object[]{category, feed}, e);
-            throw new IllegalStateException("Failed to retrieve feed metadata", e);
-        }
+        // Get the feed id
+        category = context.getProperty(CATEGORY_NAME).getValue();
+        feed = context.getProperty(FEED_NAME).getValue();
+        getLog().debug("Scheduled for {}.{}", new Object[]{category, feed});
 
         // Listen for cleanup events
         getCleanupService(context).addListener(category, feed, this);
@@ -169,15 +171,27 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
 
     @Override
     public void onTrigger(@Nonnull final ProcessContext context, @Nonnull final ProcessSession session) throws ProcessException {
+        getLog().trace("Triggered for feed {}.{}", new Object[]{category, feed});
         // Look for an event to process
         FeedCleanupTriggerEvent event = queue.poll();
         if (event == null) {
+            getLog().trace("Triggered, but no message in queue");
             context.yield();
             return;  // nothing to do
         }
 
+        String feedId;
+        try {
+            feedId = getMetadataService(context).getProvider().getFeedId(category, feed);
+            getLog().debug("Triggered for feed " + feedId);
+        } catch (Exception e) {
+            getLog().error("Failure retrieving metadata for feed: {}.{}", new Object[]{category, feed}, e);
+            throw new IllegalStateException("Failed to retrieve feed metadata", e);
+        }
+
         // Verify feed properties
         Properties properties = (feedId != null) ? getMetadataService(context).getProvider().getFeedProperties(feedId) : null;
+        getLog().debug("Feed properties " + properties);
 
         if (properties == null) {
             throw new IllegalStateException("Failed to fetch properties for feed: " + feedId);
@@ -201,6 +215,9 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
         // Create a FlowFile from the event
         FlowFile flowFile = session.create();
         flowFile = session.putAllAttributes(flowFile, attributes);
+
+        getLog().debug("Transferring flow file to Success relationship");
+
         session.transfer(flowFile, REL_SUCCESS);
     }
 
@@ -212,6 +229,7 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
     @OnUnscheduled
     public void onUnscheduled(@Nonnull final ProcessContext context) {
         // Remove listener
+        getLog().debug("Unscheduled");
         getCleanupService(context).removeListener(this);
     }
 
@@ -219,16 +237,6 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
     public void triggered(@Nonnull final FeedCleanupTriggerEvent event) {
         getLog().debug("Cleanup event triggered: {}", new Object[]{event});
         queue.add(event);
-    }
-
-    /**
-     * Gets the id for this feed.
-     *
-     * @return the feed id, or {@code null} if unknown
-     */
-    @Nullable
-    String getFeedId() {
-        return feedId;
     }
 
     /**

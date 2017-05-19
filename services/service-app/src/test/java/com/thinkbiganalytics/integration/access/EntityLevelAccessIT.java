@@ -21,8 +21,6 @@ package com.thinkbiganalytics.integration.access;
  */
 
 import com.jayway.restassured.response.Response;
-import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
-import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -42,14 +40,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-
 import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static com.thinkbiganalytics.integration.UserContext.User.ANALYST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Asserts that Category, Template and Feeds are only accessible when given permission to do so.
@@ -97,7 +91,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
         assertAnalystCantDeleteFeed(HTTP_FORBIDDEN);
-//        assertAnalystCantAccessFeedOperations(HTTP_FORBIDDEN);
+//        assertAnalystCantAccessFeedOperations(HTTP_FORBIDDEN); //todo here and everywhere below
 
         grantAccessFeedsToAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
@@ -118,7 +112,8 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         grantFeedEntityPermissionToAnalysts(PERMISSION_EDITOR);
         assertAnalystCanSeeFeed();
         assertAnalystCantEditFeed(); //cant edit feed until required service permissions are added for feed, category, template and entity access to category
-        grantEditFeedsAndCategoryEntityAccessToAnalyst();
+        grantEditFeedsToAnalysts();
+        grantCategoryEntityPermissionToAnalysts(PERMISSION_FEED_CREATOR);
 //        assertAnalystCanEditFeed(); //todo strangely this works at this point via UI, but doesn't work here
         assertAnalystCanDisableEnableFeed();
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
@@ -132,8 +127,9 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 //        assertAnalystCanEditFeed();
         assertAnalystCanExportFeed();
         assertAnalystCanDisableEnableFeed();
+
         grantAdminFeedsToAnalysts();
-//        assertAnalystCanEditFeedPermissions(); // todo caused by KYLO-645
+        assertAnalystCanEditFeedPermissions();
 
         revokeFeedEntityPermissionsFromAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
@@ -144,9 +140,9 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         assertAnalystCantDeleteFeed(HTTP_NOT_FOUND);
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_ADMIN);
-        grantCategoryEntityPermissionToAnalysts(PERMISSION_ADMIN); //to delete a feed one has to have an Admin permission to the category too
+        grantCategoryEntityPermissionToAnalysts(PERMISSION_EDITOR); //to delete a feed one has to have an Editor permission to the category too
         grantAdminFeedsToAnalysts();
-//        assertAnalystCanDeleteFeed(); //todo times out here and in UI at this point
+        assertAnalystCanDeleteFeed();
 
         resetServicePermissionsForAnalysts();
         assertAnalystCantAccessCategories();
@@ -157,7 +153,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     @Override
     public void teardown() {
         LOG.debug("EntityLevelAccessIT.teardown");
-//        super.teardown();
+        super.teardown();
     }
 
     @Override
@@ -170,38 +166,37 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
 //    @Test
     public void temp() {
-        category = new FeedCategory();
-        category.setId("69d3430a-8ed5-4b58-abfe-1a6855cb056a");
+//        category = new FeedCategory();
+//        category.setId("c6464487-1507-4ae1-a723-f15fd8bd716a");
+//
+//        feed = new FeedMetadata();
+//        feed.setFeedId("dcaf6be9-009c-4215-b50b-05d8207a0e18");
 
-        feed = new FeedMetadata();
-        feed.setFeedId("e5344629-a966-4f73-a9b8-8f4646126b76");
+//        createCategoryWithAdmin();
+//        grantAccessCategoriesToAnalysts();
+//        createTemplateWithAdmin();
+//        grantAccessTemplatesToAnalysts();
+//        createFeedWithAdmin();
+//        grantFeedEntityPermissionToAnalysts(PERMISSION_ADMIN);
+//        grantEditFeedsToAnalysts(); //so that user can disable feed
+//        grantAdminFeedsToAnalysts(); //so that user can delete
+//        grantCategoryEntityPermissionToAnalysts(PERMISSION_EDITOR);
+//        assertAnalystCanDeleteFeed();
 
-        resetServicePermissionsForAnalysts();
-        assertAnalystCantAccessCategories();
-        assertAnalystCantAccessTemplates();
-        assertAnalystCantAccessFeeds();
-
-        revokeFeedEntityPermissionsFromAnalysts();
     }
 
 
-    private void assertAnalystCantDeleteFeed(int statusCode) {
+    private void assertAnalystCantDeleteFeed(int failureStatusCode) {
         LOG.debug("EntityLevelAccessIT.assertAnalystCantDeleteFeed");
 
         runAs(ANALYST);
-
-        Response response = given(FeedRestController.BASE)
-            .when()
-            .delete(feed.getFeedId());
-
-        response.then().statusCode(statusCode);
+        deleteFeedExpecting(feed.getFeedId(), failureStatusCode);
     }
 
     private void assertAnalystCanDeleteFeed() {
         LOG.debug("EntityLevelAccessIT.assertAnalystCanDeleteFeed");
 
         runAs(ANALYST);
-
         disableFeed(feed.getFeedId());
         deleteFeed(feed.getFeedId());
 
@@ -231,51 +226,30 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         LOG.debug("EntityLevelAccessIT.assertAnalystCantDisableEnableFeed");
 
         runAs(ANALYST);
-
-        Response disableResponse = given(FeedRestController.BASE)
-            .when()
-            .post("/disable/" + feed.getFeedId());
-        disableResponse.then().statusCode(code);
-
-        Response enableResponse = given(FeedRestController.BASE)
-            .when()
-            .post("/enable/" + feed.getFeedId());
-        enableResponse.then().statusCode(code);
+        disableFeedExpecting(feed.getFeedId(), code);
+        enableFeedExpecting(feed.getFeedId(), code);
     }
 
     private void assertAnalystCanDisableEnableFeed() {
         LOG.debug("EntityLevelAccessIT.assertAnalystCanDisableEnableFeed");
 
         runAs(ANALYST);
-
         disableFeed(feed.getFeedId());
         enableFeed(feed.getFeedId());
     }
 
-    private void assertAnalystCantExportFeed(int code) {
+    private void assertAnalystCantExportFeed(int failureStatusCode) {
         LOG.debug("EntityLevelAccessIT.assertAnalystCantExportFeed");
 
         runAs(ANALYST);
-
-        Response response = given(AdminController.BASE)
-            .when()
-            .get("/export-feed/" + feed.getFeedId());
-
-        response.then().statusCode(code);
+        exportFeedExpecting(feed.getFeedId(), failureStatusCode);
     }
 
     private void assertAnalystCanExportFeed() {
         LOG.debug("EntityLevelAccessIT.assertAnalystCanExportFeed");
 
         runAs(ANALYST);
-
-        Response response = given(AdminController.BASE)
-            .when()
-            .get("/export-feed/" + feed.getFeedId());
-
-        response.then().statusCode(HTTP_OK);
-        response.then().contentType(MediaType.APPLICATION_OCTET_STREAM);
-
+        exportFeed(feed.getFeedId());
     }
 
     private void assertAnalystCantEditFeed() {
@@ -345,25 +319,21 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         Assert.assertEquals(0, categories.length);
     }
 
-    private void grantEditFeedsAndCategoryEntityAccessToAnalyst() {
-        // Editing a feed requires service access to template, category, feed and edit feed actions.
-        // Editing a feed also requires 'feed creator' role on specific category
+    private void grantEditFeedsToAnalysts() {
+        LOG.debug("EntityLevelAccessIT.grantEditFeedsToAnalysts");
 
-        LOG.debug("EntityLevelAccessIT.grantEditFeedsAndCategoryEntityAccessToAnalyst");
         runAs(ADMIN);
-
         Action feedsSupport = createAction(FeedServicesAccessControl.FEEDS_SUPPORT);
         Action accessFeeds = createAction(FeedServicesAccessControl.ACCESS_FEEDS);
         accessFeeds.addAction(createAction(FeedServicesAccessControl.EDIT_FEEDS));
         feedsSupport.addAction(accessFeeds);
 
         grantServiceActionToAnalysts(feedsSupport);
-
-        grantCategoryEntityPermissionToAnalysts(PERMISSION_FEED_CREATOR);
     }
 
     private void grantTemplateAndFeedExportToAnalysts() {
         LOG.debug("EntityLevelAccessIT.grantTemplateAndFeedExportToAnalysts");
+
         runAs(ADMIN);
         Action feedsSupport = createAction(FeedServicesAccessControl.FEEDS_SUPPORT);
         Action accessFeeds = createAction(FeedServicesAccessControl.ACCESS_FEEDS);
