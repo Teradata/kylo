@@ -138,12 +138,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
             }
 
-            if (_.isEmpty(self.existingFeedNames)) {
+            if (self.model && self.model.id && self.model.id.length > 0) {
+                self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+            } else if (_.isEmpty(self.existingFeedNames)) {
                 populateExistingFeedNames().then(function () {
                     _validate();
                 });
-            }
-            else {
+            } else {
                 _validate();
             }
 
