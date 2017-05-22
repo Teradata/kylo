@@ -61,7 +61,7 @@ else
     cp $KYLO_INSTALL_HOME/kylo-services/lib/mariadb-java-client-*.jar $NIFI_INSTALL_HOME/mysql
 fi
 
-echo "Copy the activeMQ required jars for the JMS processors to /opt/nifi/activemq"
+echo "Copy the activeMQ required jars for the JMS processors to $NIFI_INSTALL_HOME/activemq"
 mkdir $NIFI_INSTALL_HOME/activemq
 cp $NIFI_SETUP_DIR/activemq/*.jar $NIFI_INSTALL_HOME/activemq
 
