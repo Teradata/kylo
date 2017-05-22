@@ -564,8 +564,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean enableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-
-        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        if(accessController.isEntityAccessControlled()) {
+            feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        }
 
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
@@ -585,8 +586,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-
-        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        if(accessController.isEntityAccessControlled()) {
+            feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        }
 
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
@@ -613,7 +615,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void delete(Feed feed) {
-        feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
+        if(accessController.isEntityAccessControlled()) {
+            feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
+        }
 
         addPostFeedChangeAction(feed, ChangeType.DELETE);
 
