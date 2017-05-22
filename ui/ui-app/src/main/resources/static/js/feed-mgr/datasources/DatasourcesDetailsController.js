@@ -174,9 +174,9 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          */
         self.onDetailsSave = function () {
             // Prepare model
-            var model = angular.copy(self.editModel);
-            model.roleMemberships = self.model.roleMemberships;
-            model.owner = self.model.owner;
+            var model = _.pick(self.editModel, function (value, key) {
+                    return (key !== "owner" && key !== "roleMemberships");
+                });
 
             if (!angular.isString(model.type) || model.type.length === 0) {
                 var matches = /^(?:jdbc:)?([^:]+):/.exec(model.databaseConnectionUrl);
@@ -201,6 +201,8 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.saveModel = function (model) {
             return DatasourcesService.save(model)
                 .then(function (savedModel) {
+                    savedModel.owner = self.model.owner;
+                    savedModel.roleMemberships = self.model.roleMemberships;
                     self.model = savedModel;
                     return savedModel;
                 }, function (err) {
