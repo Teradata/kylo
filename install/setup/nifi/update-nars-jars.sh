@@ -24,6 +24,6 @@ cp $KYLO_SETUP_FOLDER/nifi/kylo-spark-*.jar $NIFI_HOME/data/lib/app
 
 chown -R nifi:users $NIFI_HOME/data/lib
 
-${MY_DIR}/create-symbolic-links.sh
+${MY_DIR}/create-symbolic-links.sh $NIFI_HOME $NIFI_USER $NIFI_GROUP
 
 echo "Nar files and Jar files have been updated"
