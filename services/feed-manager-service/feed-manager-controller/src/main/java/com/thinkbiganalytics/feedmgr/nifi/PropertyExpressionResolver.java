@@ -217,7 +217,7 @@ public class PropertyExpressionResolver {
                 Optional<NifiProperty> optional = properties.stream().filter(prop -> key.equals(prop.getKey())).findFirst();
                 if (optional.isPresent()) {
                     NifiProperty property = optional.get();
-                    String value = property.getValue().trim();
+                    String value = StringUtils.isNotBlank(property.getValue()) ? property.getValue().trim() : "";
                     variables.getResolvedVariables().put(property.getKey(), value);
                     return value;
                 } else {
