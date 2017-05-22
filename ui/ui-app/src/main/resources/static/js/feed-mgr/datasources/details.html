@@ -85,9 +85,8 @@
         </editable-section>
       </vertical-section-layout>
 
-      <ng-form name="vm.datasourceAccessControlForm" ng-if="!vm.isNew()">
-        <vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew()" section-title="Access Control" on-save-edit="vm.onAccessControlSave()" on-edit="vm.onEdit()"
-                                 editable="vm.isAccessControlEditable" is-valid="vm.isValid">
+      <ng-form name="vm.datasourceAccessControlForm" ng-if="vm.allowChangePermissions && !vm.isNew()">
+        <vertical-section-layout section-title="Access Control" on-save-edit="vm.onAccessControlSave()" on-edit="vm.onEdit()" editable="vm.isAccessControlEditable" is-valid="vm.isValid">
           <readonly-section>
             <entity-access-control entity="vm.model" entity-type="datasource" the-form="vm.datasourceAccessControlForm" read-only="true"></entity-access-control>
           </readonly-section>

@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -226,7 +227,11 @@ public class DatasourceController {
             com.thinkbiganalytics.metadata.api.datasource.Datasource ds = this.datasetProvider.getDatasource(id);
 
             if (ds != null) {
-                return datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
+                final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
+                if (ds instanceof AccessControlled) {
+                    accessControlledEntityTransform.applyAccessControlToRestModel((AccessControlled) ds, restModel);
+                }
+                return restModel;
             } else {
                 throw new NotFoundException("No datasource exists with the given ID: " + idStr);
             }
