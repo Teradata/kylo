@@ -301,7 +301,6 @@
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-processors/target/kylo-nifi-hadoop-processors-${project.version}.jar</source>
       <outputDirectory>lib</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -313,7 +312,6 @@
     <file>
       <source>${project.parent.parent.basedir}/ui/ui-app/target/kylo-ui-app-${project.version}.jar</source>
       <outputDirectory>kylo-ui/lib</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -337,19 +335,16 @@
     <file>
       <source>${project.parent.parent.basedir}/services/service-app/target/kylo-service-app-${project.version}.jar</source>
       <outputDirectory>kylo-services/lib</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-v1/target/kylo-spark-shell-client-v1-${project.version}.jar</source>
       <outputDirectory>kylo-services/lib/app</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-v2/target/kylo-spark-shell-client-v2-${project.version}.jar</source>
       <outputDirectory>kylo-services/lib/app</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
 
@@ -363,20 +358,17 @@
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v1-nar/target/kylo-nifi-core-v1-nar-${project.version}.nar</source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v1-nar/target/kylo-nifi-elasticsearch-v1-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v1-nar/target/kylo-nifi-hadoop-v1-nar-${project.version}.nar</source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -384,13 +376,11 @@
         ${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1-nar/target/kylo-nifi-provenance-repo-v1-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target/kylo-nifi-spark-v1-nar-${project.version}.nar</source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -398,7 +388,6 @@
         ${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-core-service-bundle/nifi-core-service-nar/target/kylo-nifi-core-service-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -406,28 +395,24 @@
         ${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v1-nar/target/kylo-nifi-hadoop-service-v1-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-standard-services-nar/target/kylo-nifi-standard-services-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-job-profiler/spark-job-profiler-spark-v1/target/kylo-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/integrations/spark/spark-job-profiler/spark-job-profiler-spark-v2/target/kylo-spark-job-profiler-spark-v2-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -435,7 +420,6 @@
         ${project.parent.parent.basedir}/integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v1/target/kylo-spark-validate-cleanse-spark-v1-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -443,7 +427,6 @@
         ${project.parent.parent.basedir}/integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v2/target/kylo-spark-validate-cleanse-spark-v2-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -451,7 +434,6 @@
         ${project.parent.parent.basedir}/integrations/spark/spark-interpreter/spark-interpreter-spark-v1/target/kylo-spark-interpreter-spark-v1-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
     <file>
@@ -459,7 +441,6 @@
         ${project.parent.parent.basedir}/integrations/spark/spark-interpreter/spark-interpreter-spark-v2/target/kylo-spark-interpreter-spark-v2-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
-      <filtered>true</filtered>
       <fileMode>755</fileMode>
     </file>
 
