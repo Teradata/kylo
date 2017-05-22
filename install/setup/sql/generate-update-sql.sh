@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
+KYLO_HOME=/opt/kylo
+
+if [ $# -eq 1 ]
+then
+    echo "Setting the KYLO_HOME to $1"
+    KYLO_HOME=$1
+fi
+
 TARGET=kylo-db-update-script.sql
-PROPS=/opt/kylo/kylo-services/conf/application.properties
+PROPS=$KYLO_HOME/kylo-services/conf/application.properties
 
 echo "Reading configuration properties from ${PROPS}"
 
@@ -10,7 +18,7 @@ PASSWORD=`grep "^spring.datasource.password=" ${PROPS} | cut -d'=' -f2`
 DRIVER=`grep "^spring.datasource.driverClassName=" ${PROPS} | cut -d'=' -f2`
 URL=`grep "^spring.datasource.url=" ${PROPS} | cut -d'=' -f2`
 
-CP='/opt/kylo/kylo-services/lib/liquibase-core-3.5.3.jar.jar:/opt/kylo/kylo-services/lib/*'
+CP="$KYLO_HOME/kylo-services/lib/liquibase-core-3.5.3.jar.jar:$KYLO_HOME/kylo-services/lib/*"
 echo "Loading classpath: ${CP}"
 
 echo "Generating ${TARGET} for ${URL}, connecting as ${USERNAME}"
