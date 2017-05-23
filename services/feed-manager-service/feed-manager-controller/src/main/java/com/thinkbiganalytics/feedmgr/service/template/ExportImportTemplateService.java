@@ -137,6 +137,7 @@ public class ExportImportTemplateService {
      */
     public ExportTemplate exportTemplateForFeedExport(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
+        registeredTemplateService.checkTemplatePermission(templateId, TemplateAccessControl.ACCESS_TEMPLATE);
         return export(templateId);
     }
 
@@ -147,17 +148,15 @@ public class ExportImportTemplateService {
      */
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
+        registeredTemplateService.checkTemplatePermission(templateId, TemplateAccessControl.EXPORT);
         return export(templateId);
     }
-
 
     private ExportTemplate export(String templateId) {
         RegisteredTemplate
             template =
             registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
-            registeredTemplateService.checkTemplatePermission(template.getId(), TemplateAccessControl.EXPORT);
-
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
             //if this template uses any reusable templates then export those reusable ones as well
