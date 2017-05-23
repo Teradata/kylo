@@ -36,7 +36,6 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
  * Configuration for the Upgrade Check that is done prior to initiating the KyloUpgrade Spring boot app
  */
 @Configuration
-@EnableConfigServer
 @Import({EncryptionAutoConfiguration.class})
 public class KyloUpgradeDatabaseVersionConfig {
 

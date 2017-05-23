@@ -21,15 +21,15 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.config.server.encryption.EncryptionController;
+import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
 import org.springframework.http.MediaType;
-
-import javax.inject.Inject;
 
 public class EncryptionService {
 
-    @Inject
-    EncryptionController encryptionController;
+    @Autowired
+    private TextEncryptorLocator encryptor;
 
     private String encryptedPrefix = "{cipher}";
 
@@ -40,7 +40,7 @@ public class EncryptionService {
     public String encrypt(String str) {
         String encrypted;
         if (str != null && !isEncrypted(str)) {
-            encrypted = encryptionController.encrypt(str, MediaType.TEXT_PLAIN);
+            encrypted = encrypt(str, MediaType.TEXT_PLAIN);
             if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
                 encrypted = encryptedPrefix + encrypted;
             }
@@ -50,14 +50,24 @@ public class EncryptionService {
         return encrypted;
     }
 
+    private String encrypt(String unencrypted, MediaType mediaType) {
+        EncryptionController ec = new EncryptionController(encryptor);
+        return ec.encrypt(unencrypted, mediaType);
+    }
+
     public String decrypt(String str) {
         String decrypted = null;
         if (str != null) {
             if (!StringUtils.startsWith(str, encryptedPrefix)) {
                 str = encryptedPrefix + str;
             }
-            decrypted = encryptionController.decrypt(str, MediaType.TEXT_PLAIN);
+            decrypted = decrypt(str, MediaType.TEXT_PLAIN);
         }
         return decrypted;
+    }
+
+    private String decrypt(String encrypted, MediaType mediaType) {
+        EncryptionController ec = new EncryptionController(encryptor);
+        return ec.decrypt(encrypted, mediaType);
     }
 }
