@@ -20,27 +20,29 @@ package com.thinkbiganalytics.feedmgr.service;
  * #L%
  */
 
+
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.config.server.encryption.EncryptionController;
-import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
-import org.springframework.http.MediaType;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
+
+import javax.inject.Inject;
+
 
 public class EncryptionService {
 
-    @Autowired
-    private TextEncryptorLocator encryptor;
+    @Inject
+    TextEncryptor encryptor;
 
     private String encryptedPrefix = "{cipher}";
+
 
     public boolean isEncrypted(String str) {
         return StringUtils.startsWith(str, encryptedPrefix);
     }
 
     public String encrypt(String str) {
-        String encrypted;
-        if (str != null && !isEncrypted(str)) {
-            encrypted = encrypt(str, MediaType.TEXT_PLAIN);
+        String encrypted = null;
+        if (StringUtils.isNotBlank(str) && !isEncrypted(str)) {
+            encrypted = encryptor.encrypt(str);
             if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
                 encrypted = encryptedPrefix + encrypted;
             }
@@ -50,24 +52,15 @@ public class EncryptionService {
         return encrypted;
     }
 
-    private String encrypt(String unencrypted, MediaType mediaType) {
-        EncryptionController ec = new EncryptionController(encryptor);
-        return ec.encrypt(unencrypted, mediaType);
-    }
-
     public String decrypt(String str) {
-        String decrypted = null;
-        if (str != null) {
-            if (!StringUtils.startsWith(str, encryptedPrefix)) {
-                str = encryptedPrefix + str;
+        if (StringUtils.isNotBlank(str)) {
+            if (StringUtils.startsWith(str, encryptedPrefix)) {
+                str = StringUtils.removeStart(str, encryptedPrefix);
             }
-            decrypted = decrypt(str, MediaType.TEXT_PLAIN);
+            return encryptor.decrypt(str);
+        } else {
+            return str;
         }
-        return decrypted;
     }
 
-    private String decrypt(String encrypted, MediaType mediaType) {
-        EncryptionController ec = new EncryptionController(encryptor);
-        return ec.decrypt(encrypted, mediaType);
-    }
 }
