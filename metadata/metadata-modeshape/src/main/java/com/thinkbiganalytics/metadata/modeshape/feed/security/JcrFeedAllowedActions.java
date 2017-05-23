@@ -84,10 +84,15 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        boolean changed = super.disable(principal, actions);
-        disableEntityAccess(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never disable permissions of the owner
+        if (! this.feed.getOwner().equals(principal)) {
+            boolean changed = super.disable(principal, actions);
+            disableEntityAccess(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
