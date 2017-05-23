@@ -65,13 +65,13 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
      */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
-    
+
     @Inject
     private SecurityRoleProvider roleProvider;
-    
+
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -84,7 +84,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public Category update(Category category) {
-        if(accessController.isEntityAccessControlled()) {
+        if (accessController.isEntityAccessControlled()) {
             category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
         }
         return super.update(category);
@@ -116,20 +116,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         String path = EntityUtil.pathForCategory();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrCategory.SYSTEM_NAME, systemName);
-        boolean isNew = ! hasEntityNode(path, systemName);
+        boolean isNew = !hasEntityNode(path, systemName);
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
-        
+
         if (isNew) {
             if (this.accessController.isEntityAccessControlled()) {
                 List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
-                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                        .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
-                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                        .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
             }
         }
-        
+
         return category;
     }
 
@@ -145,23 +145,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void deleteById(final Category.ID id) {
-        // TODO service?
-        metadataAccess.commit(() -> {
-            // Get category
-            final Category category = findById(id);
+        // Get category
+        final Category category = findById(id);
 
-            if (category != null) {
-                // Delete user type
-                final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
-                if (type != null) {
-                    extensibleTypeProvider.deleteType(type.getId());
-                }
+        if (category != null) {
 
-                // Delete category
-                super.delete(category);
+            // Delete user type
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
             }
-            return true;
-        }, MetadataAccess.SERVICE);
+
+            // Delete category
+            super.delete(category);
+        }
     }
 
     @Nonnull

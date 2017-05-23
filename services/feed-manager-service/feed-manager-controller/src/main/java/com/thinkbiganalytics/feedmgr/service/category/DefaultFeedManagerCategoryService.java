@@ -157,9 +157,32 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
 
-        final Category.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
-        categoryProvider.deleteById(domainId);
-        return true;
+        Category.ID domainId = metadataAccess.read(() -> {
+            Category.ID id = categoryProvider.resolveId(categoryId);
+            final Category category = categoryProvider.findById(id);
+
+            if (category != null) {
+
+                if (accessController.isEntityAccessControlled()) {
+                    //this check should throw a runtime exception
+                    category.getAllowedActions().checkPermission(CategoryAccessControl.DELETE);
+                }
+                return id;
+            } else {
+                //unable to read the category
+                return null;
+            }
+
+
+        });
+        if (domainId != null) {
+            metadataAccess.commit(() -> {
+                categoryProvider.deleteById(domainId);
+            }, MetadataAccess.SERVICE);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Nonnull

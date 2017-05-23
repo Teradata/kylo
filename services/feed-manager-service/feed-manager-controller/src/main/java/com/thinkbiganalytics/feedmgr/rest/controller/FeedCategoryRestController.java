@@ -146,7 +146,10 @@ public class FeedCategoryRestController {
                       @ApiResponse(code = 500, message = "The category could not be deleted.", response = RestResponseStatus.class)
                   })
     public Response deleteCategory(@UUID @PathParam("categoryId") String categoryId) throws InvalidOperationException {
-        getMetadataService().deleteCategory(categoryId);
+        boolean successful = getMetadataService().deleteCategory(categoryId);
+        if(!successful) {
+            throw new WebApplicationException("Unable to delete the category ");
+        }
         return Response.ok().build();
     }
 
