@@ -313,15 +313,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public List<FeedSummary> getFeedSummaryForCategory(final String categoryId) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
             List<FeedSummary> summaryList = new ArrayList<>();
-            Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
-            List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
-            if (domainFeeds != null && !domainFeeds.isEmpty()) {
-                List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                for (FeedMetadata feed : feeds) {
-                    summaryList.add(new FeedSummary(feed));
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            if(hasPermission) {
+
+                Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
+                List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
+                if (domainFeeds != null && !domainFeeds.isEmpty()) {
+                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                    for (FeedMetadata feed : feeds) {
+                        summaryList.add(new FeedSummary(feed));
+                    }
                 }
             }
             return summaryList;
@@ -861,17 +863,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            return UserPropertyTransform.toUserFields(feedProvider.getUserFields());
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            return  hasPermission ? UserPropertyTransform.toUserFields(feedProvider.getUserFields()) : Collections.emptySet();
         });
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-
-        feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        if(hasPermission) {
+            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        }
     }
 
     @Nonnull
