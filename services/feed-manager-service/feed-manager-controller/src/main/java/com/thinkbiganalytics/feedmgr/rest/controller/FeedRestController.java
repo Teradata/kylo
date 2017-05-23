@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
@@ -49,12 +50,12 @@ import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -71,7 +72,6 @@ import org.hibernate.JDBCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -138,10 +138,6 @@ public class FeedRestController {
     private static final String NAMES = "/names";
 
     @Autowired
-    @Qualifier("nifiRestClient")
-    LegacyNifiRestClient nifiRestClient;
-
-    @Autowired
     MetadataService metadataService;
 
     //Profile needs hive service
@@ -168,6 +164,9 @@ public class FeedRestController {
 
     @Inject
     AccessControlledEntityTransform accessControlledEntityTransform;
+
+    @Inject
+    private AccessController accessController;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -734,6 +733,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "The styles were updated.", response = RestResponseStatus.class)
     )
     public Response updateFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         datasourceService.refreshFeedLineageStyles(styles);
         return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
     }
@@ -746,6 +747,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns the updated definitions..", response = DatasourceDefinitions.class)
     )
     public DatasourceDefinitions updateDatasourceDefinitions(DatasourceDefinitions definitions) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         if (definitions != null) {
             Set<DatasourceDefinition> updatedDefinitions = datasourceService.updateDatasourceDefinitions(definitions.getDefinitions());
             if (updatedDefinitions != null) {
