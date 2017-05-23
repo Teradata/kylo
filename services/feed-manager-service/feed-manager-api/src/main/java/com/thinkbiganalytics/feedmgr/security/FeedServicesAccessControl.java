@@ -53,11 +53,11 @@ public interface FeedServicesAccessControl {
 
     Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
                                                  "Import Feeds",
-                                                 "Allows importing of previously exported feeds (.zip files)");
+                                                 "Allows importing of previously exported feeds along with their associated templates (.zip files)");
 
     Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
                                                  "Export Feeds",
-                                                 "Allows exporting feeds definitions (.zip files)");
+                                                 "Allows exporting feeds definitions with their associated templates (.zip files)");
 
     Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
                                                 "Administer Feeds",

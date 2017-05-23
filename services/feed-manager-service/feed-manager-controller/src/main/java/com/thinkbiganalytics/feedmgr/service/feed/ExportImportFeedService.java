@@ -487,7 +487,7 @@ public class ExportImportFeedService {
             importTemplate.setImportOptions(importTemplateOptions);
             importTemplateOptions.setUploadKey(importOptions.getUploadKey());
             importTemplate.setValid(true);
-            ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importZip(importTemplate);
+            ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importZipForFeedImport(importTemplate);
             if (template.isSuccess()) {
                 //import the feed
                 feed.setTemplate(template);

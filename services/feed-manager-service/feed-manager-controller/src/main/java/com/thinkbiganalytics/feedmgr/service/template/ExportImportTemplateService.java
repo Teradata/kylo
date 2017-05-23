@@ -552,6 +552,10 @@ public class ExportImportTemplateService {
 
     /// IMPORT methods
 
+    public ImportTemplate importTemplateForFeed(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
+        return importTemplate(fileName, content, importOptions);
+    }
 
     /**
      * Import a xml or zip file.
@@ -588,9 +592,26 @@ public class ExportImportTemplateService {
             return template;
        // });
     }
+    
+
+    /**
+     * Imports the data and various components based upon the supplied {@link ImportTemplate#importOptions} as part
+     * of a feed import operation.  Validates whether the user has import feed permission.
+     *
+     * Note.  This method will not call any validation routines.  It will just import.
+     * If you want to validate before to ensure the import will be correct call this.importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions)
+     *
+     * @param importTemplate the template data to validate before importing
+     * @return the template data to validate before importing
+     */
+    public ImportTemplate importZipForFeedImport(ImportTemplate importTemplate) throws Exception {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_FEEDS);
+        return importTemplate(importTemplate);
+    }
 
     /**
      * Imports the data and various components based upon the supplied {@link ImportTemplate#importOptions}.
+     * Validates whether the user has import template permission.
      *
      * Note.  This method will not call any validation routines.  It will just import.
      * If you want to validate before to ensure the import will be correct call this.importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions)
@@ -600,6 +621,10 @@ public class ExportImportTemplateService {
      */
     public ImportTemplate importZip(ImportTemplate importTemplate) throws Exception {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
+        return importTemplate(importTemplate);
+    }
+
+    private ImportTemplate importTemplate(ImportTemplate importTemplate) throws Exception {
         ImportTemplateOptions importOptions = importTemplate.getImportOptions();
 
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA),
