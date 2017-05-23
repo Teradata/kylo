@@ -393,7 +393,8 @@ public class ExportImportFeedService {
 
                     //Query for Category and ensure the user has access to create feeds on that category
                     if (domainCategory == null || (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED))) {
-                        String msg = "Access Denied. You do not have access to create feeds under the category " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
+                        String msg = "Access Denied. You do not have access to create feeds under the category " + feedCategory
+                                     + ". Attempt made to create feed " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
                         feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
                         feed.addErrorMessage(existingFeed, msg);
                         feed.setValid(false);
