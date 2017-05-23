@@ -137,6 +137,8 @@ public class ExportImportTemplateService {
             template =
             registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
+            registeredTemplateService.checkTemplatePermission(template.getId(), TemplateAccessControl.EXPORT);
+
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
             //if this template uses any reusable templates then export those reusable ones as well
