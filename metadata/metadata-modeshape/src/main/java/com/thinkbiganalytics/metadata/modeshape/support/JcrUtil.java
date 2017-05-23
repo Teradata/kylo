@@ -32,10 +32,13 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +48,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -59,6 +63,8 @@ import javax.jcr.nodetype.NodeType;
  * methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
  */
 public class JcrUtil {
+    
+    private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
 
     /**
      * Creates a Path out of the arguments appropriate for JCR.
@@ -81,6 +87,9 @@ public class JcrUtil {
     public static Path path(Node parent, String... elements) {
         try {
             return JcrPath.get(parent.getPath(), elements);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get the path of the node: " + parent, e);
         }
@@ -122,6 +131,9 @@ public class JcrUtil {
             name = node.getName();
             versionable = hasMixinType(node, "mix:versionable");
             return versionable;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
         }
@@ -130,14 +142,31 @@ public class JcrUtil {
     public static String getName(Node node) {
         try {
             return node.getName();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get name of Node " + node, e);
+        }
+    }
+
+    public static String getPath(Node node) {
+        try {
+            return node.getPath();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get the Path", e);
         }
     }
 
     public static boolean isNodeType(Node node, String typeName) {
         try {
             return node.getPrimaryNodeType().isNodeType(typeName);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the type of node: " + node, e);
         }
@@ -146,6 +175,9 @@ public class JcrUtil {
     public static Node getParent(Node node) {
         try {
             return node.getParent();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the parent of node: " + node, e);
         }
@@ -163,6 +195,9 @@ public class JcrUtil {
     public static Node getRootNode(Session session) {
         try {
             return session.getRootNode();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the root node", e);
         }
@@ -178,6 +213,9 @@ public class JcrUtil {
             }
         } catch (PathNotFoundException e) {
             return false;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check for the existence of the node at path " + absPath, e);
         }
@@ -191,6 +229,9 @@ public class JcrUtil {
     public static boolean hasNode(Node parentNode, String name) {
         try {
             return parentNode.hasNode(name);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
         }
@@ -203,6 +244,9 @@ public class JcrUtil {
             } else {
                 return session.getRootNode().getNode(absPath);
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node at the path: " + absPath, e);
         }
@@ -211,6 +255,9 @@ public class JcrUtil {
     public static Node getNode(Node parentNode, String name) {
         try {
             return parentNode.getNode(name);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named " + name, e);
         }
@@ -219,6 +266,9 @@ public class JcrUtil {
     public static Node createNode(Node parentNode, String name, String nodeType) {
         try {
             return parentNode.addNode(name, nodeType);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the Node named " + name, e);
         }
@@ -227,6 +277,9 @@ public class JcrUtil {
     public static void removeNode(Node node) {
         try {
             node.remove();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove the node " + node, e);
         }
@@ -240,6 +293,9 @@ public class JcrUtil {
             } else {
                 return false;
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove the Node named " + name, e);
         }
@@ -258,6 +314,9 @@ public class JcrUtil {
             }
 
             return list;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create set of child nodes of type: " + nodeType, e);
         }
@@ -272,7 +331,10 @@ public class JcrUtil {
         Iterable<Node> itr = () -> {
             try {
                 return name != null ? parent.getNodes(name) : parent.getNodes();
-            } catch (RepositoryException e) {
+            } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to retrieve the child nodes from:  " + parent, e);
             }
         };
@@ -289,6 +351,9 @@ public class JcrUtil {
                 + parentNode.getIdentifier() + "'";
             return JcrQueryUtil.find(parentNode.getSession(), query, type);
 
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to find Children matching type " + childNodeType, e);
         }
@@ -307,6 +372,9 @@ public class JcrUtil {
             } else {
                 throw new MetadataRepositoryException("Unable to instanciate object of node type: " + nodeType);
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to instanciate object from node: " + node, e);
         }
@@ -376,6 +444,9 @@ public class JcrUtil {
                     }
                 }
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
@@ -398,6 +469,9 @@ public class JcrUtil {
             return getJcrObject(n, type, args);
         } catch (PathNotFoundException e) {
             return null;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
@@ -417,6 +491,9 @@ public class JcrUtil {
             } else {
                 return addNode(parentNode, name, nodeType);
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
@@ -427,6 +504,9 @@ public class JcrUtil {
         try {
             JcrMetadataAccess.ensureCheckoutNode(parentNode);
             return parentNode.addNode(name, nodeType);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
@@ -466,6 +546,9 @@ public class JcrUtil {
             //  if(isVersionable(parentNode)){
             //       JcrVersionUtil.checkin(parentNode);
             //    }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
@@ -481,6 +564,9 @@ public class JcrUtil {
             Node jsonNode = parent.getNode(nodeName);
 
             return getGenericJson(jsonNode, allowClassNotFound);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to deserialize generic JSON node", e);
         }
@@ -516,6 +602,9 @@ public class JcrUtil {
 
             JcrPropertyUtil.setProperty(jsonNode, "tba:type", object.getClass().getName());
             JcrPropertyUtil.setJsonObject(jsonNode, "tba:json", object);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add a generic JSON node to the parent node: " + parent, e);
         }
@@ -535,6 +624,9 @@ public class JcrUtil {
         try {
             Node child = parent.addNode(name, nodeType);
             return createJcrObject(child, type, constructorArgs);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add new createJcrObject child node " + type, e);
         }
@@ -553,6 +645,9 @@ public class JcrUtil {
         String identifier = null;
         try {
             identifier = obj.getObjectId();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }
@@ -573,23 +668,28 @@ public class JcrUtil {
 
     public static Map<String, Object> nodeAsMap(Node obj) throws RepositoryException {
 
-        String nodeName = obj.getName();
-        String path = obj.getPath();
-        String identifier = obj.getIdentifier();
+        try {
+            String nodeName = obj.getName();
+            String path = obj.getPath();
+            String identifier = obj.getIdentifier();
 
-        String type = obj.getPrimaryNodeType() != null ? obj.getPrimaryNodeType().getName() : "";
-        Map<String, Object> props = JcrPropertyUtil.getProperties(obj);
-        Map<String, Object> finalProps = new HashMap<>();
-        if (props != null) {
-            finalProps.putAll(finalProps);
+            String type = obj.getPrimaryNodeType() != null ? obj.getPrimaryNodeType().getName() : "";
+            Map<String, Object> props = JcrPropertyUtil.getProperties(obj);
+            Map<String, Object> finalProps = new HashMap<>();
+            if (props != null) {
+                finalProps.putAll(finalProps);
+            }
+            finalProps.put("nodeName", nodeName);
+            if (identifier != null) {
+                finalProps.put("nodeIdentifier", identifier);
+            }
+            finalProps.put("nodePath", path);
+            finalProps.put("nodeType", type);
+            return finalProps;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         }
-        finalProps.put("nodeName", nodeName);
-        if (identifier != null) {
-            finalProps.put("nodeIdentifier", identifier);
-        }
-        finalProps.put("nodePath", path);
-        finalProps.put("nodeType", type);
-        return finalProps;
     }
 
     /**
@@ -637,6 +737,9 @@ public class JcrUtil {
         try {
             Property prop = node.getProperty(property);
             return createJcrObject(prop.getNode(), typeResolver.resolve(prop.getNode()));
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to dereference object of type using: " + typeResolver, e);
         }
@@ -656,6 +759,9 @@ public class JcrUtil {
                 set.add(obj);
             }
             return set;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create set of child objects from property: " + property, e);
         }
@@ -666,6 +772,9 @@ public class JcrUtil {
             return session.getWorkspace().getNodeTypeManager().getNodeType(typeName);
         } catch (NoSuchNodeTypeException e) {
             throw new MetadataRepositoryException("No node type exits named: " + typeName, e);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve node type named: " + typeName, e);
         }
@@ -676,6 +785,9 @@ public class JcrUtil {
         try {
             session.getWorkspace().copy(srcPath, destPath);
             return session.getNode(destPath);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to copy source path: " + srcPath + " to destination path: " + destPath, e);
         }
@@ -685,6 +797,9 @@ public class JcrUtil {
         try {
             Session sess = srcNode.getSession();
             return copy(sess, srcNode.getPath(), destNode.getPath());
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to copy source node: " + srcNode + " to destination node: " + destNode, e);
         }
@@ -694,6 +809,9 @@ public class JcrUtil {
         try {
             Session sess = srcNode.getSession();
             return copy(sess, srcNode.getPath(), destPath);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to copy source node: " + srcNode + " to destination path: " + destPath, e);
         }

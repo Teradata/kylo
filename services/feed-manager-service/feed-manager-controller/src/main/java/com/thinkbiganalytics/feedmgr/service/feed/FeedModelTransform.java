@@ -343,17 +343,18 @@ public class FeedModelTransform {
         if (category == null) {
             return null;
         }
+        
         FeedSummary feedSummary = new FeedSummary();
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());
 
-        feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
-        if (feedManagerFeed.getCategory() instanceof Category) {
-            feedSummary.setCategoryIcon(((Category) feedManagerFeed.getCategory()).getIcon());
-            feedSummary.setCategoryIconColor(((Category) feedManagerFeed.getCategory()).getIconColor());
+        feedSummary.setCategoryId(category.getId().toString());
+        if (category instanceof Category) {
+            feedSummary.setCategoryIcon(category.getIcon());
+            feedSummary.setCategoryIconColor(category.getIconColor());
         }
-        feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
-        feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
+        feedSummary.setCategoryName(category.getDisplayName());
+        feedSummary.setSystemCategoryName(category.getName());
         feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate() : null);
         feedSummary.setFeedName(feedManagerFeed.getDisplayName());
         feedSummary.setSystemFeedName(feedManagerFeed.getName());
