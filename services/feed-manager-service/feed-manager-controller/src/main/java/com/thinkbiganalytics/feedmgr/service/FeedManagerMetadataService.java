@@ -36,11 +36,13 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
@@ -169,7 +171,8 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         // First check if this should be allowed.
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        feedProvider.checkFeedPermission(feedId, FeedAccessControl.DELETE);
 
         // Step 1: Fetch feed metadata
         final FeedMetadata feed = feedProvider.getFeedById(feedId);
@@ -177,13 +180,16 @@ public class FeedManagerMetadataService implements MetadataService {
             throw new IllegalArgumentException("Unknown feed: " + feedId);
         }
 
-        // Step 2: Check for dependent feeds
+        // Step 2: Check category permissions
+        categoryProvider.checkCategoryPermission(feed.getCategoryId(), CategoryAccessControl.CREATE_FEED);
+
+        // Step 3: Check for dependent feeds
         if (feed.getUsedByFeeds() != null && !feed.getUsedByFeeds().isEmpty()) {
             final List<String> systemNames = feed.getUsedByFeeds().stream().map(FeedSummary::getCategoryAndFeedSystemName).collect(Collectors.toList());
             throw new IllegalStateException("Feed is referenced by " + feed.getUsedByFeeds().size() + " other feeds: " + systemNames);
         }
 
-        // Step 3: Delete hadoop authorization security policies if they exists
+        // Step 4: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
                 Feed domainFeed = feedModelTransform.feedToDomain(feed);
@@ -195,7 +201,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
         }
 
-        // Step 4: Enable NiFi cleanup flow
+        // Step 5: Enable NiFi cleanup flow
         boolean needsCleanup = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
@@ -207,7 +213,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 5: Run NiFi cleanup flow
+        // Step 6: Run NiFi cleanup flow
         if (needsCleanup) {
             // Wait for input processor to start
             try {
@@ -219,7 +225,7 @@ public class FeedManagerMetadataService implements MetadataService {
             cleanupFeed(feed);
         }
 
-        // Step 6: Remove feed from NiFi
+        // Step 7: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
@@ -227,7 +233,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 7: Delete database entries
+        // Step 8: Delete database entries
         feedProvider.deleteFeed(feedId);
 
     }

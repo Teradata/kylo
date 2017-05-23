@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,25 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Inject
     private AccessController accessController;
+
+    @Override
+    public boolean checkCategoryPermission(final String id, final Action action, final Action... more) {
+        if (accessController.isEntityAccessControlled()) {
+            return metadataAccess.read(() -> {
+                final Category.ID domainId = categoryProvider.resolveId(id);
+                final Category domainCategory = categoryProvider.findById(domainId);
+
+                if (domainCategory != null) {
+                    domainCategory.getAllowedActions().checkPermission(action, more);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            return true;
+        }
+    }
 
     @Override
     public Collection<FeedCategory> getCategories() {

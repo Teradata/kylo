@@ -114,7 +114,8 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
                 // category details node before the access control is update in the new feed node, and the new feed owner needs rights to change
                 // the access control of the feed it is creating.  TODO: Perhaps we should refactor in a future release to create a simple child node 
                 // that the feed nodes attach to so that that node only can have Privilege.JCR_MODIFY_ACCESS_CONTROL for the user
-               Collections.addAll(detailPrivs, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
+               Collections.addAll(detailPrivs, Privilege.JCR_ADD_CHILD_NODES, Privilege.JCR_REMOVE_CHILD_NODES, Privilege.JCR_MODIFY_PROPERTIES, Privilege.JCR_READ_ACCESS_CONTROL,
+                                  Privilege.JCR_MODIFY_ACCESS_CONTROL);
                Collections.addAll(summaryPrivs, Privilege.JCR_MODIFY_PROPERTIES);
             } else if (action.implies(CategoryAccessControl.ACCESS_DETAILS)) {
                 detailPrivs.add(Privilege.JCR_READ); 
