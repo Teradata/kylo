@@ -135,6 +135,15 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                         //PREVENT access
                         self.errorMessage ="Access Denied.  You are unable to edit the template. ";
                     }
+                    else {
+                        if (!self.allowAdmin) {
+                            //deactivate the access control step
+                            self.stepperController.deactivateStep(3);
+                        }
+                        else {
+                            self.stepperController.activateStep(3);
+                        }
+                    }
                         self.loadingTemplate = false;
                         hideProgress();
                 });
