@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform.TEM
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -40,6 +41,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -48,6 +50,7 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,6 +90,33 @@ public class RegisteredTemplateService {
     @Inject
     private RegisteredTemplateUtil registeredTemplateUtil;
 
+    /**
+     * Checks the current security context has been granted permission to perform the specified action(s)
+     * on the template with the specified ID.  If the template does not exist then no check is made.
+     *
+     * @param id     the template ID
+     * @param action an action to check
+     * @param more   any additional actions to check
+     * @return true if the template existed, otherwise false
+     * @throws AccessControlException thrown if the template exists and the action(s) checked are not permitted
+     */
+    public boolean checkTemplatePermission(final String id, final Action action, final Action... more) {
+        if (accessController.isEntityAccessControlled()) {
+            return metadataAccess.read(() -> {
+                final FeedManagerTemplate.ID domainId = templateProvider.resolveId(id);
+                final FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+
+                if (domainTemplate != null) {
+                    domainTemplate.getAllowedActions().checkPermission(action, more);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            return true;
+        }
+    }
 
     /**
      * Gets a Registered Template or returns null if not found by various means passed in via the request object
@@ -119,7 +149,7 @@ public class RegisteredTemplateService {
         RegisteredTemplate registeredTemplate = findRegisteredTemplateById(templateId, transformationType, principals);
         //if it is null check to see if the template exists in nifi and is already registered
         if (registeredTemplate == null) {
-          //  log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
+            //  log.info("Attempt to get Template with id {}, returned null.  This id must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
             registeredTemplate = findRegisteredTemplateByNiFiIdentifier(templateId, transformationType, principals);
         }
         if (registeredTemplate == null) {
@@ -649,6 +679,7 @@ public class RegisteredTemplateService {
             log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());
             return null;
         } else {
+            checkTemplatePermission(registeredTemplate.getId(), TemplateAccessControl.EDIT_TEMPLATE);
             log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
                      registeredTemplate.getNifiTemplateId());
             ensureRegisteredTemplateInputProcessors(registeredTemplate);
