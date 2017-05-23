@@ -119,7 +119,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             var successFn = function(response) {
                 self.loading = false;
                 if (response.data) {
+                    var entityAccessControlled = AccessControlService.isEntityAccessControlled();
                     angular.forEach(response.data, function(template) {
+                        template.allowExport = !entityAccessControlled || RegisterTemplateService.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
                         template.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                     });
                 }

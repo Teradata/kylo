@@ -229,6 +229,7 @@ define([], function () {
             TEMPLATE: {
                 EDIT_TEMPLATE: "editTemplate",
                 DELETE_TEMPLATE: "deleteTemplate",
+                EXPORT: "exportTemplate",
                 CREATE_TEMPLATE: "createFeedFromTemplate",
                 CHANGE_TEMPLATE_PERMISSIONS: "changeTemplatePermissions"
             },
