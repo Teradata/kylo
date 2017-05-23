@@ -130,9 +130,28 @@ public class ExportImportTemplateService {
 
     //Export Methods
 
+    /**
+     * Check to ensure the user just has the EXPORT_FEEDS functional access permission before exporting
+     * @param templateId the registered template id
+     * @return the exported template
+     */
+    public ExportTemplate exportTemplateForFeedExport(String templateId) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
+        return export(templateId);
+    }
+
+    /**
+     * Check to ensure the user has the EXPORT_TEMPLATES functional access permission before exporting
+     * @param templateId the registered template id
+     * @return the exported template
+     */
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
+        return export(templateId);
+    }
 
+
+    private ExportTemplate export(String templateId) {
         RegisteredTemplate
             template =
             registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());

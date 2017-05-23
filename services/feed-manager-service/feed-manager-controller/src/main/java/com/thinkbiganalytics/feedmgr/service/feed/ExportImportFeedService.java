@@ -169,7 +169,7 @@ public class ExportImportFeedService {
         }
 
         // Add feed json to template zip file
-        final ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
+        final ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplateForFeedExport(feed.getTemplateId());
         final String feedJson = ObjectMapperSerializer.serialize(feed);
 
         final byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
