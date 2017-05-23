@@ -305,7 +305,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                 result = JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, principal, ADMIN_PRIVILEGES);
             } else {
                 // Remove admin privileges but keep grant privileges if needed
-                isAdminAction = getEnabledActions(principal).stream().noneMatch(enabledAction -> enabledAction != action);  // has non-admin action remaining?
+                isAdminAction = getEnabledActions(principal).stream().allMatch(action::equals);  // has non-admin action remaining?
                 final String[] privileges = isAdminAction ? ADMIN_PRIVILEGES : ArrayUtils.removeElements(ADMIN_PRIVILEGES, GRANT_PRIVILEGES);
                 result = JcrAccessControlUtil.removeRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, principal, privileges);
             }
