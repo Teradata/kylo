@@ -139,7 +139,7 @@ elif [ "$java_type" == "2" ] ; then
     then
         ./java/install-java8.sh $current_dir -O
     else
-        ./java/install-java8.sh /opt/java
+        ./java/install-java8.sh $kylo_home_folder
     fi
 
 elif [ "$java_type" == "3" ] ; then
@@ -177,9 +177,9 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     fi
 
     if [ "$java_type" == "2" ] ; then
-        ./java/change-nifi-java-home.sh /opt/java/current $nifi_home
+        ./java/change-nifi-java-home.sh /opt/java/current $nifi_home/current
     elif  [ "$java_type" == "3" ] ; then
-        ./java/change-nifi-java-home.sh $java_home $nifi_home
+        ./java/change-nifi-java-home.sh $java_home $nifi_home/current
     fi
 
     if [ $offline = true ]
