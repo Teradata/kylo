@@ -487,6 +487,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         NEW, ENABLED, DISABLED
     }
 
+    @JsonIgnore
     public List<NifiProperty> getConfigurationProperties() {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
     }
@@ -494,6 +495,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     /**
      * Return the properties for this feed that are marked as being sensitive
      */
+    @JsonIgnore
     public List<NifiProperty> getSensitiveProperties() {
         return getProperties().stream()
             .filter(nifiProperty -> nifiProperty.isSensitive() && (!nifiProperty.isInputProperty() || (nifiProperty.isInputProperty()
