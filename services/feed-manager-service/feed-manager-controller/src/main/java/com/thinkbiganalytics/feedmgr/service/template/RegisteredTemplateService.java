@@ -679,7 +679,9 @@ public class RegisteredTemplateService {
             log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());
             return null;
         } else {
-            checkTemplatePermission(registeredTemplate.getId(), TemplateAccessControl.EDIT_TEMPLATE);
+            if(StringUtils.isNotBlank(registeredTemplate.getId())) {
+                checkTemplatePermission(registeredTemplate.getId(), TemplateAccessControl.EDIT_TEMPLATE);
+            }
             log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
                      registeredTemplate.getNifiTemplateId());
             ensureRegisteredTemplateInputProcessors(registeredTemplate);
