@@ -287,60 +287,80 @@ public class RegisteredTemplateService {
      * @return a RegisteredTemplate object mapping either one already defined in Kylo, or a new template that maps to one in NiFi
      */
     public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest) {
-        RegisteredTemplate registeredTemplate = findRegisteredTemplate(registeredTemplateRequest);
-        if (registeredTemplate == null) {
-            registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
+
+        if(registeredTemplateRequest.isTemplateEdit()){
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
         }
-        if (registeredTemplate == null) {
-            //throw exception
-        } else {
-            Set<PortDTO> ports = null;
-            // fetch ports for this template
-            try {
-                if (registeredTemplate.getNifiTemplate() != null) {
-                    ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
-                } else {
+
+        RegisteredTemplate registeredTemplate = null;
+        //attempt to find the template as a Service
+        RegisteredTemplateRequest serviceLevelRequest = new RegisteredTemplateRequest(registeredTemplateRequest);
+        //editing a feed will run as a service account
+        serviceLevelRequest.setFeedEdit(true);
+        RegisteredTemplate template = findRegisteredTemplate(serviceLevelRequest);
+        boolean canEdit = true;
+        if(template != null && StringUtils.isNotBlank(template.getId()) && registeredTemplateRequest.isTemplateEdit()) {
+          canEdit = checkTemplatePermission(template.getId(),TemplateAccessControl.EDIT_TEMPLATE);
+        }
+        if(canEdit) {
+             registeredTemplate = findRegisteredTemplate(registeredTemplateRequest);
+            if (registeredTemplate == null) {
+                registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
+            }
+            if (registeredTemplate == null) {
+                //throw exception
+            } else {
+                if(StringUtils.isBlank(registeredTemplate.getId()) && template != null && StringUtils.isNotBlank(template.getId()) ) {
+                    registeredTemplate.setId(template.getId());
+                }
+                Set<PortDTO> ports = null;
+                // fetch ports for this template
+                try {
+                    if (registeredTemplate.getNifiTemplate() != null) {
+                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
+                    } else {
+                        ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+                    }
+                } catch (NifiComponentNotFoundException notFoundException) {
+                    syncNiFiTemplateId(registeredTemplate);
                     ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
                 }
-            } catch (NifiComponentNotFoundException notFoundException) {
-                syncNiFiTemplateId(registeredTemplate);
-                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
-            }
-            if (ports == null) {
-                ports = new HashSet<>();
-            }
-            List<PortDTO>
-                outputPorts =
-                ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
-
-            List<PortDTO>
-                inputPorts =
-                ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
-            registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
-            List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
-            List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
-
-            for (final PortDTO port : outputPorts) {
-
-                ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
-                if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
-                    reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
-                                                                       reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
-                                                                           .getFeedOutputPortName()
-                                                                           .equalsIgnoreCase(port.getName())).orNull();
+                if (ports == null) {
+                    ports = new HashSet<>();
                 }
-                if (reusableTemplateConnectionInfo == null) {
-                    reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
-                    reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+                List<PortDTO>
+                    outputPorts =
+                    ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+
+                List<PortDTO>
+                    inputPorts =
+                    ports.stream().filter(portDTO -> portDTO != null && NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(portDTO.getType())).collect(Collectors.toList());
+                registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
+                List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
+                List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
+
+                for (final PortDTO port : outputPorts) {
+
+                    ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
+                    if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                        reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
+                                                                           reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
+                                                                               .getFeedOutputPortName()
+                                                                               .equalsIgnoreCase(port.getName())).orNull();
+                    }
+                    if (reusableTemplateConnectionInfo == null) {
+                        reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
+                        reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+                    }
+                    updatedConnectionInfo.add(reusableTemplateConnectionInfo);
+
                 }
-                updatedConnectionInfo.add(reusableTemplateConnectionInfo);
+
+                registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+                registeredTemplate.initializeProcessors();
+                ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
             }
-
-            registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
-            registeredTemplate.initializeProcessors();
-            ensureRegisteredTemplateInputProcessors(registeredTemplate);
-
         }
 
         return registeredTemplate;
@@ -605,11 +625,9 @@ public class RegisteredTemplateService {
         String nifiTemplateId = nifiTemplateIdForTemplateName(template.getTemplateName());
         if (nifiTemplateId != null && !oldId.equalsIgnoreCase(nifiTemplateId)) {
             template.setNifiTemplateId(nifiTemplateId);
-
+            return metadataAccess.commit(() -> {
             RegisteredTemplate t = findRegisteredTemplateById(template.getId());
             t.setNifiTemplateId(nifiTemplateId);
-
-            return metadataAccess.commit(() -> {
                 return saveTemplate(t);
             }, MetadataAccess.ADMIN);
         }

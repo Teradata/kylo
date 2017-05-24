@@ -592,15 +592,16 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
                     var allowEdit = response.entityEditAccess && allowEditAccess
                     var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
+                    var allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
                     var accessAllowed = allowEdit || allowAdmin;
-                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed};
+                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed,allowAccessControl:allowAccessControl};
                     if(!result.isValid){
                         if(!accessAllowed) {
-                            model.errorMessage = "Access Denied.  You are unable to edit the template. "
+                            model.errorMessage = "Access Denied.  You are unable to edit the template. ";
                             self.accessDeniedDialog();
                         }
                         else {
-                            model.errorMessage = "Unable to proceeed";
+                            model.errorMessage = "Unable to proceed";
                         }
                     }
                     deferred.resolve(result);

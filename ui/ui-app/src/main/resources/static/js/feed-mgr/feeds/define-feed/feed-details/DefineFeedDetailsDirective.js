@@ -130,7 +130,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 var errorFn = function(err) {
 
                 };
-                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId));
+                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId),{params:{feedEdit:true}});
                 promise.then(successFn, errorFn);
                 return promise;
             }

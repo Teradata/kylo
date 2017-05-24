@@ -126,17 +126,20 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
             RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId, templateName).then(function (response) {
 
+
+
                 RegisterTemplateService.warnInvalidProcessorNames();
-                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(response) {
-                    self.isValid = response.isValid;
-                    self.allowAdmin = response.allowAdmin;
-                    self.allowEdit = response.allowEdit;
-                    if(!response.isValid) {
+                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(accessResponse) {
+                    self.isValid = accessResponse.isValid;
+                    self.allowAdmin = accessResponse.allowAdmin;
+                    self.allowEdit = accessResponse.allowEdit;
+                    self.allowAccessControl = accessResponse.allowAccessControl;
+                    if(!accessResponse.isValid) {
                         //PREVENT access
                         self.errorMessage ="Access Denied.  You are unable to edit the template. ";
                     }
                     else {
-                        if (!self.allowAdmin) {
+                        if (  !self.allowAccessControl) {
                             //deactivate the access control step
                             self.stepperController.deactivateStep(3);
                         }
@@ -149,6 +152,11 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 });
 
 
+            },function(err) {
+                RegisterTemplateService.resetModel();
+                self.errorMessage ="An Error was found loading this template.  Please ensure you have access to edit this template.";
+                self.loadingTemplate = false;
+                hideProgress();
             });
         }
 

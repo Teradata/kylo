@@ -385,7 +385,7 @@ public class TemplatesRestController {
     }
 
     /**
-     * get a registeredTemplate for updating
+     * get a registeredTemplate
      */
     @GET
     @Path("/registered/{templateId}")
@@ -396,13 +396,22 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
-                                          @QueryParam("templateName") String templateName) {
+                                          @QueryParam("templateName") String templateName,  @QueryParam("feedEdit") @DefaultValue("false") boolean feedEdit) {
 
         RegisteredTemplateRequest
             registeredTemplateRequest =
             new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).includePropertyDescriptors(true)
-                .isTemplateEdit(true).build();
-        RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
+                .isTemplateEdit(!feedEdit).isFeedEdit(feedEdit).build();
+        RegisteredTemplate registeredTemplate = null;
+        if(registeredTemplateRequest.isTemplateEdit()) {
+          registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
+        }
+        else {
+            registeredTemplate = registeredTemplateService.findRegisteredTemplate(registeredTemplateRequest);
+        }
+        if(registeredTemplate == null) {
+            throw new WebApplicationException("Unable to find the template "+ templateName != null ? templateName : templateId+". The template either doesnt exist, or you do not have access to edit this template.");
+        }
         return Response.ok(registeredTemplate).build();
     }
 

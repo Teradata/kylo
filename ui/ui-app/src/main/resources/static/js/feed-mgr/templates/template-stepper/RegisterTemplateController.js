@@ -21,6 +21,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         this.model = RegisterTemplateService.model;
 
+        this.allowAccessControl = false;
+
         this.allowAdmin = false;
 
         this.allowEdit = false;
@@ -49,7 +51,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         }
 
         function updateAccessControl(){
-            if (!self.allowAdmin && self.stepperController) {
+            if (!self.allowAccessControl && self.stepperController) {
                 //deactivate the access control step
                 self.stepperController.deactivateStep(3);
             }
@@ -69,11 +71,19 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                       if(!response.isValid) {
                           //PREVENT access
                       }
+                        self.allowAccessControl = response.allowAccessControl;
                         self.allowAdmin = response.allowAdmin;
                         self.allowEdit = response.allowEdit;
                          updateAccessControl();
 
                     });
+                },function(err){
+                    self.loading = false;
+                    RegisterTemplateService.resetModel();
+                    self.allowAccessControl = false;
+                    self.allowAdmin = false;
+                    self.allowEdit = false;
+                    updateAccessControl();
                 });
         }
         init();
