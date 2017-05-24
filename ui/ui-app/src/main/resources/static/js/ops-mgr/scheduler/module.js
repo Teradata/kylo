@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services', 'kylo-opsmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -6,7 +6,7 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','k
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('scheduler',{
+        $stateProvider.state(AccessConstants.UI_STATES.SCHEDULER.state,{
             url:'/scheduler',
             views: {
                 'content': {
@@ -21,7 +21,8 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','k
             data:{
                 breadcrumbRoot:true,
                 displayName:'Scheduler',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.SCHEDULER.permissions
             }
         });
 

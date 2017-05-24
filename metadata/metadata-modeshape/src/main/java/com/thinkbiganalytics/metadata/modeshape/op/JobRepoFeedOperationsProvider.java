@@ -23,6 +23,22 @@ package com.thinkbiganalytics.metadata.modeshape.op;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
+
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -41,22 +57,6 @@ import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.FeedOperationExecutedJobWrapper.OpId;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.inject.Inject;
 
 /**
  *
@@ -160,7 +160,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     public List<FeedOperation> findLatestCompleted(Feed.ID feedId) {
         return metadata.read(() -> {
             List<FeedOperation> operations = new ArrayList<>();
-            Feed<?> feed = this.feedProvider.getFeed(feedId);
+            Feed feed = this.feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 BatchJobExecution latestJobExecution = this.jobExecutionProvider.findLatestCompletedJobForFeed(feed.getQualifiedName());
@@ -178,7 +178,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     public List<FeedOperation> findLatest(Feed.ID feedId) {
         return metadata.read(() -> {
             List<FeedOperation> operations = new ArrayList<>();
-            Feed<?> feed = this.feedProvider.getFeed(feedId);
+            Feed feed = this.feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 BatchJobExecution latestJobExecution = this.jobExecutionProvider.findLatestJobForFeed(feed.getQualifiedName());
@@ -203,7 +203,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             BatchJobExecution latest = jobExecutionProvider.findLatestCompletedJobForFeed(systemFeedName);
 
             //get the dependent feeds
-            List<Feed<?>> dependents = feed.getDependentFeeds();
+            List<Feed> dependents = feed.getDependentFeeds();
             if (dependents != null) {
                 for (Feed depFeed : dependents) {
 

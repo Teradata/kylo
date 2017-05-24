@@ -13,6 +13,19 @@ then
     fi
 fi
 
+# function for determining way to handle startup scripts
+function get_linux_type {
+    # redhat
+    which chkconfig > /dev/null && echo "chkonfig" && return 0
+    # ubuntu sysv
+    which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+    echo "Couldn't recognize linux version, after installation you need to do these steps manually:"
+    echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services,kylo-spark-shell} files"
+    echo " * set them to autostart"
+}
+
+linux_type=$(get_linux_type)
+
 echo "Create the /opt/activemq directory"
 mkdir /opt/activemq
 cd /opt/activemq
@@ -43,6 +56,12 @@ cp /opt/activemq/current/bin/env /etc/default/activemq
 sed -i '~s/^ACTIVEMQ_USER=""/ACTIVEMQ_USER="activemq"/' /etc/default/activemq
 chmod 644 /etc/default/activemq
 ln -snf  /opt/activemq/current/bin/activemq /etc/init.d/activemq
-chkconfig --add activemq
-chkconfig activemq on
+
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --add activemq
+    chkconfig activemq on
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d activemq defaults 95 10
+fi
+
 service activemq start

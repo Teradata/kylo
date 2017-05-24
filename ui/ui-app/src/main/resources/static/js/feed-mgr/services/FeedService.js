@@ -21,8 +21,8 @@
  *
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService",
-        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService) {
+    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","AccessControlService","EntityAccessControlService",
+        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,AccessControlService,EntityAccessControlService) {
 
             function trim(str) {
                 return str.replace(/^\s+|\s+$/g, "");
@@ -142,9 +142,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             existingTableName: null,
                             structured: false,
                             targetMergeStrategy: 'DEDUPE_AND_MERGE',
-                            feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
-                                        + ' STORED AS'
-                                        + ' TEXTFILE',
+                            feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
+                                        + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
+                                        + ' STORED AS TEXTFILE',
                             targetFormat: null,
                             fieldPolicies: [],
                             partitions: [],
@@ -155,10 +155,20 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         dataOwner: '',
                         tags: [],
                         reusableFeed: false,
-                        dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: []},
+                        dataTransformation: {
+                            chartViewModel: null,
+                            datasourceIds: null,
+                            datasources: null,
+                            dataTransformScript: null,
+                            sql: null,
+                            states: []
+                        },
                         userProperties: [],
                         options: {skipHeader: false},
-                        active: true
+                        active: true,
+                        roleMemberships:[],
+                        owner:null,
+                        roleMembershipsUpdated:false
                     };
                 },
                 /**
@@ -410,17 +420,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 },
 
                 updateEnabledMergeStrategy: function (feedModel, strategies) {
-                    // If data transformation then only support sync
-                    if (feedModel.dataTransformationFeed) {
+                    // If data transformation then default to sync
+                    if (feedModel.dataTransformationFeed && feedModel.id === null) {
                         feedModel.table.targetMergeStrategy = 'SYNC';
-                        angular.forEach(strategies, function (strat) {
-                            strat.disabled = true;
-                        });
-                    } else {
-                        this.enableDisablePkMergeStrategy(feedModel, strategies);
-                        this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
                     }
 
+                    this.enableDisablePkMergeStrategy(feedModel, strategies);
+                    this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
                 },
 
                 hasPartitions: function (feedModel) {
@@ -466,16 +472,21 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
                     if (model.inputProcessor != null) {
                         angular.forEach(model.inputProcessor.properties, function (property) {
+                            FeedPropertyService.initSensitivePropertyForSaving(property)
                             properties.push(property);
                         });
                     }
 
                     angular.forEach(model.nonInputProcessors, function (processor) {
                         angular.forEach(processor.properties, function (property) {
+                            FeedPropertyService.initSensitivePropertyForSaving(property)
                             properties.push(property);
                         });
                     });
                     model.properties = properties;
+
+                    //prepare access control changes if any
+                    EntityAccessControlService.updateEntityForSave(model);
 
                     if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                         // Set feed
@@ -490,17 +501,17 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             var feedField = angular.copy(columnDef);
 
                             sourceField.name = columnDef.origName;
-                            if (angular.isDefined(policy)) {
-                                policy.feedFieldName = feedField.name;
-                                policy.name = columnDef.name;
-                            }
-
+                            sourceField.derivedDataType = columnDef.origDataType;
                             // structured files must use the original names
                             if (model.table.structured == true) {
                                 feedField.name = columnDef.origName;
                                 feedField.derivedDataType = columnDef.origDataType;
                             } else if (model.table.method == 'EXISTING_TABLE') {
                                 sourceField.name = columnDef.origName;
+                            }
+                            if (angular.isDefined(policy)) {
+                                policy.feedFieldName = feedField.name;
+                                policy.name = columnDef.name;
                             }
 
                             if (!columnDef.deleted) {
@@ -530,11 +541,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         //only set the sourceFields if its the first time creating this feed
                         if (model.id == null) {
                             model.table.sourceTableSchema.fields = sourceFields;
+                            model.table.feedTableSchema.fields = feedFields;
                         }
                         if (model.table.feedTableSchema == undefined) {
                             model.table.feedTableSchema = {name: null, fields: []};
                         }
-                        model.table.feedTableSchema.fields = feedFields;
+
 
                         //remove any extra columns in the policies
                         /*
@@ -593,6 +605,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             model.id = response.data.feedMetadata.id;
                             model.versionName = response.data.feedMetadata.versionName;
 
+
                             $mdToast.show(
                                 $mdToast.simple()
                                     .textContent('Feed successfully saved')
@@ -612,6 +625,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     if (copy.registeredTemplate) {
                         copy.registeredTemplate = undefined;
                     }
+                    //reset the sensitive properties
+                    FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
                     var promise = $http({
                         url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
@@ -720,6 +735,28 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             return response.data;
                         });
                 },
+                /**
+                 * Finds the allowed controller services for the specified property and sets the allowable values.
+                 *
+                 * @param {Object} property the property to be updated
+                 */
+                findControllerServicesForProperty: function(property) {
+                    // Show progress indicator
+                    property.isLoading = true;
+
+                    // Fetch the list of controller services
+                    data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
+                        .then(function(services) {
+                            // Update the allowable values
+                            property.isLoading = false;
+                            property.propertyDescriptor.allowableValues = _.map(services, function(service) {
+                                return {displayName: service.name, value: service.id}
+                            });
+                        }, function() {
+                            // Hide progress indicator
+                            property.isLoading = false;
+                        });
+                },
 
                 /**
                  * Gets the list of available Hive partition functions.
@@ -731,6 +768,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         .then(function (response) {
                             return response.data;
                         });
+                },
+                /**
+                 * check if the user has access on an entity
+                 * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+                 * @param entity the entity to check. if its undefined it will use the current feed in the model
+                 * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().when()
+                 */
+                hasEntityAccess:function(permissionsToCheck,entity) {
+                    if(entity == undefined){
+                        entity = data.model;
+                    }
+                    return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.FEED);
                 }
             };
             data.init();

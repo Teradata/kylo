@@ -1,0 +1,29 @@
+<md-dialog aria-label="Access Control" ng-cloak style="min-width:700px;max-width:700px;">
+
+  <ng-form name="theForm">
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Access Control for {{entityTitle}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="onCancel()">
+          <ng-md-icon icon="close" size="20"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content class="md-dialog-content" >
+      <entity-access-control entity="entity" entity-type="{{entityType}}" model="model" the-form="theForm" query-for-entity-access="true"></entity-access-control>
+      </md-padding>
+    </md-dialog-content>
+    <md-dialog-actions layout="row" layout-align="start stretch" flex>
+      <span flex></span>
+      <md-button ng-click="onCancel($event)">
+        Cancel
+      </md-button>
+      <md-button class="md-raised md-primary" ng-click="onSave($event)" ng-disabled="preconditionForm.$invalid">
+        Done
+      </md-button>
+    </md-dialog-actions>
+  </ng-form>
+
+</md-dialog>

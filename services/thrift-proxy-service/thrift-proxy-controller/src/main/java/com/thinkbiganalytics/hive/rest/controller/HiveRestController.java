@@ -56,11 +56,13 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - Tables", produces = "application/json")
-@Path("/v1/hive")
+@Path(HiveRestController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Tables", description = "access to Hive tables"))
 public class HiveRestController {
 
     private static final Logger log = LoggerFactory.getLogger(HiveRestController.class);
+
+    public static final String BASE = "/v1/hive";
 
     @Autowired
     private Environment env;

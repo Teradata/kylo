@@ -71,7 +71,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor FEED_ROOT = new PropertyDescriptor.Builder()
         .name("Feed Root Path")
-        .description("Specify the full HDFS root path for the feed,valid,invalid tables.")
+        .description("Specify the full HDFS or S3 root path for the feed,valid,invalid tables.")
         .required(true)
         .defaultValue("${hive.ingest.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -79,7 +79,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .build();
     public static final PropertyDescriptor MASTER_ROOT = new PropertyDescriptor.Builder()
         .name("Master Root Path")
-        .description("Specify the HDFS folder root path for creating the master table")
+        .description("Specify the HDFS or S3 folder root path for creating the master table")
         .required(true)
         .defaultValue("${hive.master.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -87,7 +87,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .build();
     public static final PropertyDescriptor PROFILE_ROOT = new PropertyDescriptor.Builder()
         .name("Profile Root Path")
-        .description("Specify the HDFS folder root path for creating the profile table")
+        .description("Specify the HDFS or S3 folder root path for creating the profile table")
         .required(true)
         .defaultValue("${hive.profile.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -109,6 +109,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
         .defaultValue(ALL_TABLES)
         .build();
+
     // Relationships
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;

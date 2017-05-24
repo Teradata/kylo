@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark;
  */
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -41,6 +42,11 @@ public class DataSet16 implements DataSet {
 
     public DataSet16(DataFrame dataframe) {
         this.dataframe = dataframe;
+    }
+
+    @Override
+    public RDD<Row> rdd() {
+        return dataframe.rdd();
     }
 
     @Override

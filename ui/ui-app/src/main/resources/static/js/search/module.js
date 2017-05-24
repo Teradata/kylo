@@ -1,9 +1,9 @@
-define(['angular','search/module-name','kylo-utils/LazyLoadUtil', 'kylo-services','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-services','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
 
     var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('search',{
+        $stateProvider.state(AccessConstants.UI_STATES.SEARCH.state,{
             url:'/search',
             params: {
             },
@@ -20,7 +20,8 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil', 'kylo-services
             data:{
                 breadcrumbRoot:false,
                 displayName:'Search',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.SEARCH.permissions
             }
         })
 

@@ -66,12 +66,12 @@ class CSVAutoDetect {
      * @return A configured parser
      * @throws IOException If there is an error parsing the sample file
      */
-    public CSVFormat detectCSVFormat(String sampleText) throws IOException {
+    public CSVFormat detectCSVFormat(String sampleText, boolean headerRow) throws IOException {
         CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
         try (BufferedReader br = new BufferedReader(new StringReader(sampleText))) {
             List<LineStats> lineStats = generateStats(br);
             Character quote = guessQuote(lineStats);
-            Character delim = guessDelimiter(lineStats, sampleText, quote);
+            Character delim = guessDelimiter(lineStats, sampleText, quote, headerRow);
             if (delim == null) {
                 throw new IOException("Unrecognized format");
             }
@@ -119,7 +119,7 @@ class CSVAutoDetect {
         return CSVFormat.DEFAULT.getQuoteCharacter();
     }
 
-    private Character guessDelimiter(List<LineStats> lineStats, String value, Character quote) throws IOException {
+    private Character guessDelimiter(List<LineStats> lineStats, String value, Character quote, boolean headerRow) throws IOException {
 
         // Assume delimiter exists in first line and compare to subsequent lines
         if (lineStats.size() > 0) {
@@ -130,7 +130,13 @@ class CSVAutoDetect {
                 // Attempt to parse given delimiter
                 Set<Character> firstLineDelimKeys = firstLineDelimCounts.keySet();
                 for (Character delim : firstLineDelimKeys) {
-                    CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(delim).withQuote(quote);
+                    CSVFormat format;
+                    if (headerRow) {
+                        format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(delim).withQuote(quote);
+                    }
+                    else {
+                        format = CSVFormat.DEFAULT.withDelimiter(delim).withQuote(quote);
+                    }
                     try (StringReader sr = new StringReader(value)) {
                         try (CSVParser parser = format.parse(sr)) {
                             if (parser.getHeaderMap() != null) {
@@ -159,9 +165,10 @@ class CSVAutoDetect {
                     if (candidates.size() == 1) {
                         return candidates.get(0);
                     } else {
+                        int count = 0;
                         // Return highest delimiter from candidates
                         for (Character delim : firstLineDelimKeys) {
-                            if (candidates.get(delim) != null) {
+                            if (candidates.get(count++) != null) {
                                 return delim;
                             }
                         }

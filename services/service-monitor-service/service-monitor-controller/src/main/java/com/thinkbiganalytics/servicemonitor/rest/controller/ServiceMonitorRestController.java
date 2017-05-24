@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiResponses;
 @Path(ServiceMonitorRestController.V1_SERVICE_MONITOR)
 public class ServiceMonitorRestController {
 
-    static final String V1_SERVICE_MONITOR = "/v1/service-monitor";
+    public static final String V1_SERVICE_MONITOR = "/v1/service-monitor";
 
     @Inject
     private ServiceMonitorRepository serviceRepository;

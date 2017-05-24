@@ -7,7 +7,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
      * @param CategoriesService the category service
      * @constructor
      */
-    function CategoryDetailsController($scope, $transition$, CategoriesService) {
+    function CategoryDetailsController($scope, $transition$, $q,CategoriesService, AccessControlService) {
         var self = this;
 
         /**
@@ -15,6 +15,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
          */
         self.loadingCategory = true;
+
+
+        self.showAccessControl = false;
 
         /**
          * Category data.
@@ -25,8 +28,11 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             function () {
                 return CategoriesService.model
             },
-            function (model) {
-                self.model = model
+            function (newModel,oldModel) {
+                self.model = newModel;
+                if(oldModel && oldModel.id == null && newModel.id != null){
+                    checkAccessControl();
+                }
             },
             true
         );
@@ -37,7 +43,9 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         self.onLoad = function () {
             if (angular.isString($transition$.params().categoryId)) {
                 self.model = CategoriesService.model = CategoriesService.findCategory($transition$.params().categoryId);
-                CategoriesService.getRelatedFeeds(CategoriesService.model);
+                if(angular.isDefined(CategoriesService.model)) {
+                    CategoriesService.getRelatedFeeds(CategoriesService.model);
+                }
                 self.loadingCategory = false;
             } else {
                 CategoriesService.getUserFields()
@@ -55,7 +63,19 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         } else {
             self.onLoad();
         }
+
+
+        function checkAccessControl(){
+            if(AccessControlService.isEntityAccessControlled()) {
+                //Apply the entity access permissions... only showAccessControl if the user can change permissions
+                $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
+                    function (access) {
+                        self.showAccessControl = access;
+                    });
+            }
+        }
+        checkAccessControl();
     }
 
-    angular.module(moduleName).controller('CategoryDetailsController', ["$scope","$transition$","CategoriesService",CategoryDetailsController]);
+    angular.module(moduleName).controller('CategoryDetailsController', ["$scope","$transition$","$q","CategoriesService","AccessControlService",CategoryDetailsController]);
 });

@@ -79,21 +79,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} property the property to be updated
          */
         function findControllerServicesForProperty(property) {
-            // Show progress indicator
-            property.isLoading = true;
 
-            // Fetch the list of controller services
-            FeedService.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
-                    .then(function(services) {
-                        // Update the allowable values
-                        property.isLoading = false;
-                        property.propertyDescriptor.allowableValues = _.map(services, function(service) {
-                            return {displayName: service.name, value: service.id}
-                        });
-                    }, function() {
-                        // Hide progress indicator
-                        property.isLoading = false;
-                    });
+            FeedService.findControllerServicesForProperty(property);
         }
 
         /**
@@ -104,6 +91,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function initializeProperties(template) {
             RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
             self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+            self.model.allowPreconditions = template.allowPreconditions;
             //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
             //    return self.model.inputProcessorType == processor.type;
             // });
@@ -142,7 +130,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 var errorFn = function(err) {
 
                 };
-                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId));
+                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId),{params:{feedEdit:true}});
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -195,7 +183,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var processor = _.find(self.inputProcessors, function(processor) {
                 return (processor.processorId === processorId);
             });
-            if (angular.isUndefined(processor)) {
+            if (angular.isUndefined(processor) || self.model.dataTransformationFeed) {
                 return;
             }
 
@@ -206,7 +194,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (renderGetTableData) {
                 self.model.table.method = 'EXISTING_TABLE';
                 self.model.options.skipHeader = true;
-                self.model.allowSkipHeaderOption = false;
+                self.model.allowSkipHeaderOption = true;
+
             } else {
                 self.model.table.method = 'SAMPLE_FILE';
                 self.model.table.tableSchema.fields = [];

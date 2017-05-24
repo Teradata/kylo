@@ -16,7 +16,6 @@ then
 fi
 
 echo "Installing NiFI"
-echo "Creating a new nifi user"
 mkdir $NIFI_INSTALL_HOME
 cd $NIFI_INSTALL_HOME
 

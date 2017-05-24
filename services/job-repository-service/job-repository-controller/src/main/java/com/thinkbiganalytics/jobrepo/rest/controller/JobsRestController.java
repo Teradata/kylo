@@ -74,8 +74,10 @@ import io.swagger.annotations.ApiResponses;
  * Provides rest endpoints for control and monitoring of the pipeline
  */
 @Api(tags = "Operations Manager - Jobs", produces = "application/json")
-@Path("/v1/jobs")
+@Path(JobsRestController.BASE)
 public class JobsRestController {
+
+    public static final String BASE = "/v1/jobs";
 
     @Inject
     OpsManagerFeedProvider opsFeedManagerFeedProvider;

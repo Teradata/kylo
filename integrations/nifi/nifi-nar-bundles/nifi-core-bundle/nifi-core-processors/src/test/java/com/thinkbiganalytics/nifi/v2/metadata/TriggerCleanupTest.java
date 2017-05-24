@@ -111,17 +111,16 @@ public class TriggerCleanupTest {
         runner.setProperty(TriggerCleanup.FEED_NAME, "feed");
         runner.enqueue(new byte[0]);
         runner.run();
-        Assert.assertEquals("feed", ((TriggerCleanup) runner.getProcessor()).getFeedId());
     }
 
     /**
      * Verify exception when scheduling the processor.
      */
     @Test(expected = AssertionError.class)
-    public void testScheduledWithException() {
+    public void testTriggeredWithException() {
         runner.setProperty(TriggerCleanup.CATEGORY_NAME, "invalid");
         runner.setProperty(TriggerCleanup.FEED_NAME, "invalid");
-        runner.enqueue(new byte[0]);
+        ((TriggerCleanup) runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
         runner.run();
     }
 

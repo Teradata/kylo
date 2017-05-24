@@ -19,6 +19,19 @@
 # limitations under the License.
 # #L%
 ###
+
+# function for determining way to handle startup scripts
+function get_linux_type {
+# redhat
+which chkconfig > /dev/null && echo "chkonfig" && return 0
+# ubuntu sysv
+which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+echo "Couldn't recognize linux version, not saving version of installed Kylo package"
+}
+
+linux_type=$(get_linux_type)
+echo "Type of init scripts management tool determined as $linux_type"
+
 rpmInstallDir=/opt/kylo
 
 echo "   REMOVING Kylo ... "
@@ -28,7 +41,11 @@ time_stamp=$(date +%Y_%m_%d_%H_%M_%s)
 mkdir -p $rpmInstallDir/bkup-config/$time_stamp
 bkupDir=$rpmInstallDir/bkup-config/$time_stamp
 ###find the rpm that is installed
-lastRpm=$(rpm -q --last kylo)
+if [ "$linux_type" == "chkonfig" ]; then
+    lastRpm=$(rpm -q --last kylo)
+elif [ "$linux_type" == "update-rc.d" ]; then
+    lastRpm=$(dpkg -s kylo | grep ^Version)
+fi
 touch ${bkupDir}/README.txt
 readme=${bkupDir}/README.txt
 

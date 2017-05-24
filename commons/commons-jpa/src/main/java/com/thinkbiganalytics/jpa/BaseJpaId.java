@@ -59,6 +59,8 @@ public abstract class BaseJpaId implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
         if (getClass().isAssignableFrom(obj.getClass())) {
             BaseJpaId that = (BaseJpaId) obj;
             return Objects.equals(getUuid(), that.getUuid());

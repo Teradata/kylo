@@ -24,6 +24,7 @@ package com.thinkbiganalytics.security;
  */
 
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public interface AccessController {
     /**
      * The default services module name
      */
-    static final String SERVICES = "services";
+    String SERVICES = AllowedActions.SERVICES;
 
     /**
      * Checks whether permission is granted to perform the given action(s) defined in the named module.
@@ -55,4 +56,20 @@ public interface AccessController {
      * @param actions    the actions being checked
      */
     void checkPermission(String moduleName, Set<Action> actions);
+
+    /**
+     * Check to see if the user has an service permission for a given module
+     * @param moduleName the service module to check
+     * @param action the permission to check
+     * @param others additional permissions
+     * @return true if valid, false if not
+     */
+    boolean hasPermission(String moduleName, Action action, Action... others);
+
+
+    /**
+     * Returns true if setup to use Entity access control, false if not
+     * @return true if using entity access control, false if not
+     */
+    boolean isEntityAccessControlled();
 }

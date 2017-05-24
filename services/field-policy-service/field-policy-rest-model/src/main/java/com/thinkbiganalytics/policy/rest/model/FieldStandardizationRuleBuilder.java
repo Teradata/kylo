@@ -37,6 +37,7 @@ public class FieldStandardizationRuleBuilder extends BasePolicyRuleBuilder<Field
         rule.setDisplayName(this.displayName);
         rule.setProperties(this.properties);
         rule.setObjectClassType(this.objectClassType);
+        rule.setSequence(this.sequence);
         return rule;
     }
 

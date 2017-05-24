@@ -1,17 +1,14 @@
 package com.thinkbiganalytics.spark.service
 
-import com.thinkbiganalytics.spark.repl.SparkScriptEngine
+import javax.annotation.Nonnull
 
+import com.thinkbiganalytics.spark.repl.SparkScriptEngine
 import org.apache.spark.Success
 import org.apache.spark.scheduler._
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
-
-import javax.annotation.Nonnull
 
 /** Tracks the progress of executing and recently completed jobs.  */
-@Component
-class TransformJobTracker16 extends TransformJobTracker with SparkListener {
+class TransformJobTracker16(contextClassLoader: ClassLoader) extends TransformJobTracker(contextClassLoader) with SparkListener {
 
     private[this] val log = LoggerFactory.getLogger(classOf[TransformJobTracker16])
 
@@ -53,7 +50,7 @@ class TransformJobTracker16 extends TransformJobTracker with SparkListener {
         }
 
         // Find transform job
-        val job = groups.get(groupId)
+        val job = getJob(groupId)
         if (job.isEmpty) {
             log.debug("Missing job {}", groupId)
             return

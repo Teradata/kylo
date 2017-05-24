@@ -53,7 +53,7 @@ public class SendJmsMessage {
     @Qualifier("jmsTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
 
-    public void sendObjectToQueue(String queueName, final Object obj) {
+    private void sendObjectToQueue(String queueName, final Object obj) {
         sendObjectToQueue(queueName, obj, obj.getClass().getName());
     }
 
@@ -65,7 +65,7 @@ public class SendJmsMessage {
     }
 
 
-    public void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException {
+    private void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException {
         log.info("Sending ActiveMQ message [" + obj + "] to queue [" + queueName + "]");
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;

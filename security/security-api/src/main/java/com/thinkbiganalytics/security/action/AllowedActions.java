@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.security.action;
 
 /*-
@@ -23,6 +20,7 @@ package com.thinkbiganalytics.security.action;
  * #L%
  */
 
+import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Set;
@@ -34,12 +32,28 @@ import java.util.Set;
  */
 public interface AllowedActions {
 
+    // TODO find a better place to define the types of entities that can have associated actions.
+    String SERVICES = "services";
+    String FEED = "feed";
+    String CATEGORY = "category";
+    String TEMPLATE = "template";
+    String DATASOURCE = "datasource";
+
+
     /**
      * Retrieves the hierarchical set of allowable actions.
      *
      * @return the set of allowed actions
      */
     List<AllowableAction> getAvailableActions();
+
+    /**
+     * validate a user has a given permission(s)
+     * @param action the action to check
+     * @param more additional actions to check
+     * @return true if user has the permission(s), false if not
+     */
+    boolean hasPermission(Action action, Action... more);
 
     /**
      * Checks whether the given actions are implied by this set of actions based on the current
@@ -54,7 +68,7 @@ public interface AllowedActions {
      * Checks whether the given actions are implied by this set of actions based on the current
      * security context, i.e. the principals associates with the current user executing the current thread.
      *
-     * @param actions the actions to check
+     * @param action the actions to check
      * @throws AccessControlException thrown if any of the actions being checked are not present
      */
     void checkPermission(Action action, Action... more);
@@ -100,9 +114,26 @@ public interface AllowedActions {
     boolean enableOnly(Principal principal, Set<Action> actions);
 
     /**
-     * Updates this object to disable the given action(s) for the specified principal.
+     * Updates this object to match the given AllowedActions for the principal.
      *
      * @param principal the principal to which the action(s) are granted
+     * @param actions   the set of actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
+    boolean enableOnly(Principal principal, AllowedActions actions);
+
+    /**
+     * Enables all actions for the specified principals.
+     *
+     * @param principal the principal to which the actions are granted
+     * @return true if not all actions had already been granted to that principal, otherwise false.
+     */
+    boolean enableAll(Principal principal);
+
+    /**
+     * Updates this object to disable the given action(s) for the specified principal.
+     *
+     * @param principal the principal to which the action(s) are revoked
      * @param action    an action to revoke
      * @param more      optional additional actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
@@ -112,9 +143,26 @@ public interface AllowedActions {
     /**
      * Updates this object to disable the given action(s) for the specified principal.
      *
-     * @param principal the principal to which the action(s) are granted
+     * @param principal the principal to which the action(s) are revoked
      * @param actions   the set of actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
      */
     boolean disable(Principal principal, Set<Action> actions);
+
+    /**
+     * Updates this object disable all actions for the principal contained in the given AllowedActions.
+     *
+     * @param principal the principal to which the action(s) are revoked
+     * @param actions   the set of actions to revoke
+     * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
+     */
+    boolean disable(Principal principal, AllowedActions actions);
+
+    /**
+     * Disables all actions for the specified principals.
+     *
+     * @param principal the principal to which the actions are revoked
+     * @return true if not all actions had already been revoked from that principal, otherwise false.
+     */
+    boolean disableAll(Principal principal);
 }

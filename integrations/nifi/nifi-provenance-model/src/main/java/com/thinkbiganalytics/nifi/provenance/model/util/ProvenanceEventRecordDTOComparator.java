@@ -30,7 +30,7 @@ public class ProvenanceEventRecordDTOComparator implements Comparator<Provenance
 
 
     public int compare(ProvenanceEventRecordDTO o1, ProvenanceEventRecordDTO o2) {
-        if (o1 == null && o1 == null) {
+        if (o1 == null && o2 == null) {
             return 0;
         } else if (o1 != null && o2 == null) {
             return -1;

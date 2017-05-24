@@ -69,12 +69,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          //   $log.info('Text changed to ' + text);
         }
         function selectedItemChange(item) {
-            if(item != null && item != undefined) {
+            //only allow it if the category is there and the 'createFeed' flag is true
+            if(item != null && item != undefined && item.createFeed) {
                 self.model.category.name = item.name;
                 self.model.category.id = item.id;
                 self.model.category.systemName = item.systemName;
                 setSecurityGroups(item.name);
                 validateUniqueFeedName();
+
+                if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['category']) {
+                    self.defineFeedGeneralForm['category'].$setValidity('accessDenied', true);
+                }
             }
             else {
                 self.model.category.name = null;
@@ -83,6 +88,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.existingFeedNames = {};
                 if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
                     self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                }
+
+                if(item && item.createFeed == false){
+                    if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['category']) {
+                        self.defineFeedGeneralForm['category'].$setValidity('accessDenied', false);
+                    }
+                }
+                else {
+                    if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['category']) {
+                        self.defineFeedGeneralForm['category'].$setValidity('accessDenied', true);
+                    }
                 }
             }
         }
@@ -122,12 +138,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
             }
 
-            if (_.isEmpty(self.existingFeedNames)) {
+            if (self.model && self.model.id && self.model.id.length > 0) {
+                self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+            } else if (_.isEmpty(self.existingFeedNames)) {
                 populateExistingFeedNames().then(function () {
                     _validate();
                 });
-            }
-            else {
+            } else {
                 _validate();
             }
 
@@ -145,8 +162,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function setSecurityGroups(newVal) {
             if(newVal) {
                 var category = self.categoriesService.findCategoryByName(newVal)
-                var securityGroups = category.securityGroups;
-                self.model.securityGroups = securityGroups;
+                if(category != null) {
+                    var securityGroups = category.securityGroups;
+                    self.model.securityGroups = securityGroups;
+                }
             }
         }
 

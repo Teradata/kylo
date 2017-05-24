@@ -102,7 +102,7 @@
             <md-content flex md-scroll-y>
                 <div class="card-content">
                     <md-button ng-if="vm.alertData.actionable && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showEventDialog($event)">UPDATE</md-button>
-                    <md-button ng-if="vm.alertData.cleared == false" class="border-btn action-btn" ng-click="vm.hideAlert($event)">HIDE</md-button>
+                    <md-button ng-if="vm.alertData.cleared == false && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.hideAlert($event)">HIDE</md-button>
                 </div>
 
                 <md-list flex layout-fill layout="column" class="list-item-table">
@@ -119,7 +119,7 @@
                     <md-list-item>
                         <div layout="column"  class="item-column md-list-item-text ">
                             <span class="item-title">
-                                <tba-timer start-time="vm.alertData.createdTimeSince"></tba-timer>
+                                <kylo-timer start-time="vm.alertData.createdTimeSince"></kylo-timer>
                             </span>
                             <span class="column-title column-title-bottom">Since</span>
                         </div>

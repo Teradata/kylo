@@ -20,8 +20,13 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.SparkContextService16;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,17 +36,19 @@ import org.springframework.test.context.ContextConfiguration;
 public class SpringTestConfigV2 {
 
     @Bean
-    public ProfilerSparkContextService profilerSparkContextService() {
-        return new ProfilerSparkContextServiceV2();
-    }
-
-    @Bean
-    public ProfilerStrategy profilerStrategy() {
-        return new ProfilerStrategyV2();
-    }
-
-    @Bean
     public FieldPolicyLoader fieldPolicyLoader() {
         return new FieldPolicyLoader();
+    }
+
+    @Bean
+    public SparkContextService sparkContextService() {
+        return new SparkContextService16();
+    }
+
+    @Bean
+    public SQLContext sqlContext() {
+        final SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("Profiler Test");
+        final SparkContext sc = new SparkContext(conf);
+        return new SQLContext(sc);
     }
 }

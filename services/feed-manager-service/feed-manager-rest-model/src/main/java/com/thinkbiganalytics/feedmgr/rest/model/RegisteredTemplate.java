@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RegisteredTemplate {
+public class RegisteredTemplate extends EntityAccessControl {
 
     private List<NifiProperty> properties;
 
@@ -91,6 +92,12 @@ public class RegisteredTemplate {
     @JsonIgnore
     private TemplateDTO nifiTemplate;
 
+    /**
+     * flag to indicate the template was updated
+     */
+    @JsonIgnore
+    private boolean updated;
+
     public RegisteredTemplate() {
 
     }
@@ -120,6 +127,9 @@ public class RegisteredTemplate {
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
         this.isStream = registeredTemplate.isStream();
+        this.setOwner(registeredTemplate.getOwner());
+        this.setRoleMemberships(registeredTemplate.getRoleMemberships());
+        this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.initializeProcessors();
     }
 
@@ -140,6 +150,7 @@ public class RegisteredTemplate {
         ));
 
     }
+
 
     public List<NifiProperty> getProperties() {
         return properties;
@@ -322,6 +333,10 @@ public class RegisteredTemplate {
                 if (property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
                     inputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
                 }
+                //mark the template as allowing preconditions if it has an input of TriggerFeed
+                if(NifiProcessUtil.TRIGGER_FEED_TYPE.equalsIgnoreCase(property.getProcessorType()) && !this.isAllowPreconditions()) {
+                    this.setAllowPreconditions(true);
+                }
             } else {
                 nonInputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
             }
@@ -393,6 +408,17 @@ public class RegisteredTemplate {
     public void setStream(boolean isStream) {
         this.isStream = isStream;
     }
+
+
+    @JsonIgnore
+    public List<NifiProperty> getConfigurationProperties(){
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
+    }
+    @JsonIgnore
+    public List<NifiProperty> getSensitiveProperties(){
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
+    }
+
 
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 
@@ -537,7 +563,15 @@ public class RegisteredTemplate {
         }
 
 
+
     }
 
-
+    @JsonIgnore
+    public boolean isUpdated() {
+        return updated;
+    }
+    @JsonIgnore
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
+    }
 }

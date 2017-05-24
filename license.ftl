@@ -116,6 +116,8 @@
   <@apache2License/>
 <#elseif project.groupId?starts_with("org.apache.")>
   <@apache2License/>
+<#elseif project.groupId == "com.databricks">
+  <@apache2License/>
 <#elseif project.groupId == "org.antlr">
   <@antlrLicense/>
 <#elseif project.groupId == "org.bouncycastle">

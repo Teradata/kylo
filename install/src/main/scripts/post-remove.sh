@@ -19,6 +19,20 @@
 # limitations under the License.
 # #L%
 ###
+
+# function for determining way to handle startup scripts
+function get_linux_type {
+# redhat
+which chkconfig > /dev/null && echo "chkonfig" && return 0
+# ubuntu sysv
+which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+echo "Couldn't recognize linux version, after removal you need to turn off autostart of kylo services
+(kylo-ui, kylo-services and kylo-spark-shell)"
+}
+
+linux_type=$(get_linux_type)
+echo "Type of init scripts management tool determined as $linux_type"
+
 rpmInstallDir=/opt/kylo
 
 echo "     2. Stopping Applications ... "
@@ -27,15 +41,23 @@ service kylo-services stop
 service kylo-spark-shell stop
 
 echo "     3. Removing service configuration "
-chkconfig --del kylo-ui
+
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --del kylo-ui
+    chkconfig --del kylo-spark-shell
+    chkconfig --del kylo-services
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d -f kylo-ui remove
+    update-rc.d -f kylo-shell remove
+    update-rc.d -f kylo-spark-services remove
+fi
 rm -rf /etc/init.d/kylo-ui
 echo "         - Removed kylo-ui script '/etc/init.d/kylo-ui'"
-chkconfig --del kylo-services
 rm -rf /etc/init.d/kylo-services
 echo "         - Removed kylo-services script '/etc/init.d/kylo-services'"
-chkconfig --del kylo-spark-shell
 rm -rf /etc/init.d/kylo-spark-shell
 echo "         - Removed kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
+
 rm -rf $rpmInstallDir/setup
 
 echo "     4. Deleting application folders "

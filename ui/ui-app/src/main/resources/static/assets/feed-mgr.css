@@ -281,40 +281,6 @@ card-layout .register-nifi-template-header {
   width: 18px;
 }
 
-/**
- * Global Search styles
- */
-
-.global-search-container-sm {
-  align-self: center;
-  min-width: 300px;
-}
-
-.global-search-container {
-  align-self: center;
-  min-width: 500px;
-  padding-top: 10px;
-}
-
-md-input-container.global-search .md-input {
-  border-color: white !important;
-  font-size: 14px;
-}
-
-.elastic-search-property-table {
-  margin-top: 0px;
-  border-collapse: collapse;
-  margin-left: 30px;
-}
-
-.elastic-search-property-table td {
-  padding: 5px;
-  border-collapse: collapse;
-  border-spacing: 0px;
-}
-
-.elastic-search-property-table tr:not(:last-child) td {
-}
 
 /**
  * Visual Query

@@ -20,14 +20,13 @@ package com.thinkbiganalytics.metadata.jpa.app;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.KyloVersionUtil;
+import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +39,6 @@ import javax.annotation.PostConstruct;
 /**
  * Provider for accessing and updating the Kylo version
  */
-@Service
 public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaKyloVersionProvider.class);
@@ -58,9 +56,14 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
         this.kyloVersionRepository = kyloVersionRepository;
     }
 
+    @Override
+    public boolean isUpToDate() {
+        KyloVersion currentVersion = getCurrentVersion();
+        return currentVersion != null && currentVersion.equals(getLatestVersion());
+    }
 
     @Override
-    public KyloVersion getKyloVersion() {
+    public KyloVersion getCurrentVersion() {
 
         List<JpaKyloVersion> versions = kyloVersionRepository.findAll();
         if (versions != null && !versions.isEmpty()) {
@@ -70,82 +73,40 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     }
 
     @Override
-    public KyloVersion updateToCurrentVersion() {
-        if (getCurrentVersion() != null) {
-            KyloVersion currentVersion = parseVersionString(getCurrentVersion());
-            KyloVersion existingVersion = getKyloVersion();
+    public KyloVersion updateToLatestVersion() {
+        if (getLatestVersion() != null) {
+            KyloVersion currentVersion = getLatestVersion();
+            KyloVersion existingVersion = getCurrentVersion();
+            
             if (existingVersion == null) {
+                kyloVersionRepository.save(new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion()));
                 existingVersion = currentVersion;
-                kyloVersionRepository.save((JpaKyloVersion) existingVersion);
             } else {
                 if (!existingVersion.equals(currentVersion)) {
-                    existingVersion.update(currentVersion);
-                    kyloVersionRepository.save((JpaKyloVersion) existingVersion);
+                    kyloVersionRepository.deleteAll();
+                    JpaKyloVersion update = new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion());
+                    kyloVersionRepository.save(update);
+                    existingVersion.update(update);
                 }
             }
             return existingVersion;
         }
         return null;
     }
-
-    private KyloVersion parseVersionString(String versionString) {
-
-        if (versionString != null) {
-            JpaKyloVersion kyloVersion = new JpaKyloVersion();
-            //Major version ends before second period
-            //i.e.  v 0.3.0    0.3
-            int beforeIndex = StringUtils.ordinalIndexOf(versionString, ".", 2);
-            String majorVersionString = StringUtils.substring(versionString, 0, beforeIndex);
-            String minorVersion = StringUtils.substring(versionString, (beforeIndex + 1));
-            kyloVersion.setMajorVersion(majorVersionString);
-            kyloVersion.setMinorVersion(minorVersion);
-            return kyloVersion;
-        }
-        return null;
-
-
+    
+    @Override
+    public KyloVersion getLatestVersion() {
+        return KyloVersionUtil.getLatestVersion();
     }
+
+
 
 
     @PostConstruct
     private void init() {
-        getCurrentVersion();
+        getLatestVersion();
     }
 
 
-    /**
-     * Parse the version.txt file located in the classpath to obtain the current version installed
-     */
-    private String getCurrentVersion() {
-        if (currentVersion == null) {
-            Properties prop = new Properties();
-            String versionFile = "version.txt";
 
-            InputStream in = this.getClass().getClassLoader()
-                .getResourceAsStream(versionFile);
-            URL url = this.getClass().getClassLoader().getResource(versionFile);
-            if (in != null) {
-                try {
-                    try {
-                        log.info("finding version information from {} ", url.toURI().getPath().toString());
-                    } catch (Exception e) {
-
-                    }
-                    prop.load(in);
-                    currentVersion = prop.getProperty("version");
-                    buildTimestamp = prop.getProperty("build.date");
-
-                    log.info("loaded Kylo version file: {}  build Time: {}", currentVersion, buildTimestamp);
-                } catch (IOException e) {
-
-                }
-            }
-        }
-        return currentVersion;
-
-    }
-
-    public String getBuildTimestamp() {
-        return buildTimestamp;
-    }
 }

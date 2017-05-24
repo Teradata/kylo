@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ReactorContiguration.class})
+@ContextConfiguration(classes = {ReactorConfiguration.class})
 public class ReactorMetadataEventServiceTest {
 
     @Inject

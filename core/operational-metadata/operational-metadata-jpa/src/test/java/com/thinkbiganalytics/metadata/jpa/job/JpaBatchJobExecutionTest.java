@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
+import com.thinkbiganalytics.test.security.WithMockJaasUser;
 
 import org.joda.time.Period;
 import org.junit.Test;
@@ -68,6 +69,9 @@ public class JpaBatchJobExecutionTest {
         return Arrays.asList(cl.getDeclaredFields()).stream().collect(Collectors.toMap(f -> f.getName(), f -> f));
     }
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testPaging() {
         operationalMetadataAccess.read(() -> {
@@ -78,6 +82,9 @@ public class JpaBatchJobExecutionTest {
         });
     }
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testJobStatusCount() {
         operationalMetadataAccess.read(() -> {
@@ -87,6 +94,9 @@ public class JpaBatchJobExecutionTest {
 
     }
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testJobStatusCountFromNow() {
         operationalMetadataAccess.read(() -> {
@@ -97,6 +107,9 @@ public class JpaBatchJobExecutionTest {
 
     }
 
+    @WithMockJaasUser(username = "dladmin",
+                      password = "secret",
+                      authorities = {"admin"})
     @Test
     public void testFilters() {
         operationalMetadataAccess.read(() -> {

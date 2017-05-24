@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
  */
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;

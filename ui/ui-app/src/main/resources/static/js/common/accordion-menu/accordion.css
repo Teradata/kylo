@@ -6,6 +6,9 @@
   cursor: pointer;
 }
 
+.collapsed-menu .collapsible-item .title {
+  padding: 5px !important;
+}
 
 .collapsible-item .title.disabled {
   background: #eee;

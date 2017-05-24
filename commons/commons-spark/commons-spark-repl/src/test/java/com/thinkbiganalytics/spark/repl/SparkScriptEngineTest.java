@@ -111,13 +111,37 @@ public class SparkScriptEngineTest {
     }
 
     /**
+     * Verify security exception for rule violation.
+     */
+    @Test(expected = ScriptException.class)
+    public void testSecurity() throws Exception {
+        engine.eval("System.eval(\"true\")");
+    }
+
+    /**
+     * Verify security exception if comment in script.
+     */
+    @Test(expected = ScriptException.class)
+    public void testSecurityWithComment() throws Exception {
+        engine.eval("System/*PAD*/.eval(\"true\")");
+    }
+
+    /**
+     * Verify security exception for multi-line scripts.
+     */
+    @Test(expected = ScriptException.class)
+    public void testSecurityWithMultiline() throws Exception {
+        engine.eval("System\n.eval(\"true\")");
+    }
+
+    /**
      * Verify evaluating a script with a compile error.
      */
     @Test
     public void testWithCompileError() throws Exception {
         // Configure expected exception
         thrown.expect(ScriptException.class);
-        thrown.expectMessage(CoreMatchers.startsWith("error: not found: value Method in <console> at line number 1"));
+        thrown.expectMessage(CoreMatchers.startsWith("error: not found: value Method in <console> at line number 8"));
 
         // Test evaluating
         engine.eval("Method invalid");

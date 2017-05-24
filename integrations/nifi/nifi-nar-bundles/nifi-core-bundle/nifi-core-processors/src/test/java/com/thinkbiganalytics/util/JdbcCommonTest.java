@@ -47,6 +47,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import static org.junit.Assert.assertEquals;
+
 public class JdbcCommonTest {
 
     /**
@@ -116,7 +118,8 @@ public class JdbcCommonTest {
         // Test converting to avro
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RowVisitor visitor = Mockito.mock(RowVisitor.class);
-        JdbcCommon.convertToAvroStream(results, out, visitor);
+        Schema avroSchema = JdbcCommon.createSchema(results);
+        JdbcCommon.convertToAvroStream(results, out, visitor, avroSchema);
 
         final InOrder inOrder = Mockito.inOrder(visitor);
         inOrder.verify(visitor).visitRow(results);
@@ -160,20 +163,20 @@ public class JdbcCommonTest {
         final GenericDatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
         final DataFileReader<GenericRecord> dataReader = new DataFileReader<>(input, datumReader);
         final GenericRecord record = dataReader.next();
-        Assert.assertEquals(new Utf8("Fun Friday"), record.get(0));
-        Assert.assertEquals(null, record.get(1));
-        Assert.assertEquals(ByteBuffer.wrap(new byte[]{72, 73}), record.get(2));
-        Assert.assertEquals(42, record.get(3));
-        Assert.assertEquals(new Utf8("3.14159265359"), record.get(4));
-        Assert.assertEquals(Long.MAX_VALUE, record.get(5));
-        Assert.assertEquals(new Utf8("2017-01-06T00:00:00.000Z"), record.get(6));
-        Assert.assertEquals(new Utf8("11:50:00.000Z"), record.get(7));
-        Assert.assertEquals(new Utf8("2017-01-06T11:50:00.000Z"), record.get(8));
-        Assert.assertEquals(Boolean.TRUE, record.get(9));
-        Assert.assertEquals(12, record.get(10));
+        assertEquals(new Utf8("Fun Friday"), record.get(0));
+        assertEquals(null, record.get(1));
+        assertEquals(ByteBuffer.wrap(new byte[]{72, 73}), record.get(2));
+        assertEquals(42, record.get(3));
+        assertEquals(new Utf8("3.14159265359"), record.get(4));
+        assertEquals(Long.MAX_VALUE, record.get(5));
+        assertEquals(new Utf8("2017-01-06T00:00:00.000Z"), record.get(6));
+        assertEquals(new Utf8("11:50:00.000Z"), record.get(7));
+        assertEquals(new Utf8("2017-01-06T11:50:00.000Z"), record.get(8));
+        assertEquals(Boolean.TRUE, record.get(9));
+        assertEquals(12, record.get(10));
         Assert.assertNotNull(record.get(11));
-        Assert.assertEquals(2.5f, record.get(12));
-        Assert.assertEquals(1.61803, record.get(13));
+        assertEquals(2.5f, record.get(12));
+        assertEquals(1.61803, record.get(13));
         Assert.assertFalse(dataReader.hasNext());
     }
 
@@ -225,7 +228,7 @@ public class JdbcCommonTest {
         inOrder.verify(visitor).visitColumn("custom", Types.TIMESTAMP, (Timestamp) null);
         inOrder.verifyNoMoreInteractions();
 
-        Assert.assertEquals("event empty date time timestamp custom\n\"Fun Friday\"  2017-01-06T00:00:00.000Z 11:50:00.000Z 2017-01-06T11:50:00.000Z \n", new String(out.toByteArray(), "UTF-8"));
+        assertEquals("event empty date time timestamp custom\n\"Fun Friday\"  2017-01-06T00:00:00.000Z 11:50:00.000Z 2017-01-06T11:50:00.000Z \n", new String(out.toByteArray(), "UTF-8"));
     }
 
     /**
@@ -234,6 +237,38 @@ public class JdbcCommonTest {
     @Test
     public void convertToDelimitedStreamWithNull() throws Exception {
         final long count = JdbcCommon.convertToDelimitedStream(null, null, null, ",");
-        Assert.assertEquals(0L, count);
+        assertEquals(0L, count);
+    }
+
+    /**
+     * Verify schema format for setting up feed table
+     */
+    @Test
+    public void getAvroSchemaForFeedSetupTest() {
+        final Schema schema = SchemaBuilder
+            .record("test_record")
+            .namespace("my_schema")
+            .fields()
+                .name("po_id").type().nullable().intType().intDefault(0)
+                .name("customer_name").type().nullable().stringType().stringDefault("null")
+                .name("total_amount").type().nullable().stringType().stringDefault("null")
+                .name("is_urgent").type().nullable().booleanType().booleanDefault(false)
+                .name("last_update_time").type().nullable().stringType().stringDefault("null")
+                .name("photo").type().nullable().bytesType().bytesDefault("null")
+                .name("identifier").type().nullable().longType().longDefault(0)
+                .name("state").type().stringType().stringDefault("null")
+            .endRecord();
+
+        String obtained = JdbcCommon.getAvroSchemaForFeedSetup(schema);
+        String expected = "po_id|int||0|0|0\n"
+                        + "customer_name|string||0|0|0\n"
+                        + "total_amount|string||0|0|0\n"
+                        + "is_urgent|boolean||0|0|0\n"
+                        + "last_update_time|string||0|0|0\n"
+                        + "photo|binary||0|0|0\n"
+                        + "identifier|bigint||0|0|0\n"
+                        + "state|string||0|0|0";
+
+        assertEquals("Avro schema not mapped correctly for feed table setup", expected, obtained);
     }
 }

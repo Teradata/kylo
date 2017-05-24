@@ -228,8 +228,9 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
         if (reportingTasks == null) {
             return new NiFiReportingTaskRestClientV1(this);
         }
-        return reportingTasks();
+        return reportingTasks;
     }
+
 
     @Override
     protected WebTarget getBaseTarget() {

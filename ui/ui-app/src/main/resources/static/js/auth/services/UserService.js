@@ -19,7 +19,7 @@
  * @property {string|null} title human-readable name
  */
 define(['angular','auth/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory("UserService", ['$http', 'CommonRestUrlService', function ($http, CommonRestUrlService) {
+    angular.module(moduleName).factory("UserService", ['$http', 'CommonRestUrlService','UserGroupService', function ($http, CommonRestUrlService,UserGroupService) {
 
         /**
          * Interacts with the Users REST API.
@@ -64,10 +64,7 @@ define(['angular','auth/module-name'], function (angular,moduleName) {
              * @returns {GroupPrincipal} the group
              */
             getGroup: function (groupId) {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId))
-                    .then(function (response) {
-                        return response.data;
-                    });
+                return UserGroupService.getGroup(groupId);
             },
 
             /**
@@ -76,10 +73,7 @@ define(['angular','auth/module-name'], function (angular,moduleName) {
              * @returns {Promise} with the list of groups
              */
             getGroups: function () {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL)
-                    .then(function (response) {
-                        return response.data;
-                    });
+                return UserGroupService.getGroups();
             },
 
             /**
@@ -89,10 +83,7 @@ define(['angular','auth/module-name'], function (angular,moduleName) {
              * @returns {UserPrincipal} the user
              */
             getUser: function (userId) {
-                return $http.get(CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId))
-                    .then(function (response) {
-                        return response.data;
-                    });
+                return UserGroupService.getUser(userId);
             },
 
             /**
@@ -101,10 +92,7 @@ define(['angular','auth/module-name'], function (angular,moduleName) {
              * @returns {Array.<UserPrincipal>} the users
              */
             getUsers: function () {
-                return $http.get(CommonRestUrlService.SECURITY_USERS_URL)
-                    .then(function (response) {
-                        return response.data;
-                    });
+                return UserGroupService.getUsers();
             },
 
             /**
@@ -114,10 +102,7 @@ define(['angular','auth/module-name'], function (angular,moduleName) {
              * @returns {Array.<UserPrincipal>} the users
              */
             getUsersByGroup: function (groupId) {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId) + "/users")
-                    .then(function (response) {
-                        return response.data;
-                    });
+                return UserGroupService.getUsersByGroup(groupId);
             },
 
             /**

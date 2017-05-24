@@ -21,6 +21,8 @@ package com.thinkbiganalytics.policy.validation;
  */
 
 
+import com.thinkbiganalytics.policy.BaseFieldPolicy;
+
 import java.io.Serializable;
 
 /**
@@ -29,7 +31,7 @@ import java.io.Serializable;
  *
  * @see Validator class annotation
  */
-public interface ValidationPolicy<T> extends Serializable {
+public interface ValidationPolicy<T> extends BaseFieldPolicy, Serializable {
 
     /**
      * Perform custom validation logic return a {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid.

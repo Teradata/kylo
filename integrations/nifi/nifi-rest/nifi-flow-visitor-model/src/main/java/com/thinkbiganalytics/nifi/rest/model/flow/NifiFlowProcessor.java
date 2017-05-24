@@ -49,7 +49,7 @@ public class NifiFlowProcessor implements Serializable {
     private String id;
     @JsonProperty("name")
     private String name;
-
+    @JsonProperty("type")
     private String type;
 
     private String parentGroupId;
@@ -80,10 +80,6 @@ public class NifiFlowProcessor implements Serializable {
 
     }
 
-    public NifiFlowProcessor(@JsonProperty("id") String id, @JsonProperty("name") String name) {
-        this.id = id;
-        this.name = name;
-    }
 
     public NifiFlowProcessor(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("type") String type) {
         this.id = id;

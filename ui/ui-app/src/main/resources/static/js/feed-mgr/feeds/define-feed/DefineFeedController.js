@@ -1,6 +1,6 @@
 define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
-    var controller = function ($scope, $http, AccessControlService, FeedService, RestUrlService, StateService) {
+    var controller = function ($scope, $http,$q, AccessControlService, FeedService, FeedSecurityGroups,RestUrlService, StateService) {
 
         var self = this;
 
@@ -69,15 +69,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.model.dataTransformationFeed = template.dataTransformation;
 
             if (template.defineTable) {
-                self.totalSteps = 6;
+                self.totalSteps = 7;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html'
             }
             else if (template.dataTransformation) {
-                self.totalSteps = 8;
+                self.totalSteps = 9;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-data-transform-stepper.html'
             }
             else {
-                self.totalSteps = 4;
+                self.totalSteps = 5;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html'
             }
         }
@@ -87,13 +87,29 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.stepperUrl = null;
         }
 
+
+        self.onStepperInitialized = function(stepper) {
+            var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
+            $q.all(accessChecks).then(function (response) {
+                var entityAccess = AccessControlService.isEntityAccessControlled();
+                var securityGroupsAccess = response.securityGroups;
+                //disable the access control step
+                if(!entityAccess && !securityGroupsAccess) {
+                    //Access Control is second to last step 0 based array indexc
+                    stepper.deactivateStep(self.totalSteps -2);
+                }
+            });
+        }
+
+
+
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
                 self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
             });
     };
 
-    angular.module(moduleName).controller('DefineFeedController', ["$scope","$http","AccessControlService","FeedService","RestUrlService","StateService",controller]);
+    angular.module(moduleName).controller('DefineFeedController', ["$scope","$http","$q","AccessControlService","FeedService","FeedSecurityGroups","RestUrlService","StateService",controller]);
 
 });

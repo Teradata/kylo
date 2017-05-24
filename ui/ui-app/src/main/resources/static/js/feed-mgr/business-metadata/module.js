@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadUtil','kylo-feedmgr','kylo-common','kylo-services'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-feedmgr','kylo-common','kylo-services'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
 
@@ -7,7 +7,7 @@ define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadU
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('business-metadata',{
+        $stateProvider.state(AccessConstants.UI_STATES.BUSINESS_METADATA.state,{
             url:'/business-metadata',
             params: {},
             views: {
@@ -23,7 +23,8 @@ define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadU
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Business Metadata',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.BUSINESS_METADATA.permissions
             }
         });
 

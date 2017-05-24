@@ -31,7 +31,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
  */
 public interface FeedPrecondition {
 
-    Feed<?> getFeed();
+    Feed getFeed();
 
     ServiceLevelAgreement getAgreement();
 

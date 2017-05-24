@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,7 +35,11 @@ import java.util.List;
  */
 public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats> {
 
-    @Query(value = "select stats from JpaNifiFeedProcessorStats as stats where stats.minEventTime between :startTime and :endTime")
+    @Query(value = "select stats from JpaNifiFeedProcessorStats as stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+                   + "where stats.minEventTime between :startTime and :endTime "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<JpaNifiFeedProcessorStats> findWithinTimeWindow(@Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
     @Query(value = "select max(stats.maxEventId) from JpaNifiFeedProcessorStats as stats")

@@ -3,11 +3,22 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
     var controller = function($scope,$sce,$http,$mdToast,$mdDialog,ElasticSearchService, Utils,CategoriesService){
 
         var self = this;
+        /**
+         * The result object of what is retured from the search query
+         * @type {null}
+         */
         this.searchResult = null;
+        /**
+         * flag to indicate we are querying/searching
+         * @type {boolean}
+         */
+        this.searching = false;
 
-        this.paginationData = {rowsPerPage:10,
-        currentPage:1,
-            rowsPerPageOptions:['5','10','20','50','100']}
+        /**
+         * Pagination data
+         * @type {{rowsPerPage: number, currentPage: number, rowsPerPageOptions: [*]}}
+         */
+        this.paginationData = {rowsPerPage:10, currentPage:1, rowsPerPageOptions:['5','10','20','50','100']}
 
         var supportedDisplays = ['tweets','feed','table-metadata','hive-query','index-pattern'];
 
@@ -40,11 +51,29 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
            }
        }
         this._search = function(){
+            self.searchError = null;
+            self.searching = true;
             var limit = self.paginationData.rowsPerPage;
             var start = (limit * self.paginationData.currentPage)-limit; //self.query.page(self.selectedTab));
 
             ElasticSearchService.search(ElasticSearchService.searchQuery,limit,start).then(function(result){
                 self.searchResult = result;
+                self.searching = false;
+            },function(response){
+                self.searching = false;
+               var err = response.data.message;
+               var detailedMessage = response.data.developerMessage;
+               if(detailedMessage) {
+                   err += "<br/>" + detailedMessage;
+               }
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Error Searching')
+                        .htmlContent('There was an error while searching.<br/>'+err)
+                        .ariaLabel('Error Searching')
+                        .ok('Got it!')
+                );
             });
         }
 

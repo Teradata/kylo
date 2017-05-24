@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
@@ -33,8 +34,6 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
@@ -48,7 +47,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -59,7 +57,7 @@ import javax.jcr.query.RowIterator;
 
 /**
  */
-public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, ModeShapeAvailabilityListener {
+public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, PostMetadataConfigAction {
 
     @Inject
     FeedProvider feedProvider;
@@ -69,9 +67,6 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
     private ExtensibleEntityProvider entityProvider;
     @Inject
     private JcrMetadataAccess metadata;
-
-    @Inject
-    private ModeShapeAvailability modeShapeAvailability;
 
     private AtomicBoolean typeCreated = new AtomicBoolean(false);
 
@@ -87,13 +82,8 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     }
 
-    @PostConstruct
-    public void scheduleServiceLevelAgreements() {
-        modeShapeAvailability.subscribe(this);
-    }
-
     @Override
-    public void modeShapeAvailable() {
+    public void run() {
         createType();
     }
 

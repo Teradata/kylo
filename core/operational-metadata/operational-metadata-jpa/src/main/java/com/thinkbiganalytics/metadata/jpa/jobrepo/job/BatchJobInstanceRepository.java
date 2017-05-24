@@ -21,11 +21,14 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
+import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * Spring data repository for accessing {@link JpaBatchJobInstance}
  */
+@RepositoryType(BatchJobInstanceSecuringRepository.class)
 public interface BatchJobInstanceRepository extends JpaRepository<JpaBatchJobInstance, Long> {
 
 

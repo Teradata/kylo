@@ -22,12 +22,11 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
+import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
-import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.spring.FileResourceService;
@@ -49,15 +48,13 @@ import javax.inject.Inject;
 /**
  * Provides access to the {@link DatasourceDefinition} and {@link com.thinkbiganalytics.metadata.rest.model.feed.FeedLineage}
  */
-public class DatasourceService {
+public class DatasourceService implements PostMetadataConfigAction {
 
     private static final Logger log = LoggerFactory.getLogger(DatasourceService.class);
 
     @Inject
     ServicesApplicationStartup startup;
 
-    @Inject
-    ModeShapeAvailability modeShapeAvailability;
     @Inject
     FileResourceService fileResourceService;
     @Inject
@@ -69,7 +66,6 @@ public class DatasourceService {
     @PostConstruct
     private void init() {
         loadFeedLineageStylesFromFile();
-        modeShapeAvailability.subscribe(new DatasourceLoadStartupListener());
     }
 
 
@@ -167,16 +163,12 @@ public class DatasourceService {
         }, MetadataAccess.SERVICE);
     }
 
-
-    /**
-     * Listener to load the definitions from the file once Modeshape starts
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
      */
-    public class DatasourceLoadStartupListener implements ModeShapeAvailabilityListener {
-
-        @Override
-        public void modeShapeAvailable() {
-            loadDefinitionsFromFile();
-        }
+    @Override
+    public void run() {
+        loadDefinitionsFromFile();
     }
 
 

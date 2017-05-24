@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.modeshape;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -29,19 +30,13 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
@@ -66,10 +61,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.version.Version;
 
-/**
- */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrPropertyTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
 public class JcrPropertyTest {
 
@@ -81,12 +74,6 @@ public class JcrPropertyTest {
     @Inject
     FeedProvider feedProvider;
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
-    @Inject
-    FeedManagerTemplateProvider feedManagerTemplateProvider;
-    @Inject
-    FeedManagerCategoryProvider feedManagerCategoryProvider;
-    @Inject
     TagProvider tagProvider;
     @Inject
     private ExtensibleTypeProvider provider;
@@ -96,7 +83,7 @@ public class JcrPropertyTest {
 
     @Test
     public void testGetPropertyTypes() throws RepositoryException {
-        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new AdminCredentials(), () -> {
+        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(() -> {
             ExtensibleType feedType = provider.getType("tba:feed");
             Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
             Map<String, FieldDescriptor.Type> map = new HashMap<>();
@@ -106,7 +93,7 @@ public class JcrPropertyTest {
             }
 
             return map;
-        });
+        }, MetadataAccess.SERVICE);
         log.info("Property Types {} ", propertyTypeMap);
 
     }
@@ -118,15 +105,15 @@ public class JcrPropertyTest {
     @Test
     public void testFeed() {
         String categorySystemName = "my_category";
-        Category category = metadata.commit(new AdminCredentials(), () -> {
+        Category category = metadata.commit(() -> {
             JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
             cat.setDescription("my category desc");
             cat.setTitle("my category");
             categoryProvider.update(cat);
             return cat;
-        });
+        }, MetadataAccess.SERVICE);
 
-        final JcrFeed.FeedId createdFeedId = metadata.commit(new AdminCredentials(), () -> {
+        final JcrFeed.FeedId createdFeedId = metadata.commit(() -> {
 
             String sysName = "my_category";
 
@@ -168,11 +155,11 @@ public class JcrPropertyTest {
             feed.setProperties(otherProperties);
 
             return feed.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         //read and find feed verisons and ensure props
 
-        JcrFeed.FeedId readFeedId = metadata.read(new AdminCredentials(), () -> {
+        JcrFeed.FeedId readFeedId = metadata.read(() -> {
             Session s = null;
             JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
             // TODO: Feed vesioning disabled for Kylo v0.5.0
@@ -195,11 +182,11 @@ public class JcrPropertyTest {
             //assert we got 1 feed back
             Assert.assertTrue(taggedObjects.size() >= 1);
             return f.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         //update the feed again
 
-        JcrFeed.FeedId updatedFeed = metadata.commit(new AdminCredentials(), () -> {
+        JcrFeed.FeedId updatedFeed = metadata.commit(() -> {
             JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
             f.setDescription("My Feed Updated Description");
 
@@ -209,10 +196,10 @@ public class JcrPropertyTest {
 
             ((JcrFeedProvider) feedProvider).update(f);
             return f.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         //read it again and find the versions
-        readFeedId = metadata.read(new AdminCredentials(), () -> {
+        readFeedId = metadata.read(() -> {
             JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
             // TODO: Feed vesioning disabled for Kylo v0.5.0
 //            int versions = printVersions(f);
@@ -237,7 +224,7 @@ public class JcrPropertyTest {
 //            Assert.assertEquals(v1Id, v11Id);
 //            Assert.assertEquals(v1Id, baseId);
             return f.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
 
     }
@@ -263,16 +250,16 @@ public class JcrPropertyTest {
         //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
         final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[jcr:uuid]";
 
-        metadata.read(new AdminCredentials(), () -> {
+        metadata.read(() -> {
             List<Node> feeds = ((JcrFeedProvider) feedProvider).findNodes(query);
-        });
+        }, MetadataAccess.SERVICE);
 
-        metadata.read(new AdminCredentials(), () -> {
-            List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
+        metadata.read(() -> {
+            List<Category> c = categoryProvider.findAll();
             if (c != null) {
-                for (FeedManagerCategory cat : c) {
-                    JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
-                    List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
+                for (Category cat : c) {
+                    Category jcrCategory = (Category) cat;
+                    List<? extends Feed> categoryFeeds = jcrCategory.getFeeds();
                     if (categoryFeeds != null) {
                         for (Feed feed : categoryFeeds) {
                             log.info("Feed for category {} is {}", cat.getName(), feed.getName());
@@ -281,19 +268,19 @@ public class JcrPropertyTest {
 
                 }
             }
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 
     @Test
     public void testFeedManager() {
-        FeedManagerFeed feed = metadata.read(new AdminCredentials(), () -> {
-            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+        Feed feed = metadata.read(() -> {
+            List<Feed> feeds = feedProvider.findAll();
             if (feeds != null) {
                 return feeds.get(0);
             }
             return null;
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 
@@ -304,7 +291,7 @@ public class JcrPropertyTest {
         props.put("name", "An Old User");
         props.put("age", 140);
 
-        Map<String, Object> props2 = metadata.commit(new AdminCredentials(), () -> {
+        Map<String, Object> props2 = metadata.commit(() -> {
             List<? extends Feed> feeds = feedProvider.getFeeds();
             Feed feed = null;
             //grab the first feed
@@ -313,9 +300,9 @@ public class JcrPropertyTest {
             }
             feedProvider.mergeFeedProperties(feed.getId(), props);
             return feed.getProperties();
-        });
+        }, MetadataAccess.SERVICE);
         props.put("address", "Some road");
-        props2 = metadata.commit(new AdminCredentials(), () -> {
+        props2 = metadata.commit(() -> {
             List<? extends Feed> feeds = feedProvider.getFeeds();
             Feed feed = null;
             //grab the first feed
@@ -325,12 +312,12 @@ public class JcrPropertyTest {
 
             feedProvider.mergeFeedProperties(feed.getId(), props);
             return feed.getProperties();
-        });
+        }, MetadataAccess.SERVICE);
         org.junit.Assert.assertEquals("Some road", props2.get("address"));
 
         //Now Replace
         props.remove("address");
-        props2 = metadata.commit(new AdminCredentials(), () -> {
+        props2 = metadata.commit(() -> {
             List<? extends Feed> feeds = feedProvider.getFeeds();
             Feed feed = null;
             //grab the first feed
@@ -339,13 +326,11 @@ public class JcrPropertyTest {
             }
             feedProvider.replaceProperties(feed.getId(), props);
             return feed.getProperties();
-        });
+        }, MetadataAccess.SERVICE);
         Assert.assertNull(props2.get("address"));
 
 
     }
-
-
 }
 
 

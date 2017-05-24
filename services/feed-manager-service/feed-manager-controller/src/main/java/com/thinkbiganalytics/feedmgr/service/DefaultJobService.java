@@ -49,8 +49,6 @@ public class DefaultJobService implements JobService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultJobService.class);
 
-    private static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
-
     @Inject
     private MetadataAccess metadataAccess;
 
@@ -91,7 +89,7 @@ public class DefaultJobService implements JobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job manually abandoned @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += "Job manually abandoned @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 //also stop any running steps??
                 this.jobExecutionProvider.save(execution);
@@ -114,7 +112,7 @@ public class DefaultJobService implements JobService {
                             step.setStatus(BatchStepExecution.StepStatus.FAILED);
                             step.setExitCode(ExecutionConstants.ExitCode.FAILED);
                             String msg = step.getExitMessage() != null ? step.getExitMessage() + "\n" : "";
-                            msg += " Step manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                            msg += "Step manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                             step.setExitMessage(msg);
                             execution.setExitMessage(msg);
                         }
@@ -128,7 +126,7 @@ public class DefaultJobService implements JobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 this.jobExecutionProvider.save(execution);
             }

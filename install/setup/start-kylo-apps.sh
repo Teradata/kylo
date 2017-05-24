@@ -1,4 +1,5 @@
 #!/bin/bash
-service kylo-ui start
-service kylo-services start
+CMD=${1:-start}
+service kylo-ui $CMD
+service kylo-services $CMD
 service kylo-spark-shell start

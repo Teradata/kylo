@@ -23,6 +23,8 @@ package com.thinkbiganalytics.policy.standardization;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * test the {@link UppercaseStandardizer}
@@ -37,5 +39,46 @@ public class UppercaseStandardizerTest {
         assertEquals("12 PYRAMID ST.", standardizer.convertValue("12 pyramid st."));
         assertEquals("12 PYRAMID ST.", standardizer.convertValue("12 PYRAMID ST."));
         assertEquals("", standardizer.convertValue(""));
+    }
+
+    @Test
+    public void testAcceptValidType() {
+        UppercaseStandardizer standardizer = UppercaseStandardizer.instance();
+        assertTrue(standardizer.accepts("abc"));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        UppercaseStandardizer standardizer = UppercaseStandardizer.instance();
+        Double doubleValue = 1000.05d;
+        assertFalse(standardizer.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() {
+        Object expectedValue = "ABC";
+        Object rawValue = "abc";
+        UppercaseStandardizer standardizer = UppercaseStandardizer.instance();
+        assertEquals(expectedValue, standardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        Object expectedValue = Double.valueOf("1000e05");
+        Object rawValue = Double.valueOf("1000e05");
+        UppercaseStandardizer standardizer = UppercaseStandardizer.instance();
+        assertEquals(expectedValue, standardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults() {
+        UppercaseStandardizer standardizer = UppercaseStandardizer.instance();
+        Object rawValueObj = "abc";
+        Object expectedValueObj = "ABC";
+        String rawValueStr = "abc";
+        String expectedValueStr = "ABC";
+        assertEquals(standardizer.convertValue(rawValueStr), standardizer.convertRawValue(rawValueObj).toString());
+        assertEquals(standardizer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(standardizer.convertRawValue(rawValueObj), expectedValueObj);
     }
 }

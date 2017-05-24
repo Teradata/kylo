@@ -37,6 +37,7 @@ public class FieldValidationRuleBuilder extends BasePolicyRuleBuilder<FieldValid
         rule.setDisplayName(this.displayName);
         rule.setProperties(this.properties);
         rule.setObjectClassType(this.objectClassType);
+        rule.setSequence(this.sequence);
         return rule;
     }
 

@@ -1,0 +1,688 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  #%L
+  kylo-service-app
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="ru186002 (generated)" id="1490096811017-1">
+        <createTable tableName="AUDIT_LOG">
+            <column name="id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="create_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user" type="VARCHAR(100)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="log_type" type="VARCHAR(45)"/>
+            <column name="entity_id" type="VARCHAR(45)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-2">
+        <createTable tableName="BATCH_EXECUTION_CONTEXT_VALUES">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STEP_EXECUTION_ID" type="BIGINT"/>
+            <column name="EXECUTION_CONTEXT_TYPE" type="VARCHAR(6)"/>
+            <column name="TYPE_CD" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="KEY_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STRING_VAL" type="LONGTEXT"/>
+            <column name="DATE_VAL" type="TIMESTAMP"/>
+            <column name="LONG_VAL" type="BIGINT"/>
+            <column name="DOUBLE_VAL" type="DOUBLE"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="CREATE_DATE" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-3">
+        <createTable tableName="BATCH_JOB_EXECUTION">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="JOB_INSTANCE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATE_TIME_X" type="datetime"/>
+            <column name="START_TIME_X" type="datetime"/>
+            <column name="END_TIME_X" type="datetime"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="EXIT_CODE" type="VARCHAR(10)"/>
+            <column name="EXIT_MESSAGE" type="VARCHAR(2500)"/>
+            <column name="LAST_UPDATED_X" type="datetime"/>
+            <column name="START_YEAR" type="INT"/>
+            <column name="START_MONTH" type="INT"/>
+            <column name="START_DAY" type="INT"/>
+            <column name="END_YEAR" type="INT"/>
+            <column name="END_MONTH" type="INT"/>
+            <column name="END_DAY" type="INT"/>
+            <column name="JOB_CONFIGURATION_LOCATION" type="VARCHAR(2500)"/>
+            <column name="START_TIME" type="BIGINT"/>
+            <column name="END_TIME" type="BIGINT"/>
+            <column name="CREATE_TIME" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_UPDATED" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-4">
+        <createTable tableName="BATCH_JOB_EXECUTION_CTX_VALS">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TYPE_CD" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="KEY_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STRING_VAL" type="LONGTEXT"/>
+            <column name="DATE_VAL" type="TIMESTAMP"/>
+            <column name="LONG_VAL" type="BIGINT"/>
+            <column name="DOUBLE_VAL" type="DOUBLE"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="CREATE_DATE" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-5">
+        <createTable tableName="BATCH_JOB_EXECUTION_PARAMS">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TYPE_CD" type="VARCHAR(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="KEY_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STRING_VAL" type="VARCHAR(250)"/>
+            <column name="DATE_VAL" type="datetime"/>
+            <column name="LONG_VAL" type="BIGINT"/>
+            <column name="DOUBLE_VAL" type="DOUBLE"/>
+            <column defaultValue="N" name="IDENTIFYING" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-6">
+        <createTable tableName="BATCH_JOB_EXECUTION_SEQ">
+            <column name="ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UNIQUE_KEY" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-7">
+        <createTable tableName="BATCH_JOB_INSTANCE">
+            <column name="JOB_INSTANCE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT"/>
+            <column name="JOB_NAME" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="JOB_KEY" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FEED_ID" type="${uuid.type}"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-8">
+        <createTable tableName="BATCH_JOB_SEQ">
+            <column name="ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UNIQUE_KEY" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-9">
+        <createTable tableName="BATCH_NIFI_JOB">
+            <column name="EVENT_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NIFI_EVENT_ID" type="BIGINT"/>
+            <column defaultValue="" name="FLOW_FILE_ID" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FEED_ID" type="BIGINT"/>
+            <column name="FEED_NAME" type="VARCHAR(255)"/>
+            <column name="JOB_INSTANCE_ID" type="BIGINT"/>
+            <column name="JOB_EXECUTION_ID" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-10">
+        <createTable tableName="BATCH_NIFI_STEP">
+            <column name="EVENT_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NIFI_EVENT_ID" type="BIGINT"/>
+            <column name="COMPONENT_ID" type="VARCHAR(255)"/>
+            <column name="JOB_EXECUTION_ID" type="BIGINT"/>
+            <column name="STEP_EXECUTION_ID" type="BIGINT"/>
+            <column name="FLOW_FILE_ID" type="VARCHAR(45)"/>
+            <column name="JOB_FLOW_FILE_ID" type="VARCHAR(45)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-11">
+        <createTable tableName="BATCH_STEP_EXECUTION">
+            <column name="STEP_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STEP_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="START_TIME_X" type="datetime"/>
+            <column name="END_TIME_X" type="datetime"/>
+            <column name="STATUS" type="VARCHAR(10)"/>
+            <column name="COMMIT_COUNT" type="BIGINT"/>
+            <column name="READ_COUNT" type="BIGINT"/>
+            <column name="FILTER_COUNT" type="BIGINT"/>
+            <column name="WRITE_COUNT" type="BIGINT"/>
+            <column name="READ_SKIP_COUNT" type="BIGINT"/>
+            <column name="WRITE_SKIP_COUNT" type="BIGINT"/>
+            <column name="PROCESS_SKIP_COUNT" type="BIGINT"/>
+            <column name="ROLLBACK_COUNT" type="BIGINT"/>
+            <column name="EXIT_CODE" type="VARCHAR(10)"/>
+            <column name="EXIT_MESSAGE" type="VARCHAR(2500)"/>
+            <column name="LAST_UPDATED_X" type="datetime"/>
+            <column name="START_TIME" type="BIGINT"/>
+            <column name="END_TIME" type="BIGINT"/>
+            <column name="LAST_UPDATED" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-12">
+        <createTable tableName="BATCH_STEP_EXECUTION_CTX_VALS">
+            <column name="JOB_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueNumeric="0" name="STEP_EXECUTION_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EXECUTION_CONTEXT_TYPE" type="VARCHAR(6)"/>
+            <column name="TYPE_CD" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="KEY_NAME" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STRING_VAL" type="LONGTEXT"/>
+            <column name="DATE_VAL" type="TIMESTAMP"/>
+            <column name="LONG_VAL" type="BIGINT"/>
+            <column name="DOUBLE_VAL" type="DOUBLE"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="CREATE_DATE" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ID" type="VARCHAR(45)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-13">
+        <createTable tableName="BATCH_STEP_EXECUTION_SEQ">
+            <column name="ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="UNIQUE_KEY" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-14">
+        <createTable tableName="FEED">
+            <column name="id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="FEED_TYPE" type="VARCHAR(45)"/>
+            <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValue="1970-01-01 00:00:01" name="modified_time" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-15">
+        <createTable tableName="FEED_CHECK_DATA_FEEDS">
+            <column name="FEED_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CHECK_DATA_FEED_ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-16">
+        <createTable tableName="GENERATED_KEYS">
+            <column name="PK_COLUMN" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VALUE_COLUMN" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-17">
+        <createTable tableName="KYLO_ALERT">
+            <column name="id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="level" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_time" type="BIGINT"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="cleared" type="VARCHAR(1)"/>
+            <column name="content" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-18">
+        <createTable tableName="KYLO_ALERT_CHANGE">
+            <column name="alert_id" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_time" type="BIGINT"/>
+            <column name="user" type="VARCHAR(128)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="content" type="TEXT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-19">
+        <createTable tableName="KYLO_VERSION">
+            <column name="ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MAJOR_VERSION" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MINOR_VERSION" type="VARCHAR(45)"/>
+            <column name="DESCRIPTION" type="VARCHAR(255)"/>
+            <column name="CREATED_TIME" type="TIMESTAMP"/>
+            <column name="MODIFIED_TIME" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-20">
+        <createTable tableName="NIFI_EVENT">
+            <column name="EVENT_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FLOW_FILE_ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="FM_FEED_NAME" type="VARCHAR(255)"/>
+            <column name="EVENT_TIME" type="TIMESTAMP"/>
+            <column name="EVENT_DURATION_MILLIS" type="BIGINT"/>
+            <column name="EVENT_TYPE" type="VARCHAR(45)"/>
+            <column name="SOURCE_CONNECTION_ID" type="VARCHAR(45)"/>
+            <column name="PROCESSOR_ID" type="VARCHAR(45)"/>
+            <column name="FEED_PROCESS_GROUP_ID" type="VARCHAR(45)"/>
+            <column name="FILE_SIZE" type="VARCHAR(100)"/>
+            <column name="FILE_SIZE_BYTES" type="BIGINT"/>
+            <column name="PARENT_FLOW_FILE_IDS" type="VARCHAR(255)"/>
+            <column name="CHILD_FLOW_FILE_IDS" type="VARCHAR(255)"/>
+            <column name="ATTRIBUTES_JSON" type="LONGTEXT"/>
+            <column name="EVENT_DETAILS" type="LONGTEXT"/>
+            <column name="PROCESSOR_NAME" type="VARCHAR(255)"/>
+            <column name="JOB_FLOW_FILE_ID" type="VARCHAR(45)"/>
+            <column name="IS_END_OF_JOB" type="VARCHAR(1)"/>
+            <column name="IS_START_OF_JOB" type="VARCHAR(1)"/>
+            <column name="IS_BATCH_JOB" type="VARCHAR(1)"/>
+            <column name="IS_FAILURE" type="VARCHAR(1)"/>
+            <column name="IS_FINAL_JOB_EVENT" remarks="Y/N .  This will be set to Y when this is the last event for any and all related parent root flow files.  This indicator marks the true complete end of a large job that may have merged many files together to a single event." type="VARCHAR(45)"/>
+            <column name="HAS_FAILURE_EVENTS" type="VARCHAR(1)"/>
+            <column name="VERSION" type="INT"/>
+            <column name="CREATED_TIME" type="TIMESTAMP"/>
+            <column name="MODIFIED_TIME" type="TIMESTAMP"/>
+            <column name="CLUSTER_NODE_ID" type="VARCHAR(255)"/>
+            <column name="CLUSTER_NODE_ADDRESS" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-21">
+        <createTable tableName="NIFI_FEED_PROCESSOR_STATS">
+            <column name="FM_FEED_NAME" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NIFI_PROCESSOR_ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="NIFI_FEED_PROCESS_GROUP_ID" type="VARCHAR(45)"/>
+            <column name="COLLECTION_TIME" type="TIMESTAMP"/>
+            <column name="TOTAL_EVENTS" type="INT"/>
+            <column name="DURATION_MILLIS" type="BIGINT"/>
+            <column name="BYTES_IN" type="BIGINT"/>
+            <column name="BYTES_OUT" type="BIGINT"/>
+            <column name="MIN_EVENT_TIME" type="TIMESTAMP"/>
+            <column name="MAX_EVENT_TIME" type="TIMESTAMP"/>
+            <column name="JOBS_STARTED" type="BIGINT"/>
+            <column name="JOBS_FINISHED" type="BIGINT"/>
+            <column name="JOBS_FAILED" type="BIGINT"/>
+            <column name="PROCESSORS_FAILED" type="BIGINT"/>
+            <column name="FLOW_FILES_STARTED" type="BIGINT"/>
+            <column name="FLOW_FILES_FINISHED" type="BIGINT"/>
+            <column name="COLLECTION_ID" type="VARCHAR(45)"/>
+            <column name="COLLECTION_INTERVAL_SEC" type="BIGINT"/>
+            <column name="ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PROCESSOR_NAME" type="VARCHAR(255)"/>
+            <column name="JOB_DURATION" type="BIGINT"/>
+            <column name="SUCCESSFUL_JOB_DURATION" type="BIGINT"/>
+            <column name="CLUSTER_NODE_ID" type="VARCHAR(255)"/>
+            <column name="CLUSTER_NODE_ADDRESS" type="VARCHAR(255)"/>
+            <column name="MAX_EVENT_ID" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-22">
+        <createTable tableName="NIFI_RELATED_ROOT_FLOW_FILES">
+            <column name="FLOW_FILE_ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="RELATION_ID" type="VARCHAR(45)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="EVENT_ID" type="BIGINT"/>
+            <column name="EVENT_FLOW_FILE_ID" type="VARCHAR(45)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-23">
+        <createTable tableName="SLA_ASSESSMENT">
+            <column name="ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SLA_ID" type="VARCHAR(55)"/>
+            <column name="MESSAGE" type="VARCHAR(255)"/>
+            <column name="RESULT" type="VARCHAR(255)"/>
+            <column name="CREATED_TIME" type="TIMESTAMP"/>
+            <column name="MODIFIED_TIME" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-24">
+        <createTable tableName="SLA_METRIC_ASSESSMENT">
+            <column name="ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="MESSAGE" type="VARCHAR(255)"/>
+            <column name="RESULT" type="VARCHAR(255)"/>
+            <column name="CREATED_TIME" type="TIMESTAMP"/>
+            <column name="MODIFIED_TIME" type="TIMESTAMP"/>
+            <column name="SLA_OBLIGATION_ASSESSMENT_ID" type="${uuid.type}"/>
+            <column name="COMPARABLES" type="LONGTEXT"/>
+            <column name="DATA" type="LONGTEXT"/>
+            <column name="METRIC_TYPE" type="VARCHAR(255)"/>
+            <column name="METRIC_DESCRIPTION" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-25">
+        <createTable tableName="SLA_OBLIGATION_ASSESSMENT">
+            <column name="ID" type="${uuid.type}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="SLA_OBLIGATION_ID" type="VARCHAR(255)"/>
+            <column name="RESULT" type="VARCHAR(255)"/>
+            <column name="CREATED_TIME" type="TIMESTAMP"/>
+            <column name="MODIFIED_TIME" type="TIMESTAMP"/>
+            <column name="SLA_ASSESSMENT_ID" type="${uuid.type}"/>
+            <column name="COMPARABLES" type="LONGTEXT"/>
+            <column name="MESSAGE" type="VARCHAR(255)"/>
+            <column name="OBLIGATION_ID" type="VARCHAR(45)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-26">
+        <addPrimaryKey columnNames="id" tableName="AUDIT_LOG"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-27">
+        <addPrimaryKey columnNames="JOB_EXECUTION_ID" tableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-28">
+        <addPrimaryKey columnNames="JOB_INSTANCE_ID" tableName="BATCH_JOB_INSTANCE"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-29">
+        <addPrimaryKey columnNames="STEP_EXECUTION_ID" tableName="BATCH_STEP_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-30">
+        <addPrimaryKey columnNames="id" tableName="FEED"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-31">
+        <addPrimaryKey columnNames="FEED_ID, CHECK_DATA_FEED_ID" tableName="FEED_CHECK_DATA_FEEDS"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-32">
+        <addPrimaryKey columnNames="PK_COLUMN" tableName="GENERATED_KEYS"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-33">
+        <addPrimaryKey columnNames="id" tableName="KYLO_ALERT"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-34">
+        <addPrimaryKey columnNames="ID" tableName="KYLO_VERSION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-35">
+        <addPrimaryKey columnNames="EVENT_ID, FLOW_FILE_ID" tableName="NIFI_EVENT"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-36">
+        <addPrimaryKey columnNames="ID" tableName="NIFI_FEED_PROCESSOR_STATS"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-37">
+        <addPrimaryKey columnNames="FLOW_FILE_ID" tableName="NIFI_RELATED_ROOT_FLOW_FILES"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-38">
+        <addPrimaryKey columnNames="ID" tableName="SLA_ASSESSMENT"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-39">
+        <addPrimaryKey columnNames="ID" tableName="SLA_METRIC_ASSESSMENT"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-40">
+        <addPrimaryKey columnNames="ID" tableName="SLA_OBLIGATION_ASSESSMENT"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-41">
+        <addUniqueConstraint columnNames="JOB_EXECUTION_ID, KEY_NAME" constraintName="BATCH_JOB_EXEC_CTX_VALS_UQ1" tableName="BATCH_JOB_EXECUTION_CTX_VALS"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-42">
+        <addUniqueConstraint columnNames="JOB_NAME, JOB_KEY" constraintName="JOB_INST_UN" tableName="BATCH_JOB_INSTANCE"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-43">
+        <addUniqueConstraint columnNames="UNIQUE_KEY" constraintName="UNIQUE_KEY_UN_BJES" tableName="BATCH_JOB_EXECUTION_SEQ"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-44">
+        <addUniqueConstraint columnNames="UNIQUE_KEY" constraintName="UNIQUE_KEY_UN_BJS" tableName="BATCH_JOB_SEQ"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-45">
+        <addUniqueConstraint columnNames="UNIQUE_KEY" constraintName="UNIQUE_KEY_UN_BSES" tableName="BATCH_STEP_EXECUTION_SEQ"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-46">
+        <createIndex indexName="BATCH_JOB_EXECUTION_IDX1" tableName="BATCH_JOB_EXECUTION">
+            <column name="START_TIME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-47">
+        <createIndex indexName="BATCH_JOB_EXEC_CTX_VALS_PK" tableName="BATCH_JOB_EXECUTION_CTX_VALS">
+            <column name="ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-48">
+        <createIndex indexName="BATCH_JOB_INSTANCE_FK1_idx" tableName="BATCH_JOB_INSTANCE">
+            <column name="FEED_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-49">
+        <createIndex indexName="BATCH_NIFI_JOB_FK1_idx" tableName="BATCH_NIFI_JOB">
+            <column name="JOB_INSTANCE_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-50">
+        <createIndex indexName="BATCH_NIFI_JOB_FK2_idx" tableName="BATCH_NIFI_JOB">
+            <column name="JOB_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-51">
+        <createIndex indexName="BATCH_NIFI_STEP_FK1_idx" tableName="BATCH_NIFI_STEP">
+            <column name="STEP_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-52">
+        <createIndex indexName="BATCH_NIFI_STEP_FK2_idx" tableName="BATCH_NIFI_STEP">
+            <column name="JOB_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-53">
+        <createIndex indexName="BATCH_NIFI_STEP_IDX2" tableName="BATCH_NIFI_STEP">
+            <column name="COMPONENT_ID"/>
+            <column name="JOB_FLOW_FILE_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-54">
+        <createIndex indexName="BATCH_NIFI_STEP_IDX3" tableName="BATCH_NIFI_STEP">
+            <column name="EVENT_ID"/>
+            <column name="FLOW_FILE_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-55">
+        <createIndex indexName="BATCH_STEP_EXEC_CTX_VALS_FK2" tableName="BATCH_STEP_EXECUTION_CTX_VALS">
+            <column name="JOB_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-56">
+        <createIndex indexName="BATCH_STEP_EXEC_CTX_VALS_PK" tableName="BATCH_STEP_EXECUTION_CTX_VALS">
+            <column name="ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-57">
+        <createIndex indexName="BATCH_STEP_EXEC_CTX_VALS_UQ1" tableName="BATCH_STEP_EXECUTION_CTX_VALS">
+            <column name="STEP_EXECUTION_ID"/>
+            <column name="KEY_NAME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-58">
+        <createIndex indexName="FM_FEED_NAME" tableName="NIFI_FEED_PROCESSOR_STATS">
+            <column name="FM_FEED_NAME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-59">
+        <createIndex indexName="JOB_EXEC_PARAMS_FK" tableName="BATCH_JOB_EXECUTION_PARAMS">
+            <column name="JOB_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-60">
+        <createIndex indexName="JOB_EXEC_STEP_FK" tableName="BATCH_STEP_EXECUTION">
+            <column name="JOB_EXECUTION_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-61">
+        <createIndex indexName="JOB_INST_EXEC_FK" tableName="BATCH_JOB_EXECUTION">
+            <column name="JOB_INSTANCE_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-62">
+        <createIndex indexName="MAX_EVENT_TIME" tableName="NIFI_FEED_PROCESSOR_STATS">
+            <column name="MAX_EVENT_TIME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-63">
+        <createIndex indexName="MIN_EVENT_TIME" tableName="NIFI_FEED_PROCESSOR_STATS">
+            <column name="MIN_EVENT_TIME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-64">
+        <createIndex indexName="NIFI_EVENT_IDX1" tableName="NIFI_EVENT">
+            <column name="FM_FEED_NAME"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-65">
+        <createIndex indexName="NN_BATCH_JOB_EXEC_CREATE_TIME" tableName="BATCH_JOB_EXECUTION">
+            <column name="CREATE_TIME_X"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-66">
+        <createIndex indexName="NN_BATCH_JOB_EXEC_EXIT_CODE" tableName="BATCH_JOB_EXECUTION">
+            <column name="EXIT_CODE"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-67">
+        <createIndex indexName="NN_BATCH_JOB_EXEC_STATUS" tableName="BATCH_JOB_EXECUTION">
+            <column name="STATUS"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-68">
+        <createIndex indexName="NN_EXEC_PARAMS_STRING_VAL" tableName="BATCH_JOB_EXECUTION_PARAMS">
+            <column name="KEY_NAME"/>
+            <column name="STRING_VAL"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-69">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_CTX_VALS" constraintName="BATCH_JOB_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-70">
+        <addForeignKeyConstraint baseColumnNames="FEED_ID" baseTableName="BATCH_JOB_INSTANCE" constraintName="BATCH_JOB_INSTANCE_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="id" referencedTableName="FEED"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-71">
+        <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-72">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_JOB" constraintName="BATCH_NIFI_JOB_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-73">
+        <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-74">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_NIFI_STEP" constraintName="BATCH_NIFI_STEP_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-75">
+        <addForeignKeyConstraint baseColumnNames="STEP_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK1" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="STEP_EXECUTION_ID" referencedTableName="BATCH_STEP_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-76">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION_CTX_VALS" constraintName="BATCH_STEP_EXEC_CTX_VALS_FK2" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-77">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_JOB_EXECUTION_PARAMS" constraintName="JOB_EXEC_PARAMS_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-78">
+        <addForeignKeyConstraint baseColumnNames="JOB_EXECUTION_ID" baseTableName="BATCH_STEP_EXECUTION" constraintName="JOB_EXEC_STEP_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_EXECUTION_ID" referencedTableName="BATCH_JOB_EXECUTION"/>
+    </changeSet>
+    <changeSet author="ru186002 (generated)" id="1490096811017-79">
+        <addForeignKeyConstraint baseColumnNames="JOB_INSTANCE_ID" baseTableName="BATCH_JOB_EXECUTION" constraintName="JOB_INST_EXEC_FK" deferrable="false" initiallyDeferred="false" onDelete="RESTRICT" onUpdate="RESTRICT" referencedColumnNames="JOB_INSTANCE_ID" referencedTableName="BATCH_JOB_INSTANCE"/>
+    </changeSet>
+</databaseChangeLog>

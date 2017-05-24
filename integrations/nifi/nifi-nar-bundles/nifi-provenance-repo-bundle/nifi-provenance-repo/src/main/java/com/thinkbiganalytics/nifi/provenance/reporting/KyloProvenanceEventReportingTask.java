@@ -618,15 +618,15 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      * Check to see if Kylo is up and running and ready to process
      */
     private boolean isKyloAvailable() {
-        boolean avalable = false;
+        boolean available = false;
         try {
-            avalable = getKyloNiFiFlowProvider().isNiFiFlowDataAvailable();
+            available = getKyloNiFiFlowProvider().isNiFiFlowDataAvailable();
         } catch (Exception e) {
             String msg = "Error checking to see if Kylo is available. Please ensure Kylo is up and running. ";
             getLogger().error(msg);
             getLogger().debug(msg, e);
         }
-        return avalable;
+        return available;
     }
 
     /**
@@ -659,6 +659,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 "KyloProvenanceEventReportingTask EventId Warning: Current provenance max id is {} which is less than what was stored in state as the last queried event, which was {}. This means the provenance restarted its "
                 +
                 "ids. Restarting querying from the beginning.", new Object[]{maxEventId, lastEventId});
+            //reset it
+            metadataProviderService.getKyloNiFiFlowProvider().resetNiFiMaxEventId(clusterNodeId);
             lastEventId = -1;
             lastEventIdInitialized = true;
             setLastEventId(lastEventId);

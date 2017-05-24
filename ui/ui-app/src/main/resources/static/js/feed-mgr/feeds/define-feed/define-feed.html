@@ -61,6 +61,6 @@
 
     </div>
 
-<thinkbig-stepper total-steps="{{vm.totalSteps}}" stepper-name="DefineFeedStepper"  core-data-model="vm.model" on-cancel-stepper="vm.cancelStepper()" template-url="{{vm.stepperUrl}}" ng-if="vm.stepperUrl != null"></thinkbig-stepper>
+<thinkbig-stepper total-steps="{{vm.totalSteps}}" stepper-name="DefineFeedStepper"  core-data-model="vm.model" on-initialized="vm.onStepperInitialized" on-cancel-stepper="vm.cancelStepper()" template-url="{{vm.stepperUrl}}" ng-if="vm.stepperUrl != null"></thinkbig-stepper>
 
 </div>

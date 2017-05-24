@@ -4,8 +4,8 @@
 package com.thinkbiganalytics.auth.jaas.config;
 
 import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
+import com.thinkbiganalytics.auth.GroupPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.UserPrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
@@ -124,16 +124,16 @@ public class JaasAuthConfig {
         }
     }
 
-    @Bean(name = "rolePrincipalAuthorityGranter")
+    @Bean(name = "groupPrincipalAuthorityGranter")
     @Order(DEFAULT_GRANTER_ORDER - 100)
-    public AuthorityGranter rolePrincipalAuthorityGranter() {
-        return new RolePrincipalAuthorityGranter();
+    public AuthorityGranter groupPrincipalAuthorityGranter() {
+        return new GroupPrincipalAuthorityGranter();
     }
 
-    @Bean(name = "userRoleAuthorityGranter")
+    @Bean(name = "userPrincipalAuthorityGranter")
     @Order(DEFAULT_GRANTER_ORDER - 100)
-    public AuthorityGranter userRoleAuthorityGranter() {
-        return new UserRoleAuthorityGranter();
+    public AuthorityGranter userPrincipalAuthorityGranter() {
+        return new UserPrincipalAuthorityGranter();
     }
 
     @Bean(name = "defaultAuthorityGranter")

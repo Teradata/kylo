@@ -21,6 +21,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
+import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
+
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,94 +36,13 @@ import java.util.Set;
 /**
  * Spring data repository for accessing {@link JpaBatchJobExecution}
  */
+@RepositoryType(BatchJobExecutionSecuringRepository.class)
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
-
-
-    @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
-                   + "where nifiEventJob.eventId = :eventId and nifiEventJob.flowFileId = :flowFileId")
-    JpaBatchJobExecution findByEventAndFlowFile(@Param("eventId") Long eventId, @Param("flowFileId") String flowFileId);
 
     @Query(value = "select job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
                    + "where nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);
-
-    @Query(value = "  select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEventJob.flowFileId in ( "
-                   + " select relatedJobs.flowFileId "
-                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
-                   + " where relatedJobs.relationId in ( "
-                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
-                   + "   inner join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.flowFileId = related.flowFileId  "
-                   + " AND nifiEventJob.jobExecution.jobExecutionId = :jobExecutionId)"
-                   + ")")
-    List<JpaBatchJobExecution> findRelatedJobExecutions(@Param("jobExecutionId") Long jobExecutionId);
-
-    @Query(value = "  select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEventJob.flowFileId in ( "
-                   + " select relatedJobs.flowFileId "
-                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
-                   + " where relatedJobs.relationId in ( "
-                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
-                   + "   inner join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.flowFileId = related.flowFileId  "
-                   + " AND nifiEventJob.jobExecution.jobExecutionId = :jobExecutionId)"
-                   + ")"
-                   + "and job.endTime is null")
-    List<JpaBatchJobExecution> findRunningRelatedJobExecutions(@Param("jobExecutionId") Long jobExecutionId);
-
-
-    @Query(value = "  select CASE WHEN count(job) >0 then true else false END "
-                   + "from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEventJob.flowFileId in ( "
-                   + " select relatedJobs.flowFileId "
-                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
-                   + " where relatedJobs.relationId in ( "
-                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
-                   + "   inner join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.flowFileId = related.flowFileId  "
-                   + " AND nifiEventJob.jobExecution.jobExecutionId = :jobExecutionId)"
-                   + ")"
-                   + "and job.endTime is null")
-    Boolean hasRunningRelatedJobs(@Param("jobExecutionId") Long jobExecutionId);
-
-    @Query(value = "  select CASE WHEN count(job) >0 then true else false END "
-                   + "from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEventJob.flowFileId in ( "
-                   + " select relatedJobs.flowFileId "
-                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
-                   + " where relatedJobs.relationId in ( "
-                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
-                   + "   inner join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.flowFileId = related.flowFileId  "
-                   + " AND nifiEventJob.jobExecution.jobExecutionId = :jobExecutionId)"
-                   + ")")
-    Boolean hasRelatedJobs(@Param("jobExecutionId") Long jobExecutionId);
-
-
-    @Query(value = "  select CASE WHEN count(job) >0 then true else false END "
-                   + "from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEventJob.flowFileId in ( "
-                   + " select relatedJobs.flowFileId "
-                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
-                   + " where relatedJobs.relationId in ( "
-                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
-                   + "   inner join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.flowFileId = related.flowFileId  "
-                   + " AND nifiEventJob.jobExecution.jobExecutionId = :jobExecutionId)"
-                   + ")"
-                   + "and job.status = 'FAILED'")
-    Boolean hasRelatedJobFailures(@Param("jobExecutionId") Long jobExecutionId);
-
-
-    @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
-                   + "where nifiEvent.feedName = :feedName")
-    List<JpaBatchJobExecution> findJobsForFeed(@Param("feedName") String feedName);
 
 
     @Query(value = "select job from JpaBatchJobExecution as job "
@@ -128,15 +50,19 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
                    + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
                    + "left join fetch JpaBatchJobExecutionContextValue executionContext on executionContext.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEvent.feedName = :feedName "
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB
+                   + " where nifiEvent.feedName = :feedName "
                    + "and job.status = 'COMPLETED' "
-                   + "and job.endTime > :sinceDate ")
+                   + "and job.endTime > :sinceDate "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
 
     @Query("select job from JpaBatchJobExecution as job "
            + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
            + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + "where feed.name = :feedName "
+           + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH
            + "and job.endTimeMillis = (SELECT max(job2.endTimeMillis)"
            + "     from JpaBatchJobExecution as job2 "
            + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
@@ -158,11 +84,6 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "order by job.jobExecutionId DESC ")
     List<JpaBatchJobExecution> findLatestJobForFeed(@Param("feedName") String feedName);
 
-    /**
-     * @Query(value = "select case when(count(job)) > 0 then true else false end " + " from JpaBatchJobExecution as job " + "join JpaNifiEventJobExecution as nifiEventJob on
-     * nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId " + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId " + "and nifiEvent.flowFileId =
-     * nifiEventJob.flowFileId " + "where nifiEvent.feedName = :feedName " + "and job.endTime is null")
-     */
     @Query(value = "select case when(count(job)) > 0 then true else false end "
                    + " from JpaBatchJobExecution as job "
                    + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
@@ -170,6 +91,4 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "where feed.name = :feedName "
                    + "and job.endTime is null")
     Boolean isFeedRunning(@Param("feedName") String feedName);
-
-
 }
