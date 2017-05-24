@@ -28,8 +28,11 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             function () {
                 return CategoriesService.model
             },
-            function (model) {
-                self.model = model
+            function (newModel,oldModel) {
+                self.model = newModel;
+                if(oldModel && oldModel.id == null && newModel.id != null){
+                    checkAccessControl();
+                }
             },
             true
         );
@@ -62,13 +65,16 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         }
 
 
-        if(AccessControlService.isEntityAccessControlled()) {
-            //Apply the entity access permissions... only showAccessControl if the user can change permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
-                function (access) {
-                    self.showAccessControl = access;
-                });
+        function checkAccessControl(){
+            if(AccessControlService.isEntityAccessControlled()) {
+                //Apply the entity access permissions... only showAccessControl if the user can change permissions
+                $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
+                    function (access) {
+                        self.showAccessControl = access;
+                    });
+            }
         }
+        checkAccessControl();
     }
 
     angular.module(moduleName).controller('CategoryDetailsController', ["$scope","$transition$","$q","CategoriesService","AccessControlService",CategoryDetailsController]);
