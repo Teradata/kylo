@@ -30,7 +30,6 @@ import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapePrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadWritePrincipal;
@@ -392,8 +391,8 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     private Credentials createCredentials(boolean readOnly, Principal... principals) {
         Credentials creds = null;
-        // Using a default principal that is read-only or admin since we will use ACLs when we implement entity-level access control.
-        ModeShapePrincipal defaultPrincipal = readOnly ? ModeShapeReadOnlyPrincipal.INSTANCE : ModeShapeAdminPrincipal.INSTANCE;
+        // Using a default principal that is read-only or read-write since we will use ACLs when we implement entity-level access control.
+        ModeShapePrincipal defaultPrincipal = readOnly ? ModeShapeReadOnlyPrincipal.INSTANCE : ModeShapeReadWritePrincipal.INSTANCE;
 
         if (principals.length == 0) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();

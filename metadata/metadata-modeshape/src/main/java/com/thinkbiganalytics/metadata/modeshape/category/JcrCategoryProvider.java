@@ -186,31 +186,16 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
         metadataAccess.commit(() -> {
             final Category category = findById(categoryId);
-            setFeedUserFields(category.getName(), userFields);
+            JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
+            return userFields;
         }, MetadataAccess.SERVICE);
     }
-    
+
     @Override
     public void rename(@Nonnull final Category.ID categoryId, @Nonnull final String newName) {
         // Move the node to the new path
-        JcrCategory category = (JcrCategory) findById(categoryId);
-        String currentName = category.getSystemName();
+        final JcrCategory category = (JcrCategory) findById(categoryId);
         final Node node = category.getNode();
-
-        // Update properties
-        category.setSystemName(newName);
-        
-        // Move user fields
-        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
-
-        if (feedUserFields.isPresent()) {
-            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(currentName));
-            if (type != null) {
-                extensibleTypeProvider.deleteType(type.getId());
-            }
-
-            setFeedUserFields(newName, feedUserFields.get());
-        }
 
         try {
             final String newPath = JcrUtil.path(node.getParent().getPath(), newName).toString();
@@ -218,9 +203,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         } catch (final RepositoryException e) {
             throw new IllegalStateException("Unable to rename category: " + node, e);
         }
-    }
 
-    private void setFeedUserFields(@Nonnull final String categoryName, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(categoryName), userFields, extensibleTypeProvider);
+        // Update properties
+        category.setProperty(JcrCategory.SYSTEM_NAME, newName);
+
+        // Move user fields
+        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
+
+        if (feedUserFields.isPresent()) {
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
+            }
+
+            setFeedUserFields(category.getId(), feedUserFields.get());
+        }
     }
 }
