@@ -157,9 +157,9 @@ public class UpgradeAction implements UpgradeState {
                 }
 
                 removeMixin(feedNode, UPGRADABLE_TYPE);
-                log.info("\tCompleted upgrading feed: " + feedNode);
+                log.info("\tCompleted upgrading feed: " + feedName);
             }
-            log.info("Completed upgrading category: " + catNode);
+            log.info("Completed upgrading category: " + catName);
         }
 
         // Update templates
@@ -176,7 +176,7 @@ public class UpgradeAction implements UpgradeState {
 
             log.info("Starting upgrading template: [{}] {}", ++templateCount, templateName);
             JcrUtil.getOrCreateNode(templateNode, "tba:allowedActions", "tba:allowedActions");
-            log.info("Completed upgrading template: " + templateNode);
+            log.info("Completed upgrading template: " + templateName);
         }
 
         log.info("Upgrade complete for {} categories and {} feeds and {} templates", categoryCount, totalFeedCount, templateCount);
