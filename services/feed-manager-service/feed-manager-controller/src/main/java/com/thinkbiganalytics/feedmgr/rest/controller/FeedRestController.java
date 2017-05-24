@@ -720,7 +720,11 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getSla(@PathParam("feedId") String feedId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
         List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
+        if (sla == null) {
+            throw new WebApplicationException("No SLAs for the feed were found", Response.Status.NOT_FOUND);
+        }
         return Response.ok(sla).build();
     }
 

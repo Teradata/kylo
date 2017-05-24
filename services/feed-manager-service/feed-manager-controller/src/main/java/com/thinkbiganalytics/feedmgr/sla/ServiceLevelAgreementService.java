@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.sla;
 
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -41,14 +42,21 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.AccessControlException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -56,6 +64,8 @@ import javax.inject.Inject;
  * Service for interacting with SLA's
  */
 public class ServiceLevelAgreementService implements ServicesApplicationStartupListener {
+
+    private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementService.class);
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -71,6 +81,9 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     private FeedProvider feedProvider;
     @Inject
     private ServiceLevelAgreementModelTransform serviceLevelAgreementTransform;
+
+    @Inject
+    private AccessController accessController;
 
 
     private List<ServiceLevelAgreementRule> serviceLevelAgreementRules;
@@ -102,15 +115,41 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     }
 
     public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getServiceLevelAgreements() {
-        return metadataAccess.read(() -> {
 
-            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
+        //find all as a Service account
+        List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> agreementsList = this.metadataAccess.read(() -> {
+            List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
             if (agreements != null) {
                 return serviceLevelAgreementTransform.transformFeedServiceLevelAgreements(agreements);
             }
-            return null;
 
-        });
+            return new ArrayList<>(0);
+        }, MetadataAccess.SERVICE);
+
+        if (accessController.isEntityAccessControlled()) {
+
+            Map<String, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>
+                serviceLevelAgreementMap = agreementsList.stream().collect(Collectors.toMap(com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement::getId, Function.identity()));
+            //filter out those feeds user doesnt have access to
+            List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> entityAccessControlledSlas = this.metadataAccess.read(() -> {
+                List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
+                if (agreements != null) {
+                    List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>
+                        serviceLevelAgreements =
+                        serviceLevelAgreementTransform.transformFeedServiceLevelAgreements(agreements);
+                    return serviceLevelAgreements.stream().filter(agreement -> serviceLevelAgreementMap.get(agreement.getId()).getFeedsCount() == agreement.getFeedsCount())
+                        .collect(Collectors.toList());
+                }
+                return new ArrayList<>(0);
+            });
+
+            return entityAccessControlledSlas;
+        } else {
+            return agreementsList;
+        }
+
+
     }
 
     public void enableServiceLevelAgreementSchedule(Feed.ID feedId) {
@@ -152,38 +191,112 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         return metadataAccess.read(() -> {
 
             Feed.ID id = feedProvider.resolveFeed(feedId);
-            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(id);
-            if (agreements != null) {
-                return serviceLevelAgreementTransform.transformFeedServiceLevelAgreements(agreements);
+
+            boolean
+                canAccess =
+                accessController.isEntityAccessControlled() ? feedManagerFeedService.checkFeedPermission(id.toString(), FeedAccessControl.ACCESS_FEED)
+                                                            : accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
+            if (canAccess) {
+                List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(id);
+                if (agreements != null) {
+                    return serviceLevelAgreementTransform.transformFeedServiceLevelAgreements(agreements);
+                }
             }
             return null;
 
         });
     }
 
+
+    private com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement findFeedServiceLevelAgreementAsAdmin(String slaId, boolean deep) {
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = metadataAccess.read(() -> {
+
+            FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
+            if (agreement != null) {
+                return serviceLevelAgreementTransform.toModel(agreement, deep);
+            }
+            return null;
+        }, MetadataAccess.SERVICE);
+        return systemSla;
+    }
+
+    /**
+     * Check to see if the user can edit
+     *
+     * @param slaId an sla to check
+     * @return true if user can edit the SLA, false if not
+     */
+    public boolean canEditServiceLevelAgreement(String slaId) {
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
+
+        if (systemSla != null) {
+            if (systemSla.getFeeds() != null && accessController.isEntityAccessControlled()) {
+                return systemSla.getFeeds().stream().allMatch(feed -> feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS));
+            } else {
+                accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * check to see if the current user can read/view the SLA
+     *
+     * @param slaId an sla to check
+     * @return true if user can read the SLA, false if not
+     */
+    public boolean canAccessServiceLevelAgreement(String slaId) {
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
+
+        if (systemSla != null) {
+            if (systemSla.getFeeds() != null && accessController.isEntityAccessControlled()) {
+                return systemSla.getFeeds().stream().allMatch(feed -> feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.ACCESS_FEED));
+            } else {
+                accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
+            }
+        }
+        return false;
+
+    }
+
+    public ServiceLevelAgreement getServiceLevelAgreement(String slaId) {
+
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
+
+        //filter out if this SLA has feeds which the current user cannot access
+        ServiceLevelAgreement serviceLevelAgreement = metadataAccess.read(() -> {
+
+            FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
+            if (agreement != null) {
+                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement entityAccessControlledSla = serviceLevelAgreementTransform.toModel(agreement, false);
+                if (systemSla.getFeedsCount() == entityAccessControlledSla.getFeedsCount()) {
+                    return entityAccessControlledSla;
+                }
+            }
+            return null;
+        });
+
+        return serviceLevelAgreement;
+
+
+    }
+
+
     /**
      * get a SLA and convert it to the editable SLA form object
      */
     public ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId) {
 
-        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = metadataAccess.read(() -> {
+        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, true);
 
-            FeedServiceLevelAgreement agreement =  feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
-            if (agreement != null) {
-               return serviceLevelAgreementTransform.toModel(agreement, true);
-            }
-            return null;
-        },MetadataAccess.SERVICE);
-
-        if(systemSla != null) {
-
+        if (systemSla != null) {
 
             return metadataAccess.read(() -> {
-                 //read it in as the current user
+                //read it in as the current user
                 FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
                 //ensure the feed count match
-                if(agreement.getFeeds().size() != systemSla.getFeeds().size()){
-                    throw new AccessControlException("Unable to access the SLA "+agreement.getName()+".  You dont have proper access to one or more of the feeds associated with this SLA");
+                if (agreement.getFeeds().size() != systemSla.getFeeds().size()) {
+                    throw new AccessControlException("Unable to access the SLA " + agreement.getName() + ".  You dont have proper access to one or more of the feeds associated with this SLA");
                 }
                 if (agreement != null) {
                     com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = serviceLevelAgreementTransform.toModel(agreement, true);
@@ -201,19 +314,25 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                 return null;
 
             });
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     public boolean removeAndUnscheduleAgreement(String id) {
-        return metadataAccess.commit(() -> {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId = slaProvider.resolve(id);
-            slaProvider.removeAgreement(slaId);
-            serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(slaId);
-            return true;
-        });
+        boolean canEdit = canEditServiceLevelAgreement(id);
+
+        if (canEdit) {
+            return metadataAccess.commit(() -> {
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId = slaProvider.resolve(id);
+                //attempt to find it
+                slaProvider.removeAgreement(slaId);
+                serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(slaId);
+                return true;
+            });
+        } else {
+            return false;
+        }
 
     }
 
@@ -339,14 +458,13 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
             FeedMetadata feed = null;
             if (StringUtils.isNotBlank(feedId)) {
                 feed = feedManagerFeedService.getFeedById(feedId);
+
             }
-            if (feed != null) {
-
+            if (feed != null && feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS)) {
                 ServiceLevelAgreement sla = saveAndScheduleSla(serviceLevelAgreement, feed);
-
                 return sla;
             } else {
-                //TODO LOG ERROR CANNOT GET FEED
+                log.error("Error attempting to save and Schedule the Feed SLA {} ({}) ", feed != null ? feed.getCategoryAndFeedName() : " NULL Feed ", feedId);
                 throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
             }
         });
