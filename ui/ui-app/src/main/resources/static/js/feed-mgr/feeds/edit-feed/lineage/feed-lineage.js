@@ -116,14 +116,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 },
                 font: {align: 'horizontal'}
             },
-            "physics": {
-                "enabled": true,
-                "barnesHut": {
-                    "springLength": 200
-                }
-            },
             layout: {
-                randomSeed:2
+                hierarchical: {
+                    direction: "LR",
+                    nodeSpacing:200,
+                    sortMethod:'directed'
+                }
             },
             nodes: {
                 shape: 'box',
@@ -378,13 +376,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * @returns {string}
          */
         var datasourceNodeLabel = function(ds){
-            var label = ds.datasourceType;
-            if (ds.datasourceType && Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource")) {
-                label = label.substring(0, label.toLowerCase().lastIndexOf("datasource"));
+            var label = "";
+            if (angular.isString(ds.datasourceType)) {
+                label = Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource") ? ds.datasourceType.substring(0, ds.datasourceType.toLowerCase().lastIndexOf("datasource")) : ds.datasourceType;
+            } else if (angular.isString(ds.type)) {
+                label = ds.type;
+            } else {
+                label = Utils.endsWith(ds["@type"].toLowerCase(), "datasource") ? ds["@type"].substring(0, ds["@type"].toLowerCase().lastIndexOf("datasource")) : ds["@type"];
             }
+
             label += "\n" + ds.name;
             return label;
-        }
+        };
 
         /**
          * Get the label for the Feed Node
@@ -532,9 +535,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             else {
                 self.selectedNode = SELECT_A_NODE;
             }
-            //console.log(self.selectedNode);
+            $scope.$apply()
+            //console.log(;self.selectedNode);
             //force angular to refresh selection
-            jQuery('#hiddenSelectedNode').html(self.selectedNode.name)
+            angular.element('#hiddenSelectedNode').html(self.selectedNode.name)
         };
 
         self.navigateToFeed = function () {
@@ -550,21 +554,33 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         var onLoad = function(network){
             self.network = network;
+           // stabilizationIterationsDone();
+        }
+        var stabilized = function(){
+            stabilizationIterationsDone();
         }
 
         var stabilizationIterationsDone = function () {
             self.options.physics.enabled = false;
             if (self.network) {
                 self.network.setOptions({
-                    physics: {enabled: false}
+                    physics: {enabled: false, stabilization: false},
+                    interaction: {dragNodes: true},
+                    layout: {
+                        hierarchical: {
+                            enabled: false
+                        }
+                    }
                 });
             }
         }
 
+
         self.events = {
             onload: onLoad,
             selectNode: onSelect,
-            stabilizationIterationsDone: stabilizationIterationsDone
+            stabilized:stabilized
+          //  stabilizationIterationsDone: stabilizationIterationsDone
         };
 
         /**
@@ -573,19 +589,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         getFeedLineage(self.model.id);
     };
 
-    var FeedLineageSelectedNode = function () {
-        return {
-            restrict: "E",
-            templateUrl: 'js/feed-details/lineage/selected-node.html',
-            link: function ($scope, element, attrs) {
 
-            }
-
-        };
-    }
-
-    angular.module(moduleName)
-        .directive('thinkbigFeedLineageSelectedNode', FeedLineageSelectedNode);
 
 
     angular.module(moduleName).controller('FeedLineageController', ["$scope","$element","$http","$mdDialog","$timeout","AccessControlService","FeedService","RestUrlService","VisDataSet","Utils","BroadcastService","StateService",controller]);

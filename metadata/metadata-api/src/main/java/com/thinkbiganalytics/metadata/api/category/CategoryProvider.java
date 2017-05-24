@@ -31,13 +31,13 @@ import javax.annotation.Nonnull;
 /**
  * Manages the repository of category objects.
  *
- * @param <T> the type of provided category
+ * @param <Category> the type of provided category
  */
-public interface CategoryProvider<T extends Category> extends BaseProvider<T, Category.ID> {
+public interface CategoryProvider extends BaseProvider<Category, Category.ID> {
 
-    T findBySystemName(String systemName);
+    Category findBySystemName(String systemName);
 
-    T ensureCategory(String systemName);
+    Category ensureCategory(String systemName);
 
     /**
      * Gets the user fields for all categories.

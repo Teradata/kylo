@@ -99,7 +99,9 @@ public class TableRegisterSupport {
         columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
-        ColumnSpec[] useColumnSpecs = (tableType == TableType.FEED ? feedColumnSpecs : columnSpecs);
+        //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
+        //_valid and the final feed table should use the target schema
+        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED || tableType == TableType.INVALID) ? feedColumnSpecs : columnSpecs);
 
         // Register the database
         if (registerDatabase && !registerDatabase(source)) {
@@ -133,10 +135,10 @@ public class TableRegisterSupport {
                 tables.add(rs.getString(1));
                 logger.info("Found existing table " + rs.getString(1));
             }
-            return tables;
         } catch (final SQLException e) {
             throw new RuntimeException("Failed to query tables", e);
         }
+        return tables;
     }
 
     public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions) {
@@ -152,8 +154,7 @@ public class TableRegisterSupport {
     }
 
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs,
-                                          String tblProperties) {
+        columnSpecs, String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);

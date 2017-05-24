@@ -37,7 +37,7 @@ import javax.sql.DataSource;
 /**
  */
 @Configuration
-@PropertySource("classpath:/conf/authorization.sentry.properties")
+@PropertySource("classpath:authorization.sentry.properties")
 public class SentryConfiguration {
 
     private static Logger log = LoggerFactory.getLogger(SentryConfiguration.class);

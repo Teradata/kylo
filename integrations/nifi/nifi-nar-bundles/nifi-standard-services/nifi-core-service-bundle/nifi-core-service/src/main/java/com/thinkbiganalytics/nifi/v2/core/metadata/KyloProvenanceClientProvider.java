@@ -63,4 +63,8 @@ public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
         return client.isNiFiFlowDataAvailable();
     }
 
+    public Long resetNiFiMaxEventId(String clusterNodeId){
+        return client.resetNiFiMaxEventId(clusterNodeId);
+    }
+
 }

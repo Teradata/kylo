@@ -20,12 +20,19 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 /**
  * A request to perform a transformation on a table.
  */
 public class TransformRequest {
+
+    /**
+     * List of data sources to make available
+     */
+    private List<Datasource> datasources;
 
     /**
      * Previous transformation result
@@ -36,6 +43,24 @@ public class TransformRequest {
      * Scala script with transformation
      */
     private String script;
+
+    /**
+     * Gets the list of data sources that should be made available to the script.
+     *
+     * @return the data sources
+     */
+    public List<Datasource> getDatasources() {
+        return datasources;
+    }
+
+    /**
+     * Sets the list of data sources for the script.
+     *
+     * @param datasources the data sources
+     */
+    public void setDatasources(@Nonnull final List<Datasource> datasources) {
+        this.datasources = datasources;
+    }
 
     /**
      * Gets the previous transformation result.

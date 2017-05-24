@@ -60,6 +60,8 @@ public class PropertyExpressionResolverTest {
      */
     private static final String DEFAULT_TYPE = "com.example.UpdateAttributes";
 
+    private static final String DEFAULT_PROCESSOR_NAME="Processor Name";
+
     /**
      * Property key name for static configuration
      */
@@ -149,6 +151,21 @@ public class PropertyExpressionResolverTest {
         final NifiProperty prop9 = createProperty("config.test.value");
         Assert.assertFalse(resolver.resolveExpression(metadata, prop9));
         Assert.assertEquals("config.test.value", prop9.getValue());
+
+        //verify replacement with NiFi el
+        final NifiProperty prop10 = createProperty("property1","a value");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop10));
+        Assert.assertEquals("/path/to/property1,${nifi.expression.property}", prop10.getValue());
+
+        //verify replacement without NiFi el
+        final NifiProperty prop11 = createProperty("Another Processor","property1","a value");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop11));
+        Assert.assertEquals("/path/to/another_processor/property1/location", prop11.getValue());
+
+        //verify replacement without NiFi el using default processor type replacement
+        final NifiProperty prop12 = createProperty("My New Processor","property1","a value");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop12));
+        Assert.assertEquals("/path/to/property1/location", prop12.getValue());
     }
 
     /**
@@ -194,8 +211,22 @@ public class PropertyExpressionResolverTest {
      */
     @Nonnull
     public NifiProperty createProperty(@Nonnull final String key, @Nonnull final String value) {
+       return createProperty(DEFAULT_PROCESSOR_NAME,key,value);
+    }
+
+
+    /**
+     * Creates a new property with the specified key and value.
+     *@param processorName the name of the processor
+     * @param key   the key name
+     * @param value the value
+     * @return the new property
+     */
+    @Nonnull
+    public NifiProperty createProperty(@Nonnull final String processorName,@Nonnull final String key, @Nonnull final String value) {
         final NifiProperty property = new NifiProperty(DEFAULT_GROUP, DEFAULT_GROUP, key, value);
         property.setProcessorType(DEFAULT_TYPE);
+        property.setProcessorName(processorName);
         return property;
     }
 

@@ -241,4 +241,15 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
     public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
+    public Boolean accepts (Object value) {
+        return (value instanceof String);
+    }
+
+    public Object convertRawValue(Object value) {
+        if (accepts(value)) {
+            return String.valueOf(convertValue(value.toString()));
+        }
+
+        return value;
+    }
 }

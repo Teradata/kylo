@@ -236,6 +236,19 @@ public class NifiPropertyUtil {
     }
 
     /**
+     * Groups the properties by their {@see NifiProperty#getIdKey}
+     * @param properties the properties to inspect
+     * @return a map with the property idKey (the processgroup+processorId+propertyKey, property)
+     */
+    public static Map<String,NifiProperty> groupPropertiesByIdKey(List<NifiProperty> properties) {
+        Map<String, NifiProperty> map = new HashMap();
+        if(properties != null){
+            map = properties.stream().collect(Collectors.toMap(p -> p.getIdKey(), p-> p));
+        }
+        return map;
+    }
+
+    /**
      * Return all properties for a given processor
      *
      * @param properties  the properties to inspect
@@ -361,7 +374,7 @@ public class NifiPropertyUtil {
     /**
      * Find all properties that have the same name and property key
      *
-     * @param templateProperties the properties that are part of the template
+     * @param templateProperties the properties that are part of the template.  These properties will get updated from the {@code nifiProperties} passed in if they match
      * @param nifiProperties     the properties to inspect and match
      * @param updateMode         a mode indicating what should be inspected and updated
      * @return a list of matched properties
@@ -379,30 +392,7 @@ public class NifiPropertyUtil {
         return matchedProperties;
     }
 
-    /**
-     * Update template properties with those that match from the incoming 'savedProperties' matching on the property {@link NifiProperty#getIdKey()}
-     *
-     * @param templateProperties a list of properties on the template that should be updated
-     * @param savedProperties    a list of properties saved that should be used to match against
-     */
-    public static void matchAndSetTemplatePropertiesWithSavedProperties(Collection<NifiProperty> templateProperties, List<NifiProperty> savedProperties) {
-        if (savedProperties != null && !savedProperties.isEmpty()) {
 
-            final Map<String, NifiProperty> map = new HashMap<>();
-            for (NifiProperty p : savedProperties) {
-                if ((p.getTemplateProperty() != null)) {
-                    map.put(p.getTemplateProperty().getIdKey(), p);
-                }
-            }
-
-            for (NifiProperty property : templateProperties) {
-                if (map.containsKey(property.getIdKey())) {
-
-                    updateProperty(property, map.get(property.getIdKey()));
-                }
-            }
-        }
-    }
 
     /**
      * Return the first property matching a given property key that is part of a processor with the supplied processorType
@@ -452,15 +442,25 @@ public class NifiPropertyUtil {
      * @param propertyToUpdate a property to update
      * @param nifiProperty     a property with values that will be set to the 'propertyToUpdate'
      */
-    private static void updateProperty(NifiProperty propertyToUpdate, NifiProperty nifiProperty) {
+    private static void updateProperty(NifiProperty propertyToUpdate, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
         propertyToUpdate.setValue(nifiProperty.getValue());
-        propertyToUpdate.setInputProperty(nifiProperty.isInputProperty());
-        propertyToUpdate.setUserEditable(nifiProperty.isUserEditable());
-        propertyToUpdate.setSelected(nifiProperty.isSelected());
-        propertyToUpdate.setRenderType(nifiProperty.getRenderType());
-        if (nifiProperty.getRenderOptions() != null) {
-            propertyToUpdate.setRenderOptions(nifiProperty.getRenderOptions());
+        if(!PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode)){
+            //if its Not updating for editing a Feed then attempt to set the render type properties.
+            //otherwise the 'propertyToUpdate' will be the registeredTemplate  property and should not be updated from the feed values as the template should drive how the feed is rendered.
+            propertyToUpdate.setInputProperty(nifiProperty.isInputProperty());
+            propertyToUpdate.setUserEditable(nifiProperty.isUserEditable());
+            propertyToUpdate.setSelected(nifiProperty.isSelected());
+            propertyToUpdate.setRenderType(nifiProperty.getRenderType());
+            propertyToUpdate.setSensitive(nifiProperty.isSensitive());
+            propertyToUpdate.setRequired(nifiProperty.isRequired());
+            if(nifiProperty.getPropertyDescriptor() != null) {
+                propertyToUpdate.setPropertyDescriptor(nifiProperty.getPropertyDescriptor());
+            }
+            if (nifiProperty.getRenderOptions() != null) {
+                propertyToUpdate.setRenderOptions(nifiProperty.getRenderOptions());
+            }
         }
+
     }
 
     /**
@@ -608,12 +608,12 @@ public class NifiPropertyUtil {
      */
     private static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
         if (updateMode.performUpdate()) {
-            if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || (
+            if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode) || (
                 PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES.equals(updateMode) && (
                     (!matchingProperty.getValue().contains("${metadata.")) || (matchingProperty.getValue()
                                                                                    .contains("${metadata.") && nifiProperty.getValue() != null && nifiProperty.getValue()
                                                                                    .contains("${metadata."))))))) {
-                updateProperty(matchingProperty, nifiProperty);
+                updateProperty(matchingProperty, nifiProperty, updateMode);
             }
         }
     }
@@ -652,7 +652,12 @@ public class NifiPropertyUtil {
         /**
          * this mode will skip over any properties with the ${metadata. prefix in the value string of the property
          */
-        UPDATE_NON_EXPRESSION_PROPERTIES;
+        UPDATE_NON_EXPRESSION_PROPERTIES,
+
+        /**
+         * update the template properties with the Feed properties
+         */
+        FEED_DETAILS_MATCH_TEMPLATE;
 
         /**
          * @return true if the update should happen, false if not

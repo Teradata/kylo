@@ -86,7 +86,7 @@ public class UserMetadataService implements UserService {
     @Override
     public Optional<GroupPrincipal> getGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
-            accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
+         //   accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
 
             return userProvider.findGroupByName(groupId)
                 .map(UserModelTransform.toGroupPrincipal());
@@ -97,7 +97,7 @@ public class UserMetadataService implements UserService {
     @Override
     public List<GroupPrincipal> getGroups() {
         return metadataAccess.read(() -> {
-            accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
+          //  accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
 
             return StreamSupport.stream(userProvider.findGroups().spliterator(), false)
                 .map(UserModelTransform.toGroupPrincipal())
@@ -109,7 +109,7 @@ public class UserMetadataService implements UserService {
     @Override
     public Optional<UserPrincipal> getUser(@Nonnull final String userId) {
         return metadataAccess.read(() -> {
-            accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
+          //  accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
 
             return userProvider.findUserBySystemName(userId)
                 .map(UserModelTransform.toUserPrincipal());
@@ -120,7 +120,7 @@ public class UserMetadataService implements UserService {
     @Override
     public List<UserPrincipal> getUsers() {
         return metadataAccess.read(() -> {
-            accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
+         //   accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
 
             return StreamSupport.stream(userProvider.findUsers().spliterator(), false)
                 .map(UserModelTransform.toUserPrincipal())
@@ -132,7 +132,7 @@ public class UserMetadataService implements UserService {
     @Override
     public Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
-            accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS, UsersGroupsAccessContol.ACCESS_USERS);
+        //    accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS, UsersGroupsAccessContol.ACCESS_USERS);
 
             return userProvider.findGroupByName(groupId)
                 .map(users -> StreamSupport.stream(users.getUsers().spliterator(), false)

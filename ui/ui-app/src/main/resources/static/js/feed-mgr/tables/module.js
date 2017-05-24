@@ -1,11 +1,11 @@
-define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-feedmgr','jquery'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, []);
 
     /**
      * LAZY loaded in from /app.js
      */
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('tables',{
+        $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
             url:'/tables',
             params: {
             },
@@ -22,11 +22,12 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo
             data:{
                 breadcrumbRoot:true,
                 displayName:'Tables',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.TABLES.permissions
             }
         });
 
-        $stateProvider.state('table',{
+        $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
             url:'/tables/{schema}/{tableName}',
             params: {
                 schema:null,
@@ -45,7 +46,8 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','kylo
             data:{
                 breadcrumbRoot:false,
                 displayName:'Table Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.TABLE.permissions
             }
         })
 

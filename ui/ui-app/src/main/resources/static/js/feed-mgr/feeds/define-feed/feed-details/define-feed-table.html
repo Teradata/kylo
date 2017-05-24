@@ -29,10 +29,10 @@
 
         <div layout="row" layout-align="space-between-center" flex>
           <div class="card-title" flex>Table</div>
-          <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+          <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
         <div layout="row" class="layout-padding-top-bottom" layout-align="space-between-center" flex>
-          <div class="md-subheader" flex>Define the target Hive table</div>
+          <div class="card-sub-header" flex>Define the target Hive table</div>
           <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
         </div>
       </header-section>
@@ -59,7 +59,7 @@
                       <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
                                        ng-value="method.type"
                                        aria-label="{{method.name}}"
-                                       ng-click="vm.updateSelectedMethod()">
+                                       ng-click="vm.updateSelectedMethod(method.type)">
                         {{method.name}}
                       </md-radio-button>
                     </md-radio-group>
@@ -150,7 +150,7 @@
                            ng-click="vm.onSelectedColumn(columnDef)">
                         <div flex="30" class="md-list-item-text  ">
                           <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
-                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldChange(columnDef)"
+                            <input ng-model="columnDef.name" placeholder="Field Name" ng-required="(columnDef.deleted == false || columnDef.deleted == undefined)" name="name_{{columnDef._id}}" ng-change="vm.onNameFieldChange(columnDef)"
                                    ng-model-options="{updateOn: 'blur'}"
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                                    ng-disabled="vm.tableLocked || columnDef.deleted"
@@ -411,7 +411,7 @@
         <div layout="column" class="layout-padding-top-bottom">
           <span>Sample field values</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
-                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">>
+                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">
                         <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" aria-label="{{data}}">
                           {{data}}
                         </md-option>
@@ -426,7 +426,7 @@
         </div>
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
-                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove
           </md-button>
         </div>
       </body-section>

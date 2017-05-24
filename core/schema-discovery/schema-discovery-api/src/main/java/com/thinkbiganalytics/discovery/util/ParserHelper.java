@@ -217,7 +217,11 @@ public class ParserHelper {
                     descriptor.setDate(true);
                     break;
                 default:
-                    descriptor.setComplex(true);
+                    if (hiveType.contains("decimal")) {
+                        descriptor.setNumeric(true);
+                    } else {
+                        descriptor.setComplex(true);
+                    }
             }
         }
         return descriptor;

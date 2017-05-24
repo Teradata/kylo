@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.feedmgr.config;
 
 /*-
@@ -23,9 +20,14 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
@@ -51,21 +53,67 @@ public class FeedManagerSecurityConfiguration {
 
         return () -> metadata.commit(() -> {
             return builder
-                            .module("services")
-                                .action(FeedsAccessControl.FEEDS_SUPPORT)
-                                .action(FeedsAccessControl.ACCESS_FEEDS)
-                                .action(FeedsAccessControl.EDIT_FEEDS)
-                                .action(FeedsAccessControl.IMPORT_FEEDS)
-                                .action(FeedsAccessControl.EXPORT_FEEDS)
-                                .action(FeedsAccessControl.ADMIN_FEEDS)
-                                .action(FeedsAccessControl.ACCESS_CATEGORIES)
-                                .action(FeedsAccessControl.EDIT_CATEGORIES)
-                                .action(FeedsAccessControl.ADMIN_CATEGORIES)
-                                .action(FeedsAccessControl.ACCESS_TEMPLATES)
-                                .action(FeedsAccessControl.EDIT_TEMPLATES)
-                                .action(FeedsAccessControl.IMPORT_TEMPLATES)
-                                .action(FeedsAccessControl.EXPORT_TEMPLATES)
-                                .action(FeedsAccessControl.ADMIN_TEMPLATES)
+                            .module(AllowedActions.SERVICES)
+                                .action(FeedServicesAccessControl.FEEDS_SUPPORT)
+                                .action(FeedServicesAccessControl.ACCESS_FEEDS)
+                                .action(FeedServicesAccessControl.EDIT_FEEDS)
+                                .action(FeedServicesAccessControl.IMPORT_FEEDS)
+                                .action(FeedServicesAccessControl.EXPORT_FEEDS)
+                                .action(FeedServicesAccessControl.ADMIN_FEEDS)
+                                .action(FeedServicesAccessControl.ACCESS_TABLES)
+                                .action(FeedServicesAccessControl.ACCESS_VISUAL_QUERY)
+                                .action(FeedServicesAccessControl.ACCESS_CATEGORIES)
+                                .action(FeedServicesAccessControl.EDIT_CATEGORIES)
+                                .action(FeedServicesAccessControl.ADMIN_CATEGORIES)
+                                .action(FeedServicesAccessControl.ACCESS_TEMPLATES)
+                                .action(FeedServicesAccessControl.EDIT_TEMPLATES)
+                                .action(FeedServicesAccessControl.IMPORT_TEMPLATES)
+                                .action(FeedServicesAccessControl.EXPORT_TEMPLATES)
+                                .action(FeedServicesAccessControl.ADMIN_TEMPLATES)
+                                .action(FeedServicesAccessControl.ACCESS_DATASOURCES)
+                                .action(FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS)
+                                .action(FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS)
+                                .action(FeedServicesAccessControl.EDIT_DATASOURCES)
+                                .action(FeedServicesAccessControl.ADMIN_DATASOURCES)
+                                .action(FeedServicesAccessControl.ACCESS_GLOBAL_SEARCH)
+                                .add()
+                            .module(AllowedActions.FEED)
+                                .action(FeedAccessControl.ACCESS_FEED)
+                                .action(FeedAccessControl.EDIT_SUMMARY)
+                                .action(FeedAccessControl.ACCESS_DETAILS)
+                                .action(FeedAccessControl.EDIT_DETAILS)
+                                .action(FeedAccessControl.DELETE)
+                                .action(FeedAccessControl.ENABLE_DISABLE)
+                                .action(FeedAccessControl.EXPORT)
+//                                .action(FeedAccessControl.SCHEDULE_FEED)
+                                .action(FeedAccessControl.ACCESS_OPS)
+                                .action(FeedAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.CATEGORY)
+                                .action(CategoryAccessControl.ACCESS_CATEGORY)
+                                .action(CategoryAccessControl.EDIT_SUMMARY)
+                                .action(CategoryAccessControl.ACCESS_DETAILS)
+                                .action(CategoryAccessControl.EDIT_DETAILS)
+                                .action(CategoryAccessControl.DELETE)
+                                .action(CategoryAccessControl.EXPORT)
+                                .action(CategoryAccessControl.CREATE_FEED)
+                                .action(CategoryAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.TEMPLATE)
+                                .action(TemplateAccessControl.ACCESS_TEMPLATE)
+                                .action(TemplateAccessControl.EDIT_TEMPLATE)
+                                .action(TemplateAccessControl.DELETE)
+                                .action(TemplateAccessControl.EXPORT)
+                                .action(TemplateAccessControl.CREATE_FEED) //not currently used now.  if you have access to read the template you can create a feed on it provided you have the proper create feed permissions
+                                .action(TemplateAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.DATASOURCE)
+                                .action(DatasourceAccessControl.ACCESS_DATASOURCE)
+                                .action(DatasourceAccessControl.EDIT_SUMMARY)
+                                .action(DatasourceAccessControl.ACCESS_DETAILS)
+                                .action(DatasourceAccessControl.EDIT_DETAILS)
+                                .action(DatasourceAccessControl.DELETE)
+                                .action(DatasourceAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

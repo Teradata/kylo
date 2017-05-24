@@ -51,6 +51,19 @@ public interface FeedHealth {
      */
     void setUnhealthyCount(Long unhealthyCount);
 
+
+    /**
+     * The feed Id
+     * @return the feed id
+     */
+    String getFeedId();
+
+    /**
+     *
+     * set the feed id
+     */
+    void setFeedId(String feedId);
+
     /**
      * Return the feed name
      *

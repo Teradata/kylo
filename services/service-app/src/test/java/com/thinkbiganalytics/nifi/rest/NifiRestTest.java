@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.rest;
  */
 
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -119,7 +119,7 @@ public class NifiRestTest {
         try {
             TemplateDTO template = restClient.getTemplateByName(templateName);
 
-            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId());
+            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId(),true);
             NifiProperty inputDirectory = NifiPropertyUtil
                 .getProperty(GET_FILE_PROCESSOR_NAME, INPUT_DIRECTORY_PROPERTY, propertyList);
             NifiProperty entity = NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, SOURCE_PROPERTY, propertyList);
@@ -153,6 +153,7 @@ public class NifiRestTest {
             e.printStackTrace();
         }
     }
+
 
     //@Test
     public void testCreateFeed() throws Exception {

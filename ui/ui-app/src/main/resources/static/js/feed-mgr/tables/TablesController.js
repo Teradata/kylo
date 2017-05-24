@@ -1,6 +1,6 @@
 define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$http,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService){
+    var controller = function($scope,$http,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils){
 
         var self = this;
         this.tables =[];
@@ -88,7 +88,8 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
                     })
                 }
                 self.tables = arr;
-                self.selectedTables = arr.filter(function(t) { return !(t.tableName.endsWith("_valid") || t.tableName.endsWith("_invalid") || t.tableName.endsWith("_profile") || t.tableName.endsWith("_feed"))});
+                self.selectedTables = _.filter(arr,function(t) {
+                    return !(Utils.endsWith(t.tableName, "_valid") || Utils.endsWith(t.tableName,"_invalid") || Utils.endsWith(t.tableName, "_profile") || Utils.endsWith(t.tableName,"_feed"))});
                 self.loading = false;
 
             }
@@ -117,7 +118,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
 
     };
 
-    angular.module(moduleName).controller('TablesController',["$scope","$http","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService",controller]);
+    angular.module(moduleName).controller('TablesController',["$scope","$http","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils",controller]);
 
 
 

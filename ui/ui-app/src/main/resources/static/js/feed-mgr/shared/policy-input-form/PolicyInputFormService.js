@@ -96,6 +96,35 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 });
                 return optionsArr;
             },
+            /**
+             * remove all feeds from the selectable values where the "feed:editDetails" property is false
+             * @param policies array of policies
+             */
+            stripNonEditableFeeds:function(policies){
+                _.each(policies, function (rule) {
+
+                    _.each(rule.properties, function (prop) {
+                        if (prop.type == 'currentFeed' || prop.type == 'feedSelect' || prop.type == 'feedChips') {
+                            prop.errorMessage =undefined;
+
+                            var newSelectableValues =_.reject(prop.selectableValues,function(value){
+                                if(value.properties == undefined || value.properties["feed:editDetails"] == undefined){
+                                    return false;
+                                }
+                                else {
+                                    return (value.properties["feed:editDetails"] == false);
+                                }
+                            });
+                            prop.selectableValues = newSelectableValues;
+
+                            if( prop.selectableValues.length ==0){
+                                prop.errorMessage = "No feeds available.  You don't have access to modify any feeds.";
+                            }
+                        }
+                    });
+
+                });
+                                },
             updatePropertyIndex: function (rule) {
                 updatePropertyIndex(rule);
             },

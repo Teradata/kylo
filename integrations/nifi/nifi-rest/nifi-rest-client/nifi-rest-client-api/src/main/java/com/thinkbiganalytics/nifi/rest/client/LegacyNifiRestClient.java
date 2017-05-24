@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
@@ -66,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -199,22 +201,39 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     /**
      * Expose all Properties for a given Template as parameters for external use
      */
-    public List<NifiProperty> getPropertiesForTemplate(String templateId) {
+    public List<NifiProperty> getPropertiesForTemplate(String templateId,boolean includePropertyDescriptors) {
         TemplateDTO dto = getTemplateById(templateId);
-        return getPropertiesForTemplate(dto);
+        return getPropertiesForTemplate(dto,includePropertyDescriptors);
     }
 
     /**
+     *
      * Expose all Properties for a given Template as parameters for external use
+     *
+     * @param dto the Template to parse
+     * @param includePropertyDescriptors true to include propertyDescriptor details on each property, false to just include the property key
+     * @return all the properties included in this template
      */
-    public List<NifiProperty> getPropertiesForTemplate(TemplateDTO dto) {
+    public List<NifiProperty> getPropertiesForTemplate(TemplateDTO dto, boolean includePropertyDescriptors) {
         ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
-        return getPropertiesForTemplate(rootProcessGroup, dto);
+        return getPropertiesForTemplate(rootProcessGroup, dto, includePropertyDescriptors);
     }
 
 
-    public List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO processGroup, TemplateDTO dto) {
-        return NifiPropertyUtil.getPropertiesForTemplate(processGroup, dto, propertyDescriptorTransform);
+    /**
+     *
+     * @param parentProcessGroup the parent group for which this template will reside
+     * @param dto the template to parse
+     * @param includePropertyDescriptors true to include propertyDescriptor details on each property, false to just include the property key
+     * @return all the properties included in this template
+     */
+    public List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, boolean includePropertyDescriptors) {
+        if(includePropertyDescriptors) {
+            TemplateCreationHelper helper = new TemplateCreationHelper(this);
+            ProcessGroupDTO groupDTO = helper.createTemporaryTemplateFlow(dto.getId());
+            dto.setSnippet(groupDTO.getContents());
+        }
+        return NifiPropertyUtil.getPropertiesForTemplate(parentProcessGroup, dto, propertyDescriptorTransform);
     }
 
 
@@ -840,6 +859,8 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         for (Map.Entry<String, NifiProperty> property : propertyMap.entrySet()) {
             processor.getConfig().getProperties().put(property.getKey(), property.getValue().getValue());
         }
+        List<NifiProperty> sensitiveProperties = properties.stream().filter(property -> property.getPropertyDescriptor().isSensitive()).collect(Collectors.toList());
+
         updateProcessor(processor);
     }
 

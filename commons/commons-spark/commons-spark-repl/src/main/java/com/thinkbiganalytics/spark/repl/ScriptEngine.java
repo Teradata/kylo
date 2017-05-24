@@ -165,6 +165,14 @@ public abstract class ScriptEngine {
     }
 
     /**
+     * Gets the class loader used by the interpreter.
+     *
+     * @return the class loader
+     */
+    @Nonnull
+    public abstract ClassLoader getClassLoader();
+
+    /**
      * Gets the {@code SparkContext} available to scripts as {@code sc}.
      *
      * @return the Spark context
@@ -202,8 +210,9 @@ public abstract class ScriptEngine {
      * Executes the specified script.
      *
      * @param script the script to be executed
+     * @throws ScriptException if an error occurs in the script
      */
-    protected abstract void execute(@Nonnull final String script);
+    protected abstract void execute(@Nonnull final String script) throws ScriptException;
 
     /**
      * Gets the writer for capturing compile errors.

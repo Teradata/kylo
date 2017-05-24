@@ -23,6 +23,8 @@ package com.thinkbiganalytics.policy.standardization;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * test the {@link DefaultValueStandardizer}
@@ -36,5 +38,66 @@ public class DefaultValueStandardizerTest {
         assertEquals("default", standardizer.convertValue(""));
         assertEquals("default", standardizer.convertValue(null));
         assertEquals("foo", standardizer.convertValue("foo"));
+    }
+
+    @Test
+    public void testAcceptValidType1() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        assertTrue(standardizer.accepts("string-value"));
+    }
+
+    @Test
+    public void testAcceptValidType2() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        assertTrue(standardizer.accepts(null));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        Double doubleValue = 100.01d;
+        assertFalse(standardizer.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() throws Exception {
+
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        assertEquals("default", standardizer.convertRawValue(""));
+        assertEquals("default", standardizer.convertRawValue(null));
+        assertEquals("foo", standardizer.convertRawValue("foo"));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        Object expectedValue = Double.valueOf("1000.05");
+        Object rawValue = Double.valueOf("1000.05");
+        assertEquals(expectedValue, standardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults1() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        Object rawValueObj = "hello";
+        Object expectedValueObj = "hello";
+        String rawValueStr = "hello";
+        String expectedValueStr = "hello";
+        assertEquals(standardizer.convertValue(rawValueStr), standardizer.convertRawValue(rawValueObj).toString());
+        assertEquals(standardizer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(standardizer.convertRawValue(rawValueObj), expectedValueObj);
+    }
+
+    @Test
+    public void testIdenticalResults2() {
+        DefaultValueStandardizer standardizer = new DefaultValueStandardizer("default");
+        Object rawValueObj = null;
+        Object expectedValueObj = "default";
+        String rawValueStr = null;
+        String expectedValueStr = "default";
+
+        assertEquals(standardizer.convertValue(rawValueStr), standardizer.convertRawValue(rawValueObj).toString());
+        assertEquals(standardizer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(standardizer.convertRawValue(rawValueObj), expectedValueObj);
     }
 }

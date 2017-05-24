@@ -33,6 +33,7 @@ public class OpsManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
             registry.addResourceHandler("/ops-mgr/**").addResourceLocations("classpath:/static/");
+            registry.addResourceHandler("/kylo/**").addResourceLocations("classpath:/static/");
         }
 
 }

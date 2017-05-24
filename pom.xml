@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.datalake</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.8.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
@@ -62,6 +62,7 @@
     <junit.version>4.11</junit.version>
     <lucene.version>4.10.4</lucene.version>
     <mockito.version>1.10.19</mockito.version>
+    <mariadb.version>1.5.7</mariadb.version>
     <nifi.version>1.1.0</nifi.version>
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
@@ -90,6 +91,11 @@
     <!-- Plugin Versions -->
     <plugin.surefire.version>2.19.1</plugin.surefire.version>
     <plugin.license.version>1.12</plugin.license.version>
+    <liquibase.version>3.5.3</liquibase.version>
+    <!--<liquibase.version>3.3.5</liquibase.version>-->
+    <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
+    <liquibase-hibernate4.version>3.5</liquibase-hibernate4.version>
+    <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -130,6 +136,12 @@
         <groupId>com.beust</groupId>
         <artifactId>jcommander</artifactId>
         <version>1.48</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb.version}</version>
       </dependency>
 
       <!-- Jersey -->
@@ -457,6 +469,11 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
         <version>${spring.security.version}</version>
       </dependency>
 
@@ -871,12 +888,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.3</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.scala-tools</groupId>
           <artifactId>maven-scala-plugin</artifactId>
-          <version>2.15.2</version>
+          <version>${maven.scala.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -904,11 +921,11 @@
 
   <profiles>
     <profile>
-      <!--* Run Functional Tests (*FT.java) by selecting `integration-tests` Maven profile-->
+      <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
       <!--* Integration Tests are not run if profile is not selected-->
-      <!--mvn clean -Pfunctional-tests integration-test-->
+      <!--mvn clean -Pintegration-tests integration-test-->
 
-      <id>functional-tests</id>
+      <id>integration-tests</id>
       <build>
         <plugins>
           <plugin>
@@ -918,7 +935,7 @@
               <execution>
                 <configuration>
                   <includes>
-                    <include>**/*FT.class</include>
+                    <include>**/*IT.class</include>
                   </includes>
                 </configuration>
                 <goals>

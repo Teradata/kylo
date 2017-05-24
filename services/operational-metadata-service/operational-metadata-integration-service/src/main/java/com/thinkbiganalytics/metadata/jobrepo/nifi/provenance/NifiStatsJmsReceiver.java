@@ -103,6 +103,7 @@ public class NifiStatsJmsReceiver {
         nifiFeedProcessorStats.setJobsFailed(groupedStats.getJobsFailed());
         nifiFeedProcessorStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());
         nifiFeedProcessorStats.setJobDuration(groupedStats.getJobDuration());
+        nifiFeedProcessorStats.setMaxEventId(groupedStats.getMaxEventId());
         return nifiFeedProcessorStats;
     }
 }

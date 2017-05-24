@@ -22,10 +22,12 @@ package com.thinkbiganalytics.scheduler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
+
 /**
  * A base identifier for a scheduled item
  */
-public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier> {
+public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier>, Serializable {
 
     /**
      * A name identifying the schedule item

@@ -45,12 +45,10 @@ import javax.jcr.security.Privilege;
  */
 public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements ActionsModuleBuilder {
 
-    public static final String ALLOWED_ACTIONS = "tba:allowedActions";
-
     private final String protoModulesPath;
     private Node groupsNode;
     private Node protoActionsNode;
-    private Node actionsNode;
+//    private Node actionsNode;
 
 
     public JcrActionsGroupBuilder(String protoPath) {
@@ -72,8 +70,8 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
         try {
             Node securityNode = session.getRootNode().getNode(SecurityPaths.SECURITY.toString());
             this.groupsNode = this.groupsNode == null ? session.getRootNode().getNode(this.protoModulesPath) : this.groupsNode;
-            this.protoActionsNode = JcrUtil.getOrCreateNode(groupsNode, name, ALLOWED_ACTIONS);
-            this.actionsNode = JcrUtil.getOrCreateNode(securityNode, name, ALLOWED_ACTIONS);
+            this.protoActionsNode = JcrUtil.getOrCreateNode(groupsNode, name, JcrAllowedActions.NODE_TYPE);
+//            this.actionsNode = JcrUtil.getOrCreateNode(securityNode, name, JcrAllowedActions.NODE_TYPE);
 
             return new JcrActionTreeBuilder<>(protoActionsNode, this);
         } catch (RepositoryException e) {
@@ -94,15 +92,15 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
             JcrAccessControlUtil.addPermissions(this.protoActionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
 
             JcrAllowedActions protoAllowed = new JcrAllowedActions(this.protoActionsNode);
-            JcrAllowedActions allowed = protoAllowed.copy(this.actionsNode, protoAllowed, this.managementPrincipal, Privilege.JCR_ALL);
-
-            JcrAccessControlUtil.addPermissions(this.actionsNode, this.managementPrincipal, Privilege.JCR_ALL);
-            JcrAccessControlUtil.addPermissions(this.actionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
-
-            for (Node action : JcrUtil.getNodesOfType(this.actionsNode, JcrAllowableAction.NODE_TYPE)) {
-                // Initially only allow the mgmt principal access to the actions themselves
-                JcrAccessControlUtil.addPermissions(action, this.managementPrincipal, Privilege.JCR_ALL);
-            }
+//            JcrAllowedActions allowed = protoAllowed.copy(this.actionsNode, this.managementPrincipal, Privilege.JCR_ALL);
+//
+//            JcrAccessControlUtil.addPermissions(this.actionsNode, this.managementPrincipal, Privilege.JCR_ALL);
+//            JcrAccessControlUtil.addPermissions(this.actionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
+//
+//            for (Node actionNode : JcrUtil.getNodesOfType(this.actionsNode, JcrAllowableAction.NODE_TYPE)) {
+//                // Initially only allow the mgmt principal access to the actions themselves
+//                JcrAccessControlUtil.addPermissions(actionNode, this.managementPrincipal, Privilege.JCR_ALL);
+//            }
 
             return protoAllowed;
         } catch (RepositoryException e) {

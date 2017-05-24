@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <properties>
@@ -28,13 +28,7 @@
 
   </dependencies>
   <modules>
-    <module>ui-common</module>
-    <module>ui-operations-manager</module>
-    <module>ui-feed-manager</module>
     <module>ui-app</module>
     <module>swagger-ui</module>
-
   </modules>
-
-
 </project>

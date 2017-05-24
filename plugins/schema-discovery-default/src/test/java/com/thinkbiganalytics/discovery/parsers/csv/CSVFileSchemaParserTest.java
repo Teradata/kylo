@@ -91,6 +91,62 @@ public class CSVFileSchemaParserTest {
     }
 
     @org.junit.Test
+    public void testNoHeaderFirstRowDuplicateValues() throws Exception {
+        parser.setHeaderRow(false);
+        firstRowDuplicateValues();
+    }
+
+    @org.junit.Test (expected=IllegalArgumentException.class)
+    public void testHeaderFirstRowDuplicateValues() throws Exception {
+        parser.setHeaderRow(true);
+        firstRowDuplicateValues();
+
+    }
+
+    private void firstRowDuplicateValues() throws Exception {
+        try (InputStream is = toInputStream("r1v1,r1v1,r1v3\nr2v1,r2v2,r2v3\n")) {
+            HiveTableSchema schema = toHiveTableSchema(is);
+            List<? extends Field> fields = schema.getFields();
+            assertTrue(fields.size() == 3);
+
+            IntStream.range(0, fields.size()).forEach(idx -> {
+                assertEquals(fields.get(idx).getName(), "Col_" + (idx + 1));
+                assertEquals(fields.get(idx).getSampleValues().size(), 1);
+            });
+        }
+    }
+
+    @org.junit.Test
+    public void testNoHeaderFirstRowNoDuplicateValues() throws Exception {
+        parser.setHeaderRow(false);
+        try (InputStream is = toInputStream("HEAD_1,HEAD_2,HEAD_3\nr2v1,r2v2,r2v3\n")) {
+            HiveTableSchema schema = toHiveTableSchema(is);
+            List<? extends Field> fields = schema.getFields();
+            assertTrue(fields.size() == 3);
+
+            IntStream.range(0, fields.size()).forEach(idx -> {
+                assertEquals(fields.get(idx).getName(), "Col_" + (idx + 1));
+                assertEquals(fields.get(idx).getSampleValues().size(), 1);
+            });
+        }
+    }
+
+    @org.junit.Test
+    public void testHeaderFirstRowNoDuplicateValues() throws Exception {
+        parser.setHeaderRow(true);
+        try (InputStream is = toInputStream("HEAD_1,HEAD_2,HEAD_3\nr2v1,r2v2,r2v3\n")) {
+            HiveTableSchema schema = toHiveTableSchema(is);
+            List<? extends Field> fields = schema.getFields();
+            assertTrue(fields.size() == 3);
+
+            IntStream.range(0, fields.size()).forEach(idx -> {
+                assertEquals(fields.get(idx).getName(), "HEAD_" + (idx + 1));
+                assertEquals(fields.get(idx).getSampleValues().size(), 1);
+            });
+        }
+    }
+
+    @org.junit.Test
     public void testSparse() throws Exception {
         // Test extra columns
         parser.setSeparatorChar("\t");

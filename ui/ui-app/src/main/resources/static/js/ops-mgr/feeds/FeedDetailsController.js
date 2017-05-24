@@ -5,7 +5,6 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
         self.feedName = $transition$.params().feedName;
         self.feedData = {}
         self.feed = OpsManagerFeedService.emptyFeed();
-        self.feedNames = [];
         self.refreshIntervalTime = 5000;
 
         //Track active requests and be able to cancel them if needed
@@ -14,7 +13,7 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
         BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', abandonedAllJobs);
 
         getFeedHealth();
-        getFeedNames();
+       // getFeedNames();
         setRefreshInterval();
         function getFeedHealth(){
             var canceler = $q.defer();
@@ -26,6 +25,9 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
                     if(self.feedData.feedSummary){
                         angular.extend(self.feed,self.feedData.feedSummary[0]);
                         self.feed.isEmpty = false;
+                        if(self.feed.feedHealth && self.feed.feedHealth.feedId ){
+                            self.feed.feedId = self.feed.feedHealth.feedId
+                        }
                         OpsManagerFeedService.decorateFeedSummary(self.feed);
 
                     }
@@ -78,6 +80,8 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
         }
 
 
+
+
         function clearRefreshInterval() {
             if (self.refreshInterval != null) {
                 $interval.cancel(self.refreshInterval);
@@ -92,6 +96,12 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
 
             }
             OpsManagerFeedService.fetchFeedHealth();
+        }
+
+        this.gotoFeedDetails = function(ev){
+            if(self.feed.feedId != undefined) {
+                StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
+            }
         }
 
         this.onJobAction = function(eventName,job) {

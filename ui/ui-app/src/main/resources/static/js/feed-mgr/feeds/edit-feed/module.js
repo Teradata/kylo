@@ -1,12 +1,16 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','angular-ui-router','kylo-feedmgr','feed-mgr/visual-query/module','angular-nvd3'], function (angular,moduleName,lazyLoadUtil, vis) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module',"feed-mgr/feeds/define-feed/module",'angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
       // load vis in the global state
         if(window.vis === undefined) {
             window.vis = vis;
         }
-    module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('feed-details',{
+    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
+        //preassign modules until directives are rewritten to use the $onInit method.
+        //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
+        $compileProvider.preAssignBindingsEnabled(true);
+
+        $stateProvider.state(AccessConstants.UI_STATES.FEED_DETAILS.state,{
             url:'/feed-details/{feedId}',
             params: {
                 feedId: null,
@@ -25,9 +29,31 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
             data:{
                 breadcrumbRoot:false,
                 displayName:'Edit Feed',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
             }
-        })
+        }).state(AccessConstants.UI_STATES.EDIT_FEED.state,{
+                url:'/edit-feed/{feedId}',
+                params: {
+                    feedId: null
+                },
+                views: {
+                    'content': {
+                        templateUrl: 'js/feed-mgr/feeds/edit-feed/edit-feed.html',
+                        controller: 'EditFeedController',
+                        controllerAs: 'vm'
+                    }
+                },
+               resolve: {
+                   loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController', "feed-mgr/feeds/define-feed/module-require"])
+               },
+                data:{
+                    breadcrumbRoot: false,
+                    displayName: 'Edit Feed',
+                    module:moduleName,
+                    permissions:AccessConstants.UI_STATES.EDIT_FEED.permissions
+                }
+            })
 
         function lazyLoadController(path){
             return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);

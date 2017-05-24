@@ -1,8 +1,0 @@
-{
-  "devDependencies": {
-    "gulp-add-src": "^0.2.0",
-    "gulp-angular-templatecache": "^1.9.1",
-    "gulp-debug": "^2.1.2",
-    "gulp-htmlmin": "^3.0.0"
-  }
-}

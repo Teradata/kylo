@@ -179,7 +179,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
         private static final long serialVersionUID = 6965221468619613881L;
 
-        @Column(name = "id", columnDefinition = "binary(16)")
+        @Column(name = "id")
         private UUID uuid;
 
         public SlaAssessmentId() {

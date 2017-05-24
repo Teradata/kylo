@@ -1,9 +1,9 @@
-define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','auth/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-services'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
 
     var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state('users', {
+        $stateProvider.state(AccessConstants.UI_STATES.USERS.state, {
             url: '/users',
             params: {},
             views: {
@@ -19,11 +19,12 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: true,
                 displayName: 'Users',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.USERS.permissions
             }
         });
 
-        $stateProvider.state("user-details", {
+        $stateProvider.state(AccessConstants.UI_STATES.USERS_DETAILS.state, {
             url: "/user-details/{userId}",
             params: {
                 userId: null
@@ -41,9 +42,10 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: false,
                 displayName: "User Details",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.USERS_DETAILS.permissions
             }
-        }).state("groups", {
+        }).state(AccessConstants.UI_STATES.GROUPS.state, {
             url: "/groups",
             params: {},
             views: {
@@ -59,9 +61,10 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: true,
                 displayName: "Groups",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.GROUPS.permissions
             }
-        }).state("group-details", {
+        }).state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
             url: "/group-details/{groupId}",
             params: {
                 groupId: null
@@ -79,7 +82,8 @@ define(['angular','auth/module-name','kylo-utils/LazyLoadUtil', 'kylo-services']
             data: {
                 breadcrumbRoot: false,
                 displayName: "Group Details",
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.GROUP_DETAILS.permissions
             }
         });
 

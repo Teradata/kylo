@@ -1,0 +1,23 @@
+<card-layout body-css="md-padding">
+
+  <header-section>
+    <div layout="row" layout-align="space-between-center" flex>
+      <div class="card-title" flex>Access Control</div>
+      <h2 class="card-sub-header">4 of 5</h2>
+    </div>
+  </header-section>
+
+  <body-section>
+
+  <ng-form name="vm.templateAccessControlForm">
+
+    <entity-access-control entity="vm.model" entity-type="template" the-form="vm.templateAccessControlForm" read-only="!vm.allowEdit"></entity-access-control>
+
+
+    <br/><br/><br/>
+    <thinkbig-step-buttons can-continue="vm.templateAccessControlForm.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+
+  </ng-form>
+
+  </body-section>
+</card-layout>

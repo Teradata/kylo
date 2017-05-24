@@ -24,6 +24,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.ReadWritablePeriod;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.joda.time.format.PeriodParser;
@@ -38,6 +40,11 @@ import java.util.Locale;
 public class DateTimeUtil {
 
     static PeriodFormatter periodFormatter = new PeriodFormatterBuilder().append(null, new StringPeriodParser()).toFormatter();
+
+    public static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+
+    public static DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
+
 
     public static Date convertToUTC(Date date) {
         DateTime time = new DateTime(date.getTime());
@@ -61,8 +68,18 @@ public class DateTimeUtil {
     }
 
     /**
+     * @return a Date Time string along with the current time zone
+     */
+    public static String getNowFormattedWithTimeZone() {
+        return dateTimeFormatWithTimeZone.print(DateTime.now());
+    }
+
+    /**
      * Parse a string period into a Joda time period
      * i.e. 3Y, 20W
+     *
+     * @param period a string period (i.e. 3Y, 20W)
+     * @return return the period
      */
     public static Period period(String period) {
 

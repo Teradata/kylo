@@ -59,7 +59,7 @@ public class AccessControlExceptionMapper implements ExceptionMapper<AccessContr
 
         RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
         builder.url(req.getRequestURI());
-        builder.message("Access control violation: " + e.getMessage());
+        builder.message(e.getMessage());
 
         return Response.accepted(builder.buildError()).status(Response.Status.FORBIDDEN).build();
     }

@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.modeshape.jcr.api.JcrTools;
 import org.springframework.stereotype.Component;
@@ -80,6 +82,9 @@ public class DebugController {
 
     @Inject
     private MetadataEventService eventService;
+    
+    @Inject
+    private AccessController accessController;
 
     /**
      * Allows the caller to update status events for the feed
@@ -96,6 +101,9 @@ public class DebugController {
                                                @QueryParam("op") String opIdStr,
                                                @QueryParam("state") String stateStr,
                                                @QueryParam("status") @DefaultValue("") String status) {
+        // TODO: Is this a feed ops permission?
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        
         FeedOperation.ID opId = null;
         FeedOperation.State state = FeedOperation.State.valueOf(stateStr.toUpperCase());
         OperationStatus opStatus = new OperationStatus(feedName, opId, state, status);
@@ -157,7 +165,7 @@ public class DebugController {
     }
 
     /**
-     * delete the JCR tree specified by the path
+     * Delete the JCR tree specified by the absolute path following ".../jcr/".
      *
      * @param abspath the path with JCR to delete
      * @return a confirmation message that the path was deleted
@@ -166,6 +174,8 @@ public class DebugController {
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteJcrTree(@PathParam("abspath") final String abspath) {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
@@ -185,16 +195,17 @@ public class DebugController {
     }
 
     /**
-     * prints the nodes of the JCR path given, for debugging
+     * Prints the nodes of the JCR path given, for debugging.
      *
      * @param abspath the path in JCR
      * @return a printout of the JCR tree
      */
     @GET
     @Path("jcr/{abspath: .*}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public String printJcrTree(@PathParam("abspath") final String abspath) {
-
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+        
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -215,15 +226,17 @@ public class DebugController {
 
 
     /**
-     * Prints the subgraph of the node in JCR
+     * Prints the subgraph of the node in JCR with the specified ID.
      *
      * @param jcrId the id of the node in JCR
      * @return the subgraph print out
      */
     @GET
     @Path("jcr")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public String printJcrId(@QueryParam("id") final String jcrId) {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+        
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);

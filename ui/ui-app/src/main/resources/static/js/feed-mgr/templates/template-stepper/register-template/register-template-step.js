@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -307,9 +307,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 );
                 StateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, self.model, null);
             }
-            var errorFn = function (err) {
+            var errorFn = function (response) {
                 $mdDialog.hide();
-                var message = 'Error Registering Template ' + err;
+                var message = 'Error Registering Template ' + response.data.message;
                 self.registrationSuccess = false;
                 $mdToast.show(
                     $mdToast.simple()
@@ -321,6 +321,10 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             //get all properties that are selected
             var savedTemplate = RegisterTemplateService.getModelForSave();
+
+            //prepare access control changes if any
+            EntityAccessControlService.updateEntityForSave(savedTemplate);
+
             //get template order
             var order = [];
             _.each(self.templateOrder, function (template) {
@@ -390,7 +394,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             $mdDialog.show({
                 controller: ["$scope","$mdDialog","nifiTemplateId","templateName","message",RegistrationErrorDialogController],
-                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template-error-dialog.html',
+                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true,
                 fullscreen: true,
@@ -405,8 +409,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", RegisterCompleteRegistrationController]);
-    angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService","$transition$",RegisterTemplateCompleteController]);
+    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
+    angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);
 });
@@ -426,11 +430,10 @@ function RegistrationInProgressDialogController($scope, templateName) {
     $scope.templateName = templateName;
 }
 
-function RegisterTemplateCompleteController(StateService, $transition$) {
+function RegisterTemplateCompleteController(StateService) {
 
     var self = this;
-    self.message = $transition$.params().message;
-    self.model = $transition$.params().templateModel;
+
 
     this.gotIt = function () {
         StateService.FeedManager().Template().navigateToRegisteredTemplates();

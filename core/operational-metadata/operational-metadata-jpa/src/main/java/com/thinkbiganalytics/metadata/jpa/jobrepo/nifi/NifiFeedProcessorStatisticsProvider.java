@@ -25,7 +25,12 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
+import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -34,11 +39,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Provider for accessing the statstics for a feed and processor
  */
 @Service
 public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider {
+
+    public static String ITEM_LAST_MODIFIED_KEY = "NIFI_FEED_PROCESSOR_STATS";
 
     @Autowired
     private JPAQueryFactory factory;
@@ -47,16 +56,35 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     private NifiEventRepository nifiEventRepository;
 
+    @Inject
+    private ItemLastModifiedProvider itemLastModifiedProvider;
+
+    @Inject
+    private NifiEventProvider nifiEventProvider;
+
+    @Inject
+    private AccessController controller;
+
     @Autowired
     public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository, NifiEventRepository nifiEventRepository) {
         this.statisticsRepository = repository;
         this.nifiEventRepository = nifiEventRepository;
     }
 
+    private String getLastModifiedKey(String clusterId) {
+        if(StringUtils.isBlank(clusterId)|| "Node".equalsIgnoreCase(clusterId)){
+            return ITEM_LAST_MODIFIED_KEY;
+        }
+        else {
+            return ITEM_LAST_MODIFIED_KEY + "-" + clusterId;
+        }
+    }
 
     @Override
     public NifiFeedProcessorStats create(NifiFeedProcessorStats t) {
-        return statisticsRepository.save((JpaNifiFeedProcessorStats) t);
+        NifiFeedProcessorStats stats =  statisticsRepository.save((JpaNifiFeedProcessorStats) t);
+        ItemLastModified lastModified = itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()), t.getMaxEventId().toString());
+        return stats;
     }
 
     public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, TimeFrame timeFrame) {
@@ -115,6 +143,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -126,7 +155,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
@@ -139,6 +170,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -150,7 +184,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorName)
@@ -161,6 +197,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         JPAQuery
             query = factory.select(
             Projections.bean(JpaNifiFeedProcessorStats.class,
@@ -174,17 +213,38 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
+
             .groupBy(stats.feedName, stats.maxEventTime)
             .orderBy(stats.maxEventTime.asc());
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
 
+    public Long findLastProcessedEventId() {
+        return findLastProcessedEventId(null);
+    }
 
-    @Override
+    public Long findLastProcessedEventId(String clusterNodeId) {
+        Long eventId = null;
+        ItemLastModified lastModified = itemLastModifiedProvider.findByKey(getLastModifiedKey(clusterNodeId));
+        if(lastModified != null){
+            eventId = Long.parseLong(lastModified.getValue());
+        }
+        if(eventId == null){
+           eventId = nifiEventProvider.findLastProcessedEventId(clusterNodeId);
+        }
+        //resort back to the max event id in case the other tables are not populated yet.  backwards comparability for 0.7.x versions
+        if(eventId == null) {
+            eventId = findMaxEventId(clusterNodeId);
+        }
+        return eventId;
+    }
+
     public Long findMaxEventId(String clusterNodeId) {
         Long eventId = -1L;
         if (StringUtils.isNotBlank(clusterNodeId)) {
@@ -204,5 +264,11 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             eventId = nifiEventRepository.findMaxEventId();
         }
         return eventId;
+    }
+
+    @Override
+    public Long resetLastProcessedEventId(String clusterNodeId) {
+        ItemLastModified lastModified =  itemLastModifiedProvider.update(getLastModifiedKey(clusterNodeId),"0");
+        return lastModified != null ? Long.parseLong(lastModified.getValue()) : null;
     }
 }

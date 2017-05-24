@@ -20,14 +20,19 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.entity.TemplateEntity;
 import org.apache.nifi.web.api.entity.TemplatesEntity;
 import org.glassfish.jersey.media.multipart.MultiPart;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -124,4 +129,7 @@ public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
     protected TemplateDTO upload(@Nonnull final MultiPart template) {
         return client.postMultiPart("/process-groups/root/templates/upload", template, TemplateEntity.class).getTemplate();
     }
+
+
+
 }

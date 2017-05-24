@@ -34,4 +34,6 @@ import org.springframework.core.annotation.Order;
 public interface PostMetadataConfigAction extends Runnable {
 
     public static final int DEFAULT_ORDER = 0;
+    public static final int EARLY_ORDER = DEFAULT_ORDER - 100;
+    public static final int LATE_ORDER = DEFAULT_ORDER + 100;
 }

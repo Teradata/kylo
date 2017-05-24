@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementActionUiConfigurationItem;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
@@ -38,6 +39,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +87,11 @@ public class ServiceLevelAgreementRestController {
     private JcrMetadataAccess metadata;
     @Inject
     private MetadataAccess metadataAccess;
+    @Inject
+    private ServiceLevelAgreementModelTransform serviceLevelAgreementTransform;
+
+    @Inject
+    private AccessController accessController;
 
     @GET
     @Path("/available-metrics")
@@ -119,6 +126,7 @@ public class ServiceLevelAgreementRestController {
                       @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
                   })
     public Response saveSla(ServiceLevelAgreementGroup sla) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveAndScheduleSla(sla);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
         ServiceLevelAgreementGroup serviceLevelAgreementGroup = helper.toServiceLevelAgreementGroup(serviceLevelAgreement);
@@ -138,6 +146,7 @@ public class ServiceLevelAgreementRestController {
                       @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
                   })
     public Response saveAndScheduleFeedSla(@UUID @PathParam("feedId") String feedId, ServiceLevelAgreementGroup sla) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveAndScheduleFeedSla(sla, feedId);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
         ServiceLevelAgreementGroup serviceLevelAgreementGroup = helper.toServiceLevelAgreementGroup(serviceLevelAgreement);
@@ -158,6 +167,7 @@ public class ServiceLevelAgreementRestController {
                       @ApiResponse(code = 500, message = "The SLA could not be deleted.", response = RestResponseStatus.class)
                   })
     public Response deleteSla(@UUID @PathParam("slaId") String slaId) throws InvalidOperationException {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         serviceLevelAgreementService.removeAndUnscheduleAgreement(slaId);
 
         return Response.ok().build();
@@ -188,6 +198,7 @@ public class ServiceLevelAgreementRestController {
                       @ApiResponse(code = 400, message = "The slaId is not a valid UUID.", response = RestResponseStatus.class)
                   })
     public Response getSlaAsForm(@UUID @PathParam("slaId") String slaId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
         ServiceLevelAgreementGroup agreement = serviceLevelAgreementService.getServiceLevelAgreementAsFormObject(slaId);
 
         return Response.ok(agreement).build();
@@ -207,20 +218,6 @@ public class ServiceLevelAgreementRestController {
         return Response.ok(validation).build();
     }
 
-// TODO: this method was conflicting with saveSla()
-//    @POST
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ServiceLevelAgreement createAgreement(ServiceLevelAgreement agreement) {
-//        log.debug("POST Create SLA {}", agreement);
-//
-//        return this.metadata.commit(() -> {
-//            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement domainSla
-//                = ServiceLevelAgreementModelTransform.generateDomain(agreement, this.provider);
-//
-//            return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA.apply(domainSla);
-//        });
-//    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -230,15 +227,7 @@ public class ServiceLevelAgreementRestController {
     )
     public List<FeedServiceLevelAgreement> getAgreements() {
         log.debug("GET all SLA's");
-
-        return this.metadata.commit(() -> {
-            List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
-            if (agreements != null) {
-                return ServiceLevelAgreementModelTransform.transformFeedServiceLevelAgreements(agreements);
-            }
-
-            return new ArrayList<>(0);
-        });
+        return serviceLevelAgreementService.getServiceLevelAgreements();
     }
 
     @GET
@@ -251,17 +240,13 @@ public class ServiceLevelAgreementRestController {
                   })
     public ServiceLevelAgreement getAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
-
-        return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID id = this.provider.resolve(idValue);
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = this.provider.getAgreement(id);
-
-            if (sla != null) {
-                return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA.apply(sla);
-            } else {
-                throw new WebApplicationException("No SLA with the given ID was found", Response.Status.NOT_FOUND);
-            }
-        });
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
+        ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.getServiceLevelAgreement(idValue);
+        if (serviceLevelAgreement == null) {
+            throw new WebApplicationException("No SLA with the given ID was found", Response.Status.NOT_FOUND);
+        } else {
+            return serviceLevelAgreement;
+        }
     }
 
     @GET

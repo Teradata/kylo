@@ -139,7 +139,7 @@ public class JpaBatchFeedSummaryCounts implements BatchFeedSummaryCounts {
 
         private static final long serialVersionUID = 6017751710414995750L;
 
-        @Column(name = "feed_id", columnDefinition = "binary(16)")
+        @Column(name = "feed_id")
         private UUID uuid;
 
 

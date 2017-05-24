@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
@@ -129,12 +129,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>com.holdenkarau</groupId>
-      <artifactId>spark-testing-base_2.10</artifactId>
-      <version>${spark.version}_0.6.0</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -154,6 +148,7 @@
               <mainClass>${mainClass.name}</mainClass>
             </manifest>
           </archive>
+	  <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
           <execution>

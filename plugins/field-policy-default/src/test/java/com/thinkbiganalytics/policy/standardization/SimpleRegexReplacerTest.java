@@ -23,6 +23,8 @@ package com.thinkbiganalytics.policy.standardization;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test the {@link SimpleRegexReplacer}
@@ -50,6 +52,47 @@ public class SimpleRegexReplacerTest {
     public void testSpaces() throws Exception {
         SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("\\s", "");
         assertEquals("", regexReplacer.convertValue("        "));
+    }
+
+    @Test
+    public void testAcceptValidType() {
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("(?i)foo", "bar");
+        assertTrue(regexReplacer.accepts("foofeefoofie"));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("(?i)foo", "bar");
+        Double doubleValue = 1000.05d;
+        assertFalse(regexReplacer.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() {
+        Object expectedValue = "barfeebarfie";
+        Object rawValue = "foofeefoofie";
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("(?i)foo", "bar");
+        assertEquals(expectedValue, regexReplacer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        Object expectedValue = Double.valueOf("1000.05");
+        Object rawValue = Double.valueOf("1000.05");
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("[0-8]", "9");
+        assertEquals(expectedValue, regexReplacer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults() {
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("(?i)foo", "bar");
+        Object rawValueObj = "foofeefoofie";
+        Object expectedValueObj = "barfeebarfie";
+        String rawValueStr = "foofeefoofie";
+        String expectedValueStr = "barfeebarfie";
+        assertEquals(regexReplacer.convertValue(rawValueStr), regexReplacer.convertRawValue(rawValueObj).toString());
+        assertEquals(regexReplacer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(regexReplacer.convertRawValue(rawValueObj), expectedValueObj);
     }
 
 }

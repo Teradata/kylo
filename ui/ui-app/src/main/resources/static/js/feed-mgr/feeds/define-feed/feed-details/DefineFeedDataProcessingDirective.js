@@ -1,22 +1,3 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
 define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
     var directive = function () {
@@ -48,6 +29,107 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.stepNumber = parseInt(this.stepIndex)+1
         this.selectedColumn = {};
 
+
+        var checkAll = {
+            isChecked:true,
+            isIndeterminate: false,
+            totalChecked:0,
+            clicked:function(checked){
+                if(checked){
+                    this.totalChecked++;
+                }
+                else {
+                    this.totalChecked--;
+                }
+                this.markChecked();
+            },
+            markChecked:function(){
+                if(this.totalChecked == self.model.table.fieldPolicies.length){
+                    this.isChecked = true;
+                    this.isIndeterminate = false;
+                }
+                else if(this.totalChecked >0) {
+                    this.isChecked = false;
+                    this.isIndeterminate = true;
+                }
+                else if(this.totalChecked == 0){
+                    this.isChecked = false;
+                    this.isIndeterminate = false;
+                }
+            }
+        }
+
+        /**
+         * Toggle Check All/None on Profile column
+         * Default it to true
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.profileCheckAll = angular.extend({
+            isChecked:true,
+            isIndeterminate: false,
+            toggleAll: function() {
+            var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    field.profile = checked;
+                });
+                if(checked){
+                    this.totalChecked = self.model.table.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                 self.profileCheckAll.totalChecked = 0;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    if(field.profile){
+                        self.profileCheckAll.totalChecked++;
+                    }
+                });
+                self.profileCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+        /**
+         *
+         * Toggle check all/none on the index column
+         *
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.indexCheckAll = angular.extend({
+            isChecked:false,
+            isIndeterminate: false,
+            toggleAll: function() {
+                var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    field.index = checked;
+                });
+                this.isChecked = checked;
+
+                if(checked){
+                    this.totalChecked = self.model.table.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                self.indexCheckAll.totalChecked = 0;
+                _.each(self.model.table.fieldPolicies,function(field) {
+                    if(field.index){
+                        self.indexCheckAll.totalChecked++;
+                    }
+                });
+                self.indexCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+
+
         /**
          * The form in angular
          * @type {{}}
@@ -63,7 +145,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         FeedService.updateEnabledMergeStrategy(self.model, self.mergeStrategies);
-        this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
 
@@ -77,6 +158,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     var policy = self.model.table.fieldPolicies[idx];
                     policy.name = columnDef.name;
                 });
+
+                self.profileCheckAll.setup();
+
+                self.indexCheckAll.setup();
 
             }
         }
@@ -137,6 +222,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.isValid = validRollingSync && validPK;
         }
 
+
+
         this.getSelectedColumn = function () {
             return self.selectedColumn;
         };
@@ -155,7 +242,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         };
 
-        this.showFieldRuleDialog = function(field,policyParam) {
+        this.showFieldRuleDialog = function(field) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
@@ -164,8 +251,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 fullscreen: true,
                 locals : {
                     feed: self.model,
-                    field:field,
-                    policyParameter:policyParam
+                    field:field
                 }
             })
                 .then(function(msg) {

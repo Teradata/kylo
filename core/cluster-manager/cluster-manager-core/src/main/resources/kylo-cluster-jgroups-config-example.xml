@@ -1,0 +1,42 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="urn:org:jgroups"
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+  <TCP bind_port="7900"
+       bind_addr="127.0.0.1"
+       loopback="false"
+       recv_buf_size="${tcp.recv_buf_size:5M}"
+       send_buf_size="${tcp.send_buf_size:5M}"
+       max_bundle_size="64K"
+       max_bundle_timeout="30"
+       enable_bundling="true"
+       enable_diagnostics="true"
+       use_send_queues="true"
+       sock_conn_timeout="3000"
+       timer_type="new"
+       timer.min_threads="4"
+       timer.max_threads="10"
+       timer.keep_alive_time="3000"
+       timer.queue_max_size="500"
+       thread_pool.enabled="false"
+       oob_thread_pool.enabled="false"/>
+  <TCPPING timeout="3000" async_discovery="true" num_initial_members="2"
+           initial_hosts="127.0.0.1[7900],127.0.0.1[7901]"
+           port_range="4"/>
+  <MPING mcast_port="45700"/>
+  <MERGE3 min_interval="10000"
+          max_interval="30000"/>
+  <FD_SOCK/>
+  <FD timeout="3000" max_tries="3" />
+  <VERIFY_SUSPECT timeout="1500" />
+  <BARRIER />
+  <pbcast.NAKACK2 use_mcast_xmit="false"
+                  discard_delivered_msgs="true"/>
+  <UNICAST3 />
+  <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
+                 max_bytes="4M"/>
+  <pbcast.GMS print_local_addr="true" join_timeout="3000" view_bundling="true"/>
+  <MFC max_credits="2M"
+       min_threshold="0.4"/>
+  <FRAG2 frag_size="60K" />
+  <pbcast.STATE_TRANSFER/>
+</config>

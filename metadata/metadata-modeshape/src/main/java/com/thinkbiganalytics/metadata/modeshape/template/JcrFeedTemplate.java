@@ -20,14 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +28,21 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
+
 /**
  */
-public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate {
+public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate, AccessControlledMixin {
 
     public static String NODE_TYPE = "tba:feedTemplate";
 
@@ -55,6 +59,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     public static String JSON = "tba:json";
 
     public static String IS_STREAM = "tba:isStream";
+
 
     public JcrFeedTemplate(Node node) {
         super(node);
@@ -171,26 +176,28 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         setProperty(STATE, State.DISABLED);
     }
 
-    public List<FeedManagerFeed> getFeeds() {
-        List<FeedManagerFeed> feeds = new ArrayList<>();
+    public List<Feed> getFeeds() {
+        List<Feed> feeds = new ArrayList<>();
         Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(this.node, FEEDS);
 
         for (Node depNode : feedNodes) {
-            feeds.add(new JcrFeedManagerFeed(depNode));
+            // TODO: note that feeds instances returned here will not be able to update feed ops 
+            // access through permission changes to their allowed actions.
+            feeds.add(new JcrFeed(depNode, (FeedOpsAccessControlProvider) null));
         }
 
         return feeds;
     }
 
-    public boolean addFeed(FeedManagerFeed<?> feed) {
-        JcrFeedManagerFeed<?> jcrFeed = (JcrFeedManagerFeed<?>) feed;
+    public boolean addFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
         return JcrPropertyUtil.addToSetProperty(this.node, FEEDS, feedNode);
     }
 
-    public boolean removeFeed(FeedManagerFeed<?> feed) {
-        JcrFeedManagerFeed<?> jcrFeed = (JcrFeedManagerFeed<?>) feed;
+    public boolean removeFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
         return JcrPropertyUtil.removeFromSetProperty(this.node, FEEDS, feedNode);
@@ -215,6 +222,11 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public void setStream(boolean isStream) {
         setProperty(IS_STREAM, isStream);
+    }
+    
+    @Override
+    public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
+        return JcrTemplateAllowedActions.class;
     }
 
     public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {

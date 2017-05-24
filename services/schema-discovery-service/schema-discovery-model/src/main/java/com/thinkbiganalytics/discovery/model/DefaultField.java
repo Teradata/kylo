@@ -149,7 +149,7 @@ public class DefaultField implements Field {
      * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
      */
     public String asFieldStructure() {
-        return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + description + "|" +
+        return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + getDescriptionWithoutNewLines() + "|" +
                BooleanUtils.toInteger(primaryKey) + "|" + BooleanUtils.toInteger(createdTracker) + "|" +
                BooleanUtils.toInteger(updatedTracker);
     }
@@ -185,5 +185,12 @@ public class DefaultField implements Field {
 
     public void setUpdatedTracker(Boolean updatedTracker) {
         this.updatedTracker = updatedTracker;
+    }
+
+    public String getDescriptionWithoutNewLines() {
+        if (description != null) {
+            return description.replace("\n","\\n");
+        }
+        return "";
     }
 }

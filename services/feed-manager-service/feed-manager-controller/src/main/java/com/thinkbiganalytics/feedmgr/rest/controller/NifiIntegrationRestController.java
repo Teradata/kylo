@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -89,9 +91,9 @@ public class NifiIntegrationRestController {
      * Messages for the default locale
      */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
-    static final String BASE = "/v1/feedmgr/nifi";
-    static final String FLOWS = "/flows";
-    static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
+    public static final String BASE = "/v1/feedmgr/nifi";
+    public static final String FLOWS = "/flows";
+    public static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
     @Inject
@@ -113,6 +115,9 @@ public class NifiIntegrationRestController {
     private NiFiRestClient nifiRestClient;
     @Inject
     private SpringEnvironmentProperties environmentProperties;
+
+    @Inject
+    private AccessController accessController;
 
     @GET
     @Path("/auto-align/{processGroupId}")
@@ -179,6 +184,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlow(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlow(processGroupId);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
@@ -193,6 +200,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlowForCategoryAndFeed(@PathParam("categoryAndFeedName") String categoryAndFeedName) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlowForCategoryAndFeed(categoryAndFeedName);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
@@ -209,6 +218,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlows() {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         List<NifiFlowProcessGroup> feedFlows = legacyNifiRestClient.getFeedFlows();
         if (feedFlows != null) {
             log.info("********************** getAllFlows  ({})", feedFlows.size());

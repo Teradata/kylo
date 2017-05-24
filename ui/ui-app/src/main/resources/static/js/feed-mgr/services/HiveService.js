@@ -10,7 +10,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
         var data = {
             init: function () {
-                this.allTables == undefined;
+                this.allTables = undefined;
             },
             queryTablesSearch: function (query) {
                 var self = this;

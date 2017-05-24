@@ -58,7 +58,7 @@
                                      Cron Expression
                                    </span>
                             </div>
-                            <div flex="30" flex-md="45" flex-sm="45" flex-xs="45" layout="row" class="item-column md-list-item-text " >
+                            <div flex="30" flex-md="45" flex-sm="45" flex-xs="45" layout="row" class="item-column md-list-item-text " ng-if="vm.allowAdmin">
                                 <md-button class="border-btn" ng-if="job.state=='RUNNING' || job.state =='SCHEDULED'" ng-disabled="job.state =='PAUSED' || job.state == 'RUNNING' || vm.schedulerDetails.status == 'PAUSED' " ng-click="vm.pauseJob(job)">PAUSE</md-button>
                                 <md-button class="border-btn" ng-if="job.state=='PAUSED'" ng-disabled="job.state =='RUNNING' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.resumeJob(job)">RESUME</md-button>
                                 <md-button class="border-btn" ng-disabled="job.state !='SCHEDULED' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.triggerJob(job)">FIRE NOW </md-button>
@@ -73,7 +73,7 @@
             <card-layout flex="100" flex-gt-sm="20" flex-order="2" flex-order-xs="1" flex-order-sm="1" >
                 <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Scheduler Details</header-section>
                 <body-section transclude-to="body" flex layout="column">
-                    <div layout-align="center center" style="width:100%">
+                    <div layout-align="center center" style="width:100%" ng-if="vm.allowAdmin">
                     <md-button class="border-btn" style="width:150px;max-width:150px;" ng-show="vm.schedulerDetails.status == 'RUNNING'" ng-click="vm.pauseScheduler()">
                         PAUSE SCHEDULER
                     </md-button>

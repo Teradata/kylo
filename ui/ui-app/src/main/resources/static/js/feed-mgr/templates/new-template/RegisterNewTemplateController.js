@@ -35,7 +35,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
 		        .then(function(actionSet) {
 		        	if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
 		        		self.registrationMethods.push({
@@ -46,7 +46,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 		        });
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         self.registrationMethods.push({

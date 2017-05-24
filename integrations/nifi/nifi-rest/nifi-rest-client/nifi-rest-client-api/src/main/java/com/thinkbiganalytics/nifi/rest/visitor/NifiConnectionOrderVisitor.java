@@ -149,8 +149,10 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 //cant find the parent
             }
         }
+
         group.accept(this);
         this.visitedProcessGroups.put(group.getDto().getId(), group);
+
 
     }
 
@@ -255,6 +257,12 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 }
 
                 ConnectionDTO conn = parent.getConnectionMatchingDestinationId(source.getId());
+                if (conn == null) {
+                    //if its null get it from the cache and process with that.
+                    conn =
+                        cache.getProcessGroupCache().values().stream().flatMap(g -> g.getContents().getConnections().stream())
+                            .filter(connectionDTO -> connectionDTO.getDestination().getId().equalsIgnoreCase(source.getId())).findFirst().orElse(null);
+                }
                 if (conn != null && conn != connection) {
                     //get the processor whos source matches this connection Id
                     sourceProcessors = getSourceProcessors(conn);
@@ -274,9 +282,11 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                     Set<NifiVisitableProcessor> sources = group.getOutputPortProcessors(source.getId());
                     if (sourceProcessors != null && sources != null) {
                         sourceProcessors.addAll(sources);
-                    } else if (sourceProcessors != null && sources == null) {
-                        log.info("Unable to find/add source processors for source Connectable {} ({}) from connection id: {} ", source.getName(), source.getId(), connection.getId());
                     }
+                  /*
+                   If a process group is connected to another process group without any processors there will be no source processors
+                    having sourceProcessors as null here is ok.
+                    */
                 }
             } else if ("FUNNEL".equalsIgnoreCase(source.getType())) {
                 List<ConnectionDTO> passThroughConnections = NifiConnectionUtil.findConnectionsMatchingDestinationId(currentProcessGroup.getDto().getContents().getConnections(),
@@ -385,7 +395,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 log.debug("Exception searching Connection matching the destination. Parent Group ID: " + parentGroupId + ", and destinationId of  " + sourceId);
             }
             if (parent != null) {
-                //processGroup.getDto().setParent(parentParent.getProcessGroup());
                 //get Contents of this parent
                 NifiVisitableProcessGroup visitableProcessGroup = new NifiVisitableProcessGroup(parent);
                 ConnectionDTO conn = visitableProcessGroup.getConnectionMatchingDestinationId(sourceId);
@@ -498,13 +507,15 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         if (cache.getProcessGroup(processGroupId).isPresent()) {
             group = cache.getProcessGroup(processGroupId).get();
         } else {
-            group = getRestClient().processGroups().findById(processGroupId, false, true).orElse(null);
+            group = getRestClient().processGroups().findById(processGroupId, true, true).orElse(null);
             if (group != null) {
                 cache.add(group);
+                NifiProcessUtil.getProcessGroups(group).stream().forEach(processGroupDTO -> cache.add(processGroupDTO));
             }
         }
         return group;
     }
+
 
     private NiFiRestClient getRestClient() {
         return restClient;
