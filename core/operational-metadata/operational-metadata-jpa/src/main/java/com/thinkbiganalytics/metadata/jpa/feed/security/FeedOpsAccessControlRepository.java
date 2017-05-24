@@ -37,8 +37,8 @@ public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOps
     /**
      * Predicate for selecting matching principals in WHERE clause.
      */
-    String WHERE_PRINCIPALS_MATCH = " (acl.principalType = 'USER' AND acl.principalName = :#{user.name}) "
-                    + " OR (acl.principalType = 'GROUP' AND acl.principalName in :#{user.groups}) ";
+    String WHERE_PRINCIPALS_MATCH = " ((acl.principalType = 'USER' AND acl.principalName = :#{user.name}) "
+                    + " OR (acl.principalType = 'GROUP' AND acl.principalName in :#{user.groups})) ";
 
 
     /**
