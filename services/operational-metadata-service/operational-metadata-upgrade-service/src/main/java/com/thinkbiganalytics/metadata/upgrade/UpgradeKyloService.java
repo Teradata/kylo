@@ -333,6 +333,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             SecurityRole templateEditor = createDefaultRole(SecurityRole.TEMPLATE, "editor", "Editor", "Allows a user to edit,export a template",
                                                             TemplateAccessControl.ACCESS_TEMPLATE,
                                                             TemplateAccessControl.EDIT_TEMPLATE,
+                                                            TemplateAccessControl.DELETE,
                                                             TemplateAccessControl.CREATE_FEED,
                                                             TemplateAccessControl.EXPORT);
             createDefaultRole(SecurityRole.TEMPLATE, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions", templateEditor,
