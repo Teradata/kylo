@@ -14,6 +14,7 @@
     <rpm.install.dir>/opt/kylo</rpm.install.dir>
     <!-- override using property -Drpm.user -->
     <rpm.user>kylo</rpm.user>
+    <file.permissions>744</file.permissions>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 

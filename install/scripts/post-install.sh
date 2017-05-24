@@ -1,4 +1,9 @@
 #!/bin/bash
+####
+# There are two ways to run this script
+# No agruments - Assumes it's the RPM process running the script
+# ./post-install.sh INSTALL_HOME LINUX_USER LINUX_GROUP
+####
 
 ###
 # #%L
@@ -23,14 +28,16 @@
 INSTALL_HOME=/opt/kylo
 INSTALL_USER=kylo
 INSTALL_GROUP=users
+INSTALL_TYPE="RPM"
 
 echo "Installing to $INSTALL_HOME as the user $INSTALL_USER"
 
-if [ $# -gt 1 ]
+if [ $# -eq 3 ]
 then
     INSTALL_HOME=$1
     INSTALL_USER=$2
     INSTALL_GROUP=$3
+    INSTALL_TYPE="COMMAND_LINE"
 fi
 
 # function for determining way to handle startup scripts
@@ -46,6 +53,13 @@ echo " * set them to autostart"
 
 linux_type=$(get_linux_type)
 echo "Type of init scripts management tool determined as $linux_type"
+
+if [ "RPM" = "$INSTALL_TYPE" ]
+then
+    cd $INSTALL_HOME
+    tar -xf kylo-*-dependencies.tar.gz
+    rm kylo-*-dependencies.tar.gz
+fi
 
 chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
