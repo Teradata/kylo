@@ -373,101 +373,118 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
      *                              feed the user is editing if they are creating an SLA from the Feed Details page. If creating an SLA from the main SLA page the feed property will not be populated.
      */
     private ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
-        return metadataAccess.commit(() -> {
 
-            if (serviceLevelAgreement != null) {
-                ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+        //ensure user has permissions to edit the SLA
+        if (serviceLevelAgreement != null) {
 
+            ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+
+            //Read the feeds on the SLA as a Service. Then verify the current user has access to edit these feeds
+            List<String> feedsOnSla = metadataAccess.read(() -> {
+                List<String> feedIds = new ArrayList<>();
                 //all referencing Feeds
                 List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
-                Set<Feed> slaFeeds = new HashSet<Feed>();
-                Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
+
                 for (String categoryAndFeed : systemCategoryAndFeedNames) {
                     //fetch and update the reference to the sla
                     String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
                     String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
                     Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
                     if (feedEntity != null) {
-                        feedManagerFeedService.checkFeedPermission(feedEntity.getId().toString(), FeedAccessControl.EDIT_DETAILS);
-                        slaFeeds.add(feedEntity);
-                        slaFeedIds.add(feedEntity.getId());
+                        feedIds.add(feedEntity.getId().toString());
+
                     }
                 }
+                return feedIds;
+            }, MetadataAccess.SERVICE);
 
-                if (feed != null) {
-                    feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS);
-                }
+            boolean allowedToEdit = feedsOnSla.isEmpty() ? true : feedsOnSla.stream().allMatch(feedId -> feedManagerFeedService.checkFeedPermission(feedId, FeedAccessControl.EDIT_DETAILS));
 
-                if (feed != null) {
-                    transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                }
-                ServiceLevelAgreement sla = transformer.getServiceLevelAgreement(serviceLevelAgreement);
+            if (allowedToEdit) {
 
-                ServiceLevelAgreementBuilder slaBuilder = null;
-                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID existingId = null;
-                if (StringUtils.isNotBlank(sla.getId())) {
-                    existingId = slaProvider.resolve(sla.getId());
-                }
-                if (existingId != null) {
-                    slaBuilder = slaProvider.builder(existingId);
-                } else {
-                    slaBuilder = slaProvider.builder();
-                }
+                return metadataAccess.commit(() -> {
 
-                slaBuilder.name(sla.getName()).description(sla.getDescription());
-                for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group : sla.getGroups()) {
-                    ObligationGroupBuilder groupBuilder = slaBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition()));
-                    for (Obligation o : group.getObligations()) {
-                        groupBuilder.obligationBuilder().metric(o.getMetrics()).description(o.getDescription()).build();
+                    //Re read back in the Feeds for this session
+                    Set<Feed> slaFeeds = new HashSet<Feed>();
+                    Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
+                    feedsOnSla.stream().forEach(feedId -> {
+                        Feed feedEntity = feedProvider.findById(feedProvider.resolveId(feedId));
+                        if (feedEntity != null) {
+                            slaFeeds.add(feedEntity);
+                            slaFeedIds.add(feedEntity.getId());
+                        }
+                    });
+
+                    if (feed != null) {
+                        feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS);
                     }
-                    groupBuilder.build();
-                }
-                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
 
-                List<ServiceLevelAgreementActionConfiguration> actions = transformer.getActionConfigurations(serviceLevelAgreement);
-
-                // now assign the sla checks
-                slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
-
-                if (feed != null) {
-                    Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
-                    if (!slaFeedIds.contains(feedId)) {
-                        Feed feedEntity = feedProvider.getFeed(feedId);
-                        slaFeeds.add(feedEntity);
+                    if (feed != null) {
+                        transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());
                     }
-                }
-                //relate them
-                feedSlaProvider.relateFeeds(savedSla, slaFeeds);
-                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = serviceLevelAgreementTransform.toModel(savedSla, slaFeeds, true);
-                //schedule it
-                serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
-                return restModel;
+                    ServiceLevelAgreement sla = transformer.getServiceLevelAgreement(serviceLevelAgreement);
 
+                    ServiceLevelAgreementBuilder slaBuilder = null;
+                    com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID existingId = null;
+                    if (StringUtils.isNotBlank(sla.getId())) {
+                        existingId = slaProvider.resolve(sla.getId());
+                    }
+                    if (existingId != null) {
+                        slaBuilder = slaProvider.builder(existingId);
+                    } else {
+                        slaBuilder = slaProvider.builder();
+                    }
+
+                    slaBuilder.name(sla.getName()).description(sla.getDescription());
+                    for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group : sla.getGroups()) {
+                        ObligationGroupBuilder groupBuilder = slaBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition()));
+                        for (Obligation o : group.getObligations()) {
+                            groupBuilder.obligationBuilder().metric(o.getMetrics()).description(o.getDescription()).build();
+                        }
+                        groupBuilder.build();
+                    }
+                    com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
+
+                    List<ServiceLevelAgreementActionConfiguration> actions = transformer.getActionConfigurations(serviceLevelAgreement);
+
+                    // now assign the sla checks
+                    slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
+
+                    if (feed != null) {
+                        Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
+                        if (!slaFeedIds.contains(feedId)) {
+                            Feed feedEntity = feedProvider.getFeed(feedId);
+                            slaFeeds.add(feedEntity);
+                        }
+                    }
+                    //relate them
+                    feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = serviceLevelAgreementTransform.toModel(savedSla, slaFeeds, true);
+                    //schedule it
+                    serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
+                    return restModel;
+
+                });
             }
-            return null;
-
-
-        });
-
-
+        }
+        return null;
     }
 
     public ServiceLevelAgreement saveAndScheduleFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId) {
 
-        return metadataAccess.commit(() -> {
-            FeedMetadata feed = null;
-            if (StringUtils.isNotBlank(feedId)) {
-                feed = feedManagerFeedService.getFeedById(feedId);
+        FeedMetadata feed = null;
+        if (StringUtils.isNotBlank(feedId)) {
+            feed = feedManagerFeedService.getFeedById(feedId);
 
-            }
-            if (feed != null && feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS)) {
-                ServiceLevelAgreement sla = saveAndScheduleSla(serviceLevelAgreement, feed);
-                return sla;
-            } else {
-                log.error("Error attempting to save and Schedule the Feed SLA {} ({}) ", feed != null ? feed.getCategoryAndFeedName() : " NULL Feed ", feedId);
-                throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
-            }
-        });
+        }
+        if (feed != null && feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS)) {
+            ServiceLevelAgreement sla = saveAndScheduleSla(serviceLevelAgreement, feed);
+            return sla;
+        } else {
+            log.error("Error attempting to save and Schedule the Feed SLA {} ({}) ", feed != null ? feed.getCategoryAndFeedName() : " NULL Feed ", feedId);
+            throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
+        }
+
 
     }
 

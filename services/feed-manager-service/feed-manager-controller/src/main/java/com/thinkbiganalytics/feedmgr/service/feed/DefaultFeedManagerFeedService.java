@@ -24,8 +24,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -185,7 +185,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private LegacyNifiRestClient nifiRestClient;
 
 
-
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
 
@@ -315,7 +314,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return metadataAccess.read(() -> {
             List<FeedSummary> summaryList = new ArrayList<>();
             boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-            if(hasPermission) {
+            if (hasPermission) {
 
                 Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
                 List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
@@ -428,8 +427,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             });
         }
 
-
-
         //replace expressions with values
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
@@ -450,13 +447,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .build());
 
         //update the template properties with the feedMetadata properties
-         List<NifiProperty> matchedProperties =
-                NifiPropertyUtil
-                    .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+        List<NifiProperty> matchedProperties =
+            NifiPropertyUtil
+                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
 
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
-
 
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
@@ -843,7 +839,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
-                boolean canEditDetails = feedSummary.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName());
+                boolean
+                    canEditDetails =
+                    accessController.isEntityAccessControlled() ? feedSummary.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName())
+                                                                : accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
                 Map<String, Object> labelValueProperties = new HashMap<>();
                 labelValueProperties.put("feed:disabled", isDisabled);
                 labelValueProperties.put("feed:editDetails", canEditDetails);
@@ -864,14 +863,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
             boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-            return  hasPermission ? UserPropertyTransform.toUserFields(feedProvider.getUserFields()) : Collections.emptySet();
+            return hasPermission ? UserPropertyTransform.toUserFields(feedProvider.getUserFields()) : Collections.emptySet();
         });
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
         boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-        if(hasPermission) {
+        if (hasPermission) {
             feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
         }
     }
