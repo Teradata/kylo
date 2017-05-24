@@ -13,6 +13,10 @@ OFFLINE_SETUP_FOLDER=$2
 KYLO_INSTALL_HOME=/opt/kylo
 JAVA_INSTALL_FOLDER=/opt/java
 
+JDK_FOLDER_NAME=jdk1.8.0_131
+JDK_FILE_NAME=jdk-8u131-linux-x64.tar.gz
+JDK_DOWNLOAD_URL=http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz
+
 if [ $# -eq 0 ]
 then
     echo "No setup folder specified. Defaulting to kylo home to /opt/kylo"
@@ -46,19 +50,19 @@ if [ $offline = true ]
 then
     cp $OFFLINE_SETUP_FOLDER/java/jdk-8u92-linux-x64.tar.gz .
 else
-    curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/8u92-b14/jdk-8u92-linux-x64.tar.gz"
+    wget -c -O "$JDK_FILE_NAME" --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" "$JDK_DOWNLOAD_URL"
 fi
 
-if ! [ -f jdk-8u92-linux-x64.tar.gz ]
+if ! [ -f $JDK_FILE_NAME ]
 then
     echo "Working in offline mode and file not found.. exiting"
     exit 1
 fi
 
-tar -xvf jdk-8u92-linux-x64.tar.gz
-rm -f jdk-8u92-linux-x64.tar.gz
+tar -xvf $JDK_FILE_NAME
+rm -f $JDK_FILE_NAME
 echo "Creating symbolic link called 'current' to simplify upgrades"
-ln -s jdk1.8.0_92 current
+ln -s $JDK_FOLDER_NAME current
 
 if [ ${offline} = true ]
 then
