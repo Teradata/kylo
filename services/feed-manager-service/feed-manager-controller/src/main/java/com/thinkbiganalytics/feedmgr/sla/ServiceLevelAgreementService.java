@@ -234,6 +234,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                 return systemSla.getFeeds().stream().allMatch(feed -> feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS));
             } else {
                 accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+                return true;
             }
         }
         return false;
@@ -253,6 +254,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                 return systemSla.getFeeds().stream().allMatch(feed -> feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.ACCESS_FEED));
             } else {
                 accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
+                return true;
             }
         }
         return false;
@@ -392,7 +394,6 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                     Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
                     if (feedEntity != null) {
                         feedIds.add(feedEntity.getId().toString());
-
                     }
                 }
                 return feedIds;

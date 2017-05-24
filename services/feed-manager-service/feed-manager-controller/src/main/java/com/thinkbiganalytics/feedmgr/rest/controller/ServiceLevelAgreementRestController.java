@@ -168,9 +168,13 @@ public class ServiceLevelAgreementRestController {
                   })
     public Response deleteSla(@UUID @PathParam("slaId") String slaId) throws InvalidOperationException {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
-        serviceLevelAgreementService.removeAndUnscheduleAgreement(slaId);
-
-        return Response.ok().build();
+        boolean removed = serviceLevelAgreementService.removeAndUnscheduleAgreement(slaId);
+        if(!removed) {
+            throw new WebApplicationException("Unable to remove the SLA");
+        }
+        else {
+            return Response.ok().build();
+        }
     }
 
 
