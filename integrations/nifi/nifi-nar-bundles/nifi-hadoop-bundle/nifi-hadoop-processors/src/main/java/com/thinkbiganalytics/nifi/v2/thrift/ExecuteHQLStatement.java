@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.v2.thrift;
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -116,8 +117,14 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
+            boolean result = false;
+            String[] hiveStatements = StringUtils.split(ddlQuery, ';');
 
-            boolean result = st.execute(ddlQuery);
+            for (String statement:hiveStatements
+                 ) {
+                 result = st.execute(statement);
+            }
+
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             session.transfer(flowFile, REL_SUCCESS);
         } catch (final Exception e) {
