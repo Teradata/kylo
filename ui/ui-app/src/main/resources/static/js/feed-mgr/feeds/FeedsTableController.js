@@ -116,7 +116,8 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                             feedName: feed.feedName,
                             category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
                             updateDate: feed.updateDate,
-                            allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed)
+                            allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
+                            allowExport: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
                         })
                     });
                 }

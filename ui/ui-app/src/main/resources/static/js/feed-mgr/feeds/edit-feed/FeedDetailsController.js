@@ -388,6 +388,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 entityEditAccess: entityAccessControlled === true
                                     ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model)
                                     : true,
+                                entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
                                 entityPermissionAccess: entityAccessControlled === true
                                     ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model)
                                     : true,
@@ -403,7 +404,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
                                 self.allowAdmin = allowAdminAccess;
                                 self.allowSlaAccess = slaAccess;
-                                self.allowExport = response.entityEditAccess && allowExport;
+                                self.allowExport = response.entityExportAccess && allowExport;
                             });
                         }
                     }, function(err) {

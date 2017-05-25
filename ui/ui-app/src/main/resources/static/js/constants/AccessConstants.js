@@ -224,7 +224,8 @@ define([], function () {
                 EDIT_FEED_DETAILS: "editFeedDetails",
                 DELETE_FEED: "deleteFeed",
                 //ENABLE_FEED: "enableFeed",  /// Do we need this??... can enable be inferred from edit details
-                CHANGE_FEED_PERMISSIONS: "changeFeedPermissions"
+                CHANGE_FEED_PERMISSIONS: "changeFeedPermissions",
+                EXPORT: "exportFeed"
             },
             TEMPLATE: {
                 EDIT_TEMPLATE: "editTemplate",
