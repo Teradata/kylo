@@ -104,7 +104,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
                         return processor.userEditable
                     })) {
-                StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex)).skip = true;
+             var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+             if(step != null) {
+                 step.skip = true;
+             }
             }
 
             // Find controller services

@@ -86,10 +86,14 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
         this.sparkShellService = function () {
             var model = FeedService.createFeedModel.dataTransformation;
             var source = (angular.isObject(self.sqlModel) && angular.isArray(model.datasourceIds)
-                          && (model.datasourceIds.length > 1 || (model.datasourceIds.length === 1 && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE)))
+                          && (model.datasourceIds.length > 1 || (model.datasourceIds.length === 1 && model.datasourceIds[0] != undefined && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE)))
                 ? self.sqlModel
                 : self.sql;
 
+            // if we dont have any datasources, default it to Hive data source
+            if(model.datasources == null || model.datasources.length == 0){
+                model.datasources = [{id:VisualQueryService.HIVE_DATASOURCE,name:"Hive"}];
+            }
             if (angular.isArray(model.states) && model.states.length > 0) {
                 var service = new SparkShellService(source, model.states, model.datasources);
                 self.functionHistory = service.getHistory();
