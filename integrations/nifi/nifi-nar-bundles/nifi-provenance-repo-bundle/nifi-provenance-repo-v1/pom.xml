@@ -14,7 +14,7 @@
   <version>0.8.2-SNAPSHOT</version>
 
   <properties>
-    <nifi.version>1.1.0</nifi.version>
+    <nifi.version>1.2.0</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
