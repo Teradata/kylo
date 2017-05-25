@@ -59,9 +59,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.LOAD_JOB_URL = function (executionId) {
             return self.JOBS_BASE + "/" + executionId;
         }
-        this.JOB_PROGRESS_URL = function (executionId) {
-            return self.JOBS_BASE + "/" + executionId + "/steps";
-        }
 
         this.RELATED_JOBS_URL = function (executionId) {
             return self.JOBS_BASE + "/" + executionId + "/related";

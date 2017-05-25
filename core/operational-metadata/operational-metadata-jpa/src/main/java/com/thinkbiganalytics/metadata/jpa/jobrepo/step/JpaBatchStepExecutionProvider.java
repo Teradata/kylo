@@ -208,11 +208,4 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
         }
     }
-
-
-    public List<? extends BatchStepExecution> getSteps(Long jobExecutionId) {
-        return batchStepExecutionRepository.findSteps(jobExecutionId);
-    }
-
-
 }

@@ -22,7 +22,6 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
 
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
@@ -37,7 +36,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
-import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
@@ -122,27 +120,6 @@ public class JobsRestController {
             return executedJob;
         });
 
-    }
-
-    /**
-     * Get the progress of each of the steps of the job execution for the given job instance id
-     *
-     * @return A list of each step and its progress, or an HTTP error code on failure
-     */
-    @GET
-    @Path("/{executionId}/steps")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the steps of the specified job.")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the steps.", response = ExecutedStep.class, responseContainer = "List"),
-                      @ApiResponse(code = 400, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
-                  })
-    public List<ExecutedStep> getJobSteps(@PathParam("executionId") String executionId) {
-        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-        return metadataAccess.read(() -> {
-            List<? extends BatchStepExecution> steps = stepExecutionProvider.getSteps(Long.parseLong(executionId));
-            return JobModelTransform.executedSteps(steps);
-        });
     }
 
     /**
