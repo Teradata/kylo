@@ -58,10 +58,7 @@ public class SendJmsMessage {
     }
 
     public void sendSerializedObjectToQueue(String queueName, final Serializable obj) throws JmsException {
-        log.info("Sending ActiveMQ message [" + obj + "] to queue [" + queueName + "]");
-
         jmsMessagingTemplate.convertAndSend(queueName, obj);
-
     }
 
 
