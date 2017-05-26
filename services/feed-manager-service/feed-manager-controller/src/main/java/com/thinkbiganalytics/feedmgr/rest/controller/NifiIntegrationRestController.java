@@ -127,6 +127,8 @@ public class NifiIntegrationRestController {
         @ApiResponse(code = 200, message = "The result of the operation.", response = RestResponseStatus.class)
     )
     public Response autoAlign(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         RestResponseStatus status;
         if ("all".equals(processGroupId)) {
             AlignNiFiComponents alignNiFiComponents = new AlignNiFiComponents();
@@ -166,6 +168,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response cleanupVersionedProcessGroups(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         RestResponseStatus status;
         CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient, processGroupId, propertyDescriptorTransform);
         cleanupStaleFeedRevisions.cleanup();
