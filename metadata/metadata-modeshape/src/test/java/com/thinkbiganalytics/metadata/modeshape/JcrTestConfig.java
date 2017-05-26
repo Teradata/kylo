@@ -124,7 +124,6 @@ public class JcrTestConfig {
                                 .action(CategoryAccessControl.ACCESS_DETAILS)
                                 .action(CategoryAccessControl.EDIT_DETAILS)
                                 .action(CategoryAccessControl.DELETE)
-                                .action(CategoryAccessControl.EXPORT)
                                 .action(CategoryAccessControl.CREATE_FEED)
                                 .action(CategoryAccessControl.CHANGE_PERMS)
                                 .add()

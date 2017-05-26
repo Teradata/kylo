@@ -45,9 +45,6 @@ public interface CategoryAccessControl {
     Action DELETE = ACCESS_DETAILS.subAction("deleteCategory",
                                              "Delete",
                                              "Allows deleting the category");
-    Action EXPORT = ACCESS_CATEGORY.subAction("exportCategory",
-                                              "Export",
-                                              "Allows exporting the category");
     Action CREATE_FEED = ACCESS_CATEGORY.subAction("createFeedUnderCategory",
                                                    "Create Feed under Category",
                                                    "Allows creating feeds under this category");

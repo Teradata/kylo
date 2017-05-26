@@ -345,7 +345,6 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                             CategoryAccessControl.ACCESS_CATEGORY,
                                                             CategoryAccessControl.EDIT_DETAILS,
                                                             CategoryAccessControl.EDIT_SUMMARY,
-                                                            CategoryAccessControl.EXPORT,
                                                             CategoryAccessControl.CREATE_FEED,
                                                             CategoryAccessControl.DELETE);
 
