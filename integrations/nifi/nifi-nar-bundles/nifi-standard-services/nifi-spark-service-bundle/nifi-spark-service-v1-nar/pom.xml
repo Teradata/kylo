@@ -2,30 +2,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-nifi-spark-v1-nar</artifactId>
+  <artifactId>kylo-nifi-spark-service-v1-nar</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.spark</groupId>
-    <artifactId>kylo-nifi-spark-bundle</artifactId>
-    <version>0.8.2-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <artifactId>kylo-nifi-spark-service-bundle</artifactId>
+    <version>0.8.1-SNAPSHOT</version>
   </parent>
   <packaging>nar</packaging>
   <properties>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <source.skip>true</source.skip>
-    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+    <plugin.license.parentRelative>../../../../../../</plugin.license.parentRelative>
   </properties>
-
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-framework-v1</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.nifi.spark</groupId>
-      <artifactId>kylo-nifi-spark-processors</artifactId>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-spark-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -41,7 +34,6 @@
       <artifactId>kylo-nifi-security-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
-
   </dependencies>
 
 </project>
