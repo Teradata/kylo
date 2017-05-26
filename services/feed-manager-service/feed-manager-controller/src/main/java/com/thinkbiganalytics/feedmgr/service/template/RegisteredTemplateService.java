@@ -119,6 +119,27 @@ public class RegisteredTemplateService {
     }
 
     /**
+     * Checks the current security context has been granted permission to perform the specified action(s)
+     * on the template with the specified ID.  If the template does not exist then no check is made.
+     *
+     * @param id     the template ID
+     * @param action an action to check
+     * @param more   any additional actions to check
+     * @return true if the template existed and the check passed, otherwise false
+     */
+    public boolean hasTemplatePermission(final String id, final Action action, final Action... more) {
+        if (accessController.isEntityAccessControlled()) {
+            return metadataAccess.read(() -> {
+                final FeedManagerTemplate.ID domainId = templateProvider.resolveId(id);
+                final FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+                return domainTemplate != null && domainTemplate.getAllowedActions().hasPermission(action, more);
+            });
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Gets a Registered Template or returns null if not found by various means passed in via the request object
      *
      * @param registeredTemplateRequest a request to get a registered template

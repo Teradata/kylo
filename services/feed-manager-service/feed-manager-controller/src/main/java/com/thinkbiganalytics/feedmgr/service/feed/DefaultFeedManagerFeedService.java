@@ -65,6 +65,7 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -399,18 +400,23 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
 
-            //If the feed is New we need to ensure the user has CREATE_FEED entity permission under the feeds category
+            //If the feed is New we need to ensure the user has CREATE_FEED entity permission
             if (accessController.isEntityAccessControlled()) {
-                //ensure the user has rights to create feeds under this category
                 metadataAccess.read(() -> {
+                    //ensure the user has rights to create feeds under the category
                     Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
                     if (domainCategory == null) {
                         //throw exception
                         throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
                     }
-                    //Query for Category and ensure the user has access to create feeds on that category
                     domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
 
+                    //ensure the user has rights to create feeds using the template
+                    FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
+                    if (domainTemplate == null) {
+                        throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
+                    }
+                    domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
 
