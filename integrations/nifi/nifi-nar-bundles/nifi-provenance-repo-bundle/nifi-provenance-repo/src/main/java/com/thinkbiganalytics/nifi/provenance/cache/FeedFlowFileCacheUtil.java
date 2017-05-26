@@ -65,12 +65,13 @@ public class FeedFlowFileCacheUtil {
      */
     public void cacheAndBuildFlowFileGraph(ProvenanceEventRecordDTO event) {
 
-        // Get the FlowFile from the Cache.  It is LoadingCache so if the file is new the Cache will create it
+        // Get the FlowFile from the Cache.
         FeedFlowFileGuavaCache flowFileCache = flowFileGuavaCache;
 
         //An event is the very first in the flow if it is a CREATE or RECEIVE event and if there are no Parent flow files
         //This indicates the start of a Job.
-        if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
+        //
+        if (ProvenanceEventUtil.isFirstEvent(event) && event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty())) {
             //we only need to store references to the root feed flow file.
             FeedFlowFile flowFile = null;
             if (flowFileCache.isCached(event.getFlowFileUuid())) {
@@ -78,10 +79,11 @@ public class FeedFlowFileCacheUtil {
             } else {
                 flowFile = new FeedFlowFile(event.getFlowFileUuid());
                 flowFileCache.add(event.getFlowFileUuid(), flowFile);
+                flowFile.setFirstEvent(event);
+                event.setIsStartOfJob(true);
+
             }
-            flowFile.setFirstEvent(event);
             event.setFeedFlowFile(flowFile);
-            event.setIsStartOfJob(true);
         }
 
         FeedFlowFile feedFlowFile = null;
@@ -125,7 +127,9 @@ public class FeedFlowFileCacheUtil {
         }
 
         if (feedFlowFile == null) {
-            log.error("Unable to find feed flow file in cache!!!! for {} ", event);
+            //this is sometimes ok.
+            //it is observed that sometimes a CONTENT_MODIFIED event will come in before the CREATE/RECEIVE provenance Event.
+            //this will result in the CONTENT_MODIFIED not able to find the feed flow file.  That is ok since the CREATE event will come in and pick up the feed flow file
             throw new FeedFlowFileNotFoundException("Unable to find Feed Flow File for event " + event.getEventId() + ", Processor: " + event.getComponentId());
         }
         event.setFeedFlowFile(feedFlowFile);
@@ -170,7 +174,7 @@ public class FeedFlowFileCacheUtil {
         if (event.isEndingFlowFileEvent() && feedFlowFile.isFeedComplete()) {
             event.setIsEndOfJob(true);
             event.setIsFinalJobEvent(true);
-            log.info("Ending the Job for Feed {} and flowfile: {}.  Event: {}  ", event.getFeedName(), event.getFlowFileUuid(), event);
+            //  log.info("Ending the Job for Feed {} and flowfile: {}.  Event: {}  ", event.getFeedName(), event.getFlowFileUuid(), event);
         }
 
         eventCounter.incrementAndGet();
