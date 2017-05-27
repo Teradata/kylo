@@ -161,9 +161,9 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     echo "installing ActiveMQ"
     if [ $offline = true ]
     then
-        ./activemq/install-activemq.sh $current_dir -O
+        ./activemq/install-activemq.sh $activemq_home activemq activemq $current_dir -O
     else
-        ./activemq/install-activemq.sh
+        ./activemq/install-activemq.sh $activemq_home activemq activemq
     fi
 
 fi

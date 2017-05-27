@@ -6,21 +6,25 @@
 #Note: edit /etc/default/activemq to change Java memory parameters
 
 offline=false
-KYLO_SETUP_FOLDER=$2
+KYLO_SETUP_FOLDER=/opt/kylo/setup
 ACTIVEMQ_INSTALL_HOME=/opt/activemq
+ACTIVEMQ_USER=activemq
+ACTIVEMQ_GROUP=users
 
-if [ $# -eq 0 ]
-then
-    echo "No setup folder specified. Defaulting to activemq home to $ACTIVEMQ_INSTALL_HOME"
-elif [ $# -eq 1 ]
+if [ $# -eq 3 ]
 then
     echo "The active home folder is $1 "
     ACTIVEMQ_INSTALL_HOME=$1
-elif [ $# -eq 3 ] && ([ "$3" = "-o" ] || [ "$3" = "-O" ])
+    ACTIVEMQ_USER=$2
+    ACTIVEMQ_GROUP=$3
+elif [ $# -eq 5 ] && ([ "$5" = "-o" ] || [ "$5" = "-O" ])
 then
     echo "Working in offline mode"
     offline=true
     ACTIVEMQ_INSTALL_HOME=$1
+    ACTIVEMQ_USER=$2
+    ACTIVEMQ_GROUP=$3
+    KYLO_SETUP_FOLDER=$4
 else
     echo "Unknown arguments. The first argument should be the path to the activemq home folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
     exit 1
@@ -64,9 +68,9 @@ ln -s apache-activemq-5.13.3 current
 echo "Installing as a service"
 # http://activemq.apache.org/unix-shell-script.html
 
-chown -R activemq:activemq $ACTIVEMQ_INSTALL_HOME
+chown -R $ACTIVEMQ_USER:$ACTIVEMQ_GROUP $ACTIVEMQ_INSTALL_HOME
 cp $ACTIVEMQ_INSTALL_HOME/current/bin/env /etc/default/activemq
-sed -i '~s/^ACTIVEMQ_USER=""/ACTIVEMQ_USER="activemq"/' /etc/default/activemq
+sed -i '~s/^ACTIVEMQ_USER=""/ACTIVEMQ_USER="$ACTIVEMQ_USER"/' /etc/default/activemq
 chmod 644 /etc/default/activemq
 ln -snf  $ACTIVEMQ_INSTALL_HOME/current/bin/activemq /etc/init.d/activemq
 
