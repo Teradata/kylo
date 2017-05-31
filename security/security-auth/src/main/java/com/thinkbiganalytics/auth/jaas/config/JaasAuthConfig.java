@@ -3,32 +3,6 @@
  */
 package com.thinkbiganalytics.auth.jaas.config;
 
-import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.GroupPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.UserPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.jaas.AuthorityGranter;
-import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
-import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.inject.Named;
-import javax.security.auth.login.AppConfigurationEntry;
-
 /*-
  * #%L
  * thinkbig-security-auth
@@ -48,6 +22,34 @@ import javax.security.auth.login.AppConfigurationEntry;
  * limitations under the License.
  * #L%
  */
+
+import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.GroupPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.UserPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.jaas.AuthorityGranter;
+import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
+import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.inject.Named;
+import javax.security.auth.login.AppConfigurationEntry;
 
 /**
  *
@@ -112,7 +114,10 @@ public class JaasAuthConfig {
     public javax.security.auth.login.Configuration jaasConfiguration(Optional<List<LoginConfiguration>> loginModuleEntries) {
         // Generally the entries will be null only in situations like unit/integration tests.
         if (loginModuleEntries.isPresent()) {
-            Map<String, AppConfigurationEntry[]> merged = loginModuleEntries.get().stream()
+            List<LoginConfiguration> sorted = new ArrayList<>(loginModuleEntries.get());
+            sorted.sort(new AnnotationAwareOrderComparator());
+            
+            Map<String, AppConfigurationEntry[]> merged = sorted.stream()
                             .map(c -> c.getAllApplicationEntries().entrySet())
                             .flatMap(s -> s.stream())
                             .collect(Collectors.toMap(e -> e.getKey(),

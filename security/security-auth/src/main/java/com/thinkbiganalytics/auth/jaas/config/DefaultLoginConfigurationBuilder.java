@@ -36,6 +36,8 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
+import org.springframework.core.annotation.Order;
+
 /**
  * Default implementation of LoginConfigurationBuilder.
  */
@@ -126,6 +128,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
         }
     }
 
+    @Order(LoginConfiguration.DEFAULT_ORDER)
     public class DefaultLoginConfiguration implements LoginConfiguration {
 
         private Map<String, List<AppConfigurationEntry>> configEntries = new HashMap<>();
