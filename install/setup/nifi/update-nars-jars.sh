@@ -9,7 +9,12 @@ if [ $# -eq 4 ]
 then
     echo "The NIFI home folder is $NIFI_HOME using permissions  $NIFI_USER:$NIFI_GROUP"
 else
-    echo "Unknown arguments. You need to pas NIFI_HOME KYLO_SETUP_FOLDER NIFI_USER NIFI_GROUP "
+    echo "Unknown arguments. You need to pass NIFI_HOME KYLO_SETUP_FOLDER NIFI_USER NIFI_GROUP "
+    echo "Example values:"
+    echo "NIFI_HOME: /opt/nifi"
+    echo "KYLO_SETUP_FOLDER: /opt/kylo/setup"
+    echo "NIFI_USER: nifi"
+    echo "NIFI_GROUP: users"
     exit 1
 fi
 
