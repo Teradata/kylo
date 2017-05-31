@@ -88,17 +88,48 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Location of Jar file
+     */
+    public static final PropertyDescriptor JARURL = new PropertyDescriptor.Builder()
+        .name("Jar URL")
+        .description("Location of Jar file to be added before table creation")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     /**
      * Property for the id to use for indexing into elasticsearch.
      */
     public static final PropertyDescriptor ID_FIELD = new PropertyDescriptor.Builder()
         .name("IdField")
-        .description("Id that you want to use for indexing into elasticsearch. If it is empty then a UUID will be generated")
+        .description("ID that you want to use for indexing into elasticsearch. If it is empty then elasticsearch will use its own ID.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    public static final PropertyDescriptor USE_WAN = new PropertyDescriptor.Builder()
+        .name("Use WAN")
+        .description("Whether the connector is used against an Elasticsearch instance in a cloud/restricted environment over the WAN, such as Amazon Web Services. In this mode, the connector disables discovery and only connects through the declared es.nodes during all operations, including reads and writes. Note that in this mode, performance is highly affected.")
+        .allowableValues("true", "false")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(false)
+        .defaultValue("true")
+        .build();
+
+    public static final PropertyDescriptor AUTO_CREATE_INDEX = new PropertyDescriptor.Builder()
+        .name("Auto create index")
+        .description("Whether or not the Elasticsearch index can be created if id does not already exist.")
+        .allowableValues("true", "false")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(false)
+        .defaultValue("true")
+        .build();
+
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -119,6 +150,9 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
         pds.add(FEED_NAME);
         pds.add(FEED_CATEGORY);
         pds.add(THRIFT_SERVICE);
+        pds.add(JARURL);
+        pds.add(USE_WAN);
+        pds.add(AUTO_CREATE_INDEX);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -140,7 +174,9 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
             return;
         }
 
-        String nodes = context.getProperty(NODES).evaluateAttributeExpressions(flowFile).getValue();
+        String jarUrl = context.getProperty(JARURL).evaluateAttributeExpressions(flowFile).getValue();
+        String useWan = context.getProperty(USE_WAN).getValue();
+        String autoIndex = context.getProperty(AUTO_CREATE_INDEX).getValue();
         String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(flowFile).getValue();
 
         final ColumnSpec[] partitions = Optional.ofNullable(context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue())
@@ -172,9 +208,25 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
             return;
         }
 
+        final String nodes = context.getProperty(NODES).evaluateAttributeExpressions(flowFile).getValue();
+        if (nodes == null || nodes.isEmpty()) {
+            getLog().error("Missing node parameter");
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
+            return;
+        }
+
         TableType tableType = TableType.MASTER;
         String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions,"");
-        String hql = generateHQL(columnsSQL, nodes, feedName, categoryName);
+        String hql = generateHQL(columnsSQL, nodes, feedName, categoryName, useWan, autoIndex, idField);
+
+        List<String> hiveStatements = new ArrayList<>();
+
+        if (jarUrl != null || jarUrl.isEmpty()) {
+            String addJar = "ADD JAR " + jarUrl;
+            hiveStatements.add(addJar);
+        }
+
+        hiveStatements.add(hql);
 
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         final StopWatch stopWatch = new StopWatch(true);
@@ -182,10 +234,12 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
 
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
-
             boolean result = false;
-            result = st.execute(hql);
 
+            for (String statement:hiveStatements
+                ) {
+                result = st.execute(statement);
+            }
 
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             session.transfer(flowFile, REL_SUCCESS);
@@ -196,11 +250,11 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
 
     }
 
-    public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName){
+    public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField){
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
             .append(categoryName)
-            .append(".index")
+            .append(".index_")
             .append(feedName)
             .append(" (").append(columnsSQL).append(") ")
             .append("STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = '")
@@ -209,8 +263,19 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
             .append(feedName)
             .append("', 'es.nodes' = '")
             .append(nodes)
-            .append("', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
+            .append("', 'es.nodes.wan.only' = '")
+            .append(useWan)
+            .append("', 'es.index.auto.create' = '")
+            .append(autoIndex);
+
+        if (idField != null && !idField.isEmpty()) {
+            sb.append("', 'es.mapping.id' = '")
+                .append(idField);
+        }
+
+        sb.append("')");
 
         return sb.toString();
     }
+
 }
