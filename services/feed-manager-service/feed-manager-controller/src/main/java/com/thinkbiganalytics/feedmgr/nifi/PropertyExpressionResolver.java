@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.text.StrLookup;

@@ -25,7 +25,6 @@ import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
@@ -78,6 +77,7 @@ import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.service.user.UserService;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.ModeShapeEngine;

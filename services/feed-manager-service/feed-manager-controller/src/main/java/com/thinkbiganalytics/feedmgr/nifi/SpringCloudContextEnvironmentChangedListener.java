@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
+
 /**
  * Listen for when the spring application context is refreshed
  */

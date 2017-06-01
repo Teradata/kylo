@@ -59,7 +59,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     @Override
     public boolean isUpToDate() {
         KyloVersion currentVersion = getCurrentVersion();
-        return currentVersion != null && currentVersion.equals(getLatestVersion());
+        return currentVersion != null && currentVersion.equals(getBuildVersion());
     }
 
     @Override
@@ -74,8 +74,8 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @Override
     public KyloVersion updateToLatestVersion() {
-        if (getLatestVersion() != null) {
-            KyloVersion currentVersion = getLatestVersion();
+        if (getBuildVersion() != null) {
+            KyloVersion currentVersion = getBuildVersion();
             KyloVersion existingVersion = getCurrentVersion();
             
             if (existingVersion == null) {
@@ -96,7 +96,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     
     @Override
     public KyloVersion getLatestVersion() {
-        return KyloVersionUtil.getLatestVersion();
+        return KyloVersionUtil.getBuildVersion();
     }
 
 
@@ -104,7 +104,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @PostConstruct
     private void init() {
-        getLatestVersion();
+        getBuildVersion();
     }
 
 

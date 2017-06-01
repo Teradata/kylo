@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.server;
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L

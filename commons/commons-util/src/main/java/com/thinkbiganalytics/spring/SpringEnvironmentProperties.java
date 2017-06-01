@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.nifi;
+package com.thinkbiganalytics.spring;
 
 /*-
  * #%L

@@ -28,10 +28,10 @@
 
   <context:annotation-config />
 
-<bean id="upgradeConfig" class="com.thinkbiganalytics.server.KyloUpgradeDatabaseVersionConfig" />
+<bean id="upgradeConfig" class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionConfig" />
 
   <bean id="kyloUpgradeDatabaseVersionChecker" name="kyloUpgradeDatabaseVersionChecker"
-        class="com.thinkbiganalytics.server.KyloUpgradeDatabaseVersionChecker"/>
+        class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionChecker"/>
 
   <bean  id="springEnvironmentProperties" name="springEnvironmentProperties"
       class="com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties"/>

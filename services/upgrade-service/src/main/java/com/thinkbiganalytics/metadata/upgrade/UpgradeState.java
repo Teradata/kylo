@@ -23,37 +23,28 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
-import javax.inject.Inject;
+import java.net.URL;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 /**
- * Performs all upgrade steps within a metadata transaction.
+ *
  */
-public class KyloUpgrader {
+public interface UpgradeState { 
     
+    default boolean isTargetVersion(KyloVersion version) {
+        return false;
+    }
     
-    
-    @Inject
-    private MetadataAccess metadata;
-    
-    @Inject
-    private UpgradeKyloService upgradeService;
+    default boolean isTargetFreshInstall() {
+        return false;
+    }
 
-    @Inject
-    private KyloVersionProvider kyloVersionProvider;
-    
+    void upgradeFrom(KyloVersion startingVersion);
 
-    public boolean upgrade() {
-        return metadata.commit(() -> {
-            if(!kyloVersionProvider.isUpToDate()) {
-                KyloVersion version = upgradeService.getCurrentVersion();
-                return upgradeService.upgradeFrom(version);
-            }
-            return true;
-        }, MetadataAccess.SERVICE);
+    default URL getResource(String name) {
+        String relName = name.startsWith("/") ? name.substring(1, name.length()) : name;
+        return getClass().getResource(relName);
     }
 
 }

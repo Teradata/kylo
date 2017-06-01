@@ -36,8 +36,8 @@ public class KyloVersionUtil {
 
     private static final Logger log = LoggerFactory.getLogger(KyloVersionUtil.class);
 
-    public static KyloVersion getLatestVersion() {
-        return parseVersionString(getCurrentVersionString());
+    public static KyloVersion getBuildVersion() {
+        return parseVersion(getBuildVersionString());
     }
 
     public static String versionString = null;
@@ -45,28 +45,44 @@ public class KyloVersionUtil {
     public static String buildTimestamp = null;
 
     public static boolean isUpToDate(KyloVersion dbVersion) {
-        KyloVersion deployedVersion = getLatestVersion();
+        KyloVersion deployedVersion = getBuildVersion();
         return dbVersion != null && deployedVersion != null && deployedVersion.equals(dbVersion);
     }
 
-    private static KyloVersion parseVersionString(String versionString) {
+    public static KyloVersion parseVersion(String versionString) {
 
         if (versionString != null) {
+            String[] dotSplit = versionString.split("\\.");
+            int minorIdx = 1;
+            String major;
+            
+            if (dotSplit[0].startsWith("0")) {
+                major = dotSplit[0] + "." + dotSplit[1]; 
+                minorIdx++;
+            } else {
+                major = dotSplit[0];
+            }
 
-            //Major version ends before second period
-            //i.e.  v 0.3.0    0.3
-            int beforeIndex = StringUtils.ordinalIndexOf(versionString, ".", 2);
-            String majorVersionString = StringUtils.substring(versionString, 0, beforeIndex);
-            String minorVersion = StringUtils.substring(versionString, (beforeIndex + 1));
-            Version kyloVersion = new Version(majorVersionString, minorVersion);
-            return kyloVersion;
+            String minor = dotSplit[minorIdx];
+            String[] dashSplit = dotSplit[minorIdx + 1].split("-");
+            String point;
+            String tag;
+            
+            if (dashSplit.length == 1) {
+                point = dashSplit[0];
+                tag = null;
+            } else {
+                point = dashSplit[0];
+                tag = dashSplit[1];
+            }
+            
+            return new Version(major, minor, point, tag);
+        } else {
+            return null;
         }
-        return null;
-
-
     }
 
-    private static String getCurrentVersionString() {
+    private static String getBuildVersionString() {
         if (StringUtils.isBlank(versionString)) {
             String currentVersion = null;
             Properties prop = new Properties();
@@ -100,7 +116,7 @@ public class KyloVersionUtil {
 
     public String getBuildTimestamp() {
         if (StringUtils.isBlank(buildTimestamp)) {
-            getCurrentVersionString();
+            getBuildVersionString();
         }
         return buildTimestamp;
     }
@@ -110,18 +126,22 @@ public class KyloVersionUtil {
 
         private String majorVersion;
         private String minorVersion;
+        private String pointVersion;
+        private String tag;
         private String description;
 
         public Version(KyloVersion version) {
-            this(version.getMajorVersion(), version.getMinorVersion());
+            this(version.getMajorVersion(), version.getMinorVersion(), version.getPointVersion(), version.getTag());
         }
 
         /**
          * create a new version with a supplied major and minor version
          */
-        public Version(String majorVersion, String minorVersion) {
-            this.majorVersion = majorVersion;
-            this.minorVersion = minorVersion;
+        public Version(String major, String minor, String point, String tag) {
+            this.majorVersion = major;
+            this.minorVersion = minor;
+            this.pointVersion = point;
+            this.tag = tag;
         }
 
         /**
@@ -152,7 +172,7 @@ public class KyloVersionUtil {
          * @return the major version
          */
         public String getMajorVersion() {
-            return this.majorVersion;
+            return this.majorVersion == null ? "" : this.majorVersion;
         }
 
         public void setMajorVersion(String majorVersion) {
@@ -160,11 +180,27 @@ public class KyloVersionUtil {
         }
 
         public String getMinorVersion() {
-            return this.minorVersion;
+            return this.minorVersion == null ? "" : this.minorVersion;
         }
 
         public void setMinorVersion(String minorVersion) {
             this.minorVersion = minorVersion;
+        }
+        
+        public String getPointVersion() {
+            return pointVersion == null ? "" : this.pointVersion;
+        }
+
+        public void setPointVersion(String pointVersion) {
+            this.pointVersion = pointVersion;
+        }
+
+        public String getTag() {
+            return tag == null ? "" : this.tag;
+        }
+
+        public void setTag(String tag) {
+            this.tag = tag;
         }
 
         /**
@@ -224,6 +260,33 @@ public class KyloVersionUtil {
         @Override
         public String toString() {
             return getMajorVersion() + "." + getMinorVersion();
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Comparable#compareTo(java.lang.Object)
+         */
+        @Override
+        public int compareTo(KyloVersion o) {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#matches(java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean matches(String major, String minor, String point) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#matches(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean matches(String major, String minor, String point, String tag) {
+            // TODO Auto-generated method stub
+            return false;
         }
     }
 

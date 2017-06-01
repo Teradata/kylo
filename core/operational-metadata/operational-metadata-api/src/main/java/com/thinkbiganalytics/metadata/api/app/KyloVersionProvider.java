@@ -40,9 +40,9 @@ public interface KyloVersionProvider {
     KyloVersion getCurrentVersion();
     
     /**
-     * @return the latest version of kylo
+     * @return the version of the deployed Kylo build
      */
-    KyloVersion getLatestVersion();
+    KyloVersion getBuildVersion();
 
     /**
      * Routine to update the metadata storing the latest version of Kylo depoloyed.

@@ -60,26 +60,31 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
+        
+        KyloUpgrader upgrader = new KyloUpgrader();
 
-        KyloVersion dbVersion = getDatabaseVersion();
+//        KyloVersion dbVersion = getDatabaseVersion();
 
-        boolean skipUpgrade = KyloVersionUtil.isUpToDate(dbVersion);
+//        boolean skipUpgrade = KyloVersionUtil.isUpToDate(dbVersion);
 
-        if (!skipUpgrade) {
-            boolean upgradeComplete = false;
-            do {
-                log.info("Upgrading...");
-                System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
-                ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
-                KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
-                upgradeComplete = upgrader.upgrade();
-                cxt.close();
-            } while (!upgradeComplete);
+//        if (!skipUpgrade) {
+        if (upgrader.isUpgradeRequired()) {
+            log.info("Upgrading...");
+            System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
+            upgrader.upgrade();
+//            boolean upgradeComplete = false;
+//            do {
+//                ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
+//                KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
+//                upgradeComplete = upgrader.upgrade();
+//                cxt.close();
+//            } while (!upgradeComplete);
             log.info("Upgrading complete");
         }
         else {
-            log.info("Kylo v{} is up to date.  Starting the application.",dbVersion);
+            log.info("Kylo v{} is up to date.  Starting the application.", upgrader.getCurrentVersion());
         }
+        
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
     }
@@ -94,33 +99,4 @@ public class KyloServerApplication implements SchedulingConfigurer {
         scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
     }
 
-
-    /**
-     * Return the database version for Kylo.
-     *
-     * @return the version of Kylo stored in the database
-     */
-    private static KyloVersion getDatabaseVersion() {
-
-        try {
-            //ensure native profile is there for spring to load
-            String profiles = System.getProperty("spring.profiles.active", "");
-            if (!profiles.contains("native")) {
-                profiles = StringUtils.isEmpty(profiles) ? "native" : profiles + ",native";
-                System.setProperty("spring.profiles.active", profiles);
-            }
-            //Spring is needed to load the Spring Cloud context so we can decrypt the passwords for the database connection
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("kylo-upgrade-check-application-context.xml");
-            ctx.refresh();
-            KyloUpgradeDatabaseVersionChecker upgradeDatabaseVersionChecker = (KyloUpgradeDatabaseVersionChecker) ctx.getBean("kyloUpgradeDatabaseVersionChecker");
-            KyloVersion kyloVersion = upgradeDatabaseVersionChecker.getDatabaseVersion();
-            ctx.close();
-            return kyloVersion;
-        } catch (Exception e) {
-            log.error("Failed get the database version prior to upgrade.  The Kylo Upgrade application will load by default. {}", e.getMessage());
-        }
-        return null;
-
-
-    }
 }

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.version_0_7_1;
+package com.thinkbiganalytics.metadata.upgrade.version_0_8_0;
 
 /*-
  * #%L
@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.upgrade.version_0_7_1;
  */
 
 import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -53,12 +54,9 @@ public class UpgradeAction implements UpgradeState {
     private static final String FEED_DETAILS_TYPE = "tba:feedDetails";
     private static final String FEED_DATA_TYPE = "tba:feedData";
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#getStartingVersion()
-     */
     @Override
-    public KyloVersion getStartingVersion() {
-        return asVersion("0.7", "1");
+    public boolean isTargetVersion(KyloVersion version) {
+        return version.getMajorVersion().equals("0.8") && version.getMinorVersion().equals("0") && version.getPointVersion().equals("");
     }
 
     /* (non-Javadoc)

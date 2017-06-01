@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.server;
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L
@@ -23,8 +23,9 @@ package com.thinkbiganalytics.server;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
+import com.thinkbiganalytics.server.KyloUpgradeDatabaseVersionConfig;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;

@@ -29,5 +29,6 @@
     <module>service-app</module>
     <module>alerts-service</module>
     <module>metadata-service</module>
+    <module>upgrade-service</module>
   </modules>
 </project>

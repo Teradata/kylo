@@ -23,7 +23,7 @@ package com.thinkbiganalytics;
 /**
  * Represents the current Kylo Version deployed in the system
  */
-public interface KyloVersion {
+public interface KyloVersion extends Comparable<KyloVersion> {
 
     /**
      * Return the full Kylo Version string as {@link this#getMajorVersion()}.{@link this#getMinorVersion()}
@@ -38,14 +38,7 @@ public interface KyloVersion {
      * @return the numeric value of the major version
      */
     Float getMajorVersionNumber();
-
-    /**
-     * Return the minor version of Kylo
-     *
-     * @return the minor version of Kylo
-     */
-    String getMinorVersion();
-
+    
     /**
      * Return the major versoin of Kylo
      *
@@ -53,6 +46,26 @@ public interface KyloVersion {
      */
     String getMajorVersion();
 
+    /**
+     * Return the minor version of Kylo
+     *
+     * @return the minor version of Kylo
+     */
+    String getMinorVersion();
+    
+    /**
+     * @return the point version of Kylo
+     */
+    String getPointVersion();
+
+    /**
+     * Return any tag that is part of the version; i.e any string following a "-" after 
+     * the version numbers.  For example, if the version is 0.8.1-SNAPSHOT then the tag
+     * returned would be "SNAPSHOT".  Returns an empty string if there is no tag.
+     * 
+     * @return the tag or and empty string if this version has no tag
+     */
+    String getTag();
 
     /**
      * Return a description of the Kylo version deployed
@@ -60,6 +73,10 @@ public interface KyloVersion {
      * @return a description of the Kylo version deployed
      */
     String getDescription();
+    
+    boolean matches(String major, String minor, String point);
+    
+    boolean matches(String major, String minor, String point, String tag);
 
     /**
      * Update the current Kylo version to the passed in version

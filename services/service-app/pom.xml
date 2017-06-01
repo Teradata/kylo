@@ -31,6 +31,11 @@
       <artifactId>kylo-service-app-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-upgrade-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- Services monitoring code -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
