@@ -26,6 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Group Statistics by Processor
@@ -36,24 +40,24 @@ public class AggregatedProcessorStatistics implements Serializable {
 
     String processorId;
     String processorName;
-    GroupedStats stats;
+    private String collectionId;
+    //GroupedStats stats;
 
+    /**
+     * Source Connection ID to stats
+     */
+    private Map<String,GroupedStats> stats;
 
     public AggregatedProcessorStatistics(String processorId, String processorName, String collectionId) {
         this.processorId = processorId;
         this.processorName = processorName;
-        this.stats = new GroupedStats();
-        this.stats.setGroupKey(collectionId);
-
+        this.collectionId = collectionId;
+        this.stats = new ConcurrentHashMap<>();
     }
 
-
-    public void add(ProvenanceEventRecordDTO event) {
-        this.stats.add(event);
-    }
 
     public String getCollectionId() {
-        return stats.getGroupKey();
+        return collectionId;
     }
 
 
@@ -61,18 +65,25 @@ public class AggregatedProcessorStatistics implements Serializable {
         return processorId;
     }
 
-    public GroupedStats getStats() {
+    public Map<String,GroupedStats> getStats() {
         return stats;
     }
 
-    public void setStats(GroupedStats stats) {
-        this.stats = stats;
+    public boolean hasStats(){
+        return getStats().values().stream().anyMatch(s -> s.getTotalCount() >0);
+    }
+
+    public GroupedStats getStats(String sourceConnectionIdentifier){
+      return  this.stats.computeIfAbsent(sourceConnectionIdentifier, id -> new GroupedStats(sourceConnectionIdentifier));
     }
 
     public String getProcessorName() {
         return processorName;
     }
 
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
+    }
 
     public void clear() {
         this.stats.clear();

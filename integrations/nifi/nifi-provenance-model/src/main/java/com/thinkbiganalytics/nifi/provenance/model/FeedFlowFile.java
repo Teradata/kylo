@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.provenance.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -43,21 +45,10 @@ public class FeedFlowFile implements Serializable {
      */
     private String id;
 
-
     /**
      * Flag to mark this flowfile as a Stream.
      */
     private boolean isStream;
-
-    /**
-     * The feed associated with the flow file.  This includes the category.feedname
-     */
-    private String feedName;
-
-    /**
-     * The process group id for the feed
-     */
-    private String feedProcessGroupId;
 
     /**
      * When new flow files are created they get associated back to the feedflow file in this collection
@@ -72,6 +63,13 @@ public class FeedFlowFile implements Serializable {
 
 
     /**
+     * Set of other FeedFlowFiles that are related to this who are processed as a Batch
+     */
+    private Set<String> relatedBatchFeedFlows;
+
+    private String primaryRelatedBatchFeedFlow;
+
+    /**
      * The First Event in this flow file
      */
     private Long firstEventId;
@@ -80,12 +78,6 @@ public class FeedFlowFile implements Serializable {
 
     private String firstEventProcessorId;
 
-
-    private Long lastEventId;
-
-    private String lastEventProcessorId;
-
-    private Long lastEventTime;
 
     private AtomicInteger failedEvents = new AtomicInteger(0);
 
@@ -120,8 +112,14 @@ public class FeedFlowFile implements Serializable {
 
     private boolean isBuiltFromMapDb;
 
+    public FeedFlowFile() {
+    }
 
     public FeedFlowFile(String id) {
+        this.id = id;
+    }
+
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -149,22 +147,6 @@ public class FeedFlowFile implements Serializable {
         isStream = stream;
     }
 
-    public String getFeedName() {
-        return feedName;
-    }
-
-    public void setFeedName(String feedName) {
-        this.feedName = feedName;
-    }
-
-    public String getFeedProcessGroupId() {
-        return feedProcessGroupId;
-    }
-
-    public void setFeedProcessGroupId(String feedProcessGroupId) {
-        this.feedProcessGroupId = feedProcessGroupId;
-    }
-
     public Set<String> getActiveChildFlowFiles() {
         return activeChildFlowFiles;
     }
@@ -172,19 +154,6 @@ public class FeedFlowFile implements Serializable {
     public Set<String> getChildFlowFiles() {
         return childFlowFiles;
     }
-
-    public Long getLastEventId() {
-        return lastEventId;
-    }
-
-    public String getLastEventProcessorId() {
-        return lastEventProcessorId;
-    }
-
-    public Long getLastEventTime() {
-        return lastEventTime;
-    }
-
 
     /**
      * flag to determine if this was build from the persistent cache
@@ -219,7 +188,7 @@ public class FeedFlowFile implements Serializable {
      */
     public void setFirstEvent(ProvenanceEventRecordDTO event) {
         firstEventId = event.getEventId();
-        firstEventStartTime = event.getStartTime().getMillis();
+        firstEventStartTime = event.getStartTime();
         firstEventProcessorId = event.getComponentId();
     }
 
@@ -227,16 +196,46 @@ public class FeedFlowFile implements Serializable {
     public void addEvent(ProvenanceEventRecordDTO event) {
         Long previousEventTime = getPreviousEventTime(event.getFlowFileUuid());
         if (previousEventTime != null) {
-            event.setStartTime(new DateTime(previousEventTime));
+            event.setStartTime(previousEventTime);
         } else {
             event.setStartTime(event.getEventTime());
         }
-        lastEventId = event.getEventId();
-        lastEventTime = event.getEventTime().getMillis();
-        lastEventProcessorId = event.getComponentId();
-        event.setEventDuration(event.getEventTime().getMillis() - event.getStartTime().getMillis());
+        event.setEventDuration(event.getEventTime() - event.getStartTime());
         registerLastEventTime(event);
 
+    }
+
+    public boolean isPrimaryBatchFeedFlow(){
+        return primaryRelatedBatchFeedFlow.equalsIgnoreCase(this.getId());
+    }
+
+    public String getPrimaryRelatedBatchFeedFlow() {
+        return primaryRelatedBatchFeedFlow;
+    }
+
+    public void setPrimaryRelatedBatchFeedFlow(String primaryRelatedBatchFeedFlow) {
+        this.primaryRelatedBatchFeedFlow = primaryRelatedBatchFeedFlow;
+    }
+
+    public Set<String> getRelatedBatchFeedFlows(){
+        return relatedBatchFeedFlows;
+    }
+
+    public boolean hasRelatedBatchFlows(){
+        return getRelatedBatchFeedFlows() != null && !getRelatedBatchFeedFlows().isEmpty();
+    }
+
+    public void setRelatedBatchFeedFlows(Set<String> relatedBatchFeedFlows) {
+        this.relatedBatchFeedFlows = relatedBatchFeedFlows;
+    }
+
+    public void addRelatedBatchFeedFlows(String flowFileId) {
+        if(this.relatedBatchFeedFlows == null){
+            this.relatedBatchFeedFlows = new HashSet<>();
+        }
+        if(!flowFileId.equals(this.getId())) {
+            this.relatedBatchFeedFlows.add(flowFileId);
+        }
     }
 
     /**
@@ -245,14 +244,6 @@ public class FeedFlowFile implements Serializable {
     public boolean isFeedComplete() {
         return isCurrentFlowFileComplete && (activeChildFlowFiles == null || (activeChildFlowFiles != null && activeChildFlowFiles.isEmpty()));
     }
-
-    /**
-     * Determine if the FlowFile has the Kylo Feed information assigned to it
-     */
-    public boolean hasFeedInformationAssigned() {
-        return getFeedName() != null && getFeedProcessGroupId() != null;
-    }
-
 
     /**
      * If the event is a "DROP" event that mark the correct flow file as complete.
@@ -287,14 +278,15 @@ public class FeedFlowFile implements Serializable {
 
 
     public boolean checkIfEventStartsTheFlowFile(ProvenanceEventRecordDTO eventRecordDTO) {
-        if (flowfilesStarted == null || (flowfilesStarted != null && flowfilesStarted.contains(eventRecordDTO.getFlowFileUuid()))) {
+        if (flowfilesStarted == null || (flowfilesStarted != null && !flowfilesStarted.contains(eventRecordDTO.getFlowFileUuid()))) {
             if (flowfilesStarted == null) {
                 flowfilesStarted = new HashSet<>();
             }
             flowfilesStarted.add(eventRecordDTO.getFlowFileUuid());
-            eventRecordDTO.setStartOfFlowFile(true);
+        //    eventRecordDTO.setStartOfFlowFile(true);
         }
-        return eventRecordDTO.isStartOfFlowFile();
+      //  return eventRecordDTO.isStartOfFlowFile();
+        return false;
     }
 
     public Long getPreviousEventTime(String flowfileId) {
@@ -310,11 +302,12 @@ public class FeedFlowFile implements Serializable {
         }
     }
 
+
     public void registerLastEventTime(ProvenanceEventRecordDTO eventRecordDTO) {
         if (flowFileLastEventTime == null) {
             flowFileLastEventTime = new HashMap<>();
         }
-        flowFileLastEventTime.put(eventRecordDTO.getFlowFileUuid(), eventRecordDTO.getEventTime().getMillis());
+        flowFileLastEventTime.put(eventRecordDTO.getFlowFileUuid(), eventRecordDTO.getEventTime());
 
     }
 
@@ -336,7 +329,7 @@ public class FeedFlowFile implements Serializable {
         Long jobTime = null;
         Long firstEventTime = getFirstEventStartTime();
         if (firstEventTime != null) {
-            jobTime = event.getEventTime().getMillis() - firstEventTime;
+            jobTime = event.getEventTime() - firstEventTime;
         }
         return jobTime;
     }
@@ -347,9 +340,28 @@ public class FeedFlowFile implements Serializable {
         final StringBuilder sb = new StringBuilder("FeedFlowFile{");
         sb.append("id='").append(id).append('\'');
         sb.append(", isStream=").append(isStream);
-        sb.append(", feedName='").append(feedName).append('\'');
         sb.append(", activeFlowFiles ='").append(activeChildFlowFiles != null ? activeChildFlowFiles.size() : "null").append('\'');
         sb.append('}');
         return sb.toString();
     }
+
+    public void reset(){
+        this.id = null;
+        this.isStream = false;
+        this.activeChildFlowFiles = null;
+        this.childFlowFiles = null;
+        this.relatedBatchFeedFlows = null;
+        this.primaryRelatedBatchFeedFlow = null;
+        this.firstEventId = null;
+        this.firstEventStartTime = null;
+        this.firstEventProcessorId = null;
+        this.failedEvents = new AtomicInteger(0);
+        this.flowfilesStarted = null;
+        this.isCurrentFlowFileComplete = false;
+        this.flowFileLastEventTime = null;
+        this.childFlowFileStartTimes = null;
+        this.flowFileIdToParentFlowFileId = null;
+        this.isBuiltFromMapDb = false;
+    }
+
 }

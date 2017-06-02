@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AggregatedFeedProcessorStatistics implements Serializable {
 
-    String feedName;
+    String startingProcessorId;
     String processGroup;
     Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
     private String collectionId;
@@ -44,8 +44,8 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     public AggregatedFeedProcessorStatistics() {
     }
 
-    public AggregatedFeedProcessorStatistics(String feedName, String collectionId) {
-        this.feedName = feedName;
+    public AggregatedFeedProcessorStatistics(String startingProcessorId, String collectionId) {
+        this.startingProcessorId = startingProcessorId;
         this.collectionId = collectionId;
     }
 
@@ -53,7 +53,7 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
      * Add the event to compute statistics
      */
     public void addEventStats(ProvenanceEventRecordDTO event) {
-        processorStats.computeIfAbsent(event.getComponentId(), processorId -> new AggregatedProcessorStatistics(processorId, event.getComponentName(), collectionId)).add(event);
+       // processorStats.computeIfAbsent(event.getComponentId(), processorId -> new AggregatedProcessorStatistics(processorId, event.getComponentName(), collectionId)).add(event);
         totalEvents++;
         if (event.getEventId() < minEventId) {
             minEventId = event.getEventId();
@@ -66,12 +66,12 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         }
     }
 
-    public String getFeedName() {
-        return feedName;
+    public String getStartingProcessorId() {
+        return startingProcessorId;
     }
 
-    public void setFeedName(String feedName) {
-        this.feedName = feedName;
+    public void setStartingProcessorId(String startingProcessorId) {
+        this.startingProcessorId = startingProcessorId;
     }
 
     public String getProcessGroup() {
@@ -86,9 +86,16 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         return processorStats;
     }
 
+    public boolean hasStats(){
+        return processorStats.values().stream().anyMatch(s -> s.hasStats());
+    }
 
     public void clear(String newCollectionId) {
         this.collectionId = newCollectionId;
         processorStats.entrySet().forEach(e -> e.getValue().clear());
+    }
+
+    public String getCollectionId() {
+        return collectionId;
     }
 }

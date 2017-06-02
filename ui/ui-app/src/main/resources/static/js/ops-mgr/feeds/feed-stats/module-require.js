@@ -3,7 +3,8 @@
  */
 define(['angular',
         'ops-mgr/feeds/feed-stats/feed-stats',
-        'ops-mgr/feeds/feed-stats/feed-stats-top-n-processors'
+        'ops-mgr/feeds/feed-stats/feed-stats-grid-list',
+        'ops-mgr/feeds/feed-stats/FeedStatsService'
         ],function() {
 
 });

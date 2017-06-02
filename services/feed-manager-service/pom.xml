@@ -16,6 +16,7 @@
   <modules>
     <module>feed-manager-api</module>
     <module>feed-manager-rest-model</module>
+    <module>kylo-feed-manager-nifi-cache-api</module>
     <module>feed-manager-core</module>
     <module>feed-manager-precondition-policy-rest-model</module>
     <module>feed-manager-precondition-policy</module>

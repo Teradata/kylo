@@ -426,3 +426,30 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
 md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   margin-left: 115px;
 }
+
+
+
+
+.feed-stats-grid md-grid-list {
+  margin: 8px; }
+
+.feed-stats-grid .gray {
+  background: #f5f5f5; }
+
+.feed-stats-grid .green {
+  background: #b9f6ca; }
+
+.feed-stats-grid .yellow {
+  background: #ffff8d; }
+
+.feed-stats-grid .blue {
+  background: #84ffff; }
+
+.feed-stats-grid .purple {
+  background: #b388ff; }
+
+.feed-stats-grid .red {
+  background: #ff8a80; }
+
+.feed-stats-grid md-grid-tile {
+  transition: all 400ms ease-out 50ms; }

@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
-import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventDtoUtil;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -64,43 +64,17 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private boolean isStartOfJob;
 
     /**
-     * Indicates the end of a Root Flow File
-     */
-    private boolean isEndOfJob;
-
-    /**
      * indicates it is the final event in a root file or if the root file has child root flow files (as a result of a Merge) when this is true it is the final event for all of the root flow files
      */
     private boolean isFinalJobEvent;
 
-    /**
-     * inidcates if this is a Batch Root Flow file
-     */
-    private boolean isBatchJob;
-
-    /**
-     * Track all failures related to this jobFlowFileId if this is a finalJobEvent
-     */
-    private boolean hasFailedEvents;
 
 
-    private Long previousEventId;
 
-    /**
-     * The previous events flow file id
-     */
-    private String previousFlowfileId;
+    private Long startTime;
 
-    /**
-     * the event Time of the previous event to help determine event duration
-     */
-    private DateTime previousEventTime;
-
-    private DateTime startTime;
-
-    private String id;
     private Long eventId;
-    private DateTime eventTime;
+    private Long eventTime;
 
     private Long eventDuration;
     private String eventType;
@@ -126,12 +100,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private Set<String> relatedRootFlowFiles;
 
-    private boolean isStartOfFlowFile;
-
-    /**
-     * Indicates if the processor attached to this event {@code componentId}  is a FAILURE, WARNING,
-     */
-    private KyloProcessorFlowType processorType;
 
 
     /**
@@ -140,36 +108,14 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private boolean isFailure;
 
     /**
-     * set when the aggregator is determining if the flow of events indicate a stream (rapid fire)
-     */
-    private boolean stream;
-
-    /**
      * The flow file id the corresponds to the parent /starting event
      */
     private String jobFlowFileId;
 
-    /**
-     * The Id that corresponds to the first event that started the job
-     */
-    private Long jobEventId;
-
-    //flow information  the following are set via looking at the rest api graph of events
-
-    /**
-     * The Feed name  {category}.{feed}
-     */
-    private String feedName;
-    /**
-     * The processgroup that is holding the flow for this feed
-     */
-    private String feedProcessGroupId;
-
-
-    private String batchId;
-
 
     private String relationship;
+
+    private String firstEventProcessorId;
 
 
     @JsonProperty("updatedAttributes")
@@ -184,19 +130,28 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     @JsonProperty("attributes")
     private Map<String, String> attributeMap;
-    private FeedFlowFile feedFlowFile;
+
+
+
+
+    //flow information  the following are set via ops manager receiving the events
+
+    /**
+     * The Feed name  {category}.{feed}
+     */
+    private String feedName;
+    /**
+     * The processgroup that is holding the flow for this feed
+     */
+    private String feedProcessGroupId;
+
+    private KyloProcessorFlowType processorType;
+
 
     public ProvenanceEventRecordDTO() {
 
     }
 
-    public FeedFlowFile getFeedFlowFile() {
-        return feedFlowFile;
-    }
-
-    public void setFeedFlowFile(FeedFlowFile feedFlowFile) {
-        this.feedFlowFile = feedFlowFile;
-    }
 
     public String getFeedName() {
         return feedName;
@@ -207,12 +162,11 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
     public boolean isTerminatedByFailureRelationship() {
-        return ProvenanceEventUtil.isTerminatedByFailureRelationship(this);
+        return ProvenanceEventDtoUtil.isTerminatedByFailureRelationship(this);
     }
 
-
     public boolean isEndingFlowFileEvent() {
-        return ProvenanceEventUtil.isEndingFlowFileEvent(this);
+        return ProvenanceEventDtoUtil.isEndingFlowFileEvent(this);
     }
 
     public String getRelationship() {
@@ -248,6 +202,10 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.attributeMap = attributeMap;
     }
 
+    @JsonAnySetter
+    public void setUpdatedAttribute(String key, String value){
+        getUpdatedAttributes().put(key,value);
+    }
 
     @JsonProperty("updatedAttributes")
     public Map<String, String> getUpdatedAttributes() {
@@ -275,14 +233,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setSourceConnectionIdentifier(String sourceConnectionIdentifier) {
         this.sourceConnectionIdentifier = sourceConnectionIdentifier;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public Long getEventId() {
@@ -415,38 +365,11 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.details = details;
     }
 
-    public boolean isStartOfFlowFile() {
-        return isStartOfFlowFile;
-    }
-
-    public void setStartOfFlowFile(boolean startOfFlowFile) {
-        isStartOfFlowFile = startOfFlowFile;
-    }
-
-
-    public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
-        if (previousEvent != null) {
-            this.previousEventId = previousEvent.getEventId();
-            this.previousEventTime = previousEvent.getEventTime();
-            this.previousFlowfileId = previousEvent.getFlowFileUuid();
-            this.setStartTime(previousEventTime);
-        }
-    }
-
-    public Long getPreviousEventId() {
-        return previousEventId;
-    }
-
-    public DateTime getPreviousEventTime() {
-        return previousEventTime;
-    }
-
-
-    public DateTime getEventTime() {
+    public Long getEventTime() {
         return eventTime;
     }
 
-    public void setEventTime(DateTime eventTime) {
+    public void setEventTime(Long eventTime) {
         this.eventTime = eventTime;
     }
 
@@ -490,15 +413,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.outputContentClaimFileSize = outputContentClaimFileSize;
     }
 
-    public boolean isStream() {
-        return stream;
-    }
-
-    public void setStream(boolean stream) {
-        this.stream = stream;
-    }
-
-
     public AtomicBoolean getProcessed() {
         return processed;
     }
@@ -521,14 +435,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
 
-    public Long getJobEventId() {
-        return jobEventId;
-    }
-
-    public void setJobEventId(Long jobEventId) {
-        this.jobEventId = jobEventId;
-    }
-
     public boolean isStartOfJob() {
         return isStartOfJob;
     }
@@ -545,73 +451,29 @@ public class ProvenanceEventRecordDTO implements Serializable {
         return isFailure;
     }
 
-
-    public boolean isEndOfJob() {
-        return isEndOfJob;
-    }
-
-    public void setIsEndOfJob(boolean isEndOfJob) {
-        this.isEndOfJob = isEndOfJob;
-    }
-
-
-    public String getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
-    }
-
-    private void addRelatedRootFlowFile(String rootFlowFileId) {
-
-    }
-
-    public Set<String> getRelatedRootFlowFiles() {
-        return relatedRootFlowFiles;
-    }
-
-    public void setRelatedRootFlowFiles(Set<String> relatedRootFlowFiles) {
-        this.relatedRootFlowFiles = relatedRootFlowFiles;
-    }
-
-
     public boolean isFinalJobEvent() {
         return isFinalJobEvent;
     }
 
     public void setIsFinalJobEvent(boolean isFinalJobEvent) {
         this.isFinalJobEvent = isFinalJobEvent;
-        if (this.isFinalJobEvent) {
-            this.hasFailedEvents = getFeedFlowFile().hasFailedEvents();
-        }
     }
 
-    public boolean isHasFailedEvents() {
-        return hasFailedEvents;
-    }
-
-    public void setHasFailedEvents(boolean hasFailedEvents) {
-        this.hasFailedEvents = hasFailedEvents;
-    }
-
-    public boolean isBatchJob() {
-        return isBatchJob;
-    }
-
-    public void setIsBatchJob(boolean isBatchJob) {
-        this.isBatchJob = isBatchJob;
-    }
-
-
-    public DateTime getStartTime() {
+    public Long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(DateTime startTime) {
+    public void setStartTime(Long startTime) {
         this.startTime = startTime;
     }
 
+    public String getFirstEventProcessorId() {
+        return firstEventProcessorId;
+    }
+
+    public void setFirstEventProcessorId(String firstEventProcessorId) {
+        this.firstEventProcessorId = firstEventProcessorId;
+    }
 
     public KyloProcessorFlowType getProcessorType() {
         return processorType;
@@ -653,12 +515,9 @@ public class ProvenanceEventRecordDTO implements Serializable {
         sb.append(", processorName=").append(getComponentName());
         sb.append(", componentId=").append(getComponentId());
         sb.append(", flowFile=").append(getFlowFileUuid());
-        sb.append(", previous=").append(getPreviousEventId());
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
-        sb.append(", isEndOfJob=").append(isEndOfJob());
-        sb.append(", isBatch=").append(isBatchJob());
-        sb.append(", isStream=").append(isStream());
+        sb.append(", isFinalJobEvent=").append(isFinalJobEvent());
         sb.append(", feed=").append(getFeedName());
 
         sb.append('}');
@@ -671,15 +530,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     public void reset() {
         this.isStartOfJob = false;
-        this.isEndOfJob = false;
         this.isFinalJobEvent = false;
-        this.isBatchJob = true;
-        this.hasFailedEvents = false;
-        this.previousEventId = null;
-        this.previousFlowfileId = null;
-        this.previousEventTime = null;
         this.startTime = null;
-        this.id = null;
         this.eventId = null;
         this.eventTime = null;
         this.eventDuration = null;
@@ -702,20 +554,15 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.outputContentClaimFileSizeBytes = null;
         this.outputContentClaimFileSize = null;
         this.relatedRootFlowFiles = null;
-        this.isStartOfFlowFile = false;
-        this.processorType = null;
         this.isFailure = false;
-        this.stream = false;
         this.jobFlowFileId = null;
-        this.jobEventId = null;
         this.feedName = null;
         this.feedProcessGroupId = null;
-        this.batchId = null;
         this.relationship = null;
-        this.feedFlowFile = null;
         this.updatedAttributes = null;
         this.previousAttributes = null;
         this.additionalProperties = null;
         this.attributeMap = null;
+        this.firstEventProcessorId = null;
     }
 }

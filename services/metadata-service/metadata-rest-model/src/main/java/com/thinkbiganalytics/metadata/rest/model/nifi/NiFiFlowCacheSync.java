@@ -38,7 +38,8 @@ import java.util.UUID;
  */
 public class NiFiFlowCacheSync {
 
-    public static NiFiFlowCacheSync UNAVAILABLE = new NiFiFlowCacheSync("NiFi Flow Cache is unavailable. Try again in a few seconds");
+    private static String UNAVAILABLE_MESSAGE = "NiFi Flow Cache is unavailable. Try again in a few seconds";
+    public static NiFiFlowCacheSync UNAVAILABLE = new NiFiFlowCacheSync(UNAVAILABLE_MESSAGE);
     private String syncId;
     private NifiFlowCacheSnapshot snapshot;
     private DateTime lastSync;
@@ -186,7 +187,7 @@ public class NiFiFlowCacheSync {
     }
 
     public boolean isUnavailable() {
-        return this.equals(UNAVAILABLE);
+        return this.equals(UNAVAILABLE) || UNAVAILABLE_MESSAGE.equalsIgnoreCase(getMessage());
     }
 
     public String getMessage() {

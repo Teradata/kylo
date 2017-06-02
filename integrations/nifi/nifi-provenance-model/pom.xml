@@ -48,6 +48,7 @@
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-client-dto</artifactId>
     </dependency>
+
   </dependencies>
 
 </project>

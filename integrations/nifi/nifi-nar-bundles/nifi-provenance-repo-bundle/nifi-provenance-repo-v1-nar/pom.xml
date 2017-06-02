@@ -37,11 +37,6 @@
       <artifactId>kylo-nifi-provenance-repo</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
-      <artifactId>kylo-nifi-provenance-repo-v1</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <!--
     <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>

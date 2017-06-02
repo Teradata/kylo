@@ -46,6 +46,12 @@
       <version>${project.version}</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-nifi-cache-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-feed-manager-rest-model</artifactId>

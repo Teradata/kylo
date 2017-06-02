@@ -7,14 +7,16 @@
   <parent>
     <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
     <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
 
   <properties>
-    <nifi.version>1.1.0</nifi.version>
+    <nifi.version>1.1.2</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
+
+
 
   <dependencies>
     <dependency>
@@ -65,6 +67,10 @@
       <artifactId>nifi-utils</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-persistent-provenance-repository</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.nifi</groupId>
@@ -104,6 +110,18 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jms</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.blogspot.mydailyjava</groupId>
+      <artifactId>guava-cache-overflow-extension</artifactId>
+      <version>0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
 
@@ -150,6 +168,8 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+
+
 
 
   </dependencies>
