@@ -31,7 +31,6 @@ import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,9 +46,6 @@ public class KyloProvenanceEventConsumer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(KyloProvenanceEventConsumer.class);
     private Long lastEventId;
-
-    @Autowired
-    KyloNiFiFlowCacheUpdater kyloNiFiFlowCacheUpdater;
 
     private ProvenanceEventObjectPool objectPool;
 

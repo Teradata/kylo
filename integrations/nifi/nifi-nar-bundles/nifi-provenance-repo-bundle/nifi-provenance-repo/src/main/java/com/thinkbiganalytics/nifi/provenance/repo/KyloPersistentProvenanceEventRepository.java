@@ -119,11 +119,6 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
     public void startConsumer() {
         initializeFlowFilesFromMapDbCache();
-        try {
-            getKyloNiFiFlowCacheUpdater().updateNifiFlowCache();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
         getTaskExecutor().execute(kyloProvenanceEventConsumer);
     }
 
@@ -164,11 +159,6 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
      */
     private FeedFlowFileMapDbCache getFlowFileMapDbCache() {
         return SpringApplicationContext.getInstance().getBean(FeedFlowFileMapDbCache.class);
-    }
-
-
-    private KyloNiFiFlowCacheUpdater getKyloNiFiFlowCacheUpdater(){
-        return SpringApplicationContext.getInstance().getBean(KyloNiFiFlowCacheUpdater.class);
     }
 
     @Override
