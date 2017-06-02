@@ -64,6 +64,9 @@ public class FeedFlowFileGuavaCache {
      * Listeners that can get notified with a FeedFlowFile is invalidated and removed from the cache
      */
     private List<FeedFlowFileCacheListener> listeners = new ArrayList<>();
+
+
+
     /**
      * The last time the summary was printed
      */
@@ -168,6 +171,8 @@ public class FeedFlowFileGuavaCache {
             long start = System.currentTimeMillis();
             List<FeedFlowFile> rootFiles = getCompletedFeedFlowFiles();
             if (!rootFiles.isEmpty()) {
+                listeners.stream().forEach(listener -> listener.beforeInvalidation(rootFiles));
+
                 for (FeedFlowFile root : rootFiles) {
                     invalidate(root);
                 }

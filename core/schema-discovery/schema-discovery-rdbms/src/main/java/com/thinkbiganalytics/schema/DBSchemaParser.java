@@ -145,7 +145,13 @@ public class DBSchemaParser {
 
         final List<String> tables = new ArrayList<>();
 
-        List<String> catalogs = listCatalogs();
+        List<String> catalogs = null;
+        try {
+            catalogs = listCatalogs();
+        }
+        catch (Exception e) {
+            //ok to catch exception here
+        }
         boolean hasCatalogs = catalogs != null && !catalogs.isEmpty();
 
         if (StringUtils.isNotBlank(schema) || StringUtils.isNotBlank(tableName)) {

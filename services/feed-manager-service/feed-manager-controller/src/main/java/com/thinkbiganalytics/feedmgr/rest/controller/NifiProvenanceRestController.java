@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.nifi.cache.CacheSummary;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
@@ -113,10 +114,10 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow cache status.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the cache status.", response = NifiFlowCache.CacheSummary.class)
+        @ApiResponse(code = 200, message = "Returns the cache status.", response = CacheSummary.class)
     )
     public Response previewFlowUpdates() {
-        NifiFlowCache.CacheSummary summary = nifiFlowCache.cacheSummary();
+        CacheSummary summary = new CacheSummary();
         return Response.ok(summary).build();
     }
 

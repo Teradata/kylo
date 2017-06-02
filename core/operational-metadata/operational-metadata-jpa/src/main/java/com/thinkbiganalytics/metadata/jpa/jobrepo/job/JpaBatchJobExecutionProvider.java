@@ -251,11 +251,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param nifiEvent the persisted event
      */
     private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        if (event.getRelatedRootFlowFiles() != null && !event.getRelatedRootFlowFiles().isEmpty()) {
+        if (event.getFeedFlowFile().hasRelatedBatchFlows() && event.isFinalJobEvent() && event.getFeedFlowFile().getId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId())) {
             //relate the files together
             List<JpaNifiRelatedRootFlowFiles> relatedRootFlowFiles = new ArrayList<>();
             String relationId = UUID.randomUUID().toString();
-            for (String flowFile : event.getRelatedRootFlowFiles()) {
+            for (String flowFile : event.getFeedFlowFile().getRelatedBatchFeedFlows()) {
                 JpaNifiRelatedRootFlowFiles nifiRelatedRootFlowFile = new JpaNifiRelatedRootFlowFiles(nifiEvent, flowFile, relationId);
                 relatedRootFlowFiles.add(nifiRelatedRootFlowFile);
             }

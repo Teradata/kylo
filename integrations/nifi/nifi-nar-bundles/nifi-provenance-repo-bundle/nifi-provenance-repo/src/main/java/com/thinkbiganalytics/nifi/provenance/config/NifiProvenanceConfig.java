@@ -21,14 +21,19 @@ package com.thinkbiganalytics.nifi.provenance.config;
  */
 
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
+import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollectorV2;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectFactory;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
+import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileExpireListener;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.repo.KyloNiFiFlowCacheUpdater;
+import com.thinkbiganalytics.nifi.provenance.repo.KyloProvenanceEventConsumer;
+import com.thinkbiganalytics.nifi.provenance.repo.KyloProvenanceProcessingQueue;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -37,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Spring bean configuration for Kylo NiFi Provenance
@@ -64,9 +70,8 @@ public class NifiProvenanceConfig {
     @Bean
     public ProvenanceEventObjectPool provenanceEventObjectPool() {
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxIdle(1000);
-        config.setMaxTotal(1000);
-        config.setMinIdle(1);
+        config.setMaxTotal(2000);
+        config.setMaxIdle(2000);
         config.setBlockWhenExhausted(false);
         config.setTestOnBorrow(false);
         config.setTestOnReturn(false);
@@ -95,6 +100,12 @@ public class NifiProvenanceConfig {
     }
 
     @Bean
+    public ProvenanceEventCollectorV2 provenanceEventCollectorV2() {
+        return new ProvenanceEventCollectorV2(provenanceEventActiveMqWriter());
+    }
+
+    @Bean
+    @Deprecated
     public ProvenanceEventCollector provenanceEventCollector() {
         return new ProvenanceEventCollector(provenanceEventActiveMqWriter());
     }
@@ -107,6 +118,26 @@ public class NifiProvenanceConfig {
     @Bean
     public ProvenanceFeedLookup provenanceFeedLookup() {
         return new ProvenanceFeedLookup();
+    }
+
+    @Bean
+    public KyloNiFiFlowCacheUpdater kyloNiFiFlowCacheUpdater(){
+        return new KyloNiFiFlowCacheUpdater();
+    }
+
+
+    @Bean
+    public FeedFlowFileExpireListener feedFlowFileExpireListener(){
+        return new FeedFlowFileExpireListener();
+    }
+
+    @Bean(name = "kyloProvenanceProcessingTaskExecutor" )
+    public ThreadPoolTaskExecutor kyloProvenanceProcessingTaskExecutor() {
+        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
+        pool.setCorePoolSize(1);
+        pool.setMaxPoolSize(1);
+        pool.setWaitForTasksToCompleteOnShutdown(true);
+        return pool;
     }
 
 }

@@ -22,11 +22,15 @@ package com.thinkbiganalytics.nifi.provenance.cache;
 
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 
+import java.util.List;
+
 /**
  */
 public interface FeedFlowFileCacheListener {
 
 
     void onInvalidate(FeedFlowFile flowFile);
+
+    void beforeInvalidation(List<FeedFlowFile> completedFlowFiles);
 
 }

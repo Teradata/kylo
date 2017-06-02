@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AggregatedFeedProcessorStatistics implements Serializable {
 
-    String feedName;
+    String startingProcessorId;
     String processGroup;
     Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
     private String collectionId;
@@ -44,8 +44,8 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     public AggregatedFeedProcessorStatistics() {
     }
 
-    public AggregatedFeedProcessorStatistics(String feedName, String collectionId) {
-        this.feedName = feedName;
+    public AggregatedFeedProcessorStatistics(String startingProcessorId, String collectionId) {
+        this.startingProcessorId = startingProcessorId;
         this.collectionId = collectionId;
     }
 
@@ -66,12 +66,12 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         }
     }
 
-    public String getFeedName() {
-        return feedName;
+    public String getStartingProcessorId() {
+        return startingProcessorId;
     }
 
-    public void setFeedName(String feedName) {
-        this.feedName = feedName;
+    public void setStartingProcessorId(String startingProcessorId) {
+        this.startingProcessorId = startingProcessorId;
     }
 
     public String getProcessGroup() {

@@ -21,9 +21,10 @@ package com.thinkbiganalytics.nifi.provenance;
  */
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheListener;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
-import com.thinkbiganalytics.nifi.provenance.model.BatchFeedProcessorEvents;
+import com.thinkbiganalytics.nifi.provenance.repo.BatchFeedProcessorEventsV2;
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
@@ -45,12 +46,9 @@ import java.util.stream.Collectors;
  * com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics} grouping the events by Feed and Processor Id Otherwise if not indicated a stream, it will be processed as a
  * Batch job and send the full Event to JMS
  */
-@Deprecated
-public class ProvenanceEventCollector {
+public class ProvenanceEventCollectorV2  {
 
-    private static final Logger log = LoggerFactory.getLogger(ProvenanceEventCollector.class);
-    @Autowired
-    ProvenanceFeedLookup provenanceFeedLookup;
+    private static final Logger log = LoggerFactory.getLogger(ProvenanceEventCollectorV2.class);
     @Autowired
     ProvenanceStatsCalculator statsCalculator;
     @Autowired
@@ -58,7 +56,7 @@ public class ProvenanceEventCollector {
     /**
      * The Map of Objects that will be grouped and sent over to Kylo as Batch Jobs/Steps for Operations Manager
      */
-    Map<String, BatchFeedProcessorEvents> groupedBatchEventsByFeed = new ConcurrentHashMap<>();
+    Map<String, BatchFeedProcessorEventsV2> groupedBatchEventsByFeed = new ConcurrentHashMap<>();
     @Autowired
     private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
     /**
@@ -75,7 +73,7 @@ public class ProvenanceEventCollector {
 
 
     @Autowired
-    public ProvenanceEventCollector(@Qualifier("provenanceEventActiveMqWriter") ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter) {
+    public ProvenanceEventCollectorV2(@Qualifier("provenanceEventActiveMqWriter") ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter) {
         super();
 
         this.provenanceEventActiveMqWriter = provenanceEventActiveMqWriter;
@@ -89,7 +87,7 @@ public class ProvenanceEventCollector {
      * @return the key based upon the feed name and the component id
      */
     private String mapKey(ProvenanceEventRecordDTO event) {
-        return event.getFeedName() + ":" + event.getComponentId();
+        return event.getFeedFlowFile().getFirstEventProcessorId() + ":" + event.getComponentId();
     }
 
 
@@ -105,7 +103,7 @@ public class ProvenanceEventCollector {
 
 
     /**
-     * Process the event, adding it to the running {@link com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile} , calculating statistics on the event, and if a Batch feed, grouped by Feed and
+     * Process the event, adding it to the running {@link FeedFlowFile} , calculating statistics on the event, and if a Batch feed, grouped by Feed and
      * Processor, process the entire event for processing.
      *
      * @param event the event to process
@@ -130,18 +128,19 @@ public class ProvenanceEventCollector {
                         event.getFeedFlowFile().incrementFailedEvents();
                     }
                     //only process if we can get the feed name, otherwise its no use
-                    if (hasFeedName(event)) {
+                //    if (hasFeedName(event)) {
                         //send the event off for stats processing
                         statsCalculator.calculateStats(event);
 
                         //batch up the data to send to kylo if this feed is marked as a batch or if the parent flow file is marked as a batch
-                        if (!event.isStream()) {
-                            batchEvent(event);
-                        }
+                       // if (!event.isStream()) {
+                            boolean added = batchEvent(event);
 
-                    } else {
-                        log.error("Provenance: Cant find Feed for {} ", event);
-                    }
+                       // }
+
+                  //  } else {
+                  //      log.error("Provenance: Cant find Feed for {} ", event);
+                   // }
 
                 } catch (FeedFlowFileNotFoundException e) {
                     log.debug("Unable to find Root flowfile.", event, event.getFlowFileUuid());
@@ -161,10 +160,7 @@ public class ProvenanceEventCollector {
      */
     private boolean batchEvent(ProvenanceEventRecordDTO event) {
         if (event != null) {
-            return groupedBatchEventsByFeed.computeIfAbsent(mapKey(event), mapKey -> new BatchFeedProcessorEvents(event.getFeedName(),
-                                                                                                                  event
-                                                                                                                      .getComponentId(), getMaxBatchFeedJobEventsPerSecond())).setMaxEventsPerSecond(
-                getMaxBatchFeedJobEventsPerSecond()).add(event);
+            return groupedBatchEventsByFeed.computeIfAbsent(mapKey(event), mapKey -> new BatchFeedProcessorEventsV2(event.getJobFlowFileId(),event.getComponentId(), getMaxBatchFeedJobEventsPerSecond()).setMaxEventsPerSecond(getMaxBatchFeedJobEventsPerSecond())).add(event);
         }
         return false;
     }
@@ -222,6 +218,7 @@ public class ProvenanceEventCollector {
     public void setJmsEventGroupSize(Integer jmsEventGroupSize) {
         this.jmsEventGroupSize = jmsEventGroupSize;
     }
+
 
 
 }

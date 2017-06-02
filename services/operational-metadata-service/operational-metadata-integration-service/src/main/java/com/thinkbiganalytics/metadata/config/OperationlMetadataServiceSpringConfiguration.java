@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.config;
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
+import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventFeedUtil;
 import com.thinkbiganalytics.metadata.sla.DefaultServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.JpaJcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.ServiceLevelAgreementActionAlertResponderFactory;
@@ -58,6 +59,11 @@ public class OperationlMetadataServiceSpringConfiguration {
         ServiceLevelAgreementActionAlertResponderFactory responder = new ServiceLevelAgreementActionAlertResponderFactory();
         alertProvider.addResponder(responder);
         return responder;
+    }
+
+    @Bean
+    public ProvenanceEventFeedUtil provenanceEventFeedUtil(){
+        return new ProvenanceEventFeedUtil();
     }
 
 

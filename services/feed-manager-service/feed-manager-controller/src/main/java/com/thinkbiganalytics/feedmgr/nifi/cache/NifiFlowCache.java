@@ -178,6 +178,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
     @Override
     public void run() {
         boolean isLatest = kyloVersionProvider.isUpToDate();
+        log.info("flow cache run ... isLatest {} ",isLatest);
         if(isLatest) {
             this.modeShapeAvailable = true;
             checkAndInitializeCache();
@@ -206,6 +207,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * When modeshape and nifi are connected and ready attempt to initialize the cache
      */
     private void checkAndInitializeCache() {
+        log.info("checkAndInitialize = {} , {} , {} ",modeShapeAvailable,nifiConnected,!loaded);
         if (modeShapeAvailable && nifiConnected && !loaded) {
             rebuildCacheWithRetry();
         }
@@ -863,42 +865,5 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
         }
     }
 
-    public static class CacheSummary {
 
-        private Map<String, Integer> summary = new HashMap<>();
-        private Integer cachedSyncIds;
-
-        public CacheSummary() {
-
-        }
-
-        private CacheSummary(Map<String, Integer> cacheIds) {
-            this.summary = cacheIds;
-            this.cachedSyncIds = cacheIds.keySet().size();
-        }
-
-        public static CacheSummary build(Map<String, NiFiFlowCacheSync> syncMap) {
-            Map<String, Integer>
-                cacheIds =
-                syncMap.entrySet().stream().collect(Collectors.toMap(stringNiFiFlowCacheSyncEntry -> stringNiFiFlowCacheSyncEntry.getKey(),
-                                                                     stringNiFiFlowCacheSyncEntry1 -> stringNiFiFlowCacheSyncEntry1.getValue().getSnapshot().getProcessorIdToFeedNameMap().size()));
-            return new CacheSummary(cacheIds);
-        }
-
-        public Map<String, Integer> getSummary() {
-            return summary;
-        }
-
-        public void setSummary(Map<String, Integer> summary) {
-            this.summary = summary;
-        }
-
-        public Integer getCachedSyncIds() {
-            return cachedSyncIds;
-        }
-
-        public void setCachedSyncIds(Integer cachedSyncIds) {
-            this.cachedSyncIds = cachedSyncIds;
-        }
-    }
 }

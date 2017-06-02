@@ -73,6 +73,9 @@ public class AggregatedProcessorStatistics implements Serializable {
         return processorName;
     }
 
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
+    }
 
     public void clear() {
         this.stats.clear();

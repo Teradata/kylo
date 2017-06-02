@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -71,7 +73,7 @@ public class FeedFlowFileCacheUtil {
         //An event is the very first in the flow if it is a CREATE or RECEIVE event and if there are no Parent flow files
         //This indicates the start of a Job.
         //
-        if (ProvenanceEventUtil.isFirstEvent(event) && event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty())) {
+        if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             //we only need to store references to the root feed flow file.
             FeedFlowFile flowFile = null;
             if (flowFileCache.isCached(event.getFlowFileUuid())) {
@@ -92,16 +94,18 @@ public class FeedFlowFileCacheUtil {
             feedFlowFile = flowFileCache.getEntry(event.getFlowFileUuid());
             event.setFeedFlowFile(feedFlowFile);
         }
+     //   Set<FeedFlowFile> batchFeedFlows = new HashSet<>();
         FeedFlowFile parentFlowFile = null;
         //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
             for (String parent : event.getParentUuids()) {
-
                 if (flowFileCache.isCached(parent)) {
                     //set this flowfileid pointing to the parent
                     parentFlowFile = flowFileCache.getEntry(parent);
                     flowFileCache.add(event.getFlowFileUuid(), parentFlowFile);
-
+                 //   if(!parentFlowFile.isStream()){
+               //         batchFeedFlows.add(parentFlowFile);
+             //       }
                     //if the parent == the id of the flowfile in the cache it means this is a starting flow that relates to another starting feed flow
                     //likely the flow files got merged and are linked.
                     //track this relationship
@@ -134,6 +138,7 @@ public class FeedFlowFileCacheUtil {
         }
         event.setFeedFlowFile(feedFlowFile);
 
+
         if (event.getChildUuids() != null && !event.getChildUuids().isEmpty()) {
             for (String child : event.getChildUuids()) {
                 flowFileCache.add(child, feedFlowFile);
@@ -141,35 +146,45 @@ public class FeedFlowFileCacheUtil {
                 feedFlowFile.assignFlowFileToParent(child, event.getFlowFileUuid());
                 feedFlowFile.assignChildFlowFileStartTime(child, event.getEventTime().getMillis());
                 feedFlowFile.addChildFlowFile(child);
+
+                //relate child to cache.get(event.getFlowFileUuid())
+           //     batchFeedFlows.stream().filter(f -> !f.getId().equalsIgnoreCase(child)).forEach(f ->f.addRelatedBatchFlow(f.getId()));
+            }
+        }
+        if (event.getProcessorType() == null) {
+
+            if (event.isTerminatedByFailureRelationship()) {
+                event.setProcessorType(KyloProcessorFlowType.FAILURE);
+                event.setIsFailure(true);
             }
         }
 
-        event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
+       // event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         //assign the feed info for quick lookup on the flow file?
-        boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(feedFlowFile);
-        if (!assignedFeedInfo) {
-            log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ({}) processorId: {} ", feedFlowFile.getId(), feedFlowFile, event.getComponentName(),
-                      event.getEventId(), event.getComponentId());
+      //  boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(feedFlowFile);
+     //   if (!assignedFeedInfo) {
+    //        log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ({}) processorId: {} ", feedFlowFile.getId(), feedFlowFile, event.getComponentName(),
+   //                   event.getEventId(), event.getComponentId());
+//
+  //      } else {
+    //        event.setFeedName(feedFlowFile.getFeedName());
+   //         event.setFeedProcessGroupId(feedFlowFile.getFeedProcessGroupId());
+        //    event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
+       // }
 
-        } else {
-            event.setFeedName(feedFlowFile.getFeedName());
-            event.setFeedProcessGroupId(feedFlowFile.getFeedProcessGroupId());
-            event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
-        }
-
-        event.setStream(provenanceFeedLookup.isStream(event));
+      //  event.setStream(provenanceFeedLookup.isStream(event));
         event.setJobFlowFileId(feedFlowFile.getId());
 
         feedFlowFile.addEvent(event);
-        KyloProcessorFlowType flowType = provenanceFeedLookup.setProcessorFlowType(event);
+      //  KyloProcessorFlowType flowType = provenanceFeedLookup.setProcessorFlowType(event);
         feedFlowFile.checkIfEventStartsTheFlowFile(event);
         feedFlowFile.checkAndMarkComplete(event);
 
-        if (KyloProcessorFlowType.FAILURE.equals(flowType)) {
-            if (event.getFeedFlowFile() != null) {
-                event.getFeedFlowFile().incrementFailedEvents();
-            }
-        }
+     //   if (KyloProcessorFlowType.FAILURE.equals(flowType)) {
+      //      if (event.getFeedFlowFile() != null) {
+     //           event.getFeedFlowFile().incrementFailedEvents();
+     //       }
+      //  }
 
         if (event.isEndingFlowFileEvent() && feedFlowFile.isFeedComplete()) {
             event.setIsEndOfJob(true);

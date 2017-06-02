@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
  * Utility class to lookup Kylo Feed information as it relates to a given Provenance Event.
  * This uses the {@link NiFiFlowCacheSync} which holds data from Kylo about the Flows in NiFi.
  */
+@Deprecated
 public class ProvenanceFeedLookup {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceFeedLookup.class);

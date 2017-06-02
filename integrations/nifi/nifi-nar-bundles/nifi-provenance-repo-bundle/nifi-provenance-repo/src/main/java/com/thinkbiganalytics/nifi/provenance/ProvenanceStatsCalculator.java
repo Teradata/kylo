@@ -73,16 +73,16 @@ public class ProvenanceStatsCalculator {
      * @param event a ProvenanceEvent to be processed for statistics
      */
     public void calculateStats(ProvenanceEventRecordDTO event) {
-        String feedName = event.getFeedName();
-        if (feedName != null) {
+       // String feedName = event.getFeedName();
+       // if (feedName != null) {
             try {
                 statsHolder.addStat(event);
             } catch (Exception e) {
                 log.error("Unable to add Statistics for Event {}.  Exception: {} ", event, e.getMessage(), e);
             }
-        } else {
-            log.error("Unable to add Statistics for Event {}.  Unable to find feed for event ", event);
-        }
+      //  } else {
+     //       log.error("Unable to add Statistics for Event {}.  Unable to find feed for event ", event);
+    //    }
     }
 
 

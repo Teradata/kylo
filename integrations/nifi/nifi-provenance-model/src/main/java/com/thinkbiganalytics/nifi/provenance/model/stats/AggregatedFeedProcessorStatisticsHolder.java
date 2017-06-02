@@ -38,6 +38,9 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
     DateTime maxTime;
     String collectionId;
     AtomicLong eventCount = new AtomicLong(0L);
+    /**
+     * Map of Starting processorId and stats related to it
+     */
     Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
     private Long minEventId = 0L;
     private Long maxEventId = 0L;
@@ -57,7 +60,7 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         if (maxTime == null || event.getEventTime().isAfter(maxTime)) {
             maxTime = event.getEventTime();
         }
-        feedStatistics.computeIfAbsent(event.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
+        feedStatistics.computeIfAbsent(event.getFeedFlowFile().getFirstEventProcessorId(), (feedProcessorId) -> new AggregatedFeedProcessorStatistics(feedProcessorId, collectionId)).addEventStats(
             event);
 
         if (event.getEventId() < minEventId) {

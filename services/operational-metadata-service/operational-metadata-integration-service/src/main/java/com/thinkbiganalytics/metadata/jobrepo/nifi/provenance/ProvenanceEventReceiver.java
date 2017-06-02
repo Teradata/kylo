@@ -25,6 +25,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
@@ -40,6 +41,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvide
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
@@ -106,6 +109,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
+
     /**
      * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
      */
@@ -124,6 +128,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     private MetadataAccess metadataAccess;
     @Inject
     private MetadataEventService eventService;
+
+    @Inject
+    private ProvenanceEventFeedUtil provenanceEventFeedUtil;
+
+
+
     /**
      * The amount of retry attempts the system will do if it gets a LockAcquisitionException
      * MySQL may fail to lock the table when performing inserts into the database resulting in a deadlock exception.
@@ -161,6 +171,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     }
 
 
+
+
+
+
+
+
     /**
      * Unique key for the Event in relation to the Job
      *
@@ -183,11 +199,13 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(),events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        events.getEvents().stream()
+        events.getEvents().stream().map(event ->  provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
             .filter(this::isRegisteredWithFeedManager)
             .filter(this::ensureNewEvent)
             .forEach(event -> processEvent(event, 0));
     }
+
+
 
     /**
      * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
@@ -197,16 +215,18 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
-            if (event.isBatchJob()) {
+
+            log.info("Process {} for flowfile: {} and processorId: {} ",event, event.getJobFlowFileId(), event.getFeedFlowFile().getFirstEventProcessorId());
+           // if (event.isBatchJob()) {
                 //ensure the job is there
                 BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event),
                                                                        MetadataAccess.SERVICE);
                 NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
                                                             MetadataAccess.SERVICE);
-            } else {
-                NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
-                                                            MetadataAccess.SERVICE);
-            }
+          //  } else {cd
+         //       NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
+          //                                                  MetadataAccess.SERVICE);
+        //    }
             if (event.isFinalJobEvent()) {
                 notifyJobFinished(event);
             }

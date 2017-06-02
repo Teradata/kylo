@@ -28,6 +28,7 @@ import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,17 +38,31 @@ import java.util.Map;
 public class ProvenanceEventRecordConverter implements Serializable {
 
 
-    public static ProvenanceEventRecordDTO getPooledObject(ProvenanceEventObjectPool pool, final ProvenanceEventRecord event) throws Exception {
-        ProvenanceEventRecordDTO dto = pool.borrowObject();
+    public static ProvenanceEventRecordDTO getPooledObject(ProvenanceEventObjectPool pool, final ProvenanceEventRecord event){
+        ProvenanceEventRecordDTO dto = null;
+        try {
+            dto = pool.borrowObject();
+            populateEvent(dto, event);
+            return dto;
+        }
+        catch (Exception e){
+            //error during object pool.  just return
+            return convert(event);
+        }
+
+    }
+
+    public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event)  {
+        ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();
         populateEvent(dto, event);
         return dto;
-
     }
 
 
     public static void populateEvent(ProvenanceEventRecordDTO dto, ProvenanceEventRecord event) {
 
-        final Map<String, String> updatedAttrs = event.getUpdatedAttributes();
+        //create a new hashmap for the updatedattrs so we can modify/add additional things to it
+        final Map<String, String> updatedAttrs = new HashMap<>(event.getUpdatedAttributes());
         final Map<String, String> previousAttrs = event.getPreviousAttributes();
 
         dto.setId(String.valueOf(event.getEventId()));

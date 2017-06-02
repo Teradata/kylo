@@ -30,6 +30,7 @@ import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventRecordComparator;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.commons.lang3.StringUtils;
@@ -236,6 +237,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     @OnScheduled
     public void setup(final ConfigurationContext context) throws IOException, InitializationException {
         getLogger().info("OnScheduled of KyloReportingTask");
+        /*
         loadSpring(true);
         this.metadataProviderService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
         this.maxBatchFeedJobEventsPerSecond = context.getProperty(MAX_BATCH_FEED_EVENTS_PER_SECOND).asInteger();
@@ -256,7 +258,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         }
         if (this.rebuildNiFiFlowCacheOnRestart && StringUtils.isNotBlank(nifiFlowSyncId)) {
             nifiFlowSyncId = null;
-        }
+        }*/
     }
 
     @OnStopped
@@ -270,7 +272,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     @OnShutdown
     public final void onShutdown(ConfigurationContext configurationContext) {
-        getLogger().info("onShutdown: Attempting to persist any active flow files to disk");
+
+     /*   getLogger().info("onShutdown: Attempting to persist any active flow files to disk");
         abortProcessing();
         try {
             //persist running flowfile metadata to disk
@@ -279,6 +282,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         } catch (Exception e) {
             //ok to swallow exception here.  this is called when NiFi is shutting down
         }
+        */
     }
 
     /**
@@ -289,7 +293,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     @OnConfigurationRestored
     public final void onConfigurationRestored() {
-        if (initializing.compareAndSet(false, true)) {
+        /*if (initializing.compareAndSet(false, true)) {
             try {
                 getLogger().info("onConfigurationRestored: Attempting to load any persisted files from disk into the Guava Cache");
 
@@ -305,14 +309,15 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 initializing.set(false);
             }
         }
+        */
     }
 
     /**
      * attempt to load the data from disk into the Guava Cache
      */
     private void initializeFlowFilesFromMapDbCache() {
-        int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
-        getLogger().info("initializeFlowFilesFromMapDbCache: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
+     //   int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
+      //  getLogger().info("initializeFlowFilesFromMapDbCache: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
     }
 
     /**
@@ -474,6 +479,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     @Override
     public void onTrigger(final ReportingContext context) {
+        if(true){
+            return;
+        }
 
         String nodeId = getNodeIdStrategy().getNodeId(context);
         getLogger().debug("Nifi nodeId {}", new Object[]{nodeId});
@@ -748,7 +756,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         int recordCount = new Long(maxEventId - (minEventId < 0 ? 0 : minEventId)).intValue();
         currentProcessingMessage = "Finding all Events between " + minEventId + " - " + maxEventId;
 
-        //add one to the record count to get the correct number in the range including the maxEventId
+        //add onprocessEventsInRangee to the record count to get the correct number in the range including the maxEventId
         recordCount += 1;
         long start = System.currentTimeMillis();
         final List<ProvenanceEventRecord> events = provenance.getEvents(minEventId, recordCount);
@@ -871,24 +879,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     private static enum INITIAL_EVENT_ID_OPTION {LAST_EVENT_ID, MAX_EVENT_ID, KYLO}
 
-    /**
-     * Comparator sorting events by eventId
-     */
-    public class ProvenanceEventRecordComparator implements Comparator<ProvenanceEventRecord> {
 
-
-        public int compare(ProvenanceEventRecord o1, ProvenanceEventRecord o2) {
-            if (o1 == null && o1 == null) {
-                return 0;
-            } else if (o1 != null && o2 == null) {
-                return -1;
-            } else if (o1 == null && o2 != null) {
-                return 1;
-            } else {
-                return new Long(o1.getEventId()).compareTo(new Long(o2.getEventId()));
-            }
-        }
-    }
 
 
 }

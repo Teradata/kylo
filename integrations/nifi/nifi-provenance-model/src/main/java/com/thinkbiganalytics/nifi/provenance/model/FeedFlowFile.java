@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.provenance.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -72,6 +74,16 @@ public class FeedFlowFile implements Serializable {
 
 
     /**
+     * Set of other FeedFlowFiles that are related to this who are processed as a Batch
+     */
+    private Set<String> relatedBatchFeedFlows;
+
+    private String primaryRelatedBatchFeedFlow;
+
+
+
+
+    /**
      * The First Event in this flow file
      */
     private Long firstEventId;
@@ -119,6 +131,12 @@ public class FeedFlowFile implements Serializable {
     private Map<String, String> flowFileIdToParentFlowFileId;
 
     private boolean isBuiltFromMapDb;
+
+
+    /**
+     * Track stats that were sent via batch via those accumulated over the course of the feed.
+     */
+    private FeedFlowFileJobTrackingStats  feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats();
 
 
     public FeedFlowFile(String id) {
@@ -186,6 +204,10 @@ public class FeedFlowFile implements Serializable {
     }
 
 
+    public FeedFlowFileJobTrackingStats getFeedFlowFileJobTrackingStats() {
+        return feedFlowFileJobTrackingStats;
+    }
+
     /**
      * flag to determine if this was build from the persistent cache
      */
@@ -239,6 +261,43 @@ public class FeedFlowFile implements Serializable {
 
     }
 
+    public String getPrimaryRelatedBatchFeedFlow() {
+        return primaryRelatedBatchFeedFlow;
+    }
+
+    public void setPrimaryRelatedBatchFeedFlow(String primaryRelatedBatchFeedFlow) {
+        this.primaryRelatedBatchFeedFlow = primaryRelatedBatchFeedFlow;
+    }
+
+    public Set<String> getRelatedBatchFeedFlows(){
+        return relatedBatchFeedFlows;
+    }
+
+    public boolean hasRelatedBatchFlows(){
+        return getRelatedBatchFeedFlows() != null && !getRelatedBatchFeedFlows().isEmpty();
+    }
+
+
+
+
+
+    public void addRelatedBatchFlow(String flowFileId){
+        if(getRelatedBatchFeedFlows() == null){
+            relatedBatchFeedFlows = new HashSet<>();
+        }
+        relatedBatchFeedFlows.add(flowFileId);
+    }
+
+    public void setRelatedBatchFeedFlows(Set<String> relatedBatchFeedFlows) {
+        this.relatedBatchFeedFlows = relatedBatchFeedFlows;
+    }
+
+    public void removeRelatedBatchFlow(String flowFileId){
+        if(hasRelatedBatchFlows()){
+            relatedBatchFeedFlows.remove(flowFileId);
+        }
+    }
+
     /**
      * Is this feed and all the child flow files complete
      */
@@ -261,6 +320,9 @@ public class FeedFlowFile implements Serializable {
         if ("DROP".equalsIgnoreCase(event.getEventType())) {
             if (event.getFlowFileUuid().equals(this.getId())) {
                 isCurrentFlowFileComplete = true;
+              //  if(activeChildFlowFiles != null){
+              //      activeChildFlowFiles.remove(event.getFlowFileUuid());
+              //  }
             } else {
                 activeChildFlowFiles.remove(event.getFlowFileUuid());
             }
@@ -309,6 +371,7 @@ public class FeedFlowFile implements Serializable {
             return null;
         }
     }
+
 
     public void registerLastEventTime(ProvenanceEventRecordDTO eventRecordDTO) {
         if (flowFileLastEventTime == null) {

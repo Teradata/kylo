@@ -184,7 +184,13 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     @JsonProperty("attributes")
     private Map<String, String> attributeMap;
+
     private FeedFlowFile feedFlowFile;
+
+    /**
+     * Reference flow file for the feed event that is related to the Feed Job
+     */
+    private String streamingBatchFeedFlowFileId;
 
     public ProvenanceEventRecordDTO() {
 
@@ -196,6 +202,15 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setFeedFlowFile(FeedFlowFile feedFlowFile) {
         this.feedFlowFile = feedFlowFile;
+    }
+
+
+    public String getStreamingBatchFeedFlowFileId() {
+        return streamingBatchFeedFlowFileId;
+    }
+
+    public void setStreamingBatchFeedFlowFileId(String streamingBatchFeedFlowFileId) {
+        this.streamingBatchFeedFlowFileId = streamingBatchFeedFlowFileId;
     }
 
     public String getFeedName() {
@@ -248,6 +263,10 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.attributeMap = attributeMap;
     }
 
+    @JsonAnySetter
+    public void setUpdatedAttribute(String key, String value){
+        getUpdatedAttributes().put(key,value);
+    }
 
     @JsonProperty("updatedAttributes")
     public Map<String, String> getUpdatedAttributes() {
@@ -564,10 +583,13 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
     private void addRelatedRootFlowFile(String rootFlowFileId) {
-
+    getRelatedRootFlowFiles().add(rootFlowFileId);
     }
 
     public Set<String> getRelatedRootFlowFiles() {
+        if(relatedRootFlowFiles == null){
+            relatedRootFlowFiles = new HashSet<>();
+        }
         return relatedRootFlowFiles;
     }
 
