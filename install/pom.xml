@@ -747,9 +747,7 @@
                 <source>
                   <location>setup</location>
                   <includes>
-                    <include>start-kylo-apps.sh</include>
-                    <include>stop-kylo-apps.sh</include>
-                    <include>status-kylo-apps.sh</include>
+                    <include>kylo-service</include>
                   </includes>
                 </source>
               </sources>
@@ -841,7 +839,7 @@
                   <src>setup</src>
                   <type>directory</type>
                   <missingSrc>fail</missingSrc>
-                  <excludes>start-kylo-apps.sh,stop-kylo-apps.sh,status-kylo-apps.sh</excludes>
+                  <excludes>kylo-service</excludes>
                   <mapper>
                     <type>perm</type>
                     <prefix>${rpm.install.dir}/setup</prefix>
@@ -869,7 +867,7 @@
                   <src>setup</src>
                   <type>directory</type>
                   <missingSrc>fail</missingSrc>
-                  <includes>start-kylo-apps.sh,stop-kylo-apps.sh,status-kylo-apps.sh</includes>
+                  <includes>kylo-service</includes>
                   <mapper>
                     <type>perm</type>
                     <prefix>${rpm.install.dir}</prefix>
