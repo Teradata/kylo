@@ -75,7 +75,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                                 .parent(angular.element(document.querySelector('body')))
                                 .clickOutsideToClose(true)
                                 .title('Error executing the Query')
-                                .textContent('Error querying the data for ' + query)
+                                .textContent('Error querying the data for ' + data + ' \n Hive reported the following error:' + err)
                                 .ariaLabel('Error browsing the data')
                                 .ok('Got it!')
                             //.targetEvent(ev)
