@@ -34,8 +34,8 @@ function run_action_against_service {
 for USER_ARG in "$@"
 do
   if [[ $USER_ARG  == "help" ]]; then
-          kylo_echo "Supported actions for services are restart, stop, start, status, list, enable and disable. \n
-          For example, the command kylo-service restart will restart all kylo services. \n
+          kylo_echo "Supported actions for services are restart, stop, start, status, list, enable and disable.
+          For example, the command kylo-service restart will restart all kylo services.
           Actions can be run on optional services by adding the optional parameter. For example: kylo-service restart optional\n"; exit 1
   fi
 done
