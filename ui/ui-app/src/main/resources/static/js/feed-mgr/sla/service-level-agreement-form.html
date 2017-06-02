@@ -23,7 +23,7 @@
   <div layout="column" class="layout-padding-top" style="padding-top:16px;">
     <md-input-container class="md-block condensed">
       <label>Name</label>
-      <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name"
+      <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name" ng-disabled="!vm.allowEdit"
              required/>
 
       <div ng-messages="vm.slaForm.slaName.$error " md-auto-hide="false">
@@ -32,7 +32,7 @@
     </md-input-container>
     <md-input-container class="md-block condensed">
       <label>Description</label>
-      <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description"
+      <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description" ng-disabled="!vm.allowEdit"
              required/>
 
       <div ng-messages="vm.slaForm.slaDescription.$error " md-auto-hide="false">
@@ -160,10 +160,10 @@
 
 
     <div class="layout-padding-top-bottom" flex layout="row">
-      <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null">Delete</md-button>
+      <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null && vm.allowEdit">Delete</md-button>
       <span flex></span>
       <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">Cancel</md-button>
-      <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null " ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">Save SLA</md-button>
+      <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.allowEdit" ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">Save SLA</md-button>
     </div>
 
   </div>

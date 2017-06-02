@@ -25,16 +25,21 @@ import com.thinkbiganalytics.cluster.NiFiFlowCacheUpdateType;
 import com.thinkbiganalytics.metadata.api.cluster.NiFiFlowCacheClusterSync;
 import com.thinkbiganalytics.metadata.api.cluster.NiFiFlowCacheClusterUpdateItem;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 @Service
 public class NiFiFlowCacheClusterUpdateProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(NiFiFlowCacheClusterUpdateProvider.class);
 
     @Inject
     private ClusterService clusterService;
@@ -113,8 +118,16 @@ public class NiFiFlowCacheClusterUpdateProvider {
      * Removes all cluster records that are not part of the current cluster members
      */
     public void resetClusterSyncUpdates(){
-        List<JpaNiFiFlowCacheClusterSync> staleUpdates = niFiFlowCacheRepository.findStaleClusterUpdates(clusterService.getMembersAsString());
-        niFiFlowCacheRepository.delete(staleUpdates);
+
+        List<String> members = clusterService.getMembersAsString();
+        if(members != null && !members.isEmpty()) {
+            Set<String> updateKeys = niFiFlowCacheRepository.findStaleClusterUpdateItemKeys(members);
+            niFiFlowCacheRepository.deleteStaleCacheClusterSync(members);
+            if(updateKeys != null && !updateKeys.isEmpty()) {
+                niFiFlowCacheRepository.deleteStaleClusterUpdateItems(updateKeys);
+            }
+        }
+
     }
 
 }

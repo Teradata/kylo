@@ -37,6 +37,7 @@ import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.security.Principal;
 import java.security.acl.Group;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -135,24 +136,24 @@ public class SecurityModelTransform {
         return new UsernamePrincipal(username);
     }
 
-    public Set<UsernamePrincipal> asUserPrincipals(Set<String> userNames) {
+    public UsernamePrincipal[] asUserPrincipals(Set<String> userNames) {
         return userNames.stream()
             .map(name -> asUserPrincipal(name))
-            .collect(Collectors.toSet());
+            .toArray(UsernamePrincipal[]::new);
     }
 
-    public Set<GroupPrincipal> asGroupPrincipals(Set<String> userNames) {
+    public GroupPrincipal[] asGroupPrincipals(Set<String> userNames) {
         return userNames.stream()
             .map(name -> new GroupPrincipal(name))
-            .collect(Collectors.toSet());
+            .toArray(GroupPrincipal[]::new);
     }
     
 
     public Set<Principal> collectPrincipals(PermissionsChange changes) {
         Set<Principal> set = new HashSet<>();
 
-        set.addAll(asUserPrincipals(changes.getUsers()));
-        set.addAll(asGroupPrincipals(changes.getGroups()));
+        Collections.addAll(set, asUserPrincipals(changes.getUsers()));
+        Collections.addAll(set, asGroupPrincipals(changes.getGroups()));
 
         return set;
     }

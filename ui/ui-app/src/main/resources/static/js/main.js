@@ -1,7 +1,7 @@
 require.config({
     waitSeconds: 0,
     baseUrl: "js",
-    urlArgs: "ver=0.8.1-snapshot",
+    urlArgs: "ver=0.8.1",
     paths: {
         "angular":"../bower_components/angular/angular.min",
         "angular-drag-and-drop-lists":"../bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min",
@@ -25,6 +25,7 @@ require.config({
         "d3":"../bower_components/d3/d3.min",
         "dirPagination":"vendor/dirPagination/dirPagination",
         "draggabilly":"../bower_components/draggabilly/dist/draggabilly.pkgd.min",
+        "fattable": "../bower_components/fattable/fattable",
         "gsap": "../bower_components/gsap/src/uncompressed/TweenMax",
         "jquery":"../bower_components/jquery/dist/jquery.min",
         "jquery-ui":"../bower_components/jquery-ui/jquery-ui.min",

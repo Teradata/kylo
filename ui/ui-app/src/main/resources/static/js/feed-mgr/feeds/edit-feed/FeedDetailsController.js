@@ -383,23 +383,29 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                             FeedService.updateEditModelStateIcon();
 
                             var entityAccessControlled = AccessControlService.isEntityAccessControlled();
-                                //Apply the entity access permissions
-                                var requests = {entityEditAccess: entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model) : true,
-                                    entityPermissionAccess:entityAccessControlled == true ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model) : true,
-                                    functionalAccess:AccessControlService.getUserAllowedActions()}
-                                $q.all(requests).then(function (response) {
-                                    var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
-                                    var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
-                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
-                                    var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+                            //Apply the entity access permissions
+                            var requests = {
+                                entityEditAccess: entityAccessControlled === true
+                                    ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model)
+                                    : true,
+                                entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
+                                entityPermissionAccess: entityAccessControlled === true
+                                    ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model)
+                                    : true,
+                                functionalAccess: AccessControlService.getUserAllowedActions()
+                            };
+                            $q.all(requests).then(function (response) {
+                                var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
 
-                                    self.allowEdit = response.entityEditAccess && allowEditAccess;
-                                    self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
-                                    self.allowAdmin = allowAdminAccess;
-                                    self.allowSlaAccess = slaAccess;
-                                    self.allowExport = allowExport;
-                                });
-
+                                self.allowEdit = response.entityEditAccess && allowEditAccess;
+                                self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
+                                self.allowAdmin = allowAdminAccess;
+                                self.allowSlaAccess = slaAccess;
+                                self.allowExport = response.entityExportAccess && allowExport;
+                            });
                         }
                     }, function(err) {
                         //handle err

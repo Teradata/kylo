@@ -93,7 +93,6 @@ public class ProvenanceEventActiveMqWriter {
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
             if (stats.getEventCount().get() > 0) {
-                logger.info("SENDING AGGREGATED STAT to JMS {} ", stats);
                 sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
                 AggregationEventProcessingStats.addStreamingEvents(stats.getEventCount().intValue());
                 notifySuccess(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
@@ -111,12 +110,12 @@ public class ProvenanceEventActiveMqWriter {
      */
     public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {
-            logger.info("SENDING Events to JMS {} ", events);
+            logger.info("SENDING Batch Events to JMS {} ", events);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
             AggregationEventProcessingStats.addBatchEvents(events.getEvents().size());
             notifySuccess(Queues.FEED_MANAGER_QUEUE, events);
         } catch (Exception e) {
-            logger.error("Error writing sending JMS ", e);
+            logger.error("Error sending Batch Events to JMS ", e);
             notifyError(Queues.FEED_MANAGER_QUEUE, events, e.getMessage());
 
         }

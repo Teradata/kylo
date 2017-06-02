@@ -258,25 +258,27 @@ public class ServiceLevelAgreementModelTransform {
         com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain, deep);
         FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
         boolean canEdit = false;
+        boolean canView = true;
         if (feeds != null && !feeds.isEmpty()) {
             final Set<Feed> feedModels = feeds.stream()
                 .filter(feed -> feed != null)
                 .map(model::domainToFeed)
                 .collect(Collectors.toSet());
             feedServiceLevelAgreement.setFeeds(feedModels);
-            if(accessController.isEntityAccessControlled()) {
+            if (accessController.isEntityAccessControlled()) {
                 //set the flag on the sla edit to true only if the user has access to edit the feeds assigned to this sla
                 canEdit = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.EDIT_DETAILS));
-            }
-            else {
+                //can view
+                canView = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.ACCESS_FEED));
+            } else {
                 canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
             }
 
-        }
-        else {
-           canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+        } else {
+            canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         }
         slaModel.setCanEdit(canEdit);
+        feedServiceLevelAgreement.setCanEdit(canEdit);
         return feedServiceLevelAgreement;
     }
 }

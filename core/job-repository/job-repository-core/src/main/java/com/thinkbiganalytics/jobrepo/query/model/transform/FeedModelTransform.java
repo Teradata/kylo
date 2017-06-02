@@ -23,6 +23,7 @@ package com.thinkbiganalytics.jobrepo.query.model.transform;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedFeed;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultFeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultFeedStatus;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultFeedSummary;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
@@ -34,6 +35,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
 
 /**
  * Transform Feed domain model objects to REST friendly objects
@@ -145,6 +148,21 @@ public class FeedModelTransform {
         return feedHealth;
     }
 
+    /**
+     * Transforms the feed object to the REST friendly FeedHealth object, assuming the feed has not yet executed.
+     *
+     * @param domain the feed object
+     * @return the transformed FeedHealth object
+     */
+    @Nonnull
+    public static FeedHealth feedHealth(@Nonnull final OpsManagerFeed domain) {
+        final FeedHealth feedHealth = new DefaultFeedHealth();
+        feedHealth.setUnhealthyCount(0L);
+        feedHealth.setHealthyCount(0L);
+        feedHealth.setFeed(domain.getName());
+        feedHealth.setFeedId(domain.getId() != null ? domain.getId().toString() : null);
+        return feedHealth;
+    }
 
     /**
      * Transform the list of FeedHealth objects to a FeedStatus object summarizing the feeds.
@@ -156,5 +174,18 @@ public class FeedModelTransform {
         DefaultFeedStatus status = new DefaultFeedStatus(feedHealth);
         return status;
 
+    }
+
+    /**
+     * Transforms the feed object to a FeedStatus object summarizing the feed, assuming the feed has not yet executed.
+     *
+     * @param domain the feed object
+     * @return the FeedStatus summarizing the Feed
+     */
+    @Nonnull
+    public static FeedStatus feedStatus(@Nonnull final OpsManagerFeed domain) {
+        final DefaultFeedStatus status = new DefaultFeedStatus(null);
+        status.getFeedSummary().add(new DefaultFeedSummary(feedHealth(domain)));
+        return status;
     }
 }

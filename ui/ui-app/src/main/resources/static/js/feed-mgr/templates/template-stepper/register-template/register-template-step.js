@@ -307,9 +307,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 );
                 StateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, self.model, null);
             }
-            var errorFn = function (err) {
+            var errorFn = function (response) {
                 $mdDialog.hide();
-                var message = 'Error Registering Template ' + err;
+                var message = 'Error Registering Template ' + response.data.message;
                 self.registrationSuccess = false;
                 $mdToast.show(
                     $mdToast.simple()

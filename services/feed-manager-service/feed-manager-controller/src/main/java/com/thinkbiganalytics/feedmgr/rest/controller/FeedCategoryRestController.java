@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
@@ -45,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +131,9 @@ public class FeedCategoryRestController {
                   })
     public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
-        return Response.ok(feedCategory).build();
+        //requery it to get the allowed actions
+        FeedCategory savedCategory = getMetadataService().getCategoryBySystemName(feedCategory.getSystemName());
+        return Response.ok(savedCategory).build();
     }
 
     @DELETE
@@ -142,7 +146,10 @@ public class FeedCategoryRestController {
                       @ApiResponse(code = 500, message = "The category could not be deleted.", response = RestResponseStatus.class)
                   })
     public Response deleteCategory(@UUID @PathParam("categoryId") String categoryId) throws InvalidOperationException {
-        getMetadataService().deleteCategory(categoryId);
+        boolean successful = getMetadataService().deleteCategory(categoryId);
+        if(!successful) {
+            throw new WebApplicationException("Unable to delete the category ");
+        }
         return Response.ok().build();
     }
 
@@ -227,8 +234,8 @@ public class FeedCategoryRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for category: {}", categoryIdStr);
         
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedCategoryActions(categoryIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -270,8 +277,8 @@ public class FeedCategoryRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createCategoryPermissionChange(categoryIdStr, 
                                                                ChangeType.valueOf(changeType.toUpperCase()), 

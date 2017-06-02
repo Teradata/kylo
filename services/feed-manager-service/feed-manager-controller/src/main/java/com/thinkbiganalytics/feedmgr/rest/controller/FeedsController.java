@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -167,8 +168,8 @@ public class FeedsController {
                                          @QueryParam("group") Set<String> groupNames) {
         LOG.debug("Get allowed actions for feed: {}", feedIdStr);
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
             .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
@@ -208,8 +209,8 @@ public class FeedsController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createFeedPermissionChange(feedIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),

@@ -93,6 +93,18 @@ public class ConfigurationPropertyReplacer {
     }
 
     /**
+     * Replace the $nifi{} with ${}
+     * @param value the property value
+     * @return the replaced value
+     */
+    public static String fixNiFiExpressionPropertyValue(String value){
+        if(StringUtils.isNotBlank(value)) {
+            return StringUtils.replace(value, ConfigurationPropertyReplacer.NIF_EL_PROPERTY_REPLACEMENT_PREFIX, "${");
+        }
+        return value;
+    }
+
+    /**
      * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
      *
      * @param controllerServiceDTO        the controller service
@@ -126,10 +138,34 @@ public class ConfigurationPropertyReplacer {
         return !changedProperties.isEmpty();
     }
 
+    private static String resolveValue(NifiProperty property, Map<String,Object> configProperties){
+        Object value = null;
+        if(configProperties != null) {
+            //see if the processorType is configured
+            String processorTypeWithProcessorNameProperty = getProcessorNamePropertyConfigName(property);
+            value = configProperties.get(processorTypeWithProcessorNameProperty);
+            if (value == null || StringUtils.isBlank(value.toString())) {
+                String processorTypeProperty = getProcessorPropertyConfigName(property);
+                value = configProperties.get(processorTypeProperty);
+                if (value == null || StringUtils.isBlank(value.toString())) {
+                    String globalPropertyType = getGlobalAllProcessorsPropertyConfigName(property);
+                    value = configProperties.get(globalPropertyType);
+                }
+            }
+            if(value != null){
+                String updatedPropertyValue = fixNiFiExpressionPropertyValue(value.toString());
+                return updatedPropertyValue;
+            }
+        }
+        return null;
+
+
+    }
+
 
     /**
      * @param property         the NifiProperty to replace
-     * @param configProperties a Map of properties which will be looked to to match against thie property key
+     * @param configProperties a Map of properties which will be looked to to match against the property key
      */
     public static boolean resolveStaticConfigurationProperty(NifiProperty property, Map<String, Object> configProperties) {
         String value = property.getValue();
@@ -164,16 +200,11 @@ public class ConfigurationPropertyReplacer {
         }
 
         if (sb == null) {
-            String key = getProcessorPropertyConfigName(property);
 
-            Object resolvedValue = configProperties != null ? configProperties.get(key) : null;
-            if (resolvedValue == null) {
-                String allKey = getGlobalAllProcessorsPropertyConfigName(property);
-                resolvedValue = configProperties != null ? configProperties.get(allKey) : null;
-            }
-            if (resolvedValue != null) {
+            String updatedValue = resolveValue(property,configProperties);
+            if(StringUtils.isNotBlank(updatedValue)) {
                 sb = new StringBuffer();
-                sb.append(resolvedValue.toString());
+                sb.append(updatedValue);
             }
 
         }

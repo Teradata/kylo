@@ -96,6 +96,14 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         }
     }
 
+    public void stop() throws  Exception {
+        if(channel != null){
+            log.info("Stopping {} ",getAddressAsString());
+            channel.disconnect();
+        }
+
+    }
+
     @Override
     public boolean isClustered() {
         return this.channel != null;

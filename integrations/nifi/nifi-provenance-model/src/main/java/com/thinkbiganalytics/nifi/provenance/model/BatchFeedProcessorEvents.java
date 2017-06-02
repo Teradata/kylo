@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provenance events for Feeds not marked as "streaming" will be processed by this class in the KyloReportingTask of NiFi
@@ -41,15 +42,25 @@ import java.util.Set;
 public class BatchFeedProcessorEvents implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(BatchFeedProcessorEvents.class);
+
     /**
-     * Map to determine if the events coming in are rapid fire.  if so they wil be suppressed based upon the supplied {@code maxEventsPerSecond} allowed
+     * Map of Time -> FeedFlowFileId, # events per sec received
      */
-    Map<DateTime, Set<ProvenanceEventRecordDTO>> startingJobEventsBySecond = new HashMap<>();
+    Map<DateTime, Map<String, AtomicInteger>> jobEventsBySecond = new HashMap<>();
+
+    AtomicInteger suppressedEventCount = new AtomicInteger(0);
+
     /**
      * The name of the feed.  Derived from the process group {category}.{feed}
      */
     private String feedName;
     private String processorName;
+
+    /**
+     * the last DateTime stored in the jobEventsBySecond
+     */
+    private DateTime lastEventTimeBySecond;
+
     /**
      * The Processor Id
      */
@@ -66,6 +77,8 @@ public class BatchFeedProcessorEvents implements Serializable {
      * Collection of events that will be sent to jms
      */
     private Set<ProvenanceEventRecordDTO> jmsEvents = new LinkedHashSet<>();
+
+    private Set<String> uniqueBatchEvents = new HashSet<>();
     /**
      * The max number of starting job events for the given feed and processor allowed to pass through per second This parameter is passed in via the constructor
      */
@@ -104,6 +117,16 @@ public class BatchFeedProcessorEvents implements Serializable {
     }
 
     /**
+     * Unique key describing the event for ops manager
+     *
+     * @param event the provenance event
+     * @return the unique key
+     */
+    private String batchEventKey(ProvenanceEventRecordDTO event) {
+        return feedName + "-" + processorId + "-" + processorName + "-" + event.getJobFlowFileId() + event.isStartOfJob() + event.isEndOfJob();
+    }
+
+    /**
      * Check to see if we are getting events too fast to be considered a batch.  If so suppress the events so just a few go through and the rest generate statistics.
      *
      * @param event the event to check
@@ -112,19 +135,26 @@ public class BatchFeedProcessorEvents implements Serializable {
     private boolean isSuppressEvent(ProvenanceEventRecordDTO event) {
         if (event.isStream() || event.getFeedFlowFile().isStream()) {
             event.setStream(true);
-            log.warn(" Event {} has been suppressed from Kylo Ops Manager. Its parent starting event was detected as a stream for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
-                     processorName);
             return true;
-        } else if (event.isStartOfJob()) {
+        } else {
+            String jobEventsBySecondKey = event.getJobFlowFileId();
+            //if we ware the starting event of the job change the key to be the Feed name for detection of streaming events
+            if (event.isStartOfJob()) {
+                jobEventsBySecondKey = feedName;
+            }
             DateTime time = event.getEventTime().withMillisOfSecond(0);
-            startingJobEventsBySecond.computeIfAbsent(time, key -> new HashSet<ProvenanceEventRecordDTO>()).add(event);
-            if (startingJobEventsBySecond.get(time).size() > maxEventsPerSecond) {
-                event.getFeedFlowFile().setStream(true);
+            lastEventTimeBySecond = time;
+            jobEventsBySecond.computeIfAbsent(time, key -> new HashMap<String, AtomicInteger>()).computeIfAbsent(jobEventsBySecondKey, flowFileId -> new AtomicInteger(0)).incrementAndGet();
+            //suppress if its not the ending event
+            if (!event.isFinalJobEvent() && jobEventsBySecond.get(time).get(jobEventsBySecondKey).get() > maxEventsPerSecond) {
+                if (event.isStartOfJob()) {
+                    event.getFeedFlowFile().setStream(true);
+                }
                 event.setStream(true);
-                log.warn(" Event  {} has been suppressed from Kylo Ops Manager.  more than {} events per second were detected for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
-                         processorName);
+                suppressedEventCount.incrementAndGet();
                 return true;
             }
+
         }
         return false;
     }
@@ -145,8 +175,12 @@ public class BatchFeedProcessorEvents implements Serializable {
             }
 
             event.setIsBatchJob(true);
-            jmsEvents.add(event);
 
+            String batchKey = batchEventKey(event);
+            if (!uniqueBatchEvents.contains(batchKey)) {
+                uniqueBatchEvents.add(batchKey);
+                jmsEvents.add(event);
+            }
             lastEventTime = event.getEventTime();
             return true;
         }
@@ -164,11 +198,21 @@ public class BatchFeedProcessorEvents implements Serializable {
         try {
             events = new ArrayList<>(jmsEvents);
             jmsEvents.clear();
+            uniqueBatchEvents.clear();
         } finally {
 
         }
         lastCollectionTime = DateTime.now();
-        startingJobEventsBySecond.clear();
+        if (suppressedEventCount.get() > 0) {
+            log.debug(" {} events have been suppressed from Kylo Ops Manager.  more than {} events per second were detected for feed {} and processor: {} ", suppressedEventCount.get(),
+                      maxEventsPerSecond, feedName,
+                      processorName);
+        }
+        suppressedEventCount.set(0);
+        //safely remove everything in map before this time
+        if (lastEventTimeBySecond != null) {
+            jobEventsBySecond.entrySet().removeIf(entry -> entry.getKey().isBefore(lastEventTimeBySecond));
+        }
         return events == null ? Collections.emptyList() : events;
     }
 

@@ -53,7 +53,6 @@ import java.util.concurrent.Executors;
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
 @EnableConfigurationProperties
-@EnableConfigServer
 @Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
 public class KyloServerApplication implements SchedulingConfigurer {

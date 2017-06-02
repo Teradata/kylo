@@ -1,25 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <artifactId>kylo</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.1-SNAPSHOT</version>
-  </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>install</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>kylo</artifactId>
+    <version>0.8.2-SNAPSHOT</version>
+  </parent>
   <properties>
-    <!-- override using property -Drpm.install.dir -->
-    <rpm.install.dir>/opt/kylo</rpm.install.dir>
-    <rpm.scripts.path>src/main/scripts</rpm.scripts.path>
-    <!-- override using property -Drpm.log.dir -->
-    <rpm.log.dir>/var/log</rpm.log.dir>
-    <!-- override using property -Drpm.user -->
-    <rpm.user>kylo</rpm.user>
-    <file.permissions>744</file.permissions>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
   </properties>
+<<<<<<< HEAD
 
   <dependencies>
 
@@ -1117,3 +1107,13 @@
 
 
 </project>
+=======
+  <artifactId>kylo-install</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>install-tar</module>
+    <module>install-rpm</module>
+    <!--module>install-debian</module-->
+  </modules>
+</project>
+>>>>>>> upstream/master

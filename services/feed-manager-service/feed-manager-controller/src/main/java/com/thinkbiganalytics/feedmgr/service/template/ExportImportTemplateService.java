@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -43,6 +44,7 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -128,9 +130,29 @@ public class ExportImportTemplateService {
 
     //Export Methods
 
+    /**
+     * Check to ensure the user just has the EXPORT_FEEDS functional access permission before exporting
+     * @param templateId the registered template id
+     * @return the exported template
+     */
+    public ExportTemplate exportTemplateForFeedExport(String templateId) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
+        registeredTemplateService.checkTemplatePermission(templateId, TemplateAccessControl.ACCESS_TEMPLATE);
+        return export(templateId);
+    }
+
+    /**
+     * Check to ensure the user has the EXPORT_TEMPLATES functional access permission before exporting
+     * @param templateId the registered template id
+     * @return the exported template
+     */
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
+        registeredTemplateService.checkTemplatePermission(templateId, TemplateAccessControl.EXPORT);
+        return export(templateId);
+    }
 
+    private ExportTemplate export(String templateId) {
         RegisteredTemplate
             template =
             registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
@@ -250,8 +272,9 @@ public class ExportImportTemplateService {
                 validateReusableTemplate(template, options);
 
                 validateRegisteredTemplate(template, options);
-
-                validateNiFiTemplateImport(template);
+                if(template.isValid()) {
+                    validateNiFiTemplateImport(template);
+                }
             } else {
                 template = getNewNiFiTemplateImport(fileName, inputStream);
                 template.setImportOptions(options);
@@ -346,8 +369,10 @@ public class ExportImportTemplateService {
             RegisteredTemplate registeredTemplate = template.getTemplateToImport();
 
             //validate unique
-            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
+            //1 find if the template exists in the system running as a service account
+            RegisteredTemplate existingTemplate = registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateName(registeredTemplate.getTemplateName()).isFeedEdit(true).build());
             if (existingTemplate != null) {
+
                 if (options.stopProcessingAlreadyExists(ImportComponent.TEMPLATE_DATA)) {
                     template.setValid(false);
                     String msg = "Unable to import the template " + registeredTemplate.getTemplateName() + " It is already registered.";
@@ -361,10 +386,36 @@ public class ExportImportTemplateService {
                     statusMessage.complete(true);
                 }
                 registeredTemplate.setId(existingTemplate.getId());
+
+
+                //validate entity access
+                if (accessController.isEntityAccessControlled() && registeredTemplateOption.isOverwrite()) {
+                    //requery as the currently logged in user
+                    statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(), "Validating template entity access");
+                    existingTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
+                    //ensure the user can Edit this template
+                    boolean valid = existingTemplate != null && existingTemplate.getAllowedActions().hasAction(TemplateAccessControl.EDIT_TEMPLATE.getSystemName());
+                    if(!valid){
+                        template.setValid(false);
+                        validForImport = false;
+                        statusMessage.update("Access Denied: You do not have edit access for the template " + registeredTemplate.getTemplateName(), false);
+                        template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Access Denied: You do not have edit access for the template ");
+                    }
+                    else {
+                        statusMessage.complete(valid);
+                    }
+                }
+
             } else {
-                //reset it so it gets the new id upon import
+                //template doesnt exist.. it is new ensure the user is allowed to create templates
+                boolean editAccess = accessController.hasPermission(AccessController.SERVICES,FeedServicesAccessControl.EDIT_TEMPLATES);
+
+                if(!editAccess) {
+                    statusMessage.update("Access Denied: You are not allowed to create the template " + registeredTemplate.getTemplateName(), false);
+                    template.getImportOptions().addErrorMessage(ImportComponent.TEMPLATE_DATA, "Access Denied: You are not allowed to create the template ");
+                }
                 registeredTemplate.setId(null);
-                statusMessage.complete(true);
+                statusMessage.complete(editAccess);
             }
             validForImport &= !registeredTemplateOption.hasErrorMessages();
 
@@ -501,6 +552,10 @@ public class ExportImportTemplateService {
 
     /// IMPORT methods
 
+    public ImportTemplate importTemplateForFeed(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
+        return importTemplate(fileName, content, importOptions);
+    }
 
     /**
      * Import a xml or zip file.
@@ -511,7 +566,7 @@ public class ExportImportTemplateService {
      * @return the template data to import along with status/messages/error information if it was valid and if was successfully imported
      */
     public ImportTemplate importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions) {
-        return metadataAccess.commit(() -> {
+       // return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
 
             ImportTemplate template = null;
@@ -535,11 +590,28 @@ public class ExportImportTemplateService {
             }
             template.setImportOptions(importOptions);
             return template;
-        });
+       // });
+    }
+    
+
+    /**
+     * Imports the data and various components based upon the supplied {@link ImportTemplate#importOptions} as part
+     * of a feed import operation.  Validates whether the user has import feed permission.
+     *
+     * Note.  This method will not call any validation routines.  It will just import.
+     * If you want to validate before to ensure the import will be correct call this.importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions)
+     *
+     * @param importTemplate the template data to validate before importing
+     * @return the template data to validate before importing
+     */
+    public ImportTemplate importZipForFeedImport(ImportTemplate importTemplate) throws Exception {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_FEEDS);
+        return importTemplate(importTemplate);
     }
 
     /**
      * Imports the data and various components based upon the supplied {@link ImportTemplate#importOptions}.
+     * Validates whether the user has import template permission.
      *
      * Note.  This method will not call any validation routines.  It will just import.
      * If you want to validate before to ensure the import will be correct call this.importTemplate(final String fileName, final byte[] content, ImportTemplateOptions importOptions)
@@ -549,6 +621,10 @@ public class ExportImportTemplateService {
      */
     public ImportTemplate importZip(ImportTemplate importTemplate) throws Exception {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
+        return importTemplate(importTemplate);
+    }
+
+    private ImportTemplate importTemplate(ImportTemplate importTemplate) throws Exception {
         ImportTemplateOptions importOptions = importTemplate.getImportOptions();
 
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", importTemplate.getFileName(), importOptions.isImportAndOverwrite(ImportComponent.TEMPLATE_DATA),
@@ -687,10 +763,10 @@ public class ExportImportTemplateService {
     }
 
 
-    private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) throws Exception {
+    private ImportTemplate validateAndImportZip(String fileName, byte[] content, ImportTemplateOptions importOptions) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.IMPORT_TEMPLATES);
         ImportTemplate importTemplate = validateTemplateForImport(fileName, content, importOptions);
-        return importZip(importTemplate);
+        return metadataAccess.commit(() -> importZip(importTemplate));
     }
 
 

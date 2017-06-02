@@ -215,9 +215,6 @@ public class CategoryModelTransform {
         Category category = null;
         if (domainId != null) {
             category = categoryProvider.findById(domainId);
-            if (category != null && !feedCategory.getSystemName().equals(category.getName())) {
-                categoryProvider.rename(domainId, feedCategory.getSystemName());
-            }
         }
 
         if (category == null) {

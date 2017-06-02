@@ -17,6 +17,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 var thisController = controllers[0];
                 var stepperController = controllers[1];
                 thisController.stepperController = stepperController;
+                if(thisController && thisController.isLoading()){
+                    stepperController.showProgress = true;
+                }
             }
 
         };
@@ -56,14 +59,28 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         self.allowEdit = false;
 
+        /**
+         * Flag to indicate the template is loading
+         * Used for PRogress
+         * @type {boolean}
+         */
+        self.loadingTemplate = false;
+
+        /**
+         * Flag to indicate the select template list is loading
+         * @type {boolean}
+         */
+        self.fetchingTemplateList = false;
+
         function showProgress() {
             if (self.stepperController) {
                 self.stepperController.showProgress = true;
             }
         }
 
+
         function hideProgress() {
-            if (self.stepperController) {
+            if (self.stepperController && !self.isLoading()) {
                 self.stepperController.showProgress = false;
             }
         }
@@ -79,19 +96,27 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         }
 
+        this.isLoading = function(){
+            return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
+        }
+
         /**
          * Gets the templates for the select dropdown
          * @returns {HttpPromise}
          */
         this.getTemplates = function () {
+            self.fetchingTemplateList = true;
             showProgress();
             RegisterTemplateService.getTemplates().then(function (response) {
                 self.templates = response.data;
+                self.fetchingTemplateList = false;
                 hideProgress();
             });
         };
 
         this.changeTemplate = function () {
+            self.errorMessage = null;
+            self.loadingTemplate = true;
             showProgress();
             //Wait for the properties to come back before allowing hte user to go to the next step
             var selectedTemplate = findSelectedTemplate();
@@ -100,11 +125,38 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 templateName = selectedTemplate.name;
             }
             RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId, templateName).then(function (response) {
-                $timeout(function () {
-                    hideProgress();
-                }, 10);
+
+
+
                 RegisterTemplateService.warnInvalidProcessorNames();
-                self.isValid = self.model.valid;
+                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(accessResponse) {
+                    self.isValid = accessResponse.isValid;
+                    self.allowAdmin = accessResponse.allowAdmin;
+                    self.allowEdit = accessResponse.allowEdit;
+                    self.allowAccessControl = accessResponse.allowAccessControl;
+                    if(!accessResponse.isValid) {
+                        //PREVENT access
+                        self.errorMessage ="Access Denied.  You are unable to edit the template. ";
+                    }
+                    else {
+                        if (  !self.allowAccessControl) {
+                            //deactivate the access control step
+                            self.stepperController.deactivateStep(3);
+                        }
+                        else {
+                            self.stepperController.activateStep(3);
+                        }
+                    }
+                        self.loadingTemplate = false;
+                        hideProgress();
+                });
+
+
+            },function(err) {
+                RegisterTemplateService.resetModel();
+                self.errorMessage ="An Error was found loading this template.  Please ensure you have access to edit this template.";
+                self.loadingTemplate = false;
+                hideProgress();
             });
         }
 
@@ -178,6 +230,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html"
             });
         };
+
+        $scope.$watch(function(){
+            return self.model.loading;
+        },function(newVal){
+            if(newVal == false) {
+                hideProgress();
+            }
+
+        })
+
 
         this.getTemplates();
 

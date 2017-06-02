@@ -38,7 +38,8 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     @Query(value = "select stats from JpaNifiFeedProcessorStats as stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
-                   + "where stats.minEventTime between :startTime and :endTime")
+                   + "where stats.minEventTime between :startTime and :endTime "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<JpaNifiFeedProcessorStats> findWithinTimeWindow(@Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
     @Query(value = "select max(stats.maxEventId) from JpaNifiFeedProcessorStats as stats")

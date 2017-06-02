@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
@@ -49,12 +50,12 @@ import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -71,7 +72,6 @@ import org.hibernate.JDBCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -85,6 +85,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -137,10 +138,6 @@ public class FeedRestController {
     private static final String NAMES = "/names";
 
     @Autowired
-    @Qualifier("nifiRestClient")
-    LegacyNifiRestClient nifiRestClient;
-
-    @Autowired
     MetadataService metadataService;
 
     //Profile needs hive service
@@ -167,6 +164,9 @@ public class FeedRestController {
 
     @Inject
     AccessControlledEntityTransform accessControlledEntityTransform;
+
+    @Inject
+    private AccessController accessController;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -627,8 +627,8 @@ public class FeedRestController {
                                       @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for feed: {}", feedIdStr);
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
             .map(g -> Response.ok(g).build())
@@ -670,8 +670,8 @@ public class FeedRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createFeedPermissionChange(feedIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),
@@ -720,7 +720,11 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getSla(@PathParam("feedId") String feedId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
         List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
+        if (sla == null) {
+            throw new WebApplicationException("No SLAs for the feed were found", Response.Status.NOT_FOUND);
+        }
         return Response.ok(sla).build();
     }
 
@@ -733,6 +737,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "The styles were updated.", response = RestResponseStatus.class)
     )
     public Response updateFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         datasourceService.refreshFeedLineageStyles(styles);
         return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
     }
@@ -745,6 +751,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns the updated definitions..", response = DatasourceDefinitions.class)
     )
     public DatasourceDefinitions updateDatasourceDefinitions(DatasourceDefinitions definitions) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         if (definitions != null) {
             Set<DatasourceDefinition> updatedDefinitions = datasourceService.updateDatasourceDefinitions(definitions.getDefinitions());
             if (updatedDefinitions != null) {

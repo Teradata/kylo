@@ -172,6 +172,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
                         .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
+                checkAccessPermissions();
             }, function (err) {
                 $mdDialog.show(
                     $mdDialog.alert()
@@ -207,14 +208,19 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
                 });
         };
 
-        //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function(access) {
-            self.allowEdit = access;
-        });
 
-        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function(access) {
-            self.allowDelete = access;
-        });
+        function checkAccessPermissions() {
+            //Apply the entity access permissions
+            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access) {
+                self.allowEdit = access;
+            });
+
+            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function (access) {
+                self.allowDelete = access;
+            });
+        }
+
+        checkAccessPermissions();
 
         // Fetch the existing categories
         CategoriesService.reload().then(function (response) {

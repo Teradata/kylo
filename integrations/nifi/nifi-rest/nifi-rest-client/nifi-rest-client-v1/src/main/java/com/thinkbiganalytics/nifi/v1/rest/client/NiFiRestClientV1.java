@@ -117,7 +117,7 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     @Nonnull
     @Override
     public AboutDTO about() {
-        return get("/flow/about", null, AboutEntity.class).getAbout();
+        return get("/flow/about", null, AboutEntity.class,false).getAbout();
     }
 
     @Nonnull

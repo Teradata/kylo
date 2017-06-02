@@ -48,6 +48,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             this.entity.roleMemberships = [];
         }
 
+        if(angular.isUndefined(this.queryForEntityAccess)){
+            this.queryForEntityAccess = false;
+        }
+
         if(angular.isUndefined(this.entity.owner) || this.entity.owner == null){
             this.entity.owner = null;
             //assign it the current user
@@ -59,6 +63,19 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     }
             })
         }
+
+        /**
+         * Flag that the user has updated the role memberships
+         * @type {boolean}
+         */
+        self.entity.roleMembershipsUpdated = angular.isUndefined(self.entity.roleMembershipsUpdated) ? false : self.entity.roleMembershipsUpdated;
+
+        /**
+         * Flag to indicate we should query for the roles from the server.
+         * If the entity has already been marked as being updated then mark this as initialized so it doesnt loose the in-memory settings the user has applied
+         * @type {boolean}
+         */
+        self.rolesInitialized = self.queryForEntityAccess == true ? false : (self.entity.roleMembershipsUpdated == true ? true : false);
 
 
         /**
@@ -119,12 +136,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @param query
          */
         this.queryUsersAndGroups = function(query){
-            /**
-             * Flag that the user has updated the role memberships
-             * @type {boolean}
-             */
             self.entity.roleMembershipsUpdated = true;
-
             var df = $q.defer();
             var request = {groups:getAllGroups(),users:getAllUsers()};
             $q.all(request).then(function(results){
@@ -160,7 +172,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 UserGroupService.getGroups()
                     .then(function(groups) {
                         allGroups =  _.map(groups,function (item) {
-                            item._lowername = item.title.toLowerCase();
+                            item._lowername = (item.title == null || angular.isUndefined(item.title)) ? item.systemName.toLowerCase() : item.title.toLowerCase();
                             item.type = 'group'
                             return item;
                         });
@@ -201,8 +213,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         }
 
         function init(){
-            if(angular.isUndefined(self.entity.roleMembershipsUpdated) || self.entity.roleMembershipsUpdated == false) {
-                EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType);
+            if(self.rolesInitialized == false) {
+                $q.when(EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType)).then(function(){
+                    self.rolesInitialized == true
+                });
             }
         }
 

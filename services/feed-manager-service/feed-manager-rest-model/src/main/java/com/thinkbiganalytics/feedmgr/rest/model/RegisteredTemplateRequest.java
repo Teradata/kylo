@@ -44,6 +44,17 @@ public class RegisteredTemplateRequest {
 
     }
 
+    public RegisteredTemplateRequest(RegisteredTemplateRequest request) {
+        this.templateId = request.getTemplateId();
+        this.nifiTemplateId = request.getNifiTemplateId();
+        this.templateName = request.getTemplateName();
+        this.isFeedEdit = request.isFeedEdit();
+        this.isTemplateEdit = request.isTemplateEdit();
+        this.includeSensitiveProperties = request.isIncludeSensitiveProperties();
+        this.includePropertyDescriptors = request.isIncludePropertyDescriptors();
+        this.includeAllProperties = request.isIncludeAllProperties();
+    }
+
     public static RegisteredTemplateRequest requestByTemplateName(String templateName) {
         return new RegisteredTemplateRequest.Builder().templateName(templateName).build();
     }
@@ -132,6 +143,14 @@ public class RegisteredTemplateRequest {
 
     public boolean isFeedEdit() {
         return isFeedEdit;
+    }
+
+    public void setFeedEdit(boolean feedEdit) {
+        isFeedEdit = feedEdit;
+    }
+
+    public void setTemplateEdit(boolean templateEdit) {
+        isTemplateEdit = templateEdit;
     }
 
     public boolean isTemplateEdit() {

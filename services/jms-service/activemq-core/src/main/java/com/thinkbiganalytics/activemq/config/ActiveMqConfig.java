@@ -40,6 +40,7 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
+import org.springframework.util.StringUtils;
 
 import javax.jms.ConnectionFactory;
 
@@ -64,7 +65,6 @@ public class ActiveMqConfig {
     public ConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
         factory.setTrustAllPackages(true);
-
         PooledConnectionFactory pool = new PooledConnectionFactory();
         pool.setIdleTimeout(0);
         pool.setConnectionFactory(getCredentialsAdapter(factory));
@@ -80,9 +80,14 @@ public class ActiveMqConfig {
         factory.setConnectionFactory(connectionFactory);
         //factory.setSubscriptionDurable(true);
         factory.setClientId(env.getProperty("jms.client.id:thinkbig.feedmgr"));
-        factory.setConcurrency("1-1");
+        String concurrency = env.getProperty("jms.connections.concurrent");
+        if(StringUtils.isEmpty(concurrency)) {
+           concurrency = "1-1";
+        }
+        factory.setConcurrency(concurrency);
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
+        factory.setSessionTransacted(true);
         return factory;
     }
 

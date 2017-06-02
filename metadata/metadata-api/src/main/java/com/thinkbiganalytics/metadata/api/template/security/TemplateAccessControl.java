@@ -43,7 +43,7 @@ public interface TemplateAccessControl {
                                               "Export",
                                               "Allows exporting the template");
     Action CREATE_FEED = ACCESS_TEMPLATE.subAction("createFeedFromTemplate",
-                                                   "Create Template",
+                                                   "Create Feed",
                                                    "Allows creating feeds under this template");
     Action CHANGE_PERMS = ACCESS_TEMPLATE.subAction("changeTemplatePermissions",
                                                     "Change Permissions",

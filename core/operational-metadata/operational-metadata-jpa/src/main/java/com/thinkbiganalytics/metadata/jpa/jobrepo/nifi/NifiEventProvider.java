@@ -99,7 +99,7 @@ public class NifiEventProvider {
 
 
     private String getLastModifiedKey(String clusterId) {
-        if(StringUtils.isBlank(clusterId) || "Node".equalsIgnoreCase(clusterId)){
+        if(StringUtils.isBlank(clusterId) || "Node".equalsIgnoreCase(clusterId) || "non-clustered-node-id".equalsIgnoreCase(clusterId)){
             return ITEM_LAST_MODIFIED_KEY;
         }
         else {

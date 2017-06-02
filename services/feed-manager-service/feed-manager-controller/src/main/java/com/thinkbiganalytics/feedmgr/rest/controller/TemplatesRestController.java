@@ -385,7 +385,7 @@ public class TemplatesRestController {
     }
 
     /**
-     * get a registeredTemplate for updating
+     * get a registeredTemplate
      */
     @GET
     @Path("/registered/{templateId}")
@@ -396,13 +396,22 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
-                                          @QueryParam("templateName") String templateName) {
+                                          @QueryParam("templateName") String templateName,  @QueryParam("feedEdit") @DefaultValue("false") boolean feedEdit) {
 
         RegisteredTemplateRequest
             registeredTemplateRequest =
             new RegisteredTemplateRequest.Builder().templateId(templateId).templateName(templateName).nifiTemplateId(templateId).includeAllProperties(allProperties).includePropertyDescriptors(true)
-                .isTemplateEdit(true).build();
-        RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
+                .isTemplateEdit(!feedEdit).isFeedEdit(feedEdit).build();
+        RegisteredTemplate registeredTemplate = null;
+        if(registeredTemplateRequest.isTemplateEdit()) {
+          registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
+        }
+        else {
+            registeredTemplate = registeredTemplateService.findRegisteredTemplate(registeredTemplateRequest);
+        }
+        if(registeredTemplate == null) {
+            throw new WebApplicationException("Unable to find the template "+ templateName != null ? templateName : templateId+". The template either doesnt exist, or you do not have access to edit this template.");
+        }
         return Response.ok(registeredTemplate).build();
     }
 
@@ -505,8 +514,8 @@ public class TemplatesRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for template: {}", templateIdStr);
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedTemplateActions(templateIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -548,8 +557,8 @@ public class TemplatesRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createTemplatePermissionChange(templateIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),

@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportSection;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
@@ -37,6 +36,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
@@ -56,9 +56,9 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.security.AccessController;
@@ -81,6 +81,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Service used to export and import feeds
@@ -139,6 +140,11 @@ public class ExportImportFeedService {
         // Prepare feed metadata
         final FeedMetadata feed = metadataService.getFeedById(feedId);
 
+        if (feed == null) {
+            //feed will not be found when user is allowed to export feeds but has no entity access to feed with feed id
+            throw new NotFoundException("Feed not found for id " + feedId);
+        }
+
         final List<Datasource> userDatasources = Optional.ofNullable(feed.getDataTransformation())
             .map(FeedDataTransformation::getDatasourceIds)
             .map(datasourceIds -> metadataAccess.read(
@@ -163,7 +169,7 @@ public class ExportImportFeedService {
         }
 
         // Add feed json to template zip file
-        final ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
+        final ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplateForFeedExport(feed.getTemplateId());
         final String feedJson = ObjectMapperSerializer.serialize(feed);
 
         final byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
@@ -211,11 +217,19 @@ public class ExportImportFeedService {
             //verify if we should overwrite the feed if it already exists
             String feedCategory = StringUtils.isNotBlank(options.getCategorySystemName()) ? options.getCategorySystemName() : metadata.getSystemCategoryName();
             //query for this feed.
-            FeedMetadata existingFeed = metadataAccess.read(() -> metadataService.getFeedByName(feedCategory, metadata.getSystemFeedName()));
-
+            //first read in the feed as a service account
+            FeedMetadata existingFeed = metadataAccess.read(() -> {
+                return metadataService.getFeedByName(feedCategory, metadata.getSystemFeedName());
+            }, MetadataAccess.SERVICE);
             if (!validateOverwriteExistingFeed(existingFeed, metadata, importFeed)) {
                 //exit
                 return importFeed;
+            }
+
+            if (accessController.isEntityAccessControlled()) {
+                if (!validateEntityAccess(existingFeed, feedCategory, metadata, importFeed)) {
+                    return importFeed;
+                }
             }
 
             //sensitive properties
@@ -333,6 +347,76 @@ public class ExportImportFeedService {
         return valid;
     }
 
+    private boolean validateEntityAccess(FeedMetadata existingFeed, String feedCategory, FeedMetadata importingFeed, ImportFeed feed) {
+        if (existingFeed != null) {
+            FeedMetadata userAccessFeed = metadataAccess.read(() -> {
+                return metadataService.getFeedByName(feedCategory, importingFeed.getSystemFeedName());
+            });
+            if (userAccessFeed == null || !userAccessFeed.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName())) {
+                //error
+                feed.setValid(false);
+                if (feed.getTemplate() == null) {
+                    ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(feed.getFileName());
+                    feed.setTemplate(importTemplate);
+                }
+                String msg = "Access Denied.  You do not have access to edit this feed.";
+                feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                feed.addErrorMessage(existingFeed, msg);
+                feed.setValid(false);
+                return false;
+            } else {
+                return true;
+            }
+
+        } else {
+            //ensure the user can create under the category
+            Category category = metadataAccess.read(() -> {
+                return categoryProvider.findBySystemName(feedCategory);
+            }, MetadataAccess.SERVICE);
+
+            if (category == null) {
+                //ensure the user has functional access to create categories
+                boolean hasPermission = accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
+                if (!hasPermission) {
+                    String msg = "Access Denied. The category for this feed," + feedCategory + ", doesn't exist and you do not have access to create a new category.";
+                    feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                    feed.addErrorMessage(existingFeed, msg);
+                    feed.setValid(false);
+                    return false;
+                }
+                return true;
+            } else {
+                //if the feed is new ensure the user has write access to create feeds
+                return metadataAccess.read(() -> {
+                    //Query for Category and ensure the user has access to create feeds on that category
+                    Category domainCategory = categoryProvider.findBySystemName(feedCategory);
+                    if (domainCategory == null || (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED))) {
+                        String msg = "Access Denied. You do not have access to create feeds under the category " + feedCategory
+                                     + ". Attempt made to create feed " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
+                        feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                        feed.addErrorMessage(existingFeed, msg);
+                        feed.setValid(false);
+                        return false;
+                    }
+
+                    // Query for Template and ensure the user has access to create feeds
+                    final RegisteredTemplate domainTemplate = registeredTemplateService.findRegisteredTemplate(
+                        new RegisteredTemplateRequest.Builder().templateName(importingFeed.getTemplateName()).isFeedEdit(true).build());
+                    if (domainTemplate != null && !registeredTemplateService.hasTemplatePermission(domainTemplate.getId(), TemplateAccessControl.CREATE_FEED)) {
+                        final String msg = "Access Denied. You do not have access to create feeds using the template " + importingFeed.getTemplateName()
+                                           + ". Attempt made to create feed " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
+                        feed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);
+                        feed.addErrorMessage(existingFeed, msg);
+                        feed.setValid(false);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+        }
+    }
+
     private boolean validateOverwriteExistingFeed(FeedMetadata existingFeed, FeedMetadata importingFeed, ImportFeed feed) {
         if (existingFeed != null && !feed.getImportOptions().isImportAndOverwrite(ImportComponent.FEED_DATA)) {
             UploadProgressMessage
@@ -366,25 +450,9 @@ public class ExportImportFeedService {
             FeedCategory optionsCategory = metadataService.getCategoryBySystemName(importOptions.getCategorySystemName());
             if (optionsCategory == null) {
                 importFeed.setValid(false);
-                statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist.", false);
+                statusMessage.update("Validation Error. The category " + importOptions.getCategorySystemName() + " does not exist, or you dont have access to it.", false);
                 valid = false;
             } else {
-
-                //validate user has write access to create feeds under this category
-                //ensure the user has rights to create feeds under this category
-                if (accessController.isEntityAccessControlled()) {
-                    valid = metadataAccess.read(() -> {
-                        Category domainCategory = categoryProvider.findBySystemName(optionsCategory.getSystemName());
-                        //Query for Category and ensure the user has access to create feeds on that category
-                        if (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED)) {
-                            importFeed.setValid(false);
-                            statusMessage.update("Validation Error. You do not have access to create/update feeds under the category " + importOptions.getCategorySystemName() + ".", false);
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    });
-                }
                 if (valid) {
                     metadata.getCategory().setSystemName(importOptions.getCategorySystemName());
                     statusMessage.update("Validated. The category " + importOptions.getCategorySystemName() + " exists.", true);
@@ -428,66 +496,66 @@ public class ExportImportFeedService {
             importTemplate.setImportOptions(importTemplateOptions);
             importTemplateOptions.setUploadKey(importOptions.getUploadKey());
             importTemplate.setValid(true);
-            ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importZip(importTemplate);
+            ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importZipForFeedImport(importTemplate);
             if (template.isSuccess()) {
                 //import the feed
                 feed.setTemplate(template);
                 //now that we have the Feed object we need to create the instance of the feed
                 UploadProgressMessage uploadProgressMessage = uploadProgressService.addUploadStatus(importOptions.getUploadKey(), "Saving  and creating feed instance in NiFi");
-                NifiFeed nifiFeed = metadataAccess.commit(() -> {
-                    metadata.setIsNew(existingFeed == null ? true : false);
-                    metadata.setFeedId(existingFeed != null ? existingFeed.getFeedId() : null);
-                    metadata.setId(existingFeed != null ? existingFeed.getId() : null);
-                    //reassign the templateId to the newly registered template id
-                    metadata.setTemplateId(template.getTemplateId());
-                    if (metadata.getRegisteredTemplate() != null) {
-                        metadata.getRegisteredTemplate().setNifiTemplateId(template.getNifiTemplateId());
-                        metadata.getRegisteredTemplate().setId(template.getTemplateId());
-                    }
-                    //get/create category
-                    FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
-                    if (category == null) {
-                        metadata.getCategory().setId(null);
-                        metadataService.saveCategory(metadata.getCategory());
-                    } else {
-                        metadata.setCategory(category);
-                    }
-                    if (importOptions.isDisableUponImport()) {
-                        metadata.setActive(false);
-                        metadata.setState(FeedMetadata.STATE.DISABLED.name());
-                    }
 
-                    //remap any preconditions to this new feed/category name.
-                    if (metadata.getSchedule().hasPreconditions()) {
-                        metadata.getSchedule().getPreconditions().stream()
-                            .flatMap(preconditionRule -> preconditionRule.getProperties().stream())
-                            .filter(fieldRuleProperty -> PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name().equals(fieldRuleProperty.getType()))
-                            .forEach(fieldRuleProperty -> fieldRuleProperty.setValue(metadata.getCategoryAndFeedName()));
-                    }
+                metadata.setIsNew(existingFeed == null ? true : false);
+                metadata.setFeedId(existingFeed != null ? existingFeed.getFeedId() : null);
+                metadata.setId(existingFeed != null ? existingFeed.getId() : null);
+                //reassign the templateId to the newly registered template id
+                metadata.setTemplateId(template.getTemplateId());
+                if (metadata.getRegisteredTemplate() != null) {
+                    metadata.getRegisteredTemplate().setNifiTemplateId(template.getNifiTemplateId());
+                    metadata.getRegisteredTemplate().setId(template.getTemplateId());
+                }
+                //get/create category
+                FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
+                if (category == null) {
+                    metadata.getCategory().setId(null);
+                    metadataService.saveCategory(metadata.getCategory());
+                } else {
+                    metadata.setCategory(category);
+                }
+                if (importOptions.isDisableUponImport()) {
+                    metadata.setActive(false);
+                    metadata.setState(FeedMetadata.STATE.DISABLED.name());
+                }
 
-                    ////for all those properties where the template value is != userEditable and the template value has a metadata. property, remove that property from the feed properties so it can be imported and assigned correctly
-                    RegisteredTemplate template1 = registeredTemplateService.findRegisteredTemplateById(template.getTemplateId());
-                    if (template1 != null) {
+                //remap any preconditions to this new feed/category name.
+                if (metadata.getSchedule().hasPreconditions()) {
+                    metadata.getSchedule().getPreconditions().stream()
+                        .flatMap(preconditionRule -> preconditionRule.getProperties().stream())
+                        .filter(fieldRuleProperty -> PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name().equals(fieldRuleProperty.getType()))
+                        .forEach(fieldRuleProperty -> fieldRuleProperty.setValue(metadata.getCategoryAndFeedName()));
+                }
 
-                        //Find all the properties in the template that have ${metadata. and are not userEditable.
-                        //These are the properties we need to replace on the feed metadata
-                        List<NifiProperty> metadataProperties = template1.getProperties().stream().filter(nifiProperty -> {
+                ////for all those properties where the template value is != userEditable and the template value has a metadata. property, remove that property from the feed properties so it can be imported and assigned correctly
+                RegisteredTemplate template1 = registeredTemplateService.findRegisteredTemplateById(template.getTemplateId());
+                if (template1 != null) {
 
-                            return nifiProperty != null && StringUtils.isNotBlank(nifiProperty.getValue()) && !nifiProperty.isUserEditable() && nifiProperty.getValue().contains("${" +
-                                                                                                                                                                                 MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix);
-                        }).collect(Collectors.toList());
+                    //Find all the properties in the template that have ${metadata. and are not userEditable.
+                    //These are the properties we need to replace on the feed metadata
+                    List<NifiProperty> metadataProperties = template1.getProperties().stream().filter(nifiProperty -> {
 
-                        //Replace the Feed Metadata properties with those that match the template ones from above.
-                        List<NifiProperty> updatedProperties = metadata.getProperties().stream().map(nifiProperty -> {
-                            NifiProperty p = NifiPropertyUtil.findPropertyByProcessorName(metadataProperties, nifiProperty);
-                            return p != null ? p : nifiProperty;
-                        }).collect(Collectors.toList());
-                        metadata.setProperties(updatedProperties);
+                        return nifiProperty != null && StringUtils.isNotBlank(nifiProperty.getValue()) && !nifiProperty.isUserEditable() && nifiProperty.getValue().contains("${" +
+                                                                                                                                                                             MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix);
+                    }).collect(Collectors.toList());
 
-                    }
+                    //Replace the Feed Metadata properties with those that match the template ones from above.
+                    List<NifiProperty> updatedProperties = metadata.getProperties().stream().map(nifiProperty -> {
+                        NifiProperty p = NifiPropertyUtil.findPropertyByProcessorName(metadataProperties, nifiProperty);
+                        return p != null ? p : nifiProperty;
+                    }).collect(Collectors.toList());
+                    metadata.setProperties(updatedProperties);
 
-                    return metadataService.createFeed(metadata);
-                });
+                }
+
+                NifiFeed nifiFeed = metadataService.createFeed(metadata);
+
                 if (nifiFeed != null) {
                     feed.setFeedName(nifiFeed.getFeedMetadata().getCategoryAndFeedName());
                     uploadProgressMessage.update("Successfully saved the feed " + feed.getFeedName(), true);

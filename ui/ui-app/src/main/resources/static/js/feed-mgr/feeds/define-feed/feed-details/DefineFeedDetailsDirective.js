@@ -104,7 +104,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
                         return processor.userEditable
                     })) {
-                StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex)).skip = true;
+             var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+             if(step != null) {
+                 step.skip = true;
+             }
             }
 
             // Find controller services
@@ -130,7 +133,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 var errorFn = function(err) {
 
                 };
-                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId));
+                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId),{params:{feedEdit:true}});
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -183,7 +186,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var processor = _.find(self.inputProcessors, function(processor) {
                 return (processor.processorId === processorId);
             });
-            if (angular.isUndefined(processor)) {
+            if (angular.isUndefined(processor) || self.model.dataTransformationFeed) {
                 return;
             }
 

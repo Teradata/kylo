@@ -21,9 +21,11 @@ package com.thinkbiganalytics.audit.rest.controller;
  */
 
 import com.thinkbiganalytics.audit.rest.model.AuditLogEntry;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.springframework.stereotype.Component;
 
@@ -71,6 +73,12 @@ public class AuditLogController {
     @Inject
     private AuditLogProvider auditProvider;
 
+    /**
+     * Access controller for permission checks
+     */
+    @Inject
+    private AccessController accessController;
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Get recent log entries.")
@@ -79,6 +87,8 @@ public class AuditLogController {
     )
     public List<AuditLogEntry> getList(@QueryParam("limit") @DefaultValue("10") int limit) {
         return metadataAccess.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
             return this.auditProvider.list(limit).stream()
                 .map(transformer)
                 .collect(Collectors.toList());
@@ -95,6 +105,8 @@ public class AuditLogController {
                   })
     public AuditLogEntry findById(@PathParam("id") String idStr) {
         return metadataAccess.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
             com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID id = auditProvider.resolveId(idStr);
             return this.auditProvider.findById(id)
                 .map(transformer)

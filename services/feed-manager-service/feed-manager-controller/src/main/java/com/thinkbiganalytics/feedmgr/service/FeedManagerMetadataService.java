@@ -36,11 +36,13 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
@@ -56,6 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,6 +69,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Provides access to category, feed, and template metadata stored in the metadata store.
@@ -73,6 +77,12 @@ import javax.inject.Inject;
 public class FeedManagerMetadataService implements MetadataService {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerMetadataService.class);
+
+    @Value("${kylo.feed.mgr.cleanup.timeout:60000}")
+    private long cleanupTimeout;
+
+    @Value("${kylo.feed.mgr.cleanup.delay:300}")
+    private long cleanupDelay;
 
     @Inject
     FeedManagerCategoryService categoryProvider;
@@ -161,7 +171,8 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         // First check if this should be allowed.
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        feedProvider.checkFeedPermission(feedId, FeedAccessControl.DELETE);
 
         // Step 1: Fetch feed metadata
         final FeedMetadata feed = feedProvider.getFeedById(feedId);
@@ -169,13 +180,16 @@ public class FeedManagerMetadataService implements MetadataService {
             throw new IllegalArgumentException("Unknown feed: " + feedId);
         }
 
-        // Step 2: Check for dependent feeds
+        // Step 2: Check category permissions
+        categoryProvider.checkCategoryPermission(feed.getCategoryId(), CategoryAccessControl.CREATE_FEED);
+
+        // Step 3: Check for dependent feeds
         if (feed.getUsedByFeeds() != null && !feed.getUsedByFeeds().isEmpty()) {
             final List<String> systemNames = feed.getUsedByFeeds().stream().map(FeedSummary::getCategoryAndFeedSystemName).collect(Collectors.toList());
             throw new IllegalStateException("Feed is referenced by " + feed.getUsedByFeeds().size() + " other feeds: " + systemNames);
         }
 
-        // Step 3: Delete hadoop authorization security policies if they exists
+        // Step 4: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
                 Feed domainFeed = feedModelTransform.feedToDomain(feed);
@@ -187,7 +201,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
         }
 
-        // Step 4: Enable NiFi cleanup flow
+        // Step 5: Enable NiFi cleanup flow
         boolean needsCleanup = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
@@ -199,11 +213,11 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 5: Run NiFi cleanup flow
+        // Step 6: Run NiFi cleanup flow
         if (needsCleanup) {
             // Wait for input processor to start
             try {
-                Thread.sleep(300);
+                Thread.sleep(cleanupDelay);
             } catch (InterruptedException e) {
                 // ignored
             }
@@ -211,7 +225,7 @@ public class FeedManagerMetadataService implements MetadataService {
             cleanupFeed(feed);
         }
 
-        // Step 6: Remove feed from NiFi
+        // Step 7: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
@@ -219,7 +233,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 7: Delete database entries
+        // Step 8: Delete database entries
         feedProvider.deleteFeed(feedId);
 
     }
@@ -257,7 +271,15 @@ public class FeedManagerMetadataService implements MetadataService {
 
     public FeedSummary enableFeed(String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+
+            if (feedMetadata == null) {
+                //feed will not be found when user is allowed to export feeds but has no entity access to feed with feed id
+                throw new NotFoundException("Feed not found for id " + feedId);
+            }
+
             if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
                 FeedSummary feedSummary = feedProvider.enableFeed(feedId);
 
@@ -275,7 +297,14 @@ public class FeedManagerMetadataService implements MetadataService {
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+
+            if (feedMetadata == null) {
+                throw new NotFoundException("Feed not found for id " + feedId);
+            }
+
             if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
                 FeedSummary feedSummary = feedProvider.disableFeed(feedId);
                 boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
@@ -363,7 +392,7 @@ public class FeedManagerMetadataService implements MetadataService {
             eventService.notify(new CleanupTriggerEvent(feedProvider.resolveFeed(feed.getId())));
 
             // Wait for completion
-            long remaining = 60000L;
+            long remaining = cleanupTimeout;
             while (remaining > 0 && (listener.getState() == null || listener.getState() == FeedOperation.State.STARTED)) {
                 final long start = System.currentTimeMillis();
                 try {

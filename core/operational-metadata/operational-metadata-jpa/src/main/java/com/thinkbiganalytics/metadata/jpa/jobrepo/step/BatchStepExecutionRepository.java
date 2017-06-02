@@ -21,8 +21,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
  */
 
 
-import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,10 +44,4 @@ public interface BatchStepExecutionRepository extends JpaRepository<JpaBatchStep
                    + "join JpaNifiEventStepExecution as nifiEventStep on nifiEventStep.stepExecution.stepExecutionId = step.stepExecutionId  "
                    + "where nifiEventStep.componentId = :componentId and nifiEventStep.jobFlowFileId = :flowFileId")
     JpaBatchStepExecution findByProcessorAndJobFlowFile(@Param("componentId") String processorId, @Param("flowFileId") String flowFileId);
-
-    @Query("select step from JpaBatchStepExecution as step "
-           + "join JpaBatchJobExecution as job on job.jobExecutionId = step.jobExecution.jobExecutionId "
-           + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB
-           + "where step.jobExecution.jobExecutionId = :jobExecutionId")
-    List<JpaBatchStepExecution> findSteps(@Param("jobExecutionId") Long jobExecutionId);
 }

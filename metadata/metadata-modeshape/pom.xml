@@ -4,14 +4,13 @@
   <parent>
     <groupId>com.thinkbiganalytics.metadata</groupId>
     <artifactId>kylo-metadata</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-metadata-modeshape</artifactId>
 
   <properties>
     <modeshape.version>5.2.0.Final</modeshape.version>
     <jdbc.h2.version>1.2.124</jdbc.h2.version>
-    <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 
@@ -106,7 +105,6 @@
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>1.5.7</version>
     </dependency>
 
     <dependency>

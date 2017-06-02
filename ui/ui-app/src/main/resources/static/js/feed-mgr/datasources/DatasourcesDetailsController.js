@@ -13,14 +13,21 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
      * @param {Object} $scope the application model
      * @param {Object} $mdDialog the dialog service
      * @param {Object} $mdToast the toast notification service
+     * @param {Object} $q the promise service
      * @param {Object} $transition$ the URL parameters
      * @param {AccessControlService} AccessControlService the access control service
      * @param {DatasourcesService} DatasourcesService the data sources service
      * @param {EntityAccessControlService} EntityAccessControlService the entity access control service
      * @param {StateService} StateService the page state service
      */
-    function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, DatasourcesService, EntityAccessControlService, StateService) {
+    function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $q, $transition$, AccessControlService, DatasourcesService, EntityAccessControlService, StateService) {
         var self = this;
+
+        /**
+         * Indicates that changing permissions is allowed.
+         * @type {boolean}
+         */
+        self.allowChangePermissions = false;
 
         /**
          * Indicates that edit operations are allowed.
@@ -174,9 +181,9 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          */
         self.onDetailsSave = function () {
             // Prepare model
-            var model = angular.copy(self.editModel);
-            model.roleMemberships = self.model.roleMemberships;
-            model.owner = self.model.owner;
+            var model = _.pick(self.editModel, function (value, key) {
+                    return (key !== "owner" && key !== "roleMemberships");
+                });
 
             if (!angular.isString(model.type) || model.type.length === 0) {
                 var matches = /^(?:jdbc:)?([^:]+):/.exec(model.databaseConnectionUrl);
@@ -201,6 +208,8 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.saveModel = function (model) {
             return DatasourcesService.save(model)
                 .then(function (savedModel) {
+                    savedModel.owner = self.model.owner;
+                    savedModel.roleMemberships = self.model.roleMemberships;
                     self.model = savedModel;
                     return savedModel;
                 }, function (err) {
@@ -225,18 +234,25 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             }
         };
 
-        // Fetch allowed permissions
-        AccessControlService.getUserAllowedActions()
-            .then(function (actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.DATASOURCE_ACCESS, actionSet.actions);
-            });
-
         // Load the data source
         if (angular.isString($transition$.params().datasourceId)) {
             DatasourcesService.findById($transition$.params().datasourceId)
                 .then(function (model) {
                     self.model = model;
                     self.loading = false;
+
+                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
+                        .then(function (access) {
+                            self.allowEdit = access;
+                        });
+                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.DELETE_DATASOURCE))
+                        .then(function (access) {
+                            self.allowDelete = access;
+                        });
+                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS))
+                        .then(function (access) {
+                            self.allowChangePermissions = access;
+                        });
                 }, function () {
                     StateService.FeedManager().Datasource().navigateToDatasources();
                 });
@@ -275,6 +291,6 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         });
     }
 
-    angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "DatasourcesService",
+    angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$q", "$transition$", "AccessControlService", "DatasourcesService",
                                                                            "EntityAccessControlService", "StateService", DatasourcesDetailsController]);
 });

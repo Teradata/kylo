@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -55,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.AccessControlException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -225,7 +227,11 @@ public class DatasourceController {
             com.thinkbiganalytics.metadata.api.datasource.Datasource ds = this.datasetProvider.getDatasource(id);
 
             if (ds != null) {
-                return datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
+                final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
+                if (ds instanceof AccessControlled) {
+                    accessControlledEntityTransform.applyAccessControlToRestModel((AccessControlled) ds, restModel);
+                }
+                return restModel;
             } else {
                 throw new NotFoundException("No datasource exists with the given ID: " + idStr);
             }
@@ -397,8 +403,8 @@ public class DatasourceController {
     public Response getAllowedActions(@PathParam("id") final String datasourceIdStr, @QueryParam("user") final Set<String> userNames, @QueryParam("group") final Set<String> groupNames) {
         log.debug("Get allowed actions for data source: {}", datasourceIdStr);
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedDatasourceActions(datasourceIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
             .map(g -> Response.ok(g).build())
@@ -439,8 +445,8 @@ public class DatasourceController {
             throw new WebApplicationException("The query parameter \"type\" is required", Response.Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = this.actionsTransform.asUserPrincipals(userNames);
-        Set<? extends Principal> groups = this.actionsTransform.asGroupPrincipals(groupNames);
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createDatasourcePermissionChange(datasourceIdStr,
                                                                      PermissionsChange.ChangeType.valueOf(changeType.toUpperCase()),

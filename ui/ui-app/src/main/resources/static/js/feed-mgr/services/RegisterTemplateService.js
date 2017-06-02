@@ -515,9 +515,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @param nifiTemplateId
              * @param reusableTemplateConnections
              * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
-     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
-     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
-     *            request:{connectionInfo:reusableTemplateConnections}}
+             *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+             *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+             *            request:{connectionInfo:reusableTemplateConnections}}
              */
             getNiFiTemplateFlowInformation: function (nifiTemplateId, reusableTemplateConnections) {
                 var deferred = $q.defer();
@@ -554,6 +554,60 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             .parent(document.body)
                             .title("Template processor name warning"));
                 }
+            },
+
+            accessDeniedDialog:function() {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Access Denied")
+                        .textContent("You do not have access to edit templates.")
+                        .ariaLabel("Access denied to edit templates")
+                        .ok("OK")
+                );
+            },
+
+            /**
+             * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
+             */
+            checkTemplateAccess:function(model){
+                var self = data;
+                if(model == undefined){
+                    model = self.model;
+                }
+                model.errorMessage = '';
+
+                var entityAccessControlled = model.id != null && AccessControlService.isEntityAccessControlled();
+                var deferred = $q.defer();
+                var requests = {
+                    entityEditAccess: entityAccessControlled == true ? self.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE,model) : true,
+                    entityAdminAccess: entityAccessControlled == true ? self.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE,model) : true,
+                    functionalAccess: AccessControlService.getUserAllowedActions()
+                }
+
+                $q.all(requests).then(function (response) {
+
+                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
+                    var allowAdminAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+
+                    var allowEdit = response.entityEditAccess && allowEditAccess
+                    var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
+                    var allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
+                    var accessAllowed = allowEdit || allowAdmin;
+                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed,allowAccessControl:allowAccessControl};
+                    if(!result.isValid){
+                        if(!accessAllowed) {
+                            model.errorMessage = "Access Denied.  You are unable to edit the template. ";
+                            self.accessDeniedDialog();
+                        }
+                        else {
+                            model.errorMessage = "Unable to proceed";
+                        }
+                    }
+                    deferred.resolve(result);
+
+                });
+                return deferred.promise;
             },
 
             /**

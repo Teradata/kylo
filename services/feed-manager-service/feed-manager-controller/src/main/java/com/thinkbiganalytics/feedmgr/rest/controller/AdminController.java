@@ -120,7 +120,7 @@ public class AdminController {
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns the feed as an attachment."),
                       @ApiResponse(code = 400, message = "The feedId is invalid.", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "The feed is not available.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 404, message = "The feed is not available.", response = RestResponseStatus.class)
                   })
     public Response exportFeed(@NotNull @Size(min = 36, max = 36, message = "Invalid feedId size")
                                @PathParam("feedId") String feedId) {

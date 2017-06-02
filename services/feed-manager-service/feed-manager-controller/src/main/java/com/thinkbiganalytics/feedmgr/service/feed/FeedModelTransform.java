@@ -338,18 +338,23 @@ public class FeedModelTransform {
      * @param feedManagerFeed the Metadata feed
      * @return the Feed Manager feed summary
      */
-    @Nonnull
     public FeedSummary domainToFeedSummary(@Nonnull final Feed feedManagerFeed) {
+        Category category = feedManagerFeed.getCategory();
+        if (category == null) {
+            return null;
+        }
+        
         FeedSummary feedSummary = new FeedSummary();
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());
-        feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
-        if (feedManagerFeed.getCategory() instanceof Category) {
-            feedSummary.setCategoryIcon(((Category) feedManagerFeed.getCategory()).getIcon());
-            feedSummary.setCategoryIconColor(((Category) feedManagerFeed.getCategory()).getIconColor());
+
+        feedSummary.setCategoryId(category.getId().toString());
+        if (category instanceof Category) {
+            feedSummary.setCategoryIcon(category.getIcon());
+            feedSummary.setCategoryIconColor(category.getIconColor());
         }
-        feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
-        feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
+        feedSummary.setCategoryName(category.getDisplayName());
+        feedSummary.setSystemCategoryName(category.getName());
         feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate() : null);
         feedSummary.setFeedName(feedManagerFeed.getDisplayName());
         feedSummary.setSystemFeedName(feedManagerFeed.getName());
@@ -366,8 +371,10 @@ public class FeedModelTransform {
             }
         }
         //add in access control items
-        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed,feedSummary);
+        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed, feedSummary);
+
         return feedSummary;
+
     }
 
     /**
@@ -378,7 +385,7 @@ public class FeedModelTransform {
      */
     @Nonnull
     public List<FeedSummary> domainToFeedSummary(@Nonnull final Collection<? extends Feed> domain) {
-        return domain.stream().map(this::domainToFeedSummary).collect(Collectors.toList());
+        return domain.stream().map(this::domainToFeedSummary).filter(feedSummary -> feedSummary != null).collect(Collectors.toList());
     }
 
     /**

@@ -76,7 +76,14 @@ public class UpgradeAction implements UpgradeState {
         int totalFeedCount = 0;
 
         for (Node catNode : JcrUtil.getNodesOfType(feedsNode, CATEGORY_TYPE)) {
-            log.info("Starting upgrading category: [{}] {}", ++categoryCount, catNode);
+            String catName= "";
+            try {
+                catName = catNode != null ? catNode.getName() : "";
+            }catch (RepositoryException e){
+                // its fine to swallow this exception
+            }
+
+            log.info("Starting upgrading category: [{}] {}", ++categoryCount, catName);
 
             categoryFeedCount = 0;
             Node detailsNode = JcrUtil.getOrCreateNode(catNode, "tba:details", CAT_DETAILS_TYPE);
@@ -85,8 +92,14 @@ public class UpgradeAction implements UpgradeState {
 
             for (Node feedNode : JcrUtil.getNodesOfType(catNode, FEED_TYPE)) {
                 moveNode(session, feedNode, detailsNode);
+                String feedName= "";
+                try {
+                    feedName = feedNode != null ? feedNode.getName() : "";
+                }catch (RepositoryException e){
+                    // its fine to swallow this exception
+                }
 
-                log.info("\tStarting upgrading feed: [{}] {}", ++categoryFeedCount, feedNode);
+                log.info("\tStarting upgrading feed: [{}] {}", ++categoryFeedCount, feedName);
                 ++totalFeedCount;
                 Node feedSummaryNode = JcrUtil.getOrCreateNode(feedNode, "tba:summary", FEED_SUMMARY_TYPE);
                 Node feedDataNode = JcrUtil.getOrCreateNode(feedNode, "tba:data", FEED_DATA_TYPE);
@@ -144,9 +157,9 @@ public class UpgradeAction implements UpgradeState {
                 }
 
                 removeMixin(feedNode, UPGRADABLE_TYPE);
-                log.info("\tCompleted upgrading feed: " + feedNode);
+                log.info("\tCompleted upgrading feed: " + feedName);
             }
-            log.info("Completed upgrading category: " + catNode);
+            log.info("Completed upgrading category: " + catName);
         }
 
         // Update templates
@@ -154,9 +167,16 @@ public class UpgradeAction implements UpgradeState {
         final Node templatesNode = JcrUtil.getNode(session, "metadata/templates");
 
         for (Node templateNode : JcrUtil.getNodesOfType(templatesNode, "tba:feedTemplate")) {
-            log.info("Starting upgrading template: [{}] {}", ++templateCount, templateNode);
+            String templateName = "";
+            try {
+                templateName = templateNode != null ? templateNode.getName() : "";
+            }catch (RepositoryException e){
+                // its fine to swallow this exception
+            }
+
+            log.info("Starting upgrading template: [{}] {}", ++templateCount, templateName);
             JcrUtil.getOrCreateNode(templateNode, "tba:allowedActions", "tba:allowedActions");
-            log.info("Completed upgrading template: " + templateNode);
+            log.info("Completed upgrading template: " + templateName);
         }
 
         log.info("Upgrade complete for {} categories and {} feeds and {} templates", categoryCount, totalFeedCount, templateCount);

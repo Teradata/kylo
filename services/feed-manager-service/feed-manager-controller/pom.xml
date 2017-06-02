@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -350,7 +350,6 @@
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>1.5.7</version>
       <scope>test</scope>
     </dependency>
 

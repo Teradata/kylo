@@ -27,19 +27,26 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessControlException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
   */
 public class JcrObject {
+    
+    private static final Logger log = LoggerFactory.getLogger(JcrObject.class);
 
     protected final Node node;
 
@@ -106,17 +113,19 @@ public class JcrObject {
 
     public String getPath() {
         try {
-            return this.node.getPath();
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get the Path", e);
+            return JcrUtil.getPath(node);
+        } catch (AccessControlException e) {
+            // If it can't be accessed assume it is hidden 
+            return null;
         }
     }
 
     public String getNodeName() {
         try {
-            return this.node.getName();
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get the Node Name", e);
+            return JcrUtil.getName(node);
+        } catch (AccessControlException e) {
+            // If it can't be accessed assume it is hidden 
+            return null;
         }
     }
 
@@ -146,14 +155,19 @@ public class JcrObject {
     }
 
     public Object getProperty(String name) {
-        return JcrPropertyUtil.getProperty(this.node, name);
+        try {
+            return JcrPropertyUtil.getProperty(this.node, name);
+        } catch (AccessControlException e) {
+            // If it can't be accessed assume it is hidden 
+            return null;
+        }
     }
 
     public <T> Set<T> getPropertyAsSet(String name, Class<T> objectType) {
         Object o = null;
         try {
             o = JcrPropertyUtil.getProperty(this.node, name);
-        } catch (UnknownPropertyException e) {
+        } catch (UnknownPropertyException | AccessControlException e) {
 
         }
         if (o != null) {
@@ -196,8 +210,9 @@ public class JcrObject {
                 }
                 return set;
             }
+        } else {
+            return new HashSet<T>();
         }
-        return new HashSet<T>();
     }
 
     public <T> T getProperty(String name, Class<T> type) {
@@ -233,7 +248,12 @@ public class JcrObject {
     }
 
     public void setProperty(String name, Object value) {
-        JcrPropertyUtil.setProperty(this.node, name, value);
+        try {
+            JcrPropertyUtil.setProperty(this.node, name, value);
+        } catch (AccessControlException e) {
+            // Re-throw with possibly a better message
+            throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+        }
     }
 
 

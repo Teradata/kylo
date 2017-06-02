@@ -181,6 +181,10 @@ public class DatasourceModelTransform {
                 domain = (com.thinkbiganalytics.metadata.api.datasource.UserDatasource) datasourceProvider.getDatasource(id);
             }
 
+            if (domain == null) {
+                throw new IllegalArgumentException("Could not find data source: " + ds.getId());
+            }
+
             if (ds instanceof JdbcDatasource) {
                 if (isNew) {
                     datasourceProvider.ensureDatasourceDetails(domain.getId(), JdbcDatasourceDetails.class);

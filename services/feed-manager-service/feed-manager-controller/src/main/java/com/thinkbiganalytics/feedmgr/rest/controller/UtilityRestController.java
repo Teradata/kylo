@@ -22,17 +22,22 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.rest.model.IconColor;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.UIService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.feedmgr.security.EncryptionAccessControl;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,8 +51,12 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -71,6 +80,12 @@ public class UtilityRestController {
 
     @Inject
     FileResourceService fileResourceService;
+
+    @Inject
+    private EncryptionService encryptionService;
+
+    @Inject
+    private AccessController accessController;
 
     @GET
     @Path("/cron-expression/validate")
@@ -208,4 +223,38 @@ public class UtilityRestController {
         final Stream<String> userFunctions = Arrays.stream(env.getProperty("kylo.metadata.udfs", "").split(",")).map(String::trim).filter(StringUtils::isNotEmpty);
         return Response.ok(Stream.concat(kyloFunctions, userFunctions).collect(Collectors.toSet())).build();
     }
+
+    @POST
+    @Path("/encrypt")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Encrypts provided value")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns encrypted value", response = String.class)
+    )
+    public Response encrypt(String unencrypted) {
+        this.accessController.checkPermission(AccessController.SERVICES, EncryptionAccessControl.ACCESS_ENCRYPTION);
+
+        String encrypted = encryptionService.encrypt(unencrypted);
+        return Response.ok(encrypted).build();
+    }
+
+    /**
+     * Gets information about the current user.
+     */
+    @POST
+    @Path("/decrypt")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Decrypts provided value")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns decrypted value", response = String.class)
+    )
+    public Response decrypt(String encrypted) {
+        this.accessController.checkPermission(AccessController.SERVICES, EncryptionAccessControl.ACCESS_ENCRYPTION);
+
+        String decrypted = encryptionService.decrypt(encrypted);
+        return Response.ok(decrypted).build();
+    }
+
 }

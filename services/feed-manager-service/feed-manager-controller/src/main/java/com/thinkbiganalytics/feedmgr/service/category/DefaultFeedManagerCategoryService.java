@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,25 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Inject
     private AccessController accessController;
+
+    @Override
+    public boolean checkCategoryPermission(final String id, final Action action, final Action... more) {
+        if (accessController.isEntityAccessControlled()) {
+            return metadataAccess.read(() -> {
+                final Category.ID domainId = categoryProvider.resolveId(id);
+                final Category domainCategory = categoryProvider.findById(domainId);
+
+                if (domainCategory != null) {
+                    domainCategory.getAllowedActions().checkPermission(action, more);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            return true;
+        }
+    }
 
     @Override
     public Collection<FeedCategory> getCategories() {
@@ -95,41 +115,52 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     }
 
     @Override
-    public void saveCategory(final FeedCategory category) {
-        final Category.ID domainId = metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
-
+    public void saveCategory(final FeedCategory feedCategory) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
+        
+        // If the category exists and it is being renamed, perform the rename in a privileged transaction.
+        // This is to get around the ModeShape problem of requiring admin privileges to do type manipulation.
+        FeedCategory categoryUpdate = metadataAccess.commit(() -> {
             // Determine the system name
-            if (category.getId() == null) {
-                category.generateSystemName();
+            if (feedCategory.getId() == null) {
+                feedCategory.generateSystemName();
             } else {
-                final FeedCategory oldCategory = getCategoryById(category.getId());
-                if (oldCategory != null && !oldCategory.getName().equalsIgnoreCase(category.getName())) {
+                final FeedCategory oldCategory = getCategoryById(feedCategory.getId());
+                if (oldCategory != null && !oldCategory.getName().equalsIgnoreCase(feedCategory.getName())) {
                     //names have changed
                     //only regenerate the system name if there are no related feeds
                     if (oldCategory.getRelatedFeeds() == 0) {
-                        category.generateSystemName();
+                        Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
+                        feedCategory.generateSystemName();
+                        categoryProvider.rename(domainId, feedCategory.getSystemName());
                     }
                 }
             }
+            
+            return feedCategory;
+        }, MetadataAccess.SERVICE);
+        
+        // Perform the rest of the updates as the current user.
+        final Category.ID domainId = metadataAccess.commit(() -> {
 
             // Update the domain entity
-            final Category domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
+            final Category domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(categoryUpdate));
 
             // Repopulate identifier
-            category.setId(domainCategory.getId().toString());
+            categoryUpdate.setId(domainCategory.getId().toString());
 
             ///update access control
             //TODO only do this when modifying the access control
             if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                category.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(category.getId(), roleMembershipChange));
+                categoryUpdate.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
             }
 
             return domainCategory.getId();
         });
 
         // Update user-defined fields (must be outside metadataAccess)
-        final Set<UserFieldDescriptor> userFields = (category.getUserFields() != null) ? UserPropertyTransform.toUserFieldDescriptors(category.getUserFields()) : Collections.emptySet();
+        final Set<UserFieldDescriptor> userFields = (categoryUpdate.getUserFields() != null) ? UserPropertyTransform.toUserFieldDescriptors(categoryUpdate.getUserFields()) : Collections.emptySet();
         categoryProvider.setFeedUserFields(domainId, userFields);
     }
 
@@ -137,26 +168,49 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
 
-        final Category.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
-        categoryProvider.deleteById(domainId);
-        return true;
+        Category.ID domainId = metadataAccess.read(() -> {
+            Category.ID id = categoryProvider.resolveId(categoryId);
+            final Category category = categoryProvider.findById(id);
+
+            if (category != null) {
+
+                if (accessController.isEntityAccessControlled()) {
+                    //this check should throw a runtime exception
+                    category.getAllowedActions().checkPermission(CategoryAccessControl.DELETE);
+                }
+                return id;
+            } else {
+                //unable to read the category
+                return null;
+            }
+
+
+        });
+        if (domainId != null) {
+            metadataAccess.commit(() -> {
+                categoryProvider.deleteById(domainId);
+            }, MetadataAccess.SERVICE);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Nonnull
     @Override
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
-
-            return UserPropertyTransform.toUserFields(categoryProvider.getUserFields());
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
+            return hasPermission ? UserPropertyTransform.toUserFields(categoryProvider.getUserFields()) : Collections.emptySet();
         });
     }
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
-
-        categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
+        if(hasPermission) {
+            categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        }
     }
 
     @Nonnull

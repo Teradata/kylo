@@ -71,19 +71,22 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                    _.each(entity.roleMemberships,function(roleMembership){
                        var users = [];
                        var groups = [];
-                       //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
-                       var update = roleMembership.members.length ==0;
-                       _.each(roleMembership.members,function(member) {
-                           if(angular.isDefined(member.type)) {
-                               if (member.type == 'user') {
-                                   users.push(member.systemName);
+                       var update = false;
+                       if(roleMembership.members != null && roleMembership.members != undefined) {
+                           //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
+                           var update = roleMembership.members.length == 0;
+                           _.each(roleMembership.members, function (member) {
+                               if (angular.isDefined(member.type)) {
+                                   if (member.type == 'user') {
+                                       users.push(member.systemName);
+                                   }
+                                   else if (member.type == 'group') {
+                                       groups.push(member.systemName);
+                                   }
+                                   update = true;
                                }
-                               else if (member.type == 'group') {
-                                   groups.push(member.systemName);
-                               }
-                               update = true;
-                           }
-                       });
+                           });
+                       }
                        if(update) {
                            roleMembership.users = users;
                            roleMembership.groups = groups;
@@ -96,6 +99,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
              * Merges all possible roles for this entity, with the assigned roles/memberships
              */
             mergeRoleAssignments: function (entity, entityType) {
+                var deferred = $q.defer();
                 var existingModelRoleAssignments = {};
                 queryForRoleAssignments(entity, entityType).then(function (response) {
                     entity.roleMemberships = [];
@@ -107,6 +111,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                         roleMembership.members = [];
                         _.each(roleMembership.groups, function (group) {
                             group.type = 'group';
+                            group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
                             roleMembership.members.push(group)
                         });
                         _.each(roleMembership.users, function (user) {
@@ -125,9 +130,12 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                                 entity.roleMemberships.push(membership);
                             }
                         });
+                        deferred.resolve(entity.roleMemberships);
                     });
 
                 });
+
+                return deferred.promise;
             }
 
         });

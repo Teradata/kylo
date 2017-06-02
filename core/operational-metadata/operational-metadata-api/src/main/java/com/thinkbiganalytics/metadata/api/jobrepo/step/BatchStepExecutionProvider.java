@@ -23,13 +23,10 @@ package com.thinkbiganalytics.metadata.api.jobrepo.step;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
-import java.util.List;
-
 /**
  * Provider for accessing {@link BatchStepExecution} data
  */
 public interface BatchStepExecutionProvider {
-
 
     /**
      * Update a StepExecution record
@@ -50,13 +47,4 @@ public interface BatchStepExecutionProvider {
      * When a step fails, get notified of the failure
      */
     void subscribeToFailedSteps(FailedStepExecutionListener listener);
-
-
-    /**
-     * Return all the step executions for a given job execution id
-     *
-     * @return the steps pertaining to a given job
-     */
-    List<? extends BatchStepExecution> getSteps(Long jobExecutionId);
-
 }

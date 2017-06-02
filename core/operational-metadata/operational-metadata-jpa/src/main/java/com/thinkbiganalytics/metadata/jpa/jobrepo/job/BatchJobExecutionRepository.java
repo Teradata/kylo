@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
+import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.joda.time.DateTime;
@@ -35,12 +36,14 @@ import java.util.Set;
 /**
  * Spring data repository for accessing {@link JpaBatchJobExecution}
  */
+@RepositoryType(BatchJobExecutionSecuringRepository.class)
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 
     @Query(value = "select job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
                    + "where nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);
+
 
     @Query(value = "select job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
@@ -50,7 +53,8 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB
                    + " where nifiEvent.feedName = :feedName "
                    + "and job.status = 'COMPLETED' "
-                   + "and job.endTime > :sinceDate ")
+                   + "and job.endTime > :sinceDate "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
 
     @Query("select job from JpaBatchJobExecution as job "
@@ -58,6 +62,7 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + "where feed.name = :feedName "
+           + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH
            + "and job.endTimeMillis = (SELECT max(job2.endTimeMillis)"
            + "     from JpaBatchJobExecution as job2 "
            + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "

@@ -46,6 +46,8 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +55,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -89,6 +92,8 @@ import javax.jcr.nodetype.PropertyDefinition;
  * Utility functions for JCR properties.
  */
 public class JcrPropertyUtil {
+    
+    private static final Logger log = LoggerFactory.getLogger(JcrPropertyUtil.class);
 
     /**
      * Encoding for user-defined property names
@@ -125,6 +130,9 @@ public class JcrPropertyUtil {
     public static String getName(Node node) {
         try {
             return node.getName();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access name property of node: " + node, e);
         }
@@ -133,6 +141,9 @@ public class JcrPropertyUtil {
     public static String getName(Property prop) {
         try {
             return prop.getName();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the name of property: " + prop, e);
         }
@@ -144,6 +155,9 @@ public class JcrPropertyUtil {
             return prop.getString();
         } catch (PathNotFoundException e) {
             return null;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -167,6 +181,9 @@ public class JcrPropertyUtil {
             return notFoundValue;
         } catch (PathNotFoundException e) {
             return notFoundValue;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -188,6 +205,9 @@ public class JcrPropertyUtil {
             return prop.getLong();
         } catch (PathNotFoundException e) {
             return null;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -199,6 +219,9 @@ public class JcrPropertyUtil {
             return Enum.valueOf(enumType, prop.getString());
         } catch (PathNotFoundException e) {
             return defaultValue;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -254,6 +277,9 @@ public class JcrPropertyUtil {
             } else {
                 return Optional.empty();
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to locate a property: " + name, e);
         }
@@ -273,6 +299,9 @@ public class JcrPropertyUtil {
             } else {
                 throw new UnknownPropertyException(name, e);
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -284,11 +313,19 @@ public class JcrPropertyUtil {
             PropertyIterator itr = node.getProperties();
 
             while (itr.hasNext()) {
-                Property prop = (Property) itr.next();
-                propMap.put(prop.getName(), asValue(prop));
+                try {
+                    Property prop = (Property) itr.next();
+                    Object value = asValue(prop);
+                    propMap.put(prop.getName(), value);
+                } catch (AccessDeniedException e) {
+                    log.debug("Access denied - skipping property", e);
+                }
             }
 
             return propMap;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access properties", e);
         }
@@ -325,8 +362,22 @@ public class JcrPropertyUtil {
             }
 
             return entNode;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set properties", e);
+        }
+    }
+    
+    public static boolean hasProperty(Node node, String propName) {
+        try {
+            return node.hasProperty(propName);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to test for property", e);
         }
     }
 
@@ -386,6 +437,9 @@ public class JcrPropertyUtil {
     public static String toString(Property prop) {
         try {
             return prop.getString();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get string value of property: " + prop, e);
         }
@@ -437,6 +491,9 @@ public class JcrPropertyUtil {
                     return (T) asValue(prop.getValue(), prop.getSession());
                 }
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property type", e);
         }
@@ -447,7 +504,10 @@ public class JcrPropertyUtil {
         if (session != null) {
             try {
                 n = session.getNodeByIdentifier(nodeIdentifier);
-            } catch (RepositoryException e) {
+            } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
 
             }
         }
@@ -469,6 +529,9 @@ public class JcrPropertyUtil {
             Value weakRef = node.getSession().getValueFactory().createValue(ref, true);
             node.setProperty(name, weakRef);
 
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set weak ref property value: " + name + "=" + ref, e);
         }
@@ -530,6 +593,9 @@ public class JcrPropertyUtil {
             } else {
                 node.setProperty(name, value.toString());
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
@@ -565,6 +631,9 @@ public class JcrPropertyUtil {
             } else {
                 return new HashSet<>();
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the node property set: " + propName, e);
         }
@@ -593,7 +662,10 @@ public class JcrPropertyUtil {
                         try {
                             Node n = JcrPropertyUtil.asValue(v, node.getSession());
                             return n.getSession().getValueFactory().createValue(n, true);
-                        } catch (RepositoryException e) {
+                        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
                             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
                         }
                     } else {
@@ -614,6 +686,9 @@ public class JcrPropertyUtil {
             }
 
             return result;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
         }
@@ -633,6 +708,9 @@ public class JcrPropertyUtil {
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return true;
 
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove set property: " + name, e);
         }
@@ -666,6 +744,9 @@ public class JcrPropertyUtil {
             boolean result = values.remove(existingVal);
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return result;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove from set property: " + name + "->" + value, e);
         }
@@ -688,6 +769,9 @@ public class JcrPropertyUtil {
             }
         } catch (ClassCastException e) {
             throw new MetadataRepositoryException("Wrong property data type for set", e);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get set property: " + name, e);
         }
@@ -745,6 +829,9 @@ public class JcrPropertyUtil {
             } else {
                 return factory.createValue(value.toString());
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create value frpm: " + value, e);
         }
@@ -808,6 +895,9 @@ public class JcrPropertyUtil {
                 default:
                     return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Invalid value format", e);
         }
@@ -819,6 +909,9 @@ public class JcrPropertyUtil {
     public static boolean isReferencing(Node node, String refProp, Node targetNode) {
         try {
             return node.getProperty(refProp).getNode().isSame(targetNode);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check reference property against node: " + node, e);
         }
@@ -830,6 +923,9 @@ public class JcrPropertyUtil {
     public static boolean isReferencing(Node node, String refProp, String nodeId) {
         try {
             return node.getProperty(refProp).getNode().getIdentifier().equals(nodeId);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check reference property against node ID: " + nodeId, e);
         }
@@ -904,6 +1000,9 @@ public class JcrPropertyUtil {
         final PropertyIterator iterator;
         try {
             iterator = node.getProperties();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get properties for node: " + node, e);
         }
@@ -919,7 +1018,10 @@ public class JcrPropertyUtil {
                 if (property.getName().startsWith(prefix)) {
                     properties.put(URLDecoder.decode(property.getName().substring(prefixLength), USER_PROPERTY_ENCODING), property.getString());
                 }
-            } catch (RepositoryException e) {
+            } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to access property \"" + property + "\" on node: " + node, e);
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException("Unsupported encoding for property \"" + property + "\" on node: " + node, e);
@@ -955,7 +1057,10 @@ public class JcrPropertyUtil {
                 final String name = prefix + URLEncoder.encode(key, USER_PROPERTY_ENCODING);
                 newProperties.add(name);
                 node.setProperty(name, value);
-            } catch (RepositoryException e) {
+            } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to set user property \"" + key + "\" on node: " + node, e);
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalStateException(e.toString(), e);
@@ -966,6 +1071,9 @@ public class JcrPropertyUtil {
         final PropertyIterator iterator;
         try {
             iterator = node.getProperties();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get properties for node: " + node, e);
         }
@@ -978,7 +1086,10 @@ public class JcrPropertyUtil {
                 if (name.startsWith(prefix) && !newProperties.contains(name)) {
                     property.remove();
                 }
-            } catch (RepositoryException e) {
+            } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to remove property \"" + property + "\" on node: " + node, e);
             }
         }
@@ -1009,6 +1120,9 @@ public class JcrPropertyUtil {
             } else {
                 return false;
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to copy property \"" + name + "\" from node " + src + " to " + dest, e);
         }
@@ -1017,6 +1131,9 @@ public class JcrPropertyUtil {
     public static Node getParent(Property prop) {
         try {
             return prop.getParent();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the parent node of the property: " + prop, e);
         }
@@ -1027,6 +1144,9 @@ public class JcrPropertyUtil {
         return () -> {
             try {
                 return node.getProperties();
+            } catch (AccessDeniedException e) {
+                log.debug("Access denied", e);
+                throw new AccessControlException(e.getMessage());
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to get the properties of node: " + node, e);
             }

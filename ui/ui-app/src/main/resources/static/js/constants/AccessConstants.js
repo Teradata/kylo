@@ -204,42 +204,50 @@ define([], function () {
          */
         this.CHARTS_ACCESS = "accessCharts";
 
+        /**
+         * Allows access to search all indexed columns
+         * @type {string}
+         */
+        this.GLOBAL_SEARCH_ACCESS = "accessSearch";
+
         this.ENTITY_ACCESS = {
             CATEGORY: {
                 //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
                 EDIT_CATEGORY_DETAILS: "editCategoryDetails",
-                    DELETE_CATEGORY: "deleteCategory",
-                    CREATE_FEED: "createFeedUnderCategory",
-                    ENABLE_CATEGORY: "enableCategory",
-                    CHANGE_CATEGORY_PERMISSIONS: "changeCategoryPermissions"
+                DELETE_CATEGORY: "deleteCategory",
+                CREATE_FEED: "createFeedUnderCategory",
+                ENABLE_CATEGORY: "enableCategory",
+                CHANGE_CATEGORY_PERMISSIONS: "changeCategoryPermissions"
             },
             FEED: {
                 //EDIT_FEED_SUMMARY: "editFeedSummary", // will not be used in v0.8.0
                 EDIT_FEED_DETAILS: "editFeedDetails",
-                    DELETE_FEED: "deleteFeed",
-                    //ENABLE_FEED: "enableFeed",  /// Do we need this??... can enable be inferred from edit details
-                    CHANGE_FEED_PERMISSIONS: "changeFeedPermissions"
+                DELETE_FEED: "deleteFeed",
+                //ENABLE_FEED: "enableFeed",  /// Do we need this??... can enable be inferred from edit details
+                CHANGE_FEED_PERMISSIONS: "changeFeedPermissions",
+                EXPORT: "exportFeed"
             },
             TEMPLATE: {
                 EDIT_TEMPLATE: "editTemplate",
-                    DELETE_TEMPLATE: "deleteTemplate",
-                    CREATE_TEMPLATE: "createFeedFromTemplate",
-                    CHANGE_TEMPLATE_PERMISSIONS: "changeTemplatePermissions"
+                DELETE_TEMPLATE: "deleteTemplate",
+                EXPORT: "exportTemplate",
+                CREATE_TEMPLATE: "createFeedFromTemplate",
+                CHANGE_TEMPLATE_PERMISSIONS: "changeTemplatePermissions"
             },
             DATASOURCE: {
                 EDIT_DETAILS: "editDatasourceDetails",
-                    DELETE_DATASOURCE: "deleteDatasource",
-                    CHANGE_DATASOURCE_PERMISSIONS: "changeDatasourcePermissions"
+                DELETE_DATASOURCE: "deleteDatasource",
+                CHANGE_DATASOURCE_PERMISSIONS: "changeDatasourcePermissions"
             }
         };
 
         this.UI_STATES = {
             FEEDS: {state: "feeds", permissions: [this.FEEDS_ACCESS]},
-            DEFINE_FEED:{state:"define-feed",permissions: [this.FEEDS_EDIT]},
-            DEFINE_FEED_COMPLETE:{state:"define-feed-complete",permissions: [this.FEEDS_ACCESS]},
-            IMPORT_FEED:{state:"import-feed",permissions: [this.FEEDS_IMPORT]},
-            FEED_DETAILS:{state:"feed-details",permissions:[this.FEEDS_ACCESS]},
-            EDIT_FEED:{state:"edit-feed",permissions:[this.FEEDS_ACCESS]},
+            DEFINE_FEED: {state: "define-feed", permissions: [this.FEEDS_EDIT]},
+            DEFINE_FEED_COMPLETE: {state: "define-feed-complete", permissions: [this.FEEDS_ACCESS]},
+            IMPORT_FEED: {state: "import-feed", permissions: [this.FEEDS_IMPORT]},
+            FEED_DETAILS: {state: "feed-details", permissions: [this.FEEDS_ACCESS]},
+            EDIT_FEED: {state: "edit-feed", permissions: [this.FEEDS_ACCESS]},
             CATEGORIES: {state: "categories", permissions: [this.CATEGORIES_ACCESS]},
             CATEGORY_DETAILS: {state: "category-details", permissions: [this.CATEGORIES_ACCESS]},
             BUSINESS_METADATA: {state: "business-metadata", permissions: [this.CATEGORIES_ADMIN]},

@@ -22,9 +22,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.cloud.config.server.encryption.EncryptionController;
-import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
-import org.springframework.http.MediaType;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import javax.inject.Inject;
 
@@ -32,36 +30,37 @@ import javax.inject.Inject;
 public class EncryptionService {
 
     @Inject
-    TextEncryptorLocator encryptor;
-
-    @Inject
-    EncryptionController encryptionController;
+    TextEncryptor encryptor;
 
     private String encryptedPrefix = "{cipher}";
 
 
-    public boolean isEncrypted(String str){
-        return StringUtils.startsWith(str,encryptedPrefix);
+    public boolean isEncrypted(String str) {
+        return StringUtils.startsWith(str, encryptedPrefix);
     }
+
     public String encrypt(String str) {
         String encrypted = null;
-        if(!isEncrypted(str)) {
-            encrypted = encryptionController.encrypt(str, MediaType.TEXT_PLAIN);
+        if (StringUtils.isNotBlank(str) && !isEncrypted(str)) {
+            encrypted = encryptor.encrypt(str);
             if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
                 encrypted = encryptedPrefix + encrypted;
             }
-        }
-        else {
+        } else {
             encrypted = str;
         }
         return encrypted;
     }
 
     public String decrypt(String str) {
-        if (!StringUtils.startsWith(str, encryptedPrefix)) {
-            str = encryptedPrefix + str;
+        if (StringUtils.isNotBlank(str)) {
+            if (StringUtils.startsWith(str, encryptedPrefix)) {
+                str = StringUtils.removeStart(str, encryptedPrefix);
+            }
+            return encryptor.decrypt(str);
+        } else {
+            return str;
         }
-        return encryptionController.decrypt(str, MediaType.TEXT_PLAIN);
     }
 
 }

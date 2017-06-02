@@ -1,18 +1,23 @@
 #!/bin/bash
-NIFI_INSTALL_HOME=/opt/nifi
+NIFI_INSTALL_HOME=$1
+NIFI_USER=$2
+NIFI_GROUP=$3
+working_dir=$4
 NIFI_DATA=$NIFI_INSTALL_HOME/data
 NIFI_VERSION=1.0.0
 
 offline=false
-working_dir=$2
 
-if [ $# > 1 ]
+if [ $# -eq 3 ]
 then
-    if [ "$1" = "-o" ] || [ "$1" = "-O" ]
-    then
-        echo "Working in offline mode"
+    echo "The NIFI home folder is $NIFI_INSTALL_HOME using permissions  $NIFI_USER:$NIFI_GROUP"
+elif [ $# -eq 5 ] && ([ "$5" = "-o" ] || [ "$5" = "-O" ])
+then
+    echo "Working in offline mode"
         offline=true
-    fi
+else
+    echo "Unknown arguments. Arg1 should be the nifi_home. Arg2 should be the nifi user, Arg3 should be the nifi group. For offline mode pass Arg4 the kylo setup folder and Arg5 the -o -or -O option "
+    exit 1
 fi
 
 echo "Installing NiFI"
@@ -34,7 +39,7 @@ then
 fi
 
 tar -xvf nifi-${NIFI_VERSION}-bin.tar.gz
-rm -f current
+rm -f nifi-${NIFI_VERSION}-bin.tar.gz
 ln -s nifi-${NIFI_VERSION} current
 
 echo "Externalizing NiFi data files and folders to support upgrades"
@@ -44,7 +49,7 @@ mv $NIFI_INSTALL_HOME/current/conf/login-identity-providers.xml $NIFI_DATA/conf
 
 
 echo "Changing permissions to the nifi user"
-chown -R nifi:nifi /opt/nifi
+chown -R $NIFI_USER:$NIFI_GROUP $NIFI_INSTALL_HOME
 echo "NiFi installation complete"
 
 echo "Modifying the nifi.properties file"

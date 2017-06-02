@@ -197,10 +197,18 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
     public void onConnected(List<String> currentMembers) {
         log.info("Kylo Cluster Node connected {} members exist.  {} ",currentMembers.size(),currentMembers);
         //on connected reset the previous db entries
-        if(currentMembers.size() ==1){
-            log.info("This is the First Member connecting to the cluster.  Resetting the previous Cluster cache updates  {} members exist.  {} ",currentMembers.size(),currentMembers);
-            niFiFlowCacheProvider.resetClusterSyncUpdates();
-        }
+            if (currentMembers.size() == 1) {
+                try {
+                metadataAccess.commit(() -> {
+                    log.info("This is the First Member connecting to the cluster.  Resetting the previous Cluster cache updates  {} members exist.  {} ", currentMembers.size(), currentMembers);
+                    niFiFlowCacheProvider.resetClusterSyncUpdates();
+                }, MetadataAccess.SERVICE);
+                }catch (Exception e){
+                    //log the error and carry on
+                    log.error("Error attempting to reset the NiFi Flow Cache in the database when starting the Kylo Cluster. {} ",e.getMessage(),e);
+                }
+            }
+
     }
 
     @Override

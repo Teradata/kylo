@@ -43,6 +43,10 @@ public interface RoleMembership {
     
     void addMember(GroupPrincipal principal);
     
+    void setMemebers(UsernamePrincipal... principals);
+    
+    void setMemebers(GroupPrincipal... principals);
+    
     void removeMember(UsernamePrincipal principal);
     
     void removeMember(GroupPrincipal principal);

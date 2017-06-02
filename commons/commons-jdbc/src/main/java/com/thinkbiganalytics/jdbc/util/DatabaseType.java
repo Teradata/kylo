@@ -40,7 +40,7 @@ public enum DatabaseType {
     H2("H2", "jdbc:h2", "select 1"),
     HSQL("HSQL Database Engine", "jdbc:hsqldb", "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS"),
     MYSQL("MySQL", "jdbc:mysql", "select 1"),
-    ORACLE("Oracle", "jdbc:oracle", "select 1"),
+    ORACLE("Oracle", "jdbc:oracle", "select 1 from dual"),
     POSTGRES("PostgreSQL", "jdbc:postgressql", "select 1"),
     SQLITE("SQLite", "jdbc:sqlite", "select 1"),
     SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1"),

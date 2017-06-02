@@ -88,6 +88,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import java.security.Principal;
 import java.util.Properties;
@@ -412,6 +413,11 @@ public class TestSpringConfiguration {
     @Bean
     EncryptionService encryptionService() {
         return new EncryptionService();
+    }
+
+    @Bean
+    TextEncryptor textEncryptor(){
+        return textEncryptorLocator().locate(null);
     }
 
     @Bean

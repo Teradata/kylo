@@ -26,21 +26,18 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProv
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.feed.FeedData;
 import com.thinkbiganalytics.metadata.modeshape.feed.FeedDetails;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -66,63 +63,79 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        enableEntityAccess(principal, actions.stream());
-        return super.enable(principal, actions);
+        boolean changed = super.enable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        enableOnlyEntityAccess(principal, actions.stream());
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        enableOnlyEntityAccess(principal, actions.getAvailableActions().stream());
-        return super.enableOnly(principal, actions);
+        boolean changed = super.enableOnly(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        disableEntityAccess(principal, actions.stream());
-        return super.disable(principal, actions);
+        // Never disable permissions of the owner
+        if (! this.feed.getOwner().equals(principal)) {
+            boolean changed = super.disable(principal, actions);
+            disableEntityAccess(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public boolean disable(Principal principal, AllowedActions actions) {
-        disableEntityAccess(principal, actions.getAvailableActions().stream());
-        return super.disable(principal, actions);
-    }
-
-    @Override
-    public void setupAccessControl(UsernamePrincipal owner) {
-        super.setupAccessControl(owner);
-
+    public void setupAccessControl(Principal owner) {
         enable(owner, FeedAccessControl.EDIT_DETAILS);
+        enable(owner, FeedAccessControl.ACCESS_OPS);
         enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
+        enable(JcrMetadataAccess.ADMIN, FeedAccessControl.ACCESS_OPS);
+
+        super.setupAccessControl(owner);
     }
     
     @Override
-    public void removeAccessControl(UsernamePrincipal owner) {
+    public void removeAccessControl(Principal owner) {
         super.removeAccessControl(owner);
         
         this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), feed.getNode()));
         this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.clearHierarchyPermissions(d.getNode(), feed.getNode()));
     }
 
-    protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
+    @Override
+    protected boolean isAdminAction(Action action) {
+        return action.implies(FeedAccessControl.CHANGE_PERMS);
+    }
+
+    protected void updateEntityAccess(Principal principal, Set<? extends Action> actions) {
+        Set<String> detailPrivs = new HashSet<>();
+        Set<String> dataPrivs = new HashSet<>();
+        Set<String> summaryPrivs = new HashSet<>();
+
+        // Collect all JCR privilege changes based on the specified actions.
         actions.forEach(action -> {
             if (action.implies(FeedAccessControl.ACCESS_OPS)) {
                 this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
             } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
-                //When Change Perms comes through the user needs write access to the allowed actions tree to grant additional access
-                final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
-                JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
+                Collections.addAll(summaryPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
+                Collections.addAll(detailPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
+                Collections.addAll(dataPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Edit access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
@@ -130,20 +143,23 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                     .map(FeedManagerTemplate::getAllowedActions)
                     .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
                     .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
-                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+                
+                summaryPrivs.add(Privilege.JCR_ALL);                
+                detailPrivs.add(Privilege.JCR_ALL);
+                dataPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
                     categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
                 }
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL, Privilege.JCR_READ));
+                
+                summaryPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
                 }
                 //If a user has Read access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
@@ -151,99 +167,33 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                     .map(FeedManagerTemplate::getAllowedActions)
                     .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
                     .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
+                
+                summaryPrivs.add(Privilege.JCR_READ);
+                detailPrivs.add(Privilege.JCR_READ);                
+                dataPrivs.add(Privilege.JCR_READ);                
             } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
                 //also add read to the category summary
                 final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
                 if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
                     categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
                 }
+                
+                summaryPrivs.add(Privilege.JCR_READ);
             }
         });
+        
+        JcrAccessControlUtil.setPermissions(this.feed.getNode(), principal, summaryPrivs);
+        this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.setPermissions(s.getNode(), principal, summaryPrivs));
+        this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.setPermissions(d.getNode(), principal, detailPrivs));
+        this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.setPermissions(d.getNode(), principal, dataPrivs));
     }
 
-    protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        final AtomicBoolean summaryAccess = new AtomicBoolean(false);
-        final AtomicBoolean detailsAccess = new AtomicBoolean(false);
-        final AtomicBoolean summaryEdit = new AtomicBoolean(false);
-        final AtomicBoolean detailsEdit = new AtomicBoolean(false);
-        final AtomicBoolean accessOps = new AtomicBoolean(false);
-        final AtomicBoolean changePerms = new AtomicBoolean(false);
-
-        actions.forEach(action -> {
-            accessOps.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_OPS));
-            summaryAccess.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_FEED));
-            detailsAccess.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_DETAILS));
-            summaryEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_SUMMARY));
-            detailsEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_DETAILS));
-            changePerms.compareAndSet(false, action.implies(FeedAccessControl.CHANGE_PERMS));
-        });
-
-        if (accessOps.get()) {
-            this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
-        } else {
-            this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
-        }
-
-        if (detailsEdit.get()) {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-        } else {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-        }
-
-        if (summaryEdit.get()) {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-        } else {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-        }
-
-        if (detailsAccess.get()) {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-        } else {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-        }
-
-        if (summaryAccess.get()) {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-        } else {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_READ));
-        }
-
-        final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
-        if (changePerms.get()) {
-            JcrAccessControlUtil.addRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        } else {
-            JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-        }
-    }
-
-    protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
+    private void disableEntityAccess(Principal principal, Set<Action> actions) {
         actions.forEach(action -> {
             if (action.implies(FeedAccessControl.ACCESS_OPS)) {
                 this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
-            } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
-                final Node allowedActionsNode = ((JcrAllowedActions) this.feed.getAllowedActions()).getNode();
-                JcrAccessControlUtil.removeRecursivePermissions(allowedActionsNode, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_ALL);
-            } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
-                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
-            } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedDetails.NODE_TYPE, principal, Privilege.JCR_ALL));
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedData.NODE_TYPE, principal, Privilege.JCR_ALL));
-            } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
-                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
-            } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedDetails.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedData.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
-                JcrAccessControlUtil.removePermissions(this.feed.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ);
             }
         });
+        
     }
 }

@@ -34,9 +34,14 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
 /**
  *
@@ -59,6 +64,10 @@ public class JpaFeedOpsAclEntry {
     @Enumerated(EnumType.STRING)
     @Column(name = "principal_type", insertable = false, updatable = false)
     private PrincipalType principalType;
+
+    @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "FEED_ID", nullable = true, insertable = false, updatable = false)
+    private OpsManagerFeed feed;
     
     public JpaFeedOpsAclEntry() {
         super();
@@ -85,7 +94,14 @@ public class JpaFeedOpsAclEntry {
         return this.principalType;
     }
 
-    
+    public OpsManagerFeed getFeed() {
+        return feed;
+    }
+
+    public void setFeed(OpsManagerFeed feed) {
+        this.feed = feed;
+    }
+
     public static class EntryId implements Serializable {
 
         private static final long serialVersionUID = 1L;

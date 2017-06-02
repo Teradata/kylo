@@ -119,4 +119,22 @@ public class Action implements Serializable {
         }
         return hasAction;
     }
+
+    public void union(Action anotherAction) {
+        List<Action> existingActions = this.getActions();
+        List<Action> otherActions = anotherAction.getActions();
+
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action otherAction : otherActions) {
+            Optional<Action> existingAction = this.getAction(otherAction.getSystemName());
+            if (existingAction.isPresent()) {
+                existingAction.get().union(otherAction);
+            } else {
+                newActions.add(otherAction);
+            }
+        }
+
+        existingActions.addAll(newActions);
+    }
 }

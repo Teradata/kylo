@@ -1,29 +1,7 @@
 #!/bin/bash
 
-
-validate-system() {
-	if [ -z ${SPARK_PROFILE} ] && ! which spark-submit;  then 
-		>&2 echo "Spark not installed or version not found.  Install spark and try again";
-		exit 1
-	fi	
-	if ! id kylo >/dev/null 2>&1 ; then
-		>&2 echo "user 'kylo' not found.  Create user and try again"
-		exit 1
-	fi
-	if ! id nifi >/dev/null 2>&1; then
-		>&2 echo "user 'nifi' not found.  Create user and try again"
-		exit 1
-	fi
-	if ! id activemq >/dev/null 2>&1; then
-		>&2 echo "user 'activemq' not found.  Create user and try again"
-		exit 1
-	fi
-}
-
-validate-system
-
 offline=false
-if [ $# > 1 ]
+if [ $# -gt 1 ]
 then
     if [ "$1" = "-o" ] || [ "$1" = "-O" ]
     then
@@ -42,8 +20,16 @@ echo " "
 
 yes_no="^[yYnN]{1}$"
 # (1) prompt user, and read command line argument
+
+read -p "Enter the kylo home folder location, hit Enter for '/opt/kylo': " kylo_home_folder
+
+if [[ -z "$kylo_home_folder" ]]; then
+    kylo_home_folder=/opt/kylo
+fi
+
+echo " ";
 while [[ ! $install_db =~ $yes_no ]]; do
-    read -p "Would you like to install the database scripts to a local database instance? Please enter y/n: " install_db
+    read -p "Would you like to install the database scripts in a database instance? Please enter y/n: " install_db
 done
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
@@ -89,11 +75,27 @@ done
 echo " ";
 while [[ ! $install_activemq =~ $yes_no ]]; do
     read -p "Would you like me to install a local activemq instance?  Please enter y/n: " install_activemq
+
+    if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
+        read -p "Enter the Activemq home folder location, hit Enter for '/opt/activemq': " activemq_home
+    fi
+
+    if [[ -z "$activemq_home" ]]; then
+        activemq_home=/opt/activemq
+    fi
 done
 
 echo " ";
 while [[ ! $install_nifi =~ $yes_no ]]; do
     read -p "Would you like me to install a local nifi instance? Please enter y/n: " install_nifi
+
+    if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
+         read -p "Enter the NiFi home folder location, hit Enter for '/opt/nifi': " nifi_home
+    fi
+
+    if [[ -z "$nifi_home" ]]; then
+        nifi_home=/opt/nifi
+    fi
 done
 
 while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
@@ -113,7 +115,7 @@ if [ $offline = true ]
 then
     cd $current_dir
 else
-    cd /opt/kylo/setup
+    cd $kylo_home_folder/setup
 fi
 
 #if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
@@ -129,11 +131,27 @@ fi
 #
 #fi
 
+if [ "$java_type" == "1" ] ; then
+    echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
+    ./java/remove-default-kylo-java-home.sh $kylo_home_folder
+elif [ "$java_type" == "2" ] ; then
+    if [ $offline = true ]
+    then
+        ./java/install-java8.sh $current_dir -O
+    else
+        ./java/install-java8.sh $kylo_home_folder
+    fi
+
+elif [ "$java_type" == "3" ] ; then
+    ./java/remove-default-kylo-java-home.sh $kylo_home_folder
+    ./java/change-kylo-java-home.sh $java_home $kylo_home_folder
+fi
+
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
     if [ $offline = true ]
     then
-        ./elasticsearch/install-elasticsearch.sh -O $current_dir
+        ./elasticsearch/install-elasticsearch.sh $current_dir -O
     else
         ./elasticsearch/install-elasticsearch.sh
     fi
@@ -143,48 +161,32 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     echo "installing ActiveMQ"
     if [ $offline = true ]
     then
-        ./activemq/install-activemq.sh -O $current_dir
+        ./activemq/install-activemq.sh $activemq_home activemq activemq $current_dir -O
     else
-        ./activemq/install-activemq.sh
+        ./activemq/install-activemq.sh $activemq_home activemq activemq
     fi
 
-fi
-
-if [ "$java_type" == "1" ] ; then
-    echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
-    ./java/remove-default-kylo-java-home.sh
-elif [ "$java_type" == "2" ] ; then
-    if [ $offline = true ]
-    then
-        ./java/install-java8.sh -O $current_dir
-    else
-        ./java/install-java8.sh
-    fi
-
-elif [ "$java_type" == "3" ] ; then
-    ./java/remove-default-kylo-java-home.sh
-    ./java/change-kylo-java-home.sh $java_home
 fi
 
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     if [ $offline = true ]
     then
-        ./nifi/install-nifi.sh -O $current_dir
+        ./nifi/install-nifi.sh $nifi_home nifi users $current_dir -O
     else
-        ./nifi/install-nifi.sh
+        ./nifi/install-nifi.sh $nifi_home nifi users
     fi
 
     if [ "$java_type" == "2" ] ; then
-        ./java/change-nifi-java-home.sh /opt/java/current
+        ./java/change-nifi-java-home.sh /opt/java/current $nifi_home/current
     elif  [ "$java_type" == "3" ] ; then
-        ./java/change-nifi-java-home.sh $java_home
+        ./java/change-nifi-java-home.sh $java_home $nifi_home/current
     fi
 
     if [ $offline = true ]
     then
-        ./nifi/install-kylo-components.sh -O $current_dir
+        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder nifi users $current_dir -O
     else
-        ./nifi/install-kylo-components.sh
+        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder nifi users
     fi
 
 fi

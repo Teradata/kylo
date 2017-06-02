@@ -65,13 +65,13 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
      */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
-    
+
     @Inject
     private SecurityRoleProvider roleProvider;
-    
+
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -84,7 +84,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public Category update(Category category) {
-        category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
+        if (accessController.isEntityAccessControlled()) {
+            category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
+        }
         return super.update(category);
     }
 
@@ -114,20 +116,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         String path = EntityUtil.pathForCategory();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrCategory.SYSTEM_NAME, systemName);
-        boolean isNew = ! hasEntityNode(path, systemName);
+        boolean isNew = !hasEntityNode(path, systemName);
         JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
-        
+
         if (isNew) {
             if (this.accessController.isEntityAccessControlled()) {
                 List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
-                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                        .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
-                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY) 
-                        .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
             }
         }
-        
+
         return category;
     }
 
@@ -143,23 +145,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void deleteById(final Category.ID id) {
-        // TODO service?
-        metadataAccess.commit(() -> {
-            // Get category
-            final Category category = findById(id);
+        // Get category
+        final Category category = findById(id);
 
-            if (category != null) {
-                // Delete user type
-                final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
-                if (type != null) {
-                    extensibleTypeProvider.deleteType(type.getId());
-                }
+        if (category != null) {
 
-                // Delete category
-                super.delete(category);
+            // Delete user type
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
             }
-            return true;
-        }, MetadataAccess.SERVICE);
+
+            // Delete category
+            super.delete(category);
+        }
     }
 
     @Nonnull
@@ -187,16 +186,31 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
         metadataAccess.commit(() -> {
             final Category category = findById(categoryId);
-            JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
-            return userFields;
+            setFeedUserFields(category.getName(), userFields);
         }, MetadataAccess.SERVICE);
     }
-
+    
     @Override
     public void rename(@Nonnull final Category.ID categoryId, @Nonnull final String newName) {
         // Move the node to the new path
-        final JcrCategory category = (JcrCategory) findById(categoryId);
+        JcrCategory category = (JcrCategory) findById(categoryId);
+        String currentName = category.getSystemName();
         final Node node = category.getNode();
+
+        // Update properties
+        category.setSystemName(newName);
+        
+        // Move user fields
+        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
+
+        if (feedUserFields.isPresent()) {
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(currentName));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
+            }
+
+            setFeedUserFields(newName, feedUserFields.get());
+        }
 
         try {
             final String newPath = JcrUtil.path(node.getParent().getPath(), newName).toString();
@@ -204,20 +218,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         } catch (final RepositoryException e) {
             throw new IllegalStateException("Unable to rename category: " + node, e);
         }
+    }
 
-        // Update properties
-        category.setProperty(JcrCategory.SYSTEM_NAME, newName);
-
-        // Move user fields
-        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
-
-        if (feedUserFields.isPresent()) {
-            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
-            if (type != null) {
-                extensibleTypeProvider.deleteType(type.getId());
-            }
-
-            setFeedUserFields(category.getId(), feedUserFields.get());
-        }
+    private void setFeedUserFields(@Nonnull final String categoryName, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(categoryName), userFields, extensibleTypeProvider);
     }
 }

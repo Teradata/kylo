@@ -24,8 +24,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -65,6 +65,7 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -115,6 +116,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
@@ -182,7 +184,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     NifiFlowCache nifiFlowCache;
     @Inject
     private LegacyNifiRestClient nifiRestClient;
-
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -312,15 +313,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public List<FeedSummary> getFeedSummaryForCategory(final String categoryId) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
             List<FeedSummary> summaryList = new ArrayList<>();
-            Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
-            List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
-            if (domainFeeds != null && !domainFeeds.isEmpty()) {
-                List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                for (FeedMetadata feed : feeds) {
-                    summaryList.add(new FeedSummary(feed));
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            if (hasPermission) {
+
+                Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
+                List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
+                if (domainFeeds != null && !domainFeeds.isEmpty()) {
+                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                    for (FeedMetadata feed : feeds) {
+                        summaryList.add(new FeedSummary(feed));
+                    }
                 }
             }
             return summaryList;
@@ -396,6 +399,27 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
+
+            //If the feed is New we need to ensure the user has CREATE_FEED entity permission
+            if (accessController.isEntityAccessControlled()) {
+                metadataAccess.read(() -> {
+                    //ensure the user has rights to create feeds under the category
+                    Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
+                    if (domainCategory == null) {
+                        //throw exception
+                        throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
+                    }
+                    domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+
+                    //ensure the user has rights to create feeds using the template
+                    FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
+                    if (domainTemplate == null) {
+                        throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
+                    }
+                    domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
+                });
+            }
+
         } else if (accessController.isEntityAccessControlled()) {
             metadataAccess.read(() -> {
                 //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
@@ -403,21 +427,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 Feed domainFeed = feedProvider.findById(domainId);
                 if (domainFeed != null) {
                     domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+                } else {
+                    throw new NotFoundException("Feed not found for id " + feedMetadata.getId());
                 }
-            });
-        }
-
-        if (accessController.isEntityAccessControlled()) {
-            //ensure the user has rights to create feeds under this category
-            metadataAccess.read(() -> {
-                Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
-                if (domainCategory == null) {
-                    //throw exception
-                    throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
-                }
-                //Query for Category and ensure the user has access to create feeds on that category
-                domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
-
             });
         }
 
@@ -441,13 +453,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .build());
 
         //update the template properties with the feedMetadata properties
-         List<NifiProperty> matchedProperties =
-                NifiPropertyUtil
-                    .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+        List<NifiProperty> matchedProperties =
+            NifiPropertyUtil
+                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
 
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
-
 
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
@@ -834,7 +845,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
-                boolean canEditDetails = feedSummary.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName());
+                boolean
+                    canEditDetails =
+                    accessController.isEntityAccessControlled() ? feedSummary.hasAction(FeedAccessControl.EDIT_DETAILS.getSystemName())
+                                                                : accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
                 Map<String, Object> labelValueProperties = new HashMap<>();
                 labelValueProperties.put("feed:disabled", isDisabled);
                 labelValueProperties.put("feed:editDetails", canEditDetails);
@@ -854,17 +868,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            return UserPropertyTransform.toUserFields(feedProvider.getUserFields());
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            return hasPermission ? UserPropertyTransform.toUserFields(feedProvider.getUserFields()) : Collections.emptySet();
         });
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-
-        feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        if (hasPermission) {
+            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+        }
     }
 
     @Nonnull
