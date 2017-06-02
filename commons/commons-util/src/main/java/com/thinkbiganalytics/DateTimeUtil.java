@@ -59,6 +59,13 @@ public class DateTimeUtil {
         return new DateTime(utc);
     }
 
+    public static DateTime convertToUTC(Long time) {
+        DateTimeZone dtZone = DateTimeZone.forID("UTC");
+        DateTime date = new DateTime(time);
+        DateTime utc = date.withZone(dtZone);
+        return new DateTime(utc);
+    }
+
     public static Date getUTCTime() {
         return convertToUTC(new Date());
     }

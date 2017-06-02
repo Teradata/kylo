@@ -12,7 +12,7 @@
   <properties>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <source.skip>true</source.skip>
-    <nifi.version>1.2.0</nifi.version>
+    <nifi.version>1.1.2</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
@@ -35,11 +35,6 @@
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
       <artifactId>kylo-nifi-provenance-repo</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
-      <artifactId>kylo-nifi-provenance-repo-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!--

@@ -34,6 +34,7 @@ import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,48 +128,54 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         //only create the step if it doesnt exist yet for this event
         JpaBatchStepExecution stepExecution = batchStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
         if (stepExecution == null) {
-
-            stepExecution = new JpaBatchStepExecution();
-            stepExecution.setJobExecution(jobExecution);
-            stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
-                                       event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
-                                                                            : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
-            stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-            stepExecution.setStepName(event.getComponentName());
-            if (StringUtils.isBlank(stepExecution.getStepName())) {
-                stepExecution.setStepName("Unknown Step ");
-            }
-            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
-
-            boolean failure = event.isFailure();
-            if (failure) {
-                //notify failure listeners
-                failStep(jobExecution, stepExecution, event.getFlowFileUuid(), event.getComponentId());
-                if (StringUtils.isBlank(stepExecution.getExitMessage())) {
-                    stepExecution.setExitMessage(event.getDetails());
+            if(!"KYLO".equalsIgnoreCase(event.getEventType())) {
+                stepExecution = new JpaBatchStepExecution();
+                stepExecution.setJobExecution(jobExecution);
+                stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
+                                            DateTimeUtil.convertToUTC(event.getEventTime()).minus(event.getEventDuration()));
+                stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+                stepExecution.setStepName(event.getComponentName());
+                if (StringUtils.isBlank(stepExecution.getStepName())) {
+                    stepExecution.setStepName("Unknown Step ");
                 }
-            } else {
-                stepExecution.completeStep();
-            }
-            //add in execution contexts
-            assignStepExecutionContextMap(event, stepExecution);
+                log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
 
-            //Attach the NifiEvent object to this StepExecution
-            JpaNifiEventStepExecution eventStepExecution = new JpaNifiEventStepExecution(jobExecution, stepExecution, event.getEventId(), event.getJobFlowFileId());
-            eventStepExecution.setComponentId(event.getComponentId());
-            eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
-            stepExecution.setNifiEventStepExecution(eventStepExecution);
-            Set<BatchStepExecution> steps = jobExecution.getStepExecutions();
-            if (steps == null) {
-                ((JpaBatchJobExecution) jobExecution).setStepExecutions(new HashSet<>());
+                boolean failure = event.isFailure();
+                if (failure) {
+                    //notify failure listeners
+                    failStep(jobExecution, stepExecution, event.getFlowFileUuid(), event.getComponentId());
+                    if (StringUtils.isBlank(stepExecution.getExitMessage())) {
+                        stepExecution.setExitMessage(event.getDetails());
+                    }
+                } else {
+                    stepExecution.completeStep();
+                }
+                //add in execution contexts
+                assignStepExecutionContextMap(event, stepExecution);
+
+                //Attach the NifiEvent object to this StepExecution
+                JpaNifiEventStepExecution eventStepExecution = new JpaNifiEventStepExecution(jobExecution, stepExecution, event.getEventId(), event.getJobFlowFileId());
+                eventStepExecution.setComponentId(event.getComponentId());
+                eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
+                stepExecution.setNifiEventStepExecution(eventStepExecution);
+                Set<BatchStepExecution> steps = jobExecution.getStepExecutions();
+                if (steps == null) {
+                    ((JpaBatchJobExecution) jobExecution).setStepExecutions(new HashSet<>());
+                }
+                jobExecution.getStepExecutions().add(stepExecution);
+                //saving the StepExecution will cascade and save the nifiEventStep
+                stepExecution = batchStepExecutionRepository.save(stepExecution);
             }
-            jobExecution.getStepExecutions().add(stepExecution);
-            //saving the StepExecution will cascade and save the nifiEventStep
-            stepExecution = batchStepExecutionRepository.save(stepExecution);
 
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
+            //update the timing info
+
+            DateTime newEndTime = DateTimeUtil.convertToUTC(event.getEventTime());
+            if(newEndTime.isAfter(stepExecution.getEndTime())) {
+                stepExecution.setEndTime(newEndTime);
+            }
             stepExecution = batchStepExecutionRepository.save(stepExecution);
         }
 
@@ -193,6 +200,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         stepExecution.addStepExecutionContext(eventIdContextValue);
 
         //add in the flow type if its there
+       /*
         if (event.getProcessorType() != null && !KyloProcessorFlowType.NORMAL_FLOW.equals(event.getProcessorType())) {
             KyloProcessorFlowType processorFlowType = event.getProcessorType();
 
@@ -207,5 +215,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             }
 
         }
+        */
     }
 }

@@ -704,7 +704,7 @@ public class TableMergeSyncSupport implements Serializable {
     protected void doExecuteSQL(String sql) {
 
         try (final Statement st = conn.createStatement()) {
-            logger.info("Executing doMerge batch sql {}", sql);
+            logger.info("Executing doExecuteSQL batch sql {}", sql);
             st.execute(sql);
         } catch (SQLException e) {
             logger.error("Failed to execute {} with error {}", sql, e);

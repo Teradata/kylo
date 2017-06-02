@@ -157,7 +157,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     private String jobKeyGenerator(ProvenanceEventRecordDTO event) {
 
-        StringBuffer stringBuffer = new StringBuffer(event.getEventTime().getMillis() + "").append(event.getFlowFileUuid());
+        StringBuffer stringBuffer = new StringBuffer(event.getEventTime() + "").append(event.getFlowFileUuid());
         MessageDigest digest1;
         try {
             digest1 = MessageDigest.getInstance("MD5");
@@ -251,16 +251,16 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param nifiEvent the persisted event
      */
     private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        if (event.getRelatedRootFlowFiles() != null && !event.getRelatedRootFlowFiles().isEmpty()) {
+        //if (event.getFeedFlowFile() != null && event.getFeedFlowFile().hasRelatedBatchFlows() && event.isFinalJobEvent() && event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId())) {
             //relate the files together
             List<JpaNifiRelatedRootFlowFiles> relatedRootFlowFiles = new ArrayList<>();
             String relationId = UUID.randomUUID().toString();
-            for (String flowFile : event.getRelatedRootFlowFiles()) {
-                JpaNifiRelatedRootFlowFiles nifiRelatedRootFlowFile = new JpaNifiRelatedRootFlowFiles(nifiEvent, flowFile, relationId);
-                relatedRootFlowFiles.add(nifiRelatedRootFlowFile);
-            }
+            //for (String flowFile : event.getFeedFlowFile().getRelatedBatchFeedFlows()) {
+            //    JpaNifiRelatedRootFlowFiles nifiRelatedRootFlowFile = new JpaNifiRelatedRootFlowFiles(nifiEvent, flowFile, relationId);
+            //    relatedRootFlowFiles.add(nifiRelatedRootFlowFile);
+           // }
             relatedRootFlowFilesRepository.save(relatedRootFlowFiles);
-        }
+      //  }
     }
 
     /**
@@ -315,7 +315,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (jobExecution.getJobExecutionId() == null) {
             log.error("Warning execution id is null for ending event {} ", event);
         }
-        if (event.isHasFailedEvents()) {
+        if (event.isFailure()) {  //event.hasFailureEvents
             jobExecution.failJob();
         } else {
             jobExecution.completeJob();
@@ -381,7 +381,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //if the attrs coming in change the type to a CHECK job then update the entity
         boolean updatedJobType = updateJobType(jobExecution, event);
         boolean save = isNew || updatedJobType;
-        if (event.isEndOfJob()) {
+        if (event.isFinalJobEvent()) {
             finishJob(event, jobExecution);
             save = true;
         }
@@ -413,7 +413,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             return null;
         }
         JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
-        checkAndRelateJobs(event, nifiEvent);
+      //  checkAndRelateJobs(event, nifiEvent);
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
         if (jobExecution.isFinished()) {
             //ensure failures

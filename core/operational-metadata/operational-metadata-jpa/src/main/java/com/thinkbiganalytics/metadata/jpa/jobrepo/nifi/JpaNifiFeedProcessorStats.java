@@ -75,6 +75,10 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     protected String clusterNodeId;
     @Column(name = "CLUSTER_NODE_ADDRESS")
     protected String clusterNodeAddress;
+
+    @Column(name = "FAILED_EVENTS")
+    protected Long failedCount = 0L;
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -204,6 +208,16 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Override
     public void setTotalCount(Long totalCount) {
         this.totalCount = totalCount;
+    }
+
+    @Override
+    public Long getFailedCount() {
+        return failedCount;
+    }
+
+    @Override
+    public void setFailedCount(Long failedCount) {
+        this.failedCount = failedCount;
     }
 
     @Override

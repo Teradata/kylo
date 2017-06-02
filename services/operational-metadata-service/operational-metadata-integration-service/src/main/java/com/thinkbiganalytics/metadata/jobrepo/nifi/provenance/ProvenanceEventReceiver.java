@@ -40,6 +40,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvide
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
@@ -106,6 +108,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
+
     /**
      * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
      */
@@ -124,6 +127,15 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     private MetadataAccess metadataAccess;
     @Inject
     private MetadataEventService eventService;
+
+    @Inject
+    private ProvenanceEventFeedUtil provenanceEventFeedUtil;
+
+    @Inject
+    private ProvenanceEventBatchJobThrottle provenanceEventBatchJobThrottle;
+
+
+
     /**
      * The amount of retry attempts the system will do if it gets a LockAcquisitionException
      * MySQL may fail to lock the table when performing inserts into the database resulting in a deadlock exception.
@@ -161,6 +173,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     }
 
 
+
+
+
+
+
+
     /**
      * Unique key for the Event in relation to the Job
      *
@@ -183,11 +201,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(),events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        events.getEvents().stream()
+        events.getEvents().stream().map(event ->  provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
             .filter(this::isRegisteredWithFeedManager)
             .filter(this::ensureNewEvent)
+            .filter(this::isProcessEvent)
             .forEach(event -> processEvent(event, 0));
     }
+
+
 
     /**
      * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
@@ -197,16 +218,18 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
-            if (event.isBatchJob()) {
+
+            log.info("Process {} for flowfile: {} and processorId: {} ",event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
+           // if (event.isBatchJob()) {
                 //ensure the job is there
                 BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event),
                                                                        MetadataAccess.SERVICE);
                 NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
                                                             MetadataAccess.SERVICE);
-            } else {
-                NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
-                                                            MetadataAccess.SERVICE);
-            }
+          //  } else {cd
+         //       NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
+          //                                                  MetadataAccess.SERVICE);
+        //    }
             if (event.isFinalJobEvent()) {
                 notifyJobFinished(event);
             }
@@ -242,14 +265,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         NifiEvent nifiEvent = null;
-        log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
+        log.debug("Received ProvenanceEvent {}.  is ending flowfile:{}", event, event.isEndingFlowFileEvent());
         nifiEvent = nifiEventProvider.create(event);
         //query it again
         jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
         BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
         if (job == null) {
-            log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
-                      event.isEndingFlowFileEvent(), event.isBatchJob());
+            log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, ", event, event.isEndingFlowFileEvent(),
+                      event.isEndingFlowFileEvent());
         }
 
         return nifiEvent;
@@ -291,7 +314,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
             if (alreadyTriggered == null) {
                 completedJobEvents.put(mapKey, mapKey);
                 /// TRIGGER JOB COMPLETE!!!
-                if (event.isHasFailedEvents()) {
+                if (event.isFailure()) {
                     failedJob(event);
                 } else {
                     successfulJob(event);
@@ -309,12 +332,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * @param event a provenance event
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
-        if (queryForNiFiBulletins && event.isBatchJob()) {
+        if (queryForNiFiBulletins) {
             queryForNiFiErrorBulletins(event);
         }
         FeedOperation.State state = FeedOperation.State.FAILURE;
         log.debug("FAILED JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job")));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job", event.getJobFlowFileId())));
 
     }
 
@@ -330,7 +353,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
 
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.debug("Success JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName())));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName(),event.getJobFlowFileId())));
     }
 
     /**
@@ -391,6 +414,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private boolean ensureNewEvent(ProvenanceEventRecordDTO event) {
         return metadataAccess.read(() -> !nifiEventProvider.exists(event), MetadataAccess.SERVICE);
+    }
+
+    private boolean isProcessEvent(ProvenanceEventRecordDTO event){
+        return provenanceEventBatchJobThrottle.isProcessEvent(event);
     }
 
     /**
