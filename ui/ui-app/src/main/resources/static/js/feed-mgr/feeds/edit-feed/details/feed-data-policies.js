@@ -219,10 +219,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             validateMergeStrategies();
         }
 
-        this.navigateToEditFeedInStepper = function(){
-            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
-        }
-
         this.onChangeMergeStrategy = function () {
             validateMergeStrategies();
         }

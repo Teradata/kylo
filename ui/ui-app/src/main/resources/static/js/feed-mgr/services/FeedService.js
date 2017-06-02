@@ -420,11 +420,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 },
 
                 updateEnabledMergeStrategy: function (feedModel, strategies) {
-                    // If data transformation then default to sync
-                    if (feedModel.dataTransformationFeed && feedModel.id === null) {
-                        feedModel.table.targetMergeStrategy = 'SYNC';
-                    }
-
                     this.enableDisablePkMergeStrategy(feedModel, strategies);
                     this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
                 },

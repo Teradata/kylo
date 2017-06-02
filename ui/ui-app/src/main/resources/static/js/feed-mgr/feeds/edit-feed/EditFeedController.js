@@ -5,7 +5,7 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
      * @constructor
      */
     var EditFeedController = function ($scope, $http, $q, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService, AccessControlService, FeedSecurityGroups,
-                                       StepperService, EntityAccessControlService) {
+                                       StepperService, EntityAccessControlService, UiComponentsService) {
         var self = this;
 
         /**
@@ -28,21 +28,7 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
          *
          * @type {number}
          */
-        self.selectedStepIndex = 0;
-
-        /**
-         * Template for the stepper
-         *
-         * @type {string}
-         */
-        self.stepperUrl = "";
-
-        /**
-         * Total number of steps for the stepper
-         *
-         * @type {number}
-         */
-        self.totalSteps = 0;
+        self.selectedStepIndex = 2;
 
         /**
          * Fetches and displays the feed.
@@ -54,21 +40,37 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
                 self.model.loaded = true;
                 FeedService.createFeedModel = self.model;
 
-                // Update stepper based on template
-                if (self.model.registeredTemplate.defineTable) {
-                    self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-stepper.html";
-                    self.totalSteps = 7;
-                } else if (self.model.registeredTemplate.dataTransformation) {
-                    self.model.dataTransformationFeed = true;
-                    VisualQueryService.resetModel();
+                // Determine table option
+                if (self.model.registeredTemplate.templateTableOption === null) {
+                    if (self.model.registeredTemplate.defineTable) {
+                        self.model.registeredTemplate.templateTableOption = "DEFINE_TABLE";
+                    } else if (self.model.registeredTemplate.dataTransformation) {
+                        self.model.registeredTemplate.templateTableOption = "DATA_TRANSFORMATION";
+                    } else {
+                        self.model.registeredTemplate.templateTableOption = "NO_TABLE";
+                    }
+                }
 
-                    self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-data-transform-stepper.html";
-                    self.totalSteps = 9;
+                // Load table option
+                self.model.templateTableOption = self.model.registeredTemplate.templateTableOption;
+
+                if (self.model.templateTableOption !== "NO_TABLE") {
+                    UiComponentsService.getTemplateTableOption(self.model.templateTableOption)
+                        .then(function (tableOption) {
+                            self.model.totalSteps = tableOption.totalSteps + 5;
+                        }, function () {
+                            $mdDialog.show(
+                                $mdDialog.alert()
+                                    .clickOutsideToClose(true)
+                                    .title("Create Failed")
+                                    .textContent("The template table option could not be loaded.")
+                                    .ariaLabel("Failed to create feed")
+                                    .ok("Got it!")
+                            );
+                            StateService.FeedManager().Feed().navigateToFeeds();
+                        });
                 } else {
-                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html";
-                    self.totalSteps = 5;
+                    self.model.totalSteps = 5;
                 }
 
                 self.onStepperInitialized();
@@ -91,7 +93,7 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
          * initialize the stepper and setup step display
          */
         self.onStepperInitialized = function () {
-            if (self.model.loaded && self.totalSteps > 2 && StepperService.getStep("EditFeedStepper", self.totalSteps - 2) !== null) {
+            if (self.model.loaded && self.model.totalSteps > 2 && StepperService.getStep("EditFeedStepper", self.model.totalSteps - 2) !== null) {
                 var entityAccess = AccessControlService.checkEntityAccessControlled();
                 var accessChecks = {
                     changeFeedPermissions: entityAccess && FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
@@ -101,7 +103,7 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
                     //disable the access control step
                     if (!response.changeFeedPermissions && !response.securityGroups) {
                         //Access Control is second to last step 0 based array index
-                        StepperService.deactivateStep("EditFeedStepper", self.totalSteps - 2);
+                        StepperService.deactivateStep("EditFeedStepper", self.model.totalSteps - 2);
                     }
                 });
             }
@@ -110,7 +112,7 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
         /**
          * Resets the editor state.
          */
-        this.cancelStepper = function () {
+        self.cancelStepper = function () {
             FeedService.resetFeed();
             self.stepperUrl = "";
             StateService.FeedManager().Feed().navigateToFeeds();
@@ -121,5 +123,5 @@ define(['angular', 'feed-mgr/feeds/module-name'], function (angular, moduleName)
     };
 
     angular.module(moduleName).controller("EditFeedController", ["$scope", "$http", "$q", "$mdDialog", "$transition$", "FeedService", "RestUrlService", "StateService", "VisualQueryService",
-                                                                 "AccessControlService", "FeedSecurityGroups", "StepperService", "EntityAccessControlService", EditFeedController]);
+                                                                 "AccessControlService", "FeedSecurityGroups", "StepperService", "EntityAccessControlService", "UiComponentsService", EditFeedController]);
 });

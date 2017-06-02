@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService,FeedPropertyService) {
+    var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,FeedPropertyService) {
 
         var self = this;
 
@@ -157,12 +157,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          }
         }
 
-
-        this.navigateToEditFeedInStepper = function(){
-            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
-        }
-
-
         function findProperty(key) {
             return _.find(self.model.allProperties, function (property) {
                 //return property.key = 'Source Database Connection';
@@ -273,7 +267,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         });
     };
 
-    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService","FeedPropertyService",controller]);
+    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","FeedPropertyService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedNifiProperties', directive);

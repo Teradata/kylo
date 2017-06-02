@@ -35,6 +35,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
         this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
         this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
+        this.UI_BASE_URL = this.ROOT + "/api/v1/ui";
 
         this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
         this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
@@ -304,5 +305,11 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.DATASOURCE_ROLES_URL = function (datasourceId) {
             return self.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
         };
+
+        /**
+         * The URL for retrieving the list of template table option plugins.
+         * @type {string}
+         */
+        this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
     });
 });

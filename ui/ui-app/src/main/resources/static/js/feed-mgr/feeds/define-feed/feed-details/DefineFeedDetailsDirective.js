@@ -186,7 +186,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var processor = _.find(self.inputProcessors, function(processor) {
                 return (processor.processorId === processorId);
             });
-            if (angular.isUndefined(processor) || self.model.dataTransformationFeed) {
+            if (angular.isUndefined(processor)) {
                 return;
             }
 

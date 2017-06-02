@@ -22,19 +22,11 @@
                          the-form="vm.feedDetailsForm">
     <readonly-section>
         <div layout="column">
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation == false">
+            <div layout="row" class="layout-padding-top-bottom">
                 <span flex="25" class="property-name">Source</span>
 
                 <div flex>
                     {{vm.model.inputProcessor.name}}
-                </div>
-            </div>
-
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation == true">
-                <span flex="25" class="property-name">Query</span>
-
-                <div flex>
-                    {{vm.model.dataTransformation.sql}}
                 </div>
             </div>
 
@@ -71,7 +63,7 @@
         <ng-form name="vm.feedDetailsForm">
 
         <div layout="column">
-            <div style="padding-bottom:10px;" ng-if="vm.model.registeredTemplate.dataTransformation == false">
+            <div style="padding-bottom:10px;">
                 <div class="md-subhead">Choose a Feed Input</div>
                 <div class="layout-padding-indent" style="padding-top:8px;">
                     <md-radio-group ng-model="vm.editModel.inputProcessorId" layout="row" disabled="true">
@@ -84,13 +76,6 @@
                         </md-tooltip>
                     </md-radio-group>
                 </div>
-            </div>
-
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation == true">
-                <span flex="25" class="property-name">Query</span>
-            </div>
-            <div layout="row">
-                <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Query...</md-button>
             </div>
 
             <div flex ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">

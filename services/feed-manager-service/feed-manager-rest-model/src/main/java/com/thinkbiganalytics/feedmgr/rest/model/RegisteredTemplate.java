@@ -98,6 +98,11 @@ public class RegisteredTemplate extends EntityAccessControl {
     @JsonIgnore
     private boolean updated;
 
+    /**
+     * Type of TemplateTableOption used when creating and editing feeds.
+     */
+    private String templateTableOption;
+
     public RegisteredTemplate() {
 
     }
@@ -419,6 +424,13 @@ public class RegisteredTemplate extends EntityAccessControl {
         return getProperties().stream().filter(nifiProperty -> nifiProperty.isSensitive()).collect(Collectors.toList());
     }
 
+    public String getTemplateTableOption() {
+        return templateTableOption;
+    }
+
+    public void setTemplateTableOption(String templateTableOption) {
+        this.templateTableOption = templateTableOption;
+    }
 
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 

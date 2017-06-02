@@ -4,6 +4,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         return {
             restrict: "EA",
             bindToController: {
+                defaultMergeStrategy: "@",
                 stepIndex: '@'
             },
             controllerAs: 'vm',
@@ -144,6 +145,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
+        if (self.model.id == null && angular.isDefined(self.defaultMergeStrategy)) {
+            self.model.table.targetMergeStrategy = self.defaultMergeStrategy;
+        }
         FeedService.updateEnabledMergeStrategy(self.model, self.mergeStrategies);
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)

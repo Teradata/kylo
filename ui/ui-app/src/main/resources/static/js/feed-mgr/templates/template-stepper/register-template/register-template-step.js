@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService, UiComponentsService) {
 
         /**
          * ref back to this controller
@@ -72,15 +72,13 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         /**
          * The possible options to choose how this template should be displayed in the Feed Stepper
-         * @type {[*]}
+         * @type {Array.<TemplateTableOption>}
          */
-        this.templateTableOptions =
-            [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'},
-                {type: 'DEFINE_TABLE', displayName: 'Customize destination table', description: 'Allow users to define and customize the destination data table.'}, {
-                type: 'DATA_TRANSFORMATION',
-                displayName: 'Data Transformation',
-                description: 'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'
-            }]
+        self.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
+        UiComponentsService.getTemplateTableOptions()
+            .then(function (templateTableOptions) {
+                Array.prototype.push.apply(self.templateTableOptions, templateTableOptions);
+            });
 
         /**
          * the selected option for the template
@@ -409,7 +407,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
+    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", "UiComponentsService", RegisterCompleteRegistrationController]);
     angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);

@@ -23,7 +23,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         return {
             restrict: "EA",
             bindToController: {
-                stepIndex: '@'
+                canRemoveFields: "@",
+                stepIndex: '@',
+                tableLocked: "@",
+                typeLocked: "@"
             },
             scope: {},
             require: ['thinkbigDefineFeedTable', '^thinkbigStepper'],
@@ -57,9 +60,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
 
-        this.tableLocked = false
-        this.dataTypeLocked = false;
-        this.canRemoveFields = true;
         this.showMethodPanel = true;
         this.showTablePanel = true;
         this.uploadBtnDisabled = false;
@@ -84,12 +84,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.calcTableState = function() {
-            self.tableLocked = (self.model.dataTransformationFeed);
-            self.dataTypeLocked = (self.model.dataTransformationFeed);
-            self.canRemoveFields = (!self.model.dataTransformationFeed);
+            self.tableLocked = angular.isDefined(self.tableLocked) && (self.tableLocked === true || self.tableLocked === "true");
+            self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
+            self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
-        }
+        };
+        this.calcTableState();
 
         /*
         Create columns for tracking changes between original source and the target table schema
