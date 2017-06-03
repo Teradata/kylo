@@ -131,6 +131,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     @Inject
     private ProvenanceEventFeedUtil provenanceEventFeedUtil;
 
+    @Inject
+    private ProvenanceEventBatchJobThrottle provenanceEventBatchJobThrottle;
+
 
 
     /**
@@ -201,6 +204,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         events.getEvents().stream().map(event ->  provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
             .filter(this::isRegisteredWithFeedManager)
             .filter(this::ensureNewEvent)
+            .filter(this::isProcessEvent)
             .forEach(event -> processEvent(event, 0));
     }
 
@@ -410,6 +414,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private boolean ensureNewEvent(ProvenanceEventRecordDTO event) {
         return metadataAccess.read(() -> !nifiEventProvider.exists(event), MetadataAccess.SERVICE);
+    }
+
+    private boolean isProcessEvent(ProvenanceEventRecordDTO event){
+        return provenanceEventBatchJobThrottle.isProcessEvent(event);
     }
 
     /**

@@ -117,6 +117,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
     private Map<String, NifiFlowProcessor> processorIdMap = new ConcurrentHashMap<>();
 
+    private NifiFlowCacheSnapshot latest;
+
     /**
      * Flag to mark if the cache is loaded or not This is used to determine if the cache is ready to be used
      */
@@ -170,6 +172,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private void init() {
         nifiConnectionService.subscribeConnectionListener(this);
         initExpireTimerThread();
+        initializeLatestSnapshot();
     }
 
     /**
@@ -444,6 +447,21 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
     }
 
+    public NifiFlowCacheSnapshot getLatest(){
+        if (!isAvailable()) {
+            return NifiFlowCacheSnapshot.EMPTY;
+        }
+        return latest;
+    }
+
+    private void initializeLatestSnapshot(){
+      latest =
+            new NifiFlowCacheSnapshot(processorIdToFeedNameMap, processorIdToFeedProcessGroupId, processorIdToProcessorName, streamingFeeds, allFeeds);
+        latest.setConnectionIdToConnection(connectionIdToConnectionMap);
+        latest.setConnectionIdToConnectionName(connectionIdCacheNameMap);
+
+    }
+
 
 
     private NiFiFlowCacheSync syncAndReturnUpdates(NiFiFlowCacheSync sync, boolean preview) {
@@ -704,6 +722,11 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         }
         this.connectionIdToConnectionMap.putAll(toConnectionIdMap(connectionIdToConnectionMap.values()));
 
+        if (connections != null) {
+            Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getId(), conn -> conn.getName()));
+            connectionIdCacheNameMap.putAll(connectionIdToNameMap);
+        }
+
         if(notifyClusterMembers) {
             if(nifiFlowCacheClusterManager.isClustered()) {
                 nifiFlowCacheClusterManager.updateConnections(connections);
@@ -762,6 +785,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
 
         connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
+
 
         if (connections != null) {
             Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));

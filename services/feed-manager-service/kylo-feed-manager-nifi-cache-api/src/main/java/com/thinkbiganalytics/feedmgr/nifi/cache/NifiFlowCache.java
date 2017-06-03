@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -38,6 +39,8 @@ public interface NifiFlowCache {
     boolean isAvailable();
 
     boolean isKyloClustered();
+
+    NifiFlowCacheSnapshot getLatest();
 
     NiFiFlowCacheSync syncAndReturnUpdates(String syncId);
 
