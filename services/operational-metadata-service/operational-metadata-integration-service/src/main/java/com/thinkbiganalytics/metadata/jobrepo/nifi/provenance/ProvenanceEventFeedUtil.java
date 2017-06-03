@@ -69,7 +69,7 @@ public class ProvenanceEventFeedUtil {
     @Inject
     private MetadataEventService eventService;
 
-    private FeedOperationListener listener = new FeedCompletedListener();
+    private FeedCompletedListener listener = new FeedCompletedListener();
 
 
     Cache<String, ProvenanceEventRecordDTO> runningJobs = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
