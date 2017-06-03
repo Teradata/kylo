@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>NiFi HDF (HTTPS)</short>
+  <description>This firewalld configuration file is for the Apache NiFi service. NiFi is a workflow tool which enables automatic data flow between systems. This port provides connectivity to HDF using NiFi.</description>
+  <port protocol="tcp" port="9090"/>
+</service>

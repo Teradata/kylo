@@ -482,6 +482,9 @@ cp $rpmInstallDir/kylo-service /usr/bin/kylo-service
 chown root:root /usr/bin/kylo-service
 chmod 755 /usr/bin/kylo-service
 
+# Setup kylo-tail command
+mkdir -p /etc/kylo/
+
 echo "   INSTALL COMPLETE"
 <<<<<<< HEAD:install/src/main/scripts/post-install.sh
 echo "   - The command kylo-service can be used to control and check the Kylo services as well as optional services. Use the command kylo-service help to find out more information. "
