@@ -37,7 +37,7 @@ public class ProvenanceEventUtil {
 
     public static final String[] STARTING_EVENT_TYPES = {"RECEIVE", "CREATE"};
 
-    public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE",};
+    public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE"};
 
     public static boolean contains(String[] allowedEvents, String event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);
@@ -54,20 +54,6 @@ public class ProvenanceEventUtil {
     public static boolean isEndingFlowFileEvent(ProvenanceEventRecordDTO event) {
         return contains(ENDING_EVENT_TYPES, event.getEventType());
     }
-
-    /**
-     * Certain Events in NiFi will create new Flow files and others will indicate the processor is complete
-     * This will return true if the event is one that indicates the processor is complete
-     */
-    public static boolean isCompletionEvent(ProvenanceEventRecordDTO event) {
-        return true; // !contains(NON_COMPLETION_EVENTS, event.getEventType());
-    }
-
-
-    public static Comparator<ProvenanceEventRecordDTO> provenanceEventRecordDTOComparator() {
-        return new ProvenanceEventRecordDTOComparator();
-    }
-
 
     public static boolean isTerminatedByFailureRelationship(ProvenanceEventRecordDTO event) {
 

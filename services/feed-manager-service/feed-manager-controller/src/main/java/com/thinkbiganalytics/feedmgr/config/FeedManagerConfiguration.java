@@ -23,11 +23,12 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.ElasticSearchClientConfig;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
@@ -162,7 +163,7 @@ public class FeedManagerConfiguration {
 
     @Bean
     public NifiFlowCache nifiFlowCache() {
-        return new NifiFlowCache();
+        return new NifiFlowCacheImpl();
     }
 
 

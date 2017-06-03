@@ -21,9 +21,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -149,11 +147,6 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     private ProvenanceFeedLookup getProvenanceFeedLookup() {
         return SpringApplicationContext.getInstance().getBean(ProvenanceFeedLookup.class);
     }
-
-    private KyloNiFiFlowCacheUpdater getKyloNiFiFlowCacheUpdater() {
-        return SpringApplicationContext.getInstance().getBean(KyloNiFiFlowCacheUpdater.class);
-    }
-
 
     private ProvenanceEventObjectPool getProvenanceEventObjectPool() {
         return SpringApplicationContext.getInstance().getBean(ProvenanceEventObjectPool.class);

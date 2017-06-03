@@ -136,7 +136,7 @@ public class FeedFlowFile implements Serializable {
     /**
      * Track stats that were sent via batch via those accumulated over the course of the feed.
      */
-    private FeedFlowFileJobTrackingStats  feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats();
+    private FeedFlowFileJobTrackingStats  feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats(this);
 
 
     public FeedFlowFile(String id) {

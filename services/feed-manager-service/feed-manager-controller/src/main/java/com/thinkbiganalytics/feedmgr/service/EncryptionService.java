@@ -27,7 +27,8 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import javax.inject.Inject;
 
 
-public class EncryptionService {
+public class
+EncryptionService {
 
     @Inject
     TextEncryptor encryptor;

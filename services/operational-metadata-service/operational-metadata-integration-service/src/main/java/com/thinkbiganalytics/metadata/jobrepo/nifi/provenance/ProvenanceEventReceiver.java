@@ -25,7 +25,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
@@ -334,7 +333,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         }
         FeedOperation.State state = FeedOperation.State.FAILURE;
         log.debug("FAILED JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job")));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job", event.getJobFlowFileId())));
 
     }
 
@@ -350,7 +349,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
 
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.debug("Success JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName())));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName(),event.getJobFlowFileId())));
     }
 
     /**

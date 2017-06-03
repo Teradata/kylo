@@ -83,9 +83,9 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
  *
  * @see com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor
  */
-public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfigAction, NiFiProvenanceConstants {
+public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataConfigAction, NiFiProvenanceConstants, NifiFlowCache {
 
-    private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
+    private static final Logger log = LoggerFactory.getLogger(NifiFlowCacheImpl.class);
 
     public static final String ITEM_LAST_MODIFIED_KEY = "NIFI_FLOW_CACHE";
 
@@ -234,6 +234,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      *
      * @return {@code true} if the cache is populated, {@code false} if the cache is not populated
      */
+    @Override
     public boolean isAvailable() {
         return loaded;
     }
@@ -244,6 +245,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * @return true if kylo is clustered, false if not.
      *
      */
+    @Override
     public boolean isKyloClustered() {
         return nifiFlowCacheClusterManager.isClustered();
     }
@@ -255,6 +257,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * @param syncId a cache id
      * @return updates that have been applied to the cache.
      */
+    @Override
     public NiFiFlowCacheSync syncAndReturnUpdates(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId);
         if (!sync.isUnavailable()) {
@@ -269,6 +272,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * @param syncId a cache id
      * @return the data in the cache for a given cache id
      */
+    @Override
     public NiFiFlowCacheSync getCache(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId);
         return sync;
@@ -280,6 +284,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
      * @param syncId a cache id
      * @return any new updates that will be applied to a given cache
      */
+    @Override
     public NiFiFlowCacheSync previewUpdates(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId, true);
         if (!sync.isUnavailable()) {
@@ -292,6 +297,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
     /**
      * Rebuild the base cache that others will update from.
      */
+    @Override
     public synchronized void rebuildAll() {
         loaded = false;
         try {

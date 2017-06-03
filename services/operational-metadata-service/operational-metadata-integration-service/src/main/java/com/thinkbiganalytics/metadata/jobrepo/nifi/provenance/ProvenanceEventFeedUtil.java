@@ -20,7 +20,18 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
@@ -28,13 +39,19 @@ import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/30/17.
+ *
  */
 public class ProvenanceEventFeedUtil {
 
@@ -43,17 +60,61 @@ public class ProvenanceEventFeedUtil {
     @Inject
     private NifiFlowCache nifiFlowCache;
 
-    private String nifiFlowCacheSyncId;
+    @Inject
+    NifiEventProvider nifiEventProvider;
 
-    public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event){
+    @Inject
+    MetadataAccess metadataAccess;
+
+    @Inject
+    private MetadataEventService eventService;
+
+    private FeedOperationListener listener = new FeedCompletedListener();
+
+
+    Cache<String, ProvenanceEventRecordDTO> runningJobs = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
+
+    BiMap<String,String> relatedFlowFiles = HashBiMap.create();
+
+    private String nifiFlowCacheSyncId = null;
+
+    @PostConstruct
+    public void addEventListener() {
+        this.eventService.addListener(this.listener);
+    }
+
+
+    private Long timeBetweenStartingJobs(String feedName) {
+        return 2000L;
+    }
+
+    public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFeedFlowFile().getFirstEventProcessorId());
         String processGroupId = getFeedProcessGroupId(event.getFeedFlowFile().getFirstEventProcessorId());
         String processorName = getProcessorName(event.getComponentId());
 
-        if( event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId())) {
+        if (event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId())) {
             //reassign the feedFlowFile to the batch
-            log.info("Reassigned FlowFile from {} to {} ",event.getJobFlowFileId(),event.getStreamingBatchFeedFlowFileId());
+            log.info("Reassigned FlowFile from {} to {} ", event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
             event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
+        }
+        if (event.isStartOfJob()) {
+            ProvenanceEventRecordDTO lastEvent = runningJobs.getIfPresent(feedName);
+            Long timeBetweenJobs = timeBetweenStartingJobs(feedName);
+            if (timeBetweenJobs == -1L || lastEvent == null || (lastEvent != null && (event.getEventTime().getMillis() - lastEvent.getEventTime().getMillis()) > timeBetweenJobs)) {
+                //create it
+                runningJobs.put(feedName,event);
+                //notify clusters its running
+            }
+            else {
+                //relate it
+                relatedFlowFiles.put(event.getJobFlowFileId(),lastEvent.getJobFlowFileId());
+                //notify clusters its related
+            }
+        }
+        //if the job flow file is part of the related ones reassign it
+        if(relatedFlowFiles.containsKey(event.getJobFlowFileId())) {
+            event.setJobFlowFileId(relatedFlowFiles.get(event.getJobFlowFileId()));
         }
 
         event.setIsBatchJob(true);
@@ -62,6 +123,7 @@ public class ProvenanceEventFeedUtil {
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);
         setProcessorFlowType(event);
+
         return event;
     }
 
@@ -115,6 +177,7 @@ public class ProvenanceEventFeedUtil {
 
     private NiFiFlowCacheSync getNiFiFlowCacheData() {
         NiFiFlowCacheSync sync =  nifiFlowCache.syncAndReturnUpdates(nifiFlowCacheSyncId);
+        nifiFlowCacheSyncId = sync.getSyncId();
         return sync;
     }
 
@@ -127,5 +190,19 @@ public class ProvenanceEventFeedUtil {
         }
     }
 
+
+
+    private class FeedCompletedListener implements MetadataEventListener<FeedOperationStatusEvent> {
+
+        @Override
+        public void notify(FeedOperationStatusEvent event) {
+           ProvenanceEventRecordDTO provenanceEventRecordDTO = runningJobs.getIfPresent(event.getData().getFeedFlowFileId());
+           if(provenanceEventRecordDTO != null){
+               runningJobs.invalidate(provenanceEventRecordDTO);
+               relatedFlowFiles.remove(event.getData().getFeedFlowFileId());
+               relatedFlowFiles.inverse().remove(event.getData().getFeedFlowFileId());
+           }
+        }
+    }
 
 }

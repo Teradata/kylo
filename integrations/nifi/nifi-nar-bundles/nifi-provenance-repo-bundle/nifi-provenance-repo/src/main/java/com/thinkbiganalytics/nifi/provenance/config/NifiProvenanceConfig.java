@@ -30,10 +30,7 @@ import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileExpireListener;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
-import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
-import com.thinkbiganalytics.nifi.provenance.repo.KyloNiFiFlowCacheUpdater;
-import com.thinkbiganalytics.nifi.provenance.repo.KyloProvenanceEventConsumer;
-import com.thinkbiganalytics.nifi.provenance.repo.KyloProvenanceProcessingQueue;
+import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -119,12 +116,6 @@ public class NifiProvenanceConfig {
     public ProvenanceFeedLookup provenanceFeedLookup() {
         return new ProvenanceFeedLookup();
     }
-
-    @Bean
-    public KyloNiFiFlowCacheUpdater kyloNiFiFlowCacheUpdater(){
-        return new KyloNiFiFlowCacheUpdater();
-    }
-
 
     @Bean
     public FeedFlowFileExpireListener feedFlowFileExpireListener(){

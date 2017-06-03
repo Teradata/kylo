@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.provenance.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Created by sr186054 on 6/1/17.
  */
-public class FeedFlowFileJobTrackingStats {
+public class FeedFlowFileJobTrackingStats implements Serializable{
 
     //track flows sent vs actual
 
@@ -103,7 +104,7 @@ public FeedFlowFileJobTrackingStats(FeedFlowFile feedFlowFile){
     }
 
     public Integer getActualChildFlowFileCount(String processorId){
-        return actualProcessorIdChildFlowFileCount == null ? 0: actualProcessorIdParentFlowFileCount.getOrDefault(processorId, 0);
+        return actualProcessorIdChildFlowFileCount == null ? 0: actualProcessorIdChildFlowFileCount.getOrDefault(processorId, 0);
     }
 
     public Integer getSentParentFlowFileCount(String processorId){
@@ -150,6 +151,9 @@ public FeedFlowFileJobTrackingStats(FeedFlowFile feedFlowFile){
         Integer actualParents = getActualParentFlowFileCount(processorId);
         Integer actualChildren = getActualChildFlowFileCount(processorId);
         if(actualParents != 0 || actualChildren != 0) {
+            if(event.getUpdatedAttributes() == null){
+                event.setUpdatedAttributes(new HashMap<>());
+            }
             event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.PARENT_FLOW_FILES_COUNT.getDisplayName(), actualParents + "");
             event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.CHILD_FLOW_FILES_COUNT.getDisplayName(), actualChildren + "");
             setSentParentFlowFileCount(processorId, actualParents);
@@ -173,20 +177,26 @@ public FeedFlowFileJobTrackingStats(FeedFlowFile feedFlowFile){
     public List<ProvenanceEventRecordDTO> getDirtyProcessorProvenanceEvents(){
         List<ProvenanceEventRecordDTO>  list = null;
         if(dirtyProcessors != null){
-            list =dirtyProcessors.stream().map(processorId -> {
+            list = new ArrayList<>();
+            for(String processorId: dirtyProcessors) {
                 ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
                 event.setFeedFlowFile(feedFlowFile);
                 event.setComponentId(processorId);
                 markExtendedAttributesAsSent(event);
                 event.setJobFlowFileId(feedFlowFile.getId());
-                if(event.getFeedFlowFile().hasRelatedBatchFlows()) {
-                    String ffId = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
-                    if(ffId != null) {
+                String ffId = event.getFeedFlowFile().getId();
+                if (event.getFeedFlowFile().hasRelatedBatchFlows()) {
+                     ffId = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
+                    if (ffId != null) {
                         event.setStreamingBatchFeedFlowFileId(ffId);
                     }
                 }
-                return event;
-            }).collect(Collectors.toList());
+                event.setFlowFileUuid(ffId);
+                event.setEventId(-1L);
+                event.setEventType("KYLO");
+                event.setDetails("Job Tracking Stats Event");
+                list.add(event);
+            }
         }
         else {
             list = Collections.emptyList();

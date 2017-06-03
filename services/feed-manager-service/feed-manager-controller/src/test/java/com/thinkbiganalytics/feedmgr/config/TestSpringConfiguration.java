@@ -23,10 +23,11 @@ package com.thinkbiganalytics.feedmgr.config;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
@@ -132,7 +133,7 @@ public class TestSpringConfiguration {
 
     @Bean
     public NifiFlowCache nifiFlowCache() {
-        return new NifiFlowCache();
+        return new NifiFlowCacheImpl();
     }
 
     @Bean
