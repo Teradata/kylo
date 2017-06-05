@@ -118,18 +118,6 @@ else
     cd $kylo_home_folder/setup
 fi
 
-if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
-    echo "Running the database scripts"
-
-    if [ "$database_type" == "1"  ] ; then
-        echo "Installing for MySQL"
-        ./sql/mysql/setup-mysql.sh $hostname $username $password
-    fi
-    if [ "$database_type" == "2"  ] ; then
-        echo "Installation for Postgres is not yet supported"
-    fi
-fi
-
 if [ "$java_type" == "1" ] ; then
     echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
     ./java/remove-default-kylo-java-home.sh $kylo_home_folder
