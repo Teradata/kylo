@@ -10,6 +10,7 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
@@ -25,6 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /*-
  * #%L
@@ -75,8 +77,8 @@ public class SparkJobserverService extends AbstractControllerService implements 
     /**
      * List of properties
      */
-    private List<PropertyDescriptor> properties;
     private volatile ISparkJobServerClient client;
+    private List<PropertyDescriptor> properties;
     private volatile String jobServerUrl;
     private volatile String syncTimeout;
     private volatile Timer contextTimeoutTimer = new Timer();
@@ -120,11 +122,13 @@ public class SparkJobserverService extends AbstractControllerService implements 
         getLogger().info("Creating a new connection to Spark Jobserver: {}", new Object[]{jobServerUrl});
 
         try {
-            client =
-                SparkJobServerClientFactory
-                    .getInstance()
-                    .createSparkJobServerClient(jobServerUrl);
+            if (client == null) {
+                client =
+                    SparkJobServerClientFactory
+                        .getInstance()
+                        .createSparkJobServerClient(jobServerUrl);
 
+            }
             syncTimeout = context.getProperty(SYNC_TIMEOUT).getValue();
             setupContextTimeoutTask();
 
