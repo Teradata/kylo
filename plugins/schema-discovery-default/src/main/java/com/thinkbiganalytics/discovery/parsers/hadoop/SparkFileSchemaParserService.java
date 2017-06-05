@@ -121,6 +121,7 @@ public class SparkFileSchemaParserService {
         sb.append("import sqlContext.implicits._\n");
         sb.append("import org.apache.spark.sql._\n");
 
+
         String method;
         switch (fileType) {
             case AVRO:
