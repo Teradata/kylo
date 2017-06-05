@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * #L%
  */
 
+import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
+import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -36,10 +38,24 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+
+@RunWith(MockitoJUnitRunner.class)
 public class SparkJobserverServiceTest {
 
     /**
@@ -60,9 +76,24 @@ public class SparkJobserverServiceTest {
     /**
      * Spark Jobserver service for testing
      */
+
+    @Mock
+    private ISparkJobServerClient client;
+
+    @InjectMocks
     private static final SparkJobserverService sparkJobserverService = new SparkJobserverService();
     private static final String sparkJobserverUrl = "http://localhost:8089";
     private static final String syncTimeout = "600";
+
+    /**
+     * Default Context Creation Properties
+     */
+    private static final String numExecutors = "1";
+    private static final String memPerNode = "512m";
+    private static final String numCPUCores = "2";
+    private static final SparkContextType sparkContextType = SparkContextType.SPARK_CONTEXT;
+    private static final int contextTimeout = 0;
+    private static boolean async = false;
 
     /**
      * Test runner
@@ -121,10 +152,114 @@ public class SparkJobserverServiceTest {
     }
 
     /**
+     * Verify creating Spark Context and then deleting the Context
+     */
+    @Test
+    public void testContextCreationAndDeletion() throws Exception {
+
+        // Test creating context
+        String contextName = "testContextCreationAndDeletion";
+
+        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        boolean created = sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
+        Assert.assertTrue(created);
+
+        when(client.deleteContext(contextName)).thenReturn(true);
+        boolean deleted = sparkJobserverService.deleteContext(contextName);
+        Assert.assertTrue(deleted);
+    }
+
+    /**
+     * Verify two threads attempting to create a Spark Context at once
+     */
+    @Test
+    public void testDuplicateContextCreation() throws Exception {
+        // Test creating context
+        String contextName = "testDuplicateContextCreation";
+
+        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        CreateSparkContext createSparkContext1 = new CreateSparkContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
+        Thread thread1 = new Thread(createSparkContext1);
+
+        CreateSparkContext createSparkContext2 = new CreateSparkContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
+        Thread thread2 = new Thread(createSparkContext2);
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        when(client.getContexts()).thenReturn(Arrays.asList(contextName));
+        boolean contextExists = sparkJobserverService.checkIfContextExists(contextName);
+
+        Assert.assertTrue(contextExists);
+    }
+
+    /**
+     * Verify creating a Spark Context which times out and gets deleted
+     */
+    @Test
+    public void testContextTimeout() throws Exception {
+        // Test creating context
+        String contextName = "testContextTimeout";
+        int contextTimeout = 1;
+
+        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
+        when(client.getContexts()).thenReturn(Arrays.asList(contextName));
+        when(client.deleteContext(contextName)).thenReturn(true);
+
+        Thread.sleep(15000);
+
+        when(client.getContexts()).thenReturn(new ArrayList<String>());
+        boolean contextExists = sparkJobserverService.checkIfContextExists(contextName);
+        Assert.assertFalse(contextExists);
+    }
+
+    /**
+     * Verify creating two Spark Contexts
+     */
+    @Test
+    public void testMultipleContextCreation() throws Exception {
+        // Test creating context
+        String contextOneName = "testMultipleContextCreationOne";
+        String contextTwoName = "testMultipleContextCreationTwo";
+
+        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+
+        CreateSparkContext createSparkContext1 = new CreateSparkContext(contextOneName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
+        Thread thread1 = new Thread(createSparkContext1);
+
+        CreateSparkContext createSparkContext2 = new CreateSparkContext(contextTwoName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
+        Thread thread2 = new Thread(createSparkContext2);
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        when(client.getContexts()).thenReturn(Arrays.asList(contextOneName, contextTwoName));
+
+        boolean contextOneExists = sparkJobserverService.checkIfContextExists(contextOneName);
+        boolean contextTwoExists = sparkJobserverService.checkIfContextExists(contextTwoName);
+
+        when(client.deleteContext(contextOneName)).thenReturn(true);
+        when(client.deleteContext(contextTwoName)).thenReturn(true);
+
+        sparkJobserverService.deleteContext(contextOneName);
+        sparkJobserverService.deleteContext(contextTwoName);
+
+        Assert.assertTrue(contextOneExists && contextTwoExists);
+    }
+
+    /**
      * Shutdown the runner
      */
     @After
     public void shutdown() {
         runner.shutdown();
     }
+
 }
