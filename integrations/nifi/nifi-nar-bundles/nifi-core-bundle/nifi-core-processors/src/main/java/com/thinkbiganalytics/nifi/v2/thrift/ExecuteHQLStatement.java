@@ -104,31 +104,38 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
         }
 
-        final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         final String ddlQuery = context.getProperty(SQL_DDL_STATEMENT).evaluateAttributeExpressions(flowFile).getValue();
+        String[] hiveStatements = StringUtils.split(ddlQuery, ';');
+        final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
+
+        executeStatements(context, session, flowFile, hiveStatements, thriftService);
+
+
+    }
+
+    public void executeStatements(ProcessContext context, ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
+        final ComponentLog logger = getLog();
 
         final StopWatch stopWatch = new StopWatch(true);
 
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
             boolean result = false;
-            String[] hiveStatements = StringUtils.split(ddlQuery, ';');
 
-            for (String statement:hiveStatements
-                 ) {
-                 result = st.execute(statement);
+
+            for (String statement:hiveStatements) {
+                result = st.execute(statement);
             }
 
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             session.transfer(flowFile, REL_SUCCESS);
         } catch (final Exception e) {
-            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{ddlQuery, flowFile, e});
+            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements.toString(), flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
         }
     }

@@ -20,32 +20,28 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.StopWatch;
 
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
@@ -54,7 +50,6 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIF
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECS;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
 
 /**
@@ -63,7 +58,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVI
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"elasticsearch", "thinkbig", "hive"})
 @CapabilityDescription("Creates a table in Hive that is backed by data in Elasticsearch")
-public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
+public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
 
 
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -82,7 +77,7 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
      */
     public static final PropertyDescriptor NODES = new PropertyDescriptor.Builder()
         .name("Nodes")
-        .description("Elasticsearch nodes")
+        .description("A comma separated list of one or more Elasticsearch nodes to be used.")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -112,7 +107,8 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor USE_WAN = new PropertyDescriptor.Builder()
         .name("Use WAN")
-        .description("Whether the connector is used against an Elasticsearch instance in a cloud/restricted environment over the WAN, such as Amazon Web Services. In this mode, the connector disables discovery and only connects through the declared es.nodes during all operations, including reads and writes. Note that in this mode, performance is highly affected.")
+        .description(
+            "Whether the connector is used against an Elasticsearch instance in a cloud/restricted environment over the WAN, such as Amazon Web Services. In this mode, the connector disables discovery and only connects through the declared es.nodes during all operations, including reads and writes. Note that in this mode, performance is highly affected.")
         .allowableValues("true", "false")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -129,6 +125,16 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
         .expressionLanguageSupported(false)
         .defaultValue("true")
         .build();
+
+    public static final PropertyDescriptor FIELD_INDEX_STRING = new PropertyDescriptor.Builder()
+        .name("Field Index String")
+        .description("Comma separated list of fields to be indexed.")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .defaultValue("${metadata.table.fieldIndexString}")
+        .build();
+
 
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
@@ -153,6 +159,7 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
         pds.add(JARURL);
         pds.add(USE_WAN);
         pds.add(AUTO_CREATE_INDEX);
+        pds.add(FIELD_INDEX_STRING);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -168,7 +175,6 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -188,75 +194,53 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
-        if (columnSpecs == null || columnSpecs.length == 0) {
-            getLog().error("Missing field specification");
-            session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            return;
-        }
+        validateArrayProperty("column specification", columnSpecs, session, flowFile);
 
         final String feedName = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-        if (feedName == null || feedName.isEmpty()) {
-            getLog().error("Missing feed name");
-            session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            return;
-        }
+        validateStringProperty("feed name", feedName, session, flowFile);
 
         final String categoryName = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-        if (categoryName == null || categoryName.isEmpty()) {
-            getLog().error("Missing category name");
-            session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            return;
-        }
+        validateStringProperty("category name", categoryName, session, flowFile);
 
         final String nodes = context.getProperty(NODES).evaluateAttributeExpressions(flowFile).getValue();
-        if (nodes == null || nodes.isEmpty()) {
-            getLog().error("Missing node parameter");
-            session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            return;
-        }
+        validateStringProperty("elasticsearch nodes", nodes, session, flowFile);
 
-        TableType tableType = TableType.MASTER;
-        String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions,"");
-        String hql = generateHQL(columnsSQL, nodes, feedName, categoryName, useWan, autoIndex, idField);
+        final String indexString = context.getProperty(FIELD_INDEX_STRING).evaluateAttributeExpressions(flowFile).getValue();
+        validateStringProperty("index string", indexString, session, flowFile);
 
-        List<String> hiveStatements = new ArrayList<>();
-
-        if (jarUrl != null || jarUrl.isEmpty()) {
-            String addJar = "ADD JAR " + jarUrl;
-            hiveStatements.add(addJar);
-        }
-
-        hiveStatements.add(hql);
-
+        List<String> hiveStatements = getHQLStatements(columnSpecs, partitions, nodes, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
-        final StopWatch stopWatch = new StopWatch(true);
 
-
-        try (final Connection con = thriftService.getConnection();
-             final Statement st = con.createStatement()) {
-            boolean result = false;
-
-            for (String statement:hiveStatements
-                ) {
-                result = st.execute(statement);
-            }
-
-            session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-            session.transfer(flowFile, REL_SUCCESS);
-        } catch (final Exception e) {
-            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hql, flowFile, e});
-            session.transfer(flowFile, REL_FAILURE);
-        }
+        executeStatements(context, session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
 
     }
 
-    public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField){
+    private void validateArrayProperty(String propertyName, Object[] values, ProcessSession session, FlowFile flowFile) {
+        if (values == null || values.length == 0) {
+            getLog().error("Missing " + propertyName + " specification");
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
+            return;
+        }
+    }
+
+    private void validateStringProperty(String propertyName, String propertyValue, ProcessSession session, FlowFile flowFile) {
+        if (propertyValue == null || propertyValue.isEmpty()) {
+            getLog().error("Missing " + propertyName + " parameter");
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
+            return;
+        }
+    }
+
+    public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
             .append(categoryName)
-            .append(".index_")
+            .append(".")
             .append(feedName)
-            .append(" (").append(columnsSQL).append(") ")
+            .append("_index")
+            .append(" (")
+            .append(columnsSQL)
+            .append(") ")
             .append("STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = '")
             .append(categoryName)
             .append("/")
@@ -276,6 +260,30 @@ public class CreateElasticsearchBackedHiveTable extends AbstractNiFiProcessor {
         sb.append("')");
 
         return sb.toString();
+    }
+
+    public List<String> getHQLStatements(ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField,
+                                         String jarUrl, String indexFieldString) {
+        TableType tableType = TableType.MASTER;
+
+        List<String> indexFields = Arrays.asList(indexFieldString.toLowerCase().split(","));
+
+        List<ColumnSpec> indexCols = Arrays.asList(columnSpecs)
+            .stream().filter(p -> indexFields.contains(p.getName().toLowerCase()))
+            .collect(Collectors.toList());
+
+        String columnsSQL = tableType.deriveColumnSpecification(indexCols.toArray(new ColumnSpec[indexCols.size()]), partitions, "");
+        String hql = generateHQL(columnsSQL, nodes, feedName, categoryName, useWan, autoIndex, idField);
+
+        List<String> hiveStatements = new ArrayList<>();
+
+        if (jarUrl != null && !jarUrl.isEmpty()) {
+            String addJar = "ADD JAR " + jarUrl;
+            hiveStatements.add(addJar);
+        }
+
+        hiveStatements.add(hql);
+        return hiveStatements;
     }
 
 }

@@ -23,11 +23,14 @@ package com.thinkbiganalytics.ingest;
 import com.thinkbiganalytics.nifi.v2.ingest.CreateElasticsearchBackedHiveTable;
 import com.thinkbiganalytics.nifi.v2.ingest.IngestProperties;
 import com.thinkbiganalytics.nifi.v2.ingest.RegisterFeedTablesTest;
+import com.thinkbiganalytics.util.ColumnSpec;
 
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,9 +45,23 @@ public class CreateElasticsearchBackedHiveTableTest {
     }
 
     @Test
+    public void testGetHQLStatements() throws Exception {
+        ColumnSpec spec = new ColumnSpec("name", "string", "");
+        ColumnSpec spec2 = new ColumnSpec("iD", "int", "");
+        ColumnSpec spec3 = new ColumnSpec("PHONE", "string", "");
+        ColumnSpec[] specs = {spec, spec2, spec3};
+        ColumnSpec[] parts = {};
+        List<String> statements = table.getHQLStatements(specs, parts, "localnode", "test_feed", "test_category", "true", "true", "", "jar:///url", "Name,Phone");
+        for (String s : statements) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
     public void testGeneratingHQL() throws Exception {
         String hql = table.generateHQL("id int, count int, name string", "localhost:8300", "test_feed", "test_category", "true", "true", "");
-        assertEquals(hql, "CREATE EXTERNAL TABLE IF NOT EXISTS test_category.index_test_feed (id int, count int, name string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = 'localhost:8300', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
+        assertEquals(hql,
+                     "CREATE EXTERNAL TABLE IF NOT EXISTS test_category.test_feed_index (id int, count int, name string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = 'localhost:8300', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
     }
 
 }
