@@ -81,12 +81,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             });
 
         /**
-         * the selected option for the template
-         * @type {*}
-         */
-        this.templateTableOption = this.model.templateTableOption;
-
-        /**
          * A map of the port names to the port Object
          * used for the connections from the outputs to input ports
          * @type {{}}
@@ -101,22 +95,19 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         // setup the Stepper types
         var initTemplateTableOptions = function () {
-            if (self.templateTableOption == undefined) {
+            if (self.model.templateTableOption == null) {
 
                 if (self.model.defineTable) {
-                    self.templateTableOption = 'DEFINE_TABLE'
-                }
-                else if (self.model.dataTransformation) {
-                    self.templateTableOption = 'DATA_TRANSFORMATION'
-                }
-                else if (self.model.reusableTemplate) {
-                    self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
-                }
-                else {
-                    self.templateTableOption = 'NO_TABLE'
+                    self.model.templateTableOption = 'DEFINE_TABLE'
+                } else if (self.model.dataTransformation) {
+                    self.model.templateTableOption = 'DATA_TRANSFORMATION'
+                } else if (self.model.reusableTemplate) {
+                    self.model.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
+                } else {
+                    self.model.templateTableOption = 'NO_TABLE'
                 }
             }
-        }
+        };
 
         /**
          * Calls the server to get all the Datasources and the Flow processors and flow types
@@ -232,20 +223,17 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * Called when the user changes the radio buttons
          */
         this.onTableOptionChange = function () {
-
-            if (self.templateTableOption == 'DEFINE_TABLE') {
+            if (self.model.templateTableOption === 'DEFINE_TABLE') {
                 self.model.defineTable = true;
                 self.model.dataTransformation = false;
-            }
-            else if (self.templateTableOption == 'DATA_TRANSFORMATION') {
+            } else if (self.model.templateTableOption === 'DATA_TRANSFORMATION') {
                 self.model.defineTable = false;
                 self.model.dataTransformation = true;
-            }
-            else if (self.templateTableOption == 'NO_TABLE') {
+            } else {
                 self.model.defineTable = false;
                 self.model.dataTransformation = false;
             }
-        }
+        };
 
         /**
          * Called when the user changes the output port connections

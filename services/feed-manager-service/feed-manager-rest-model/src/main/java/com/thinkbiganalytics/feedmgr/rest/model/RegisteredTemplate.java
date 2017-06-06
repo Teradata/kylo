@@ -135,6 +135,7 @@ public class RegisteredTemplate extends EntityAccessControl {
         this.setOwner(registeredTemplate.getOwner());
         this.setRoleMemberships(registeredTemplate.getRoleMemberships());
         this.setAllowedActions(registeredTemplate.getAllowedActions());
+        this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
         this.initializeProcessors();
     }
 

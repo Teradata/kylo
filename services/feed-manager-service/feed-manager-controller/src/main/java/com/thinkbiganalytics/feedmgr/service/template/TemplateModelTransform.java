@@ -126,6 +126,7 @@ public class TemplateModelTransform {
                 domain.setDescription(registeredTemplate.getDescription());
                 domain.setOrder(registeredTemplate.getOrder());
                 domain.setStream(registeredTemplate.isStream());
+                domain.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
                 prepareForSave(registeredTemplate);
                 String json = ObjectMapperSerializer.serialize(registeredTemplate);
                 domain.setJson(json);
@@ -193,6 +194,7 @@ public class TemplateModelTransform {
                     template.setUpdateDate(domain.getModifiedTime().toDate());
                 }
                 template.setOrder(domain.getOrder());
+                template.setTemplateTableOption(domain.getTemplateTableOption());
 
                 accessControlledEntityTransform.applyAccessControlToRestModel(domain, template);
 

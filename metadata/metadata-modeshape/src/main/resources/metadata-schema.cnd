@@ -216,7 +216,7 @@
     - tba:feeds (REFERENCE) multiple
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
-
+    - tba:templateTableOption (STRING)
 
 [tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled
 	- tba:systemName (STRING) mandatory

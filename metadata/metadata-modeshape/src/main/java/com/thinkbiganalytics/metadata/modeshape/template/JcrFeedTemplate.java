@@ -60,6 +60,8 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     public static String IS_STREAM = "tba:isStream";
 
+    public static String TEMPLATE_TABLE_OPTION = "tba:templateTableOption";
+
 
     public JcrFeedTemplate(Node node) {
         super(node);
@@ -227,6 +229,16 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrTemplateAllowedActions.class;
+    }
+
+    @Override
+    public String getTemplateTableOption() {
+        return getProperty(TEMPLATE_TABLE_OPTION, String.class);
+    }
+
+    @Override
+    public void setTemplateTableOption(final String templateTableOption) {
+        setProperty(TEMPLATE_TABLE_OPTION, templateTableOption);
     }
 
     public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {

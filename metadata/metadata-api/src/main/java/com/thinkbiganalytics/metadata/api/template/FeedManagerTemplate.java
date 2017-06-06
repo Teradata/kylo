@@ -92,6 +92,10 @@ public interface FeedManagerTemplate extends AccessControlled {
 
     void setStream(boolean stream);
 
+    String getTemplateTableOption();
+
+    void setTemplateTableOption(String templateTableOption);
+
     enum State {
         ENABLED, DISABLED
     }

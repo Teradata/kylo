@@ -105,7 +105,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     isStream: this.model.isStream,
                     roleMemberships:this.model.roleMemberships,
                     owner: this.model.owner,
-                    roleMembershipsUpdated: this.model.roleMembershipsUpdated
+                    roleMembershipsUpdated: this.model.roleMembershipsUpdated,
+                    templateTableOption: this.model.templateTableOption
                 }
             },
             newReusableConnectionInfo: function () {
@@ -835,6 +836,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.owner = templateData.owner;
                         self.model.allowedActions = templateData.allowedActions;
                         self.model.roleMemberships = templateData.roleMemberships;
+                        self.model.templateTableOption = templateData.templateTableOption;
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }
