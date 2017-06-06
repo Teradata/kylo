@@ -92,7 +92,7 @@ public class ProvenanceEventFeedUtil {
 
 
         event.setIsBatchJob(true);
-        event.getFeedFlowFile().setFeedName(feedName);
+     //   event.getFeedFlowFile().setFeedName(feedName);
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);

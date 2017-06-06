@@ -20,8 +20,11 @@ package com.thinkbiganalytics.nifi.provenance.config;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.provenance.BatchEventsBySampling;
+import com.thinkbiganalytics.nifi.provenance.BatchProvenanceEvents;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollectorV2;
+import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollectorV3;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectFactory;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
@@ -48,6 +51,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class NifiProvenanceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
+
+    public static final Integer PROVENANCE_EVENT_OBJECT_POOL_SIZE = 500;
     /**
      * location of where map db should store the persist cache file to disk
      **/
@@ -67,8 +72,8 @@ public class NifiProvenanceConfig {
     @Bean
     public ProvenanceEventObjectPool provenanceEventObjectPool() {
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxTotal(2000);
-        config.setMaxIdle(2000);
+        config.setMaxTotal(PROVENANCE_EVENT_OBJECT_POOL_SIZE);
+        config.setMaxIdle(PROVENANCE_EVENT_OBJECT_POOL_SIZE);
         config.setBlockWhenExhausted(false);
         config.setTestOnBorrow(false);
         config.setTestOnReturn(false);
@@ -102,6 +107,11 @@ public class NifiProvenanceConfig {
     }
 
     @Bean
+    public ProvenanceEventCollectorV3 provenanceEventCollectorV3() {
+        return new ProvenanceEventCollectorV3(provenanceEventActiveMqWriter());
+    }
+
+    @Bean
     @Deprecated
     public ProvenanceEventCollector provenanceEventCollector() {
         return new ProvenanceEventCollector(provenanceEventActiveMqWriter());
@@ -129,6 +139,11 @@ public class NifiProvenanceConfig {
         pool.setMaxPoolSize(1);
         pool.setWaitForTasksToCompleteOnShutdown(true);
         return pool;
+    }
+
+    @Bean
+    BatchProvenanceEvents batchProvenanceEvents(){
+        return new BatchEventsBySampling();
     }
 
 }

@@ -91,10 +91,7 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
      * The time for the Last Event that has been processed
      */
     private DateTime lastEventTime;
-    /**
-     * the last time the events were sent to JMS
-     **/
-    private DateTime lastCollectionTime;
+
     /**
      * Collection of events that will be sent to jms
      */
@@ -111,8 +108,6 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
      * Time when this group first got created
      */
     private DateTime initTime;
-
-    private UUID batchSuppressionId = UUID.randomUUID();
 
 
 
@@ -177,6 +172,7 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
             if(event.getFeedFlowFile().isStream()){
                 jobEventsBySecondKey = event.getFeedFlowFile().getFirstEventProcessorId();
             }
+
             DateTime time = eventTimeToNearestSecond(event);
             lastEventTimeBySecond = time;
             jobEventsBySecond.computeIfAbsent(time, key -> new HashMap<String, AtomicInteger>()).computeIfAbsent(jobEventsBySecondKey, flowFileId -> new AtomicInteger(0)).incrementAndGet();
@@ -284,7 +280,6 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
         } finally {
 
         }
-        lastCollectionTime = DateTime.now();
         if(uniqueFlowFileCount.size() >0) {
             events.stream().forEach(e -> {
                 if(uniqueFlowFileCount.size() >0) {

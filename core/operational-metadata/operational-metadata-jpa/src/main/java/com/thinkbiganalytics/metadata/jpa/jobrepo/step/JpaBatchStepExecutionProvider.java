@@ -34,6 +34,7 @@ import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,6 +170,12 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
+            //update the timing info
+
+            DateTime newEndTime = DateTimeUtil.convertToUTC(event.getEventTime());
+            if(newEndTime.isAfter(stepExecution.getEndTime())) {
+                stepExecution.setEndTime(newEndTime);
+            }
             stepExecution = batchStepExecutionRepository.save(stepExecution);
         }
 

@@ -29,6 +29,7 @@ import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
@@ -70,22 +71,27 @@ public class NifiStatsJmsReceiver {
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats ->
                                                              {
                                                                  String feedProcessorId = feedProcessorStats.getStartingProcessorId();
-                                                                 String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
-                                                                 String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
+                                                                 String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);  //ensure not null
+                                                                 if(StringUtils.isNotBlank(feedName)) {
+                                                                     String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
 
-                                                                 feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
-                                                                                                                         {
-                                                                                                                             NifiFeedProcessorStats
-                                                                                                                                 nifiFeedProcessorStats =
-                                                                                                                                 toSummaryStats(processorStats.getStats());
-                                                                                                                             nifiFeedProcessorStats.setFeedName(feedName);
-                                                                                                                             nifiFeedProcessorStats.setProcessorId(processorStats.getProcessorId());
-                                                                                                                             String processorName= provenanceEventFeedUtil.getProcessorName(processorStats.getProcessorId());
-                                                                                                                             nifiFeedProcessorStats.setProcessorName(processorName);
-                                                                                                                             nifiFeedProcessorStats
-                                                                                                                                 .setFeedProcessGroupId(feedProcessGroupId);
-                                                                                                                             nifiFeedProcessorStatsList.add(nifiFeedProcessorStats);
-                                                                                                                         });
+                                                                     feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
+                                                                                                                             {
+                                                                                                                                 NifiFeedProcessorStats
+                                                                                                                                     nifiFeedProcessorStats =
+                                                                                                                                     toSummaryStats(processorStats.getStats());
+                                                                                                                                 nifiFeedProcessorStats.setFeedName(feedName);
+                                                                                                                                 nifiFeedProcessorStats.setProcessorId(processorStats.getProcessorId());
+                                                                                                                                 String
+                                                                                                                                     processorName =
+                                                                                                                                     provenanceEventFeedUtil
+                                                                                                                                         .getProcessorName(processorStats.getProcessorId());
+                                                                                                                                 nifiFeedProcessorStats.setProcessorName(processorName);
+                                                                                                                                 nifiFeedProcessorStats
+                                                                                                                                     .setFeedProcessGroupId(feedProcessGroupId);
+                                                                                                                                 nifiFeedProcessorStatsList.add(nifiFeedProcessorStats);
+                                                                                                                             });
+                                                                 }
 
                                                              });
         return nifiFeedProcessorStatsList;

@@ -23,6 +23,8 @@ package com.thinkbiganalytics.nifi.provenance.repo;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class KyloProvenanceProcessingQueue  {
 
+    private static final Logger log = LoggerFactory.getLogger(KyloProvenanceProcessingQueue.class);
+
     LinkedBlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> queue = new LinkedBlockingQueue();
 
 
@@ -45,7 +49,13 @@ public class KyloProvenanceProcessingQueue  {
 
     public List<Map.Entry<Long,ProvenanceEventRecord>>  takeAll(){
         List<Map.Entry<Long,ProvenanceEventRecord>> events = new ArrayList();
+        if(!queue.isEmpty()) {
+            log.info("about to drain {} events", queue.size());
+        }
       queue.drainTo(events);
+        if(!events.isEmpty()) {
+            log.info("successfully drained {} events", events.size());
+        }
       return events;
     }
 

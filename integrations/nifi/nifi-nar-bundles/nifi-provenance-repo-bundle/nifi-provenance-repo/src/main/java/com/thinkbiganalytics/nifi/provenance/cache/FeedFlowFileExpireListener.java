@@ -52,7 +52,7 @@ public class FeedFlowFileExpireListener implements FeedFlowFileCacheListener {
 
     @PostConstruct
     private void init(){
-        cache.subscribe(this);
+    //    cache.subscribe(this);
     }
 
     @Override

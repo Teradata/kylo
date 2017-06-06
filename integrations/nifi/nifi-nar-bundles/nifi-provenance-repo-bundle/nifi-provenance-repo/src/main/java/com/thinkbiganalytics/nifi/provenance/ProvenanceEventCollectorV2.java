@@ -90,18 +90,6 @@ public class ProvenanceEventCollectorV2  {
         return event.getFeedFlowFile().getFirstEventProcessorId() + ":" + event.getComponentId();
     }
 
-
-    /**
-     * determine if the event has Feed
-     *
-     * @param event the event to check
-     * @return true if feed name is set, false if not
-     */
-    private boolean hasFeedName(ProvenanceEventRecordDTO event) {
-        return StringUtils.isNotBlank(event.getFeedName());
-    }
-
-
     /**
      * Process the event, adding it to the running {@link FeedFlowFile} , calculating statistics on the event, and if a Batch feed, grouped by Feed and
      * Processor, process the entire event for processing.

@@ -45,21 +45,10 @@ public class FeedFlowFile implements Serializable {
      */
     private String id;
 
-
     /**
      * Flag to mark this flowfile as a Stream.
      */
     private boolean isStream;
-
-    /**
-     * The feed associated with the flow file.  This includes the category.feedname
-     */
-    private String feedName;
-
-    /**
-     * The process group id for the feed
-     */
-    private String feedProcessGroupId;
 
     /**
      * When new flow files are created they get associated back to the feedflow file in this collection
@@ -80,9 +69,6 @@ public class FeedFlowFile implements Serializable {
 
     private String primaryRelatedBatchFeedFlow;
 
-
-
-
     /**
      * The First Event in this flow file
      */
@@ -92,12 +78,6 @@ public class FeedFlowFile implements Serializable {
 
     private String firstEventProcessorId;
 
-
-    private Long lastEventId;
-
-    private String lastEventProcessorId;
-
-    private Long lastEventTime;
 
     private AtomicInteger failedEvents = new AtomicInteger(0);
 
@@ -167,22 +147,6 @@ public class FeedFlowFile implements Serializable {
         isStream = stream;
     }
 
-    public String getFeedName() {
-        return feedName;
-    }
-
-    public void setFeedName(String feedName) {
-        this.feedName = feedName;
-    }
-
-    public String getFeedProcessGroupId() {
-        return feedProcessGroupId;
-    }
-
-    public void setFeedProcessGroupId(String feedProcessGroupId) {
-        this.feedProcessGroupId = feedProcessGroupId;
-    }
-
     public Set<String> getActiveChildFlowFiles() {
         return activeChildFlowFiles;
     }
@@ -190,19 +154,6 @@ public class FeedFlowFile implements Serializable {
     public Set<String> getChildFlowFiles() {
         return childFlowFiles;
     }
-
-    public Long getLastEventId() {
-        return lastEventId;
-    }
-
-    public String getLastEventProcessorId() {
-        return lastEventProcessorId;
-    }
-
-    public Long getLastEventTime() {
-        return lastEventTime;
-    }
-
 
     public FeedFlowFileJobTrackingStats getFeedFlowFileJobTrackingStats() {
         return feedFlowFileJobTrackingStats;
@@ -253,9 +204,6 @@ public class FeedFlowFile implements Serializable {
         } else {
             event.setStartTime(event.getEventTime());
         }
-        lastEventId = event.getEventId();
-        lastEventTime = event.getEventTime().getMillis();
-        lastEventProcessorId = event.getComponentId();
         event.setEventDuration(event.getEventTime().getMillis() - event.getStartTime().getMillis());
         registerLastEventTime(event);
 
@@ -277,24 +225,16 @@ public class FeedFlowFile implements Serializable {
         return getRelatedBatchFeedFlows() != null && !getRelatedBatchFeedFlows().isEmpty();
     }
 
-
-
-
-
-    public void addRelatedBatchFlow(String flowFileId){
-        if(getRelatedBatchFeedFlows() == null){
-            relatedBatchFeedFlows = new HashSet<>();
-        }
-        relatedBatchFeedFlows.add(flowFileId);
-    }
-
     public void setRelatedBatchFeedFlows(Set<String> relatedBatchFeedFlows) {
         this.relatedBatchFeedFlows = relatedBatchFeedFlows;
     }
 
-    public void removeRelatedBatchFlow(String flowFileId){
-        if(hasRelatedBatchFlows()){
-            relatedBatchFeedFlows.remove(flowFileId);
+    public void addRelatedBatchFeedFlows(String flowFileId) {
+        if(this.relatedBatchFeedFlows == null){
+            this.relatedBatchFeedFlows = new HashSet<>();
+        }
+        if(!flowFileId.equals(this.getId())) {
+            this.relatedBatchFeedFlows.add(flowFileId);
         }
     }
 
@@ -306,23 +246,12 @@ public class FeedFlowFile implements Serializable {
     }
 
     /**
-     * Determine if the FlowFile has the Kylo Feed information assigned to it
-     */
-    public boolean hasFeedInformationAssigned() {
-        return getFeedName() != null && getFeedProcessGroupId() != null;
-    }
-
-
-    /**
      * If the event is a "DROP" event that mark the correct flow file as complete.
      */
     public void checkAndMarkComplete(ProvenanceEventRecordDTO event) {
         if ("DROP".equalsIgnoreCase(event.getEventType())) {
             if (event.getFlowFileUuid().equals(this.getId())) {
                 isCurrentFlowFileComplete = true;
-              //  if(activeChildFlowFiles != null){
-              //      activeChildFlowFiles.remove(event.getFlowFileUuid());
-              //  }
             } else {
                 activeChildFlowFiles.remove(event.getFlowFileUuid());
             }
@@ -410,7 +339,6 @@ public class FeedFlowFile implements Serializable {
         final StringBuilder sb = new StringBuilder("FeedFlowFile{");
         sb.append("id='").append(id).append('\'');
         sb.append(", isStream=").append(isStream);
-        sb.append(", feedName='").append(feedName).append('\'');
         sb.append(", activeFlowFiles ='").append(activeChildFlowFiles != null ? activeChildFlowFiles.size() : "null").append('\'');
         sb.append('}');
         return sb.toString();

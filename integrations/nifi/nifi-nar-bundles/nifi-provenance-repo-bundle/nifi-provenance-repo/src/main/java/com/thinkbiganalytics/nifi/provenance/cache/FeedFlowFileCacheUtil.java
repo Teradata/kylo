@@ -22,7 +22,6 @@ package com.thinkbiganalytics.nifi.provenance.cache;
 
 import com.thinkbiganalytics.nifi.provenance.FeedFlowFileNotFoundException;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
@@ -30,10 +29,6 @@ import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utility to build the FlowFile graph from an incoming Provenance Event and cache the FlowFile Graph.
@@ -43,23 +38,12 @@ public class FeedFlowFileCacheUtil {
     private static final Logger log = LoggerFactory.getLogger(FeedFlowFileCacheUtil.class);
 
     @Autowired
-    ProvenanceFeedLookup provenanceFeedLookup;
-
-    @Autowired
     FeedFlowFileGuavaCache flowFileGuavaCache;
-
-    // internal counters for general stats
-    AtomicLong eventCounter = new AtomicLong(0L);
-
 
     public FeedFlowFileCacheUtil() {
 
     }
 
-
-    public void logStats() {
-        log.info("Processed {} events.  ", eventCounter.get());
-    }
 
 
     /**
@@ -72,7 +56,6 @@ public class FeedFlowFileCacheUtil {
 
         //An event is the very first in the flow if it is a CREATE or RECEIVE event and if there are no Parent flow files
         //This indicates the start of a Job.
-        //
         if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             //we only need to store references to the root feed flow file.
             FeedFlowFile flowFile = null;
@@ -94,7 +77,6 @@ public class FeedFlowFileCacheUtil {
             feedFlowFile = flowFileCache.getEntry(event.getFlowFileUuid());
             event.setFeedFlowFile(feedFlowFile);
         }
-     //   Set<FeedFlowFile> batchFeedFlows = new HashSet<>();
         FeedFlowFile parentFlowFile = null;
         //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
@@ -103,13 +85,9 @@ public class FeedFlowFileCacheUtil {
                     //set this flowfileid pointing to the parent
                     parentFlowFile = flowFileCache.getEntry(parent);
                     flowFileCache.add(event.getFlowFileUuid(), parentFlowFile);
-                 //   if(!parentFlowFile.isStream()){
-               //         batchFeedFlows.add(parentFlowFile);
-             //       }
                     //if the parent == the id of the flowfile in the cache it means this is a starting flow that relates to another starting feed flow
                     //likely the flow files got merged and are linked.
                     //track this relationship
-                    //mark this event as a Job event
                     if (parentFlowFile.getId().equals(parent) && event.isStartOfJob()) {
                         //relate them
                         parentFlowFile.addChildFlowFile(event.getFeedFlowFile().getId());
@@ -121,8 +99,6 @@ public class FeedFlowFileCacheUtil {
                 } else {
                     //UNABLE TO FIND PARENT!
                 }
-
-
             }
         }
 
@@ -146,53 +122,25 @@ public class FeedFlowFileCacheUtil {
                 feedFlowFile.assignFlowFileToParent(child, event.getFlowFileUuid());
                 feedFlowFile.assignChildFlowFileStartTime(child, event.getEventTime().getMillis());
                 feedFlowFile.addChildFlowFile(child);
-
-                //relate child to cache.get(event.getFlowFileUuid())
-           //     batchFeedFlows.stream().filter(f -> !f.getId().equalsIgnoreCase(child)).forEach(f ->f.addRelatedBatchFlow(f.getId()));
             }
         }
         if (event.getProcessorType() == null) {
-
             if (event.isTerminatedByFailureRelationship()) {
                 event.setProcessorType(KyloProcessorFlowType.FAILURE);
                 event.setIsFailure(true);
             }
         }
 
-       // event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
-        //assign the feed info for quick lookup on the flow file?
-      //  boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(feedFlowFile);
-     //   if (!assignedFeedInfo) {
-    //        log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ({}) processorId: {} ", feedFlowFile.getId(), feedFlowFile, event.getComponentName(),
-   //                   event.getEventId(), event.getComponentId());
-//
-  //      } else {
-    //        event.setFeedName(feedFlowFile.getFeedName());
-   //         event.setFeedProcessGroupId(feedFlowFile.getFeedProcessGroupId());
-        //    event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
-       // }
-
-      //  event.setStream(provenanceFeedLookup.isStream(event));
         event.setJobFlowFileId(feedFlowFile.getId());
 
         feedFlowFile.addEvent(event);
-      //  KyloProcessorFlowType flowType = provenanceFeedLookup.setProcessorFlowType(event);
         feedFlowFile.checkIfEventStartsTheFlowFile(event);
         feedFlowFile.checkAndMarkComplete(event);
-
-     //   if (KyloProcessorFlowType.FAILURE.equals(flowType)) {
-      //      if (event.getFeedFlowFile() != null) {
-     //           event.getFeedFlowFile().incrementFailedEvents();
-     //       }
-      //  }
 
         if (event.isEndingFlowFileEvent() && feedFlowFile.isFeedComplete()) {
             event.setIsEndOfJob(true);
             event.setIsFinalJobEvent(true);
-            //  log.info("Ending the Job for Feed {} and flowfile: {}.  Event: {}  ", event.getFeedName(), event.getFlowFileUuid(), event);
         }
-
-        eventCounter.incrementAndGet();
 
 
     }

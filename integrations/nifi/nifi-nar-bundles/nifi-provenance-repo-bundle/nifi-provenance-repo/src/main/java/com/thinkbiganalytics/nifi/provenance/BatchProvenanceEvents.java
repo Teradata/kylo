@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.provenance.cache;
+package com.thinkbiganalytics.nifi.provenance;
 
 /*-
  * #%L
@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.provenance.cache;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,18 +20,15 @@ package com.thinkbiganalytics.nifi.provenance.cache;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
-
-import java.util.List;
-
-/**
- */
-public interface FeedFlowFileCacheListener {
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 
-    void onInvalidate(FeedFlowFile flowFile);
+public interface BatchProvenanceEvents {
 
-    void beforeInvalidation(List<FeedFlowFile> completedFlowFiles);
+    boolean process(ProvenanceEventRecordDTO event);
+
+    void sendToJms();
+
 
 
 }

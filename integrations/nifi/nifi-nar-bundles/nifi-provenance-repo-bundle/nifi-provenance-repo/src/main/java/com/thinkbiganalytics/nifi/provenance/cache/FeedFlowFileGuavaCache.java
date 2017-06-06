@@ -171,7 +171,7 @@ public class FeedFlowFileGuavaCache {
             long start = System.currentTimeMillis();
             List<FeedFlowFile> rootFiles = getCompletedFeedFlowFiles();
             if (!rootFiles.isEmpty()) {
-                listeners.stream().forEach(listener -> listener.beforeInvalidation(rootFiles));
+                listeners.stream().forEach(listener -> listener.beforeInvalidation(new ArrayList<>(rootFiles)));
 
                 for (FeedFlowFile root : rootFiles) {
                     invalidate(root);

@@ -194,25 +194,6 @@ public class ProvenanceFeedLookup {
     }
 
     /**
-     * Assign the Feed name and Feed ProcessGroup to the FeedFlowFile
-     *
-     * @param flowFile the feedFlowFile to check
-     * @return true if the feed information was found and assigned, false if not
-     */
-    public boolean assignFeedInformationToFlowFile(FeedFlowFile flowFile) {
-        boolean assigned = flowFile.hasFeedInformationAssigned();
-        if (!assigned) {
-            String feedName = getFeedName(flowFile.getFirstEventProcessorId());
-            String processGroupId = getFeedProcessGroupId(flowFile.getFirstEventProcessorId());
-            flowFile.setFeedName(feedName);
-            flowFile.setFeedProcessGroupId(processGroupId);
-            assigned = true;
-        }
-        return assigned;
-    }
-
-
-    /**
      * Check to see if this event is registered to a Template that is marked as being a Stream
      *
      * @param eventRecordDTO the event to check
