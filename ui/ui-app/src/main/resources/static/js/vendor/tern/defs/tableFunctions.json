@@ -3547,7 +3547,7 @@
   "IsotonicRegression": {
     "!type": "fn() -> IsotonicRegression",
     "!doc": "Isotonic regression.",
-    "!spark": "new org.apache.spark.xml.regression.IsotonicRegression()",
+    "!spark": "new org.apache.spark.ml.regression.IsotonicRegression()",
     "!sparkType": "IsotonicRegression"
   },
   "KMeans": {
