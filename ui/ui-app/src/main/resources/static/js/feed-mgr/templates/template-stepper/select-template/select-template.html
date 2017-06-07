@@ -19,7 +19,7 @@
   -->
 <div layout="row" layout-align="center start">
 
-    <card-layout style="max-width:980px;width:980px;" flex="initial">
+    <card-layout body-css="md-padding" style="max-width:980px;width:980px;" flex="initial">
 
         <header-section>
         <div layout="row" layout-align="space-between-center" flex>
@@ -27,7 +27,7 @@
         </div>
     </header-section >
 
-    <body-section class="md-padding">
+    <body-section>
         <md-input-container>
             <label>Template</label>
             <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
@@ -37,6 +37,19 @@
             </md-select>
         </md-input-container>
         <div class="error md-caption layout-padding" ng-if="vm.errorMessage != null && !vm.isValid">{{vm.errorMessage}}</div>
+
+        <div layout="column" ng-if="!vm.model.reusableTemplate">
+            <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
+            <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
+                <md-radio-group ng-model="vm.model.templateTableOption" flex layout="row" layout-wrap ng-change="vm.onTableOptionChange()" required="true">
+                    <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="30">
+                        {{tableOption.displayName}}
+                        <div class="hint">{{tableOption.description}}</div>
+                    </md-radio-button>
+                </md-radio-group>
+            </md-input-container>
+        </div>
+
         <br/><br/><br/>
         <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </body-section>

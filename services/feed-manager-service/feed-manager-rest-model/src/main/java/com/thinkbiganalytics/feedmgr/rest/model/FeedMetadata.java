@@ -40,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -138,6 +139,11 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
      * List of data source dependencies.
      */
     private List<Datasource> userDatasources;
+
+    /**
+     * Additional key / value pairs for use by plugins.
+     */
+    private Map<String, Object> tableOption;
 
     public FeedMetadata() {
     }
@@ -509,5 +515,13 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setUserDatasources(List<Datasource> userDatasources) {
         this.userDatasources = userDatasources;
+    }
+
+    public Map<String, Object> getTableOption() {
+        return tableOption;
+    }
+
+    public void setTableOption(Map<String, Object> tableOption) {
+        this.tableOption = tableOption;
     }
 }

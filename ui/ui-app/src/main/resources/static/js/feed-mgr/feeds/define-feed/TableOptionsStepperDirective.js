@@ -52,15 +52,14 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
                 // Loads the table option template
                 UiComponentsService.getTemplateTableOption($scope.type)
                     .then(function (tableOption) {
-                        return $templateRequest(tableOption.stepperTemplateUrl);
+                        return (tableOption.stepperTemplateUrl !== null) ? $templateRequest(tableOption.stepperTemplateUrl) : null;
                     })
                     .then(function (html) {
-                        // Convert the html to an actual DOM node
-                        var template = angular.element(html);
-                        // Append it to the directive element
-                        $element.append(template);
-                        // And let Angular $compile it
-                        $compile(template)($scope);
+                        if (html !== null) {
+                            var template = angular.element(html);
+                            $element.append(template);
+                            $compile(template)($scope);
+                        }
                     }, function () {
                         $mdDialog.show(
                             $mdDialog.alert()

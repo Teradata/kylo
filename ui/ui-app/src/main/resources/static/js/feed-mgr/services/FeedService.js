@@ -168,7 +168,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         active: true,
                         roleMemberships:[],
                         owner:null,
-                        roleMembershipsUpdated:false
+                        roleMembershipsUpdated:false,
+                        tableOption: {}
                     };
                 },
                 /**

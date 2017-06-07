@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService, UiComponentsService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -71,16 +71,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.stepNumber = parseInt(this.stepIndex) + 1
 
         /**
-         * The possible options to choose how this template should be displayed in the Feed Stepper
-         * @type {Array.<TemplateTableOption>}
-         */
-        self.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
-        UiComponentsService.getTemplateTableOptions()
-            .then(function (templateTableOptions) {
-                Array.prototype.push.apply(self.templateTableOptions, templateTableOptions);
-            });
-
-        /**
          * A map of the port names to the port Object
          * used for the connections from the outputs to input ports
          * @type {{}}
@@ -92,22 +82,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * @type {Array} of {label: port.name, value: port.name}
          */
         self.inputPortList = [];
-
-        // setup the Stepper types
-        var initTemplateTableOptions = function () {
-            if (self.model.templateTableOption == null) {
-
-                if (self.model.defineTable) {
-                    self.model.templateTableOption = 'DEFINE_TABLE'
-                } else if (self.model.dataTransformation) {
-                    self.model.templateTableOption = 'DATA_TRANSFORMATION'
-                } else if (self.model.reusableTemplate) {
-                    self.model.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
-                } else {
-                    self.model.templateTableOption = 'NO_TABLE'
-                }
-            }
-        };
 
         /**
          * Calls the server to get all the Datasources and the Flow processors and flow types
@@ -210,30 +184,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         }
 
         /**
-         * Initialze the template options
-         */
-        initTemplateTableOptions();
-
-        /**
          * Initialize the connections and flow data
          */
         initTemplateFlowData();
-
-        /**
-         * Called when the user changes the radio buttons
-         */
-        this.onTableOptionChange = function () {
-            if (self.model.templateTableOption === 'DEFINE_TABLE') {
-                self.model.defineTable = true;
-                self.model.dataTransformation = false;
-            } else if (self.model.templateTableOption === 'DATA_TRANSFORMATION') {
-                self.model.defineTable = false;
-                self.model.dataTransformation = true;
-            } else {
-                self.model.defineTable = false;
-                self.model.dataTransformation = false;
-            }
-        };
 
         /**
          * Called when the user changes the output port connections
@@ -395,7 +348,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", "UiComponentsService", RegisterCompleteRegistrationController]);
+    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
     angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);

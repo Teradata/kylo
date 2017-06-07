@@ -25,7 +25,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,RestUrlService, RegisterTemplateService, StateService, AccessControlService,EntityAccessControlService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
+                               UiComponentsService) {
 
         var self = this;
 
@@ -71,6 +72,32 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * @type {boolean}
          */
         self.fetchingTemplateList = false;
+
+        /**
+         * The possible options to choose how this template should be displayed in the Feed Stepper
+         * @type {Array.<TemplateTableOption>}
+         */
+        self.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
+        UiComponentsService.getTemplateTableOptions()
+            .then(function (templateTableOptions) {
+                Array.prototype.push.apply(self.templateTableOptions, templateTableOptions);
+            });
+
+        // setup the Stepper types
+        var initTemplateTableOptions = function () {
+            if (self.model.templateTableOption == null) {
+
+                if (self.model.defineTable) {
+                    self.model.templateTableOption = 'DEFINE_TABLE'
+                } else if (self.model.dataTransformation) {
+                    self.model.templateTableOption = 'DATA_TRANSFORMATION'
+                } else if (self.model.reusableTemplate) {
+                    self.model.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
+                } else {
+                    self.model.templateTableOption = 'NO_TABLE'
+                }
+            }
+        };
 
         function showProgress() {
             if (self.stepperController) {
@@ -231,14 +258,30 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             });
         };
 
+        /**
+         * Called when the user changes the radio buttons
+         */
+        this.onTableOptionChange = function () {
+            if (self.model.templateTableOption === 'DEFINE_TABLE') {
+                self.model.defineTable = true;
+                self.model.dataTransformation = false;
+            } else if (self.model.templateTableOption === 'DATA_TRANSFORMATION') {
+                self.model.defineTable = false;
+                self.model.dataTransformation = true;
+            } else {
+                self.model.defineTable = false;
+                self.model.dataTransformation = false;
+            }
+        };
+
         $scope.$watch(function(){
             return self.model.loading;
         },function(newVal){
-            if(newVal == false) {
+            if(newVal === false) {
+                initTemplateTableOptions();
                 hideProgress();
             }
-
-        })
+        });
 
 
         this.getTemplates();
@@ -254,7 +297,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     };
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService","AccessControlService","EntityAccessControlService",controller]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService",
+                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);

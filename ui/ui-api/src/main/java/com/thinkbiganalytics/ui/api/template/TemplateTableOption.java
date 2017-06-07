@@ -20,6 +20,12 @@ package com.thinkbiganalytics.ui.api.template;
  * #L%
  */
 
+import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
+import com.thinkbiganalytics.metadata.MetadataField;
+
+import java.util.Collections;
+import java.util.List;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -51,6 +57,14 @@ public interface TemplateTableOption {
     @Nullable
     default String getFeedDetailsTemplateUrl() {
         return null;
+    }
+
+    /**
+     * Gets the list of metadata properties that can be used in NiFi property expressions.
+     */
+    @Nonnull
+    default List<AnnotatedFieldProperty<MetadataField>> getMetadataProperties() {
+        return Collections.emptyList();
     }
 
     /**
