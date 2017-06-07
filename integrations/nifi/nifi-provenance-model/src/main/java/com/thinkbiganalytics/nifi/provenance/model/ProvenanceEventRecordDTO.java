@@ -171,6 +171,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private String relationship;
 
+    private String firstEventProcessorId;
+
 
     @JsonProperty("updatedAttributes")
     private Map<String, String> updatedAttributes;
@@ -641,6 +643,14 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setProcessorType(KyloProcessorFlowType processorType) {
         this.processorType = processorType;
+    }
+
+    public String getFirstEventProcessorId() {
+        return firstEventProcessorId;
+    }
+
+    public void setFirstEventProcessorId(String firstEventProcessorId) {
+        this.firstEventProcessorId = firstEventProcessorId;
     }
 
     @Override

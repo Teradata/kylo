@@ -116,11 +116,13 @@ public class FeedFlowFile implements Serializable {
     /**
      * Track stats that were sent via batch via those accumulated over the course of the feed.
      */
-    private FeedFlowFileJobTrackingStats  feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats(this);
+    @JsonIgnore
+    private FeedFlowFileJobTrackingStats feedFlowFileJobTrackingStats;
 
 
     public FeedFlowFile(String id) {
         this.id = id;
+        feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats(id);
     }
 
     public String getId() {
@@ -155,6 +157,7 @@ public class FeedFlowFile implements Serializable {
         return childFlowFiles;
     }
 
+    @JsonIgnore
     public FeedFlowFileJobTrackingStats getFeedFlowFileJobTrackingStats() {
         return feedFlowFileJobTrackingStats;
     }
@@ -194,6 +197,7 @@ public class FeedFlowFile implements Serializable {
         firstEventId = event.getEventId();
         firstEventStartTime = event.getStartTime().getMillis();
         firstEventProcessorId = event.getComponentId();
+        this.feedFlowFileJobTrackingStats.setFirstEventProcessorId(firstEventProcessorId);
     }
 
 
@@ -215,6 +219,7 @@ public class FeedFlowFile implements Serializable {
 
     public void setPrimaryRelatedBatchFeedFlow(String primaryRelatedBatchFeedFlow) {
         this.primaryRelatedBatchFeedFlow = primaryRelatedBatchFeedFlow;
+        this.feedFlowFileJobTrackingStats.setPrimaryRelatedBatchFeedFlow(primaryRelatedBatchFeedFlow);
     }
 
     public Set<String> getRelatedBatchFeedFlows(){
@@ -278,7 +283,7 @@ public class FeedFlowFile implements Serializable {
 
 
     public boolean checkIfEventStartsTheFlowFile(ProvenanceEventRecordDTO eventRecordDTO) {
-        if (flowfilesStarted == null || (flowfilesStarted != null && flowfilesStarted.contains(eventRecordDTO.getFlowFileUuid()))) {
+        if (flowfilesStarted == null || (flowfilesStarted != null && !flowfilesStarted.contains(eventRecordDTO.getFlowFileUuid()))) {
             if (flowfilesStarted == null) {
                 flowfilesStarted = new HashSet<>();
             }

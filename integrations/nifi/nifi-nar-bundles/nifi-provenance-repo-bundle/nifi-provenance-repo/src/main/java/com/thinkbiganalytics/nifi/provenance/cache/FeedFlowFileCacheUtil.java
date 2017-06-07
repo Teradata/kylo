@@ -114,7 +114,7 @@ public class FeedFlowFileCacheUtil {
         }
         event.setFeedFlowFile(feedFlowFile);
 
-
+        event.setFirstEventProcessorId(feedFlowFile.getFirstEventProcessorId());
         if (event.getChildUuids() != null && !event.getChildUuids().isEmpty()) {
             for (String child : event.getChildUuids()) {
                 flowFileCache.add(child, feedFlowFile);

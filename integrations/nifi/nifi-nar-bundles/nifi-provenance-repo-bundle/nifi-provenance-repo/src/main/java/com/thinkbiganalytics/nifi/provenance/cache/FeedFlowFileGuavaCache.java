@@ -73,9 +73,9 @@ public class FeedFlowFileGuavaCache {
     private DateTime lastPrintLogTime = null;
     /**
      * How often should the summary of whats in the cache be logged
-     * Every 5 minutes
+     * Every 30sec
      */
-    private Long PRINT_LOG_MILLIS = 60 * 5000L;
+    private Long PRINT_LOG_MILLIS = 20 * 1000L;
 
     public FeedFlowFileGuavaCache() {
         cache = CacheBuilder.newBuilder().build();
@@ -110,6 +110,7 @@ public class FeedFlowFileGuavaCache {
     public FeedFlowFile getEntry(String id) {
         return cache.getIfPresent(id);
     }
+
 
 
     /**
@@ -155,13 +156,12 @@ public class FeedFlowFileGuavaCache {
         }
     }
 
-    /**
+      /**
      * Invalidate and remove the flowfile from the cache
      */
     public void invalidate(String flowFileId) {
         cache.invalidate(flowFileId);
     }
-
 
     /**
      * Expire any completed FeedFlowFiles checking the {@link FeedFlowFile#isFeedComplete()} to determine if the FeedFlowFile is complete

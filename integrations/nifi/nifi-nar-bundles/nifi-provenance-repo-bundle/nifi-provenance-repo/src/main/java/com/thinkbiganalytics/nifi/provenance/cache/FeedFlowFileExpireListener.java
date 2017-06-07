@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.provenance.cache;
  * #L%
  */
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -30,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -52,7 +50,7 @@ public class FeedFlowFileExpireListener implements FeedFlowFileCacheListener {
 
     @PostConstruct
     private void init(){
-    //    cache.subscribe(this);
+       cache.subscribe(this);
     }
 
     @Override
@@ -61,10 +59,19 @@ public class FeedFlowFileExpireListener implements FeedFlowFileCacheListener {
     }
 
     public void beforeInvalidation(List<FeedFlowFile> completedFlowFiles) {
-        List<ProvenanceEventRecordDTO> dirtyEvents = completedFlowFiles.stream().flatMap(feedFlowFile -> feedFlowFile.getFeedFlowFileJobTrackingStats().getDirtyProcessorProvenanceEvents().stream()).collect(Collectors.toList());
-        if(!dirtyEvents.isEmpty()) {
+        List<ProvenanceEventRecordDTO> updatedEvents = null;
+           for(FeedFlowFile feedFlowFile : completedFlowFiles){
+            List<ProvenanceEventRecordDTO> dirtyEvents =  feedFlowFile.getFeedFlowFileJobTrackingStats().getUpdatedProvenanceEvents();
+            if(dirtyEvents != null && !dirtyEvents.isEmpty()) {
+                if(updatedEvents == null){
+                    updatedEvents = new ArrayList<>();
+                }
+                updatedEvents.addAll(dirtyEvents);
+            }
+        }
+        if(updatedEvents != null && !updatedEvents.isEmpty()) {
             ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
-            eventRecordDTOHolder.setEvents(dirtyEvents);
+            eventRecordDTOHolder.setEvents(updatedEvents);
             provenanceEventActiveMqWriter.writeBatchEvents(eventRecordDTOHolder);
         }
     }

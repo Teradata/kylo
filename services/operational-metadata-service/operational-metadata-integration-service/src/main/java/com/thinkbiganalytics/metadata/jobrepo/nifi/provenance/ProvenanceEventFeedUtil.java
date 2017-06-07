@@ -80,11 +80,11 @@ public class ProvenanceEventFeedUtil {
 
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
-        String feedName = getFeedName(event.getFeedFlowFile().getFirstEventProcessorId());
-        String processGroupId = getFeedProcessGroupId(event.getFeedFlowFile().getFirstEventProcessorId());
+        String feedName = getFeedName(event.getFirstEventProcessorId());
+        String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
         String processorName = getProcessorName(event.getComponentId());
 
-        if (event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId())) {
+        if (event.isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId())) {
             //reassign the feedFlowFile to the batch
             log.info("Reassigned FlowFile from {} to {} ", event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
             event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
@@ -92,7 +92,6 @@ public class ProvenanceEventFeedUtil {
 
 
         event.setIsBatchJob(true);
-     //   event.getFeedFlowFile().setFeedName(feedName);
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);
@@ -132,7 +131,7 @@ public class ProvenanceEventFeedUtil {
     }
 
 public String getFeedName(ProvenanceEventRecordDTO event){
-        return getFeedName(event.getFeedFlowFile().getFirstEventProcessorId());
+        return getFeedName(event.getFirstEventProcessorId());
 }
 
     public String getFeedName(String feedProcessorId){
@@ -147,10 +146,6 @@ public String getFeedName(ProvenanceEventRecordDTO event){
         return getFlowCache().getProcessorIdToProcessorName().get(processorId);
     }
 
-
-    private Integer batchJobsPerSecond(String feedName) {
-        return -1;
-    }
 
      private NifiFlowCacheSnapshot getFlowCache() {
         return nifiFlowCache.getLatest();
