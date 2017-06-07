@@ -60,7 +60,9 @@ public class FeedFlowFileExpireListener implements FeedFlowFileCacheListener {
 
     public void beforeInvalidation(List<FeedFlowFile> completedFlowFiles) {
         List<ProvenanceEventRecordDTO> updatedEvents = null;
-           for(FeedFlowFile feedFlowFile : completedFlowFiles){
+        List<FeedFlowFile> filesToProcess = completedFlowFiles.stream().filter(feedFlowFile -> feedFlowFile.getPrimaryRelatedBatchFeedFlow() != null && feedFlowFile.getId().equalsIgnoreCase(feedFlowFile.getPrimaryRelatedBatchFeedFlow())).collect(Collectors.toList());
+
+           for(FeedFlowFile feedFlowFile : filesToProcess){
             List<ProvenanceEventRecordDTO> dirtyEvents =  feedFlowFile.getFeedFlowFileJobTrackingStats().getUpdatedProvenanceEvents();
             if(dirtyEvents != null && !dirtyEvents.isEmpty()) {
                 if(updatedEvents == null){

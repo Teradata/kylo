@@ -84,9 +84,9 @@ public class ProvenanceEventFeedUtil {
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
         String processorName = getProcessorName(event.getComponentId());
 
-        if (event.isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId())) {
+        if (event.getFeedFlowFile() != null && event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId()) && !event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId()) ) {
             //reassign the feedFlowFile to the batch
-            log.info("Reassigned FlowFile from {} to {} ", event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
+            log.info("Event : {}, processor: {}, Reassigned FlowFile from {} to {} ", event.getEventId(), processorName,event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
             event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
         }
 

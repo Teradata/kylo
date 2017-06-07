@@ -76,6 +76,7 @@ public class BatchFeedStartingJobEventCacheEntry extends BatchFeedProcessorEvent
                 startingFlowFileIds.add(event.getFeedFlowFile().getId());
                 if (primaryFlowFile == null) {
                     primaryFlowFile = event.getFeedFlowFile().getId();
+                    event.getFeedFlowFile().setPrimaryRelatedBatchFeedFlow(event.getFeedFlowFile().getId());
                 }
             }
         }else {
