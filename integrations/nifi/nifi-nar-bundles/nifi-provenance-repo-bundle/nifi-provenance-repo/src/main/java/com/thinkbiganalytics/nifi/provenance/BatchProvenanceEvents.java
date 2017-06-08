@@ -29,6 +29,8 @@ public interface BatchProvenanceEvents {
 
     void sendToJms();
 
+    void logStats();
+
 
 
 }

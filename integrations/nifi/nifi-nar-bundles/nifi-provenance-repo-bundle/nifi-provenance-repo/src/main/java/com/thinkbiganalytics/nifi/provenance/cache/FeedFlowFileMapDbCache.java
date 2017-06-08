@@ -139,11 +139,6 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
 
     }
 
-    @Override
-    public void beforeInvalidation(List<FeedFlowFile> completedFlowFiles) {
-        //no op
-    }
-
     /**
      * Load the persisted cached back into the {@link FeedFlowFileGuavaCache}
      */

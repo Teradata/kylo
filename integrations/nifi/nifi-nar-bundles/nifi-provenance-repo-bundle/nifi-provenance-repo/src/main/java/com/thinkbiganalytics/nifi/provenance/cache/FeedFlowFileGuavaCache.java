@@ -20,17 +20,21 @@ package com.thinkbiganalytics.nifi.provenance.cache;
  * #L%
  */
 
+import com.blogspot.mydailyjava.guava.cache.overflow.FileSystemCacheBuilder;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.nifi.provenance.AggregationEventProcessingStats;
+import com.thinkbiganalytics.nifi.provenance.BatchProvenanceEvents;;
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
-import com.thinkbiganalytics.nifi.provenance.reporting.KyloProvenanceEventReportingTask;
+import com.thinkbiganalytics.nifi.provenance.repo.KyloPersistentProvenanceEventRepository;
 
 import org.apache.nifi.controller.ConfigurationContext;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,11 +52,14 @@ import java.util.stream.Collectors;
 /**
  * As a feed runs through NiFi the root {@link FeedFlowFile} keeps track of its progress and the status of its child flow files {@link FeedFlowFile#activeChildFlowFiles} and last processed
  * ProvenanceEvent {@link FeedFlowFile#flowFileLastEventTime} When a {@link FeedFlowFile} is marked as the complete {@link FeedFlowFile#isFeedComplete()} it will be removed from this cache via the
- * {@link this#expire()} thread When NiFi shuts down the cache is persisted to disk via the {@link FeedFlowFileMapDbCache#persistFlowFiles()} called by the {@link
- * com.thinkbiganalytics.nifi.provenance.reporting.KyloProvenanceEventReportingTask#onShutdown(ConfigurationContext)} This is to ensure that on startup of NiFi the tracking of the running flow files
- * is kept in tact When NiFi starts the persisted disk cache is checked and loaded back into this cache via the {@link KyloProvenanceEventReportingTask#onConfigurationRestored()}
+ * {@link this#expire()} thread When NiFi shuts down the cache is persisted to disk via the {@link FeedFlowFileMapDbCache#persistFlowFiles()} called by the {@link KyloPersistentProvenanceEventRepository#close()}
+ *  This is to ensure that on startup of NiFi the tracking of the running flow files is kept in tact When NiFi starts the persisted disk cache is checked and loaded back into this cache via the {@link KyloPersistentProvenanceEventRepository#initializeFlowFilesFromMapDbCache()}
  */
 public class FeedFlowFileGuavaCache {
+
+
+    @Autowired
+    BatchProvenanceEvents batchProvenanceEvents;
 
     private static final Logger log = LoggerFactory.getLogger(FeedFlowFileGuavaCache.class);
     /**
@@ -66,7 +73,7 @@ public class FeedFlowFileGuavaCache {
      * This is because for rapid fire events we sample data and dont send the final processor event data to ops manager.
      * This flag will enable the listener to update ops manager step information when the entire feed is completed
      */
-    private boolean primaryFlowFileCompleteListenerEnabled = true;
+    private boolean primaryFlowFileCompleteListenerEnabled = false;
 
 
     /**
@@ -102,9 +109,13 @@ public class FeedFlowFileGuavaCache {
     private Long PRINT_LOG_MILLIS = 20 * 1000L;
 
     public FeedFlowFileGuavaCache() {
-        cache = CacheBuilder.newBuilder().build();
+
+      cache =  FileSystemCacheBuilder.newBuilder().persistenceDirectory(new File("/var/kylo/cache"))
+            .maximumSize(100L)
+            .build();
+       // cache = CacheBuilder.newBuilder().build();
         flowFileToPrimaryFlow = CacheBuilder.newBuilder().build();
-        log.info("Created new FlowFileGuavaCache running timer every {} seconds to check and expire finished flow files", expireTimerCheckSeconds);
+      //  log.info("Created new FlowFileGuavaCache running timer every {} seconds to check and expire finished flow files", expireTimerCheckSeconds);
         initTimerThread();
     }
 
@@ -187,7 +198,7 @@ public class FeedFlowFileGuavaCache {
      *
      * @param flowFile the flow file to invalidate/remove
      */
-    private void invalidate(FeedFlowFile flowFile) {
+    public void invalidate(FeedFlowFile flowFile) {
         if (flowFile != null && flowFile.isFeedComplete()) {
             invalidate(flowFile.getId());
             if (flowFile.getChildFlowFiles() != null) {
@@ -207,7 +218,7 @@ public class FeedFlowFileGuavaCache {
      * @param primaryFlowFileId the flow marked as being primary
      */
     public void addRelatedFlowFile(String flowFileId,String primaryFlowFileId) {
-        if(flowFileToPrimaryFlow.getIfPresent(flowFileId) == null) {
+        if(isPrimaryFlowFileCompleteListenerEnabled() && flowFileToPrimaryFlow.getIfPresent(flowFileId) == null) {
             flowFileToPrimaryFlow.put(flowFileId, primaryFlowFileId);
             primaryFlowFilesActive.computeIfAbsent(primaryFlowFileId,key -> new AtomicInteger(0)).incrementAndGet();
         }
@@ -229,7 +240,6 @@ public class FeedFlowFileGuavaCache {
             long start = System.currentTimeMillis();
             List<FeedFlowFile> rootFiles = getCompletedFeedFlowFiles();
             if (!rootFiles.isEmpty()) {
-                listeners.stream().forEach(listener -> listener.beforeInvalidation(new ArrayList<>(rootFiles)));
                 Set<String> allCompleteFlowFileIds = new HashSet<>();
                 for (FeedFlowFile root : rootFiles) {
                     invalidate(root);
@@ -260,12 +270,17 @@ public class FeedFlowFileGuavaCache {
         }
     }
 
+    public boolean isPrimaryFlowFileCompleteListenerEnabled() {
+        return primaryFlowFileCompleteListenerEnabled;
+    }
+
     /**
      * Log some summary data about the cache and JMS activity
      */
     public void printSummary() {
         Map<String, FeedFlowFile> map = cache.asMap();
         log.info("FeedFlowFile Cache Size: {}.  RelatedFlowsSize: {}  ", map.size(), flowFileToPrimaryFlow.size());
+        batchProvenanceEvents.logStats();
         log.info("ProvenanceEvent JMS Stats:  Sent {} statistics events to JMS.  Sent {} batch events to JMS ", AggregationEventProcessingStats.getStreamingEventsSent(),
                  AggregationEventProcessingStats.getBatchEventsSent());
 
@@ -278,11 +293,13 @@ public class FeedFlowFileGuavaCache {
     private void initTimerThread() {
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(() -> {
-            expire();
-        }, expireTimerCheckSeconds, expireTimerCheckSeconds, TimeUnit.SECONDS);
+            printSummary();
+        }, 30, 30, TimeUnit.SECONDS);
 
 
     }
+
+
 
 
 }

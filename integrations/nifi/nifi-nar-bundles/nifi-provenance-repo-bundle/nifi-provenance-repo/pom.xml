@@ -110,6 +110,18 @@
       <artifactId>spring-jms</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.blogspot.mydailyjava</groupId>
+      <artifactId>guava-cache-overflow-extension</artifactId>
+      <version>0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
 
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>

@@ -112,8 +112,14 @@ public class FeedFlowFile implements Serializable {
 
     private boolean isBuiltFromMapDb;
 
+    public FeedFlowFile() {
+    }
 
     public FeedFlowFile(String id) {
+        this.id = id;
+    }
+
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -337,4 +343,24 @@ public class FeedFlowFile implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+    public void reset(){
+        this.id = null;
+        this.isStream = false;
+        this.activeChildFlowFiles = null;
+        this.childFlowFiles = null;
+        this.relatedBatchFeedFlows = null;
+        this.primaryRelatedBatchFeedFlow = null;
+        this.firstEventId = null;
+        this.firstEventStartTime = null;
+        this.firstEventProcessorId = null;
+        this.failedEvents = new AtomicInteger(0);
+        this.flowfilesStarted = null;
+        this.isCurrentFlowFileComplete = false;
+        this.flowFileLastEventTime = null;
+        this.childFlowFileStartTimes = null;
+        this.flowFileIdToParentFlowFileId = null;
+        this.isBuiltFromMapDb = false;
+    }
+
 }

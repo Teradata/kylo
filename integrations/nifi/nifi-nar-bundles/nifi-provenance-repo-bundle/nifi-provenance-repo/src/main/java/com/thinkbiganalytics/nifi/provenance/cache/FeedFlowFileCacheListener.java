@@ -32,8 +32,6 @@ public interface FeedFlowFileCacheListener {
 
     void onInvalidate(FeedFlowFile flowFile);
 
-    void beforeInvalidation(List<FeedFlowFile> completedFlowFiles);
-
     void onPrimaryFeedFlowsComplete(Set<String> primaryFeedFlowId);
 
 }

@@ -23,11 +23,8 @@ package com.thinkbiganalytics.nifi.provenance.config;
 import com.thinkbiganalytics.nifi.provenance.BatchEventsBySampling;
 import com.thinkbiganalytics.nifi.provenance.BatchProvenanceEvents;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollectorV2;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollectorV3;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectFactory;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
@@ -35,6 +32,7 @@ import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
+import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +74,10 @@ public class NifiProvenanceConfig {
         config.setBlockWhenExhausted(false);
         config.setTestOnBorrow(false);
         config.setTestOnReturn(false);
-        return new ProvenanceEventObjectPool(new ProvenanceEventObjectFactory(), config);
+        AbandonedConfig abandonedConfig = new AbandonedConfig();
+        return new ProvenanceEventObjectPool(new ProvenanceEventObjectFactory(), config,abandonedConfig);
     }
+
 
     @Bean
     public FeedFlowFileMapDbCache feedFlowFileMapDbCache() {
@@ -101,30 +101,16 @@ public class NifiProvenanceConfig {
     }
 
     @Bean
-    public ProvenanceEventCollectorV2 provenanceEventCollectorV2() {
-        return new ProvenanceEventCollectorV2(provenanceEventActiveMqWriter());
+    public ProvenanceEventCollector provenanceEventCollectorV3() {
+        return new ProvenanceEventCollector();
     }
 
-    @Bean
-    public ProvenanceEventCollectorV3 provenanceEventCollectorV3() {
-        return new ProvenanceEventCollectorV3(provenanceEventActiveMqWriter());
-    }
-
-    @Bean
-    @Deprecated
-    public ProvenanceEventCollector provenanceEventCollector() {
-        return new ProvenanceEventCollector(provenanceEventActiveMqWriter());
-    }
 
     @Bean
     public ProvenanceStatsCalculator provenanceStatsCalculator() {
         return new ProvenanceStatsCalculator();
     }
 
-    @Bean
-    public ProvenanceFeedLookup provenanceFeedLookup() {
-        return new ProvenanceFeedLookup();
-    }
 
 
     @Bean(name = "kyloProvenanceProcessingTaskExecutor" )

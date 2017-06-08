@@ -36,11 +36,6 @@ public class NoopFeedFlowFileCacheListener implements FeedFlowFileCacheListener 
     }
 
     @Override
-    public void beforeInvalidation(List<FeedFlowFile> completedFlowFiles) {
-
-    }
-
-    @Override
     public void onPrimaryFeedFlowsComplete(Set<String> primaryFeedFlowId) {
 
     }

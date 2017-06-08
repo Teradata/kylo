@@ -56,20 +56,20 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
      * Event Cache has a key of the processor Id + the feed flowfile id.
      * This should expire after access > than the sampleTimeInMills
      */
-    Cache<String, BatchFeedProcessorEventCacheEntry> feedProcessorEventCache = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).build();
+    Cache<String, BatchFeedProcessorEventCacheEntry> feedProcessorEventCache = CacheBuilder.newBuilder().recordStats().expireAfterAccess(3, TimeUnit.SECONDS).build();
 
     /**
      * Starting flow cache has a key of the processorId for the starting processor.
      * This is cleared internally and has a longer expire time
      */
-    Cache<String, BatchFeedStartingJobEventCacheEntry> startingFlowsCache = CacheBuilder.newBuilder().expireAfterAccess(15, TimeUnit.SECONDS).build();
+    Cache<String, BatchFeedStartingJobEventCacheEntry> startingFlowsCache = CacheBuilder.newBuilder().recordStats().expireAfterAccess(15, TimeUnit.SECONDS).build();
 
 
     /**
      * unique mapKey along with the set of batch keys sent to jms
      * Used to ensure we dont send duplicate events to jms
      */
-    Cache<String, String> batchedEvents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
+    Cache<String, String> batchedEvents = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.SECONDS).build();
 
     @Autowired
     private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
@@ -98,6 +98,7 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
     /**
      * The number of events per the threshold to sample
      * Every {sampleEventRate}  per {sampleTimeInMillis} process
+     * This is for each Feed and Processor in the feed
      */
     private final Integer sampleEventRate = 3;
 
@@ -108,6 +109,9 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
     private Integer jmsGroupSize = 30;
 
 
+    /**
+     * When a FeedFlowFile is completed this listener will be invoked
+     */
     private FeedFlowFileExpireListener feedFlowFileExpireListener = new FeedFlowFileExpireListener();
 
 
@@ -137,6 +141,8 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
      */
     protected String mapKey(ProvenanceEventRecordDTO event) {
         String key = event.getFeedFlowFile().getFirstEventProcessorId() + ":" + event.getComponentId();
+
+        //events that create a new feed flow file do not include the flow file as the tracking key
         if (!event.isStartOfJob() && !event.getFeedFlowFile().isStream()) {
             key += ":" + event.getJobFlowFileId();
         }
@@ -173,10 +179,14 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
                 cache.addRelatedFlowFile(event.getFlowFileUuid(),event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow());
             }
 
-            //track the additional attrs
-            String key = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
-            if(key != null) {
-                flowFileJobTrackingStatsMap.computeIfAbsent(key, k -> new FeedFlowFileJobTrackingStats(event.getFeedFlowFile().getFirstEventProcessorId(),event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow())).trackExtendedAttributes(event);
+            if(cache.isPrimaryFlowFileCompleteListenerEnabled()) {
+                //track the additional attrs
+                String key = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
+                if (key != null) {
+                    flowFileJobTrackingStatsMap
+                        .computeIfAbsent(key, k -> new FeedFlowFileJobTrackingStats(event.getFeedFlowFile().getFirstEventProcessorId(), event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow()))
+                        .trackExtendedAttributes(event);
+                }
             }
 
             if(processed) {
@@ -200,7 +210,11 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
     }
 
 
+    /**
+     * Send the events off to jms
+     */
     public void sendToJms() {
+
         if (!jmsEvents.isEmpty()) {
             Lists.partition(jmsEvents, jmsGroupSize).forEach(eventsSubList -> {
                 ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
@@ -208,12 +222,17 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
                 provenanceEventActiveMqWriter.writeBatchEvents(eventRecordDTOHolder);
             });
         }
+
         //clear it
         jmsEvents.clear();
 
     }
 
 
+    /**
+     * Used to send additional tracking stats when the feed completes.
+     * This is only enabled if the cache.isPrimaryFlowFileCompleteListenerEnabled()
+     */
     private class FeedFlowFileExpireListener extends NoopFeedFlowFileCacheListener {
 
 
@@ -274,6 +293,12 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
         }
 
 
+    }
+
+    public void logStats(){
+        log.info("Batched Events Stats: {} ",batchedEvents.stats());
+        log.info("Feed Processor Events Stats: {} ",feedProcessorEventCache.stats());
+        log.info("Starting Feed Flows Stats: {} ",startingFlowsCache.stats());
     }
 
 }

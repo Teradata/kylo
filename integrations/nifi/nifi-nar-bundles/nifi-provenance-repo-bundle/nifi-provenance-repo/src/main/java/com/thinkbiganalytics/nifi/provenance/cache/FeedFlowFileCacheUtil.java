@@ -26,6 +26,7 @@ import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
+import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ public class FeedFlowFileCacheUtil {
 
     @Autowired
     FeedFlowFileGuavaCache flowFileGuavaCache;
+
 
     public FeedFlowFileCacheUtil() {
 
@@ -141,7 +143,11 @@ public class FeedFlowFileCacheUtil {
             event.setIsEndOfJob(true);
             event.setIsFinalJobEvent(true);
         }
-
-
     }
+
+    public void completeFlowFile(FeedFlowFile feedFlowFile){
+        flowFileGuavaCache.invalidate(feedFlowFile);
+    }
+
+
 }

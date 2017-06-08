@@ -19,9 +19,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * limitations under the License.
  * #L%
  */
-
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +31,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by sr186054 on 5/26/17.
+ *
  */
 public class KyloProvenanceProcessingQueue  {
 
@@ -43,10 +40,19 @@ public class KyloProvenanceProcessingQueue  {
     LinkedBlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> queue = new LinkedBlockingQueue();
 
 
+    /**
+     * Add an Event and its corresponding id to thte queue
+     * @param eventId the event id
+     * @param event the event
+     */
     public void put(Long eventId, ProvenanceEventRecord event){
         queue.add(new AbstractMap.SimpleEntry<>(eventId,event));
     }
 
+    /**
+     * Drain the queue to a list
+     * @return the list of id,event objects
+     */
     public List<Map.Entry<Long,ProvenanceEventRecord>>  takeAll(){
         List<Map.Entry<Long,ProvenanceEventRecord>> events = new ArrayList();
         if(!queue.isEmpty()) {
@@ -59,10 +65,28 @@ public class KyloProvenanceProcessingQueue  {
       return events;
     }
 
+    /**
+     * Take a subset of the elements off the queue
+     * @param maxElements number of elements to drain
+     * @return the list of id,event objects
+     */
     public List<Map.Entry<Long,ProvenanceEventRecord>>  take(int maxElements){
         List<Map.Entry<Long,ProvenanceEventRecord>> events = new ArrayList();
         queue.drainTo(events, maxElements);
         return events;
+    }
+
+    /**
+     * Take a subset of the elements off the queue
+     * @param maxElements number of elements to drain
+     * @return the list of id,event objects
+     */
+    public Map.Entry<Long,ProvenanceEventRecord>  take() {
+        try {
+            return queue.take();
+        }catch (InterruptedException e){
+            return null;
+        }
     }
 
 }

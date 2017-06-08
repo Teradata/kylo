@@ -21,7 +21,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -32,21 +31,21 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 
 public class KyloRecordWriterDelegate implements RecordWriter {
 
     private static final Logger log = LoggerFactory.getLogger(KyloRecordWriterDelegate.class);
 
-    private Long conversionTime = 0L;
-    private Long eventCount = 0L;
-
     private RecordWriter recordWriter;
-    KyloProvenanceProcessingQueue processingQueue;
+    BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
-    public KyloRecordWriterDelegate(RecordWriter recordWriter,KyloProvenanceProcessingQueue processingQueue) {
+    public KyloRecordWriterDelegate(RecordWriter recordWriter,BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue) {
         this.recordWriter = recordWriter;
         this.processingQueue =processingQueue;
     }
@@ -114,43 +113,11 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     @Override
     public long writeRecord(ProvenanceEventRecord provenanceEventRecord, long eventId) throws IOException {
         long bytesWritten = recordWriter.writeRecord(provenanceEventRecord, eventId);
-         processingQueue.put(eventId,provenanceEventRecord);
-         return bytesWritten;
-    }
-
-    /**
-     * generate timing stats for converting to the DTO
-     * @param start start time
-     */
-    private void generateConversionStats(long start){
-
-        long time = System.currentTimeMillis() - start;
-        conversionTime+=time;
-        eventCount +=1;
-        if(eventCount % 1000 == 0){
-            avgConversionTime();
-        }
+        processingQueue.add(new AbstractMap.SimpleEntry<>(eventId, provenanceEventRecord));
+        return bytesWritten;
     }
 
 
-    private Double avgConversionTime() {
-      Double time = conversionTime.doubleValue()/eventCount;
-      log.info("Avg time to convert {} events is {} ms",eventCount,time);
-      return time;
-    }
-
-
-    /***
-     * Gets the Spring managed bean to retrieve Kylo feed information
-     * @return
-     */
-    private ProvenanceFeedLookup getProvenanceFeedLookup() {
-        return SpringApplicationContext.getInstance().getBean(ProvenanceFeedLookup.class);
-    }
-
-    private ProvenanceEventObjectPool getProvenanceEventObjectPool() {
-        return SpringApplicationContext.getInstance().getBean(ProvenanceEventObjectPool.class);
-    }
 
     /*
 NiFi 1.2 method

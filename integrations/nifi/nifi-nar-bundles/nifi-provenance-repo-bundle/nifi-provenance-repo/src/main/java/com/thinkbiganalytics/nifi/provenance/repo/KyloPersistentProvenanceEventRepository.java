@@ -39,16 +39,26 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by sr186054 on 5/26/17.
+ * Kylo Provenance Event Repository
+ * This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to the KylpProvenanceProcessingQueue with the KyloProvenanceEventConsumer will process in a different thread
  */
 public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
 
-    KyloProvenanceProcessingQueue processingQueue;
+    /**
+     * The shared queue that the Consumer will take in a new thread
+     */
+    private BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
+    /**
+     * The consumer to take and process the Provenance Events
+     */
     KyloProvenanceEventConsumer kyloProvenanceEventConsumer;
 
 
@@ -71,11 +81,10 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
 
     private void init() {
-        processingQueue = new KyloProvenanceProcessingQueue();
-
+        processingQueue = new LinkedBlockingQueue<>();
         loadSpring();
         kyloProvenanceEventConsumer = new KyloProvenanceEventConsumer(processingQueue);
-        autowire(kyloProvenanceEventConsumer);
+       // autowire(kyloProvenanceEventConsumer);
         startConsumer();
     }
 
@@ -83,18 +92,15 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     @Override
     public void registerEvent(ProvenanceEventRecord event) {
         super.registerEvent(event);
-        log.debug("registerEvent {} ",event);
     }
 
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> events) {
         super.registerEvents(events);
-      log.debug("registerEvents {} ",events);
     }
 
     @Override
     protected RecordWriter[] createWriters(final RepositoryConfiguration config, final long initialRecordId) throws IOException {
-        log.info("Creating new KyloRecordWriterDelegate");
         final RecordWriter[] writers = super.createWriters(config, initialRecordId);
         final RecordWriter[] interceptEventIdWriters = new RecordWriter[writers.length];
         for (int i = 0; i < writers.length; i++) {
@@ -102,11 +108,6 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
             interceptEventIdWriters[i] = delegate;
         }
         return interceptEventIdWriters;
-    }
-
-    private void autowire(Object o) {
-        AutowireCapableBeanFactory autowire = SpringApplicationContext.getInstance().getApplicationContext().getAutowireCapableBeanFactory();
-        autowire.autowireBean(o);
     }
 
     private void loadSpring() {
@@ -117,7 +118,10 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
         }
     }
 
-    public void startConsumer() {
+    /**
+     * Start the consumer thread to process the events and send to Kylo
+     */
+    private void startConsumer() {
         initializeFlowFilesFromMapDbCache();
         getTaskExecutor().execute(kyloProvenanceEventConsumer);
     }
@@ -148,7 +152,7 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     }
 
 
-    TaskExecutor getTaskExecutor() {
+    private TaskExecutor getTaskExecutor() {
         return (ThreadPoolTaskExecutor) SpringApplicationContext.getInstance().getBean("kyloProvenanceProcessingTaskExecutor");
     }
 

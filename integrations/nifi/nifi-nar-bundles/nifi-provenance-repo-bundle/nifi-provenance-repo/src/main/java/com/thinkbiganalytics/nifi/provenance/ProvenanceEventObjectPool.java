@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.provenance;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -33,6 +34,9 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
  */
 public class ProvenanceEventObjectPool extends GenericObjectPool<ProvenanceEventRecordDTO> {
 
+    public ProvenanceEventObjectPool(PooledObjectFactory<ProvenanceEventRecordDTO> factory, GenericObjectPoolConfig config, AbandonedConfig abandonedConfig) {
+        super(factory, config, abandonedConfig);
+    }
 
     public ProvenanceEventObjectPool(PooledObjectFactory<ProvenanceEventRecordDTO> factory) {
         super(factory);
