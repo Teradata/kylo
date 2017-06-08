@@ -221,7 +221,7 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
      */
     public boolean addEvent(ProvenanceEventRecordDTO event) {
 
-        event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().trackExtendedAttributes(event);
+      //  event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().trackExtendedAttributes(event);
 
         if (!isSuppressEvent(event)) {
             if (lastEventTime == null) {
@@ -231,7 +231,7 @@ public class BatchFeedProcessorEventsV2 implements  Serializable {
 
             String batchKey = batchEventKey(event);
             if (!uniqueBatchEvents.contains(batchKey)) {
-                event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().markExtendedAttributesAsSent(event);
+              //  event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().markExtendedAttributesAsSent(event);
                 //reassign the flowfile to a batch one
                 if(event.getFeedFlowFile().hasRelatedBatchFlows()) {
                     String ffId = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();

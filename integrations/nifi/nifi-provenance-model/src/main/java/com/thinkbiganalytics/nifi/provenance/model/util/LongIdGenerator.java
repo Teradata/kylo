@@ -1,17 +1,17 @@
-package com.thinkbiganalytics.nifi.provenance.cache;
+package com.thinkbiganalytics.nifi.provenance.model.util;
 
 /*-
  * #%L
- * thinkbig-nifi-provenance-repo
+ * thinkbig-nifi-provenance-model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,20 +20,25 @@ package com.thinkbiganalytics.nifi.provenance.cache;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
-
-import java.util.List;
-import java.util.Set;
-
-/**
- */
-public interface FeedFlowFileCacheListener {
+import java.util.concurrent.atomic.AtomicLong;
 
 
-    void onInvalidate(FeedFlowFile flowFile);
+public class LongIdGenerator {
 
-    void beforeInvalidation(List<FeedFlowFile> completedFlowFiles);
+    final static AtomicLong kyloEventIdGenerator = new AtomicLong(-1);
 
-    void onPrimaryFeedFlowsComplete(Set<String> primaryFeedFlowId);
 
+    public static Long nextId(){
+        Long next = kyloEventIdGenerator.decrementAndGet();
+        if(next <= Long.MIN_VALUE){
+            next = reset();
+        }
+        return next;
+
+    }
+
+    private static Long reset(){
+        kyloEventIdGenerator.set(-1);
+        return kyloEventIdGenerator.get();
+    }
 }

@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -131,6 +132,11 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
                 flowFile.getChildFlowFiles().stream().forEach(flowFileId -> memFeedFlowFileCache.remove(flowFileId));
             }
         }
+    }
+
+    @Override
+    public void onPrimaryFeedFlowsComplete(Set<String> primaryFeedFlowId) {
+
     }
 
     @Override

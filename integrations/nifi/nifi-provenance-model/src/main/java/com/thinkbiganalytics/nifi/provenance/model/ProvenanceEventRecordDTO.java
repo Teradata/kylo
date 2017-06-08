@@ -749,5 +749,7 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.previousAttributes = null;
         this.additionalProperties = null;
         this.attributeMap = null;
+        this.streamingBatchFeedFlowFileId = null;
+        this.firstEventProcessorId = null;
     }
 }

@@ -114,11 +114,7 @@ public class BatchFeedProcessorEventCacheEntry {
 
     public boolean process(ProvenanceEventRecordDTO event) {
 
-        event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().trackExtendedAttributes(event);
         boolean process = isProcessEvent(event);
-        if (process) {
-            event.getFeedFlowFile().getFeedFlowFileJobTrackingStats().markExtendedAttributesAsSent(event);
-        }
         if (!process) {
            event.setStream(true);
         }

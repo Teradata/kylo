@@ -30,7 +30,6 @@ import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
-import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileExpireListener;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;;
@@ -127,10 +126,6 @@ public class NifiProvenanceConfig {
         return new ProvenanceFeedLookup();
     }
 
-    @Bean
-    public FeedFlowFileExpireListener feedFlowFileExpireListener(){
-        return new FeedFlowFileExpireListener();
-    }
 
     @Bean(name = "kyloProvenanceProcessingTaskExecutor" )
     public ThreadPoolTaskExecutor kyloProvenanceProcessingTaskExecutor() {

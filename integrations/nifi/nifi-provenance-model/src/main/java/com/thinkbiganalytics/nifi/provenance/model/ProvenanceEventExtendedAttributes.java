@@ -20,9 +20,11 @@ package com.thinkbiganalytics.nifi.provenance.model;
  * #L%
  */
 
+import java.nio.file.Files;
+
 public enum ProvenanceEventExtendedAttributes {
 
-    PARENT_FLOW_FILES_COUNT("Parent Flow Files","Count of parent flow files coming into this processor"), CHILD_FLOW_FILES_COUNT("Child Flow Files", "Count of child flow files coming out of this processor");
+    FLOW_FILES_PROCESSED_COUNT("Flow Files Processed","Total Number of files processed"),PARENT_FLOW_FILES_COUNT("Parent Flow Files","Count of parent flow files coming into this processor"), CHILD_FLOW_FILES_COUNT("Child Flow Files", "Count of child flow files coming out of this processor");
 
     private String displayName;
     private String description;

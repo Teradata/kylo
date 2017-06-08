@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.provenance.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.thinkbiganalytics.nifi.provenance.model.util.LongIdGenerator;
 
 import org.joda.time.DateTime;
 
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +53,10 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
 
     private Map<String,DateTime> actualProcessorIdEventTime = null;
 
+    private Map<String,Set<String>> actualFlowFilesProcessed = null;
+
+    private Map<String,Integer> sentFlowFilesProcessedCount = null;
+
     private Set<String> updatedProcessors;
 
     private String feedFlowFileId;
@@ -62,9 +68,11 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
     public FeedFlowFileJobTrackingStats(){
 
     }
-public FeedFlowFileJobTrackingStats(String feedFlowFileId){
-    this.feedFlowFileId = feedFlowFileId;
-}
+
+    public FeedFlowFileJobTrackingStats(String firstEventProcessorId,String feedFlowFileId){
+        this.feedFlowFileId = feedFlowFileId;
+        this.firstEventProcessorId =firstEventProcessorId;
+    }
 
     public String getFirstEventProcessorId() {
         return firstEventProcessorId;
@@ -80,6 +88,13 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
 
     public void setPrimaryRelatedBatchFeedFlow(String primaryRelatedBatchFeedFlow) {
         this.primaryRelatedBatchFeedFlow = primaryRelatedBatchFeedFlow;
+    }
+
+    private void addFlowFile(String processorId, String flowFileId){
+        if(actualFlowFilesProcessed == null) {
+            actualFlowFilesProcessed = new ConcurrentHashMap<>();
+        }
+        actualFlowFilesProcessed.computeIfAbsent(processorId, id -> new HashSet<String>()).add(flowFileId);
     }
 
     @JsonIgnore
@@ -122,6 +137,26 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
         return map;
     }
 
+    public Integer getActualFlowFilesProcessed(String processorId) {
+        Integer count = 0;
+        if(actualFlowFilesProcessed != null){
+            if(actualFlowFilesProcessed.containsKey(processorId)){
+                return actualFlowFilesProcessed.get(processorId).size();
+            }
+        }
+        return count;
+    }
+
+    public Integer getSentFlowFilesProcessed(String processorId) {
+        Integer count = 0;
+        if(sentProcessorIdChildFlowFileCount != null){
+            if(sentProcessorIdChildFlowFileCount.containsKey(processorId)){
+                return sentProcessorIdChildFlowFileCount.get(processorId);
+            }
+        }
+        return count;
+    }
+
     public Integer getActualParentFlowFileCount(String processorId){
          return actualProcessorIdParentFlowFileCount == null ? 0: actualProcessorIdParentFlowFileCount.getOrDefault(processorId, 0);
     }
@@ -154,6 +189,13 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
 
     }
 
+    private void setSentFlowFilesProcessedCount(String processorId, Integer count){
+        if(sentFlowFilesProcessedCount == null){
+            sentFlowFilesProcessedCount = new HashMap<>();
+        }
+        sentFlowFilesProcessedCount.put(processorId,count);
+    }
+
     @JsonIgnore
     public void trackExtendedAttributes(ProvenanceEventRecordDTO event){
         String processorId = event.getComponentId();
@@ -164,6 +206,7 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
         if(event.getChildUuids() != null && !event.getChildUuids().isEmpty()){
            addChildFlowFiles(processorId,event.getChildUuids().size());
         }
+        addFlowFile(processorId,event.getFlowFileUuid());
 
         if(actualProcessorIdEventTime == null){
             actualProcessorIdEventTime = new HashMap<>();
@@ -181,14 +224,26 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
         String processorId = event.getComponentId();
         Integer actualParents = getActualParentFlowFileCount(processorId);
         Integer actualChildren = getActualChildFlowFileCount(processorId);
-        if(actualParents != 0 || actualChildren != 0) {
+        Integer flowFilesProcessed = getActualFlowFilesProcessed(processorId);
+        if(actualParents != 0 || actualChildren != 0 || flowFilesProcessed != 0) {
             if(event.getUpdatedAttributes() == null){
                 event.setUpdatedAttributes(new HashMap<>());
             }
-            event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.PARENT_FLOW_FILES_COUNT.getDisplayName(), actualParents + "");
-            event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.CHILD_FLOW_FILES_COUNT.getDisplayName(), actualChildren + "");
-            setSentParentFlowFileCount(processorId, actualParents);
-            setSentChildFlowFileCount(processorId, actualChildren);
+            if(actualParents  != 0) {
+                event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.PARENT_FLOW_FILES_COUNT.getDisplayName(), actualParents + "");
+                setSentParentFlowFileCount(processorId, actualParents);
+            }
+            if(actualChildren != 0) {
+                event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.CHILD_FLOW_FILES_COUNT.getDisplayName(), actualChildren + "");
+                setSentChildFlowFileCount(processorId, actualChildren);
+            }
+            if(flowFilesProcessed != 0) {
+                event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.FLOW_FILES_PROCESSED_COUNT.getDisplayName(), flowFilesProcessed+"");
+                setSentFlowFilesProcessedCount(processorId,flowFilesProcessed);
+            }
+
+
+
             if(check) {
                 dirtyCheck(event);
             }
@@ -199,7 +254,7 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
     @JsonIgnore
     private void dirtyCheck(ProvenanceEventRecordDTO event){
         String processorId = event.getComponentId();
-        if(getActualChildFlowFileCount(processorId) != getSentChildFlowFileCount(processorId) || getActualParentFlowFileCount(processorId) != getSentParentFlowFileCount(processorId)) {
+        if(getActualChildFlowFileCount(processorId) != getSentChildFlowFileCount(processorId) || getActualParentFlowFileCount(processorId) != getSentParentFlowFileCount(processorId) || getActualFlowFilesProcessed(processorId) != getSentFlowFilesProcessed(processorId)) {
             dirty(processorId);
         }
         else {
@@ -220,13 +275,11 @@ public FeedFlowFileJobTrackingStats(String feedFlowFileId){
                 event.setEventTime(actualProcessorIdEventTime.get(processorId));
                 event.setJobFlowFileId(feedFlowFileId);
                 String ffId = feedFlowFileId;
-                     ffId = getPrimaryRelatedBatchFeedFlow();
-                    if (ffId != null) {
-                        event.setStreamingBatchFeedFlowFileId(ffId);
-                    }
+                event.setStreamingBatchFeedFlowFileId(ffId);
                 event.setFlowFileUuid(ffId);
                 event.setJobFlowFileId(ffId);
-                event.setEventId(-1L);
+
+                event.setEventId(LongIdGenerator.nextId());
                 event.setEventType("KYLO");
                 event.setDetails("Job Tracking Stats Event");
                 list.add(event);

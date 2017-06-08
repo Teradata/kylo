@@ -36,9 +36,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -56,6 +59,27 @@ public class FeedFlowFileGuavaCache {
      * The cache of FeedFlowFiles
      */
     private final Cache<String, FeedFlowFile> cache;
+
+
+    /**
+     * When the ops manager feeds complete their stats tracking listener will be called to send any items to ops manager that didnt get sent during the standard processing.
+     * This is because for rapid fire events we sample data and dont send the final processor event data to ops manager.
+     * This flag will enable the listener to update ops manager step information when the entire feed is completed
+     */
+    private boolean primaryFlowFileCompleteListenerEnabled = true;
+
+
+    /**
+     * Keep a mapping between flow files that start rapidly for a given feed to those that are being tracked in Kylo Ops Manager
+     */
+    private final Cache<String, String> flowFileToPrimaryFlow;
+
+    /**
+     * Keep the reverse mapping to the flowFileToPrimaryFlow.
+     * This will be decremented every time a flow file is processed
+     */
+    private final Map<String, AtomicInteger> primaryFlowFilesActive = new ConcurrentHashMap<>();
+
     /**
      * The amount of time the expire thread should run to check and expire the feed flow files
      */
@@ -79,6 +103,7 @@ public class FeedFlowFileGuavaCache {
 
     public FeedFlowFileGuavaCache() {
         cache = CacheBuilder.newBuilder().build();
+        flowFileToPrimaryFlow = CacheBuilder.newBuilder().build();
         log.info("Created new FlowFileGuavaCache running timer every {} seconds to check and expire finished flow files", expireTimerCheckSeconds);
         initTimerThread();
     }
@@ -141,19 +166,52 @@ public class FeedFlowFileGuavaCache {
     }
 
 
+    private boolean isFeedAndRelatedFeedComplete(FeedFlowFile flowFile){
+        boolean allComplete = true;
+        if(flowFileToPrimaryFlow.getIfPresent(flowFile.getId()) != null) {
+            AtomicInteger active =  primaryFlowFilesActive.get(flowFile.getPrimaryRelatedBatchFeedFlow());
+            int remainingActive = 0;
+            if(active != null) {
+                remainingActive = active.decrementAndGet();
+            }
+            flowFileToPrimaryFlow.invalidate(flowFile.getId());
+            allComplete = (remainingActive == 0);
+            if(allComplete){
+                primaryFlowFilesActive.remove(flowFile.getPrimaryRelatedBatchFeedFlow());
+            }
+        }
+        return allComplete;
+    }
     /**
      * Invalidate and remove the given FeedFlowFile from the cache
      *
      * @param flowFile the flow file to invalidate/remove
      */
-    public void invalidate(FeedFlowFile flowFile) {
+    private void invalidate(FeedFlowFile flowFile) {
         if (flowFile != null && flowFile.isFeedComplete()) {
             invalidate(flowFile.getId());
             if (flowFile.getChildFlowFiles() != null) {
                 flowFile.getChildFlowFiles().stream().forEach(flowFileId -> invalidate(flowFileId));
             }
-            listeners.stream().forEach(flowFileCacheListener -> flowFileCacheListener.onInvalidate(flowFile));
+            //remove the relationship
+
+            listeners.stream().forEach(flowFileCacheListener -> {
+                flowFileCacheListener.onInvalidate(flowFile);
+            });
         }
+    }
+
+    /**
+     * Relate the flows together
+     * @param flowFileId a flow file
+     * @param primaryFlowFileId the flow marked as being primary
+     */
+    public void addRelatedFlowFile(String flowFileId,String primaryFlowFileId) {
+        if(flowFileToPrimaryFlow.getIfPresent(flowFileId) == null) {
+            flowFileToPrimaryFlow.put(flowFileId, primaryFlowFileId);
+            primaryFlowFilesActive.computeIfAbsent(primaryFlowFileId,key -> new AtomicInteger(0)).incrementAndGet();
+        }
+
     }
 
       /**
@@ -172,10 +230,21 @@ public class FeedFlowFileGuavaCache {
             List<FeedFlowFile> rootFiles = getCompletedFeedFlowFiles();
             if (!rootFiles.isEmpty()) {
                 listeners.stream().forEach(listener -> listener.beforeInvalidation(new ArrayList<>(rootFiles)));
-
+                Set<String> allCompleteFlowFileIds = new HashSet<>();
                 for (FeedFlowFile root : rootFiles) {
                     invalidate(root);
+                    if(primaryFlowFileCompleteListenerEnabled) {
+                        if (isFeedAndRelatedFeedComplete(root)) {
+                            allCompleteFlowFileIds.add(root.getPrimaryRelatedBatchFeedFlow() != null ? root.getPrimaryRelatedBatchFeedFlow() : root.getId());
+                        }
+                    }
                 }
+                if(!allCompleteFlowFileIds.isEmpty()){
+                    listeners.stream().forEach(flowFileCacheListener -> {
+                       flowFileCacheListener.onPrimaryFeedFlowsComplete(allCompleteFlowFileIds);
+                    });
+                }
+
                 long stop = System.currentTimeMillis();
                 if (rootFiles.size() > 0) {
                     log.info("Time to expire {} flowfile and all references {} ms. FeedFlowFile and references left in cache: {} ", rootFiles.size(), (stop - start), getFlowFiles().size());
@@ -196,7 +265,7 @@ public class FeedFlowFileGuavaCache {
      */
     public void printSummary() {
         Map<String, FeedFlowFile> map = cache.asMap();
-        log.info("FeedFlowFile Cache Size: {}  ", map.size());
+        log.info("FeedFlowFile Cache Size: {}.  RelatedFlowsSize: {}  ", map.size(), flowFileToPrimaryFlow.size());
         log.info("ProvenanceEvent JMS Stats:  Sent {} statistics events to JMS.  Sent {} batch events to JMS ", AggregationEventProcessingStats.getStreamingEventsSent(),
                  AggregationEventProcessingStats.getBatchEventsSent());
 

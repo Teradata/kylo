@@ -113,16 +113,8 @@ public class FeedFlowFile implements Serializable {
     private boolean isBuiltFromMapDb;
 
 
-    /**
-     * Track stats that were sent via batch via those accumulated over the course of the feed.
-     */
-    @JsonIgnore
-    private FeedFlowFileJobTrackingStats feedFlowFileJobTrackingStats;
-
-
     public FeedFlowFile(String id) {
         this.id = id;
-        feedFlowFileJobTrackingStats = new FeedFlowFileJobTrackingStats(id);
     }
 
     public String getId() {
@@ -155,11 +147,6 @@ public class FeedFlowFile implements Serializable {
 
     public Set<String> getChildFlowFiles() {
         return childFlowFiles;
-    }
-
-    @JsonIgnore
-    public FeedFlowFileJobTrackingStats getFeedFlowFileJobTrackingStats() {
-        return feedFlowFileJobTrackingStats;
     }
 
     /**
@@ -197,7 +184,6 @@ public class FeedFlowFile implements Serializable {
         firstEventId = event.getEventId();
         firstEventStartTime = event.getStartTime().getMillis();
         firstEventProcessorId = event.getComponentId();
-        this.feedFlowFileJobTrackingStats.setFirstEventProcessorId(firstEventProcessorId);
     }
 
 
@@ -213,13 +199,16 @@ public class FeedFlowFile implements Serializable {
 
     }
 
+    public boolean isPrimaryBatchFeedFlow(){
+        return primaryRelatedBatchFeedFlow.equalsIgnoreCase(this.getId());
+    }
+
     public String getPrimaryRelatedBatchFeedFlow() {
         return primaryRelatedBatchFeedFlow;
     }
 
     public void setPrimaryRelatedBatchFeedFlow(String primaryRelatedBatchFeedFlow) {
         this.primaryRelatedBatchFeedFlow = primaryRelatedBatchFeedFlow;
-        this.feedFlowFileJobTrackingStats.setPrimaryRelatedBatchFeedFlow(primaryRelatedBatchFeedFlow);
     }
 
     public Set<String> getRelatedBatchFeedFlows(){

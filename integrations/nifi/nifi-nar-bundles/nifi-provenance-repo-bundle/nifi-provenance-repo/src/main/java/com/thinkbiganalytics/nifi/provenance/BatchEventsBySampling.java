@@ -23,21 +23,34 @@ package com.thinkbiganalytics.nifi.provenance;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
+import com.thinkbiganalytics.nifi.provenance.cache.NoopFeedFlowFileCacheListener;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFileJobTrackingStats;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by sr186054 on 6/5/17.
  */
 public class BatchEventsBySampling   implements BatchProvenanceEvents {
 
+    private static final Logger log = LoggerFactory.getLogger(BatchEventsBySampling.class);
 
     /**
      * Event Cache has a key of the processor Id + the feed flowfile id.
@@ -60,6 +73,15 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
 
     @Autowired
     private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
+
+    @Autowired
+    private FeedFlowFileGuavaCache cache;
+
+
+    /**
+     * Track additional attributes pertaining to the lifecycle of the feed flow
+     */
+    Map<String, FeedFlowFileJobTrackingStats> flowFileJobTrackingStatsMap = new ConcurrentHashMap<>();
 
 
     /**
@@ -84,6 +106,16 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
      * The number of events to group together
      */
     private Integer jmsGroupSize = 30;
+
+
+    private FeedFlowFileExpireListener feedFlowFileExpireListener = new FeedFlowFileExpireListener();
+
+
+
+    @PostConstruct
+    private void init(){
+        cache.subscribe(feedFlowFileExpireListener);
+    }
 
     /**
      * Unique key describing the event for ops manager
@@ -137,6 +169,16 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
         BatchFeedProcessorEventCacheEntry feedProcessorEventCacheEntry = getBatchFeedProcessorEventCacheEntry(event);
 
             boolean processed = feedProcessorEventCacheEntry.process(event);
+            if(!processed && event.isStartOfJob()){
+                cache.addRelatedFlowFile(event.getFlowFileUuid(),event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow());
+            }
+
+            //track the additional attrs
+            String key = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
+            if(key != null) {
+                flowFileJobTrackingStatsMap.computeIfAbsent(key, k -> new FeedFlowFileJobTrackingStats(event.getFeedFlowFile().getFirstEventProcessorId(),event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow())).trackExtendedAttributes(event);
+            }
+
             if(processed) {
                 //ensure we only send 1 unique event result
                 String batchKey = batchEventKey(event);
@@ -168,6 +210,69 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
         }
         //clear it
         jmsEvents.clear();
+
+    }
+
+
+    private class FeedFlowFileExpireListener extends NoopFeedFlowFileCacheListener {
+
+
+        public FeedFlowFileExpireListener() {
+
+        }
+
+        private List<ProvenanceEventRecordDTO> getUpdatedEvents(String primaryFeedFlowId){
+
+            List<ProvenanceEventRecordDTO> updatedEvents = null;
+            FeedFlowFileJobTrackingStats stats = flowFileJobTrackingStatsMap.get(primaryFeedFlowId);
+            if(stats != null){
+                List<ProvenanceEventRecordDTO> dirtyEvents =  stats.getUpdatedProvenanceEvents();
+                if(dirtyEvents != null && !dirtyEvents.isEmpty()) {
+                    if(updatedEvents == null){
+                        updatedEvents = new ArrayList<>();
+                    }
+                    updatedEvents.addAll(dirtyEvents);
+                }
+
+                flowFileJobTrackingStatsMap.remove(primaryFeedFlowId);
+            }
+            return updatedEvents;
+        }
+
+        @Override
+        public void onPrimaryFeedFlowsComplete(Set<String> primaryFeedFlowIds) {
+            if(primaryFeedFlowIds != null){
+                List<ProvenanceEventRecordDTO> allUpdatedEvents = new ArrayList<>();
+                long start = System.currentTimeMillis();
+               for(String ffId : primaryFeedFlowIds){
+                   List<ProvenanceEventRecordDTO> updatedEvents = getUpdatedEvents(ffId);
+                   if(updatedEvents != null){
+                       allUpdatedEvents.addAll(updatedEvents);
+                   }
+               }
+                long end = System.currentTimeMillis();
+                log.info("time to collect {} completion events {} ms ",allUpdatedEvents.size(),(end-start));
+
+                if(!allUpdatedEvents.isEmpty()) {
+                    long start2 = System.currentTimeMillis();
+                    ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
+                    eventRecordDTOHolder.setEvents(allUpdatedEvents);
+                    provenanceEventActiveMqWriter.writeBatchEvents(eventRecordDTOHolder);
+                    end = System.currentTimeMillis();
+                    log.info("time to send {} completion events {} ms ",allUpdatedEvents.size(),(end-start2));
+                    log.info("Total Time for events {} is {} ms ",allUpdatedEvents.size(),(end-start2));
+                }
+
+
+            }
+
+
+
+
+
+
+        }
+
 
     }
 
