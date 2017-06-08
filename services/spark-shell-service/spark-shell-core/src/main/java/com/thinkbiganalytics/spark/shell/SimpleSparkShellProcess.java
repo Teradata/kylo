@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.conf.model;
+package com.thinkbiganalytics.spark.shell;
 
 /*-
  * #%L
@@ -20,34 +20,43 @@ package com.thinkbiganalytics.spark.conf.model;
  * #L%
  */
 
+import javax.annotation.Nonnull;
+
 /**
- * Properties for an externally managed Spark Shell service.
+ * A simple Kylo Spark Shell process where the hostname and port are constants.
  */
-public class SparkShellServerProperties {
+public class SimpleSparkShellProcess implements SparkShellProcess {
 
     /**
      * Host where Spark Shell is running
      */
-    private String host;
+    @Nonnull
+    private final String hostname;
 
     /**
      * Port where Spark Shell is listening
      */
-    private Integer port = 8450;
+    private final int port;
 
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
+    /**
+     * Constructs a {@code SimpleSparkShellProcess} with the specified hostname and port.
+     *
+     * @param hostname host where Spark Shell is running
+     * @param port port where Spark Shell is listening
+     */
+    public SimpleSparkShellProcess(@Nonnull final String hostname, final int port) {
+        this.hostname = hostname;
         this.port = port;
+    }
+
+    @Nonnull
+    @Override
+    public String getHostname() {
+        return hostname;
+    }
+
+    @Override
+    public int getPort() {
+        return port;
     }
 }

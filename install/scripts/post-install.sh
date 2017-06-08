@@ -362,7 +362,7 @@ if [[ -n \$SPARK_CONF_DIR ]]; then
 		fi
 	fi
 fi
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
+spark-submit --master local --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"

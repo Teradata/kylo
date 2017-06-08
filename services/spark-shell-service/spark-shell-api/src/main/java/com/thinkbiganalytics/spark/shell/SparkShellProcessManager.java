@@ -57,12 +57,11 @@ public interface SparkShellProcessManager {
      * has finished starting.</p>
      *
      * @param clientId     the Spark Shell client id
-     * @param clientSecret the Spark Shell client secret
      * @param registration the Spark Shell registration request
      * @throws IllegalArgumentException      if the client id or secret is not recognized
      * @throws UnsupportedOperationException if this process manager does not support registration
      */
-    void register(@Nonnull String clientId, @Nonnull String clientSecret, @Nonnull RegistrationRequest registration);
+    void register(@Nonnull String clientId, @Nonnull RegistrationRequest registration);
 
     /**
      * Starts a new Spark Shell process for the specified user if one is not already running.
@@ -72,5 +71,5 @@ public interface SparkShellProcessManager {
      * @param username the user who will be using the Spark Shell process
      * @throws IllegalStateException if a Spark Shell process cannot be started
      */
-    void start(@Nonnull String username) throws IllegalStateException;
+    void start(@Nonnull String username);
 }

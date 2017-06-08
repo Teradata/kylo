@@ -37,7 +37,7 @@ public interface SparkShellProcess {
     String getHostname();
 
     /**
-     * Gets the port number fo communicating with this Spark Shell client.
+     * Gets the port number for communicating with this Spark Shell client.
      *
      * @return the port number
      * @throws IllegalStateException if the Spark Shell client is not ready to receive commands

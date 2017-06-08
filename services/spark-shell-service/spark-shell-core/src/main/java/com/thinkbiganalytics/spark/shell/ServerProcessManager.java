@@ -36,6 +36,7 @@ public class ServerProcessManager implements SparkShellProcessManager {
     /**
      * Spark Shell process
      */
+    @Nonnull
     private final SparkShellProcess process;
 
     /**
@@ -44,18 +45,12 @@ public class ServerProcessManager implements SparkShellProcessManager {
      * @param properties the Spark Shell properties
      */
     public ServerProcessManager(@Nonnull final SparkShellProperties properties) {
-        process = new SparkShellProcess() {
-            @Nonnull
-            @Override
-            public String getHostname() {
-                return Optional.ofNullable(properties.getServer()).map(SparkShellServerProperties::getHost).orElse("localhost");
-            }
+        final Optional<SparkShellServerProperties> server = Optional.ofNullable(properties.getServer());
 
-            @Override
-            public int getPort() {
-                return Optional.ofNullable(properties.getServer()).map(SparkShellServerProperties::getPort).orElse(8450);
-            }
-        };
+        // Create process using defaults if necessary
+        final String hostname = server.map(SparkShellServerProperties::getHost).orElse("localhost");
+        final int port = server.map(SparkShellServerProperties::getPort).orElse(8450);
+        process = new SimpleSparkShellProcess(hostname, port);
     }
 
     @Nonnull
@@ -71,12 +66,12 @@ public class ServerProcessManager implements SparkShellProcessManager {
     }
 
     @Override
-    public void register(@Nonnull final String clientId, @Nonnull final String clientSecret, @Nonnull final RegistrationRequest registration) {
+    public void register(@Nonnull final String clientId, @Nonnull final RegistrationRequest registration) {
         // ignored
     }
 
     @Override
-    public void start(@Nonnull final String username) throws IllegalStateException {
+    public void start(@Nonnull final String username) {
         // ignored
     }
 }

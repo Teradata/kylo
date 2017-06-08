@@ -22,6 +22,7 @@
     <module>security-auth-kylo-local</module>
     <module>security-auth-kylo-rest</module>
     <module>security-auth-kerberos</module>
+    <module>security-auth-memory</module>
     <module>security-auth-cache</module>
     <module>security-core</module>
   </modules>

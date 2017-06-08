@@ -189,6 +189,7 @@ public class SparkShellProxyController {
     @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Registers a new Spark Shell process with Kylo.")
     @ApiResponses({
                       @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
@@ -200,7 +201,7 @@ public class SparkShellProxyController {
     public Response register(@Nonnull final RegistrationRequest registration) {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         try {
-            processManager.register(auth.getPrincipal().toString(), auth.getCredentials().toString(), registration);
+            processManager.register(auth.getPrincipal().toString(), registration);
             return Response.noContent().build();
         } catch (final IllegalArgumentException e) {
             throw error(Response.Status.FORBIDDEN, "register.forbidden", null);

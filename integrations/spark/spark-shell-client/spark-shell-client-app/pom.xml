@@ -17,6 +17,10 @@
   <dependencies>
     <!-- Core -->
     <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
@@ -35,6 +39,11 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-commons-hive</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
