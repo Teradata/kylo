@@ -152,7 +152,6 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         pds.add(NODES);
         pds.add(ID_FIELD);
         pds.add(FIELD_SPECIFICATION);
-        pds.add(PARTITION_SPECS);
         pds.add(FEED_NAME);
         pds.add(FEED_CATEGORY);
         pds.add(THRIFT_SERVICE);
@@ -185,10 +184,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         String autoIndex = context.getProperty(AUTO_CREATE_INDEX).getValue();
         String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(flowFile).getValue();
 
-        final ColumnSpec[] partitions = Optional.ofNullable(context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue())
-            .filter(StringUtils::isNotEmpty)
-            .map(ColumnSpec::createFromString)
-            .orElse(new ColumnSpec[0]);
+        final ColumnSpec[] partitions = {};
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)

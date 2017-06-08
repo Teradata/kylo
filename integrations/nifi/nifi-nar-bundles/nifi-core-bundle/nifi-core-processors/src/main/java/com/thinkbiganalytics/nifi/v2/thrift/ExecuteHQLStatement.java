@@ -127,13 +127,14 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
              final Statement st = con.createStatement()) {
             boolean result = false;
 
-
-            for (String statement:hiveStatements) {
+            for (String statement : hiveStatements) {
                 result = st.execute(statement);
             }
 
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             session.transfer(flowFile, REL_SUCCESS);
+        } catch (ProcessException e) {
+            throw e;
         } catch (final Exception e) {
             logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements.toString(), flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
