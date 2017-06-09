@@ -424,9 +424,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      * @param eventId the eventId to save
      */
     protected void setLastEventId(long eventId) throws IOException {
-        if (eventId > 0) {
-            setLastEventId(stateManager, eventId);
-        }
+        setLastEventId(stateManager, eventId);
     }
 
     /**
