@@ -1,4 +1,4 @@
-/*-
+package com.thinkbiganalytics.nifi.provenance;/*-
  * #%L
  * thinkbig-nifi-provenance-repo
  * %%

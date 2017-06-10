@@ -34,7 +34,6 @@ import org.apache.nifi.util.NiFiProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -54,12 +53,13 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     /**
      * The shared queue that the Consumer will take in a new thread
      */
-    private BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
+   private BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
     /**
      * The consumer to take and process the Provenance Events
      */
     KyloProvenanceEventConsumer kyloProvenanceEventConsumer;
+
 
 
     public KyloPersistentProvenanceEventRepository() {
@@ -83,7 +83,7 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     private void init() {
         processingQueue = new LinkedBlockingQueue<>();
         loadSpring();
-        kyloProvenanceEventConsumer = new KyloProvenanceEventConsumer(processingQueue);
+        kyloProvenanceEventConsumer = new KyloProvenanceEventConsumer(processingQueue,false);
        // autowire(kyloProvenanceEventConsumer);
         startConsumer();
     }

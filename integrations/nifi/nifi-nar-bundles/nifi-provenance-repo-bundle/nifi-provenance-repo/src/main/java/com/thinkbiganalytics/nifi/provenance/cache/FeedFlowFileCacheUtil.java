@@ -22,14 +22,16 @@ package com.thinkbiganalytics.nifi.provenance.cache;
 
 import com.thinkbiganalytics.nifi.provenance.FeedFlowFileNotFoundException;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
+import com.thinkbiganalytics.nifi.provenance.StartingFeedFlowFileUtil;
 import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
-import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utility to build the FlowFile graph from an incoming Provenance Event and cache the FlowFile Graph.
@@ -41,6 +43,11 @@ public class FeedFlowFileCacheUtil {
     @Autowired
     FeedFlowFileGuavaCache flowFileGuavaCache;
 
+    @Autowired
+    StartingFeedFlowFileUtil startingFeedFlowFileUtil;
+
+
+    AtomicLong skippedFeedFlowFiles = new AtomicLong(0);
 
     public FeedFlowFileCacheUtil() {
 
@@ -64,10 +71,17 @@ public class FeedFlowFileCacheUtil {
             if (flowFileCache.isCached(event.getFlowFileUuid())) {
                 flowFile = flowFileCache.getEntry(event.getFlowFileUuid());
             } else {
-                flowFile = new FeedFlowFile(event.getFlowFileUuid());
-                flowFileCache.add(event.getFlowFileUuid(), flowFile);
-                flowFile.setFirstEvent(event);
-                event.setIsStartOfJob(true);
+            //    if(startingFeedFlowFileUtil.process(event)) {
+                    flowFile = new FeedFlowFile(event.getFlowFileUuid());
+                    flowFileCache.add(event.getFlowFileUuid(), flowFile);
+                    flowFile.setFirstEvent(event);
+                    event.setIsStartOfJob(true);
+             //   }
+             //   else {
+                    //skip processing
+           //         skippedFeedFlowFiles.incrementAndGet();
+           //         return;
+           //     }
 
             }
             event.setFeedFlowFile(flowFile);

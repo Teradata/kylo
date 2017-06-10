@@ -171,15 +171,21 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
 
 
     public  boolean process(ProvenanceEventRecordDTO event){
-        boolean added = false;
-        BatchFeedProcessorEventCacheEntry feedProcessorEventCacheEntry = getBatchFeedProcessorEventCacheEntry(event);
+        //always process starting feed events as they were sampled previous to this point
 
-            boolean processed = feedProcessorEventCacheEntry.process(event);
-            if(!processed && event.isStartOfJob()){
-                cache.addRelatedFlowFile(event.getFlowFileUuid(),event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow());
+        boolean added = false;
+        boolean processed = false;
+        if(event.isStartOfJob()){
+            processed = true;
+        } else {
+            BatchFeedProcessorEventCacheEntry feedProcessorEventCacheEntry = getBatchFeedProcessorEventCacheEntry(event);
+
+             processed = feedProcessorEventCacheEntry.process(event);
+            if (!processed && event.isStartOfJob()) {
+                cache.addRelatedFlowFile(event.getFlowFileUuid(), event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow());
             }
 
-            if(cache.isPrimaryFlowFileCompleteListenerEnabled()) {
+            if (cache.isPrimaryFlowFileCompleteListenerEnabled()) {
                 //track the additional attrs
                 String key = event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow();
                 if (key != null) {
@@ -188,6 +194,7 @@ public class BatchEventsBySampling   implements BatchProvenanceEvents {
                         .trackExtendedAttributes(event);
                 }
             }
+        }
 
             if(processed) {
                 //ensure we only send 1 unique event result

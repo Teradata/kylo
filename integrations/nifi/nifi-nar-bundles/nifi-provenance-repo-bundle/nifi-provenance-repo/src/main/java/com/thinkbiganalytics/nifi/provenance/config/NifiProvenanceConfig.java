@@ -26,10 +26,12 @@ import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectFactory;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceStatsCalculator;
+import com.thinkbiganalytics.nifi.provenance.StartingFeedFlowFileUtil;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;;
+import com.thinkbiganalytics.nifi.provenance.repo.ThrottleEvents;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.commons.pool2.impl.AbandonedConfig;
@@ -125,6 +127,11 @@ public class NifiProvenanceConfig {
     @Bean
     BatchProvenanceEvents batchProvenanceEvents(){
         return new BatchEventsBySampling();
+    }
+
+    @Bean
+    StartingFeedFlowFileUtil startingFeedFlowFileUtil(){
+        return new StartingFeedFlowFileUtil();
     }
 
 }

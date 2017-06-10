@@ -63,27 +63,28 @@ public class ProvenanceEventCollector {
         try {
             if (event != null) {
                 try {
-
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
-                    //if the Flow gets an "Empty Queue" message it means a user emptied the queue that was stuck in a connection.
-                    // this means the flow cannot complete and will be treated as a failed flow and failed job
-                    if (ProvenanceEventUtil.isFlowFileQueueEmptied(event)) {
-                        // a Drop event component id will be the connection, not the processor id. we will set the name of the component
-                        event.setComponentName("FlowFile Queue emptied");
-                        event.setIsFailure(true);
-                        event.setHasFailedEvents(true);
-                        FeedFlowFile feedFlowFile = event.getFeedFlowFile();
-                        if (feedFlowFile != null) {
-                            feedFlowFile.checkAndMarkComplete(event);
+                    if(event.getFeedFlowFile() != null) {
+                        //if the Flow gets an "Empty Queue" message it means a user emptied the queue that was stuck in a connection.
+                        // this means the flow cannot complete and will be treated as a failed flow and failed job
+                        if (ProvenanceEventUtil.isFlowFileQueueEmptied(event)) {
+                            // a Drop event component id will be the connection, not the processor id. we will set the name of the component
+                            event.setComponentName("FlowFile Queue emptied");
+                            event.setIsFailure(true);
+                            event.setHasFailedEvents(true);
+                            FeedFlowFile feedFlowFile = event.getFeedFlowFile();
+                            if (feedFlowFile != null) {
+                                feedFlowFile.checkAndMarkComplete(event);
+                            }
+                            event.getFeedFlowFile().incrementFailedEvents();
                         }
-                        event.getFeedFlowFile().incrementFailedEvents();
-                    }
                         //send the event off for stats processing
-                       statsCalculator.calculateStats(event);
-                       batchEvent(event);
-                       if(  event.isFinalJobEvent()){
-                           cacheUtil.completeFlowFile(event.getFeedFlowFile());
-                       }
+                        statsCalculator.calculateStats(event);
+                        batchEvent(event);
+                        if (event.isFinalJobEvent()) {
+                            cacheUtil.completeFlowFile(event.getFeedFlowFile());
+                        }
+                    }
                 } catch (FeedFlowFileNotFoundException e) {
                     log.debug("Unable to find Root flowfile.", event, event.getFlowFileUuid());
                 }

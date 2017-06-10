@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.provenance;
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
+import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.joda.time.DateTime;
 
 import java.util.HashSet;
@@ -59,15 +60,12 @@ public class BatchFeedProcessorEventCacheEntry {
         return mapKey;
     }
 
+    public void setLastEventTime(DateTime lastEventTime) {
+        this.lastEventTime = lastEventTime;
+    }
 
-    /**
-     * Unique key describing the event for ops manager
-     *
-     * @param event the provenance event
-     * @return the unique key
-     */
-    private String batchEventKey(ProvenanceEventRecordDTO event) {
-        return event.getComponentId() + "-" + (event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow() == null ? event.getJobFlowFileId() : event.getFeedFlowFile().getPrimaryRelatedBatchFeedFlow() )+ event.isStartOfJob() + event.isEndOfJob();
+    public DateTime getLastEventTime() {
+        return lastEventTime;
     }
 
     /**
@@ -82,6 +80,9 @@ public class BatchFeedProcessorEventCacheEntry {
 
 
     public boolean isProcessEvent(ProvenanceEventRecordDTO event) {
+        if(lastEventTime == null) {
+            lastEventTime = event.getEventTime();
+        }
 
         boolean process = false;
         //if the event is the last one for the entire feed flow, and its being tracked as a job in ops manager send it
@@ -111,6 +112,7 @@ public class BatchFeedProcessorEventCacheEntry {
 
         return process;
     }
+
 
     public boolean process(ProvenanceEventRecordDTO event) {
 

@@ -21,19 +21,17 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
-import com.thinkbiganalytics.nifi.provenance.config.NifiProvenanceConfig;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventRecordMapEntryComparator;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,15 +58,15 @@ public class KyloProvenanceEventConsumer implements Runnable {
     /**
      * Shared queue the Provenance Events are written to which are pulled off this thread and processed
      */
-   // private KyloProvenanceProcessingQueue processingQueue;
-
     private BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
 
-    public KyloProvenanceEventConsumer(BlockingQueue processingQueue) {
-        this.processingQueue = processingQueue;
-    }
 
+    public KyloProvenanceEventConsumer(BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue, boolean isPoolProvenanceEvents)
+    {
+        this.processingQueue = processingQueue;
+        this.isPool = isPoolProvenanceEvents;
+    }
     private AtomicLong eventsProcessed = new AtomicLong(0);
 
     /**
@@ -78,54 +76,61 @@ public class KyloProvenanceEventConsumer implements Runnable {
 
     List<Long> processingTimes = new ArrayList<>();
 
+    private boolean isPool = false;
+
     List<ProvenanceEventRecordDTO> processedEvents = new ArrayList<>();
 
-    private Map.Entry<Long,ProvenanceEventRecord> take(){
-        try {
-            return processingQueue.take();
-        }catch (InterruptedException e){
-            return null;
-        }
-        }
 
+
+    public boolean isProcessing(){
+        return true; //eventsProcessed.get() ==0 ||  processingQueue.peek() != null;
+    }
     @Override
     public void run() {
 
-        Map.Entry<Long,ProvenanceEventRecord> e = null;
+        Map.Entry<Long, ProvenanceEventRecord> e = null;
 
-        List<Map.Entry<Long,ProvenanceEventRecord>> events = new ArrayList<>(partitionSize);
-        while((e = take())!=null)
-        {
-            processEvent(e);
-            processingQueue.drainTo(events,partitionSize);
-            if (!events.isEmpty()) {
-                try {
-                    for (Map.Entry<Long, ProvenanceEventRecord> entry : events) {
-                        ProvenanceEventRecordDTO eventDto = processEvent(entry);
-                        if(eventDto != null){
-                            processedEvents.add(eventDto);
+        List<Map.Entry<Long, ProvenanceEventRecord>> events = new ArrayList<>(partitionSize);
+        Map.Entry<Long, ProvenanceEventRecord> p = null;
+        while (true) {
+            while (processingQueue.peek() != null) {
+                processingQueue.drainTo(events, partitionSize);
+                if (!events.isEmpty()) {
+                    try {
+                        for (Map.Entry<Long, ProvenanceEventRecord> entry : events) {
+                            ProvenanceEventRecordDTO eventDto = processEvent(entry);
+                            if (eventDto != null && isPool) {
+                                processedEvents.add(eventDto);
+                            }
+                        }
+                        getProvenanceEventCollector().sendToJms();
+                    } finally {
+                        if(isPool) {
+                            returnToObjectsPool(processedEvents);
+                            processedEvents.clear();
                         }
                     }
-                    getProvenanceEventCollector().sendToJms();
-                }finally{
-                    returnToObjectsPool(processedEvents);
+                    log.info("Total Events Processed: {}, Skipped:{}, throttle starting flow cache size: {}", eventsProcessed.get(), ThrottleEvents.getInstance().getSkippedEvents(), ThrottleEvents.getInstance().getFlowFileToStartingFlowCacheSize());
                 }
-                OptionalDouble avg = processingTimes.stream().mapToLong(t->t).average();
-                log.info("Total Events Processed: {}, Avg Processing Time:{}/{}, ProvenanceEventPool: Pool Stats: Created:[{}] Borrowed:[{}]",eventsProcessed.get(),avg.getAsDouble(),processingTimes.size(), getProvenanceEventObjectPool().getCreatedCount(), getProvenanceEventObjectPool().getBorrowedCount() );
+                events.clear();
             }
-            events.clear();
         }
     }
 
     private ProvenanceEventRecordDTO processEvent(Map.Entry<Long,ProvenanceEventRecord> entry) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
+       // Stopwatch stopwatch = Stopwatch.createStarted();
         ProvenanceEventRecordDTO event = null;
+        if(isPool) {
             event = ProvenanceEventRecordConverter.getPooledObject(getProvenanceEventObjectPool(), entry.getValue());
-            event.setEventId(entry.getKey());
-            getProvenanceEventCollector().process(event);
-            eventsProcessed.incrementAndGet();
-            stopwatch.stop();
-            processingTimes.add(stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        }
+        else {
+            event = ProvenanceEventRecordConverter.convert(entry.getValue());
+        }
+        event.setEventId(entry.getKey());
+        getProvenanceEventCollector().process(event);
+        eventsProcessed.incrementAndGet();
+       // stopwatch.stop();
+       // processingTimes.add(stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return event;
     }
@@ -156,6 +161,10 @@ public class KyloProvenanceEventConsumer implements Runnable {
             objectPool = SpringApplicationContext.getInstance().getBean(ProvenanceEventObjectPool.class);
         }
         return objectPool;
+    }
+
+    public void setObjectPool(ProvenanceEventObjectPool objectPool) {
+        this.objectPool = objectPool;
     }
 
     private ProvenanceEventCollector getProvenanceEventCollector(){
