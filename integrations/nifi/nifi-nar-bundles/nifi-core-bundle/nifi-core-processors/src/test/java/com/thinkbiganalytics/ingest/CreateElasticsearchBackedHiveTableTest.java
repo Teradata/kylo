@@ -75,8 +75,7 @@ public class CreateElasticsearchBackedHiveTableTest {
         ColumnSpec spec2 = new ColumnSpec("iD", "int", "");
         ColumnSpec spec3 = new ColumnSpec("PHONE", "string", "");
         ColumnSpec[] specs = {spec, spec2, spec3};
-        ColumnSpec[] parts = {};
-        List<String> statements = table.getHQLStatements(specs, parts, NODES, FEED, CATEGORY, "true", "true", "", JAR_URL, FIELD_STRING);
+        List<String> statements = table.getHQLStatements(specs, NODES, FEED, CATEGORY, "true", "true", "", JAR_URL, FIELD_STRING);
         assertEquals(statements.get(0), "ADD JAR " + JAR_URL);
         assertEquals(statements.get(1), "CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
                                         + "_index (`name` string, `phone` string, processing_dttm string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = '"
@@ -118,7 +117,7 @@ public class CreateElasticsearchBackedHiveTableTest {
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, FIELD_SPEC);
         runner.setProperty(CreateElasticsearchBackedHiveTable.NODES, NODES);
         runner.setProperty(CreateElasticsearchBackedHiveTable.FIELD_INDEX_STRING, FIELD_STRING);
-        runner.setProperty(CreateElasticsearchBackedHiveTable.JARURL, JAR_URL);
+        runner.setProperty(CreateElasticsearchBackedHiveTable.JAR_URL, JAR_URL);
         runner.setProperty(CreateElasticsearchBackedHiveTable.ID_FIELD, ID_FIELD);
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", CATEGORY, "metadata.systemFeedName", FEED));
         runner.run();

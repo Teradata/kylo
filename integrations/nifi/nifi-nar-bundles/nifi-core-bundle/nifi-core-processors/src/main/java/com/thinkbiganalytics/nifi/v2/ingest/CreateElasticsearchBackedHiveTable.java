@@ -47,7 +47,6 @@ import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECS;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
 
@@ -61,13 +60,13 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
 public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
 
 
-    public static final Relationship REL_SUCCESS = new Relationship.Builder()
+    public static final Relationship REL_CREATE_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Successfully created Elasticsearch backed Hive table.")
         .build();
 
 
-    public static final Relationship REL_FAILURE = new Relationship.Builder()
+    public static final Relationship REL_CREATE_FAILURE = new Relationship.Builder()
         .name("failure")
         .description("Failed to create Elasticsearch backed Hive table")
         .build();
@@ -86,7 +85,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
     /**
      * Location of Jar file
      */
-    public static final PropertyDescriptor JARURL = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor JAR_URL = new PropertyDescriptor.Builder()
         .name("Jar URL")
         .description("Location of Jar file to be added before table creation")
         .required(false)
@@ -144,8 +143,8 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
      */
     public CreateElasticsearchBackedHiveTable() {
         final Set<Relationship> r = new HashSet<>();
-        r.add(REL_SUCCESS);
-        r.add(REL_FAILURE);
+        r.add(REL_CREATE_SUCCESS);
+        r.add(REL_CREATE_FAILURE);
         relationships = Collections.unmodifiableSet(r);
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
@@ -155,7 +154,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         pds.add(FEED_NAME);
         pds.add(FEED_CATEGORY);
         pds.add(THRIFT_SERVICE);
-        pds.add(JARURL);
+        pds.add(JAR_URL);
         pds.add(USE_WAN);
         pds.add(AUTO_CREATE_INDEX);
         pds.add(FIELD_INDEX_STRING);
@@ -173,18 +172,16 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
+    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
         }
 
-        String jarUrl = context.getProperty(JARURL).evaluateAttributeExpressions(flowFile).getValue();
+        String jarUrl = context.getProperty(JAR_URL).evaluateAttributeExpressions(flowFile).getValue();
         String useWan = context.getProperty(USE_WAN).getValue();
         String autoIndex = context.getProperty(AUTO_CREATE_INDEX).getValue();
         String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(flowFile).getValue();
-
-        final ColumnSpec[] partitions = {};
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
@@ -204,10 +201,10 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         final String indexString = context.getProperty(FIELD_INDEX_STRING).evaluateAttributeExpressions(flowFile).getValue();
         validateStringProperty("index string", indexString, session, flowFile);
 
-        List<String> hiveStatements = getHQLStatements(columnSpecs, partitions, nodes, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
+        List<String> hiveStatements = getHQLStatements(columnSpecs, nodes, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
-        executeStatements(context, session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
+        executeStatements(session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
 
     }
 
@@ -258,8 +255,11 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         return sb.toString();
     }
 
-    public List<String> getHQLStatements(ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField,
+    public List<String> getHQLStatements(ColumnSpec[] columnSpecs, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField,
                                          String jarUrl, String indexFieldString) {
+
+        final ColumnSpec[] partitions = {};
+
         TableType tableType = TableType.MASTER;
 
         List<String> indexFields = Arrays.asList(indexFieldString.toLowerCase().split(","));

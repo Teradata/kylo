@@ -103,7 +103,7 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
+    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -113,12 +113,12 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
         String[] hiveStatements = StringUtils.split(ddlQuery, ';');
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
-        executeStatements(context, session, flowFile, hiveStatements, thriftService);
+        executeStatements(session, flowFile, hiveStatements, thriftService);
 
 
     }
 
-    public void executeStatements(ProcessContext context, ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
+    public void executeStatements(ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
         final ComponentLog logger = getLog();
 
         final StopWatch stopWatch = new StopWatch(true);
