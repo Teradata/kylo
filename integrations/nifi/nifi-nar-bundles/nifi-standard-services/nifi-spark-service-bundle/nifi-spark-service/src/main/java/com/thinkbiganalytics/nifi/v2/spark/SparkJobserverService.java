@@ -225,7 +225,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public boolean executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
+    public String executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
 
         String id = contextName + System.nanoTime();
 
@@ -236,7 +236,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         }
 
         SparkJobResult jobResult = null;
-        Boolean success = false;
+        String result = null;
 
         try {
             getLogger().info("Executing Spark App {} {} on context {} with args {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, args, jobServerUrl});
@@ -270,9 +270,9 @@ public class SparkJobserverService extends AbstractControllerService implements 
         }
 
         if (jobResult != null && jobResult.getStatus() != "ERROR") {
-            success = true;
+            result = jobResult.getResult();
         }
-        return success;
+        return result;
     }
 
     /**

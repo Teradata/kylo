@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -35,12 +36,16 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -58,6 +63,13 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
     public static final AllowableValue SPARK_CONTEXT = new AllowableValue(sparkContextValue, "Spark Context", "Creates a Standard Spark Context");
     public static final AllowableValue SQL_CONTEXT = new AllowableValue(sqlContextValue, "SQL Context","Creates a Spark SQL Context");
     public static final AllowableValue HIVE_CONTEXT = new AllowableValue(hiveContextValue,"Hive Context","Creates a Hive Context");
+
+    public static final String flowFileAttributeValue = "FLOW_FILE_ATTRIBUTE";
+    public static final String flowFileContentsValue = "FLOW_FILE_CONTENTS";
+
+    public static final AllowableValue FLOW_FILE_ATTRIBUTE = new AllowableValue(flowFileAttributeValue, "Flow File Attribute","Stores Spark job result in flow file attribute spark.job.result");
+    public static final AllowableValue FLOW_FILE_CONTENTS = new AllowableValue(flowFileContentsValue,"Flow File Contents","Stores Spark job result in flow file content");
+
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -96,7 +108,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor ARGS = new PropertyDescriptor.Builder()
         .name("Spark App Args")
-        .description("Sring arguments from the spark app")
+        .description("String arguments from the spark app")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -107,6 +119,14 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         .description("The Controller Service that is used to manage long running spark contexts.")
         .required(true)
         .identifiesControllerService(JobService.class)
+        .build();
+
+    public static final PropertyDescriptor RESULTS_OUTPUT_LOCATION = new PropertyDescriptor.Builder()
+        .name("Results Output Locations")
+        .description("Location to store the Spark job results")
+        .required(true)
+        .allowableValues(FLOW_FILE_ATTRIBUTE, FLOW_FILE_CONTENTS)
+        .defaultValue(FLOW_FILE_ATTRIBUTE.getValue())
         .build();
 
     public static final PropertyDescriptor CONTEXT_TYPE = new PropertyDescriptor.Builder()
@@ -185,6 +205,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         pds.add(CONTEXT_NAME);
         pds.add(ARGS);
         pds.add(JOB_SERVICE);
+        pds.add(RESULTS_OUTPUT_LOCATION);
         pds.add(CONTEXT_TIMEOUT);
         pds.add(ASYNC);
         pds.add(NUM_EXECUTORS);
@@ -228,6 +249,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         final String contextName = context.getProperty(CONTEXT_NAME).evaluateAttributeExpressions(flowFile).getValue().trim();
         final SparkContextType contextType = SparkContextType.valueOf(context.getProperty(CONTEXT_TYPE).getValue());
         final JobService jobService = context.getProperty(JOB_SERVICE).asControllerService(JobService.class);
+        final String resultsOutputLocation = context.getProperty(RESULTS_OUTPUT_LOCATION).getValue();
         final String numExecutors = context.getProperty(NUM_EXECUTORS).evaluateAttributeExpressions(flowFile).getValue().trim();
         final String memPerNode = context.getProperty(MEM_PER_NODE).evaluateAttributeExpressions(flowFile).getValue().trim();
         final String numCPUCores = context.getProperty(NUM_CPU_CORES).evaluateAttributeExpressions(flowFile).getValue().trim();
@@ -241,14 +263,25 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         }
 
         boolean createSuccess = jobService.createContext(contextName, numExecutors, memPerNode, numCPUCores, contextType, contextTimeout, false);
-        boolean executeSuccess = false;
 
         if (createSuccess) {
-            executeSuccess = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
-        }
+            final String result = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
 
-        if (executeSuccess) {
-            session.transfer(outgoing, REL_SUCCESS);
+            if (result !=  null) {
+                if (Objects.equals(resultsOutputLocation, flowFileAttributeValue)) {
+                    outgoing = session.putAttribute(outgoing, appName + ".result", result);
+                } else {
+                    outgoing = session.write(outgoing, new OutputStreamCallback(){
+                        @Override
+                        public void process(OutputStream outputStream) throws IOException {
+                            IOUtils.write(result, outputStream, "UTF-8");
+                        }
+                    });
+                }
+                session.transfer(outgoing, REL_SUCCESS);
+            } else {
+                session.transfer(outgoing, REL_FAILURE);
+            }
         } else {
             session.transfer(outgoing, REL_FAILURE);
         }
