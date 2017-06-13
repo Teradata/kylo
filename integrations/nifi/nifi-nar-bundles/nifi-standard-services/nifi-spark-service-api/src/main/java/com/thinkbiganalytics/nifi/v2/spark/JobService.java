@@ -54,5 +54,5 @@ public interface JobService extends ControllerService {
      *
      * @return true or false
      */
-    boolean executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async);
+    String executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async);
 }
