@@ -191,9 +191,9 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
-            .otherwise(jobExecution.status.stringValue());
+        com.querydsl.core.types.dsl.EnumExpression jobState = new CaseBuilder()
+            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.JobStatus.RUNNING)
+            .otherwise(jobExecution.status);
 
         JPAQuery
             query = factory.select(

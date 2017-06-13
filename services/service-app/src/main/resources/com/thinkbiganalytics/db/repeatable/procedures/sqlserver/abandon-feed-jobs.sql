@@ -7,9 +7,9 @@
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --     http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,13 +18,21 @@
 -- #L%
 -- -
 
-/**
-Get the feed and the last time it completed
- */
-CREATE OR REPLACE  VIEW LATEST_FEED_JOB_END_TIME_VW AS
-    SELECT f.id as FEED_ID, MAX(e.END_TIME) END_TIME
-    FROM
-       BATCH_JOB_EXECUTION e
-       INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
-       INNER JOIN FEED f on f.id = i.FEED_ID
-       GROUP by f.id;
+CREATE PROCEDURE [dbo].[abandon_feed_jobs](@feed varchar(255))
+AS
+UPDATE
+	BJE
+SET
+	BJE.STATUS = 'ABANDONED',
+	BJE.EXIT_MESSAGE = CONCAT('Job manually abandoned @ ', FORMAT(Getdate(), '%Y-%m-%d %T:%f', 'en-US'))
+FROM
+	BATCH_JOB_EXECUTION BJE
+	INNER JOIN BATCH_JOB_INSTANCE ON BATCH_JOB_INSTANCE.JOB_INSTANCE_ID = BJE.JOB_INSTANCE_ID
+WHERE
+	BATCH_JOB_INSTANCE.JOB_NAME in ( SELECT checkFeed.NAME
+				FROM FEED_CHECK_DATA_FEEDS c
+				inner join FEED f on f.name = @feed and c.FEED_ID = f.id
+				inner join FEED checkFeed on checkFeed.id = c.CHECK_DATA_FEED_ID
+				UNION
+				SELECT feed from dual )
+  AND BATCH_JOB_EXECUTION.STATUS = 'FAILED';

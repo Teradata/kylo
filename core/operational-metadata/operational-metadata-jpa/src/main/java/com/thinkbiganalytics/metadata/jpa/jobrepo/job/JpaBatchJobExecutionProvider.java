@@ -26,6 +26,7 @@ import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.EnumExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -567,11 +568,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
-            .otherwise(jobExecution.status.stringValue());
+        EnumExpression jobState = getJobStatusExpression(jobExecution);
 
         BooleanBuilder whereBuilder = new BooleanBuilder();
         if (StringUtils.isNotBlank(filter)) {
@@ -603,11 +600,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
-            .otherwise(jobExecution.status.stringValue());
+        EnumExpression jobState = getJobStatusExpression(jobExecution);
 
         JPAQuery
             query = factory.select(
@@ -627,6 +620,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
+
     /**
      * gets job executions grouped by status and Day looking back from Now - the supplied {@code period}
      *
@@ -641,11 +635,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
-            .otherwise(jobExecution.status.stringValue());
+        EnumExpression jobState = getJobStatusExpression(jobExecution);
 
         BooleanBuilder whereBuilder = new BooleanBuilder();
         whereBuilder.and(jobExecution.startTime.goe(DateTimeUtil.getNowUTCTime().minus(period)));
@@ -693,5 +683,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
     */
 
+    private com.querydsl.core.types.dsl.EnumExpression getJobStatusExpression(QJpaBatchJobExecution jobExecution) {
+        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+
+        return new CaseBuilder()
+                .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.JobStatus.RUNNING)
+                .otherwise(jobExecution.status);
+    }
 
 }

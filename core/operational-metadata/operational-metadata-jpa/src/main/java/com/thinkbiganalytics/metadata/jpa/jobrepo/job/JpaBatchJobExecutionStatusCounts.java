@@ -60,6 +60,10 @@ public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
         this.date = new DateTime().withDate(year, month, day);
     }
 
+    public JpaBatchJobExecutionStatusCounts(BatchJobExecution.JobStatus status, Integer year, Integer month, Integer day, Long count) {
+        this(status.name(), year, month, day, count);
+    }
+
     public JpaBatchJobExecutionStatusCounts(String status, String feedName, Integer year, Integer month, Integer day, Long count) {
         this.status = status;
         this.count = count;
@@ -67,6 +71,9 @@ public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
         this.date = new DateTime().withDate(year, month, day).withMillisOfDay(0);
     }
 
+    public JpaBatchJobExecutionStatusCounts(BatchJobExecution.JobStatus status, String feedName, Integer year, Integer month, Integer day, Long count) {
+        this(status.name(), feedName, year, month, day, count);
+    }
 
     public JpaBatchJobExecutionStatusCounts(JobStatusCount jobStatusCount) {
         this.feedName = jobStatusCount.getFeedName();
