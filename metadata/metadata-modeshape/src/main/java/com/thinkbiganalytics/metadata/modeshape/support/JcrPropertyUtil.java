@@ -457,7 +457,9 @@ public class JcrPropertyUtil {
                     for (Value value : values) {
                         try {
                             T o = asValue(value, prop.getSession());
-                            list.add(o);
+                            if (o != null) {
+                                list.add(o);
+                            }
                         } catch (AccessDeniedException e) {
                             // We are not allowd to see the value (likely a node reference) then
                             // just ignore this value in the result list.
@@ -740,7 +742,7 @@ public class JcrPropertyUtil {
                 values = new HashSet<>();
             }
 
-            Value existingVal = createValue(node.getSession(), value, weakRef);
+            Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
             boolean result = values.remove(existingVal);
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return result;

@@ -256,5 +256,34 @@ public class DebugController {
             return sw.toString();
         });
     }
+    
+    /**
+     * Prints the subgraph of the node in JCR
+     *
+     * @param jcrId the id of the node in JCR
+     * @return the subgraph print out
+     */
+    @DELETE
+    @Path("jcr")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrId(@QueryParam("id") final String jcrId) {
+        return metadata.commit(() -> {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Node node = session.getNodeByIdentifier(jcrId);
+                String absPath = node.getPath();
+                node.remove();
+                pw.print("DELETED " + absPath);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            pw.flush();
+            return sw.toString();
+        });
+    }
 
 }
