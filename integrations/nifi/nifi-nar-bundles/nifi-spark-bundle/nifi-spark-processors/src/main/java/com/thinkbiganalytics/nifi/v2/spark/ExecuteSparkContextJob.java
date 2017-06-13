@@ -67,7 +67,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
     public static final String flowFileAttributeValue = "FLOW_FILE_ATTRIBUTE";
     public static final String flowFileContentsValue = "FLOW_FILE_CONTENTS";
 
-    public static final AllowableValue FLOW_FILE_ATTRIBUTE = new AllowableValue(flowFileAttributeValue, "Flow File Attribute","Stores Spark job result in flow file attribute spark.job.result");
+    public static final AllowableValue FLOW_FILE_ATTRIBUTE = new AllowableValue(flowFileAttributeValue, "Flow File Attribute","Stores Spark job result in flow file attribute $APP_NAME.result");
     public static final AllowableValue FLOW_FILE_CONTENTS = new AllowableValue(flowFileContentsValue,"Flow File Contents","Stores Spark job result in flow file content");
 
 
