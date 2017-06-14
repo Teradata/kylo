@@ -132,8 +132,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 stepExecution = new JpaBatchStepExecution();
                 stepExecution.setJobExecution(jobExecution);
                 stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
-                                           event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
-                                                                                : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
+                                            DateTimeUtil.convertToUTC(event.getEventTime()).minus(event.getEventDuration()));
                 stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
                 stepExecution.setStepName(event.getComponentName());
                 if (StringUtils.isBlank(stepExecution.getStepName())) {
@@ -201,6 +200,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         stepExecution.addStepExecutionContext(eventIdContextValue);
 
         //add in the flow type if its there
+       /*
         if (event.getProcessorType() != null && !KyloProcessorFlowType.NORMAL_FLOW.equals(event.getProcessorType())) {
             KyloProcessorFlowType processorFlowType = event.getProcessorType();
 
@@ -215,5 +215,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             }
 
         }
+        */
     }
 }

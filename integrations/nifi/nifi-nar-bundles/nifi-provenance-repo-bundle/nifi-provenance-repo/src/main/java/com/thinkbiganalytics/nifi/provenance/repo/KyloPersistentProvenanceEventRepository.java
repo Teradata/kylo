@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.authorization.Authorizer;
@@ -34,32 +33,19 @@ import org.apache.nifi.util.NiFiProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Kylo Provenance Event Repository
- * This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to the KylpProvenanceProcessingQueue with the KyloProvenanceEventConsumer will process in a different thread
+ * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to the KylpProvenanceProcessingQueue with the KyloProvenanceEventConsumer
+ * will process in a different thread
  */
 public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
 
-    /**
-     * The shared queue that the Consumer will take in a new thread
-     */
-   private BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
-    /**
-     * The consumer to take and process the Provenance Events
-     */
-    KyloProvenanceEventConsumer kyloProvenanceEventConsumer;
-
+    private FeedStatisticsManager feedStatisticsManager;
 
 
     public KyloPersistentProvenanceEventRepository() {
@@ -79,13 +65,11 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     }
 
 
-
     private void init() {
-        processingQueue = new LinkedBlockingQueue<>();
         loadSpring();
-        kyloProvenanceEventConsumer = new KyloProvenanceEventConsumer(processingQueue,false);
-       // autowire(kyloProvenanceEventConsumer);
-        startConsumer();
+        feedStatisticsManager = new FeedStatisticsManager();
+        initializeFeedEventStatistics();
+
     }
 
 
@@ -104,7 +88,7 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
         final RecordWriter[] writers = super.createWriters(config, initialRecordId);
         final RecordWriter[] interceptEventIdWriters = new RecordWriter[writers.length];
         for (int i = 0; i < writers.length; i++) {
-            KyloRecordWriterDelegate delegate = new KyloRecordWriterDelegate(writers[i], processingQueue);
+            KyloRecordWriterDelegate delegate = new KyloRecordWriterDelegate(writers[i], getFeedStatisticsManager());
             interceptEventIdWriters[i] = delegate;
         }
         return interceptEventIdWriters;
@@ -118,23 +102,20 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
         }
     }
 
-    /**
-     * Start the consumer thread to process the events and send to Kylo
-     */
-    private void startConsumer() {
-        initializeFlowFilesFromMapDbCache();
-        getTaskExecutor().execute(kyloProvenanceEventConsumer);
-    }
 
     /**
      * Write any feed flow relationships in memory (running flows) to disk
      */
-    public final void persistFeedFlowToDisk() {
+    public final void persistFeedEventStatisticsToDisk() {
         log.info("onShutdown: Attempting to persist any active flow files to disk");
         try {
             //persist running flowfile metadata to disk
-            int persistedRootFlowFiles = getFlowFileMapDbCache().persistFlowFiles();
-            log.info("onShutdown: Finished persisting {} root flow files to disk ", new Object[]{persistedRootFlowFiles});
+            boolean success = FeedEventStatistics.getInstance().backup();
+            if (success) {
+                log.info("onShutdown: Successfully Finished persisting Kylo Flow processing data to {}", new Object[]{FeedEventStatistics.getInstance().getBackupLocation()});
+            } else {
+                log.info("onShutdown: FAILED Finished persisting Kylo Flow processing data.");
+            }
         } catch (Exception e) {
             //ok to swallow exception here.  this is called when NiFi is shutting down
         }
@@ -143,26 +124,21 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     @Override
     public synchronized void close() throws IOException {
         super.close();
-        persistFeedFlowToDisk();
+        persistFeedEventStatisticsToDisk();
     }
 
-    private void initializeFlowFilesFromMapDbCache() {
-        int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
-        log.info("initializeFlowFilesFromMapDbCache: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
+    private void initializeFeedEventStatistics() {
+        boolean success = FeedEventStatistics.getInstance().loadBackup();
+        if (success) {
+            log.info("Successfully loaded backup from {} ", FeedEventStatistics.getInstance().getBackupLocation());
+        } else {
+            log.error("Error loading backup");
+        }
     }
 
 
-    private TaskExecutor getTaskExecutor() {
-        return (ThreadPoolTaskExecutor) SpringApplicationContext.getInstance().getBean("kyloProvenanceProcessingTaskExecutor");
-    }
-
-
-    /**
-     * Persistent cache that will only be used when NiFi shuts down or is started, persisting the RootFlowFile objects to help complete Statistics and event processing when NiFi shuts down with events
-     * in mid flow processing
-     */
-    private FeedFlowFileMapDbCache getFlowFileMapDbCache() {
-        return SpringApplicationContext.getInstance().getBean(FeedFlowFileMapDbCache.class);
+    private FeedStatisticsManager getFeedStatisticsManager() {
+        return feedStatisticsManager;
     }
 
     @Override

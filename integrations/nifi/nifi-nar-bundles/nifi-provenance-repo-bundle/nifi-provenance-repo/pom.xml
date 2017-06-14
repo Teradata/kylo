@@ -16,6 +16,8 @@
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
+
+
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -166,6 +168,8 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+
+
 
 
   </dependencies>

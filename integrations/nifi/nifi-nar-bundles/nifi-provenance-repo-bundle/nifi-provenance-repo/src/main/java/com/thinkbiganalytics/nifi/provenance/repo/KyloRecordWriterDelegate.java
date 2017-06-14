@@ -19,6 +19,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * limitations under the License.
  * #L%
  */
+
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.serialization.RecordWriter;
 import org.apache.nifi.provenance.toc.TocWriter;
@@ -27,11 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 
 
 public class KyloRecordWriterDelegate implements RecordWriter {
@@ -111,7 +107,7 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     @Override
     public long writeRecord(ProvenanceEventRecord provenanceEventRecord, long eventId) throws IOException {
         long bytesWritten = recordWriter.writeRecord(provenanceEventRecord, eventId);
-        feedStatisticsManager.addEvent(provenanceEventRecord,eventId);
+        feedStatisticsManager.addEvent(provenanceEventRecord, eventId);
         return bytesWritten;
     }
 

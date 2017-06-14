@@ -40,6 +40,7 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -84,14 +85,14 @@ public class ProvenanceEventFeedUtil {
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
         String processorName = getProcessorName(event.getComponentId());
 
-        if (event.getFeedFlowFile() != null && event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId()) && !event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId()) ) {
+      //  if (event.getFeedFlowFile() != null && event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId()) && !event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId()) ) {
             //reassign the feedFlowFile to the batch
-            log.info("Event : {}, processor: {}, Reassigned FlowFile from {} to {} ", event.getEventId(), processorName,event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
-            event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
-        }
+    //        log.info("Event : {}, processor: {}, Reassigned FlowFile from {} to {} ", event.getEventId(), processorName,event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
+         //   event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
+     //   }
 
 
-        event.setIsBatchJob(true);
+       // event.setIsBatchJob(true);
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);
@@ -109,26 +110,40 @@ public class ProvenanceEventFeedUtil {
                 event.setProcessorType(KyloProcessorFlowType.FAILURE);
                 event.setIsFailure(true);
             }
-            if (event.getSourceConnectionIdentifier() != null) {
-                NiFiFlowCacheConnectionData connectionData = getFlowCache().getConnectionIdToConnection().get(event.getSourceConnectionIdentifier());
-                if (connectionData != null && connectionData.getName() != null) {
-                    if (connectionData.getName().toLowerCase().contains("failure")) {
-                        event.setProcessorType(KyloProcessorFlowType.FAILURE);
-                        event.setIsFailure(true);
-                        //if this is a failure because of the connection name it means the previous event failed.
-                        //todo is there a way to efficiently set the previous event as being failed
-                    } else if (connectionData.getName().toLowerCase().contains("warn")) {
-                        event.setProcessorType(KyloProcessorFlowType.WARNING);
-                    }
+            KyloProcessorFlowType flowType = getProcessorFlowType(event.getSourceConnectionIdentifier());
+            event.setProcessorType(flowType);
 
-                }
-                if (event.getProcessorType() == null) {
-                    event.setProcessorType(KyloProcessorFlowType.NORMAL_FLOW);
-                }
+            if(flowType.equals(KyloProcessorFlowType.FAILURE)){
+                event.setIsFailure(true);
             }
         }
         return event.getProcessorType();
     }
+
+
+    public boolean isFailure(String sourceConnectionIdentifer){
+        return KyloProcessorFlowType.FAILURE.equals(getProcessorFlowType(sourceConnectionIdentifer));
+    }
+
+    private KyloProcessorFlowType getProcessorFlowType(String sourceConnectionIdentifer){
+
+        if (sourceConnectionIdentifer != null) {
+            NiFiFlowCacheConnectionData connectionData = getFlowCache().getConnectionIdToConnection().get(sourceConnectionIdentifer);
+            if (connectionData != null && connectionData.getName() != null) {
+                if (connectionData.getName().toLowerCase().contains("failure")) {
+                   return KyloProcessorFlowType.FAILURE;
+                } else if (connectionData.getName().toLowerCase().contains("warn")) {
+                  return KyloProcessorFlowType.WARNING;
+                }
+            }
+        }
+        return KyloProcessorFlowType.NORMAL_FLOW;
+
+
+    }
+
+
+
 
 public String getFeedName(ProvenanceEventRecordDTO event){
         return getFeedName(event.getFirstEventProcessorId());

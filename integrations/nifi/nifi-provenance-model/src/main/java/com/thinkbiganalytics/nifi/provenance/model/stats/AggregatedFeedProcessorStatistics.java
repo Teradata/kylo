@@ -53,7 +53,7 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
      * Add the event to compute statistics
      */
     public void addEventStats(ProvenanceEventRecordDTO event) {
-        processorStats.computeIfAbsent(event.getComponentId(), processorId -> new AggregatedProcessorStatistics(processorId, event.getComponentName(), collectionId)).add(event);
+       // processorStats.computeIfAbsent(event.getComponentId(), processorId -> new AggregatedProcessorStatistics(processorId, event.getComponentName(), collectionId)).add(event);
         totalEvents++;
         if (event.getEventId() < minEventId) {
             minEventId = event.getEventId();
@@ -86,9 +86,16 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         return processorStats;
     }
 
+    public boolean hasStats(){
+        return processorStats.values().stream().anyMatch(s -> s.hasStats());
+    }
 
     public void clear(String newCollectionId) {
         this.collectionId = newCollectionId;
         processorStats.entrySet().forEach(e -> e.getValue().clear());
+    }
+
+    public String getCollectionId() {
+        return collectionId;
     }
 }

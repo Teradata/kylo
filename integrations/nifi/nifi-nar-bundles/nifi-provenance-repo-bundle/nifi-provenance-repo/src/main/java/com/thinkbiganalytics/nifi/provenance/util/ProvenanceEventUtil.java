@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.provenance.model.util;
+package com.thinkbiganalytics.nifi.provenance.util;
 
 /*-
  * #%L
@@ -20,12 +20,11 @@ package com.thinkbiganalytics.nifi.provenance.model.util;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.provenance.ProvenanceEventRecord;
+import org.apache.nifi.provenance.ProvenanceEventType;
 
 import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  */
@@ -35,33 +34,31 @@ public class ProvenanceEventUtil {
 
     public static final String FLOWFILE_QUEUE_EMPTIED = "flowfile queue emptied";
 
-    public static final String[] STARTING_EVENT_TYPES = {"RECEIVE", "CREATE"};
+    public static final ProvenanceEventType[] STARTING_EVENT_TYPES = {ProvenanceEventType.RECEIVE, ProvenanceEventType.CREATE};
 
-    public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE"};
+    public static final ProvenanceEventType[] ENDING_EVENT_TYPES = {ProvenanceEventType.DROP, ProvenanceEventType.EXPIRE};
 
-    public static boolean contains(String[] allowedEvents, String event) {
+    public static boolean contains(ProvenanceEventType[] allowedEvents, ProvenanceEventType event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);
     }
 
     /**
      * Check if the event is one that kicks off the flow
      */
-    public static boolean isFirstEvent(ProvenanceEventRecordDTO event) {
+    public static boolean isStartingFeedFlow(ProvenanceEventRecord event) {
         return contains(STARTING_EVENT_TYPES, event.getEventType());
     }
 
 
-    public static boolean isEndingFlowFileEvent(ProvenanceEventRecordDTO event) {
+    public static boolean isEndingFlowFileEvent(ProvenanceEventRecord event) {
         return contains(ENDING_EVENT_TYPES, event.getEventType());
     }
 
-    public static boolean isTerminatedByFailureRelationship(ProvenanceEventRecordDTO event) {
-
+    public static boolean isTerminatedByFailureRelationship(ProvenanceEventRecord event) {
         return event.getDetails() != null && AUTO_TERMINATED_FAILURE_RELATIONSHIP.equalsIgnoreCase(event.getDetails());
-
     }
 
-    public static boolean isFlowFileQueueEmptied(ProvenanceEventRecordDTO event) {
+    public static boolean isFlowFileQueueEmptied(ProvenanceEventRecord event) {
         return (isEndingFlowFileEvent(event) && StringUtils.isNotBlank(event.getDetails()) && event.getDetails().toLowerCase().startsWith(FLOWFILE_QUEUE_EMPTIED));
     }
 

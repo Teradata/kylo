@@ -22,10 +22,9 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
-
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import java.util.List;
 
@@ -33,29 +32,30 @@ import java.util.List;
 /**
  * Created by sr186054 on 6/12/17.
  */
-public class StatisticsConsumer {
+public class FeedProcessorStatisticsAggregator {
 
 
-    private static final StatisticsConsumer instance = new StatisticsConsumer();
+    private static final FeedProcessorStatisticsAggregator instance = new FeedProcessorStatisticsAggregator();
 
-    private StatisticsConsumer() {
+    private FeedProcessorStatisticsAggregator() {
 
     }
 
-    public static StatisticsConsumer getInstance() {
+    public static FeedProcessorStatisticsAggregator getInstance() {
         return instance;
     }
 
 
     public void add(GroupedStats stats, ProvenanceEventRecord event, Long eventId) {
-        //  FeedFlowFile feedFlowFile = event.getFeedFlowFile();
         stats.addTotalCount(1L);
         stats.addBytesIn(event.getPreviousFileSize() != null ? event.getPreviousFileSize() : 0L);
         stats.addBytesOut(event.getFileSize());
         stats.addDuration(FeedEventStatistics.getInstance().getEventDuration(eventId));
-        boolean isFailure = false;
+        stats.setSourceConnectionIdentifier(event.getSourceQueueIdentifier());
+
         if (ProvenanceEventUtil.isTerminatedByFailureRelationship(event)) {
             stats.addProcessorsFailed(1L);
+
         }
         //   this.flowFilesStarted += event.isStartOfFlowFile() ? 1L : 0L;
         //  this.flowFilesFinished += event.isEndingFlowFileEvent() ? 1L : 0L;
@@ -73,25 +73,9 @@ public class StatisticsConsumer {
                 stats.addSuccessfulJobDuration(jobTime);
                 //count successful jobs?
             }
-            //calc job time
-            //cacl job failures
-            //calc job success
-        }
-        /*
 
-        if (event.isEndOfJob()) {
-            this.jobsFinished += 1L;
-            Long jobTime = feedFlowFile.calculateJobDuration(event);
-            this.jobDuration += jobTime;
-            if (feedFlowFile.hasFailedEvents()) {
-                this.jobsFailed += 1L;
-            } else {
-                this.successfulJobDuration += jobTime;
-            }
         }
-        */
-            stats.setTime(event.getEventTime());
-
+        stats.setTime(event.getEventTime());
 
         if (stats.getMinTime() == null) {
             stats.setMinTime(event.getEventTime());
@@ -100,10 +84,10 @@ public class StatisticsConsumer {
         if (stats.getMaxTime() == null) {
             stats.setMaxTime(event.getEventTime());
         }
-        if(event.getEventTime() > stats.getMaxTime()){
+        if (event.getEventTime() > stats.getMaxTime()) {
             stats.setMaxTime(event.getEventTime());
         }
-        if(event.getEventTime() < stats.getMinTime()){
+        if (event.getEventTime() < stats.getMinTime()) {
             stats.setMinTime(event.getEventTime());
         }
 
@@ -111,18 +95,7 @@ public class StatisticsConsumer {
             stats.setMaxEventId(eventId);
         }
 
-        /*
-        stats.setClusterNodeAddress(event.getC);
-        if (StringUtils.isBlank(this.clusterNodeAddress)) {
-            this.clusterNodeAddress = event.getClusterNodeAddress();
-        }
 
-        if (StringUtils.isBlank(this.clusterNodeId)) {
-            this.clusterNodeId = event.getClusterNodeId();
-        }
-
-        this.totalCount++;
-        */
     }
 
     public void addStats1(GroupedStats stats1, GroupedStats stats2) {
@@ -148,8 +121,8 @@ public class StatisticsConsumer {
 
     public GroupedStats add(GroupedStats... groupedStatss) {
         GroupedStats allStats = new GroupedStats();
-        for(GroupedStats stats : groupedStatss){
-            addStats1(allStats,stats);
+        for (GroupedStats stats : groupedStatss) {
+            addStats1(allStats, stats);
         }
         return allStats;
     }

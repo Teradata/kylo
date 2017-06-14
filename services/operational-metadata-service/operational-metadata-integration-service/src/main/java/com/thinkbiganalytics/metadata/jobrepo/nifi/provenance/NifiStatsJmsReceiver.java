@@ -25,11 +25,14 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
@@ -77,19 +80,22 @@ public class NifiStatsJmsReceiver {
 
                                                                      feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
                                                                                                                              {
-                                                                                                                                 NifiFeedProcessorStats
-                                                                                                                                     nifiFeedProcessorStats =
-                                                                                                                                     toSummaryStats(processorStats.getStats());
-                                                                                                                                 nifiFeedProcessorStats.setFeedName(feedName);
-                                                                                                                                 nifiFeedProcessorStats.setProcessorId(processorStats.getProcessorId());
-                                                                                                                                 String
-                                                                                                                                     processorName =
-                                                                                                                                     provenanceEventFeedUtil
-                                                                                                                                         .getProcessorName(processorStats.getProcessorId());
-                                                                                                                                 nifiFeedProcessorStats.setProcessorName(processorName);
-                                                                                                                                 nifiFeedProcessorStats
-                                                                                                                                     .setFeedProcessGroupId(feedProcessGroupId);
-                                                                                                                                 nifiFeedProcessorStatsList.add(nifiFeedProcessorStats);
+                                                                                                                                 processorStats.getStats().values().stream().forEach(stats -> {
+                                                                                                                                     NifiFeedProcessorStats
+                                                                                                                                         nifiFeedProcessorStats =
+                                                                                                                                         toSummaryStats(stats);
+                                                                                                                                     nifiFeedProcessorStats.setFeedName(feedName);
+                                                                                                                                     nifiFeedProcessorStats
+                                                                                                                                         .setProcessorId(processorStats.getProcessorId());
+                                                                                                                                     String
+                                                                                                                                         processorName =
+                                                                                                                                         provenanceEventFeedUtil
+                                                                                                                                             .getProcessorName(processorStats.getProcessorId());
+                                                                                                                                     nifiFeedProcessorStats.setProcessorName(processorName);
+                                                                                                                                     nifiFeedProcessorStats
+                                                                                                                                         .setFeedProcessGroupId(feedProcessGroupId);
+                                                                                                                                     nifiFeedProcessorStatsList.add(nifiFeedProcessorStats);
+                                                                                                                                 });
                                                                                                                              });
                                                                  }
 
@@ -97,6 +103,8 @@ public class NifiStatsJmsReceiver {
         return nifiFeedProcessorStatsList;
 
     }
+
+
 
     private NifiFeedProcessorStats toSummaryStats(GroupedStats groupedStats) {
         NifiFeedProcessorStats nifiFeedProcessorStats = new JpaNifiFeedProcessorStats();
@@ -110,13 +118,18 @@ public class NifiStatsJmsReceiver {
         nifiFeedProcessorStats.setJobsFinished(groupedStats.getJobsFinished());
         nifiFeedProcessorStats.setJobsStarted(groupedStats.getJobsStarted());
         nifiFeedProcessorStats.setProcessorsFailed(groupedStats.getProcessorsFailed());
-        nifiFeedProcessorStats.setCollectionTime(groupedStats.getTime());
-        nifiFeedProcessorStats.setMinEventTime(groupedStats.getMinTime());
-        nifiFeedProcessorStats.setMaxEventTime(groupedStats.getMaxTime());
+        nifiFeedProcessorStats.setCollectionTime(new DateTime(groupedStats.getTime()));
+        nifiFeedProcessorStats.setMinEventTime(new DateTime(groupedStats.getMinTime()));
+        nifiFeedProcessorStats.setMaxEventTime(new DateTime(groupedStats.getMaxTime()));
         nifiFeedProcessorStats.setJobsFailed(groupedStats.getJobsFailed());
         nifiFeedProcessorStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());
         nifiFeedProcessorStats.setJobDuration(groupedStats.getJobDuration());
         nifiFeedProcessorStats.setMaxEventId(groupedStats.getMaxEventId());
+        nifiFeedProcessorStats.setFailedCount(groupedStats.getProcessorsFailed());
+        if(provenanceEventFeedUtil.isFailure(groupedStats.getSourceConnectionIdentifier())){
+            nifiFeedProcessorStats.setFailedCount(groupedStats.getTotalCount() + groupedStats.getProcessorsFailed());
+        }
+
         return nifiFeedProcessorStats;
     }
 }

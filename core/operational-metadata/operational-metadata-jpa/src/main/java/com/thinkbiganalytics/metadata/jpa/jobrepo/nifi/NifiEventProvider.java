@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,7 +58,7 @@ public class NifiEventProvider {
     public static NifiEvent toNifiEvent(ProvenanceEventRecordDTO eventRecordDTO) {
         JpaNifiEvent nifiEvent = new JpaNifiEvent(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
         nifiEvent.setFeedName(eventRecordDTO.getFeedName());
-        nifiEvent.setEventTime(eventRecordDTO.getEventTime());
+        nifiEvent.setEventTime(new DateTime(eventRecordDTO.getEventTime()));
         nifiEvent.setEventDetails(eventRecordDTO.getDetails());
         nifiEvent.setEventDuration(eventRecordDTO.getEventDuration());
         nifiEvent.setFeedProcessGroupId(eventRecordDTO.getFeedProcessGroupId());
@@ -70,14 +71,14 @@ public class NifiEventProvider {
         nifiEvent.setChildFlowFileIds(StringUtils.join(eventRecordDTO.getChildUuids(), ","));
         nifiEvent.setJobFlowFileId(eventRecordDTO.getJobFlowFileId());
         nifiEvent.setIsStartOfJob(eventRecordDTO.isStartOfJob());
-        nifiEvent.setIsEndOfJob(eventRecordDTO.isEndOfJob());
+        nifiEvent.setIsEndOfJob(eventRecordDTO.isFinalJobEvent());
         nifiEvent.setSourceConnectionId(eventRecordDTO.getSourceConnectionIdentifier());
         String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributeMap());
         nifiEvent.setAttributesJson(attributesJSON);
         nifiEvent.setIsFinalJobEvent(eventRecordDTO.isFinalJobEvent());
         nifiEvent.setIsFailure(eventRecordDTO.isFailure());
-        nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
-        nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
+     //   nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
+      //  nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
         nifiEvent.setClusterNodeAddress(eventRecordDTO.getClusterNodeAddress());
         nifiEvent.setClusterNodeId(eventRecordDTO.getClusterNodeId());
         return nifiEvent;

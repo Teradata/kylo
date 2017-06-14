@@ -24,7 +24,6 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,21 +37,7 @@ import java.util.Map;
 public class ProvenanceEventRecordConverter implements Serializable {
 
 
-    public static ProvenanceEventRecordDTO getPooledObject(ProvenanceEventObjectPool pool, final ProvenanceEventRecord event){
-        ProvenanceEventRecordDTO dto = null;
-        try {
-            dto = pool.borrowObject();
-            populateEvent(dto, event);
-            return dto;
-        }
-        catch (Exception e){
-            //error during object pool.  just return
-            return convert(event);
-        }
-
-    }
-
-    public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event)  {
+    public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();
         populateEvent(dto, event);
         return dto;
@@ -65,9 +50,8 @@ public class ProvenanceEventRecordConverter implements Serializable {
         final Map<String, String> updatedAttrs = new HashMap<>(event.getUpdatedAttributes());
         final Map<String, String> previousAttrs = event.getPreviousAttributes();
 
-        dto.setId(String.valueOf(event.getEventId()));
         dto.setEventId(event.getEventId());
-        dto.setEventTime(new DateTime(event.getEventTime()));
+        dto.setEventTime(event.getEventTime());
         dto.setEventType(event.getEventType().name());
         dto.setFileSize(FormatUtils.formatDataSize(event.getFileSize()));
         dto.setFileSizeBytes(event.getFileSize());
@@ -91,7 +75,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
 
         dto.setSourceConnectionIdentifier(event.getSourceQueueIdentifier());
 
-        dto.setStartTime(new DateTime(event.getLineageStartDate()));
+        dto.setStartTime(event.getFlowFileEntryDate());
 
         final List<String> parentUuids = new ArrayList<>(event.getParentUuids());
         dto.setParentUuids(parentUuids);

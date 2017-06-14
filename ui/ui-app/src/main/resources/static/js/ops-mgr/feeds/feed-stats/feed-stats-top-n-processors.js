@@ -325,7 +325,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
 
         self.timeframeOptions = [];
-        self.timeFrame = 'DAY';
+        self.timeFrame = 'FIVE_MIN';
         self.lastRefreshTime = null;
         self.timeFramOptionsLookupMap = {};
         self.selectedTimeFrameOptionObject = {};

@@ -77,7 +77,7 @@ public class ProvenanceEventBatchJobThrottle {
             String feedName = provenanceEventFeedUtil.getFeedName(event);
             ProvenanceEventRecordDTO lastEvent = runningJobs.getIfPresent(feedName);
             Long timeBetweenJobs = timeBetweenStartingJobs(feedName);
-            if (timeBetweenJobs == -1L || lastEvent == null || (lastEvent != null && (event.getEventTime().getMillis() - lastEvent.getEventTime().getMillis()) > timeBetweenJobs)) {
+            if (timeBetweenJobs == -1L || lastEvent == null || (lastEvent != null && (event.getEventTime() - lastEvent.getEventTime()) > timeBetweenJobs)) {
                 //create it
                 runningJobs.put(feedName,event);
                 //notify clusters its running

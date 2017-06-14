@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.provenance;
+package com.thinkbiganalytics.nifi.provenance.repo;
 
 /*-
  * #%L
@@ -20,17 +20,17 @@ package com.thinkbiganalytics.nifi.provenance;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+/**
+ * Created by sr186054 on 6/14/17.
+ */
+public class SetupBean {
 
+    public SetupBean() {
 
-public interface BatchProvenanceEvents {
+    }
 
-    boolean process(ProvenanceEventRecordDTO event);
-
-    void sendToJms();
-
-    void logStats();
-
-
+    public SetupBean(String location) {
+        FeedEventStatistics.getInstance().setBackupLocation(location);
+    }
 
 }

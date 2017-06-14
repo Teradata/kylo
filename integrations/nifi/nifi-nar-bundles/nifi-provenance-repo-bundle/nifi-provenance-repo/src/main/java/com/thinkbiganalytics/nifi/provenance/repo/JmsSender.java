@@ -41,44 +41,44 @@ public class JmsSender {
 
     private static final Logger log = LoggerFactory.getLogger(JmsSender.class);
 
-        List<ProvenanceEventRecordDTO> eventsToSend = null;
-        List<AggregatedFeedProcessorStatistics> statsToSend = null;
+    List<ProvenanceEventRecordDTO> eventsToSend = null;
+    List<AggregatedFeedProcessorStatistics> statsToSend = null;
 
-        public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend) {
-            this.eventsToSend = eventsToSend;
-            if(statsToSend != null) {
-                this.statsToSend = new ArrayList<>(statsToSend);
-            }
+    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend) {
+        this.eventsToSend = eventsToSend;
+        if (statsToSend != null) {
+            this.statsToSend = new ArrayList<>(statsToSend);
         }
+    }
 
-        public void run() {
+    public void run() {
 
-            try {
-                if (eventsToSend != null && !eventsToSend.isEmpty()) {
-                    ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
-                    eventRecordDTOHolder.setEvents(eventsToSend);
-                    getProvenanceEventActiveMqWriter().writeBatchEvents(eventRecordDTOHolder);
-                }
-
-                if (statsToSend != null && !statsToSend.isEmpty()) {
-                    AggregatedFeedProcessorStatisticsHolder statsHolder = new AggregatedFeedProcessorStatisticsHolder();
-                    statsHolder.setCollectionId(statsToSend.get(0).getCollectionId());
-                    statsHolder.setFeedStatistics(statsToSend);
-                    getProvenanceEventActiveMqWriter().writeStats(statsHolder);
-                }
-
-
-            }catch (Exception e){
-                e.printStackTrace();
-                //TODO log
+        try {
+            if (eventsToSend != null && !eventsToSend.isEmpty()) {
+                ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
+                eventRecordDTOHolder.setEvents(eventsToSend);
+                getProvenanceEventActiveMqWriter().writeBatchEvents(eventRecordDTOHolder);
             }
-        }
 
-    public ProvenanceEventActiveMqWriter getProvenanceEventActiveMqWriter(){
+            if (statsToSend != null && !statsToSend.isEmpty()) {
+                AggregatedFeedProcessorStatisticsHolder statsHolder = new AggregatedFeedProcessorStatisticsHolder();
+                statsHolder.setCollectionId(statsToSend.get(0).getCollectionId());
+                statsHolder.setFeedStatistics(statsToSend);
+                getProvenanceEventActiveMqWriter().writeStats(statsHolder);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            //TODO log
+        }
+    }
+
+    public ProvenanceEventActiveMqWriter getProvenanceEventActiveMqWriter() {
         ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter = SpringApplicationContext.getInstance().getBean(ProvenanceEventActiveMqWriter.class);
-        if(provenanceEventActiveMqWriter == null) {
+        if (provenanceEventActiveMqWriter == null) {
             log.error("!!!!!!!ProvenanceEventActiveMqWriter is NULL !!!!!!");
         }
         return provenanceEventActiveMqWriter;
     }
-    }
+}

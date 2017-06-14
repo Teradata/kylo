@@ -188,7 +188,7 @@ public class FeedFlowFile implements Serializable {
      */
     public void setFirstEvent(ProvenanceEventRecordDTO event) {
         firstEventId = event.getEventId();
-        firstEventStartTime = event.getStartTime().getMillis();
+        firstEventStartTime = event.getStartTime();
         firstEventProcessorId = event.getComponentId();
     }
 
@@ -196,11 +196,11 @@ public class FeedFlowFile implements Serializable {
     public void addEvent(ProvenanceEventRecordDTO event) {
         Long previousEventTime = getPreviousEventTime(event.getFlowFileUuid());
         if (previousEventTime != null) {
-            event.setStartTime(new DateTime(previousEventTime));
+            event.setStartTime(previousEventTime);
         } else {
             event.setStartTime(event.getEventTime());
         }
-        event.setEventDuration(event.getEventTime().getMillis() - event.getStartTime().getMillis());
+        event.setEventDuration(event.getEventTime() - event.getStartTime());
         registerLastEventTime(event);
 
     }
@@ -283,9 +283,10 @@ public class FeedFlowFile implements Serializable {
                 flowfilesStarted = new HashSet<>();
             }
             flowfilesStarted.add(eventRecordDTO.getFlowFileUuid());
-            eventRecordDTO.setStartOfFlowFile(true);
+        //    eventRecordDTO.setStartOfFlowFile(true);
         }
-        return eventRecordDTO.isStartOfFlowFile();
+      //  return eventRecordDTO.isStartOfFlowFile();
+        return false;
     }
 
     public Long getPreviousEventTime(String flowfileId) {
@@ -306,7 +307,7 @@ public class FeedFlowFile implements Serializable {
         if (flowFileLastEventTime == null) {
             flowFileLastEventTime = new HashMap<>();
         }
-        flowFileLastEventTime.put(eventRecordDTO.getFlowFileUuid(), eventRecordDTO.getEventTime().getMillis());
+        flowFileLastEventTime.put(eventRecordDTO.getFlowFileUuid(), eventRecordDTO.getEventTime());
 
     }
 
@@ -328,7 +329,7 @@ public class FeedFlowFile implements Serializable {
         Long jobTime = null;
         Long firstEventTime = getFirstEventStartTime();
         if (firstEventTime != null) {
-            jobTime = event.getEventTime().getMillis() - firstEventTime;
+            jobTime = event.getEventTime() - firstEventTime;
         }
         return jobTime;
     }

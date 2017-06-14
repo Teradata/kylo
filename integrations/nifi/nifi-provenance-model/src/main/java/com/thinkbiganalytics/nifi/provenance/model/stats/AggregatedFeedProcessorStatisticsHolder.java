@@ -25,10 +25,14 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -54,13 +58,13 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
      * Add an event to generate statistics
      */
     public void addStat(ProvenanceEventRecordDTO event) {
-        if (minTime == null || event.getEventTime().isBefore(minTime)) {
-            minTime = event.getEventTime();
+        if (minTime == null || event.getEventTime() < minTime.getMillis()) {
+            minTime = new DateTime(event.getEventTime());
         }
-        if (maxTime == null || event.getEventTime().isAfter(maxTime)) {
-            maxTime = event.getEventTime();
+        if (maxTime == null || event.getEventTime() > maxTime.getMillis()) {
+            maxTime = new DateTime(event.getEventTime());
         }
-        feedStatistics.computeIfAbsent(event.getFeedFlowFile().getFirstEventProcessorId(), (feedProcessorId) -> new AggregatedFeedProcessorStatistics(feedProcessorId, collectionId)).addEventStats(
+        feedStatistics.computeIfAbsent(event.getFirstEventProcessorId(), (feedProcessorId) -> new AggregatedFeedProcessorStatistics(feedProcessorId, collectionId)).addEventStats(
             event);
 
         if (event.getEventId() < minEventId) {
@@ -90,10 +94,27 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         return feedStatistics;
     }
 
+    public void setFeedStatistics(Map<String, AggregatedFeedProcessorStatistics> feedStatistics) {
+        this.feedStatistics = feedStatistics;
+    }
+
+    public void setFeedStatistics(List<AggregatedFeedProcessorStatistics> stats){
+        if(stats != null){
+            this.feedStatistics =    stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
+        }
+    }
+
     public void clear() {
         this.collectionId = UUID.randomUUID().toString();
-
         feedStatistics.entrySet().forEach(e -> e.getValue().clear(collectionId));
+    }
+
+    public boolean hasStats(){
+        return feedStatistics.values().stream().anyMatch(s -> s.hasStats());
+    }
+
+    public void setCollectionId(String collectionId) {
+        this.collectionId = collectionId;
     }
 
     @Override

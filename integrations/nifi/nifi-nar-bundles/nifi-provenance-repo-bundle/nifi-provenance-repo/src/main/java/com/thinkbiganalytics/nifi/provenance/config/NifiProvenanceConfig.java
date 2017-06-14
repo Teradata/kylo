@@ -20,28 +20,17 @@ package com.thinkbiganalytics.nifi.provenance.config;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.BatchEventsBySampling;
-import com.thinkbiganalytics.nifi.provenance.BatchProvenanceEvents;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventCollector;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectFactory;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventObjectPool;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceStatsCalculator;
-import com.thinkbiganalytics.nifi.provenance.StartingFeedFlowFileUtil;
-import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
-import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileGuavaCache;
-import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileMapDbCache;
-import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;;
-import com.thinkbiganalytics.nifi.provenance.repo.ThrottleEvents;
+import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.repo.SetupBean;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
-import org.apache.commons.pool2.impl.AbandonedConfig;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+;
 
 /**
  * Spring bean configuration for Kylo NiFi Provenance
@@ -53,49 +42,16 @@ public class NifiProvenanceConfig {
 
     public static final Integer PROVENANCE_EVENT_OBJECT_POOL_SIZE = 500;
     /**
-     * location of where map db should store the persist cache file to disk
+     * location of where the FeedEventStatistics should be written if NiFi shuts down mid flow
      **/
-    @Value("${kylo.provenance.feedflowfile.mapdb.cache.location:/opt/nifi/feed-flowfile-cache.db}")
-    private String feedFlowFileMapDbCacheLocation;
+    @Value("${kylo.provenance.cache.location:/opt/nifi/feed-event-statistics.gz}")
+    private String feedEventStatisticsLocation;
 
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
     }
 
-    /**
-     * The KyloProvenanceEventReportingTask will override these defaults based upon its batch property ("Processing batch size")
-     *
-     * @return an object pool for processing ProvenanceEventRecordDTO objects
-     */
-    @Bean
-    public ProvenanceEventObjectPool provenanceEventObjectPool() {
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxTotal(PROVENANCE_EVENT_OBJECT_POOL_SIZE);
-        config.setMaxIdle(PROVENANCE_EVENT_OBJECT_POOL_SIZE);
-        config.setBlockWhenExhausted(false);
-        config.setTestOnBorrow(false);
-        config.setTestOnReturn(false);
-        AbandonedConfig abandonedConfig = new AbandonedConfig();
-        return new ProvenanceEventObjectPool(new ProvenanceEventObjectFactory(), config,abandonedConfig);
-    }
-
-
-    @Bean
-    public FeedFlowFileMapDbCache feedFlowFileMapDbCache() {
-        String location = feedFlowFileMapDbCacheLocation;
-        return new FeedFlowFileMapDbCache(location);
-    }
-
-    @Bean
-    public FeedFlowFileGuavaCache feedFlowFileGuavaCache() {
-        return new FeedFlowFileGuavaCache();
-    }
-
-    @Bean
-    public FeedFlowFileCacheUtil feedFlowFileCacheUtil() {
-        return new FeedFlowFileCacheUtil();
-    }
 
     @Bean
     public ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter() {
@@ -103,35 +59,8 @@ public class NifiProvenanceConfig {
     }
 
     @Bean
-    public ProvenanceEventCollector provenanceEventCollectorV3() {
-        return new ProvenanceEventCollector();
-    }
-
-
-    @Bean
-    public ProvenanceStatsCalculator provenanceStatsCalculator() {
-        return new ProvenanceStatsCalculator();
-    }
-
-
-
-    @Bean(name = "kyloProvenanceProcessingTaskExecutor" )
-    public ThreadPoolTaskExecutor kyloProvenanceProcessingTaskExecutor() {
-        ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor();
-        pool.setCorePoolSize(1);
-        pool.setMaxPoolSize(1);
-        pool.setWaitForTasksToCompleteOnShutdown(true);
-        return pool;
-    }
-
-    @Bean
-    BatchProvenanceEvents batchProvenanceEvents(){
-        return new BatchEventsBySampling();
-    }
-
-    @Bean
-    StartingFeedFlowFileUtil startingFeedFlowFileUtil(){
-        return new StartingFeedFlowFileUtil();
+    public SetupBean setupBean(){
+        return new SetupBean(feedEventStatisticsLocation);
     }
 
 }

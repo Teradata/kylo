@@ -51,7 +51,7 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
 
     private Map<String,Integer> sentProcessorIdChildFlowFileCount = null;
 
-    private Map<String,DateTime> actualProcessorIdEventTime = null;
+    private Map<String,Long> actualProcessorIdEventTime = null;
 
     private Map<String,Set<String>> actualFlowFilesProcessed = null;
 
@@ -275,7 +275,7 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
                 event.setEventTime(actualProcessorIdEventTime.get(processorId));
                 event.setJobFlowFileId(feedFlowFileId);
                 String ffId = feedFlowFileId;
-                event.setStreamingBatchFeedFlowFileId(ffId);
+               // event.setStreamingBatchFeedFlowFileId(ffId);
                 event.setFlowFileUuid(ffId);
                 event.setJobFlowFileId(ffId);
 

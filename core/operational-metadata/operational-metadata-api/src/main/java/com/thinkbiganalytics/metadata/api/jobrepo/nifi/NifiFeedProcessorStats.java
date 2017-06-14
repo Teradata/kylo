@@ -145,6 +145,20 @@ public interface NifiFeedProcessorStats {
      */
     void setTotalCount(Long totalCount);
 
+
+    /**
+     *
+     * @return the number of events that failed
+     */
+    Long getFailedCount();
+
+    /**
+     * set the total events that are failure events
+     * @param totalFailureCount
+     */
+    void setFailedCount(Long failedCount);
+
+
     /**
      * return the total jobs started by this feed and processor
      *

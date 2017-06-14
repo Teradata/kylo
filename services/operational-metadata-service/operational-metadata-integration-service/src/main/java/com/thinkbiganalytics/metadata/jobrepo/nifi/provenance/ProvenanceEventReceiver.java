@@ -265,14 +265,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         NifiEvent nifiEvent = null;
-        log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
+        log.debug("Received ProvenanceEvent {}.  is ending flowfile:{}", event, event.isEndingFlowFileEvent());
         nifiEvent = nifiEventProvider.create(event);
         //query it again
         jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
         BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
         if (job == null) {
-            log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
-                      event.isEndingFlowFileEvent(), event.isBatchJob());
+            log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, ", event, event.isEndingFlowFileEvent(),
+                      event.isEndingFlowFileEvent());
         }
 
         return nifiEvent;
@@ -314,7 +314,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
             if (alreadyTriggered == null) {
                 completedJobEvents.put(mapKey, mapKey);
                 /// TRIGGER JOB COMPLETE!!!
-                if (event.isHasFailedEvents()) {
+                if (event.isFailure()) {
                     failedJob(event);
                 } else {
                     successfulJob(event);
@@ -332,7 +332,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * @param event a provenance event
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
-        if (queryForNiFiBulletins && event.isBatchJob()) {
+        if (queryForNiFiBulletins) {
             queryForNiFiErrorBulletins(event);
         }
         FeedOperation.State state = FeedOperation.State.FAILURE;

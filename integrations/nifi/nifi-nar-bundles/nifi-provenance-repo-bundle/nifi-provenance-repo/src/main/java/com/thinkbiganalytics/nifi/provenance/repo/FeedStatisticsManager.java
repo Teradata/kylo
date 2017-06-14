@@ -20,22 +20,15 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
-import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,10 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
 
 /**
  * Created by sr186054 on 6/12/17.
@@ -68,32 +58,19 @@ public class FeedStatisticsManager {
     private BlockingQueue<JmsSender> jmsSenderBlockingQueue = new LinkedBlockingQueue<>();
 
 
-    private boolean isTest = false;
+    public FeedStatisticsManager() {
+        this(true);
+    }
 
-    public void setTest(boolean isTest){
-        this.isTest = isTest;
+    public FeedStatisticsManager( boolean initTimer) {
+        if(initTimer){
+            initTimerThread();
+        }
     }
 
 
-    private void checkout(FeedEventStatistics feedEventStatistics){
 
-    }
-
-    List<ProvenanceEventRecordDTO> sentEvents = new ArrayList<>();
-
-    List<GroupedStats> sentStats = new ArrayList<>();
-
-    public FeedStatisticsManager(){
-        init();
-    }
-
-
-    private void init(){
-        initTimerThread();
-    }
-
-
-    public void addEvent(ProvenanceEventRecord event, Long eventId){
+    public void addEvent(ProvenanceEventRecord event, Long eventId) {
         lock.lock();
         try {
             //build up feed flow file map relationships
@@ -105,56 +82,57 @@ public class FeedStatisticsManager {
 
             //generate statistics and process the event
             String feedProcessorId = FeedEventStatistics.getInstance().getFeedProcessorId(event);
-            if(feedProcessorId != null) {
+            if (feedProcessorId != null) {
                 String key = feedProcessorId + event.getComponentId();
                 feedStatisticsMap.computeIfAbsent(key, feedStatisticsKey -> new FeedStatistics(feedProcessorId, event.getComponentId())).addEvent(event, eventId);
-            }
-            else {
+            } else {
                 //UNABLE TO FIND data in maps
             }
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
 
-    public void send(){
+    public void send() {
         lock.lock();
         List<ProvenanceEventRecordDTO> eventsToSend = null;
-        Map<String,AggregatedFeedProcessorStatistics> statsToSend = null;
-        JmsSender jmsSender = null;
+        Map<String, AggregatedFeedProcessorStatistics> statsToSend = null;
         try {
             //Gather Events and Stats to send Ops Manager
             eventsToSend = feedStatisticsMap.values().stream().flatMap(stats -> stats.getEventsToSend().stream()).collect(Collectors.toList());
 
             final String collectionId = UUID.randomUUID().toString();
 
-            for(FeedStatistics feedStatistics : feedStatisticsMap.values()){
-                if(feedStatistics.hasStats()){
-                    if(statsToSend == null){
+            for (FeedStatistics feedStatistics : feedStatisticsMap.values()) {
+                if (feedStatistics.hasStats()) {
+                    if (statsToSend == null) {
                         statsToSend = new ConcurrentHashMap<>();
                     }
-                    AggregatedFeedProcessorStatistics feedProcessorStatistics =statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(), feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId) );
-                    AggregatedProcessorStatistics processorStatistics = feedProcessorStatistics.getProcessorStats().computeIfAbsent(feedStatistics.getProcessorId(),processorId ->new AggregatedProcessorStatistics(feedStatistics.getProcessorId(),null,collectionId));
-                    StatisticsConsumer.getInstance().addStats1(processorStatistics.getStats(),feedStatistics.getStats());
+                    AggregatedFeedProcessorStatistics
+                        feedProcessorStatistics =
+                        statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(), feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId));
+                    AggregatedProcessorStatistics
+                        processorStatistics =
+                        feedProcessorStatistics.getProcessorStats()
+                            .computeIfAbsent(feedStatistics.getProcessorId(), processorId -> new AggregatedProcessorStatistics(feedStatistics.getProcessorId(), null, collectionId));
+
+                    //accumulate the stats together into the processorStatistics object grouped by source connection id
+                    feedStatistics.getStats().stream().forEach(stats -> {
+                        FeedProcessorStatisticsAggregator.getInstance().addStats1(processorStatistics.getStats(stats.getSourceConnectionIdentifier()), stats);
+                    });
                 }
             }
 
-            if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty()) ) {
-                jmsSenderBlockingQueue.add(new JmsSender(eventsToSend,statsToSend.values()));
+            if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
+                jmsSenderBlockingQueue.add(new JmsSender(eventsToSend, statsToSend.values()));
             }
 
-        }finally{
+        } finally {
             feedStatisticsMap.values().stream().forEach(stats -> stats.clear());
             lock.unlock();
         }
 
     }
-
-
-
-
-
-
 
     //jms thread
 
@@ -167,16 +145,8 @@ public class FeedStatisticsManager {
             send();
         }, sendJmsTimeMillis, sendJmsTimeMillis, TimeUnit.MILLISECONDS);
 
-
         ScheduledExecutorService jmsService = Executors.newSingleThreadScheduledExecutor();
         jmsService.submit(new JmsSenderConsumer(jmsSenderBlockingQueue));
     }
 
-    public List<ProvenanceEventRecordDTO> getSentEvents() {
-        return sentEvents;
-    }
-
-    public List<GroupedStats> getSentStats() {
-        return sentStats;
-    }
 }

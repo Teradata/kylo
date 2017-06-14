@@ -29,6 +29,18 @@ import java.util.List;
 
 public class ConsumerStats {
 
+
+    private static final ConsumerStats instance = new ConsumerStats();
+
+    private ConsumerStats() {
+
+    }
+
+    public static ConsumerStats getInstance() {
+        return instance;
+    }
+
+
     private static final Logger log = LoggerFactory.getLogger(ConsumerStats.class);
 
     private List<Long> processTimes = new ArrayList<>();
@@ -44,31 +56,31 @@ public class ConsumerStats {
     private List<Long> totalTimes = new ArrayList<>();
 
 
-    public void addSortTime(Long time){
+    public void addSortTime(Long time) {
         sortTimes.add(time);
     }
 
-    public void addConversionTime(Long time){
+    public void addConversionTime(Long time) {
         conversionTimes.add(time);
     }
 
-    public void addProcessTime(Long time){
+    public void addProcessTime(Long time) {
         processTimes.add(time);
     }
 
-    public void addEventTime(Long time){
+    public void addEventTime(Long time) {
         eventTimes.add(time);
     }
 
-    public void addTotalTime(Long time){
+    public void addTotalTime(Long time) {
         totalTimes.add(time);
     }
 
-    public void incrementEventCount(){
+    public void incrementEventCount() {
         eventCount++;
     }
 
-    private void resetTimes(){
+    private void resetTimes() {
         processTimes.clear();
         conversionTimes.clear();
         eventCount = 0L;
@@ -76,12 +88,12 @@ public class ConsumerStats {
         totalTimes.clear();
     }
 
-    public void log(){
-        log.info("Averages for {} events.  Sort: {}, conversion: {}, process: {}, event: {}, totalTime: {}, ",eventCount, (sortTimes.stream().mapToDouble(Long::doubleValue).sum()/eventCount),
+    public void log() {
+        log.info("Averages for {} events.  Sort: {}, conversion: {}, process: {}, event: {}, totalTime: {}, ", eventCount, (sortTimes.stream().mapToDouble(Long::doubleValue).sum() / eventCount),
                  conversionTimes.stream().mapToDouble(Long::doubleValue).average(),
                  processTimes.stream().mapToDouble(Long::doubleValue).average(),
                  eventTimes.stream().mapToDouble(Long::doubleValue).average(),
-                 (totalTimes.stream().mapToDouble(Long::doubleValue).sum()/eventCount));
+                 (totalTimes.stream().mapToDouble(Long::doubleValue).sum() / eventCount));
     }
 
 

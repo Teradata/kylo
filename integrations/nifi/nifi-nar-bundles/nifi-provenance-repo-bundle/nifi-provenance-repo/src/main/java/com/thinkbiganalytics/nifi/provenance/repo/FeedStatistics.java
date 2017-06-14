@@ -23,28 +23,23 @@ package com.thinkbiganalytics.nifi.provenance.repo;
 import com.google.common.base.Stopwatch;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 /**
  * Created by sr186054 on 6/12/17.
  */
 public class FeedStatistics {
+
     private static int limit = 3;
 
     private String feedProcessorId;
@@ -52,43 +47,52 @@ public class FeedStatistics {
     private String processorId;
 
 
-    private Map<String,ProvenanceEventRecordDTO> lastRecords = new ConcurrentHashMap<>(limit);
+    private Map<String, ProvenanceEventRecordDTO> lastRecords = new ConcurrentHashMap<>(limit);
 
-    private GroupedStats stats;
+    /**
+     * SourceQueueIdentifier to Grouped Stats
+     */
+    private Map<String, GroupedStats> stats;
 
-    private AggregatedProcessorStatistics feedProcessorStatistics;
 
-    private ProvenanceEventRecordThrottle eventRecordThrottle;
-
-    private String batchKey(ProvenanceEventRecord event, String feedFlowFileId, boolean isStartingFeedFlow){
+    private String batchKey(ProvenanceEventRecord event, String feedFlowFileId, boolean isStartingFeedFlow) {
         String key = event.getComponentId() + "-" + event.getEventType().name();
-        if(isStartingFeedFlow){
-            key +=eventTimeNearestSecond(event);
+        if (isStartingFeedFlow) {
+            key += eventTimeNearestSecond(event);
+        } else {
+            key += ":" + feedFlowFileId;
         }
-        else {
-            key +=":"+feedFlowFileId;
-        }
-        return  key;
+        return key;
     }
 
 
     private Long eventTimeNearestSecond(ProvenanceEventRecord event) {
-            return new DateTime(event.getEventTime()).withMillis(0).getMillis();
+        return new DateTime(event.getEventTime()).withMillis(0).getMillis();
     }
 
 
     public FeedStatistics(String feedProcessorId, String processorId) {
         this.feedProcessorId = feedProcessorId;
         this.processorId = processorId;
-        stats = new GroupedStats();
-        this.feedProcessorStatistics = new AggregatedProcessorStatistics(processorId,null, UUID.randomUUID().toString(),stats);
-   //     eventRecordThrottle = new ProvenanceEventRecordThrottle(feedProcessorId+processorId,null,1000L,3);
+        stats = new ConcurrentHashMap<>();
+
+        //    this.feedProcessorStatistics = new AggregatedProcessorStatistics(processorId,null, UUID.randomUUID().toString(),stats);
+        //     eventRecordThrottle = new ProvenanceEventRecordThrottle(feedProcessorId+processorId,null,1000L,3);
     }
 
-    public void addEvent(ProvenanceEventRecord event, Long eventId){
+    public GroupedStats getStats(ProvenanceEventRecord event) {
+        String key = event.getSourceQueueIdentifier();
+        if (key == null) {
+            key = GroupedStats.DEFAULT_SOURCE_CONNECTION_ID;
+        }
+        return stats.computeIfAbsent(key, sourceConnectionIdentifier -> new GroupedStats(sourceConnectionIdentifier));
+
+    }
+
+    public void addEvent(ProvenanceEventRecord event, Long eventId) {
         Stopwatch totalTime = Stopwatch.createStarted();
         Stopwatch stopwatch = Stopwatch.createStarted();
-        FeedEventStatistics.getInstance().calculateTimes(event,eventId);
+        FeedEventStatistics.getInstance().calculateTimes(event, eventId);
         ConsumerStats.getInstance().addProcessTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
         ProvenanceEventRecordDTO eventRecordDTO = null;
@@ -96,67 +100,62 @@ public class FeedStatistics {
         String feedFlowFileId = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
 
         boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
-        String batchKey = batchKey(event,feedFlowFileId, isStartingFeedFlow);
+        String batchKey = batchKey(event, feedFlowFileId, isStartingFeedFlow);
 
         //always track drop events if its on a tracked feed
         boolean isDropEvent = ProvenanceEventUtil.isEndingFlowFileEvent(event);
-        if(isDropEvent && FeedEventStatistics.getInstance().beforeProcessingIsLastEventForTrackedFeed(event,eventId)){
+        if (isDropEvent && FeedEventStatistics.getInstance().beforeProcessingIsLastEventForTrackedFeed(event, eventId)) {
             batchKey += UUID.randomUUID().toString();
         }
 
+        if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() < limit)) && !lastRecords
+            .containsKey(batchKey)) {
+            stopwatch.start();
+            // if we are tracking details send the event off for jms
 
+            if (isStartingFeedFlow) {
+                FeedEventStatistics.getInstance().setTrackingDetails(event);
+            }
 
-       if(((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() < limit )) && !lastRecords.containsKey(batchKey)){
-           stopwatch.start();
-           // if we are tracking details send the event off for jms
+            eventRecordDTO = ProvenanceEventRecordConverter.convert(event);
+            //  eventRecordDTO.setEventTime(event.getEventTime());
+            eventRecordDTO.setEventId(eventId);
+            eventRecordDTO.setIsStartOfJob(ProvenanceEventUtil.isStartingFeedFlow(event));
 
+            eventRecordDTO.setJobFlowFileId(feedFlowFileId);
+            eventRecordDTO.setFirstEventProcessorId(feedProcessorId);
+            eventRecordDTO.setStartTime(FeedEventStatistics.getInstance().getEventStartTime(eventId));
+            eventRecordDTO.setEventDuration(FeedEventStatistics.getInstance().getEventDuration(eventId));
 
-           if(isStartingFeedFlow){
-               FeedEventStatistics.getInstance().setTrackingDetails(event);
-           }
+            if (ProvenanceEventUtil.isFlowFileQueueEmptied(event)) {
+                // a Drop event component id will be the connection, not the processor id. we will set the name of the component
+                eventRecordDTO.setComponentName("FlowFile Queue emptied");
+                eventRecordDTO.setIsFailure(true);
+            }
 
+            if (ProvenanceEventUtil.isTerminatedByFailureRelationship(event)) {
+                eventRecordDTO.setIsFailure(true);
+            }
 
-            eventRecordDTO =   ProvenanceEventRecordConverter.convert(event);
-          //  eventRecordDTO.setEventTime(event.getEventTime());
-           eventRecordDTO.setEventId(eventId);
-           eventRecordDTO.setIsStartOfJob(ProvenanceEventUtil.isStartingFeedFlow(event));
+            lastRecords.put(batchKey, eventRecordDTO);
+            ConsumerStats.getInstance().addConversionTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
 
+        } else {
+            FeedEventStatistics.getInstance().skip(event, eventId);
+        }
+        stopwatch.reset().start();
 
-           eventRecordDTO.setJobFlowFileId(feedFlowFileId);
-           eventRecordDTO.setFirstEventProcessorId(feedProcessorId);
-           eventRecordDTO.setEventDuration(FeedEventStatistics.getInstance().getEventDuration(eventId));
-
-           if (ProvenanceEventUtil.isFlowFileQueueEmptied(event)) {
-               // a Drop event component id will be the connection, not the processor id. we will set the name of the component
-               eventRecordDTO.setComponentName("FlowFile Queue emptied");
-               eventRecordDTO.setIsFailure(true);
-           }
-
-           if(ProvenanceEventUtil.isTerminatedByFailureRelationship(event)){
-               eventRecordDTO.setIsFailure(true);
-           }
-
-
-           lastRecords.put(batchKey,eventRecordDTO);
-           ConsumerStats.getInstance().addConversionTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
-
-       }
-       else {
-           FeedEventStatistics.getInstance().skip(event,eventId);
-       }
-       stopwatch.reset().start();
-
-        FeedEventStatistics.getInstance().finishedEvent(event,eventId);
+        FeedEventStatistics.getInstance().finishedEvent(event, eventId);
 
         boolean isEndingEvent = FeedEventStatistics.getInstance().isEndingFeedFlow(eventId);
-       if(eventRecordDTO != null && isEndingEvent) {
-           eventRecordDTO.setIsFinalJobEvent(isEndingEvent);
-       }
-        StatisticsConsumer.getInstance().add(stats,event,eventId);
-       FeedEventStatistics.getInstance().cleanup(event,eventId);
+        if (eventRecordDTO != null && isEndingEvent) {
+            eventRecordDTO.setIsFinalJobEvent(isEndingEvent);
+        }
+        FeedProcessorStatisticsAggregator.getInstance().add(getStats(event), event, eventId);
 
-           FeedEventStatistics.getInstance().cleanup(eventRecordDTO);
+        FeedEventStatistics.getInstance().cleanup(event, eventId);
 
+        FeedEventStatistics.getInstance().cleanup(eventRecordDTO);
 
         ConsumerStats.getInstance().addEventTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
 
@@ -165,8 +164,8 @@ public class FeedStatistics {
 
     }
 
-    public boolean hasStats(){
-        return stats.getTotalCount() >0;
+    public boolean hasStats() {
+        return getStats().stream().anyMatch(s -> s.getTotalCount() > 0);
     }
 
     public String getFeedProcessorId() {
@@ -177,19 +176,19 @@ public class FeedStatistics {
         return processorId;
     }
 
-    public Collection<ProvenanceEventRecordDTO> getEventsToSend(){
+    public Collection<ProvenanceEventRecordDTO> getEventsToSend() {
         return lastRecords.values();
     }
 
-    public AggregatedProcessorStatistics getFeedProcessorStatistics(){
-        return feedProcessorStatistics;
+    //  public AggregatedProcessorStatistics getFeedProcessorStatistics(){
+    //      return feedProcessorStatistics;
+    //  }
+
+    public Collection<GroupedStats> getStats() {
+        return stats.values();
     }
 
-    public GroupedStats getStats(){
-        return stats;
-    }
-
-    public void clear(){
+    public void clear() {
         lastRecords.clear();
         stats.clear();
     }
