@@ -122,7 +122,7 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         .build();
 
     public static final PropertyDescriptor RESULTS_OUTPUT_LOCATION = new PropertyDescriptor.Builder()
-        .name("Results Output Locations")
+        .name("Results Output Location")
         .description("Location to store the Spark job results")
         .required(true)
         .allowableValues(FLOW_FILE_ATTRIBUTE, FLOW_FILE_CONTENTS)
@@ -265,16 +265,16 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
         boolean createSuccess = jobService.createContext(contextName, numExecutors, memPerNode, numCPUCores, contextType, contextTimeout, false);
 
         if (createSuccess) {
-            final String result = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
+            final SparkJobResult result = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
 
-            if (result !=  null) {
+            if (result.success) {
                 if (Objects.equals(resultsOutputLocation, flowFileAttributeValue)) {
-                    outgoing = session.putAttribute(outgoing, appName + ".result", result);
+                    outgoing = session.putAttribute(outgoing, appName + ".result", result.result);
                 } else {
                     outgoing = session.write(outgoing, new OutputStreamCallback(){
                         @Override
                         public void process(OutputStream outputStream) throws IOException {
-                            IOUtils.write(result, outputStream, "UTF-8");
+                            IOUtils.write(result.result, outputStream, "UTF-8");
                         }
                     });
                 }

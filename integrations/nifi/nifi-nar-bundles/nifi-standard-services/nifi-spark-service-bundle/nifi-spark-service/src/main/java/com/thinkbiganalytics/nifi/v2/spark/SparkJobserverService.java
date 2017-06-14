@@ -10,11 +10,9 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
-import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 
 import java.util.ArrayList;
@@ -26,7 +24,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 /*-
  * #%L
@@ -225,7 +222,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     @Override
-    public String executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
+    public SparkJobResult executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
 
         String id = contextName + System.nanoTime();
 
@@ -235,8 +232,8 @@ public class SparkJobserverService extends AbstractControllerService implements 
             }
         }
 
-        SparkJobResult jobResult = null;
-        String result = null;
+        com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult jobResult = null;
+        SparkJobResult result = null;
 
         try {
             getLogger().info("Executing Spark App {} {} on context {} with args {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, args, jobServerUrl});
@@ -270,8 +267,11 @@ public class SparkJobserverService extends AbstractControllerService implements 
         }
 
         if (jobResult != null && jobResult.getStatus() != "ERROR") {
-            result = jobResult.getResult();
+            result = new SparkJobResult(true, jobResult.getResult());
+        } else {
+            result = new SparkJobResult(false, null);
         }
+
         return result;
     }
 

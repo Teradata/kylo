@@ -52,7 +52,7 @@ public interface JobService extends ControllerService {
     /**
      * Executes a Spark Job
      *
-     * @return true or false
+     * @return SparkJobResult
      */
-    String executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async);
+    SparkJobResult executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async);
 }
