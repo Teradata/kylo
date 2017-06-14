@@ -39,11 +39,13 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     private static final Logger log = LoggerFactory.getLogger(KyloRecordWriterDelegate.class);
 
     private RecordWriter recordWriter;
-    BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue;
 
-    public KyloRecordWriterDelegate(RecordWriter recordWriter,BlockingQueue<Map.Entry<Long,ProvenanceEventRecord>> processingQueue) {
+    FeedStatisticsManager feedStatisticsManager;
+
+
+    public KyloRecordWriterDelegate(RecordWriter recordWriter, FeedStatisticsManager feedStatisticsManager) {
         this.recordWriter = recordWriter;
-        this.processingQueue =processingQueue;
+        this.feedStatisticsManager = feedStatisticsManager;
     }
 
     @Override
@@ -109,13 +111,7 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     @Override
     public long writeRecord(ProvenanceEventRecord provenanceEventRecord, long eventId) throws IOException {
         long bytesWritten = recordWriter.writeRecord(provenanceEventRecord, eventId);
-        try {
-            if(ThrottleEvents.getInstance().isProcessEvent(provenanceEventRecord)) {
-                processingQueue.put(new AbstractMap.SimpleEntry<Long, ProvenanceEventRecord>(eventId, provenanceEventRecord));
-            }
-        }catch(InterruptedException e){
-
-        }
+        feedStatisticsManager.addEvent(provenanceEventRecord,eventId);
         return bytesWritten;
     }
 
