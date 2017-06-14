@@ -28,6 +28,7 @@ import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -55,7 +56,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
     private static final Logger log = LoggerFactory.getLogger(KyloServerApplication.class);
 
     public static void main(String[] args) {
-        
+        SLF4JBridgeHandler.install();
         KyloUpgrader upgrader = new KyloUpgrader();
 
         if (upgrader.isUpgradeRequired()) {
@@ -63,10 +64,11 @@ public class KyloServerApplication implements SchedulingConfigurer {
             log.info("Beginning upgrade from version ...", currentVersion == null ? "unknown" : currentVersion);
             upgrader.upgrade();
             log.info("Upgrading complete");
-        } else {
-            log.info("Kylo v{} is up to date.  Starting the application.", KyloVersionUtil.getBuildVersion());
         }
-        
+        else {
+            log.info("Kylo v{} is up to date.  Starting the application.",KyloVersionUtil.getBuildVersion());
+        }
+
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
 

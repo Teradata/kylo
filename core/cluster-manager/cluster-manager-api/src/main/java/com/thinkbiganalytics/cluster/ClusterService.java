@@ -70,6 +70,16 @@ public interface ClusterService {
     void sendMessage(String type, Serializable message);
 
     /**
+     * Sends a message to the specified node.
+     *
+     * @param other   the address of the node to receive the message
+     * @param type    the type describing the message
+     * @param message a message to send
+     * @throws IllegalArgumentException if the other node does cannot be found
+     */
+    void sendMessageToOther(String other, String type, Serializable message);
+
+    /**
      * Send a message to everyone else in the cluster, not including this node
      * @param type the type describing the message
      * @param message a message to send

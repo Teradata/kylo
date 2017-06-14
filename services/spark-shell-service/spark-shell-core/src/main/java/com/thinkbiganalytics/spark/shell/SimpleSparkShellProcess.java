@@ -51,6 +51,12 @@ public class SimpleSparkShellProcess implements SparkShellProcess {
 
     @Nonnull
     @Override
+    public String getClientId() {
+        return "SIMPLE";
+    }
+
+    @Nonnull
+    @Override
     public String getHostname() {
         return hostname;
     }

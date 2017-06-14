@@ -23,32 +23,28 @@ package com.thinkbiganalytics.spark.shell;
 import javax.annotation.Nonnull;
 
 /**
- * A Spark Shell client running in a separate JVM.
+ * Receives events when the state of a {@link SparkShellProcess} changes.
  */
-public interface SparkShellProcess {
+public interface SparkShellProcessListener {
 
     /**
-     * Gets the client identifier for this process.
+     * Called when a process is ready to process requests.
      *
-     * @return a unique identifier for this client
+     * @param process the Spark Shell process
      */
-    @Nonnull
-    String getClientId();
+    void processReady(@Nonnull SparkShellProcess process);
 
     /**
-     * Gets the hostname for communicating with this Spark Shell client.
+     * Called when a new process has been created.
      *
-     * @return the hostname
-     * @throws IllegalStateException if the Spark Shell client is not ready to receive commands
+     * @param process the Spark Shell process
      */
-    @Nonnull
-    String getHostname();
+    void processStarted(@Nonnull SparkShellProcess process);
 
     /**
-     * Gets the port number for communicating with this Spark Shell client.
+     * Called when a process is no longer able to process new requests.
      *
-     * @return the port number
-     * @throws IllegalStateException if the Spark Shell client is not ready to receive commands
+     * @param process the Spark Shell process
      */
-    int getPort();
+    void processStopped(@Nonnull SparkShellProcess process);
 }

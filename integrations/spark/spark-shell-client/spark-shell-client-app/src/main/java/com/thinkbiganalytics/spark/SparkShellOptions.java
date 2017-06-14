@@ -56,9 +56,9 @@ public class SparkShellOptions {
     private int portMin = NO_PORT;
 
     /**
-     * Registration server host:port
+     * Registration URL
      */
-    @Parameter(names = "--server", description = "Registration server host:port")
+    @Parameter(names = "--server", description = "Registration URL")
     private String server;
 
     /**
@@ -89,9 +89,7 @@ public class SparkShellOptions {
     }
 
     /**
-     * Gets the registration server host and port.
-     *
-     * @return the registration server
+     * Gets the registration URL.
      */
     public String getServer() {
         return server;

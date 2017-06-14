@@ -53,6 +53,16 @@ public class ServerProcessManager implements SparkShellProcessManager {
         process = new SimpleSparkShellProcess(hostname, port);
     }
 
+    @Override
+    public void addListener(@Nonnull final SparkShellProcessListener listener) {
+        // ignored
+    }
+
+    @Override
+    public void removeListener(@Nonnull final SparkShellProcessListener listener) {
+        // ignored
+    }
+
     @Nonnull
     @Override
     public SparkShellProcess getProcessForUser(@Nonnull final String username) throws InterruptedException {

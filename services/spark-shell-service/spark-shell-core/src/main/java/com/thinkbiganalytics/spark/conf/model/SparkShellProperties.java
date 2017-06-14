@@ -20,10 +20,12 @@ package com.thinkbiganalytics.spark.conf.model;
  * #L%
  */
 
-/**
- *
- */
 public class SparkShellProperties {
+
+    /**
+     * Path to the kylo-spark-shell-client jar file
+     */
+    private String appResource;
 
     /**
      * Startup timeout in seconds
@@ -36,14 +38,29 @@ public class SparkShellProperties {
     private String deployMode = "client";
 
     /**
+     * Additional files to be submitted with the application
+     */
+    private String files;
+
+    /**
      * Request timeout in seconds
      */
     private int idleTimeout = 900;
 
     /**
+     * Additional jars to be submitted with the Spark application
+     */
+    private String jars;
+
+    /**
+     * The {@code JAVA_HOME} for launching the Spark application
+     */
+    private String javaHome;
+
+    /**
      * Spark master
      */
-    private String master = "local";
+    private String master = "yarn";
 
     /**
      * Maximum port number
@@ -56,9 +73,19 @@ public class SparkShellProperties {
     private int portMin = 45000;
 
     /**
+     * Custom properties file with Spark configuration for the application
+     */
+    private String propertiesFile;
+
+    /**
      * Enables user impersonation
      */
     private boolean proxyUser = false;
+
+    /**
+     * Registration URL
+     */
+    private String registrationUrl;
 
     /**
      * Externally managed process
@@ -68,7 +95,25 @@ public class SparkShellProperties {
     /**
      * Additional command-line options
      */
-    private String sparkOptions;
+    private String sparkArgs;
+
+    /**
+     * Custom Spark installation location
+     */
+    private String sparkHome;
+
+    /**
+     * Enables verbose reporting for Spark Submit
+     */
+    private boolean verbose;
+
+    public String getAppResource() {
+        return appResource;
+    }
+
+    public void setAppResource(String appResource) {
+        this.appResource = appResource;
+    }
 
     public int getClientTimeout() {
         return clientTimeout;
@@ -86,12 +131,36 @@ public class SparkShellProperties {
         this.deployMode = deployMode;
     }
 
+    public String getFiles() {
+        return files;
+    }
+
+    public void setFiles(String files) {
+        this.files = files;
+    }
+
     public int getIdleTimeout() {
         return idleTimeout;
     }
 
     public void setIdleTimeout(int idleTimeout) {
         this.idleTimeout = idleTimeout;
+    }
+
+    public String getJars() {
+        return jars;
+    }
+
+    public void setJars(String jars) {
+        this.jars = jars;
+    }
+
+    public String getJavaHome() {
+        return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
     }
 
     public String getMaster() {
@@ -118,12 +187,28 @@ public class SparkShellProperties {
         this.portMin = portMin;
     }
 
+    public String getPropertiesFile() {
+        return propertiesFile;
+    }
+
+    public void setPropertiesFile(String propertiesFile) {
+        this.propertiesFile = propertiesFile;
+    }
+
     public boolean isProxyUser() {
         return proxyUser;
     }
 
     public void setProxyUser(boolean proxyUser) {
         this.proxyUser = proxyUser;
+    }
+
+    public String getRegistrationUrl() {
+        return registrationUrl;
+    }
+
+    public void setRegistrationUrl(String registrationUrl) {
+        this.registrationUrl = registrationUrl;
     }
 
     public SparkShellServerProperties getServer() {
@@ -134,11 +219,27 @@ public class SparkShellProperties {
         this.server = server;
     }
 
-    public String getSparkOptions() {
-        return sparkOptions;
+    public String getSparkArgs() {
+        return sparkArgs;
     }
 
-    public void setSparkOptions(String sparkOptions) {
-        this.sparkOptions = sparkOptions;
+    public void setSparkArgs(String sparkArgs) {
+        this.sparkArgs = sparkArgs;
+    }
+
+    public String getSparkHome() {
+        return sparkHome;
+    }
+
+    public void setSparkHome(String sparkHome) {
+        this.sparkHome = sparkHome;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

@@ -31,6 +31,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 
 import javax.annotation.Nonnull;
@@ -50,7 +52,7 @@ public class RemoteClientRunner implements ApplicationRunner {
     private final int localPort;
 
     /**
-     * Registration server
+     * Registration URL
      */
     @Nullable
     private final String server;
@@ -73,14 +75,11 @@ public class RemoteClientRunner implements ApplicationRunner {
         Preconditions.checkState(server != null, "Registration server is not available.");
 
         // Parse server address
-        final String[] serverAddress = server.split(":", 2);
-        Preconditions.checkArgument(serverAddress.length == 2, "Not a valid registration server address: %s", server);
-
-        final int port;
+        final URL url;
         try {
-            port = Integer.parseInt(serverAddress[1]);
-        } catch (final NumberFormatException e) {
-            throw new NumberFormatException("Not a valid registration server address: " + server);
+            url = new URL(server);
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("Not a valid registration URL: " + server);
         }
 
         // Find client id and secret
@@ -91,14 +90,14 @@ public class RemoteClientRunner implements ApplicationRunner {
         Preconditions.checkNotNull(clientSecret, "Environment variable is not defined: KYLO_CLIENT_SECRET");
 
         // Register with server
-        final JerseyClientConfig config = new JerseyClientConfig(serverAddress[0], clientId, clientSecret);
-        config.setPort(port);
+        final JerseyClientConfig config = new JerseyClientConfig(url.getHost(), clientId, clientSecret);
+        config.setPort(url.getPort() > 0 ? url.getPort() : url.getDefaultPort());
 
         final JerseyRestClient client = getRestClient(config);
         final String hostName = getHostName();
 
         log.info("Registering client {} at {}:{} with server {}.", clientId, hostName, localPort, server);
-        final Response response = client.post("/proxy/v1/spark/shell/register", ImmutableMap.of("host", hostName, "port", localPort));
+        final Response response = client.post(url.getPath(), ImmutableMap.of("host", hostName, "port", localPort));
 
         if (response != null && response.getStatus() >= 200 && response.getStatus() < 300) {
             log.info("Successfully registered client.");
