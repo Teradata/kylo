@@ -1,4 +1,6 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.security.core.encrypt;
+
+import org.apache.commons.lang3.StringUtils;
 
 /*-
  * #%L
@@ -21,31 +23,29 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import javax.inject.Inject;
 
 
-public class
-EncryptionService {
+public class EncryptionService {
+    
+    private static final String CIPHER_PREFIX = "{cipher}";
 
     @Inject
-    TextEncryptor encryptor;
-
-    private String encryptedPrefix = "{cipher}";
+    private TextEncryptor encryptor;
 
 
     public boolean isEncrypted(String str) {
-        return StringUtils.startsWith(str, encryptedPrefix);
+        return StringUtils.startsWith(str, CIPHER_PREFIX);
     }
 
     public String encrypt(String str) {
         String encrypted = null;
         if (StringUtils.isNotBlank(str) && !isEncrypted(str)) {
             encrypted = encryptor.encrypt(str);
-            if (!StringUtils.startsWith(encrypted, encryptedPrefix)) {
-                encrypted = encryptedPrefix + encrypted;
+            if (!StringUtils.startsWith(encrypted, CIPHER_PREFIX)) {
+                encrypted = CIPHER_PREFIX + encrypted;
             }
         } else {
             encrypted = str;
@@ -55,8 +55,8 @@ EncryptionService {
 
     public String decrypt(String str) {
         if (StringUtils.isNotBlank(str)) {
-            if (StringUtils.startsWith(str, encryptedPrefix)) {
-                str = StringUtils.removeStart(str, encryptedPrefix);
+            if (StringUtils.startsWith(str, CIPHER_PREFIX)) {
+                str = StringUtils.removeStart(str, CIPHER_PREFIX);
             }
             return encryptor.decrypt(str);
         } else {

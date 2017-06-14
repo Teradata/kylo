@@ -21,6 +21,9 @@ package com.thinkbiganalytics.metadata.jpa.app;
  */
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+
+import jersey.repackaged.com.google.common.base.Objects;
+
 import com.thinkbiganalytics.KyloVersion;
 
 import org.slf4j.Logger;
@@ -54,6 +57,14 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     @Column(name = "MINOR_VERSION")
     private String minorVersion;
+    
+    
+    @Column(name = "POINT_VERSION")
+    private String pointVersion;
+    
+    
+    @Column(name = "TAG")
+    private String tag;
 
     @Column
     private String description;
@@ -113,6 +124,22 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     public void setMinorVersion(String minorVersion) {
         this.minorVersion = minorVersion;
     }
+    
+    public String getPointVersion() {
+        return pointVersion;
+    }
+
+    public void setPointVersion(String pointVersion) {
+        this.pointVersion = pointVersion;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
 
     /**
      * @return the major version number
@@ -149,18 +176,44 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         }
 
         KyloVersion that = (KyloVersion) o;
-
-        if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
-            return false;
-        }
-        return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
-
+        
+        return Objects.equal(this.getMajorVersion(), that.getMajorVersion()) && 
+                        Objects.equal(this.getMinorVersion(), that.getMinorVersion()) && 
+                        Objects.equal(this.getPointVersion(), that.getPointVersion()) && 
+                        Objects.equal(this.getTag(), that.getTag());
     }
 
     @Override
     public int hashCode() {
-        int result = majorVersion != null ? majorVersion.hashCode() : 0;
-        result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
-        return result;
+        return Objects.hashCode(this.majorVersion, this.minorVersion, this.pointVersion, this.tag);
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(KyloVersion o) {
+        int result = 0;
+        if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) return result;
+        if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) return result;
+//        if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
+        // Ignoring "tag" for now
+        return getPointVersion().compareTo(o.getPointVersion());
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#matches(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean matches(String major, String minor, String point) {
+        return Objects.equal(getMajorVersion(), major) && Objects.equal(getMinorVersion(), minor) && Objects.equal(getPointVersion(), point);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#matches(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean matches(String major, String minor, String point, String tag) {
+        return matches(major, minor, point) && Objects.equal(getTag(), tag);
     }
 }

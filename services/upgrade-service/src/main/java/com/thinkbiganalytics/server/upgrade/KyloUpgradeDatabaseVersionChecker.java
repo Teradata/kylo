@@ -23,17 +23,14 @@ package com.thinkbiganalytics.server.upgrade;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
-import com.thinkbiganalytics.feedmgr.service.EncryptionService;
-import com.thinkbiganalytics.server.KyloUpgradeDatabaseVersionConfig;
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -42,22 +39,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
 
 @Configuration
 @EnableConfigurationProperties
 @PropertySource("classpath:application.properties")
-@Import(KyloUpgradeDatabaseVersionConfig.class)
 public class KyloUpgradeDatabaseVersionChecker {
 
     private static final Logger log = LoggerFactory.getLogger(KyloUpgradeDatabaseVersionChecker.class);
 
-    @Autowired
+    @Inject
     SpringEnvironmentProperties environmentProperties;
 
-    @Autowired
-    EncryptionService encryptionService;
+    @Inject
+    private EncryptionService encryptionService;
 
     public KyloUpgradeDatabaseVersionChecker() {
 
@@ -94,7 +91,8 @@ public class KyloUpgradeDatabaseVersionChecker {
             if (rs.next()) {
                 String majorVersion = rs.getString("MAJOR_VERSION");
                 String minorVersion = rs.getString("MINOR_VERSION");
-                version = new KyloVersionUtil.Version(majorVersion, minorVersion);
+                String pointVersion = rs.getString("POINT_VERSION");
+                version = new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, "");
             }
 
         } catch (SQLException e) {

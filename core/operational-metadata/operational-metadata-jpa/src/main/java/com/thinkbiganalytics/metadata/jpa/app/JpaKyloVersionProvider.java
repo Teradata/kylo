@@ -95,7 +95,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     }
     
     @Override
-    public KyloVersion getLatestVersion() {
+    public KyloVersion getBuildVersion() {
         return KyloVersionUtil.getBuildVersion();
     }
 

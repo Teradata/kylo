@@ -28,13 +28,16 @@
 
   <context:annotation-config />
 
-<bean id="upgradeConfig" class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionConfig" />
+<!-- 
+  <bean id="upgradeConfig" class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionConfig" />
+ -->
+  <bean  id="securityCoreConfig" class="com.thinkbiganalytics.security.core.SecurityCoreConfig"/>
 
   <bean id="kyloUpgradeDatabaseVersionChecker" name="kyloUpgradeDatabaseVersionChecker"
         class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionChecker"/>
 
   <bean  id="springEnvironmentProperties" name="springEnvironmentProperties"
-      class="com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties"/>
+      class="com.thinkbiganalytics.spring.SpringEnvironmentProperties"/>
 
   <bean id="kyloUpgradeConfigurationClassPostProcessor"
         class="org.springframework.context.annotation.ConfigurationClassPostProcessor"/>

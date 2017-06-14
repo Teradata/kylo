@@ -22,12 +22,12 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.rest.model.IconColor;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.UIService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.feedmgr.security.EncryptionAccessControl;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.apache.commons.lang3.StringUtils;

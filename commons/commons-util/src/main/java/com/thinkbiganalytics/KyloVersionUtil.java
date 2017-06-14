@@ -50,30 +50,36 @@ public class KyloVersionUtil {
     }
 
     public static KyloVersion parseVersion(String versionString) {
-
+/*
+ * 0.8.1-SNAPSOT    0   8   1-SNAPSHOT
+ * 0.8.1.1-SNAPSOT  0   8   1   1-SNAPSHOT
+ * 0.8.1            0   8   1
+ * 0.8.1.1          0   8   1   1-SNAPSHOT
+ */
         if (versionString != null) {
             String[] dotSplit = versionString.split("\\.");
-            int minorIdx = 1;
-            String major;
+            String[] dashSplit = dotSplit[dotSplit.length - 1].split("-");
+            dotSplit[dotSplit.length - 1] = dashSplit[0];
+            
+            String tag = dashSplit[1];
+            String major = "";
+            String minor = "";
+            String point = "";
+            int majorIdx = 0;
             
             if (dotSplit[0].startsWith("0")) {
                 major = dotSplit[0] + "." + dotSplit[1]; 
-                minorIdx++;
+                majorIdx = 1;
             } else {
                 major = dotSplit[0];
             }
-
-            String minor = dotSplit[minorIdx];
-            String[] dashSplit = dotSplit[minorIdx + 1].split("-");
-            String point;
-            String tag;
             
-            if (dashSplit.length == 1) {
-                point = dashSplit[0];
-                tag = null;
-            } else {
-                point = dashSplit[0];
-                tag = dashSplit[1];
+            if (majorIdx + 1 < dotSplit.length) {
+                minor = dotSplit[majorIdx + 1];
+            }
+            
+            if (majorIdx + 2 < dotSplit.length) {
+                point = dotSplit[majorIdx + 2];
             }
             
             return new Version(major, minor, point, tag);

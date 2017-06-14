@@ -23,17 +23,15 @@ package com.thinkbiganalytics.metadata.upgrade;
  * #L%
  */
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
-import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionChecker;
 
 /**
@@ -44,74 +42,41 @@ public class KyloUpgrader {
     private static final Logger log = LoggerFactory.getLogger(KyloUpgrader.class);
     
     
-    @Inject
-    private MetadataAccess metadata;
-    
-    @Inject
-    private UpgradeKyloService upgradeService;
-
-    @Inject
-    private KyloVersionProvider kyloVersionProvider;
-    
-    public boolean upgrade() {
-        
-        return true;
+    public void upgrade() {
+        boolean upgradeComplete = false;
+        do {
+            ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
+            UpgradeKyloService upgradeService = cxt.getBean(UpgradeKyloService.class);
+            upgradeComplete = upgradeService.upgrade();
+            cxt.close();
+        } while (! upgradeComplete);
     }
     
     public boolean isUpgradeRequired() {
         KyloVersion buildVersion = KyloVersionUtil.getBuildVersion();
+        KyloVersion currentVerion = getCurrentVersion();
         
-        return false;
+        return currentVerion.compareTo(buildVersion) != 0;
     }
-    
-    public KyloVersion getCurrentVersion() {
-        
-        return null;
-    }
-    
-//    public boolean isUpToDate() {
-//        return metadata.commit(() -> {
-//            return 
-//        }, MetadataAccess.SERVICE);
-//    }
-//
-//    public boolean upgrade() {
-//        return metadata.commit(() -> {
-//            if(!kyloVersionProvider.isUpToDate()) {
-//                KyloVersion version = upgradeService.getCurrentVersion();
-//                return upgradeService.upgradeFrom(version);
-//            }
-//            return true;
-//        }, MetadataAccess.SERVICE);
-//    }
 
     /**
      * Return the database version for Kylo.
      *
      * @return the version of Kylo stored in the database
      */
-    private KyloVersion getDatabaseVersion() {
-
-        try {
-            //ensure native profile is there for spring to load
-            String profiles = System.getProperty("spring.profiles.active", "");
-            if (!profiles.contains("native")) {
-                profiles = StringUtils.isEmpty(profiles) ? "native" : profiles + ",native";
-                System.setProperty("spring.profiles.active", profiles);
-            }
-            //Spring is needed to load the Spring Cloud context so we can decrypt the passwords for the database connection
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("kylo-upgrade-check-application-context.xml");
-            ctx.refresh();
-            KyloUpgradeDatabaseVersionChecker upgradeDatabaseVersionChecker = (KyloUpgradeDatabaseVersionChecker) ctx.getBean("kyloUpgradeDatabaseVersionChecker");
-            KyloVersion kyloVersion = upgradeDatabaseVersionChecker.getDatabaseVersion();
-            ctx.close();
-            return kyloVersion;
-        } catch (Exception e) {
-            log.error("Failed get the database version prior to upgrade.  The Kylo Upgrade application will load by default. {}", e.getMessage());
+    public KyloVersion getCurrentVersion() {
+        String profiles = System.getProperty("spring.profiles.active", "");
+        if (!profiles.contains("native")) {
+            profiles = StringUtils.isEmpty(profiles) ? "native" : profiles + ",native";
+            System.setProperty("spring.profiles.active", profiles);
         }
-        return null;
-
-
+        //Spring is needed to load the Spring Cloud context so we can decrypt the passwords for the database connection
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("kylo-upgrade-check-application-context.xml");
+        ctx.refresh();
+        KyloUpgradeDatabaseVersionChecker upgradeDatabaseVersionChecker = (KyloUpgradeDatabaseVersionChecker) ctx.getBean("kyloUpgradeDatabaseVersionChecker");
+        KyloVersion kyloVersion = upgradeDatabaseVersionChecker.getDatabaseVersion();
+        ctx.close();
+        return kyloVersion;
     }
 
 }

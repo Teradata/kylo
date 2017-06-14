@@ -69,19 +69,12 @@ public class KyloServerApplication implements SchedulingConfigurer {
 
 //        if (!skipUpgrade) {
         if (upgrader.isUpgradeRequired()) {
-            log.info("Upgrading...");
+            KyloVersion currentVersion = upgrader.getCurrentVersion();
+            log.info("Upgrading from v{}...", currentVersion);
             System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
             upgrader.upgrade();
-//            boolean upgradeComplete = false;
-//            do {
-//                ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
-//                KyloUpgrader upgrader = cxt.getBean(KyloUpgrader.class);
-//                upgradeComplete = upgrader.upgrade();
-//                cxt.close();
-//            } while (!upgradeComplete);
             log.info("Upgrading complete");
-        }
-        else {
+        } else {
             log.info("Kylo v{} is up to date.  Starting the application.", upgrader.getCurrentVersion());
         }
         

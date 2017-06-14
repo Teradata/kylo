@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
@@ -51,7 +50,7 @@ public class PoolingDataSourceService {
         .expireAfterAccess(60, TimeUnit.MINUTES)
         .build(new CacheLoader<DataSourceProperties, DataSource>() {
             @Override
-            public DataSource load(@Nonnull final DataSourceProperties key) throws Exception {
+            public DataSource load(final DataSourceProperties key) throws Exception {
                 return createDatasource(key);
             }
         });
@@ -62,7 +61,7 @@ public class PoolingDataSourceService {
      * @param props the data source properties
      * @return the data source
      */
-    public static DataSource getDataSource(@Nonnull final DataSourceProperties props) {
+    public static DataSource getDataSource(final DataSourceProperties props) {
         try {
             return DATA_SOURCES.get(props);
         } catch (final ExecutionException e) {
