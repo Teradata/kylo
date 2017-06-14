@@ -2,7 +2,7 @@ package com.thinkbiganalytics.ingest;
 
 /*-
  * #%L
- * thinkbig-nifi-elasticsearch-processors
+ * thinkbig-nifi-core-processors
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%

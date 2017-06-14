@@ -2,7 +2,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 /*-
  * #%L
- * thinkbig-nifi-elasticsearch-processors
+ * thinkbig-nifi-core-processors
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -59,18 +59,6 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
 @CapabilityDescription("Creates a table in Hive that is backed by data in Elasticsearch")
 public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
 
-
-    public static final Relationship REL_CREATE_SUCCESS = new Relationship.Builder()
-        .name("success")
-        .description("Successfully created Elasticsearch backed Hive table.")
-        .build();
-
-
-    public static final Relationship REL_CREATE_FAILURE = new Relationship.Builder()
-        .name("failure")
-        .description("Failed to create Elasticsearch backed Hive table")
-        .build();
-
     /**
      * List of Elasticsearch nodes to connect to
      */
@@ -107,7 +95,9 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
     public static final PropertyDescriptor USE_WAN = new PropertyDescriptor.Builder()
         .name("Use WAN")
         .description(
-            "Whether the connector is used against an Elasticsearch instance in a cloud/restricted environment over the WAN, such as Amazon Web Services. In this mode, the connector disables discovery and only connects through the declared es.nodes during all operations, including reads and writes. Note that in this mode, performance is highly affected.")
+            "Whether the connector is used against an Elasticsearch instance in a cloud/restricted environment over the WAN, such as Amazon Web Services. "
+            + "In this mode, the connector disables discovery and only connects through the declared es.nodes during all operations, including reads and writes."
+            + " Note that in this mode, performance is highly affected.")
         .allowableValues("true", "false")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -143,8 +133,8 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
      */
     public CreateElasticsearchBackedHiveTable() {
         final Set<Relationship> r = new HashSet<>();
-        r.add(REL_CREATE_SUCCESS);
-        r.add(REL_CREATE_FAILURE);
+        r.add(IngestProperties.REL_SUCCESS);
+        r.add(IngestProperties.REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
@@ -172,7 +162,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
+    public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;

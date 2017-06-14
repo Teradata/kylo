@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.thrift;
 
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.v2.ingest.IngestProperties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -55,15 +56,7 @@ import java.util.concurrent.TimeUnit;
 )
 public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
-    // Relationships
-    public static final Relationship REL_SUCCESS = new Relationship.Builder()
-        .name("success")
-        .description("Successfully created FlowFile from .")
-        .build();
-    public static final Relationship REL_FAILURE = new Relationship.Builder()
-        .name("failure")
-        .description("SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship")
-        .build();
+
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
         .description("The Controller Service that is used to obtain connection to database")
@@ -82,8 +75,8 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
     public ExecuteHQLStatement() {
         final Set<Relationship> r = new HashSet<>();
-        r.add(REL_SUCCESS);
-        r.add(REL_FAILURE);
+        r.add(IngestProperties.REL_SUCCESS);
+        r.add(IngestProperties.REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
@@ -132,10 +125,10 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
             }
 
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-            session.transfer(flowFile, REL_SUCCESS);
+            session.transfer(flowFile, IngestProperties.REL_SUCCESS);
         } catch (final Exception e) {
-            logger.error("Unable to execute SQL DDL");
-            session.transfer(flowFile, REL_FAILURE);
+            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements, flowFile, e});
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             throw new ProcessException(e);
         }
     }

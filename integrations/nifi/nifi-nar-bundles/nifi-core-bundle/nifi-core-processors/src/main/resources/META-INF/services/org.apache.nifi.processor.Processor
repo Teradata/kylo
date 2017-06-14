@@ -19,4 +19,6 @@ com.thinkbiganalytics.nifi.v2.core.watermark.ReleaseHighWaterMark
 com.thinkbiganalytics.nifi.v2.init.InitializeFeed
 com.thinkbiganalytics.nifi.v2.init.CompleteInitializeFeed
 com.thinkbiganalytics.nifi.v2.ingest.CreateElasticsearchBackedHiveTable
+com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement
+
 
