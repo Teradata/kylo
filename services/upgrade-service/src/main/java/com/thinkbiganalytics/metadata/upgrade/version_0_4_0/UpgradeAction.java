@@ -28,11 +28,14 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +44,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+@Component
+@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);

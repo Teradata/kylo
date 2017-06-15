@@ -40,6 +40,7 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
@@ -52,6 +53,8 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -65,6 +68,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 
+@Component
+@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);

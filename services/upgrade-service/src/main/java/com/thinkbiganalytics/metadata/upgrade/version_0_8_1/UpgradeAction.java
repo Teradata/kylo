@@ -25,15 +25,20 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
+@Component
+@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);

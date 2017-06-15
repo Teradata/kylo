@@ -21,16 +21,18 @@ package com.thinkbiganalytics.metadata.upgrade.version_0_8_0;
  */
 
 import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
 import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -41,6 +43,8 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+@Component
+@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);

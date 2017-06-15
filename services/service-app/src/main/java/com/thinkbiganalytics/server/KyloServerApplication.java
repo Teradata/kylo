@@ -30,10 +30,12 @@ import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ResourceBanner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.config.server.EnableConfigServer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -42,6 +44,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
@@ -65,8 +68,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
 
         if (upgrader.isUpgradeRequired()) {
             KyloVersion currentVersion = upgrader.getCurrentVersion();
-            log.info("Upgrading from v{}...", currentVersion);
-            System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
+            log.info("Beginning upgrade from version ...", currentVersion == null ? "unknown" : currentVersion);
             upgrader.upgrade();
             log.info("Upgrading complete");
         } else {
@@ -75,6 +77,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
         
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
         SpringApplication.run("classpath:application-context.xml", args);
+
     }
 
     @Bean(destroyMethod = "shutdown")

@@ -26,9 +26,12 @@ package com.thinkbiganalytics.metadata.upgrade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ResourceBanner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
@@ -40,23 +43,31 @@ import com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionChecker;
 public class KyloUpgrader {
     
     private static final Logger log = LoggerFactory.getLogger(KyloUpgrader.class);
+
+    public static final String KYLO_UPGRADE = "kyloUpgrade";
     
     
     public void upgrade() {
         boolean upgradeComplete = false;
         do {
-            ConfigurableApplicationContext cxt = SpringApplication.run(UpgradeKyloConfig.class);
-            UpgradeKyloService upgradeService = cxt.getBean(UpgradeKyloService.class);
-            upgradeComplete = upgradeService.upgrade();
-            cxt.close();
+            System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
+            ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(UpgradeKyloConfig.class)
+                            .web(false)
+                            .profiles(KYLO_UPGRADE)
+                            .run();
+            UpgradeKyloService upgradeService = upgradeCxt.getBean(UpgradeKyloService.class);
+            upgradeComplete = upgradeService.upgradeNext();
+            upgradeCxt.close();
         } while (! upgradeComplete);
     }
     
     public boolean isUpgradeRequired() {
-        KyloVersion buildVersion = KyloVersionUtil.getBuildVersion();
-        KyloVersion currentVersion = getCurrentVersion();
+        KyloVersion buildVer = KyloVersionUtil.getBuildVersion();
+        KyloVersion currentVer = getCurrentVersion();
         
-        return currentVersion == null ? true : buildVersion.compareTo(currentVersion) != 0;
+        return currentVer == null ? true : buildVer.matches(currentVer.getMajorVersion(), 
+                                                            currentVer.getMinorVersion(), 
+                                                            currentVer.getPointVersion());
     }
 
     /**
