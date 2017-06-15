@@ -859,8 +859,6 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         for (Map.Entry<String, NifiProperty> property : propertyMap.entrySet()) {
             processor.getConfig().getProperties().put(property.getKey(), property.getValue().getValue());
         }
-        List<NifiProperty> sensitiveProperties = properties.stream().filter(property -> property.getPropertyDescriptor().isSensitive()).collect(Collectors.toList());
-
         updateProcessor(processor);
     }
 
@@ -868,6 +866,8 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         // fetch the processor
         ProcessorDTO processor = getProcessor(processGroupId, processorId);
         //iterate through and update the properties
+        //only set this property
+        processor.getConfig().getProperties().clear();
         processor.getConfig().getProperties().put(property.getKey(), property.getValue());
         updateProcessor(processor);
     }
