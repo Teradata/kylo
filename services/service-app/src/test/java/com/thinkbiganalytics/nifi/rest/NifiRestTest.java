@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.rest;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
@@ -69,7 +70,7 @@ public class NifiRestTest {
         clientConfig.setPort(8079);
         NiFiRestClient c = new NiFiRestClientV1(clientConfig);
         restClient.setClient(c);
-        nifiFlowCache = new NifiFlowCache();
+        nifiFlowCache = new NifiFlowCacheImpl();
         propertyDescriptorTransform = new NiFiPropertyDescriptorTransformV1();
 
     }
@@ -195,57 +196,6 @@ public class NifiRestTest {
     }
 
 
-    // @Test
-    public void testReportingTask() {
-        LegacyNifiRestClient nifiRestClient = restClient;
-        if (!nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType).isPresent()) {
-            //create it
-            //1 ensure the controller service exists and is wired correctly
-            Optional<ControllerServiceDTO> controllerService = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstControllerServiceByType(NifiFlowCache.NiFiMetadataControllerServiceType);
-            ControllerServiceDTO metadataService = null;
-            if (controllerService.isPresent()) {
-                metadataService = controllerService.get();
-            } else {
-                //create it and enable it
-                //first create it
-                ControllerServiceDTO controllerServiceDTO = new ControllerServiceDTO();
-                controllerServiceDTO.setType(NifiFlowCache.NiFiMetadataControllerServiceType);
-                controllerServiceDTO.setName("Kylo Metadata Service");
-                metadataService = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTaskControllerService(controllerServiceDTO);
-                //find the properties to inject
-                Map<String, String> stringConfigProperties = new HashMap<>();
-                metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), stringConfigProperties);
-            }
-
-            if (metadataService != null) {
-                if (NifiProcessUtil.SERVICE_STATE.DISABLED.name().equalsIgnoreCase(metadataService.getState())) {
-                    //enable it....
-                    metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), null);
-                }
-
-                //assign the service to the reporting task
-
-                ReportingTaskDTO reportingTaskDTO = new ReportingTaskDTO();
-                reportingTaskDTO.setType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType);
-                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTask(reportingTaskDTO);
-                //now set the properties
-                ReportingTaskDTO updatedReportingTask = new ReportingTaskDTO();
-                updatedReportingTask.setType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType);
-                updatedReportingTask.setId(reportingTaskDTO.getId());
-                updatedReportingTask.setName("KyloProvenanceEventReportingTask");
-                updatedReportingTask.setProperties(new HashMap<>(1));
-                updatedReportingTask.getProperties().put("Metadata Service", metadataService.getId());
-                updatedReportingTask.setSchedulingStrategy("TIMER_DRIVEN");
-                updatedReportingTask.setSchedulingPeriod("5 secs");
-                updatedReportingTask.setComments("Reporting task that will query the provenance repository and send the events and summary statistics over to Kylo via a JMS queue");
-                updatedReportingTask.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-
-                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().update(updatedReportingTask);
-            }
-
-        }
-        ;
-    }
 
     // @Test
     public void testUpdateProcessor() {
