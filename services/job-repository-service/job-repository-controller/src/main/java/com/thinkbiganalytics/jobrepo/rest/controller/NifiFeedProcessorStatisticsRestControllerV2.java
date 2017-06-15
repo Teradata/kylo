@@ -24,6 +24,7 @@ import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NiFiFeedProcessorStatsContainer;
 import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsTransform;
 import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
@@ -50,8 +51,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Api(tags = "Operations Manager - Feeds", produces = "application/json")
-@Path("/v1/provenance-stats")
-public class NifiFeedProcessorStatisticsRestController {
+@Path("/v2/provenance-stats")
+public class NifiFeedProcessorStatisticsRestControllerV2 {
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -81,16 +82,18 @@ public class NifiFeedProcessorStatisticsRestController {
     @GET
     @Path("/{feedName}/processor-duration/{timeframe}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the job duration for the specified feed.")
+    @ApiOperation("Returns the list of stats for each processor within the given timeframe relative to now")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the job duration.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, timeframe);
+            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-            return Response.ok(model).build();
+            statsContainer.setStats(model);
+            return Response.ok(statsContainer).build();
         });
     }
 
@@ -104,10 +107,11 @@ public class NifiFeedProcessorStatisticsRestController {
     public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, timeframe);
+            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-            return Response.ok(model).build();
+            statsContainer.setStats(model);
+            return Response.ok(statsContainer).build();
         });
     }
 

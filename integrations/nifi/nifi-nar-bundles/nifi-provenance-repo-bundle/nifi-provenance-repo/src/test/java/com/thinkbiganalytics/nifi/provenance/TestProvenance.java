@@ -18,7 +18,6 @@ package com.thinkbiganalytics.nifi.provenance;/*-
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.repo.ConsumerStats;
 import com.thinkbiganalytics.nifi.provenance.repo.FeedEventStatistics;
 import com.thinkbiganalytics.nifi.provenance.repo.FeedStatisticsManager;
 
@@ -70,7 +69,6 @@ public class TestProvenance {
         run();
         //feedStatisticsManager.send();
         Double avgTime = nifiFlow.averageTime();
-        ConsumerStats.getInstance().log();
         FeedEventStatistics s = FeedEventStatistics.getInstance();
         int i = 0;
     }

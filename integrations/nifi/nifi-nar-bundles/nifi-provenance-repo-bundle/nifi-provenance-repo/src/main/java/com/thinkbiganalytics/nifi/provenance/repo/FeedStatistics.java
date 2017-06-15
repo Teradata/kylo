@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.google.common.base.Stopwatch;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
@@ -42,15 +41,26 @@ public class FeedStatistics {
 
     private static int limit = 3;
 
+    /**
+     * The originating processor id that started this entire execution.  This will mark the feed identity
+     */
     private String feedProcessorId;
 
+    /**
+     * The Processor ID
+     */
     private String processorId;
 
 
+    /**
+     * Records to send off to JMS
+     */
     private Map<String, ProvenanceEventRecordDTO> lastRecords = new ConcurrentHashMap<>(limit);
+
 
     /**
      * SourceQueueIdentifier to Grouped Stats
+     * Stats are grouped by their SourceQueueId so Kylo can detect if it came off a "failure" path
      */
     private Map<String, GroupedStats> stats;
 
@@ -90,11 +100,9 @@ public class FeedStatistics {
     }
 
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
-        Stopwatch totalTime = Stopwatch.createStarted();
-        Stopwatch stopwatch = Stopwatch.createStarted();
+
         FeedEventStatistics.getInstance().calculateTimes(event, eventId);
-        ConsumerStats.getInstance().addProcessTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
-        stopwatch.reset();
+
         ProvenanceEventRecordDTO eventRecordDTO = null;
 
         String feedFlowFileId = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
@@ -110,15 +118,12 @@ public class FeedStatistics {
 
         if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() < limit)) && !lastRecords
             .containsKey(batchKey)) {
-            stopwatch.start();
             // if we are tracking details send the event off for jms
-
-            if (isStartingFeedFlow) {
+           if (isStartingFeedFlow) {
                 FeedEventStatistics.getInstance().setTrackingDetails(event);
             }
 
             eventRecordDTO = ProvenanceEventRecordConverter.convert(event);
-            //  eventRecordDTO.setEventTime(event.getEventTime());
             eventRecordDTO.setEventId(eventId);
             eventRecordDTO.setIsStartOfJob(ProvenanceEventUtil.isStartingFeedFlow(event));
 
@@ -138,13 +143,10 @@ public class FeedStatistics {
             }
 
             lastRecords.put(batchKey, eventRecordDTO);
-            ConsumerStats.getInstance().addConversionTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
 
         } else {
             FeedEventStatistics.getInstance().skip(event, eventId);
         }
-        stopwatch.reset().start();
-
         FeedEventStatistics.getInstance().finishedEvent(event, eventId);
 
         boolean isEndingEvent = FeedEventStatistics.getInstance().isEndingFeedFlow(eventId);
@@ -157,10 +159,6 @@ public class FeedStatistics {
 
         FeedEventStatistics.getInstance().cleanup(eventRecordDTO);
 
-        ConsumerStats.getInstance().addEventTime(stopwatch.stop().elapsed(TimeUnit.MILLISECONDS));
-
-        ConsumerStats.getInstance().addTotalTime(totalTime.stop().elapsed(TimeUnit.MILLISECONDS));
-        ConsumerStats.getInstance().incrementEventCount();
 
     }
 

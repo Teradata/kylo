@@ -36,6 +36,7 @@ public class NifiFeedProcessorStats {
     protected Long bytesIn = 0L;
     protected Long bytesOut = 0L;
     protected Long totalCount = 1L;
+    protected Long failedCount = 0L;
     protected Long jobsStarted = 0L;
     protected Long jobsFinished = 0L;
     protected Long jobsFailed = 0L;
@@ -236,5 +237,13 @@ public class NifiFeedProcessorStats {
 
     public void setMaxEventId(Long maxEventId) {
         this.maxEventId = maxEventId;
+    }
+
+    public Long getFailedCount() {
+        return failedCount;
+    }
+
+    public void setFailedCount(Long failedCount) {
+        this.failedCount = failedCount;
     }
 }

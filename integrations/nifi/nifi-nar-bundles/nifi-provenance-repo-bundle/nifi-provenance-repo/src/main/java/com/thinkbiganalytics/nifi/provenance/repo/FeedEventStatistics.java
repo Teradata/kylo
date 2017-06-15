@@ -480,6 +480,8 @@ public class FeedEventStatistics implements Serializable {
         }
         if (ProvenanceEventType.DROP.name().equals(eventType)) {
             flowFileLastNonDropEventTime.remove(eventFlowFileId);
+            //added
+            allFlowFileToFeedFlowFile.remove(eventFlowFileId);
         }
         eventDuration.remove(eventId);
         eventStartTime.remove(eventId);
