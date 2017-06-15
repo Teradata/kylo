@@ -22,14 +22,13 @@ package com.thinkbiganalytics.metadata.jpa.app;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 
-import jersey.repackaged.com.google.common.base.Objects;
-
 import com.thinkbiganalytics.KyloVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -110,7 +109,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
      * @return the major version
      */
     public String getMajorVersion() {
-        return this.majorVersion;
+        return this.majorVersion == null ? "" : this.majorVersion;
     }
 
     public void setMajorVersion(String majorVersion) {
@@ -118,7 +117,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     }
 
     public String getMinorVersion() {
-        return this.minorVersion;
+        return this.minorVersion == null ? "" : this.minorVersion;
     }
 
     public void setMinorVersion(String minorVersion) {
@@ -126,7 +125,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     }
     
     public String getPointVersion() {
-        return pointVersion;
+        return pointVersion == null ? "" : this.pointVersion;
     }
 
     public void setPointVersion(String pointVersion) {
@@ -134,7 +133,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     }
 
     public String getTag() {
-        return tag;
+        return tag == null ? "" : this.tag;
     }
 
     public void setTag(String tag) {
@@ -177,15 +176,15 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
         KyloVersion that = (KyloVersion) o;
         
-        return Objects.equal(this.getMajorVersion(), that.getMajorVersion()) && 
-                        Objects.equal(this.getMinorVersion(), that.getMinorVersion()) && 
-                        Objects.equal(this.getPointVersion(), that.getPointVersion()) && 
-                        Objects.equal(this.getTag(), that.getTag());
+        return Objects.equals(this.getMajorVersion(), that.getMajorVersion()) && 
+                        Objects.equals(this.getMinorVersion(), that.getMinorVersion()) && 
+                        Objects.equals(this.getPointVersion(), that.getPointVersion()) && 
+                        Objects.equals(this.getTag(), that.getTag());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.majorVersion, this.minorVersion, this.pointVersion, this.tag);
+        return Objects.hash(this.majorVersion, this.minorVersion, this.pointVersion, this.tag);
     }
 
     /* (non-Javadoc)
@@ -196,9 +195,8 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         int result = 0;
         if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) return result;
         if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) return result;
-//        if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
-        // Ignoring "tag" for now
-        return getPointVersion().compareTo(o.getPointVersion());
+        if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
+        return getTag().compareTo(o.getTag());
     }
 
     /* (non-Javadoc)
@@ -206,7 +204,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
      */
     @Override
     public boolean matches(String major, String minor, String point) {
-        return Objects.equal(getMajorVersion(), major) && Objects.equal(getMinorVersion(), minor) && Objects.equal(getPointVersion(), point);
+        return Objects.equals(getMajorVersion(), major) && Objects.equals(getMinorVersion(), minor) && Objects.equals(getPointVersion(), point);
     }
 
     /* (non-Javadoc)
@@ -214,6 +212,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
      */
     @Override
     public boolean matches(String major, String minor, String point, String tag) {
-        return matches(major, minor, point) && Objects.equal(getTag(), tag);
+        return matches(major, minor, point) && Objects.equals(getTag(), tag);
     }
 }

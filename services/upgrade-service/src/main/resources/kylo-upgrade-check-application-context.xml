@@ -28,9 +28,6 @@
 
   <context:annotation-config />
 
-<!-- 
-  <bean id="upgradeConfig" class="com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionConfig" />
- -->
   <bean  id="securityCoreConfig" class="com.thinkbiganalytics.security.core.SecurityCoreConfig"/>
 
   <bean id="kyloUpgradeDatabaseVersionChecker" name="kyloUpgradeDatabaseVersionChecker"

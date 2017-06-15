@@ -54,9 +54,9 @@ public class KyloUpgrader {
     
     public boolean isUpgradeRequired() {
         KyloVersion buildVersion = KyloVersionUtil.getBuildVersion();
-        KyloVersion currentVerion = getCurrentVersion();
+        KyloVersion currentVersion = getCurrentVersion();
         
-        return currentVerion.compareTo(buildVersion) != 0;
+        return currentVersion == null ? true : buildVersion.compareTo(currentVersion) != 0;
     }
 
     /**

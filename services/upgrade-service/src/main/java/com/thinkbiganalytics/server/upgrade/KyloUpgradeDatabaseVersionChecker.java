@@ -78,21 +78,22 @@ public class KyloUpgradeDatabaseVersionChecker {
             String uri = environmentProperties.getPropertyValueAsString("spring.datasource.url");
             String driverClassName = environmentProperties.getPropertyValueAsString("spring.datasource.driverClassName");
             boolean testOnBorrow = BooleanUtils.toBoolean(environmentProperties.getPropertyValueAsString("spring.datasource.testOnBorrow"));
-            String validationQuery = environmentProperties.getPropertyValueAsString("spring.data.validationQuery");
+            String validationQuery = environmentProperties.getPropertyValueAsString("spring.datasource.validationQuery");
 
             PoolingDataSourceService.DataSourceProperties dataSourceProperties = new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
 
             DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
 
             connection = dataSource.getConnection();
-            String query = "SELECT MAJOR_VERSION,MINOR_VERSION FROM kylo.KYLO_VERSION ";
+            String query = "SELECT * FROM kylo.KYLO_VERSION ";
             statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
             if (rs.next()) {
                 String majorVersion = rs.getString("MAJOR_VERSION");
                 String minorVersion = rs.getString("MINOR_VERSION");
                 String pointVersion = rs.getString("POINT_VERSION");
-                version = new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, "");
+                String tag = rs.getString("TAG");
+                version = new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, tag);
             }
 
         } catch (SQLException e) {

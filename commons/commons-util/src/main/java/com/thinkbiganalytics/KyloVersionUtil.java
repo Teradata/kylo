@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -50,18 +51,12 @@ public class KyloVersionUtil {
     }
 
     public static KyloVersion parseVersion(String versionString) {
-/*
- * 0.8.1-SNAPSOT    0   8   1-SNAPSHOT
- * 0.8.1.1-SNAPSOT  0   8   1   1-SNAPSHOT
- * 0.8.1            0   8   1
- * 0.8.1.1          0   8   1   1-SNAPSHOT
- */
         if (versionString != null) {
             String[] dotSplit = versionString.split("\\.");
             String[] dashSplit = dotSplit[dotSplit.length - 1].split("-");
             dotSplit[dotSplit.length - 1] = dashSplit[0];
             
-            String tag = dashSplit[1];
+            String tag = dashSplit.length > 1 ? dashSplit[1] : "";
             String major = "";
             String minor = "";
             String point = "";
@@ -245,19 +240,16 @@ public class KyloVersionUtil {
             }
 
             KyloVersion that = (KyloVersion) o;
-
-            if (majorVersion != null ? !majorVersion.equals(that.getMajorVersion()) : that.getMajorVersion() != null) {
-                return false;
-            }
-            return !(minorVersion != null ? !minorVersion.equals(that.getMinorVersion()) : that.getMinorVersion() != null);
-
+            
+            return Objects.equals(this.getMajorVersion(), that.getMajorVersion()) && 
+                            Objects.equals(this.getMinorVersion(), that.getMinorVersion()) && 
+                            Objects.equals(this.getPointVersion(), that.getPointVersion()) && 
+                            Objects.equals(this.getTag(), that.getTag());
         }
 
         @Override
         public int hashCode() {
-            int result = majorVersion != null ? majorVersion.hashCode() : 0;
-            result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
-            return result;
+            return Objects.hash(this.majorVersion, this.minorVersion, this.pointVersion, this.tag);
         }
 
         /* (non-Javadoc)
@@ -273,8 +265,11 @@ public class KyloVersionUtil {
          */
         @Override
         public int compareTo(KyloVersion o) {
-            // TODO Auto-generated method stub
-            return 0;
+            int result = 0;
+            if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) return result;
+            if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) return result;
+            if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
+            return getTag().compareTo(o.getTag());
         }
 
         /* (non-Javadoc)
@@ -282,8 +277,7 @@ public class KyloVersionUtil {
          */
         @Override
         public boolean matches(String major, String minor, String point) {
-            // TODO Auto-generated method stub
-            return false;
+            return Objects.equals(getMajorVersion(), major) && Objects.equals(getMinorVersion(), minor) && Objects.equals(getPointVersion(), point);
         }
 
         /* (non-Javadoc)
@@ -291,8 +285,7 @@ public class KyloVersionUtil {
          */
         @Override
         public boolean matches(String major, String minor, String point, String tag) {
-            // TODO Auto-generated method stub
-            return false;
+            return matches(major, minor, point) && Objects.equals(getTag(), tag);
         }
     }
 

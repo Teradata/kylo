@@ -63,11 +63,6 @@ public class KyloServerApplication implements SchedulingConfigurer {
         
         KyloUpgrader upgrader = new KyloUpgrader();
 
-//        KyloVersion dbVersion = getDatabaseVersion();
-
-//        boolean skipUpgrade = KyloVersionUtil.isUpToDate(dbVersion);
-
-//        if (!skipUpgrade) {
         if (upgrader.isUpgradeRequired()) {
             KyloVersion currentVersion = upgrader.getCurrentVersion();
             log.info("Upgrading from v{}...", currentVersion);
@@ -75,7 +70,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
             upgrader.upgrade();
             log.info("Upgrading complete");
         } else {
-            log.info("Kylo v{} is up to date.  Starting the application.", upgrader.getCurrentVersion());
+            log.info("Kylo v{} is up to date.  Starting the application.", KyloVersionUtil.getBuildVersion());
         }
         
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "banner.txt");
