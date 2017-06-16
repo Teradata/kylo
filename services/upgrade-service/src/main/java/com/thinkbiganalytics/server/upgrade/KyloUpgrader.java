@@ -45,7 +45,6 @@ public class KyloUpgrader {
     
     
     public void upgrade() {
-        boolean upgradeComplete = false;
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
         ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(KyloUpgradeConfig.class)
                         .web(false)
@@ -53,9 +52,8 @@ public class KyloUpgrader {
                         .run();
         try {
             KyloUpgradeService upgradeService = upgradeCxt.getBean(KyloUpgradeService.class);
-            do {
-                upgradeComplete = upgradeService.upgradeNext();
-            } while (!upgradeComplete);
+            // Keep upgrading until upgrade() returns true, i.e. we are up-to-date;
+            while (! upgradeService.upgradeNext());
         } finally {
             upgradeCxt.close();
         }

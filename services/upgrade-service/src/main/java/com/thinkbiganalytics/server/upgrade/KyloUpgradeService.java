@@ -23,23 +23,22 @@ package com.thinkbiganalytics.server.upgrade;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-@Order(PostMetadataConfigAction.LATE_ORDER + 100)
-public class KyloUpgradeService implements PostMetadataConfigAction {
+public class KyloUpgradeService {
 
     private static final Logger log = LoggerFactory.getLogger(KyloUpgradeService.class);
 
@@ -59,7 +58,8 @@ public class KyloUpgradeService implements PostMetadataConfigAction {
               "0.7.0",
               "0.8.0",
               "0.8.0.1",
-              "0.8.1"
+              "0.8.1",
+              "0.8.2"
         };
         
         UPGRADE_SEQUENCE = Collections.unmodifiableList(Arrays.stream(versions)
@@ -75,7 +75,8 @@ public class KyloUpgradeService implements PostMetadataConfigAction {
     @Inject
     private Optional<List<UpgradeState>> upgradeActions;
     
-    private final KyloVersion buildVersion = KyloVersionUtil.getBuildVersion();
+    private KyloVersion buildVersion;
+    private boolean freshInstall = false;
     
     
     /**
@@ -86,22 +87,46 @@ public class KyloUpgradeService implements PostMetadataConfigAction {
         boolean isComplete = false;
         
         if (this.upgradeActions.isPresent()) {
+            // Determine the next version from the current version.  If this is
+            // a fresh install then the build version will be returned.  If
+            // there are no versions later than the current one (we are up-to-date)
+            // then nextVerion will be null.
             KyloVersion nextVersion = metadataAccess.read(() -> {
                 return getNextVersion();
             }, MetadataAccess.SERVICE);
             
-            isComplete = metadataAccess.commit(() -> {
-                this.upgradeActions.get().stream()
-                    .filter(a -> a.isTargetVersion(nextVersion))
-                    .forEach(a -> a.upgradeTo(nextVersion));
-                versionProvider.setCurrentVersion(nextVersion);
-                return nextVersion.equals(this.buildVersion);
-            }, MetadataAccess.SERVICE);
-            
-            log.info("=================================");
-            log.info("Finished upgrade through v{}", nextVersion);
-            
-            return isComplete;
+            if (nextVersion != null) {
+                // Invoke any upgrade actions for this next version and update it to be the current version.
+                isComplete = metadataAccess.commit(() -> {
+                    this.upgradeActions.get().stream()
+                        .filter(a -> a.isTargetVersion(nextVersion))
+                        .forEach(a -> a.upgradeTo(nextVersion));
+                    versionProvider.setCurrentVersion(nextVersion);
+                    
+                    log.info("=================================");
+                    log.info("Finished upgrade through v{}", nextVersion);
+                    
+                    return nextVersion.equals(this.buildVersion);
+                }, MetadataAccess.SERVICE);
+                
+                // If upgrades are complete and this was starting from a fresh install then invoke any
+                // fresh install actions.
+                if (isComplete && this.freshInstall) {
+                    metadataAccess.commit(() -> {
+                        this.upgradeActions.get().stream()
+                            .filter(a -> a.isTargetFreshInstall())
+                            .forEach(a -> a.upgradeTo(this.buildVersion));
+                        
+                        log.info("=================================");
+                        log.info("Finished fresh install updates");
+                    }, MetadataAccess.SERVICE);
+                }
+                
+                return isComplete;
+            } else {
+                log.info("Nothing left to upgrade - Kylo is up-to-date");
+                return true;
+            }
         } else {
             isComplete = metadataAccess.commit(() -> {
                 versionProvider.setCurrentVersion(this.buildVersion);
@@ -115,24 +140,12 @@ public class KyloUpgradeService implements PostMetadataConfigAction {
         return isComplete;
     }
     
-    /**
-     * This service as a PostMetadataConfigAction will invoke fresh install actions
-     * after the metadata store is started and configured.
-     */
-    @Override
-    public void run() {
-        if (this.upgradeActions.isPresent()) {
-            metadataAccess.commit(() -> {
-                this.upgradeActions.get().stream()
-                    .filter(a -> a.isTargetFreshInstall())
-                    .forEach(a -> a.upgradeTo(this.buildVersion));
-                
-                log.info("=================================");
-                log.info("Finished fresh install updates");
-            }, MetadataAccess.SERVICE);
-        }
+    @PostConstruct
+    public void init() {
+        KyloVersion current = versionProvider.getCurrentVersion();
+        this.freshInstall = current == null;
+        this.buildVersion = KyloVersionUtil.getBuildVersion();
     }
-    
 
     private KyloVersion getNextVersion() {
         KyloVersion current = versionProvider.getCurrentVersion();
@@ -140,7 +153,11 @@ public class KyloUpgradeService implements PostMetadataConfigAction {
         if (current == null) {
             return this.buildVersion;
         } else {
-            int idx = UPGRADE_SEQUENCE.indexOf(current);
+            int idx = IntStream.range(0, UPGRADE_SEQUENCE.size())
+                .filter(i -> UPGRADE_SEQUENCE.get(i).matches(current.getMajorVersion(), current.getMinorVersion(), current.getPointVersion()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("The current Kylo version is unrecognized: " + current));
+            // If the current version is not the last one in the upgrade sequence then return it, otherwise return null.
             return idx == UPGRADE_SEQUENCE.size() - 1 ? null : UPGRADE_SEQUENCE.get(idx + 1);
         }
     }

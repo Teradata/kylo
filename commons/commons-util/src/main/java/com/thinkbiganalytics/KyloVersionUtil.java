@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -257,7 +259,9 @@ public class KyloVersionUtil {
          */
         @Override
         public String toString() {
-            return getMajorVersion() + "." + getMinorVersion();
+            return getMajorVersion() + "." + getMinorVersion() 
+                + (Strings.isNullOrEmpty(getPointVersion()) ? "" : "." + getPointVersion())
+                + (Strings.isNullOrEmpty(getTag()) ? "" : "-" + getTag());
         }
 
         /* (non-Javadoc)

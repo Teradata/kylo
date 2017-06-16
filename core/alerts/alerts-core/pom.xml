@@ -48,6 +48,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>kylo-metadata-core</artifactId>
       <version>${project.version}</version>

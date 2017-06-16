@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.app;
  */
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-
+import com.google.common.base.Strings;
 import com.thinkbiganalytics.KyloVersion;
 
 import org.slf4j.Logger;
@@ -172,6 +172,13 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    @Override
+    public String toString() {
+        return getMajorVersion() + "." + getMinorVersion() 
+            + (Strings.isNullOrEmpty(getPointVersion()) ? "" : "." + getPointVersion())
+            + (Strings.isNullOrEmpty(getTag()) ? "" : "-" + getTag());
     }
 
     @Override

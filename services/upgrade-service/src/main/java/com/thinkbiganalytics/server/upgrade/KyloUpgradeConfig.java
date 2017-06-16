@@ -53,7 +53,7 @@ public class KyloUpgradeConfig {
     @Configuration
     @ComponentScan(basePackages="com.thinkbiganalytics")
     @Import({ ModeShapeEngineConfig.class, MetadataJcrConfig.class, ModeShapeAuthConfig.class, JpaKyloVersionConfig.class })
-    public static class UpgradeStaeConfig {
+    public static class UpgradeStateConfig {
         
         @Bean
         @DependsOn("liquibase")
