@@ -10,8 +10,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 feedName: '@'
             },
             controllerAs: 'vm',
-            templateUrl: 'js/ops-mgr/feeds/feed-stats/feed-stats-grid-list.html',
-            controller: "FeedStatsGridListController",
+            templateUrl: 'js/ops-mgr/feeds/feed-stats/feed-stats-charts.html',
+            controller: "FeedStatsChartsController",
             link: function ($scope, element, attrs) {
                 $scope.$on('$destroy', function () {
 
@@ -102,7 +102,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.failedEventsPercent = 0;
 
 
-        self.onTimeFrameChange = onTimeFrameChange;
+        self.onTimeFrameClick = onTimeFrameClick;
 
         self.onProcessorChartFunctionChanged = onProcessorChartFunctionChanged;
 
@@ -162,17 +162,18 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      height: 200,
                      margin: {
                          top: 5, //otherwise top of numeric value is cut off
-                         right: 50,
+                         right: 10,
                          bottom: 50, //otherwise bottom labels are not visible
-                         left: 150
+                         left: 70
                      },
                      duration: 500,
                      x: function (d) {
-                         return d.label.length > 60 ? d.label.substr(0, 60) + "..." : d.label;
+                         return d.label.length > 10 ? d.label.substr(0, 10) + "..." : d.label;
                      },
                      y: function (d) {
                          return d.value;
                      },
+                     showLegend: false,
                      showControls: false,
                      showValues: true,
                      xAxis: {
@@ -187,6 +188,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      },
                      valueFormat: function (d) {
                          return d3.format(',.2f')(d);
+                     }, dispatch:{
+                         renderEnd:function(){
+                         }
                      }
                  }
              };
@@ -204,7 +208,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      },
                      showLabels: false,
                      duration: 100,
-                     "height": 150,
+                     "height": 120,
                      labelThreshold: 0.01,
                      labelSunbeamLayout: false,
                      interactiveLayer: {tooltip: {gravity: 's'}},
@@ -247,7 +251,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      },
                      showLabels: false,
                      duration: 100,
-                     "height": 100,
+                     "height": 200,
                      labelThreshold: 0.01,
                      labelSunbeamLayout: false,
                      interactiveLayer: {tooltip: {gravity: 's'}},
@@ -267,9 +271,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                          }
                      },
                      dispatch: {
-                         renderEnd: function () {
-
-                         }
+                         renderEnd: function(e){ console.log('renderEnd') }
                      }
                  }
              };
@@ -301,7 +303,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                          rotateLabels: -45
                      },
                      yAxis: {
-                         axisLabel:'Running',
+                         axisLabel:'Duration (sec)',
                          "axisLabelDistance": -10,
                          showMaxMin:false,
                          tickSubdivide:0,
@@ -321,13 +323,13 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
              self.feedChartOptions = {
                  chart: {
-                     type: 'stackedAreaChart',
+                     type: 'lineChart',
                      height: 450,
                      margin: {
                          top: 10,
                          right: 20,
-                         bottom: 150,
-                         left: 55
+                         bottom: 100,
+                         left: 65
                      },
                      x: function (d) {
                          return d[0];
@@ -335,23 +337,25 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      y: function (d) {
                          return d[1];
                      },
-                     showControls:true,
                      showTotalInTooltip:true,
                      useVoronoi: false,
                      clipEdge: false,
                      duration: 250,
                      useInteractiveGuideline: true,
                      interactiveLayer: {tooltip: {gravity: 's'}},
+                     valueFormat: function (d) {
+                         return d3.format(',')(parseInt(d))
+                     },
                      xAxis: {
-                         axisLabel: 'Event Time',
+                         axisLabel: 'Time',
                          showMaxMin: false,
                          tickFormat: function (d) {
-                             return d3.time.format('%x %X')(new Date(d))
+                             return d3.time.format('%X')(new Date(d))
                          },
                          rotateLabels: -45
                      },
                      yAxis: {
-                         axisLabel: 'Count',
+                         axisLabel: 'Flows Per Second',
                          axisLabelDistance: -10
                      },
                      legend: {
@@ -366,10 +370,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                              // fixChartWidth();
                          }
                      }
-                 },
-                 title: {
-                     enable: true,
-                     text: 'Flows over time'
                  }
 
              };
@@ -391,13 +391,14 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             })
         }
 
-        function onTimeFrameChange() {
+
+        function onTimeFrameClick(timeFrame){
+             self.timeFrame = timeFrame;
             clearRefreshInterval();
             //abort
             FeedStatsService.setTimeFrame(self.timeFrame);
             buildChartData();
             setRefreshInterval();
-
         }
 
 
@@ -424,7 +425,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             self.processChartLoading = true;
             $q.when(FeedStatsService.fetchProcessorStatistics()).then(function (response) {
                 self.summaryStatsData = FeedStatsService.summaryStatistics;
-                self.failedEventsPercent  =  self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) : 0;
+                self.failedEventsPercent  =  self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) *100 : 0;
                 self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
                 self.statusPieChartData = FeedStatsService.buildStatusPieChart();
                 self.eventsPieChartData = FeedStatsService.buildEventsPieChart();
@@ -434,6 +435,33 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
                var lastData = buildLastStatsChartData('Average Duration',"#1f77b4",'avgFlowDuration')
                self.summaryStatisticsChartData = lastData;
+
+                var values = [];
+                if(lastData != undefined && lastData[0] != undefined && lastData[0].values != undefined)
+                var max = d3.max(lastData[0].values, function(d) {
+                    return d[1]; } );
+                if(max == undefined || max ==0) {
+                    max = 1;
+                }
+                else {
+                    max +=1;
+                }
+                if(self.summaryStatisticsChartOptions.chart.yAxis.ticks != max) {
+                    self.summaryStatisticsChartOptions.chart.yDomain = [0, max];
+                    var ticks = max;
+                    if(ticks > 8){
+                        ticks = 8;
+                    }
+                    self.summaryStatisticsChartOptions.chart.yAxis.ticks = ticks;
+                }
+
+                if(self.summaryStatisticsChartApi && self.summaryStatisticsChartApi.update){
+                    self.summaryStatisticsChartApi.update();
+                }
+
+
+
+
 
                 FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,values.length,self.selectedProcessorStatisticFunction);
                 FeedStatsService.updateBarChartHeight(self.topNProcessorChartOptions,self.topNProcessorChartApi,values.length,'Average Duration');
@@ -467,8 +495,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 self.maxTime = feedTimeSeries.maxTime;
 
                 var chartArr = [];
-                chartArr.push({label: 'Completed', value: 'jobsFinished', color: '#009933'});
-                chartArr.push({label: 'Started', value: 'jobsStarted', color: '#FF9901'});
+                chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#009933'});
+                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', color: '#FF9901'});
                 //preserve the legend selections
                 if (feedChartLegendState.length > 0) {
                     _.each(chartArr, function (item, i) {
@@ -587,9 +615,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedStatsGridListController', ["$scope","$element","$http","$interval","$timeout","$q","ProvenanceEventStatsService","FeedStatsService","Nvd3ChartService",controller]);
+    angular.module(moduleName).controller('FeedStatsChartsController', ["$scope","$element","$http","$interval","$timeout","$q","ProvenanceEventStatsService","FeedStatsService","Nvd3ChartService",controller]);
 
     angular.module(moduleName)
-        .directive('kyloFeedStatsGridList', directive);
+        .directive('kyloFeedStatsCharts', directive);
 
 });

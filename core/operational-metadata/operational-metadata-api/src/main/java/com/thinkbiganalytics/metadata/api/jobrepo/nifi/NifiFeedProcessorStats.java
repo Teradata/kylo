@@ -326,4 +326,21 @@ public interface NifiFeedProcessorStats {
     void setClusterNodeAddress(String clusterNodeAddress);
 
 
+
+    Long getCollectionIntervalSeconds();
+
+    void setCollectionIntervalSeconds(Long collectionIntervalSeconds);
+
+
+    Long getJobsStartedPerSecond();
+
+    void setJobsStartedPerSecond(Long jobsStartedPerSecond);
+
+    Long getJobsFinishedPerSecond();
+
+    void setJobsFinishedPerSecond(Long jobsFinishedPerSecond);
+
+
+
+
 }

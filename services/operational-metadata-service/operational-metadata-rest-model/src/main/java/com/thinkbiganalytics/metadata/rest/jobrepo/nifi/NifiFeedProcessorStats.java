@@ -55,6 +55,12 @@ public class NifiFeedProcessorStats {
     private String collectionId;
     private Long resultSetCount;
 
+    private Long jobsStartedPerSecond;
+
+    private Long jobsFinishedPerSecond;
+
+    private Long collectionIntervalSeconds;
+
     public String getId() {
         return id;
     }
@@ -245,5 +251,28 @@ public class NifiFeedProcessorStats {
 
     public void setFailedCount(Long failedCount) {
         this.failedCount = failedCount;
+    }
+
+    public Long getCollectionIntervalSeconds() {
+        return collectionIntervalSeconds;
+    }
+    public void setCollectionIntervalSeconds(Long collectionIntervalSeconds) {
+        this.collectionIntervalSeconds = collectionIntervalSeconds;
+    }
+
+    public Long getJobsStartedPerSecond() {
+        return jobsStartedPerSecond;
+    }
+
+    public void setJobsStartedPerSecond(Long jobsStartedPerSecond) {
+        this.jobsStartedPerSecond = jobsStartedPerSecond;
+    }
+
+    public Long getJobsFinishedPerSecond() {
+        return jobsFinishedPerSecond;
+    }
+
+    public void setJobsFinishedPerSecond(Long jobsFinishedPerSecond) {
+        this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 }
