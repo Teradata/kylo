@@ -44,7 +44,7 @@ import liquibase.integration.spring.SpringLiquibase;
  */
 @Configuration
 @Import(LiquibaseConfiguration.class)
-public class UpgradeKyloConfig {
+public class KyloUpgradeConfig {
 
     @Inject
     @SuppressWarnings("unused")
@@ -55,14 +55,10 @@ public class UpgradeKyloConfig {
     @Import({ ModeShapeEngineConfig.class, MetadataJcrConfig.class, ModeShapeAuthConfig.class, JpaKyloVersionConfig.class })
     public static class UpgradeStaeConfig {
         
-        public UpgradeStaeConfig() {
-            super();
-        }
-        
         @Bean
         @DependsOn("liquibase")
-        public UpgradeKyloService upgradeService() {
-            return new UpgradeKyloService();
+        public KyloUpgradeService upgradeService() {
+            return new KyloUpgradeService();
         }
 
     }

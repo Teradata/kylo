@@ -26,12 +26,10 @@ package com.thinkbiganalytics.server.upgrade;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.ResourceBanner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
@@ -48,16 +46,19 @@ public class KyloUpgrader {
     
     public void upgrade() {
         boolean upgradeComplete = false;
-        do {
-            System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
-            ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(UpgradeKyloConfig.class)
-                            .web(false)
-                            .profiles(KYLO_UPGRADE)
-                            .run();
-            UpgradeKyloService upgradeService = upgradeCxt.getBean(UpgradeKyloService.class);
-            upgradeComplete = upgradeService.upgradeNext();
+        System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
+        ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(KyloUpgradeConfig.class)
+                        .web(false)
+                        .profiles(KYLO_UPGRADE)
+                        .run();
+        try {
+            KyloUpgradeService upgradeService = upgradeCxt.getBean(KyloUpgradeService.class);
+            do {
+                upgradeComplete = upgradeService.upgradeNext();
+            } while (!upgradeComplete);
+        } finally {
             upgradeCxt.close();
-        } while (! upgradeComplete);
+        }
     }
     
     public boolean isUpgradeRequired() {

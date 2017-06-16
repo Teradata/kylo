@@ -68,7 +68,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 
-@Component("upgradeAction081-2")
+@Component("upgradeAction081")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class SecurityRolesUpgradeAction implements UpgradeState {
 
@@ -89,10 +89,7 @@ public class SecurityRolesUpgradeAction implements UpgradeState {
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        KyloVersion current = KyloVersionUtil.getBuildVersion();
-        return version.getMajorVersion().equals(current.getMajorVersion()) 
-                        && version.getMinorVersion().equals(current.getMinorVersion()) 
-                        && version.getPointVersion().equals(current.getPointVersion());
+        return version.matches("0.8", "1", "");
     }
 
     /* (non-Javadoc)

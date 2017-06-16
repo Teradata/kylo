@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.v081;
+package com.thinkbiganalytics.metadata.upgrade.v0811;
 
 /*-
  * #%L
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-@Component("upgradeAction081-1")
+@Component("upgradeAction0811")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class GroupNamesUpgradeAction implements UpgradeState {
 
@@ -50,7 +50,7 @@ public class GroupNamesUpgradeAction implements UpgradeState {
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        return version.getMajorVersion().equals("0.8") && version.getMinorVersion().equals("1") && version.getPointVersion().equals("");
+        return version.matches("0.8", "1", "1");
     }
 
     /* (non-Javadoc)

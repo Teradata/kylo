@@ -59,7 +59,7 @@ public class UpgradeAction implements UpgradeState {
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        return version.getMajorVersion().equals("0.4") && version.getMinorVersion().equals("0") && version.getPointVersion().equals("");
+        return version.matches("0.4", "0", "");
     }
 
     /* (non-Javadoc)

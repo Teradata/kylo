@@ -39,10 +39,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 @Order(PostMetadataConfigAction.LATE_ORDER + 100)
-public class UpgradeKyloService implements PostMetadataConfigAction {
-//public class UpgradeKyloService {
+public class KyloUpgradeService implements PostMetadataConfigAction {
 
-    private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
+    private static final Logger log = LoggerFactory.getLogger(KyloUpgradeService.class);
 
     public static final List<KyloVersion> UPGRADE_SEQUENCE;
     static {
@@ -84,24 +83,36 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      * @return true if after this call upgrades are complete and Kylo is up-to-date.
      */
     public boolean upgradeNext() {
+        boolean isComplete = false;
+        
         if (this.upgradeActions.isPresent()) {
             KyloVersion nextVersion = metadataAccess.read(() -> {
                 return getNextVersion();
             }, MetadataAccess.SERVICE);
             
-            return metadataAccess.commit(() -> {
+            isComplete = metadataAccess.commit(() -> {
                 this.upgradeActions.get().stream()
                     .filter(a -> a.isTargetVersion(nextVersion))
                     .forEach(a -> a.upgradeTo(nextVersion));
                 versionProvider.setCurrentVersion(nextVersion);
                 return nextVersion.equals(this.buildVersion);
             }, MetadataAccess.SERVICE);
+            
+            log.info("=================================");
+            log.info("Finished upgrade through v{}", nextVersion);
+            
+            return isComplete;
         } else {
-            return metadataAccess.commit(() -> {
+            isComplete = metadataAccess.commit(() -> {
                 versionProvider.setCurrentVersion(this.buildVersion);
                 return true;
             }, MetadataAccess.SERVICE);
+            
+            log.info("=================================");
+            log.info("Finished upgrade through v{}", this.buildVersion);
         }
+        
+        return isComplete;
     }
     
     /**
@@ -115,6 +126,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 this.upgradeActions.get().stream()
                     .filter(a -> a.isTargetFreshInstall())
                     .forEach(a -> a.upgradeTo(this.buildVersion));
+                
+                log.info("=================================");
+                log.info("Finished fresh install updates");
             }, MetadataAccess.SERVICE);
         }
     }
@@ -122,6 +136,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
     private KyloVersion getNextVersion() {
         KyloVersion current = versionProvider.getCurrentVersion();
+        // If there are no recorded versions then this is a fresh install so the next version is the actual build version.
         if (current == null) {
             return this.buildVersion;
         } else {
