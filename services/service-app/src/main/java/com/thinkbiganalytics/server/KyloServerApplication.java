@@ -23,9 +23,9 @@ package com.thinkbiganalytics.server;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeKyloConfig;
 import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeKyloConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

@@ -23,9 +23,10 @@
 
   <changeSet author="sf186028" id="kylo_0.8.2-kylo_version-update">
     <addColumn tableName="KYLO_VERSION">
-        <column name="POINT_VERSION" type="VARCHAR(10)" afterColumn="MINOR_VERSION" />
-        <column name="TAG" type="VARCHAR(45))" afterColumn="POINT_VERSION" />
+        <column name="POINT_VERSION" type="VARCHAR(10)" afterColumn="MINOR_VERSION" defaultValue="" />
+        <column name="TAG" type="VARCHAR(45))" afterColumn="POINT_VERSION" defaultValue="" />
     </addColumn>
+    
   </changeSet>
 
 </databaseChangeLog>

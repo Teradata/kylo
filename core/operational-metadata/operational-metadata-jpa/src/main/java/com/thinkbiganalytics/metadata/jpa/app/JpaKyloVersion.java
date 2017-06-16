@@ -80,6 +80,15 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
     }
+    /**
+     * create a new version with a supplied major and minor version
+     */
+    public JpaKyloVersion(String majorVersion, String minorVersion, String pointVersion, String tag) {
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
+        this.pointVersion = pointVersion;
+        this.tag = tag;
+    }
 
     /**
      * update this version to the new passed in version

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.version.latest;
+package com.thinkbiganalytics.metadata.upgrade.v081;
 
 /*-
  * #%L
@@ -40,8 +40,6 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
@@ -49,6 +47,8 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -68,11 +68,11 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 
-@Component
+@Component("upgradeAction081-2")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class UpgradeAction implements UpgradeState {
+public class SecurityRolesUpgradeAction implements UpgradeState {
 
-    private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(SecurityRolesUpgradeAction.class);
 
     @Inject
     private CategoryProvider categoryProvider;
@@ -99,7 +99,7 @@ public class UpgradeAction implements UpgradeState {
      * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
      */
     @Override
-    public void upgradeFrom(KyloVersion startingVersion) {
+    public void upgradeTo(KyloVersion startingVersion) {
         log.info("Upgrading from version: " + startingVersion);
         
         ensureFeedTemplateFeedRelationships();

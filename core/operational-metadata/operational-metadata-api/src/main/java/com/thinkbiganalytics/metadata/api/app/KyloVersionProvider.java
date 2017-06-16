@@ -40,14 +40,13 @@ public interface KyloVersionProvider {
     KyloVersion getCurrentVersion();
     
     /**
+     * Sets a new Kylo current version.
+     * @param version the new version
+     */
+    void setCurrentVersion(KyloVersion version);
+    
+    /**
      * @return the version of the deployed Kylo build
      */
     KyloVersion getBuildVersion();
-
-    /**
-     * Routine to update the metadata storing the latest version of Kylo depoloyed.
-     *
-     * @return the updated version
-     */
-    KyloVersion updateToLatestVersion();
 }

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.upgrade;
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L
@@ -35,7 +35,6 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
-import com.thinkbiganalytics.server.upgrade.KyloUpgradeDatabaseVersionChecker;
 
 /**
  * Performs all upgrade steps within a metadata transaction.
@@ -65,9 +64,9 @@ public class KyloUpgrader {
         KyloVersion buildVer = KyloVersionUtil.getBuildVersion();
         KyloVersion currentVer = getCurrentVersion();
         
-        return currentVer == null ? true : buildVer.matches(currentVer.getMajorVersion(), 
-                                                            currentVer.getMinorVersion(), 
-                                                            currentVer.getPointVersion());
+        return currentVer == null || ! buildVer.matches(currentVer.getMajorVersion(), 
+                                                        currentVer.getMinorVersion(), 
+                                                        currentVer.getPointVersion());
     }
 
     /**

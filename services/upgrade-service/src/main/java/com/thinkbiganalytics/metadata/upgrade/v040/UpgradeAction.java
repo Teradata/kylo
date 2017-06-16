@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.version_0_4_0;
+package com.thinkbiganalytics.metadata.upgrade.v040;
 
 /*-
  * #%L
@@ -28,8 +28,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeState;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-@Component
+@Component("upgradeAction040")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
@@ -66,7 +66,7 @@ public class UpgradeAction implements UpgradeState {
      * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
      */
     @Override
-    public void upgradeFrom(KyloVersion startingVersion) {
+    public void upgradeTo(KyloVersion startingVersion) {
         log.info("Upgrading from version: " + startingVersion);
         
         for (Category category : categoryProvider.findAll()) {

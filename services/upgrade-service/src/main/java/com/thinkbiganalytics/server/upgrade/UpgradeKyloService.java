@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade;
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L
@@ -23,10 +23,12 @@ package com.thinkbiganalytics.metadata.upgrade;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +38,9 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-public class UpgradeKyloService {
+@Order(PostMetadataConfigAction.LATE_ORDER + 100)
+public class UpgradeKyloService implements PostMetadataConfigAction {
+//public class UpgradeKyloService {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
 
@@ -69,9 +73,10 @@ public class UpgradeKyloService {
     private MetadataAccess metadataAccess;
     @Inject
     private KyloVersionProvider versionProvider;
-    
     @Inject
     private Optional<List<UpgradeState>> upgradeActions;
+    
+    private final KyloVersion buildVersion = KyloVersionUtil.getBuildVersion();
     
     
     /**
@@ -80,28 +85,48 @@ public class UpgradeKyloService {
      */
     public boolean upgradeNext() {
         if (this.upgradeActions.isPresent()) {
-            Optional<KyloVersion> nextVersion = metadataAccess.read(() -> {
-                KyloVersion current = versionProvider.getCurrentVersion();
-                return getNextVersion(current);
+            KyloVersion nextVersion = metadataAccess.read(() -> {
+                return getNextVersion();
             }, MetadataAccess.SERVICE);
             
-            return nextVersion
-                .map(version ->
-                    metadataAccess.commit(() -> {
-                        this.upgradeActions.get().stream()
-                            .filter(a -> a.isTargetVersion(version))
-                            .forEach(a -> a.upgradeFrom(version));
-                        return false;
-                    }, MetadataAccess.SERVICE))
-                .orElse(true);
+            return metadataAccess.commit(() -> {
+                this.upgradeActions.get().stream()
+                    .filter(a -> a.isTargetVersion(nextVersion))
+                    .forEach(a -> a.upgradeTo(nextVersion));
+                versionProvider.setCurrentVersion(nextVersion);
+                return nextVersion.equals(this.buildVersion);
+            }, MetadataAccess.SERVICE);
         } else {
-            // TODO No actions: update to latest version
-            return true;
+            return metadataAccess.commit(() -> {
+                versionProvider.setCurrentVersion(this.buildVersion);
+                return true;
+            }, MetadataAccess.SERVICE);
         }
     }
+    
+    /**
+     * This service as a PostMetadataConfigAction will invoke fresh install actions
+     * after the metadata store is started and configured.
+     */
+    @Override
+    public void run() {
+        if (this.upgradeActions.isPresent()) {
+            metadataAccess.commit(() -> {
+                this.upgradeActions.get().stream()
+                    .filter(a -> a.isTargetFreshInstall())
+                    .forEach(a -> a.upgradeTo(this.buildVersion));
+            }, MetadataAccess.SERVICE);
+        }
+    }
+    
 
-    private Optional<KyloVersion> getNextVersion(KyloVersion current) {
-        int idx = UPGRADE_SEQUENCE.indexOf(current);
-        return idx == UPGRADE_SEQUENCE.size() - 1 ? Optional.empty() : Optional.of(UPGRADE_SEQUENCE.get(idx + 1));
+    private KyloVersion getNextVersion() {
+        KyloVersion current = versionProvider.getCurrentVersion();
+        if (current == null) {
+            return this.buildVersion;
+        } else {
+            int idx = UPGRADE_SEQUENCE.indexOf(current);
+            return idx == UPGRADE_SEQUENCE.size() - 1 ? null : UPGRADE_SEQUENCE.get(idx + 1);
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.version_0_8_0;
+package com.thinkbiganalytics.metadata.upgrade.v080;
 
 /*-
  * #%L
@@ -24,9 +24,9 @@ import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeException;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeException;
+import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-@Component
+@Component("upgradeAction080")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeAction implements UpgradeState {
 
@@ -60,14 +60,14 @@ public class UpgradeAction implements UpgradeState {
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        return version.getMajorVersion().equals("0.8") && version.getMinorVersion().equals("0") && version.getPointVersion().equals("");
+        return version.matches("0.8", "0", "");
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
      */
     @Override
-    public void upgradeFrom(KyloVersion startingVersion) {
+    public void upgradeTo(KyloVersion startingVersion) {
         log.info("Upgrading from version: " + startingVersion);
 
         Session session = JcrMetadataAccess.getActiveSession();

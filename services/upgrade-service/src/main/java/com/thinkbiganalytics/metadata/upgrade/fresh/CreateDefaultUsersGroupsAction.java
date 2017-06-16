@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.version.fresh;
+package com.thinkbiganalytics.metadata.upgrade.fresh;
 
 /*-
  * #%L
@@ -26,10 +26,10 @@ import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.metadata.upgrade.UpgradeState;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +41,11 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-@Component
+@Component("upgradeActionFreshInstall")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class UpgradeAction implements UpgradeState {
+public class CreateDefaultUsersGroupsAction implements UpgradeState {
 
-    private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(CreateDefaultUsersGroupsAction.class);
 
     @Inject
     private UserProvider userProvider;
@@ -63,7 +63,7 @@ public class UpgradeAction implements UpgradeState {
      * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
      */
     @Override
-    public void upgradeFrom(KyloVersion startingVersion) {
+    public void upgradeTo(KyloVersion startingVersion) {
         log.info("Upgrading from version: " + startingVersion);
         
         User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", "thinkbig");

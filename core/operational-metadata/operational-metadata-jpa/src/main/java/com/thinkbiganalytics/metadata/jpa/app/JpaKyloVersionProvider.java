@@ -27,6 +27,8 @@ import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +44,11 @@ import javax.annotation.PostConstruct;
 public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaKyloVersionProvider.class);
+    
+    private static final Sort SORT_ORDER = new Sort(new Sort.Order(Direction.DESC, "majorVersion"),
+                                                    new Sort.Order(Direction.DESC, "minorVersion"),
+                                                    new Sort.Order(Direction.DESC, "pointVersion"),
+                                                    new Sort.Order(Direction.DESC, "tag") );
 
 
     private KyloVersionRepository kyloVersionRepository;
@@ -64,34 +71,23 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @Override
     public KyloVersion getCurrentVersion() {
-
-        List<JpaKyloVersion> versions = kyloVersionRepository.findAll();
+        List<JpaKyloVersion> versions = kyloVersionRepository.findAll(SORT_ORDER);
         if (versions != null && !versions.isEmpty()) {
             return versions.get(0);
         }
         return null;
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.app.KyloVersionProvider#setCurrentVersion(com.thinkbiganalytics.KyloVersion)
+     */
     @Override
-    public KyloVersion updateToLatestVersion() {
-        if (getBuildVersion() != null) {
-            KyloVersion currentVersion = getBuildVersion();
-            KyloVersion existingVersion = getCurrentVersion();
-            
-            if (existingVersion == null) {
-                kyloVersionRepository.save(new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion()));
-                existingVersion = currentVersion;
-            } else {
-                if (!existingVersion.equals(currentVersion)) {
-                    kyloVersionRepository.deleteAll();
-                    JpaKyloVersion update = new JpaKyloVersion(currentVersion.getMajorVersion(), currentVersion.getMinorVersion());
-                    kyloVersionRepository.save(update);
-                    existingVersion.update(update);
-                }
-            }
-            return existingVersion;
-        }
-        return null;
+    public void setCurrentVersion(KyloVersion version) {
+        JpaKyloVersion update = new JpaKyloVersion(version.getMajorVersion(), 
+                                                   version.getMinorVersion(), 
+                                                   version.getPointVersion(),
+                                                   version.getTag());
+        kyloVersionRepository.save(update);
     }
     
     @Override

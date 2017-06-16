@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.upgrade;
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L
@@ -30,13 +30,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 
-import com.thinkbiganalytics.liquibase.LiquibaseConfiguration;
 import com.thinkbiganalytics.metadata.jpa.app.JpaKyloVersionConfig;
 import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
+import com.thinkbiganalytics.server.upgrade.liquibase.LiquibaseConfiguration;
 
 import liquibase.integration.spring.SpringLiquibase;
 
@@ -45,7 +44,6 @@ import liquibase.integration.spring.SpringLiquibase;
  */
 @Configuration
 @Import(LiquibaseConfiguration.class)
-@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class UpgradeKyloConfig {
 
     @Inject
@@ -68,38 +66,4 @@ public class UpgradeKyloConfig {
         }
 
     }
-//    
-//    @Inject
-//    private Environment environment;
-//    
-//    @Bean
-//    @Primary
-//    public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
-//        // Overrides the this bean from MetadataJcrConfig so that it does not invoke configure() at bean construction.
-//        return new MetadataJcrConfigurator(postConfigActions);
-//    }
-//
-//    @Bean
-//    @Primary
-//    public RepositoryConfiguration metadataRepoConfig() throws IOException {
-//        for (String prop : ModeShapeEngineConfig.CONFIG_PROPS) {
-//            if (this.environment.containsProperty(prop)) {
-//                System.setProperty(prop, this.environment.getProperty(prop));
-//            }
-//        }
-//
-//        KyloVersion version = upgradeService().getCurrentVersion();
-//        URL configUrl = upgradeService().getUpgradeState(version)
-//                        .map(upgrade -> upgrade.getResource("/metadata-repository.json"))
-//                        .orElse(new ClassPathResource("/metadata-repository.json").getURL());
-//        RepositoryConfiguration config = RepositoryConfiguration.read(configUrl);
-//
-//        Problems problems = config.validate();
-//        if (problems.hasErrors()) {
-//            log.error("Problems with the ModeShape repository configuration: \n{}", problems);
-//            throw new RuntimeException("Problems with the ModeShape repository configuration: " + problems);
-//        }
-//
-//        return config;
-//    }
 }

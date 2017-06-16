@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.liquibase;
+package com.thinkbiganalytics.server.upgrade.liquibase;
 
 /*-
  * #%L
@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.thinkbiganalytics.metadata.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 
 import javax.sql.DataSource;
 
