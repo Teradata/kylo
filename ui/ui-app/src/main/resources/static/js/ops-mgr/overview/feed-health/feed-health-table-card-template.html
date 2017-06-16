@@ -55,7 +55,14 @@
                                Feed Health
                                    </span>
                     </div>
-                    <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
+                    <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
+                                   <span class="orange" ng-if="feed.stream">
+                                           <ng-md-icon icon="tune" size="20" hide-xs style="height: inherit">
+                                           </ng-md-icon>
+                                     STREAM
+                                    </span>
+                    </div>
+                    <div flex="20" layout="column" class="item-column md-list-item-text " >
 
                                    <span class="item-title-small {{feed.statusStyle}}">
                                      {{feed.displayStatus}}</span>
@@ -64,19 +71,13 @@
                                    </span>
                     </div>
 
-                    <div flex="40" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
-                                   <span class="orange" ng-if="feed.stream">
-                                           <ng-md-icon icon="tune" size="20" hide-xs style="height: inherit">
-                                           </ng-md-icon>
-                                     STREAM
-                                    </span>
-                    </div>
-                    <div flex="30" layout="column" class="item-column md-list-item-text ">
+
+                    <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="(!feed.stream || (feed.stream && !feed.running))">
                                    <span class="item-title"><kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
                                    </span>
                       <span class="column-title column-title-bottom">Since</span>
                     </div>
-                    <div flex hide-xs layout="column" class="item-column md-list-item-text ">
+                    <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
                       <span class="item-title">{{feed.runTimeString}}</span>
                       <span class="column-title column-title-bottom">Last Run Time</span>
                     </div>
