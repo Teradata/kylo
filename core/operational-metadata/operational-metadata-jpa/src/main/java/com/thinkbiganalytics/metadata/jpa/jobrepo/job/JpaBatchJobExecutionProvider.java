@@ -20,6 +20,10 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
@@ -33,6 +37,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
@@ -78,6 +83,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,6 +91,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.persistence.OptimisticLockException;
@@ -122,6 +131,17 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Inject
     private AccessController controller;
 
+    @Inject
+        private MetadataAccess metadataAccess;
+
+
+    /**
+     * Temporary cache of completed events in to check against to ensure we trigger the same event twice
+     */
+    Cache<String, StreamFeedRunningJobExecution> latestSteamingFeedCompletion = CacheBuilder.newBuilder().build();
+
+    Set<String> runningStreamingFeeds = new HashSet<>();
+
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
@@ -134,6 +154,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
         this.jobParametersRepository = jobParametersRepository;
         this.opsManagerFeedRepository = opsManagerFeedRepository;
+        initTimerThread();
 
     }
 
@@ -446,14 +467,25 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         boolean updatedJobType = updateJobType(jobExecution, event);
         boolean save = isNew || updatedJobType;
         if (event.isFinalJobEvent()) {
-            finishJob(event, jobExecution);
-            save = true;
+            //access
+            StreamFeedRunningJobExecution streamFeedRunningJobExecution = latestSteamingFeedCompletion.getIfPresent(event.getFeedName());
+            if(streamFeedRunningJobExecution == null){
+                streamFeedRunningJobExecution = new StreamFeedRunningJobExecution(event.getFeedName(),event,jobExecution.getJobExecutionId());
+                latestSteamingFeedCompletion.put(event.getFeedName(),streamFeedRunningJobExecution);
+            }
+            else  {
+                streamFeedRunningJobExecution.setLastCompletedEvent(event);
+            }
+
         }
 
+
         //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
-        if (event.isStartOfJob() && !isNew && jobExecution != null) {
+        if (event.isStartOfJob() && !isNew && jobExecution != null && !runningStreamingFeeds.contains(event.getFeedName())) {
             jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
             jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
+            jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
             //create the job params
             Map<String, Object> jobParameters = new HashMap<>();
             if (event.isStartOfJob() && event.getAttributeMap() != null) {
@@ -461,7 +493,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             } else {
                 jobParameters = new HashMap<>();
             }
-
+            runningStreamingFeeds.add(event.getFeedName());
             this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
             save = true;
         }
@@ -761,5 +793,43 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
     */
 
+    private void updateStreamingFeedRunningStatus(){
+        Set<String> completedFeeds = new HashSet<>();
+        long EXPIRE_AFTER_MILLIS = 5000L;
+        runningStreamingFeeds.stream().forEach(feed -> {
+            StreamFeedRunningJobExecution streamFeedRunningJobExecution = latestSteamingFeedCompletion.getIfPresent(feed);
+
+            if(streamFeedRunningJobExecution != null){
+                long lastCompletionTime = streamFeedRunningJobExecution.getLastCompletedEvent().getEventTime();
+                if(DateTime.now().getMillis() - lastCompletionTime > EXPIRE_AFTER_MILLIS) {
+                    //EXPIRE IT
+                    metadataAccess.commit(() -> {
+                        ProvenanceEventRecordDTO event = streamFeedRunningJobExecution.getLastCompletedEvent();
+                        Long executionId = streamFeedRunningJobExecution.getJobExecutionId();
+                        JpaBatchJobExecution jobExecution = (JpaBatchJobExecution) findByJobExecutionId(executionId);
+
+                        finishJob(event, jobExecution);
+                        jobExecutionRepository.save(jobExecution);
+                        completedFeeds.add(feed);
+                        latestSteamingFeedCompletion.invalidate(feed);
+
+                    }, MetadataAccess.SERVICE);
+                }
+            }
+
+        });
+
+        if(!completedFeeds.isEmpty()) {
+            runningStreamingFeeds.removeAll(completedFeeds);
+        }
+
+    }
+
+    private void initTimerThread() {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(() -> {
+            updateStreamingFeedRunningStatus();
+        }, 5, 5, TimeUnit.SECONDS);
+    }
 
 }
