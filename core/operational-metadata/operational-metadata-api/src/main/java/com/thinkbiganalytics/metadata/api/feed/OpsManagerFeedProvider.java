@@ -27,6 +27,7 @@ import org.joda.time.ReadablePeriod;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Provider interface for accessing/processing Feeds
@@ -73,12 +74,18 @@ public interface OpsManagerFeedProvider {
     void save(List<? extends OpsManagerFeed> feeds);
 
     /**
+     * Feed Names to update the streaming flag
+     * @param feedNames
+     */
+    void updateStreamingFlag(Set<String> feedNames, boolean isStream);
+
+    /**
      * save a feed with a specific feed id and name
      * This is used to save an initial record for a feed when a feed is created
      *
      * @return the saved feed
      */
-    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName);
+    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName, boolean isStream);
 
     /**
      * Delete a feed and all of its operational metadata (i.e. jobs, steps, etc)

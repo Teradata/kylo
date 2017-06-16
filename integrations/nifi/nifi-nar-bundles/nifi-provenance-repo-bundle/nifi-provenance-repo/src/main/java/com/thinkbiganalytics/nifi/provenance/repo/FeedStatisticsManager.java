@@ -110,7 +110,7 @@ public class FeedStatisticsManager {
                     }
                     AggregatedFeedProcessorStatistics
                         feedProcessorStatistics =
-                        statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(), feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId));
+                        statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(), feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId, sendJmsTimeMillis));
 
                     AggregatedProcessorStatistics
                         processorStatistics =

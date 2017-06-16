@@ -166,4 +166,11 @@ public class DefaultFeedSummary implements FeedSummary {
     public FeedHealth getFeedHealth() {
         return feedHealth;
     }
+
+    @Override
+    public boolean isStream() {
+        return feedHealth.isStream();
+    }
+
+
 }

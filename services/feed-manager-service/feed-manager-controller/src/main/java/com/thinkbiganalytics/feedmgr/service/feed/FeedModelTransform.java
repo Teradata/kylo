@@ -153,10 +153,12 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
+        RegisteredTemplate template= feedMetadata.getRegisteredTemplate();
         prepareForSave(feedMetadata);
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
 
+        feedMetadata.setRegisteredTemplate(template);
         if (domain.getTemplate() == null) {
             FeedManagerTemplate.ID templateId = templateProvider.resolveId(feedMetadata.getTemplateId());
             FeedManagerTemplate domainTemplate = templateProvider.findById(templateId);

@@ -179,7 +179,7 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-right {
-  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .layout-padding-left {
@@ -752,6 +752,7 @@ Status styles
 
 .orange {
   color: #F08C38;
+  fill: #F08C38;
 }
 
 .accent-color, .accent-color-1 {

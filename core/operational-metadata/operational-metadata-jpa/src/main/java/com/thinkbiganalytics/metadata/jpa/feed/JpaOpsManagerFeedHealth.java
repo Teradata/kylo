@@ -100,6 +100,10 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
     @Column(name = "RUNNING_COUNT")
     private Long runningCount;
 
+    @Column(name = "IS_STREAM", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStream;
+
     public JpaOpsManagerFeedHealth() {
     }
 
@@ -227,6 +231,15 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
 
     public void setRunningCount(Long runningCount) {
         this.runningCount = runningCount;
+    }
+
+
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
     }
 
     @Embeddable

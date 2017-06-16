@@ -122,4 +122,11 @@ public interface FeedSummary {
      * @return the FeedHealth object for this feed
      */
     FeedHealth getFeedHealth();
+
+    /**
+     *
+     * @return true if streaming feed
+     */
+    boolean isStream();
+
 }

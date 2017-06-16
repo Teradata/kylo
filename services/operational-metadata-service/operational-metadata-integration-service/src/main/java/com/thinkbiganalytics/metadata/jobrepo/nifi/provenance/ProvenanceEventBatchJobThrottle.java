@@ -105,7 +105,8 @@ public class ProvenanceEventBatchJobThrottle {
         public void notify(FeedOperationStatusEvent event) {
             ProvenanceEventRecordDTO provenanceEventRecordDTO = runningJobs.getIfPresent(event.getData().getFeedFlowFileId());
             if(provenanceEventRecordDTO != null){
-                runningJobs.invalidate(provenanceEventRecordDTO);
+                //String feedName = provenanceEventFeedUtil.getFeedName(provenanceEventRecordDTO);
+                //runningJobs.invalidate(feedName);
                 relatedFlowFiles.remove(event.getData().getFeedFlowFileId());
                 inverseRelatedFlowFiles.removeAll(event.getData().getFeedFlowFileId());
             }

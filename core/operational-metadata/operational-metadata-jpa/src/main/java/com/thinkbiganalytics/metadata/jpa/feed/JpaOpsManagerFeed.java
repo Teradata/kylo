@@ -69,6 +69,10 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     @Column(name = "FEED_TYPE")
     private FeedType feedType = FeedType.FEED;
 
+    @Column(name = "IS_STREAM", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStream;
+
     @OneToMany(targetEntity = JpaBatchJobInstance.class, mappedBy = "feed", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
 
@@ -148,5 +152,12 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
         this.feedsToCheck = feedsToCheck;
     }
 
+    @Override
+    public boolean isStream() {
+        return isStream;
+    }
 
+    public void setStream(boolean stream) {
+        isStream = stream;
+    }
 }
