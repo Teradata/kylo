@@ -192,7 +192,7 @@
                           </div>
                           <md-divider></md-divider>
                         </md-list-item>
-                        <md-list-item ng-repeat="item in step.content.executionContextArray | orderBy:key">
+                        <md-list-item ng-repeat="item in step.content.executionContextArray | orderBy:'key'">
                           <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                             {{item.key}}
                           </div>

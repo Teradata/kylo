@@ -49,6 +49,7 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Provider allowing access to feeds {@link OpsManagerFeed}
@@ -112,19 +113,41 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         return null;
     }
 
+    public List<? extends OpsManagerFeed> findByFeedNames(Set<String> feedNames) {
+        return findByFeedNames(feedNames,true);
+    }
+
+    public List<? extends OpsManagerFeed> findByFeedNames(Set<String> feedNames, boolean addAclFilter) {
+        if (feedNames != null && !feedNames.isEmpty()) {
+            if(addAclFilter) {
+                return repository.findByName(feedNames);
+            }
+            else {
+                return repository.findByNameWithoutAcl(feedNames);
+            }
+        }
+        return null;
+    }
+
+
     public void save(List<? extends OpsManagerFeed> feeds) {
         repository.save((List<JpaOpsManagerFeed>) feeds);
     }
 
     @Override
-    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName) {
+    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName,boolean isStream) {
         OpsManagerFeed feed = findById(feedManagerId);
         if (feed == null) {
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedManagerId);
-            repository.save((JpaOpsManagerFeed) feed);
+            ((JpaOpsManagerFeed) feed).setStream(isStream);
+
         }
+        else {
+            ((JpaOpsManagerFeed) feed).setStream(isStream);
+        }
+       feed = repository.save((JpaOpsManagerFeed) feed);
         return feed;
     }
 
@@ -234,6 +257,22 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         String exitMessage = String.format("Job manually abandoned @ %s", DateTimeUtil.getNowFormattedWithTimeZone());
 
         repository.abandonFeedJobs(feed, exitMessage);
+    }
+
+    /**
+     * Sets the stream flag for the list of feeds
+     * @param feedNames the feed names to update
+     * @param isStream true if stream/ false if not
+     */
+    public void updateStreamingFlag(Set<String> feedNames, boolean isStream) {
+        List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
+        if(feeds != null){
+            for(JpaOpsManagerFeed feed: feeds){
+               feed.setStream(isStream);
+            }
+            repository.save(feeds);
+        }
+
     }
 
 

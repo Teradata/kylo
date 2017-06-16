@@ -71,35 +71,7 @@ import javax.inject.Inject;
 public class ProvenanceEventReceiver implements FailedStepExecutionListener, DeleteFeedListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
-    /**
-     * Empty feed object for Loading Cache
-     */
-    static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
-        @Override
-        public ID getId() {
-            return null;
-        }
 
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        protected Object clone() throws CloneNotSupportedException {
-            return super.clone();
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public FeedType getFeedType() {
-            return null;
-        }
-    };
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
     @Inject
@@ -109,10 +81,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      */
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
-    /**
-     * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
-     */
-    LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
+
     @Value("${kylo.ops.mgr.query.nifi.bulletins:false}")
     private boolean queryForNiFiBulletins;
     @Inject
@@ -148,22 +117,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * default constructor creates the feed cache
      */
     public ProvenanceEventReceiver() {
-        // create the loading Cache to get the Feed Manager Feeds.  If its not in the cache, query the JCR store for the Feed object otherwise return the NULL_FEED object
-        opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
-                                                                  @Override
-                                                                  public OpsManagerFeed load(String feedName) throws Exception {
-                                                                      OpsManagerFeed feed = null;
-                                                                      try {
-                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName),
-                                                                                                       MetadataAccess.SERVICE);
-                                                                      } catch (Exception e) {
 
-                                                                      }
-                                                                      return feed == null ? NULL_FEED : feed;
-                                                                  }
-
-                                                              }
-        );
     }
 
     @PostConstruct
@@ -202,13 +156,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(),events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
         events.getEvents().stream().map(event ->  provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
-            .filter(this::isRegisteredWithFeedManager)
+            .filter(event -> provenanceEventFeedUtil.isRegisteredWithFeedManager(event))
             .filter(this::ensureNewEvent)
             .filter(this::isProcessEvent)
             .forEach(event -> processEvent(event, 0));
     }
-
-
 
     /**
      * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
@@ -224,8 +176,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
                 //ensure the job is there
                 BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event),
                                                                        MetadataAccess.SERVICE);
-                NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
-                                                            MetadataAccess.SERVICE);
+
+                if(!event.isStream()) {
+                    NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
+                                                                MetadataAccess.SERVICE);
+                }
           //  } else {cd
          //       NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
           //                                                  MetadataAccess.SERVICE);
@@ -278,28 +233,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         return nifiEvent;
     }
 
-    /**
-     * Check to see if the event has a relationship to Feed Manager
-     * In cases where a user is experimenting in NiFi and not using Feed Manager the event would not be registered
-     *
-     * @param event a provenance event
-     * @return {@code true} if the event has a feed associaetd with it {@code false} if there is no feed associated with it
-     */
-    private boolean isRegisteredWithFeedManager(ProvenanceEventRecordDTO event) {
 
-        String feedName = event.getFeedName();
-        if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
-            if (feed == null || NULL_FEED.equals(feed)) {
-                log.debug("Not processing operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
-                opsManagerFeedCache.invalidate(feedName);
-                return false;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
 
 
     /**
@@ -428,6 +362,6 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     @Override
     public void onFeedDelete(OpsManagerFeed feed) {
         log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
-        opsManagerFeedCache.invalidate(feed.getName());
+        provenanceEventFeedUtil.deletedFeed(feed.getName());
     }
 }

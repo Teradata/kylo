@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
@@ -108,6 +109,11 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
     RegisteredTemplateUtil registeredTemplateUtil;
 
     @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
+
+
+
+    @Inject
     private SecurityService securityService;
 
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
@@ -169,12 +175,45 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
     }
 
+    /**
+     * Updates the Streaming flag on the feeds related to this template, when the template is updated and the streamign flag is changed
+     * @param templateName the name of the template
+     * @param previousTemplate the previous template
+     */
+    private void notifyOperationsManagerOfStreamingUpdate(String templateName,RegisteredTemplate previousTemplate) {
+
+            RegisteredTemplate
+                newTemplate =
+                registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(templateName));
+            if(newTemplate != null) {
+                //notify if this is the first template update, or if we have changed the streaming flag
+                boolean notify = (previousTemplate == null || previousTemplate.isStream() != newTemplate.isStream());
+
+                if (notify) {
+                    Set<String> feedNames = newTemplate.getFeedNames();
+                    if(feedNames != null && !feedNames.isEmpty()) {
+                        metadataAccess.commit(() -> opsManagerFeedProvider.updateStreamingFlag(feedNames, newTemplate.isStream()),MetadataAccess.SERVICE);
+                    }
+                }
+            }
+
+    }
+
     @Override
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
         boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
+        //detect if we changed the stream setting
+        RegisteredTemplate previousTemplate = null;
+        if(!isNew){
+            //run as service account
+            previousTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(registeredTemplate.getTemplateName()));
+        }
+
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
         if (template.isUpdated()) {
             nifiFlowCache.updateRegisteredTemplate(template,true);
+            //update ops manager for feed.isStream
+            notifyOperationsManagerOfStreamingUpdate(template.getTemplateName(),previousTemplate);
 
             //only allow update to the Access control if the user has the CHANGE_PERMS permission on this template entity
             if (accessController.isEntityAccessControlled() && template.hasAction(TemplateAccessControl.CHANGE_PERMS.getSystemName())) {

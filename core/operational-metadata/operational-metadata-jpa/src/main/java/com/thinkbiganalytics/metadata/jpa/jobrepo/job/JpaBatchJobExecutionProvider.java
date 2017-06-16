@@ -365,6 +365,18 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event) {
+        if(event.isStream()){
+            return getOrCreateStreamJobExecution(event);
+        }
+        else {
+            return getOrCreateBatchJobExecution(event);
+        }
+
+    }
+
+
+
+    private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
@@ -406,6 +418,62 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
         return jobExecution;
     }
+
+
+    private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event) {
+        JpaBatchJobExecution jobExecution = null;
+        boolean isNew = false;
+        try {
+            List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(event.getFeedName());
+            if (jobExecution == null && jobExecutions.isEmpty()) {
+                jobExecution = createNewJobExecution(event);
+                isNew = true;
+            }
+            else {
+                if(jobExecutions != null){
+                    jobExecution = jobExecutions.get(0);
+                }
+            }
+        } catch (OptimisticLockException e) {
+            //read
+            List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(event.getFeedName());
+            if(jobExecutions != null && !jobExecutions.isEmpty()){
+                jobExecution = jobExecutions.get(0);
+            }
+        }
+
+        //if the attrs coming in change the type to a CHECK job then update the entity
+        boolean updatedJobType = updateJobType(jobExecution, event);
+        boolean save = isNew || updatedJobType;
+        if (event.isFinalJobEvent()) {
+            finishJob(event, jobExecution);
+            save = true;
+        }
+
+        //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
+        if (event.isStartOfJob() && !isNew && jobExecution != null) {
+            jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            //create the job params
+            Map<String, Object> jobParameters = new HashMap<>();
+            if (event.isStartOfJob() && event.getAttributeMap() != null) {
+                jobParameters = new HashMap<>(event.getAttributeMap());
+            } else {
+                jobParameters = new HashMap<>();
+            }
+
+            this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
+            save = true;
+        }
+        if (save) {
+            jobExecutionRepository.save(jobExecution);
+        }
+        return jobExecution;
+    }
+
+
+
+
 
     @Override
     public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {

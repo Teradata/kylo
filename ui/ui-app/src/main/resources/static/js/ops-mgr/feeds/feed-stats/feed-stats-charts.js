@@ -74,11 +74,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.selectedProcessorStatisticFunction = 'Average Duration';
         self.processorStatsFunctions = FeedStatsService.processorStatsFunctions();
 
-        self.topN =FeedStatsService.processorStatistics.topN;
-        self.topNProcessorChartApi = {};
-        self.topNProcessorChartData = [];
-        self.topNProcessorChartOptions = {};
-
         self.statusPieChartApi = {};
         self.statusPieChartOptions = {};
         self.statusPieChartData = [];
@@ -89,10 +84,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.eventsPieChartData = [];
 
 
-        var summaryStatisticsMaxDataPoints = 20;
-        self.summaryStatisticsChartData = [];
-        self.summaryStatisticsChartOptions = {};
-        self.summaryStatisticsChartApi = {};
 
         /**
          * Latest summary stats
@@ -156,44 +147,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                  }
              };
 
-             self.topNProcessorChartOptions = {
-                 chart: {
-                     type: 'multiBarHorizontalChart',
-                     height: 200,
-                     margin: {
-                         top: 5, //otherwise top of numeric value is cut off
-                         right: 10,
-                         bottom: 50, //otherwise bottom labels are not visible
-                         left: 70
-                     },
-                     duration: 500,
-                     x: function (d) {
-                         return d.label.length > 10 ? d.label.substr(0, 10) + "..." : d.label;
-                     },
-                     y: function (d) {
-                         return d.value;
-                     },
-                     showLegend: false,
-                     showControls: false,
-                     showValues: true,
-                     xAxis: {
-                         showMaxMin: false
-                     },
-                     interactiveLayer: {tooltip: {gravity: 's'}},
-                     yAxis: {
-                         axisLabel: FeedStatsService.averageDurationFunction.axisLabel,
-                         tickFormat: function (d) {
-                             return d3.format(',.2f')(d);
-                         }
-                     },
-                     valueFormat: function (d) {
-                         return d3.format(',.2f')(d);
-                     }, dispatch:{
-                         renderEnd:function(){
-                         }
-                     }
-                 }
-             };
 
 
 
@@ -276,49 +229,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                  }
              };
 
-
-             self.summaryStatisticsChartOptions = {
-
-                 chart: {
-                     type: 'lineChart',
-                     margin : {
-                         top: 5,
-                         right: 5,
-                         bottom:10,
-                         left: 20
-                     },
-                     x: function(d){return d[0];},
-                     y: function(d){return d[1];},
-                     useVoronoi: false,
-                     clipEdge: false,
-                     duration: 0,
-                     height:200,
-                     useInteractiveGuideline: true,
-                     xAxis: {
-                         axisLabel: 'Time',
-                         showMaxMin: false,
-                         tickFormat: function(d) {
-                             return d3.time.format('%X')(new Date(d))
-                         },
-                         rotateLabels: -45
-                     },
-                     yAxis: {
-                         axisLabel:'Duration (sec)',
-                         "axisLabelDistance": -10,
-                         showMaxMin:false,
-                         tickSubdivide:0,
-                         ticks:1
-                     },
-                     yDomain:[0,1],
-                     showLegend:false,
-                     showXAxis:false,
-                     showYAxis:true,
-                     dispatch: {
-
-                     }
-                 }
-
-             }
 
 
              self.feedChartOptions = {
@@ -429,42 +339,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
                 self.statusPieChartData = FeedStatsService.buildStatusPieChart();
                 self.eventsPieChartData = FeedStatsService.buildEventsPieChart();
-                var values = FeedStatsService.processorStatistics.topNProcessorDurationData;
-                var topNProcessorDurationChart = [{key: "Processor", "color": "#1f77b4", values: values}];
-                self.topNProcessorChartData = topNProcessorDurationChart;
-
-               var lastData = buildLastStatsChartData('Average Duration',"#1f77b4",'avgFlowDuration')
-               self.summaryStatisticsChartData = lastData;
-
-                var values = [];
-                if(lastData != undefined && lastData[0] != undefined && lastData[0].values != undefined)
-                var max = d3.max(lastData[0].values, function(d) {
-                    return d[1]; } );
-                if(max == undefined || max ==0) {
-                    max = 1;
-                }
-                else {
-                    max +=1;
-                }
-                if(self.summaryStatisticsChartOptions.chart.yAxis.ticks != max) {
-                    self.summaryStatisticsChartOptions.chart.yDomain = [0, max];
-                    var ticks = max;
-                    if(ticks > 8){
-                        ticks = 8;
-                    }
-                    self.summaryStatisticsChartOptions.chart.yAxis.ticks = ticks;
-                }
-
-                if(self.summaryStatisticsChartApi && self.summaryStatisticsChartApi.update){
-                    self.summaryStatisticsChartApi.update();
-                }
-
-
-
 
 
                 FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,values.length,self.selectedProcessorStatisticFunction);
-                FeedStatsService.updateBarChartHeight(self.topNProcessorChartOptions,self.topNProcessorChartApi,values.length,'Average Duration');
                 self.processChartLoading = false;
                 self.lastProcessorChartRefresh = new Date().getTime();
                 self.lastRefreshTime = new Date();
@@ -495,8 +372,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 self.maxTime = feedTimeSeries.maxTime;
 
                 var chartArr = [];
-                chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#009933'});
-                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', color: '#FF9901'});
+             //   chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#009933'});
+                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', color: "#1f77b4"});
                 //preserve the legend selections
                 if (feedChartLegendState.length > 0) {
                     _.each(chartArr, function (item, i) {

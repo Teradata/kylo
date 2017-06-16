@@ -22,38 +22,35 @@
   <div layout="column" ng-if="vm.dataLoaded" layout-padding>
 
 
-    <card-layout flex header-css="filter-header">
-      <header-section>
-        <div layout="column">
-          <div layout="row">
-            <span class="card-title kpi-header">Feed Statistics - {{vm.feedName}}</span>
-            <span flex></span>
-
-            <div layout="column" class="layout-padding-right">
-              <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
-              <span class="md-caption">Last Refreshed</span>
-            </div>
-          </div>
-        </div>
-      </header-section>
-      <body-section>
-        <div layout="row" class="layout-padding-left">
-            <span flex  layout-align="end top" class="md-button-group layout-padding" layout-padding>
+    <div flex>
+      <md-card layout-align="center center" >
+        <md-card-content  layout="column"  style="width:100%;">
+          <div layout="row" class="layout-padding-left">
+            <span flex  layout-align="end top" class="md-button-group layout-padding feed-stats-filter" layout-padding >
               <md-button flex="none" class="border-btn small"  ng-repeat="opt in vm.timeFrameOptions track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}" ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>
             </span>
-          <span flex></span>
-          <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+            <span flex></span>
             <div layout="column">
-              <span style="padding-top:30px;">&nbsp;</span>
-              <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+              <div layout="column" class="layout-padding-right">
+                <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
+                <span class="md-caption">Last Refreshed</span>
+              </div>
+              <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+                <div layout="column">
+                  <span style="padding-top:30px;">&nbsp;</span>
+                  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                </div>
+
+              </div>
+
+
             </div>
 
           </div>
-        </div>
-      </body-section>
-    </card-layout>
 
-
+        </md-card-content>
+      </md-card>
+    </div>
 
     <div layout="row" layout-sm="column" layout-xs="column">
       <div flex layout="column" flex-gt-sm="70" flex="100" flex-order="1" flex-order-xs="2" flex-order-sm="2">
@@ -75,11 +72,10 @@
 
           <div flex-gt-md="33" flex-gt-xs="50" class="service-wrapper kpi"  layout-wrap >
             <md-card layout-align="center center" >
-              <span class="card-title kpi-header">Processor Duration</span>
-              <span class="md-caption kpi-subtitle ">Top 3 running processors</span>
-              <md-card-content  layout="column"  layout-align="center center" class="kpi-content topn" style="width:100%;">
-                  <nvd3 flex options="vm.topNProcessorChartOptions" data="vm.topNProcessorChartData" api="vm.topNProcessorChartApi" config="{deepWatchOptions:true}"></nvd3>
-
+              <span class="card-title kpi-header">Flow Rate</span>
+              <span class="md-caption kpi-subtitle ">Average Incoming Flow Rate</span>
+              <md-card-content  layout="column"  layout-align="center center" class="kpi-content topn" style="width:100%;height:200px;">
+               <h2>{{vm.summaryStatistics.flowsStartedPerSecond | number}} / sec</h2>
               </md-card-content>
             </md-card>
           </div>
@@ -87,10 +83,9 @@
           <div flex-gt-md="33" flex-gt-xs="50" class="service-wrapper kpi"  layout-wrap >
             <md-card layout-align="center center" >
               <span class="card-title kpi-header">Flow Duration</span>
-              <span class="md-caption kpi-subtitle ">Averge time a flow takes to complete </span>
-              <md-card-content  layout="column"  layout-align="center center" class="kpi-content" style="width:100%;">
-                <nvd3 flex options="vm.summaryStatisticsChartOptions" data="vm.summaryStatisticsChartData" api="vm.summaryStatisticsChartApi"></nvd3>
-
+              <span class="md-caption kpi-subtitle ">Averge time a flow takes to complete</span>
+              <md-card-content  layout="column"  layout-align="center center" class="kpi-content" style="width:100%;height:200px;">
+                <h2>{{vm.summaryStatistics.avgFlowDuration | number}} sec</h2>
               </md-card-content>
             </md-card>
           </div>
@@ -109,7 +104,7 @@
         </div>
 
 
-        <div flex>
+        <div>
           <md-card layout-align="center center" style="margin-left: 0px;margin-right: 0px;">
             <span class="card-title kpi-header">Feed Processor Metrics</span>
             <md-card-content  style="width:100%;">
@@ -138,20 +133,18 @@
 
       <div flex="100" flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left">
       <card-layout class="right-card" >
-        <header-section layout="row" >
-            <div class="card-title right-card-title-text" style="padding-left:5px;">Details</div>
-          <span flex></span>
+        <header-section >
+          <div layout="column">
+            <div class="card-title right-card-title-text">Feed Details</div>
+          </div>
+          <div layout="column">
+            <span class="item-title" class="layout-padding-top-bottom" >{{vm.feedName}}</span>
+          </div>
         </header-section>
         <body-section>
+          <div>
           <md-divider></md-divider>
           <md-list  layout-fill layout="column" class="list-item-table">
-            <md-list-item>
-              <div layout="column"  class="item-column md-list-item-text ">
-                <span class="item-title">{{vm.feedName}}</span>
-                <span class="column-title column-title-bottom">Feed</span>
-              </div>
-              <md-divider></md-divider>
-            </md-list-item>
             <md-list-item>
               <div layout="column"  class="item-column md-list-item-text ">
                 <span class="item-title">{{vm.summaryStatistics.flowsStarted | number}}</span>
@@ -186,6 +179,14 @@
 
             <md-list-item>
               <div layout="column"  class="item-column md-list-item-text ">
+                <span class="item-title">{{vm.summaryStatistics.avgFlowDuration | number}} sec</span>
+                <span class="column-title column-title-bottom">Flow Duration</span>
+              </div>
+              <md-divider></md-divider>
+            </md-list-item>
+
+            <md-list-item>
+              <div layout="column"  class="item-column md-list-item-text ">
                 <span class="item-title">{{vm.failedEventsPercent}}% failed</span>
                 <span class="column-title column-title-bottom">Failed Events</span>
               </div>
@@ -194,6 +195,7 @@
 
 
           </md-list>
+          </div>
         </body-section>
       </card-layout>
       </div>
