@@ -40,13 +40,15 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     private Long totalEvents = 0L;
     private Long minEventId = 0L;
     private Long maxEventId = 0L;
+    private Long collectionIntervalMillis;
 
     public AggregatedFeedProcessorStatistics() {
     }
 
-    public AggregatedFeedProcessorStatistics(String startingProcessorId, String collectionId) {
+    public AggregatedFeedProcessorStatistics(String startingProcessorId, String collectionId, Long collectionIntervalMillis) {
         this.startingProcessorId = startingProcessorId;
         this.collectionId = collectionId;
+        this.collectionIntervalMillis = collectionIntervalMillis;
     }
 
     /**
@@ -97,5 +99,13 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
 
     public String getCollectionId() {
         return collectionId;
+    }
+
+    public Long getCollectionIntervalMillis() {
+        return collectionIntervalMillis;
+    }
+
+    public void setCollectionIntervalMillis(Long collectionIntervalMillis) {
+        this.collectionIntervalMillis = collectionIntervalMillis;
     }
 }

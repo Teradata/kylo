@@ -582,6 +582,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
             }
 
+
             //if this is the first time saving this feed create a new one
             Feed domainFeed = feedModelTransform.feedToDomain(feed);
 
@@ -603,8 +604,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             //Assign the datasources
             assignFeedDatasources(feed, domainFeed);
 
+            boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
             //sync the feed information to ops manager
-            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName,isStream));
 
             // Update hadoop security group polices if the groups changed
             if (!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {

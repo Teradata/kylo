@@ -147,6 +147,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private KyloProcessorFlowType processorType;
 
+    private boolean isStream;
+
 
     public ProvenanceEventRecordDTO() {
 
@@ -481,6 +483,14 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setProcessorType(KyloProcessorFlowType processorType) {
         this.processorType = processorType;
+    }
+
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
     }
 
     @Override

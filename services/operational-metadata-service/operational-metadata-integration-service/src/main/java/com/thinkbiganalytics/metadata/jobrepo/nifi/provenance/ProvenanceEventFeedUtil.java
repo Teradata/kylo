@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -33,6 +35,8 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
@@ -71,6 +75,49 @@ public class ProvenanceEventFeedUtil {
     @Inject
     MetadataAccess metadataAccess;
 
+    @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
+
+    /**
+     * Empty feed object for Loading Cache
+     */
+   public static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
+        @Override
+        public ID getId() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        public FeedType getFeedType() {
+            return null;
+        }
+
+        @Override
+        public boolean isStream() {
+            return false;
+        }
+    };
+
+    /**
+     * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
+     */
+    LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
+
 
     Cache<String, ProvenanceEventRecordDTO> runningJobs = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
@@ -78,26 +125,42 @@ public class ProvenanceEventFeedUtil {
 
     ListMultimap<String, String> inverseRelatedFlowFiles = ArrayListMultimap.create();
 
+    public ProvenanceEventFeedUtil() {
 
+
+        // create the loading Cache to get the Feed Manager Feeds.  If its not in the cache, query the JCR store for the Feed object otherwise return the NULL_FEED object
+        opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
+                                                                  @Override
+                                                                  public OpsManagerFeed load(String feedName) throws Exception {
+                                                                      OpsManagerFeed feed = null;
+                                                                      try {
+                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName),
+                                                                                                       MetadataAccess.SERVICE);
+                                                                      } catch (Exception e) {
+
+                                                                      }
+                                                                      return feed == null ? NULL_FEED : feed;
+                                                                  }
+
+                                                              }
+        );
+    }
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
         String processorName = getProcessorName(event.getComponentId());
-
-      //  if (event.getFeedFlowFile() != null && event.getFeedFlowFile().isStream() && StringUtils.isNotBlank(event.getStreamingBatchFeedFlowFileId()) && !event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId()) ) {
-            //reassign the feedFlowFile to the batch
-    //        log.info("Event : {}, processor: {}, Reassigned FlowFile from {} to {} ", event.getEventId(), processorName,event.getJobFlowFileId(), event.getStreamingBatchFeedFlowFileId());
-         //   event.setJobFlowFileId(event.getStreamingBatchFeedFlowFileId());
-     //   }
-
-
-       // event.setIsBatchJob(true);
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);
         setProcessorFlowType(event);
 
+        if (StringUtils.isNotBlank(feedName)) {
+            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
+            if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+                event.setStream(feed.isStream());
+            }
+        }
         return event;
     }
 
@@ -142,7 +205,32 @@ public class ProvenanceEventFeedUtil {
 
     }
 
+    /**
+     * Check to see if the event has a relationship to Feed Manager
+     * In cases where a user is experimenting in NiFi and not using Feed Manager the event would not be registered
+     *
+     * @param event a provenance event
+     * @return {@code true} if the event has a feed associaetd with it {@code false} if there is no feed associated with it
+     */
+    public boolean isRegisteredWithFeedManager(ProvenanceEventRecordDTO event) {
 
+        String feedName = event.getFeedName();
+        if (StringUtils.isNotBlank(feedName)) {
+            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
+            if (feed == null || ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+                log.debug("Not processing operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
+                opsManagerFeedCache.invalidate(feedName);
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+public void deletedFeed(String feedName){
+        opsManagerFeedCache.invalidate(feedName);
+}
 
 
 public String getFeedName(ProvenanceEventRecordDTO event){

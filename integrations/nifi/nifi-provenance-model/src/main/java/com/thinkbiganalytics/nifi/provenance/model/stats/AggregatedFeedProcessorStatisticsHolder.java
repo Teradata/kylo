@@ -54,28 +54,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         this.collectionId = UUID.randomUUID().toString();
     }
 
-    /**
-     * Add an event to generate statistics
-     */
-    public void addStat(ProvenanceEventRecordDTO event) {
-        if (minTime == null || event.getEventTime() < minTime.getMillis()) {
-            minTime = new DateTime(event.getEventTime());
-        }
-        if (maxTime == null || event.getEventTime() > maxTime.getMillis()) {
-            maxTime = new DateTime(event.getEventTime());
-        }
-        feedStatistics.computeIfAbsent(event.getFirstEventProcessorId(), (feedProcessorId) -> new AggregatedFeedProcessorStatistics(feedProcessorId, collectionId)).addEventStats(
-            event);
-
-        if (event.getEventId() < minEventId) {
-            minEventId = event.getEventId();
-        }
-        if (event.getEventId() > maxEventId) {
-            maxEventId = event.getEventId();
-        }
-
-        eventCount.incrementAndGet();
-    }
 
 
     public AtomicLong getEventCount() {

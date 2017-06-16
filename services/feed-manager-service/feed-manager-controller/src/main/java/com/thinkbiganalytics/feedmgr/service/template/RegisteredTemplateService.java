@@ -90,6 +90,8 @@ public class RegisteredTemplateService {
     @Inject
     private RegisteredTemplateUtil registeredTemplateUtil;
 
+
+
     /**
      * Checks the current security context has been granted permission to perform the specified action(s)
      * on the template with the specified ID.  If the template does not exist then no check is made.

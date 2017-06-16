@@ -73,6 +73,7 @@ public class NifiStatsJmsReceiver {
         List<NifiFeedProcessorStats> nifiFeedProcessorStatsList = new ArrayList<>();
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats ->
                                                              {
+                                                                 Long collectionIntervalMillis = feedProcessorStats.getCollectionIntervalMillis();
                                                                  String feedProcessorId = feedProcessorStats.getStartingProcessorId();
                                                                  String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);  //ensure not null
                                                                  if(StringUtils.isNotBlank(feedName)) {
@@ -87,6 +88,7 @@ public class NifiStatsJmsReceiver {
                                                                                                                                      nifiFeedProcessorStats.setFeedName(feedName);
                                                                                                                                      nifiFeedProcessorStats
                                                                                                                                          .setProcessorId(processorStats.getProcessorId());
+                                                                                                                                     nifiFeedProcessorStats.setCollectionIntervalSeconds((collectionIntervalMillis/1000));
                                                                                                                                      String
                                                                                                                                          processorName =
                                                                                                                                          provenanceEventFeedUtil

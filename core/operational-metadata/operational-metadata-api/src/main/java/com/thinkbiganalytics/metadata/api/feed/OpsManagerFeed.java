@@ -63,5 +63,11 @@ public interface OpsManagerFeed {
 
     }
 
+    /**
+     *
+     * @return true if streaming feed, false if not
+     */
+    boolean isStream();
+
 
 }

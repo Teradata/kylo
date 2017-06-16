@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
@@ -208,6 +209,8 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
                              stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"),stats.failedCount.sum().as("failedCount"),
                              stats.maxEventTime,
+                             MathExpressions.round(stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds)).as("jobsStartedPerSecond"),
+                             MathExpressions.round(stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds)).as("jobsFinishedPerSecond"),
                              //stats.maxEventTime,
                              stats.jobsFailed.sum().as("jobsFailed"), stats.totalCount.sum().as("totalCount"),
                              stats.count().as("resultSetCount"))

@@ -145,6 +145,7 @@ public class FeedModelTransform {
         feedHealth.setFeed(domain.getFeedName());
         feedHealth.setFeedId(domain.getFeedId() != null ? domain.getFeedId().toString() : null);
         feedHealth.setLastOpFeed(executedFeed(domain));
+        feedHealth.setStream(domain.isStream());
         return feedHealth;
     }
 
@@ -161,6 +162,7 @@ public class FeedModelTransform {
         feedHealth.setHealthyCount(0L);
         feedHealth.setFeed(domain.getName());
         feedHealth.setFeedId(domain.getId() != null ? domain.getId().toString() : null);
+        feedHealth.setStream(domain.isStream());
         return feedHealth;
     }
 

@@ -58,6 +58,9 @@ public class RegisteredTemplateRequest {
     public static RegisteredTemplateRequest requestByTemplateName(String templateName) {
         return new RegisteredTemplateRequest.Builder().templateName(templateName).build();
     }
+    public static RegisteredTemplateRequest requestAccessAsServiceAccountByTemplateName(String templateName) {
+        return new RegisteredTemplateRequest.Builder().templateName(templateName).isFeedEdit(true).build();
+    }
 
     public static RegisteredTemplateRequest requestByTemplateId(String templateId) {
         return new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).build();

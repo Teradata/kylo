@@ -275,7 +275,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     self.loadingProcessorStatistics = false;
                     var refreshTime = new Date().getTime();
                     self.processorStatistics.lastRefreshTime = refreshTime;
-                    summary.lastRefreshTime = refreshTime;
+                    self.summaryStatistics.lastRefreshTime = refreshTime;
                     deferred.reject(err);
                 });
                 return deferred.promise;

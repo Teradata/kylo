@@ -3,7 +3,7 @@
  */
 define(['angular',
         'ops-mgr/feeds/feed-stats/feed-stats',
-        'ops-mgr/feeds/feed-stats/feed-stats-grid-list',
+        'ops-mgr/feeds/feed-stats/feed-stats-charts',
         'ops-mgr/feeds/feed-stats/FeedStatsService'
         ],function() {
 
