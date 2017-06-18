@@ -27,6 +27,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
+import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,8 +157,8 @@ public class FeedStatistics {
             key = GroupedStats.DEFAULT_SOURCE_CONNECTION_ID;
         }
         return stats.computeIfAbsent(key, sourceConnectionIdentifier -> new GroupedStats(sourceConnectionIdentifier));
-
     }
+
 
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
 
@@ -166,6 +167,7 @@ public class FeedStatistics {
         ProvenanceEventRecordDTO eventRecordDTO = null;
 
         String feedFlowFileId = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
+        FeedEventStatistics.getInstance().updateTrackingDetailsMap(event);
 
         boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
         String batchKey = batchKey(event, feedFlowFileId, isStartingFeedFlow);
@@ -216,8 +218,6 @@ public class FeedStatistics {
         FeedProcessorStatisticsAggregator.getInstance().add(getStats(event), event, eventId);
 
         FeedEventStatistics.getInstance().cleanup(event, eventId);
-
-        FeedEventStatistics.getInstance().cleanup(eventRecordDTO);
 
 
     }
