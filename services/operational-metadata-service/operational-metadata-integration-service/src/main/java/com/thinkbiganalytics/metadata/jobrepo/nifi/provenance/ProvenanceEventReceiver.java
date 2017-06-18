@@ -68,7 +68,7 @@ import javax.inject.Inject;
  * JMS Listener for NiFi Provenance Events.
  */
 @Component
-public class ProvenanceEventReceiver implements FailedStepExecutionListener, DeleteFeedListener {
+public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
 
@@ -123,7 +123,6 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     @PostConstruct
     private void init() {
         batchStepExecutionProvider.subscribeToFailedSteps(this);
-        opsManagerFeedProvider.subscribeFeedDeletion(this);
     }
 
 
@@ -158,7 +157,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         events.getEvents().stream().map(event ->  provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
             .filter(event -> provenanceEventFeedUtil.isRegisteredWithFeedManager(event))
             .filter(this::ensureNewEvent)
-            .filter(this::isProcessEvent)
+           // .filter(this::isProcessEvent)
             .forEach(event -> processEvent(event, 0));
     }
 
@@ -177,7 +176,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
                 BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event),
                                                                        MetadataAccess.SERVICE);
 
-                if(!event.isStream()) {
+                if(jobExecution != null && !event.isStream()) {
                     NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
                                                                 MetadataAccess.SERVICE);
                 }
@@ -185,7 +184,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
          //       NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
           //                                                  MetadataAccess.SERVICE);
         //    }
-            if (event.isFinalJobEvent()) {
+            if (jobExecution != null && event.isFinalJobEvent()) {
                 notifyJobFinished(event);
             }
         } catch (LockAcquisitionException lae) {
@@ -354,14 +353,5 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         return provenanceEventBatchJobThrottle.isProcessEvent(event);
     }
 
-    /**
-     * When a feed is deleted remove it from the cache of feed names
-     *
-     * @param feed a delete feed
-     */
-    @Override
-    public void onFeedDelete(OpsManagerFeed feed) {
-        log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
-        provenanceEventFeedUtil.deletedFeed(feed.getName());
-    }
+
 }

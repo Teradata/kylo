@@ -21,7 +21,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout, $q, ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService) {
+    var controller = function ($scope, $element, $http, $interval, $timeout, $q, ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService,StateService) {
         var self = this;
         this.dataLoaded = false;
 
@@ -74,14 +74,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.selectedProcessorStatisticFunction = 'Average Duration';
         self.processorStatsFunctions = FeedStatsService.processorStatsFunctions();
 
-        self.statusPieChartApi = {};
-        self.statusPieChartOptions = {};
-        self.statusPieChartData = [];
+        self.feed = {
+            displayStatus:''
+        }
 
-
-        self.eventsPieChartApi = {};
-        self.eventsPieChartOptions = {};
-        self.eventsPieChartData = [];
 
 
 
@@ -90,13 +86,36 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
          * @type {{}}
          */
         self.summaryStatsData = {};
-        self.failedEventsPercent = 0;
+
+        self.eventSuccessKpi = {
+            value:0,
+            icon:'',
+            color:''
+        }
+
+        self.flowRateKpi = {
+            value:0,
+            icon: 'tune',
+            color: '#1f77b4'
+        }
+
+        self.avgDurationKpi = {
+            value:0,
+            icon: 'access_time',
+            color: '#1f77b4'
+        }
 
 
         self.onTimeFrameClick = onTimeFrameClick;
 
         self.onProcessorChartFunctionChanged = onProcessorChartFunctionChanged;
 
+
+        self.gotoFeedDetails = function(ev){
+            if(self.feed.feedId != undefined) {
+                StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
+            }
+        }
 
 
         function init(){
@@ -150,87 +169,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
 
 
-             self.statusPieChartOptions = {
-                 chart: {
-                     type: 'pieChart',
-                     x: function (d) {
-                         return d.key;
-                     },
-                     y: function (d) {
-                         return d.value;
-                     },
-                     showLabels: false,
-                     duration: 100,
-                     "height": 120,
-                     labelThreshold: 0.01,
-                     labelSunbeamLayout: false,
-                     interactiveLayer: {tooltip: {gravity: 's'}},
-                     "margin": {"top": 10, "right": 10, "bottom": 10, "left": 10},
-                     donut: false,
-                     // donutRatio: 0.65,
-                     showLegend: false,
-                     valueFormat: function (d) {
-                         return parseInt(d);
-                     },
-                     color: function (d) {
-                         if (d.key == 'Successful Flows') {
-                             return '#009933';
-                         }
-                         else if (d.key == 'Failed Flows') {
-                             return '#FF0000';
-                         }
-                         else if (d.key == 'Running Flows') {
-                             return '#FF9901';
-                         }
-                     },
-                     dispatch: {
-                         renderEnd: function () {
-
-                         }
-                     }
-                 }
-             };
-
-
-
-             self.eventsPieChartOptions = {
-                 chart: {
-                     type: 'pieChart',
-                     x: function (d) {
-                         return d.key;
-                     },
-                     y: function (d) {
-                         return d.value;
-                     },
-                     showLabels: false,
-                     duration: 100,
-                     "height": 200,
-                     labelThreshold: 0.01,
-                     labelSunbeamLayout: false,
-                     interactiveLayer: {tooltip: {gravity: 's'}},
-                     "margin": {"top": 10, "right": 10, "bottom": 10, "left": 10},
-                     donut: false,
-                     // donutRatio: 0.65,
-                     showLegend: false,
-                     valueFormat: function (d) {
-                         return d3.format(',')(parseInt(d))
-                     },
-                     color: function (d) {
-                         if (d.key == 'Success') {
-                             return '#009933';
-                         }
-                         else if (d.key == 'Failed') {
-                             return '#FF0000';
-                         }
-                     },
-                     dispatch: {
-                         renderEnd: function(e){ console.log('renderEnd') }
-                     }
-                 }
-             };
-
-
-
              self.feedChartOptions = {
                  chart: {
                      type: 'lineChart',
@@ -248,6 +186,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                          return d[1];
                      },
                      showTotalInTooltip:true,
+                     interpolate:'linear',
                      useVoronoi: false,
                      clipEdge: false,
                      duration: 250,
@@ -327,6 +266,83 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 buildProcessorChartData();
                 buildFeedCharts();
             }
+            getFeedHealth();
+        }
+
+
+
+        function updateSuccessEventsPercentKpi(){
+            if(self.summaryStatsData.totalEvents == 0){
+                self.eventSuccessKpi.icon = 'remove';
+                self.eventSuccessKpi.color= "#1f77b4"
+                self.eventSuccessKpi.value = "--";
+            }
+            else {
+                var failed = self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) * 100 : 0;
+                var value = (100 - failed).toFixed(0);
+                var icon = 'battery_unknown';
+                var iconColor = "#1f77b4"
+
+                if(value <50){
+                    iconColor ='#FF0000'
+                }
+                else if(value < 80){
+                    iconColor = '#FF9901';
+                }
+                else {
+                    iconColor = '#009933';
+                }
+
+                if(value <20){
+                    icon = 'battery_alert';
+                }
+                else if(value <30) {
+                    icon = 'battery_20';
+                }
+                else if(value <50) {
+                    icon = 'battery_30';
+                }
+                else if(value <60) {
+                    icon = 'battery_50';
+                }
+                else if(value <80) {
+                    icon = 'battery_60';
+                }
+                else if(value <90) {
+                    icon = 'battery_80';
+                }
+                else if(value <100) {
+                    icon = 'battery_90';
+                }
+                else if(value == 100) {
+                    icon = 'battery_full';
+                }
+                self.eventSuccessKpi.icon = icon;
+                self.eventSuccessKpi.color = iconColor;
+                self.eventSuccessKpi.value = value
+
+
+
+            }
+        }
+
+        function updateFlowRateKpi(){
+            self.flowRateKpi.value = self.summaryStatistics.flowsStartedPerSecond;
+        }
+
+        function updateAvgDurationKpi(){
+            var avgMillis = self.summaryStatistics.avgFlowDurationMilis;
+            self.avgDurationKpi.value = DateTimeUtils.formatMillisAsText(avgMillis,false,true);
+        }
+
+        function formatSecondsToMinutesAndSeconds(s){   // accepts seconds as Number or String. Returns m:ss
+            return( s - ( s %= 60 )) / 60 + (9 < s ? ':' : ':0' ) + s ;
+        }
+
+        function updateSummaryKpis(){
+            updateFlowRateKpi();
+            updateSuccessEventsPercentKpi();
+            updateAvgDurationKpi();
         }
 
 
@@ -335,11 +351,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             self.processChartLoading = true;
             $q.when(FeedStatsService.fetchProcessorStatistics()).then(function (response) {
                 self.summaryStatsData = FeedStatsService.summaryStatistics;
-                self.failedEventsPercent  =  self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) *100 : 0;
+               updateSummaryKpis();
                 self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
-                self.statusPieChartData = FeedStatsService.buildStatusPieChart();
-                self.eventsPieChartData = FeedStatsService.buildEventsPieChart();
-
 
                 FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,values.length,self.selectedProcessorStatisticFunction);
                 self.processChartLoading = false;
@@ -367,13 +380,12 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             self.feedTimeChartLoading = true;
             $q.when(FeedStatsService.fetchFeedTimeSeriesData()).then(function (feedTimeSeries) {
 
-
                 self.minTime = feedTimeSeries.minTime;
                 self.maxTime = feedTimeSeries.maxTime;
 
                 var chartArr = [];
              //   chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#009933'});
-                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', color: "#1f77b4"});
+                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', area:true, color: "#F08C38"});
                 //preserve the legend selections
                 if (feedChartLegendState.length > 0) {
                     _.each(chartArr, function (item, i) {
@@ -382,7 +394,29 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 }
 
                 self.feedChartData = Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'maxEventTime');
-
+                var max = 0;
+                if(self.feedChartData && self.feedChartData[0]) {
+                  max = d3.max(self.feedChartData[0].values, function (d) {
+                        return d[1];
+                    });
+                }
+                if(max == undefined || max ==0) {
+                    max = 5;
+                }
+                else {
+                    max +=5;
+                }
+                if(self.feedChartOptions.chart.yAxis.ticks != max) {
+                    self.feedChartOptions.chart.yDomain = [0, max];
+                    var ticks = max;
+                    if(ticks > 8){
+                        ticks = 8;
+                    }
+                    self.feedChartOptions.chart.yAxis.ticks = ticks;
+                }
+                if(self.feedChartApi && self.feedChartApi.update) {
+                    self.feedChartApi.update();
+                }
 
                 self.feedTimeChartLoading = false;
                 self.lastFeedTimeChartRefresh = new Date().getTime();
@@ -392,6 +426,31 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             });
 
         }
+
+
+         function getFeedHealth(){
+                var successFn = function (response) {
+                    if (response.data) {
+                        //transform the data for UI
+                        if(response.data.feedSummary){
+                            angular.extend(self.feed,response.data.feedSummary[0]);
+                            self.feed.feedId = self.feed.feedHealth.feedId;
+                            if (self.feed.running) {
+                                self.feed.displayStatus = 'RUNNING';
+                            }
+                            else {
+                                self.feed.displayStatus = 'STOPPED';
+                            }
+                        }
+
+                    }
+                }
+                var errorFn = function (err) {
+                }
+
+
+                $http.get(OpsManagerFeedService.SPECIFIC_FEED_HEALTH_URL(self.feedName)).then( successFn, errorFn);
+            }
 
 
 
@@ -423,6 +482,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 self.chartOptions.chart.yAxis.ticks = ticks;
             }
         }
+
 
 
 
@@ -492,7 +552,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedStatsChartsController', ["$scope","$element","$http","$interval","$timeout","$q","ProvenanceEventStatsService","FeedStatsService","Nvd3ChartService",controller]);
+    angular.module(moduleName).controller('FeedStatsChartsController', ["$scope","$element","$http","$interval","$timeout","$q","ProvenanceEventStatsService","FeedStatsService","Nvd3ChartService","OpsManagerFeedService","StateService",controller]);
 
     angular.module(moduleName)
         .directive('kyloFeedStatsCharts', directive);

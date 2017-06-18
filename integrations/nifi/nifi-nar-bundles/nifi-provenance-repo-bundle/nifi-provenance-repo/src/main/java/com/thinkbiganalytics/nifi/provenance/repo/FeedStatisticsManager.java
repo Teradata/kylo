@@ -43,13 +43,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 6/12/17.
+ * Manage the Feed Stats calculation and sending of events to Ops Manager
  */
 public class FeedStatisticsManager {
 
     private static final Logger log = LoggerFactory.getLogger(FeedStatisticsManager.class);
 
-    private Long sendJmsTimeMillis = 3000L; //every 3 seconds
+    private Long sendJmsTimeMillis = ConfigurationProperties.DEFAULT_RUN_INTERVAL_MILLIS; //every 3 seconds
 
     private Lock lock = new ReentrantLock();
 
@@ -58,16 +58,17 @@ public class FeedStatisticsManager {
     private BlockingQueue<JmsSender> jmsSenderBlockingQueue = new LinkedBlockingQueue<>();
 
 
-    public FeedStatisticsManager() {
-        this(true);
+    ScheduledExecutorService jmsGatherEventsToSendService = Executors.newSingleThreadScheduledExecutor();
+
+    private static final FeedStatisticsManager instance = new FeedStatisticsManager();
+
+    private FeedStatisticsManager() {
+        initTimerThread();
     }
 
-    public FeedStatisticsManager( boolean initTimer) {
-        if(initTimer){
-            initTimerThread();
-        }
+    public static FeedStatisticsManager getInstance() {
+        return instance;
     }
-
 
 
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
@@ -110,7 +111,8 @@ public class FeedStatisticsManager {
                     }
                     AggregatedFeedProcessorStatistics
                         feedProcessorStatistics =
-                        statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(), feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId, sendJmsTimeMillis));
+                        statsToSend.computeIfAbsent(feedStatistics.getFeedProcessorId(),
+                                                    feedProcessorId -> new AggregatedFeedProcessorStatistics(feedStatistics.getFeedProcessorId(), collectionId, sendJmsTimeMillis));
 
                     AggregatedProcessorStatistics
                         processorStatistics =
@@ -135,17 +137,51 @@ public class FeedStatisticsManager {
 
     }
 
+    private Runnable jmsSendingTask = new Runnable() {
+        @Override
+        public void run() {
+            send();
+        }
+    };
+
+    public void resetStatisticsInterval(Long interval) {
+        lock.lock();
+        sendJmsTimeMillis = interval;
+        try {
+            initGatherStatisticsTimerThread(interval);
+
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void resetMaxEvents(Integer limit) {
+        lock.lock();
+        try {
+            feedStatisticsMap.values().forEach(stats -> stats.setLimit(limit));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
+    private void initTimerThread() {
+        Long runInterval = ConfigurationProperties.getInstance().getFeedProcessingRunInterval();
+        this.sendJmsTimeMillis = runInterval;
+        initGatherStatisticsTimerThread(runInterval);
+        initJmsSendingThread();
+    }
+
     //jms thread
 
     /**
      * Start the timer thread
      */
-    private void initTimerThread() {
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(() -> {
-            send();
-        }, sendJmsTimeMillis, sendJmsTimeMillis, TimeUnit.MILLISECONDS);
+    private void initGatherStatisticsTimerThread(Long time) {
+        jmsGatherEventsToSendService.scheduleAtFixedRate(jmsSendingTask, time, time, TimeUnit.MILLISECONDS);
+    }
 
+    private void initJmsSendingThread() {
         ScheduledExecutorService jmsService = Executors.newSingleThreadScheduledExecutor();
         jmsService.submit(new JmsSenderConsumer(jmsSenderBlockingQueue));
     }

@@ -35,7 +35,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by sr186054 on 6/13/17.
+ * Send data to Ops Manager
  */
 public class JmsSender {
 

@@ -32,6 +32,7 @@ import com.thinkbiganalytics.security.AccessController;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,6 +111,32 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
             NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
             List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
+            Integer timeInterval = 5000;
+            Long diff = statsContainer.getEndTime().getMillis() - statsContainer.getStartTime().getMillis();
+            DateTime start = statsContainer.getStartTime();
+            if(model != null && !model.isEmpty()){
+                //add in times based
+                Long maxTime = model.stream().map(item -> item.getMaxEventTime().getMillis()).max(Long::compare).get();
+                Long endTime = statsContainer.getEndTime().getMillis();
+                diff = endTime - maxTime;
+                start = new DateTime(maxTime);
+            }
+            Long extraBlankItems = diff/timeInterval;
+            Integer extras = extraBlankItems.intValue();
+            if(model == null){
+                model = new ArrayList<>();
+            }
+            for(int i=0; i< extras; i++){
+                start = start.plus(timeInterval);
+                if(start.isBefore(statsContainer.getEndTime())) {
+                    com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats stats = new com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats();
+                    stats.setFeedName(feedName);
+                    stats.setMinEventTime(start);
+                    stats.setMaxEventTime(start);
+                    model.add(stats);
+                }
+            }
+
             statsContainer.setStats(model);
             return Response.ok(statsContainer).build();
         });

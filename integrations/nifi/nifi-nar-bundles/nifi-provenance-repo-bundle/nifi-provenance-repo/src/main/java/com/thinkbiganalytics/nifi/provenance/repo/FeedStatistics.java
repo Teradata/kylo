@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
+import com.google.common.collect.EvictingQueue;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
@@ -27,19 +28,24 @@ import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by sr186054 on 6/12/17.
+ * Holds Statistics about a Feed and Processor updated during Nifi execution
  */
 public class FeedStatistics {
 
-    private static int limit = 3;
+    private static final Logger log = LoggerFactory.getLogger(FeedStatistics.class);
+
+    private static int limit = ConfigurationProperties.DEFAULT_MAX_EVENTS;
 
     /**
      * The originating processor id that started this entire execution.  This will mark the feed identity
@@ -64,30 +70,84 @@ public class FeedStatistics {
      */
     private Map<String, GroupedStats> stats;
 
+    /**
+     * Flag to indicate we are throttling the start Job events that get sent to ops manager
+     */
+    private AtomicBoolean isThrottled = new AtomicBoolean(false);
+
+    /**
+     * The
+     */
+    private Integer throttleStartingFeedFlowsThreshold = 15;
+
+    /**
+     * Rolling queue of the last {throttleStartingFeedFlowsThreshold} items based upon time
+     */
+    Queue<Long> startingFeedFlowQueue = null;
+
+
+    /**
+     * Time to before the throttle key will rest
+     * Rapid events need to be slow for this amount of time before resetting the key
+     */
+    private Integer throttleStartingFeedFlowsTimePeriod = 1000;
+
 
     private String batchKey(ProvenanceEventRecord event, String feedFlowFileId, boolean isStartingFeedFlow) {
-        String key = event.getComponentId() + "-" + event.getEventType().name();
+        String key = event.getComponentId() + ":" + event.getEventType().name();
+
         if (isStartingFeedFlow) {
-            key += eventTimeNearestSecond(event);
-        } else {
-            key += ":" + feedFlowFileId;
+            if(startingFeedFlowQueue == null){
+                startingFeedFlowQueue =EvictingQueue.create(throttleStartingFeedFlowsThreshold);
+            }
+
+            startingFeedFlowQueue.add(event.getEventTime());
+            if(startingFeedFlowQueue.size() >= 10) {
+                Long diff = event.getEventTime() - startingFeedFlowQueue.peek();
+                if (diff < throttleStartingFeedFlowsTimePeriod) {
+                    //we got more than x events within the threshold... throttle
+                    key += eventTimeNearestSecond(event);
+                    if(isThrottled.compareAndSet(false,true)) {
+                        log.info("Detected over {} flows/sec starting within the given window, throttling back starting events ", throttleStartingFeedFlowsThreshold);
+                    }
+                } else {
+                    key +=":" + feedFlowFileId;
+                    startingFeedFlowQueue.clear();
+                    if(isThrottled.compareAndSet(true,false)) {
+                        log.info("Resetting throttle flow rate is slower than threshold {} flows/se for flows starting within the given window.", throttleStartingFeedFlowsThreshold);
+                    }
+                }
+
+            }
         }
+        else {
+            key +=":" + feedFlowFileId;
+        }
+
+
         return key;
+
+
     }
 
 
     private Long eventTimeNearestSecond(ProvenanceEventRecord event) {
-        return new DateTime(event.getEventTime()).withMillis(0).getMillis();
+        return new DateTime(event.getEventTime()).withMillisOfSecond(0).getMillis();
     }
+
+    private Long nowToNearestSecond(ProvenanceEventRecord event) {
+        return DateTime.now().withMillis(0).getMillis();
+    }
+
 
 
     public FeedStatistics(String feedProcessorId, String processorId) {
         this.feedProcessorId = feedProcessorId;
         this.processorId = processorId;
         stats = new ConcurrentHashMap<>();
-
-        //    this.feedProcessorStatistics = new AggregatedProcessorStatistics(processorId,null, UUID.randomUUID().toString(),stats);
-        //     eventRecordThrottle = new ProvenanceEventRecordThrottle(feedProcessorId+processorId,null,1000L,3);
+        this.limit = ConfigurationProperties.getInstance().getFeedProcessorMaxEvents();
+        this.throttleStartingFeedFlowsThreshold = ConfigurationProperties.getInstance().getThrottleStartingFeedFlowsThreshold();
+        this.throttleStartingFeedFlowsTimePeriod = ConfigurationProperties.getInstance().getDefaultThrottleStartingFeedFlowsTimePeriodMillis();
     }
 
     public GroupedStats getStats(ProvenanceEventRecord event) {
@@ -116,10 +176,10 @@ public class FeedStatistics {
             batchKey += UUID.randomUUID().toString();
         }
 
-        if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() < limit)) && !lastRecords
+        if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() <= limit)) && !lastRecords
             .containsKey(batchKey)) {
             // if we are tracking details send the event off for jms
-           if (isStartingFeedFlow) {
+            if (isStartingFeedFlow) {
                 FeedEventStatistics.getInstance().setTrackingDetails(event);
             }
 
@@ -189,6 +249,10 @@ public class FeedStatistics {
     public void clear() {
         lastRecords.clear();
         stats.clear();
+    }
+
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
 
 }

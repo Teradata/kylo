@@ -30,7 +30,7 @@ import java.util.List;
 
 
 /**
- * Created by sr186054 on 6/12/17.
+ * Aggregate stats together
  */
 public class FeedProcessorStatisticsAggregator {
 

@@ -427,7 +427,25 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   margin-left: 115px;
 }
 
+.feed-stats .kpi md-card-title {
+  width: 100%;
+  padding-top: 0px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-bottom: 0px;
+}
 
+.feed-stats .kpi .icon {
+  width: 50px;
+  height: 50px;
+}
+
+.feed-stats .kpi md-card-content {
+  padding-bottom: 8px;
+  padding-left: 8px;
+  padding-top: 8px;
+  padding-right: 8px;
+}
 
 .feed-stats-filter .md-button.selected {
   background-color: #EEEEEE;

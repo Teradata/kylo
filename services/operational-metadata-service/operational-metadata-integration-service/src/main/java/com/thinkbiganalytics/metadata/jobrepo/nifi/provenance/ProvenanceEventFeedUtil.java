@@ -34,8 +34,10 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedChangedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
@@ -62,7 +64,7 @@ import javax.inject.Inject;
 /**
  *
  */
-public class ProvenanceEventFeedUtil {
+public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, DeleteFeedListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventFeedUtil.class);
 
@@ -77,6 +79,12 @@ public class ProvenanceEventFeedUtil {
 
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
+
+    @PostConstruct
+    private void init(){
+        opsManagerFeedProvider.subscribe(this);
+        opsManagerFeedProvider.subscribeFeedDeletion(this);
+    }
 
     /**
      * Empty feed object for Loading Cache
@@ -119,12 +127,6 @@ public class ProvenanceEventFeedUtil {
     LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
 
 
-    Cache<String, ProvenanceEventRecordDTO> runningJobs = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
-
-    Map<String,String> relatedFlowFiles = new ConcurrentHashMap<>();
-
-    ListMultimap<String, String> inverseRelatedFlowFiles = ArrayListMultimap.create();
-
     public ProvenanceEventFeedUtil() {
 
 
@@ -144,6 +146,10 @@ public class ProvenanceEventFeedUtil {
 
                                                               }
         );
+    }
+
+    public void updateFeed(OpsManagerFeed feed){
+        opsManagerFeedCache.put(feed.getName(),feed);
     }
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
@@ -255,8 +261,19 @@ public String getFeedName(ProvenanceEventRecordDTO event){
     }
 
 
+    @Override
+    public void onFeedChange(OpsManagerFeed newFeed) {
+        updateFeed(newFeed);
+    }
 
-
-
-
+    /**
+     * When a feed is deleted remove it from the cache of feed names
+     *
+     * @param feed a delete feed
+     */
+    @Override
+    public void onFeedDelete(OpsManagerFeed feed) {
+        log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
+        deletedFeed(feed.getName());
+    }
 }

@@ -44,7 +44,8 @@ public class TestProvenance {
     }
 
     private void init() {
-        feedStatisticsManager = new FeedStatisticsManager(false);
+        feedStatisticsManager = FeedStatisticsManager.getInstance();
+
 
         this.nifiFlow = new SimulateNiFiFlow(this.feedStatisticsManager);
     }

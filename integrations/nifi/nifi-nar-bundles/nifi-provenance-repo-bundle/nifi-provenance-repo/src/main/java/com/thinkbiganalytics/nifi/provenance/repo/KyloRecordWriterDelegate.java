@@ -36,12 +36,8 @@ public class KyloRecordWriterDelegate implements RecordWriter {
 
     private RecordWriter recordWriter;
 
-    FeedStatisticsManager feedStatisticsManager;
-
-
-    public KyloRecordWriterDelegate(RecordWriter recordWriter, FeedStatisticsManager feedStatisticsManager) {
+    public KyloRecordWriterDelegate(RecordWriter recordWriter) {
         this.recordWriter = recordWriter;
-        this.feedStatisticsManager = feedStatisticsManager;
     }
 
     @Override
@@ -107,7 +103,7 @@ public class KyloRecordWriterDelegate implements RecordWriter {
     @Override
     public long writeRecord(ProvenanceEventRecord provenanceEventRecord, long eventId) throws IOException {
         long bytesWritten = recordWriter.writeRecord(provenanceEventRecord, eventId);
-        feedStatisticsManager.addEvent(provenanceEventRecord, eventId);
+        FeedStatisticsManager.getInstance().addEvent(provenanceEventRecord, eventId);
         return bytesWritten;
     }
 

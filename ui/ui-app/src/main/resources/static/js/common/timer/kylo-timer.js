@@ -37,41 +37,12 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 }
 
                 function format() {
+
                     var ms = $scope.time;
-                    days = Math.floor(ms / (24 * 60 * 60 * 1000));
-                    var daysms = ms % (24 * 60 * 60 * 1000);
-                    hours = Math.floor((daysms) / (60 * 60 * 1000));
-                    var hoursms = ms % (60 * 60 * 1000);
-                    minutes = Math.floor((hoursms) / (60 * 1000));
-                    var minutesms = ms % (60 * 1000);
-                    seconds = Math.floor((minutesms) / (1000));
-
-                    var secondsStr = '';
-                    var minutesStr = '';
-                    var hoursStr = '';
-                    var daysStr = '';
-                    var agoSuffix = $scope.addAgoSuffix ? 'ago' : '';
-
-                    var str = seconds + ' sec ';
-                    secondsStr = str;
-                    var truncateFormatStr = str + agoSuffix;
-                    if (hours > 0 || (hours == 0 && minutes > 0)) {
-                        minutesStr = minutes + ' min ';
-                        str = minutesStr + str;
-                        truncateFormatStr = minutesStr + agoSuffix;
+                    var displayStr = DateTimeUtils.formatMillisAsText(ms,$scope.truncatedFormat,false);
+                    if($scope.addAgoSuffix) {
+                        displayStr += " ago";
                     }
-                    if (days > 0 || days == 0 && hours > 0) {
-                        hoursStr = hours + ' hrs ';
-                        str = hoursStr + str;
-                        truncateFormatStr = hoursStr + agoSuffix;
-                    }
-                    if (days > 0) {
-                        daysStr = days + " days ";
-                        str = daysStr + str;
-                        truncateFormatStr = daysStr + agoSuffix;
-                    }
-
-                    var displayStr = $scope.truncatedFormat ? truncateFormatStr : str;
 
                     if ($scope.previousDisplayStr == '' || $scope.previousDisplayStr != displayStr) {
                         element.html(displayStr);

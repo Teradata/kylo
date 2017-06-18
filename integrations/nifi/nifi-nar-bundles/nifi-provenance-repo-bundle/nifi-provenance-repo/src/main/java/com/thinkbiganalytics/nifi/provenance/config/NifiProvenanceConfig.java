@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.provenance.config;
  */
 
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
-import com.thinkbiganalytics.nifi.provenance.repo.SetupBean;
+import com.thinkbiganalytics.nifi.provenance.repo.ConfigurationPropertiesRefresher;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.slf4j.Logger;
@@ -40,13 +40,6 @@ public class NifiProvenanceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
 
-    public static final Integer PROVENANCE_EVENT_OBJECT_POOL_SIZE = 500;
-    /**
-     * location of where the FeedEventStatistics should be written if NiFi shuts down mid flow
-     **/
-    @Value("${kylo.provenance.cache.location:/opt/nifi/feed-event-statistics.gz}")
-    private String feedEventStatisticsLocation;
-
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
@@ -59,8 +52,8 @@ public class NifiProvenanceConfig {
     }
 
     @Bean
-    public SetupBean setupBean(){
-        return new SetupBean(feedEventStatisticsLocation);
+    public ConfigurationPropertiesRefresher configurationPropertiesRefresher(){
+        return new ConfigurationPropertiesRefresher();
     }
 
 }

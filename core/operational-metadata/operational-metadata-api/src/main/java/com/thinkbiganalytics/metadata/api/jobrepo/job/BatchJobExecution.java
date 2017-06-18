@@ -111,6 +111,8 @@ public interface BatchJobExecution {
      */
     ExecutionConstants.ExitCode getExitCode();
 
+    void setExitCode(ExecutionConstants.ExitCode exitCode);
+
     /**
      * Return the exit message with more descriptions about the result of the job
      *
