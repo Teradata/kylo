@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.metadata.jobrepo.StreamingFeedService;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventBatchJobThrottle;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventFeedUtil;
@@ -72,5 +73,9 @@ public class OperationlMetadataServiceSpringConfiguration {
         return new ProvenanceEventBatchJobThrottle();
     }
 
+    @Bean
+    public StreamingFeedService streamingFeedService() {
+        return new StreamingFeedService();
+    }
 
 }

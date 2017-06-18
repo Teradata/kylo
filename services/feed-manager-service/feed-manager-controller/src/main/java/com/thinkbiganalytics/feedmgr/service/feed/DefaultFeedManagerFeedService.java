@@ -146,8 +146,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      * Metadata event service
      */
     @Inject
-    private MetadataEventService eventService;
-    @Inject
     private AccessController accessController;
     @Inject
     private MetadataEventService metadataEventService;
@@ -927,7 +925,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
                                     ? SecurityContextHolder.getContext().getAuthentication()
                                     : null;
-        FeedChange change = new FeedChange(changeType, feedMetadata != null ? feedMetadata.getCategoryAndFeedName() : "", feedId, state);
+        String feedName = feedMetadata != null ? feedMetadata.getCategoryAndFeedName() : "";
+        FeedChange change = new FeedChange(changeType, feedName,feedName, feedId, state);
         FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
         metadataEventService.notify(event);
     }

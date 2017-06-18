@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by sr186054 on 6/14/17.
+ * Backup of the FeedEventStatistics.  This is the object that will be serialized to disk upon NiFi shutdown
  */
 public class FeedEventStatisticsData implements Serializable {
 

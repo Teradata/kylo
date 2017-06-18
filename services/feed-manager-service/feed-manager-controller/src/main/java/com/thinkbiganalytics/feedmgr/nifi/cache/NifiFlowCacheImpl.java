@@ -151,8 +151,6 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      */
     private Set<String> allFeeds = new HashSet<>();
 
-    private Map<String, Long> feedLastUpated = new ConcurrentHashMap<>();
-
     /**
      * Map of the sync id to cache
      * This is the cache of the items out there that others have built and will check/update themseleves based upon the base maps in the object
@@ -303,11 +301,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     @Override
     public synchronized void rebuildAll() {
         loaded = false;
-        try {
-            ensureNiFiKyloReportingTask();
-        } catch (Exception e) {
-            log.error("Exception while trying to ensure KyloReportingTask {}", e.getMessage(), e);
-        }
+
         List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
 
         List<RegisteredTemplate> templates = null;
@@ -554,79 +548,6 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
                 streamingFeeds.remove(feedName);
             }
         });
-    }
-
-
-    /**
-     * Ensure that there is a configured reporting task
-     */
-    private void ensureNiFiKyloReportingTask() {
-        String reportingTaskName = StringUtils.substringAfterLast(NiFiKyloProvenanceEventReportingTaskType, ".");
-        if (!nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NiFiKyloProvenanceEventReportingTaskType).isPresent()) {
-            log.info("Attempting to create the {} in NiFi ", reportingTaskName);
-            //create it
-            //1 ensure the controller service exists and is wired correctly
-            Optional<ControllerServiceDTO> controllerService = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstControllerServiceByType(NiFiMetadataControllerServiceType);
-            ControllerServiceDTO metadataService = null;
-            if (controllerService.isPresent()) {
-                metadataService = controllerService.get();
-            } else {
-                log.info("Attempting to create the Controller Service: {}  with the name {} in NiFi ", NiFiMetadataControllerServiceType, NiFiMetadataServiceName);
-                //create it and enable it
-                //first create it
-                ControllerServiceDTO controllerServiceDTO = new ControllerServiceDTO();
-                controllerServiceDTO.setType(NiFiMetadataControllerServiceType);
-                controllerServiceDTO.setName(NiFiMetadataServiceName);
-                metadataService = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTaskControllerService(controllerServiceDTO);
-                //find the properties to inject
-                Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
-                Map<String, String> stringConfigProperties = new HashMap<>();
-                if (configProperties != null) {
-                    //transform the object map to the String map
-                    stringConfigProperties = configProperties.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue().toString() : null));
-                }
-                metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), stringConfigProperties);
-            }
-
-            if (metadataService != null) {
-
-                try {
-                    if (NifiProcessUtil.SERVICE_STATE.DISABLED.name().equalsIgnoreCase(metadataService.getState())) {
-                        log.info("Reporting Task Controller Service {} exists, ensuring it is enabled.", NiFiMetadataServiceName);
-                        //enable it....
-                        metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), null);
-                    }
-                } catch (NifiClientRuntimeException e) {
-                    //swallow the exception and attempt to move on to create the task
-                }
-
-                log.info("Creating the Reporting Task {} ", reportingTaskName);
-                ReportingTaskDTO reportingTaskDTO = new ReportingTaskDTO();
-                reportingTaskDTO.setType(NiFiKyloProvenanceEventReportingTaskType);
-                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTask(reportingTaskDTO);
-                //now set the properties
-                ReportingTaskDTO updatedReportingTask = new ReportingTaskDTO();
-                updatedReportingTask.setType(NiFiKyloProvenanceEventReportingTaskType);
-                updatedReportingTask.setId(reportingTaskDTO.getId());
-                updatedReportingTask.setName(reportingTaskName);
-                updatedReportingTask.setProperties(new HashMap<>(1));
-                updatedReportingTask.getProperties().put("Metadata Service", metadataService.getId());
-                updatedReportingTask.setSchedulingStrategy("TIMER_DRIVEN");
-                updatedReportingTask.setSchedulingPeriod("5 secs");
-                updatedReportingTask.setComments("Reporting task that will query the provenance repository and send the events and summary statistics over to Kylo via a JMS queue");
-                updatedReportingTask.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                //update it
-                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().update(updatedReportingTask);
-                if (reportingTaskDTO != null) {
-                    log.info("Successfully created the Reporting Task {} ", reportingTaskName);
-                } else {
-                    log.info("Error creating the Reporting Task {}.  You will need to go into NiFi to resolve. ", reportingTaskName);
-                }
-            }
-
-        }
-        ;
-
     }
 
 

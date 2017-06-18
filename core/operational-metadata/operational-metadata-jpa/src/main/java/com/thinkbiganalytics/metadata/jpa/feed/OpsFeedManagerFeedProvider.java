@@ -76,6 +76,8 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
      **/
     private List<DeleteFeedListener> deleteFeedListeners = new ArrayList<>();
 
+    private List <OpsManagerFeedChangedListener> feedChangedListeners = new ArrayList<>();
+
 
     @Autowired
     public OpsFeedManagerFeedProvider(OpsManagerFeedRepository repository, BatchFeedSummaryCountsRepository batchFeedSummaryCountsRepository,
@@ -142,12 +144,12 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedManagerId);
             ((JpaOpsManagerFeed) feed).setStream(isStream);
-
         }
         else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
         }
        feed = repository.save((JpaOpsManagerFeed) feed);
+        notifyOnFeedChanged(feed);
         return feed;
     }
 
@@ -272,6 +274,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             }
             repository.save(feeds);
         }
+        feeds.stream().forEach(feed -> notifyOnFeedChanged(feed));
 
     }
 
@@ -289,5 +292,12 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         deleteFeedListeners.stream().forEach(listener -> listener.onFeedDelete(feed));
     }
 
+    public void subscribe(OpsManagerFeedChangedListener listener) {
+        feedChangedListeners.add(listener);
+    }
+
+    public void notifyOnFeedChanged(OpsManagerFeed feed) {
+        feedChangedListeners.stream().forEach(listener -> listener.onFeedChange(feed));
+    }
 
 }

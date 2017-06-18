@@ -28,6 +28,9 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.util.Map;
@@ -49,6 +52,8 @@ public class ProvenanceEventBatchJobThrottle {
     @Inject
     private MetadataEventService eventService;
 
+
+
     private FeedCompletedListener listener = new FeedCompletedListener();
 
 
@@ -68,6 +73,10 @@ public class ProvenanceEventBatchJobThrottle {
     private Long timeBetweenStartingJobs(String feedName) {
         return 2000L;
     }
+
+
+
+
 
 
 

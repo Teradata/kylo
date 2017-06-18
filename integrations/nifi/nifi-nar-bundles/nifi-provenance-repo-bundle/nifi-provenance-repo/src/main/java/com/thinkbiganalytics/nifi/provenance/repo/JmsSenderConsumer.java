@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by sr186054 on 6/13/17.
+ * Queue to drain and send to ops Manager
  */
 public class JmsSenderConsumer implements Runnable {
 

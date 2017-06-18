@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.nifi.provenance.repo;
+package com.thinkbiganalytics.metadata.api.feed;
 
 /*-
  * #%L
- * thinkbig-nifi-provenance-repo
+ * thinkbig-operational-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,16 +21,10 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 /**
- * Created by sr186054 on 6/14/17.
+ * Called after Ops Manager updates a Feed
  */
-public class SetupBean {
+public interface OpsManagerFeedChangedListener {
 
-    public SetupBean() {
-
-    }
-
-    public SetupBean(String location) {
-        FeedEventStatistics.getInstance().setBackupLocation(location);
-    }
+    void onFeedChange(OpsManagerFeed newFeed);
 
 }

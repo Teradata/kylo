@@ -37,6 +37,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +49,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Created by sr186054 on 6/11/17.
+ * Hold all data about running flows as they pertain to Feeds
  */
 public class FeedEventStatistics implements Serializable {
 
@@ -92,6 +93,8 @@ public class FeedEventStatistics implements Serializable {
 
     //Feed Execution tracking
 
+    private Map<String,long[]> flowRate =new HashMap<>();
+
     /**
      * Set of Event Ids that are events that finish the feed flow execution.  Last Job Event Ids
      */
@@ -118,8 +121,11 @@ public class FeedEventStatistics implements Serializable {
 
     /**
      * file location to persist this data if NiFi goes Down midstream
+     * This value is set via the KyloPersistenetProvenanceEventRepository during initialization
+     *
+     * @see KyloPersistentProvenanceEventRepository#initializeFeedEventStatistics()
      */
-    private String backupLocation;
+    private String backupLocation = "/opt/nifi/feed-event-statistics.gz";
 
 
     private static final FeedEventStatistics instance = new FeedEventStatistics();

@@ -440,6 +440,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         }
     }
 
+    public void finishStreamingJob(){
+        if (endTime == null) {
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
+    }
+
     /**
      * Finish the job and update teh status and end time as being completed, or failed, based upon the status of the {@link BatchStepExecution}'s
      */

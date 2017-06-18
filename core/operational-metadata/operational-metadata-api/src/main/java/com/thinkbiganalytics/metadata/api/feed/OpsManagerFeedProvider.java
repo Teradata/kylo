@@ -140,4 +140,10 @@ public interface OpsManagerFeedProvider {
      * @param listener a delete feed listener
      */
     void subscribeFeedDeletion(DeleteFeedListener listener);
+
+    /**
+     * listen when feed changes
+     * @param listener
+     */
+    void subscribe(OpsManagerFeedChangedListener listener);
 }

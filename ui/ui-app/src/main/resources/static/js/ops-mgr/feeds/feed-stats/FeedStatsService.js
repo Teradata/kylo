@@ -125,6 +125,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         }
 
+
         var keepLastSummary = 20;
 
         var data = {
@@ -249,6 +250,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     summary.flowsRunning = flowsRunning;
                     summary.flowsSuccess = flowsSuccess;
                     summary.flowsStartedPerSecond = flowsStartedPerSecond;
+                    summary.avgFlowDurationMilis = parseInt(flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
                     summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
 
                     self.processorStatistics.chartData = chartData;
@@ -311,7 +313,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             buildProcessorDurationChartData:function(){
                 var chartData = this.processorStatistics.chartData;
                 var values = chartData.data;
-                var data = [{key: "Processor", "color": "#1f77b4", values: values}];
+                var data = [{key: "Processor", "color": "#F08C38", values: values}];
                  return data;
 
             },
@@ -331,6 +333,37 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 eventsPieChartData.push({key: "Success", value: success})
                 eventsPieChartData.push({key: "Failed", value: self.summaryStatistics.failedEvents})
                 return eventsPieChartData;
+            },
+            emptyFeedTimeSeriesObject:function(eventTime,feedName) {
+                return {
+                    "duration": 0,
+                    "minEventTime": null,
+                    "maxEventTime": eventTime,
+                    "bytesIn": 0,
+                    "bytesOut": 0,
+                    "totalCount": 0,
+                    "failedCount": 0,
+                    "jobsStarted": 0,
+                    "jobsFinished": 0,
+                    "jobsFailed": 0,
+                    "jobDuration": 0,
+                    "successfulJobDuration": 0,
+                    "processorsFailed": 0,
+                    "flowFilesStarted": 0,
+                    "flowFilesFinished": 0,
+                    "maxEventId": 0,
+                    "id": null,
+                    "feedName": feedName,
+                    "processorId": null,
+                    "processorName": null,
+                    "feedProcessGroupId": null,
+                    "collectionTime": null,
+                    "collectionId": null,
+                    "resultSetCount": null,
+                    "jobsStartedPerSecond": 0,
+                    "jobsFinishedPerSecond": 0,
+                    "collectionIntervalSeconds": null
+                }
             },
 
             fetchFeedTimeSeriesData:function() {

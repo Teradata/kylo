@@ -37,8 +37,7 @@ import org.springframework.beans.BeansException;
 import java.io.IOException;
 
 /**
- * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to the KylpProvenanceProcessingQueue with the KyloProvenanceEventConsumer
- * will process in a different thread
+ * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to Ops Manager
  */
 public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository {
 
@@ -67,7 +66,6 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
     private void init() {
         loadSpring();
-        feedStatisticsManager = new FeedStatisticsManager();
         initializeFeedEventStatistics();
 
     }
@@ -88,7 +86,7 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
         final RecordWriter[] writers = super.createWriters(config, initialRecordId);
         final RecordWriter[] interceptEventIdWriters = new RecordWriter[writers.length];
         for (int i = 0; i < writers.length; i++) {
-            KyloRecordWriterDelegate delegate = new KyloRecordWriterDelegate(writers[i], getFeedStatisticsManager());
+            KyloRecordWriterDelegate delegate = new KyloRecordWriterDelegate(writers[i]);
             interceptEventIdWriters[i] = delegate;
         }
         return interceptEventIdWriters;
@@ -128,6 +126,10 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     }
 
     private void initializeFeedEventStatistics() {
+        String backupLocation = ConfigurationProperties.getInstance().getFeedEventStatisticsBackupLocation();
+        if (backupLocation != null) {
+            FeedEventStatistics.getInstance().setBackupLocation(backupLocation);
+        }
         boolean success = FeedEventStatistics.getInstance().loadBackup();
         if (success) {
             log.info("Successfully loaded backup from {} ", FeedEventStatistics.getInstance().getBackupLocation());
