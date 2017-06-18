@@ -21,7 +21,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -41,7 +40,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -65,6 +63,12 @@ public class FeedEventStatistics implements Serializable {
      * Used to expire EventStatistics
      */
     protected Map<String, String> allFlowFileToFeedFlowFile = new ConcurrentHashMap<>();
+
+
+    /**
+     * feed flow file to respective flow files that are detail tracked.
+     */
+    protected Map<String, Set<String>> detailedTrackingInverseInverseMap = new ConcurrentHashMap<>();
 
     ///Track Timing Information for each event
 
@@ -93,7 +97,7 @@ public class FeedEventStatistics implements Serializable {
 
     //Feed Execution tracking
 
-    private Map<String,long[]> flowRate =new HashMap<>();
+    private Map<String, long[]> flowRate = new HashMap<>();
 
     /**
      * Set of Event Ids that are events that finish the feed flow execution.  Last Job Event Ids
@@ -216,6 +220,7 @@ public class FeedEventStatistics implements Serializable {
         this.feedFlowProcessing.clear();
         this.skippedEvents.set(0L);
         this.feedFlowFileFailureCount.clear();
+        this.detailedTrackingInverseInverseMap.clear();
     }
 
 
@@ -234,33 +239,10 @@ public class FeedEventStatistics implements Serializable {
         this.feedFlowProcessing.putAll(other.feedFlowProcessing);
         this.skippedEvents.set(other.skippedEvents.get());
         this.feedFlowFileFailureCount.putAll(other.feedFlowFileFailureCount);
+        this.detailedTrackingInverseInverseMap.putAll(other.detailedTrackingInverseInverseMap);
         return true;
 
 
-    }
-
-
-    public void test() {
-        int i = 100;
-        while (i > 0) {
-            String feedFlowFile = UUID.randomUUID().toString();
-            long now = DateTime.now().getMillis();
-            feedFlowFileFailureCount.put(feedFlowFile, new AtomicInteger(i));
-            feedFlowFileEndTime.put(feedFlowFile, now);
-            feedFlowFileStartTime.put(feedFlowFile, now);
-
-            feedFlowProcessing.put(feedFlowFile, new AtomicInteger(1));
-            feedFlowFileIdToFeedProcessorId.put(feedFlowFile, feedFlowFile);
-            detailedTrackingFeedFlowFileId.add(feedFlowFile);
-            Long l = new Integer(i).longValue();
-            eventsThatCompleteFeedFlow.add(l);
-            // detailedFlowFileToFeedFlowFile.remove(eventFlowFileId);
-            allFlowFileToFeedFlowFile.put(feedFlowFile, feedFlowFile);
-
-            eventDuration.put(l, l);
-            eventStartTime.put(l, now);
-            i--;
-        }
     }
 
 
@@ -347,6 +329,7 @@ public class FeedEventStatistics implements Serializable {
         if (startTime == null) {
             startTime = event.getFlowFileEntryDate();
         }
+        DateTime st = new DateTime(startTime);
         if (ProvenanceEventUtil.isStartingFeedFlow(event)) {
             feedFlowFileStartTime.put(event.getFlowFileUuid(), startTime);
         }
@@ -392,8 +375,16 @@ public class FeedEventStatistics implements Serializable {
         return false;
     }
 
+    public void updateTrackingDetailsMap(ProvenanceEventRecord event) {
+        String feedFlowFileId = getFeedFlowFileId(event);
+        if (feedFlowFileId != null && isTrackingDetails(event.getFlowFileUuid())) {
+            detailedTrackingInverseInverseMap.computeIfAbsent(feedFlowFileId, flowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
+        }
+    }
+
     public void setTrackingDetails(ProvenanceEventRecord event) {
         detailedTrackingFeedFlowFileId.add(event.getFlowFileUuid());
+        detailedTrackingInverseInverseMap.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
     }
 
     private boolean hasParents(ProvenanceEventRecord event) {
@@ -461,33 +452,49 @@ public class FeedEventStatistics implements Serializable {
         return null;
     }
 
+    private void clearMapsForEventFlowFile(String eventFlowFileId) {
+        flowFileLastNonDropEventTime.remove(eventFlowFileId);
+        detailedTrackingFeedFlowFileId.remove(eventFlowFileId);
+        allFlowFileToFeedFlowFile.remove(eventFlowFileId);
+    }
 
-    public void checkAndClear(String eventFlowFileId, String eventType, Long eventId, boolean removeFeedFlowData) {
-        if (ProvenanceEventType.DROP.name().equals(eventType) && removeFeedFlowData) {
-            if (isEndingFeedFlow(eventId)) {
-                String feedFlowFile = getFeedFlowFileId(eventFlowFileId);
-                if (feedFlowFile != null) {
-                    feedFlowFileFailureCount.remove(feedFlowFile);
-                    feedFlowFileEndTime.remove(feedFlowFile);
-                    feedFlowFileStartTime.remove(feedFlowFile);
+    private void clearMapsForFeedFlowFile(String feedFlowFile) {
+        if (feedFlowFile != null) {
+            feedFlowFileFailureCount.remove(feedFlowFile);
+            feedFlowFileEndTime.remove(feedFlowFile);
+            feedFlowFileStartTime.remove(feedFlowFile);
+            feedFlowProcessing.remove(feedFlowFile);
+            feedFlowFileIdToFeedProcessorId.remove(feedFlowFile);
+        }
+    }
 
-                    feedFlowProcessing.remove(feedFlowFile);
-                    feedFlowFileIdToFeedProcessorId.remove(feedFlowFile);
-                    detailedTrackingFeedFlowFileId.remove(feedFlowFile);
+    public void checkAndClear(String eventFlowFileId, String eventType, Long eventId) {
+        if (ProvenanceEventType.DROP.name().equals(eventType)) {
 
+            boolean isTrackingDetails = isTrackingDetails(eventFlowFileId);
+            boolean isEndingFeedFlowFile = isEndingFeedFlow(eventId);
+            String feedFlowFile = getFeedFlowFileId(eventFlowFileId);
+
+            //if we are the last event for the feed flow and we are not tracking any details
+
+            if (!isTrackingDetails) {
+                clearMapsForEventFlowFile(eventFlowFileId);
+                if (isEndingFeedFlowFile) {
+                    clearMapsForFeedFlowFile(feedFlowFile);
+                    eventsThatCompleteFeedFlow.remove(eventId);
+                }
+            } else {
+                if (isEndingFeedFlowFile && isTrackingDetails && feedFlowFile != null) {
+                    Set<String> relatedFlows = detailedTrackingInverseInverseMap.get(feedFlowFile);
+                    if (relatedFlows != null && !relatedFlows.isEmpty()) {
+                        log.info("Clearing {} children for  parent {} ", relatedFlows.size(), feedFlowFile);
+                        relatedFlows.stream().forEach(flowFileId -> clearMapsForEventFlowFile(flowFileId));
+                    }
+                    detailedTrackingInverseInverseMap.remove(feedFlowFile);
+                    clearMapsForFeedFlowFile(feedFlowFile);
+                    eventsThatCompleteFeedFlow.remove(eventId);
                 }
             }
-
-            eventsThatCompleteFeedFlow.remove(eventId);
-            // detailedFlowFileToFeedFlowFile.remove(eventFlowFileId);
-            allFlowFileToFeedFlowFile.remove(eventFlowFileId);
-
-
-        }
-        if (ProvenanceEventType.DROP.name().equals(eventType)) {
-            flowFileLastNonDropEventTime.remove(eventFlowFileId);
-            //added
-            allFlowFileToFeedFlowFile.remove(eventFlowFileId);
         }
         eventDuration.remove(eventId);
         eventStartTime.remove(eventId);
@@ -533,14 +540,7 @@ public class FeedEventStatistics implements Serializable {
     }
 
     public void cleanup(ProvenanceEventRecord event, Long eventId) {
-        boolean isTrackDetails = isTrackingDetails(event.getFlowFileUuid());
-        checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId, !isTrackDetails);
-    }
-
-    public void cleanup(ProvenanceEventRecordDTO event) {
-        if (event != null && event.isFinalJobEvent()) {
-            checkAndClear(event.getFlowFileUuid(), event.getEventType(), event.getEventId(), true);
-        }
+        checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId);
     }
 
 

@@ -171,10 +171,19 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             //update it
             assignStepExecutionContextMap(event, stepExecution);
             //update the timing info
-
-            DateTime newEndTime = DateTimeUtil.convertToUTC(event.getEventTime());
-            if(newEndTime.isAfter(stepExecution.getEndTime())) {
-                stepExecution.setEndTime(newEndTime);
+            Long originatingNiFiEventId = stepExecution.getNifiEventStepExecution().getEventId();
+            //only update the end time if the eventid is > than the first one
+            if(event.getEventId()> originatingNiFiEventId) {
+                DateTime newEndTime = DateTimeUtil.convertToUTC(event.getEventTime());
+                if (newEndTime.isAfter(stepExecution.getEndTime())) {
+                    stepExecution.setEndTime(newEndTime);
+                }
+            }
+            else {
+                DateTime newStartTime = DateTimeUtil.convertToUTC(event.getStartTime());
+                if (newStartTime.isBefore(stepExecution.getStartTime())) {
+                    stepExecution.setStartTime(newStartTime);
+                }
             }
             stepExecution = batchStepExecutionRepository.save(stepExecution);
         }

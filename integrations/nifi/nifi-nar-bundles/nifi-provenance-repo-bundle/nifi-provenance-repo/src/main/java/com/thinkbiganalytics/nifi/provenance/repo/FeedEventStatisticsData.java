@@ -44,6 +44,11 @@ public class FeedEventStatisticsData implements Serializable {
      */
     protected Map<String, String> allFlowFileToFeedFlowFile = new ConcurrentHashMap<>();
 
+    /**
+     *  feed flow file to respective flow files that are detail tracked.
+     */
+    protected Map<String, Set<String>> detailedTrackingInverseInverseMap = new ConcurrentHashMap<>();
+
     ///Track Timing Information for each event
 
 
@@ -112,6 +117,7 @@ public class FeedEventStatisticsData implements Serializable {
         this.feedFlowProcessing = other.feedFlowProcessing;
         this.skippedEvents = other.skippedEvents;
         this.feedFlowFileFailureCount = other.feedFlowFileFailureCount;
+        this.detailedTrackingInverseInverseMap = other.detailedTrackingInverseInverseMap;
     }
 
     public void load() {

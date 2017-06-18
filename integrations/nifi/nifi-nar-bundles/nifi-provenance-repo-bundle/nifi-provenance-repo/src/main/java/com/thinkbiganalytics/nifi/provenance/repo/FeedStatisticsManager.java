@@ -170,6 +170,7 @@ public class FeedStatisticsManager {
         this.sendJmsTimeMillis = runInterval;
         initGatherStatisticsTimerThread(runInterval);
         initJmsSendingThread();
+        log.info("Initialized Timer Thread to gather statistics and send to Kylo running every {} ms ",sendJmsTimeMillis);
     }
 
     //jms thread
