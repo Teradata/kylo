@@ -159,14 +159,6 @@ public class FeedStatistics {
         return stats.computeIfAbsent(key, sourceConnectionIdentifier -> new GroupedStats(sourceConnectionIdentifier));
     }
 
-    /**
-     * Is the event of type that is not to be tracked in ops manager
-     * @param event the event
-     * @return
-     */
-    private boolean isSkipDetailedProcessing(ProvenanceEventRecord event){
-        return ProvenanceEventType.CLONE.equals(event.getEventType());
-    }
 
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
 
@@ -186,7 +178,7 @@ public class FeedStatistics {
             batchKey += UUID.randomUUID().toString();
         }
 
-        if (!isSkipDetailedProcessing(event) && ((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() <= limit)) && !lastRecords
+        if (((!isStartingFeedFlow && FeedEventStatistics.getInstance().isTrackingDetails(event.getFlowFileUuid())) || (isStartingFeedFlow && lastRecords.size() <= limit)) && !lastRecords
             .containsKey(batchKey)) {
             // if we are tracking details send the event off for jms
             if (isStartingFeedFlow) {
