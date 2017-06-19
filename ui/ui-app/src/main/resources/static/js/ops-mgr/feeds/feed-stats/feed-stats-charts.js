@@ -280,43 +280,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             else {
                 var failed = self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) * 100 : 0;
                 var value = (100 - failed).toFixed(0);
-                var icon = 'battery_unknown';
-                var iconColor = "#1f77b4"
+                var icon = 'offline_pin';
+                var iconColor = "#3483BA"
 
-                if(value <50){
-                    iconColor ='#FF0000'
-                }
-                else if(value < 80){
-                    iconColor = '#FF9901';
-                }
-                else {
-                    iconColor = '#009933';
-                }
-
-                if(value <20){
-                    icon = 'battery_alert';
-                }
-                else if(value <30) {
-                    icon = 'battery_20';
-                }
-                else if(value <50) {
-                    icon = 'battery_30';
-                }
-                else if(value <60) {
-                    icon = 'battery_50';
-                }
-                else if(value <80) {
-                    icon = 'battery_60';
-                }
-                else if(value <90) {
-                    icon = 'battery_80';
-                }
-                else if(value <100) {
-                    icon = 'battery_90';
-                }
-                else if(value == 100) {
-                    icon = 'battery_full';
-                }
                 self.eventSuccessKpi.icon = icon;
                 self.eventSuccessKpi.color = iconColor;
                 self.eventSuccessKpi.value = value
@@ -354,7 +320,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                updateSummaryKpis();
                 self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
 
-                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,values.length,self.selectedProcessorStatisticFunction);
+                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,self.processorChartData.values.length,self.selectedProcessorStatisticFunction);
                 self.processChartLoading = false;
                 self.lastProcessorChartRefresh = new Date().getTime();
                 self.lastRefreshTime = new Date();
@@ -384,7 +350,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 self.maxTime = feedTimeSeries.maxTime;
 
                 var chartArr = [];
-             //   chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#009933'});
+                chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#3483BA'});
                 chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', area:true, color: "#F08C38"});
                 //preserve the legend selections
                 if (feedChartLegendState.length > 0) {
@@ -404,8 +370,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     max = 5;
                 }
                 else {
-                    max +=5;
+                    max *=1.2;
                 }
+                max = Math.round(max)
+                self.feedChartOptions.chart.forceY = [0,max];
                 if(self.feedChartOptions.chart.yAxis.ticks != max) {
                     self.feedChartOptions.chart.yDomain = [0, max];
                     var ticks = max;

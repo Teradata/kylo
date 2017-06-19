@@ -87,7 +87,7 @@
                 </div>
               </md-card-title-media>
               <md-card-content layout="column" layout-align="center center">
-                <span class="md-title">Flow Rate</span>
+                <span class="md-title">Incoming Flow Rate</span>
               </md-card-content>
             </md-card>
           </div>
@@ -112,9 +112,9 @@
         <!-- END KPIs -->
 
         <div flex>
-          <md-card layout-align="center center" style="margin-left: 0px;margin-right: 0px;">
-            <span class="card-title kpi-header">Flow Rate</span>
-            <span class="md-caption kpi-subtitle ">Monitor the rate of the feed flows</span>
+          <md-card layout-align="start start" style="margin-left: 0px;margin-right: 0px;">
+            <span class="card-title kpi-header layout-padding-left">Flow Rate</span>
+            <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Monitor the rate of the feed flows</span>
             <md-card-content style="width:100%;">
               <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
 
