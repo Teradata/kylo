@@ -184,6 +184,8 @@ public class FeedEventStatistics implements Serializable {
     public boolean backup(String location) {
 
         try {
+            //cleanup any files that should be removed before backup
+            detailedTrackingFlowFilesToDelete.cleanUp();
 
             FileOutputStream fos = new FileOutputStream(location);
             GZIPOutputStream gz = new GZIPOutputStream(fos);
