@@ -117,7 +117,6 @@ public class FeedEventStatisticsData implements Serializable {
         this.feedFlowProcessing = other.feedFlowProcessing;
         this.skippedEvents = other.skippedEvents;
         this.feedFlowFileFailureCount = other.feedFlowFileFailureCount;
-        this.detailedTrackingInverseInverseMap = other.detailedTrackingInverseInverseMap;
     }
 
     public void load() {
