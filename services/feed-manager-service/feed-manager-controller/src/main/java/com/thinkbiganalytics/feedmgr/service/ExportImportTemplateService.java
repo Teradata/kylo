@@ -22,7 +22,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
