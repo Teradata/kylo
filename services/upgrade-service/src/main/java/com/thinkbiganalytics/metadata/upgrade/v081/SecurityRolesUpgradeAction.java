@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.upgrade.v081;
  */
 
 import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -68,6 +67,9 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 
+/**
+ * This action is upgraded both on upgrade to v0.8.1 and during a fresh install.
+ */
 @Component("upgradeAction081")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class SecurityRolesUpgradeAction implements UpgradeState {
@@ -86,6 +88,14 @@ public class SecurityRolesUpgradeAction implements UpgradeState {
     private AllowedEntityActionsProvider actionsProvider;
     @Inject
     private AccessController accessController;
+    
+    private boolean upgraded = false;
+    
+    
+    @Override
+    public boolean isTargetFreshInstall() {
+        return true;
+    }
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
@@ -97,12 +107,17 @@ public class SecurityRolesUpgradeAction implements UpgradeState {
      */
     @Override
     public void upgradeTo(KyloVersion startingVersion) {
-        log.info("Upgrading from version: " + startingVersion);
-        
-        ensureFeedTemplateFeedRelationships();
-
-        if (accessController.isEntityAccessControlled()) {
-            ensureDefaultEntityRoles();
+        // Only invoke this action once; either during upgrade or a fresh install.
+        // This method may be upgraded twice if a fresh install is being performed for build v0.8.1 specifically.
+        if (! this.upgraded) {
+            log.info("Upgrading from version: " + startingVersion);
+            
+            ensureFeedTemplateFeedRelationships();
+            if (accessController.isEntityAccessControlled()) {
+                ensureDefaultEntityRoles();
+            } 
+            
+            this.upgraded = true;
         }
     }
     
