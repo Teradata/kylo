@@ -249,9 +249,11 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     summary.failedEvents = failedEvents;
                     summary.flowsRunning = flowsRunning;
                     summary.flowsSuccess = flowsSuccess;
-                    summary.flowsStartedPerSecond = flowsStartedPerSecond;
+                    summary.flowsStartedPerSecond = flowsStartedPerSecond != 0 ? parseFloat(flowsStartedPerSecond) : flowsStartedPerSecond;
                     summary.avgFlowDurationMilis = parseInt(flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
                     summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
+
+                    summary.avgFlowDuration = summary.avgFlowDuration  != 0 ? parseFloat(summary.avgFlowDuration) : 0;
 
                     self.processorStatistics.chartData = chartData;
 
