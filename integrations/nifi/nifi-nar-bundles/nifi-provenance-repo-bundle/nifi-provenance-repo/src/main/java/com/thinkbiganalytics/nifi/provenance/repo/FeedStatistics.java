@@ -167,7 +167,6 @@ public class FeedStatistics {
         ProvenanceEventRecordDTO eventRecordDTO = null;
 
         String feedFlowFileId = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
-        FeedEventStatistics.getInstance().updateTrackingDetailsMap(event);
 
         boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
         String batchKey = batchKey(event, feedFlowFileId, isStartingFeedFlow);
