@@ -166,7 +166,16 @@ public class PropertyExpressionResolverTest {
         final NifiProperty prop12 = createProperty("My New Processor","property1","a value");
         Assert.assertTrue(resolver.resolveExpression(metadata, prop12));
         Assert.assertEquals("/path/to/property1/location", prop12.getValue());
+
+
+        //verify replacement without NiFi el using default processor type replacement
+        final NifiProperty extraFiles = createProperty("extra_files","a value");
+        Assert.assertTrue(resolver.resolveExpression(metadata, extraFiles));
+        Assert.assertEquals("${table_field_policy_json_file},/usr/hdp/current/spark-client/conf/hive-site.xml",extraFiles.getValue());
+        Assert.assertTrue(resolver.resolveExpression(metadata, extraFiles));
+        Assert.assertEquals("${table_field_policy_json_file},/usr/hdp/current/spark-client/conf/hive-site.xml",extraFiles.getValue());
     }
+
 
     /**
      * Verifies invalid expressions are resolved properly.

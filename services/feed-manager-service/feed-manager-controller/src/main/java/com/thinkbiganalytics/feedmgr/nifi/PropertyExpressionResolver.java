@@ -347,7 +347,7 @@ public class PropertyExpressionResolver {
             public String lookup(String variable) {
                 // Resolve configuration variables
                 final String configValue = getConfigurationPropertyValue(property, variable);
-                if (configValue != null) {
+                if (configValue != null && property.getValue() != null && !property.getValue().contains(configValue)) {
                     hasConfig[0] = true;
                     isModified[0] = true;
                     //if this is the first time we found the config var, set the template value correctly
@@ -356,6 +356,7 @@ public class PropertyExpressionResolver {
                         property.setContainsConfigurationVariables(true);
                     }
                     return configValue;
+
                 }
 
                 // Resolve metadata variables
@@ -374,7 +375,10 @@ public class PropertyExpressionResolver {
         };
         StrSubstitutor ss = new StrSubstitutor(resolver);
         ss.setEnableSubstitutionInVariables(true);
-        property.setValue(StringUtils.trim(ss.replace(value)));
+        //escape
+        String val = StringUtils.trim(ss.replace(value));
+        //fix
+        property.setValue(val);
 
         return new ResolveResult(hasConfig[0], isModified[0]);
     }
