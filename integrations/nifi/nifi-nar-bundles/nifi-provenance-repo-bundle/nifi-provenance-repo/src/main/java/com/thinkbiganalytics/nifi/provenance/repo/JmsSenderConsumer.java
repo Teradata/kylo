@@ -29,24 +29,18 @@ import java.util.concurrent.BlockingQueue;
  */
 public class JmsSenderConsumer implements Runnable {
 
-    private BlockingQueue<JmsSender> queue;
+    private JmsSender jmsSender;
 
 
-    public JmsSenderConsumer(BlockingQueue<JmsSender> queue) {
-        this.queue = queue;
+    public JmsSenderConsumer(JmsSender jmsSender) {
+        this.jmsSender = jmsSender;
     }
 
     @Override
     public void run() {
-        while (true) {
-            while (queue.peek() != null) {
-
-                List<JmsSender> items = new ArrayList<>();
-                queue.drainTo(items);
-                if (!items.isEmpty()) {
-                    items.stream().forEach(item -> item.run());
-                }
-            }
-        }
+       if(jmsSender != null) {
+           jmsSender.run();
+       }
     }
+
 }

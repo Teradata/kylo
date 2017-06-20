@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
@@ -32,11 +33,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -55,11 +56,6 @@ public class FeedStatisticsManager {
 
     private Map<String, FeedStatistics> feedStatisticsMap = new ConcurrentHashMap<>();
 
-    private BlockingQueue<JmsSender> jmsSenderBlockingQueue = new LinkedBlockingQueue<>();
-
-
-    ScheduledExecutorService jmsGatherEventsToSendService = Executors.newSingleThreadScheduledExecutor();
-
     private static final FeedStatisticsManager instance = new FeedStatisticsManager();
 
     private FeedStatisticsManager() {
@@ -69,6 +65,21 @@ public class FeedStatisticsManager {
     public static FeedStatisticsManager getInstance() {
         return instance;
     }
+
+
+    private ThreadFactory gatherStatsThreadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("FeedStatisticsManager-GatherStats-%d").build();
+
+    private ThreadFactory sendJmsThreadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("FeedStatisticsManager-SendStats-%d").build();
+
+    /**
+     * Service to schedule the sending of events to activemq
+     */
+    private ExecutorService jmsService = Executors.newFixedThreadPool(3, sendJmsThreadFactory);
+
+    private ScheduledExecutorService jmsGatherEventsToSendService = Executors.newSingleThreadScheduledExecutor(gatherStatsThreadFactory);
+
 
 
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
@@ -94,7 +105,7 @@ public class FeedStatisticsManager {
         }
     }
 
-    public void send() {
+    public void gatherStatistics() {
         lock.lock();
         List<ProvenanceEventRecordDTO> eventsToSend = null;
         Map<String, AggregatedFeedProcessorStatistics> statsToSend = null;
@@ -127,20 +138,24 @@ public class FeedStatisticsManager {
             }
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
-                jmsSenderBlockingQueue.add(new JmsSender(eventsToSend, statsToSend.values()));
+                //send it off to jms on a different thread
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values());
+                this.jmsService.submit(new JmsSenderConsumer(jmsSender));
             }
+
 
         } finally {
             feedStatisticsMap.values().stream().forEach(stats -> stats.clear());
             lock.unlock();
         }
 
+
     }
 
-    private Runnable jmsSendingTask = new Runnable() {
+    private Runnable gatherStatisticsTask = new Runnable() {
         @Override
         public void run() {
-            send();
+            gatherStatistics();
         }
     };
 
@@ -169,7 +184,7 @@ public class FeedStatisticsManager {
         Long runInterval = ConfigurationProperties.getInstance().getFeedProcessingRunInterval();
         this.sendJmsTimeMillis = runInterval;
         initGatherStatisticsTimerThread(runInterval);
-        initJmsSendingThread();
+        log.info("Initialized Timer Thread to gather statistics and send events to JMS running every {} ms ",sendJmsTimeMillis);
     }
 
     //jms thread
@@ -178,12 +193,7 @@ public class FeedStatisticsManager {
      * Start the timer thread
      */
     private void initGatherStatisticsTimerThread(Long time) {
-        jmsGatherEventsToSendService.scheduleAtFixedRate(jmsSendingTask, time, time, TimeUnit.MILLISECONDS);
-    }
-
-    private void initJmsSendingThread() {
-        ScheduledExecutorService jmsService = Executors.newSingleThreadScheduledExecutor();
-        jmsService.submit(new JmsSenderConsumer(jmsSenderBlockingQueue));
+        jmsGatherEventsToSendService.scheduleAtFixedRate(gatherStatisticsTask, time, time, TimeUnit.MILLISECONDS);
     }
 
 }
