@@ -28,5 +28,6 @@
   <include file="alter-ops-manager-views.xml" relativeToChangelogFile="true"/>
   <include file="batch_related_flow_files_table.xml" relativeToChangelogFile="true"/>
   <include file="update-version-table.xml" relativeToChangelogFile="true"/>
+  <include file="alter-nifi-feed-processor-stats.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>
