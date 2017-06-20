@@ -21,8 +21,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
-import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
-import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;

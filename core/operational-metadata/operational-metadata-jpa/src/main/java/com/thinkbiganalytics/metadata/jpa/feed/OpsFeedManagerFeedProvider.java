@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedChangedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;

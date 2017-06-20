@@ -29,6 +29,7 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring data repository for accessing {@link JpaOpsManagerFeed}
@@ -51,5 +52,13 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
     @Procedure(name = "OpsManagerFeed.abandonFeedJobs")
     void abandonFeedJobs(@Param("feed") String feed);
+
+    @Query("select feed from JpaOpsManagerFeed as feed "
+           + " where feed.name in(:feedNames)")
+    List<JpaOpsManagerFeed> findByName(@Param("feedNames") Set<String> feedName);
+
+    @Query("select feed from JpaOpsManagerFeed as feed "
+           + " where feed.name in(:feedNames)")
+    List<JpaOpsManagerFeed> findByNameWithoutAcl(@Param("feedNames") Set<String> feedName);
 
 }

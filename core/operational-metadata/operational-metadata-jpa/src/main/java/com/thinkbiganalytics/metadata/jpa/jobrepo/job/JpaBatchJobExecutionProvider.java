@@ -669,7 +669,7 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
             QJpaOpsManagerFeed feedPath = new QJpaOpsManagerFeed("feed");
 
             return findAllWithFetch(jobExecution,
-                                    GenericQueryDslFilter.buildFilter(jobExecution, filter).and(augment(feedPath.id)),
+                                    GenericQueryDslFilter.buildFilter(jobExecution, filter),
                                     pageable,
                                     QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
                                     QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath),
@@ -684,13 +684,9 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
      */
     @Override
     public Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable) {
-
         List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
         return findAllForFeed(feedName, searchCriterias, pageable);
 
-    private RoleSetExposingSecurityExpressionRoot getUserContext() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return new RoleSetExposingSecurityExpressionRoot(authentication);
     }
 
     private Page<? extends BatchJobExecution> findAllForFeed(String feedName, List<SearchCriteria> filters, Pageable pageable) {
@@ -707,7 +703,7 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
             .join(jobInstance.feed, feed)
             .where((feed.name.eq(feedName).or(feed.id.in(checkFeedQuery)))
                        .and(GenericQueryDslFilter.buildFilter(jobExecution, filters)
-                       .and(augment(feed.id))))
+                      ))
                 .fetchAll();
 
         pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
@@ -747,7 +743,7 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
             .from(jobExecution)
             .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
-            .where(whereBuilder
+            .where(whereBuilder)
             .groupBy(jobExecution.status);
 
         return (List<JobStatusCount>) query.fetch();

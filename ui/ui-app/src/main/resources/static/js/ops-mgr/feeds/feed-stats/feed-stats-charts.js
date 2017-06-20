@@ -320,7 +320,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                updateSummaryKpis();
                 self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
 
-                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,self.processorChartData.values.length,self.selectedProcessorStatisticFunction);
+
+                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,self.processorChartData[0].values.length,self.selectedProcessorStatisticFunction);
                 self.processChartLoading = false;
                 self.lastProcessorChartRefresh = new Date().getTime();
                 self.lastRefreshTime = new Date();

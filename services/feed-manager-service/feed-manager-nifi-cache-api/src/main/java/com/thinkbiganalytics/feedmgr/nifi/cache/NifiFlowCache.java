@@ -38,8 +38,6 @@ public interface NifiFlowCache {
 
     boolean isAvailable();
 
-    boolean isKyloClustered();
-
     NifiFlowCacheSnapshot getLatest();
 
     NiFiFlowCacheSync syncAndReturnUpdates(String syncId);

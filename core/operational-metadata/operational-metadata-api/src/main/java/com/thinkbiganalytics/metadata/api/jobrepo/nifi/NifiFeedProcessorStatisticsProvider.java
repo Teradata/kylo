@@ -111,6 +111,7 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     Long findMaxEventId(String clusterNodeId);
 
+
     /**
      * allow for specifying a time to look back from when querying for statistical information
      */

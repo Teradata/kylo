@@ -21,9 +21,11 @@ package com.thinkbiganalytics.feedmgr.service.template;
  */
 
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.feed.AbstractFeedManagerFeedService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -215,7 +217,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
         boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
-        nifiFlowCache.updateRegisteredTemplate(template);
+        nifiFlowCache.updateRegisteredTemplate(template,true);
         //notify audit of the change
 
         FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(template.getState());

@@ -186,8 +186,14 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
 
+    public Long findLastProcessedEventId() {
+        return findLastProcessedEventId(null);
+    }
 
-    @Override
+    public Long findLastProcessedEventId(String clusterNodeId) {
+        return findMaxEventId(clusterNodeId);
+    }
+
     public Long findMaxEventId(String clusterNodeId) {
         Long eventId = -1L;
         if (StringUtils.isNotBlank(clusterNodeId)) {
@@ -208,4 +214,5 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         }
         return eventId;
     }
+
 }

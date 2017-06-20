@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  */
 
 
-import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
