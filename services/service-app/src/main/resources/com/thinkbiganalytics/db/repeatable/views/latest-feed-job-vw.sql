@@ -22,10 +22,13 @@
 Latest JOB EXECUTION grouped by Feed
  */
 CREATE OR REPLACE VIEW LATEST_FEED_JOB_VW AS
-          SELECT f.id as FEED_ID, MAX(e.JOB_EXECUTION_ID) JOB_EXECUTION_ID
+          SELECT
+    f.id AS FEED_ID,
+    f.name AS FEED_NAME,
+    f.is_stream AS IS_STREAM,
+    MAX(e.JOB_EXECUTION_ID) AS JOB_EXECUTION_ID
     FROM
-       BATCH_JOB_EXECUTION e
-       INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
-       INNER JOIN FEED f on f.id = i.FEED_ID
-       GROUP by f.id;
-
+    ((BATCH_JOB_EXECUTION e
+    JOIN BATCH_JOB_INSTANCE i ON ((i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID)))
+    JOIN FEED f ON ((f.id = i.FEED_ID)))
+    GROUP BY f.id , f.name, f.is_stream
