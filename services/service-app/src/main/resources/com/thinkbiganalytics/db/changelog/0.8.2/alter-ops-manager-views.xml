@@ -23,6 +23,35 @@
 
 
 <changeSet author="sr186054" id="alter-feed-views">
+
+  <createView replaceIfExists="true"
+              schemaName="kylo"
+              viewName="CHECK_DATA_TO_FEED_VW">
+  SELECT FEED_ID FEED_ID, f2.NAME as FEED_NAME, check_feeds.CHECK_DATA_FEED_ID as KYLO_FEED_ID, f.NAME as KYLO_FEED_NAME
+  FROM FEED_CHECK_DATA_FEEDS check_feeds
+  INNER JOIN FEED f on f.ID = check_feeds.CHECK_DATA_FEED_ID
+  INNER JOIN FEED f2 on f2.ID = check_feeds.FEED_ID
+  WHERE f.FEED_TYPE = 'CHECK'
+  UNION ALL
+  SELECT ID,NAME,id, NAME from FEED
+  WHERE FEED_TYPE = 'FEED';
+  </createView>
+
+  <createView replaceIfExists="true"
+              schemaName="kylo"
+              viewName="BATCH_FEED_SUMMARY_COUNTS_VW">
+  SELECT f.FEED_ID as FEED_ID,f.FEED_NAME as FEED_NAME,
+  count(e2.JOB_EXECUTION_ID) as ALL_COUNT,
+  count(case when e2.status <>'ABANDONED' AND (e2.status = 'FAILED' or e2.EXIT_CODE = 'FAILED') then 1 else null end) as FAILED_COUNT,
+  count(case when e2.status <>'ABANDONED' AND (e2.EXIT_CODE = 'COMPLETED') then 1 else null end) as COMPLETED_COUNT,
+  count(case when e2.status = 'ABANDONED'then 1 else null end) as ABANDONED_COUNT,
+  count(case when e2.status IN('STARTING','STARTED')then 1 else null end) as RUNNING_COUNT
+  FROM   BATCH_JOB_EXECUTION e2
+  INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID
+  INNER JOIN CHECK_DATA_TO_FEED_VW f on f.KYLO_FEED_ID = i.FEED_ID
+  group by f.feed_id, f.feed_name;
+  </createView>
+
   <createView replaceIfExists="true"
               schemaName="kylo"
               viewName="LATEST_FEED_JOB_VW">    SELECT
