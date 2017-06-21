@@ -254,13 +254,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- Kylo upgrade -->
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- Swagger -->
     <dependency>
       <groupId>io.swagger</groupId>
