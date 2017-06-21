@@ -34,6 +34,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventFeedUtil;
 
+import org.joda.time.DateTime;
+
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -88,9 +90,11 @@ public class StreamingFeedService {
                         if (state.equals(Feed.State.ENABLED)) {
                             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
                             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
+                            jobExecution.setStartTime(DateTime.now());
                         } else {
                             jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
                             jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+                            jobExecution.setEndTime(DateTime.now());
                         }
                         batchJobExecutionProvider.save(jobExecution);
                     }

@@ -92,6 +92,10 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
     @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "2500")})
     private String exitMessage;
 
+    @Column(name = "IS_STREAM", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStream;
+
 
     public JpaLatestFeedJobExecution() {
 
@@ -192,5 +196,14 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
     public void setFeedType(String feedType) {
         this.feedType = feedType;
+    }
+
+    @Override
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
     }
 }

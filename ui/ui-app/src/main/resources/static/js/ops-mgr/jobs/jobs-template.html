@@ -59,7 +59,7 @@
                                     <span class="item-title">{{job.runTime | time }}</span>
                                     <span class="column-title column-title-bottom">Run Time</span>
                                 </div>
-                                <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text">
+                                <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text" ng-if="!job.stream">
                                     <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL
                                     </md-button>
                                     <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>

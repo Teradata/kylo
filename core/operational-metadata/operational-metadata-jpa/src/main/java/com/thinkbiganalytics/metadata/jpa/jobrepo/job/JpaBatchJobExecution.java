@@ -154,6 +154,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Column(name = "LAST_UPDATED")
     private DateTime lastUpdated;
 
+    @Column(name = "IS_STREAM", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStream;
 
     @ManyToOne(targetEntity = JpaBatchJobInstance.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
@@ -329,6 +332,14 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     }
 
+    @Override
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
+    }
 
     @Override
     public Map<String, String> getJobExecutionContextAsMap() {
