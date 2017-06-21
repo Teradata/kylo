@@ -200,6 +200,9 @@ public interface BatchJobExecution {
      */
     boolean isFinished();
 
+
+    boolean isStream();
+
     /**
      * Various statuses for a Job
      */

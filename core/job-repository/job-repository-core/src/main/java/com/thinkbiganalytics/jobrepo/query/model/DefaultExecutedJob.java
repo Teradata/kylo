@@ -56,6 +56,7 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
     private Long timeSinceEndTime;
     private String jobType;
     private String feedName;
+    private boolean isStream;
 
     public DefaultExecutedJob() {
 
@@ -267,4 +268,11 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
         return displayStatus;
     }
 
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
+    }
 }

@@ -502,8 +502,21 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
         boolean isNew = false;
         try {
            BatchJobExecution latestJobExecution = findLatestJobForFeed(event.getFeedName());
-           if(latestJobExecution == null) {
+           if(latestJobExecution == null || (latestJobExecution != null && !latestJobExecution.isStream())) {
+               //If the latest Job is not set to be a Stream and its still running we need to fail it and create the new streaming job.
+               if(latestJobExecution != null && !latestJobExecution.isFinished()) {
+                   ProvenanceEventRecordDTO tempFailedEvent = new ProvenanceEventRecordDTO();
+                   tempFailedEvent.setFeedName(event.getFeedName());
+                   tempFailedEvent.setAttributeMap(new HashMap<>());
+                   tempFailedEvent.setIsFailure(true);
+                   tempFailedEvent.setDetails("Failed Running Batch event as this Feed has now become a Stream");
+                   finishJob(tempFailedEvent,(JpaBatchJobExecution)latestJobExecution);
+                   jobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
+                   jobExecutionRepository.save((JpaBatchJobExecution)latestJobExecution);
+               }
+
                jobExecution = createNewJobExecution(event);
+               jobExecution.setStream(true);
            }
             else {
                 jobExecution = (JpaBatchJobExecution)latestJobExecution;
@@ -513,43 +526,19 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
             jobExecution = (JpaBatchJobExecution) findLatestJobForFeed(event.getFeedName());
         }
 
-        //if the attrs coming in change the type to a CHECK job then update the entity
-        boolean updatedJobType = updateJobType(jobExecution, event);
-        boolean save = isNew || updatedJobType;
-        if (event.isFinalJobEvent()) {
-            //access
-            finishJob(event, jobExecution);
-            save = true;
+        boolean save = isNew;
 
-        }
-
-
-        //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
-        if (event.isStartOfJob() && !isNew && jobExecution != null) {
-            jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
-            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-            //Job status for Streams is controlled by the StreamingFeedService when a Feed is enabled/disabled
-            //only set the exit code
-           // jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
-            jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-            //create the job params
-            Map<String, Object> jobParameters = new HashMap<>();
-            if (event.isStartOfJob() && event.getAttributeMap() != null) {
-                jobParameters = new HashMap<>(event.getAttributeMap());
-            } else {
-                jobParameters = new HashMap<>();
-            }
-            this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
+        if(!jobExecution.isStream()){
+            jobExecution.setStream(true);
             save = true;
         }
+
+
         if (save) {
             jobExecutionRepository.save(jobExecution);
         }
         return jobExecution;
     }
-
-
-
 
 
     @Override
@@ -559,6 +548,7 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
         }
         JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
       //  checkAndRelateJobs(event, nifiEvent);
+
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
         if (jobExecution.isFinished()) {
             //ensure failures

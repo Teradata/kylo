@@ -54,3 +54,24 @@ CREATE OR REPLACE VIEW LATEST_FEED_JOB_VW AS
         JOIN BATCH_FEED_SUMMARY_COUNTS_VW summary ON ((summary.FEED_ID = i.FEED_ID)))
         JOIN LATEST_FEED_JOB_VW maxJobs ON (((maxJobs.FEED_ID = summary.FEED_ID)
             AND (maxJobs.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID))));
+
+
+CREATE OR REPLACE VIEW LATEST_FINISHED_FEED_JOB_VW AS
+    SELECT 
+        f.id AS FEED_ID,
+        f.name AS FEED_NAME,
+        f.FEED_TYPE AS FEED_TYPE,
+        e.JOB_EXECUTION_ID AS JOB_EXECUTION_ID,
+        i.JOB_INSTANCE_ID AS JOB_INSTANCE_ID,
+        e.START_TIME AS START_TIME,
+        e.END_TIME AS END_TIME,
+        e.STATUS AS STATUS,
+        e.EXIT_CODE AS EXIT_CODE,
+        e.EXIT_MESSAGE AS EXIT_MESSAGE,
+         e.IS_STREAM as IS_STREAM
+    FROM
+        (((kylo.BATCH_JOB_EXECUTION e
+        JOIN kylo.BATCH_JOB_INSTANCE i ON ((i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID)))
+        JOIN kylo.FEED f ON ((f.id = i.FEED_ID)))
+        JOIN kylo.LATEST_FEED_JOB_END_TIME_VW maxJobs ON (((maxJobs.FEED_ID = f.id)
+            AND (maxJobs.END_TIME = e.END_TIME))));

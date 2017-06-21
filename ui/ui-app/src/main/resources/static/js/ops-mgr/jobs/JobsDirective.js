@@ -392,7 +392,11 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         }
 
         this.jobDetails = function(event, job) {
-            StateService.OpsManager().Job().navigateToJobDetails(job.executionId);
+            if(job.stream){
+                StateService.OpsManager().Feed().navigateToFeedStats(job.jobName);
+            }else {
+                StateService.OpsManager().Job().navigateToJobDetails(job.executionId);
+            }
         }
 
         var getRunningJobExecutionData = function(instanceId, executionId) {
