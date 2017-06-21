@@ -34,8 +34,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.authentication.ad.DelegatingActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
@@ -55,7 +54,7 @@ public class ActiveDirectoryAuthConfig {
     private String servicesLoginFlag;
 
     @Bean(name = "servicesActiveDirectoryLoginConfiguration")
-    public LoginConfiguration servicesAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
+    public LoginConfiguration servicesAdLoginConfiguration(ActiveDirectoryAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
                                                            LoginConfigurationBuilder builder) {
         // @formatter:off
@@ -72,7 +71,7 @@ public class ActiveDirectoryAuthConfig {
     }
 
     @Bean(name = "uiActiveDirectoryLoginConfiguration")
-    public LoginConfiguration uiAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
+    public LoginConfiguration uiAdLoginConfiguration(ActiveDirectoryAuthenticationProvider authProvider,
                                                      UserDetailsContextMapper userMapper,
                                                      LoginConfigurationBuilder builder) {
         // @formatter:off
@@ -105,11 +104,13 @@ public class ActiveDirectoryAuthConfig {
     }
 
 
-    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<DelegatingActiveDirectoryLdapAuthenticationProvider> {
+    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<ActiveDirectoryAuthenticationProvider> {
 
         private URI uri;
         private String domain;
         private boolean enableGroups = false;
+        private String serviceUser = null;
+        private String servicePassword = null;
         private UserDetailsContextMapper mapper;
 
         public void setEnableGroups(boolean groupsEnabled) {
@@ -127,19 +128,30 @@ public class ActiveDirectoryAuthConfig {
         public void setMapper(UserDetailsContextMapper mapper) {
             this.mapper = mapper;
         }
-
-        @Override
-        public Class<?> getObjectType() {
-            return DelegatingActiveDirectoryLdapAuthenticationProvider.class;
+        
+        public void setServiceUser(String serviceUser) {
+            this.serviceUser = serviceUser;
+        }
+        
+        public void setServicePassword(String servicePassword) {
+            this.servicePassword = servicePassword;
         }
 
         @Override
-        protected DelegatingActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
-            ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+        public Class<?> getObjectType() {
+            return ActiveDirectoryAuthenticationProvider.class;
+        }
+
+        @Override
+        protected ActiveDirectoryAuthenticationProvider createInstance() throws Exception {
+            ActiveDirectoryAuthenticationProvider provider = new ActiveDirectoryAuthenticationProvider(this.domain, 
+                                                                                                                   this.uri.toASCIIString(), 
+                                                                                                                   this.enableGroups, 
+                                                                                                                   this.serviceUser, 
+                                                                                                                   this.servicePassword);
             provider.setConvertSubErrorCodesToExceptions(true);
             provider.setUserDetailsContextMapper(this.mapper);
-
-            return new DelegatingActiveDirectoryLdapAuthenticationProvider(provider, this.enableGroups);
+            return provider;
         }
     }
 
