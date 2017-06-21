@@ -62,6 +62,7 @@ sed -i 's/nifi.content.repository.directory.default=.\/content_repository/nifi.c
 sed -i 's/nifi.content.repository.archive.enabled=true/nifi.content.repository.archive.enabled=false/' $NIFI_INSTALL_HOME/current/conf/nifi.properties
 sed -i 's/nifi.provenance.repository.directory.default=.\/provenance_repository/nifi.provenance.repository.directory.default=\/opt\/nifi\/data\/provenance_repository/' $NIFI_INSTALL_HOME/current/conf/nifi.properties
 sed -i 's/nifi.web.http.port=8080/nifi.web.http.port=8079/' $NIFI_INSTALL_HOME/current/conf/nifi.properties
+sed -i 's/nifi.provenance.repository.implementation=org.apache.nifi.provenance.PersistentProvenanceRepository/nifi.provenance.repository.implementation=com.thinkbiganalytics.nifi.provenance.repo.KyloPersistentProvenanceEventRepository/' $NIFI_INSTALL_HOME/current/conf/nifi.properties
 
 echo "Updating the log file path"
 sed -i 's/NIFI_LOG_DIR=\".*\"/NIFI_LOG_DIR=\"\/var\/log\/nifi\"/' $NIFI_INSTALL_HOME/current/bin/nifi-env.sh
