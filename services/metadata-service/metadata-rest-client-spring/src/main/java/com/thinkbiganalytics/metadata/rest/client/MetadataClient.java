@@ -49,12 +49,24 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,10 +176,14 @@ public class MetadataClient {
         this.base = base;
         this.proxyBase = URI.create(this.base.getScheme()+"://"+this.base.getHost()+"/proxy");
         if (credsProvider != null) {
-            HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
+            HttpClient httpClient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
                 .setSSLContext(sslContext != null ? sslContext : null)
                 .build();
-            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth(new HttpHost(base.getHost(), 
+                                                                                                                   base.getPort(), 
+                                                                                                                   base.getScheme()), 
+                                                                                                      httpClient);
             this.template = new RestTemplate(reqFactory);
         } else {
             this.template = new RestTemplate();
@@ -190,6 +206,11 @@ public class MetadataClient {
         return credsProvider;
     }
 
+//    public static CredentialsProvider createBasicCredentialProvider(String username, String password) {
+//        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+//        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+//    }
+    
     /**
      * Converts one or more strings to a path, compatible with the OS representation of a path
      *
@@ -763,6 +784,34 @@ public class MetadataClient {
             return resp.getBody();
         } else {
             throw new WebResponseException(ResponseEntity.status(resp.getStatusCode()).headers(resp.getHeaders()).build());
+        }
+    }
+    
+    
+    /**
+     * Preemptively uses BASIC auth rather than negotiating the auth scheme.
+     */
+    private class HttpComponentsClientHttpRequestFactoryBasicAuth extends HttpComponentsClientHttpRequestFactory {
+
+        private HttpHost host;
+
+        public HttpComponentsClientHttpRequestFactoryBasicAuth(HttpHost host, HttpClient httpClient) {
+            super(httpClient);
+            this.host = host;
+        }
+
+        protected HttpContext createHttpContext(HttpMethod httpMethod, URI uri) {
+            return createHttpContext();
+        }
+
+        private HttpContext createHttpContext() {
+            AuthCache authCache = new BasicAuthCache();
+            BasicScheme basicAuth = new BasicScheme();
+            authCache.put(host, basicAuth);
+
+            BasicHttpContext localcontext = new BasicHttpContext();
+            localcontext.setAttribute(HttpClientContext.AUTH_CACHE, authCache);
+            return localcontext;
         }
     }
 
