@@ -29,5 +29,6 @@
   <include file="update-version-table.xml" relativeToChangelogFile="true"/>
   <include file="alter-nifi-feed-processor-stats.xml" relativeToChangelogFile="true" />
   <include file="alter-job_execution-add-stream-column.xml" relativeToChangelogFile="true" />
+  <include file="alter_feed_add_time_btwn_batch_jobs_column" relativeToChangelogFile="true" />
 
 </databaseChangeLog>
