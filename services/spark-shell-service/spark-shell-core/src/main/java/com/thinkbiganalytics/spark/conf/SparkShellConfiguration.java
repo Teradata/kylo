@@ -25,6 +25,7 @@ import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.shell.DefaultProcessManager;
 import com.thinkbiganalytics.spark.shell.JerseySparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.MultiUserProcessManager;
 import com.thinkbiganalytics.spark.shell.ServerProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
@@ -80,15 +81,19 @@ public class SparkShellConfiguration {
      * Creates a Spark Shell process manager for creating new Spark Shell instances.
      *
      * @param sparkShellProperties the Spark Shell properties
+     * @param kerberosProperties   the Kerberos properties for the Spark Shell client
      * @param users                mapping of username to password
      * @return a Spark Shell process manager
      */
     @Bean
-    public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, @Qualifier("memoryLoginUsers") final Properties users) {
+    public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,
+                                                   @Qualifier("memoryLoginUsers") final Properties users) {
         if (sparkShellProperties.getServer() != null) {
             return new ServerProcessManager(sparkShellProperties);
+        } else if (sparkShellProperties.isProxyUser()) {
+            return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users);
         } else {
-            return new DefaultProcessManager(sparkShellProperties, users);
+            return new DefaultProcessManager(sparkShellProperties, kerberosProperties, users);
         }
     }
 
