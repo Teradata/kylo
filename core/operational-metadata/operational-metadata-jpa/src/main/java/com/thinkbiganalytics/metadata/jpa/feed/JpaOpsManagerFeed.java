@@ -73,6 +73,9 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     @org.hibernate.annotations.Type(type = "yes_no")
     private boolean isStream;
 
+    @Column(name =" TIME_BTWN_BATCH_JOBS")
+    private Long timeBetweenBatchJobs;
+
     @OneToMany(targetEntity = JpaBatchJobInstance.class, mappedBy = "feed", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
 
@@ -159,5 +162,13 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
 
     public void setStream(boolean stream) {
         isStream = stream;
+    }
+
+    public Long getTimeBetweenBatchJobs() {
+        return timeBetweenBatchJobs;
+    }
+
+    public void setTimeBetweenBatchJobs(Long timeBetweenBatchJobs) {
+        this.timeBetweenBatchJobs = timeBetweenBatchJobs;
     }
 }

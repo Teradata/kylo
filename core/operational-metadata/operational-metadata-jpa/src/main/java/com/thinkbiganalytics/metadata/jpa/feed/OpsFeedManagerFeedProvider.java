@@ -271,6 +271,23 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
 
     /**
+     *
+     * @param feedNames a set of category.feed names
+     * @param timeBetweenBatchJobs  a time in millis to suppress new job creation
+     */
+    @Override
+    public void updateTimeBetweenBatchJobs(Set<String> feedNames, Long timeBetweenBatchJobs) {
+        List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
+        if(feeds != null){
+            for(JpaOpsManagerFeed feed: feeds){
+                feed.setTimeBetweenBatchJobs(timeBetweenBatchJobs);
+            }
+            repository.save(feeds);
+        }
+        feeds.stream().forEach(feed -> notifyOnFeedChanged(feed));
+    }
+
+    /**
      * Subscribe to feed deletion events
      *
      * @param listener a delete feed listener

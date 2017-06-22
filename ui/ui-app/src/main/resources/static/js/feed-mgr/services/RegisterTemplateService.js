@@ -99,7 +99,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     needsReusableTemplate: this.model.needsReusableTemplate,
                     reusableTemplateConnections: this.model.reusableTemplateConnections,
                     state: this.model.state,
-                    isStream: this.model.isStream
+                    isStream: this.model.isStream,
+                    templateTableOption: this.model.templateTableOption,
+                    timeBetweenStartingBatchJobs: this.model.timeBetweenStartingBatchJobs
                 }
             },
             newReusableConnectionInfo: function () {
@@ -509,9 +511,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @param nifiTemplateId
              * @param reusableTemplateConnections
              * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
-     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
-     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
-     *            request:{connectionInfo:reusableTemplateConnections}}
+             *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+             *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+             *            request:{connectionInfo:reusableTemplateConnections}}
              */
             getNiFiTemplateFlowInformation: function (nifiTemplateId, reusableTemplateConnections) {
                 var deferred = $q.defer();
@@ -770,6 +772,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length > 0;
                         self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
                         self.model.isStream = templateData.isStream;
+                        self.model.templateTableOption = templateData.templateTableOption;
+                        self.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }

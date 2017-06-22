@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
@@ -110,9 +111,10 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * This will create a new job execution if one does not exist for this event using the {@link ProvenanceEventRecordDTO#jobFlowFileId}
      *
      * @param event a provenance event
+     * @param feed the feed related to this event
      * @return the job execution
      */
-    BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event);
+    BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
 
     /**
      * find the job execution from the provenance event

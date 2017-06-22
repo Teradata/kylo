@@ -370,7 +370,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * Get or Create the JobExecution for a given ProvenanceEvent
      */
     @Override
-    public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event) {
+    public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         if(event.isStream()){
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
             if(event.isStartOfJob() || event.isFinalJobEvent()) {
@@ -381,7 +381,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
         }
         else {
-            if(isProcessBatchEvent(event)) {
+            if(feed == null) {
+              feed =  opsManagerFeedRepository.findByName(event.getFeedName());
+            }
+            if(isProcessBatchEvent(event, feed)) {
                 return getOrCreateBatchJobExecution(event);
             }
             else {
@@ -397,8 +400,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return relatedFlowFile;
     }
 
-    private Long timeBetweenStartingJobs(String feedName) {
-        return 2000L;
+    private Long timeBetweenStartingJobs(OpsManagerFeed feed) {
+        Long time = null;
+        if (feed != null) {
+            time = feed.getTimeBetweenBatchJobs();
+        }
+       if(time == null) {
+            time = 1000L;
+       }
+       return time;
     }
 
 
@@ -408,7 +418,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
+private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
 
         //if we have a job already for this event then let it pass
     JpaBatchJobExecution jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
@@ -425,8 +435,8 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
             } else {
                 boolean isSkipped = getOtherBatchJobFlowFile(event) != null;
                 Long diff = event.getEventTime() - jobExecution.getStartTime().getMillis();
-                Long threshold = timeBetweenStartingJobs(event.getFeedName());
-                if (!isSkipped && jobExecution != null && diff >= 0 && diff < threshold) {
+                Long threshold = timeBetweenStartingJobs(feed);
+                if (!isSkipped && threshold != -1 && jobExecution != null && diff >= 0 && diff < threshold) {
 
                     //relate this to that and return
                     BatchRelatedFlowFile related = getOtherBatchJobFlowFile(event);
@@ -564,12 +574,12 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event) {
      */
     @Override
     public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event);
+        OpsManagerFeed feed = opsManagerFeedRepository.findByName(event.getFeedName());
+        JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event,feed);
         if(jobExecution != null) {
             return save(jobExecution, event, nifiEvent);
         }
         return null;
-
     }
 
     /**
