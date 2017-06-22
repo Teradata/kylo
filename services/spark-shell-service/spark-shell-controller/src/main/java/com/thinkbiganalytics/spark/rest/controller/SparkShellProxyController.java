@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -331,8 +332,9 @@ public class SparkShellProxyController {
     @Nonnull
     private SparkShellProcess getSparkShellProcess() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        final String username = (auth.getPrincipal() instanceof User) ? ((User) auth.getPrincipal()).getUsername() : auth.getPrincipal().toString();
         try {
-            return processManager.getProcessForUser(auth.getPrincipal().toString());
+            return processManager.getProcessForUser(username);
         } catch (final Exception e) {
             throw error(Response.Status.INTERNAL_SERVER_ERROR, "start.error", e);
         }

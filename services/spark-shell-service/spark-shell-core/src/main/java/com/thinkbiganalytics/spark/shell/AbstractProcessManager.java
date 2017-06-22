@@ -20,11 +20,14 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -57,13 +60,19 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
      * Kylo Spark Shell client configuration
      */
     @Nonnull
-    private final SparkShellProperties clientProperties;
+    protected final SparkShellProperties clientProperties;
 
     /**
      * Thread pool for starting and managing processes
      */
     @Nonnull
     private final ScheduledExecutorService executor;
+
+    /**
+     * Kerberos configuration for Spark Shell client
+     */
+    @Nullable
+    protected final KerberosSparkProperties kerberos;
 
     /**
      * List of process listeners
@@ -87,11 +96,21 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
      * Constructs an {@code AbstractProcessManager} with the specified configuration.
      *
      * @param sparkShellProperties the Kylo Spark Shell client configuration
+     * @param kerberosProperties   the Kerberos configuration for the Kylo Spark Shell client
      * @param users                the username to password mapping
      */
-    public AbstractProcessManager(@Nonnull final SparkShellProperties sparkShellProperties, @Nonnull final Properties users) {
+    public AbstractProcessManager(@Nonnull final SparkShellProperties sparkShellProperties, @Nonnull final KerberosSparkProperties kerberosProperties, @Nonnull final Properties users) {
         this.clientProperties = sparkShellProperties;
         this.users = users;
+
+        // Verify Kerberos properties
+        if (kerberosProperties.isKerberosEnabled()) {
+            Preconditions.checkState(StringUtils.isNoneBlank(kerberosProperties.getKeytabLocation()), "The kerberos.spark.keytabLocation property cannot be blank when Kerberos is enabled.");
+            Preconditions.checkState(StringUtils.isNoneBlank(kerberosProperties.getKerberosPrincipal()), "The kerberos.spark.kerberosPrincipal property cannot be blank when Kerberos is enabled.");
+            kerberos = kerberosProperties;
+        } else {
+            kerberos = null;
+        }
 
         // Create the scheduler
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
@@ -269,7 +288,12 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
      */
     @Nonnull
     protected SparkShellProcessBuilder createProcessBuilder(@Nullable final String username) {
-        return SparkShellProcessBuilder.create(clientProperties);
+        final SparkShellProcessBuilder builder = SparkShellProcessBuilder.create(clientProperties);
+        if (kerberos != null && (username == null || !clientProperties.isProxyUser())) {
+            builder.addSparkArg("--keytab", kerberos.getKeytabLocation());
+            builder.addSparkArg("--principal", kerberos.getKerberosPrincipal());
+        }
+        return builder;
     }
 
     /**

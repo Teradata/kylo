@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 import com.google.common.base.Preconditions;
+import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 
 import java.util.Collections;
@@ -45,11 +46,12 @@ public class DefaultProcessManager extends AbstractProcessManager {
     /**
      * Constructs a {@code DefaultProcessManager} with the specified configuration.
      *
-     * @param properties the Kylo Spark Shell configuration
-     * @param users      the username / password mapping
+     * @param properties         the Kylo Spark Shell configuration
+     * @param kerberosProperties the Kerberos configuration for the Kylo Spark Shell client
+     * @param users              the username / password mapping
      */
-    public DefaultProcessManager(@Nonnull final SparkShellProperties properties, @Nonnull final Properties users) {
-        super(properties, users);
+    public DefaultProcessManager(@Nonnull final SparkShellProperties properties, @Nonnull final KerberosSparkProperties kerberosProperties, @Nonnull final Properties users) {
+        super(properties, kerberosProperties, users);
         Preconditions.checkArgument(!properties.isProxyUser(), "User impersonation is not supported by this userProcess manager.");
     }
 

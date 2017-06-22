@@ -38,8 +38,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
@@ -62,6 +64,11 @@ public class SparkShellProcessBuilder {
      * Name of the client secret environment variable
      */
     private static final String CLIENT_SECRET = "KYLO_CLIENT_SECRET";
+
+    /**
+     * Set of Spark argument switches (args requiring no value)
+     */
+    private static final Set<String> SWITCHES = Stream.of("--supervise", "-v").collect(Collectors.toSet());
 
     /**
      * Creates a new {@code SparkShellProcessBuilder} using the specified Spark Shell properties.
@@ -261,7 +268,7 @@ public class SparkShellProcessBuilder {
         final PeekingIterator<String> iter = Iterators.peekingIterator(args.iterator());
         while (iter.hasNext()) {
             final String arg = iter.next();
-            if (arg.startsWith("-") && iter.hasNext() && !iter.peek().startsWith("-")) {
+            if (!SWITCHES.contains(arg) && iter.hasNext()) {
                 addSparkArg(arg, iter.next());
             } else {
                 addSparkArg(arg);
