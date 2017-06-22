@@ -106,7 +106,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     roleMemberships:this.model.roleMemberships,
                     owner: this.model.owner,
                     roleMembershipsUpdated: this.model.roleMembershipsUpdated,
-                    templateTableOption: this.model.templateTableOption
+                    templateTableOption: this.model.templateTableOption,
+                    timeBetweenStartingBatchJobs: this.model.timeBetweenStartingBatchJobs
+
                 }
             },
             newReusableConnectionInfo: function () {
@@ -837,6 +839,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.allowedActions = templateData.allowedActions;
                         self.model.roleMemberships = templateData.roleMemberships;
                         self.model.templateTableOption = templateData.templateTableOption;
+                        self.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }

@@ -103,6 +103,14 @@ public class RegisteredTemplate extends EntityAccessControl {
      */
     private String templateTableOption;
 
+    /**
+     * For Batch Feeds that may start many flowfiles/jobs at once in a short amount of time
+     * we don't necessarily want to show all of those as individual jobs in ops manager as they may merge and join into a single ending flow.
+     * For a flood of starting jobs if ops manager receives more than 1 starting event within this given interval it will supress the creation of the next Job
+     * Set this to -1L or 0L to bypass and always create a job instance per starting flow file.
+     */
+    private Long timeBetweenStartingBatchJobs = 1000L;
+
     public RegisteredTemplate() {
 
     }
@@ -136,6 +144,7 @@ public class RegisteredTemplate extends EntityAccessControl {
         this.setRoleMemberships(registeredTemplate.getRoleMemberships());
         this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
+        this.setTimeBetweenStartingBatchJobs(registeredTemplate.getTimeBetweenStartingBatchJobs());
         this.initializeProcessors();
     }
 
@@ -586,5 +595,13 @@ public class RegisteredTemplate extends EntityAccessControl {
     @JsonIgnore
     public void setUpdated(boolean updated) {
         this.updated = updated;
+    }
+
+    public Long getTimeBetweenStartingBatchJobs() {
+        return timeBetweenStartingBatchJobs;
+    }
+
+    public void setTimeBetweenStartingBatchJobs(Long timeBetweenStartingBatchJobs) {
+        this.timeBetweenStartingBatchJobs = timeBetweenStartingBatchJobs;
     }
 }

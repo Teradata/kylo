@@ -75,9 +75,21 @@ public interface OpsManagerFeedProvider {
 
     /**
      * Feed Names to update the streaming flag
-     * @param feedNames
+     * @param feedNames set of category.feed names
+     * @param isStream true if stream, false if not
      */
     void updateStreamingFlag(Set<String> feedNames, boolean isStream);
+
+
+    /**
+     * For Batch Feeds that may start many flowfiles/jobs at once in a short amount of time
+     * we don't necessarily want to show all of those as individual jobs in ops manager as they may merge and join into a single ending flow.
+     * For a flood of starting jobs if ops manager receives more than 1 starting event within this given interval it will supress the creation of the next Job
+     * Set this to -1L or 0L to bypass and always create a job instance per starting flow file.
+     * @param feedNames a set of category.feed names
+     * @param timeBetweenBatchJobs  a time in millis to supress new job creation
+     */
+    void updateTimeBetweenBatchJobs(Set<String> feedNames, Long timeBetweenBatchJobs);
 
     /**
      * save a feed with a specific feed id and name

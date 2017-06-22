@@ -119,6 +119,11 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         public boolean isStream() {
             return false;
         }
+
+        @Override
+        public Long getTimeBetweenBatchJobs() {
+            return 0L;
+        }
     };
 
     /**
@@ -168,6 +173,21 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
             }
         }
         return event;
+    }
+
+    public OpsManagerFeed getFeed(ProvenanceEventRecordDTO event){
+        String feedName = event.getFeedName();
+        if(StringUtils.isBlank(feedName)){
+            feedName = getFeedName(event.getFirstEventProcessorId());
+        }
+        if(StringUtils.isNotBlank(feedName)) {
+            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
+            if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+                return feed;
+            }
+
+        }
+        return null;
     }
 
 

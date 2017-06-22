@@ -187,12 +187,20 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
                 registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(templateName));
             if(newTemplate != null) {
                 //notify if this is the first template update, or if we have changed the streaming flag
-                boolean notify = (previousTemplate == null || previousTemplate.isStream() != newTemplate.isStream());
+                boolean notifyOfStreamingChange = (previousTemplate == null || previousTemplate.isStream() != newTemplate.isStream());
+                boolean notifyOfTimeChange = (previousTemplate == null || previousTemplate.getTimeBetweenStartingBatchJobs() != newTemplate.getTimeBetweenStartingBatchJobs());
 
-                if (notify) {
+                if (notifyOfStreamingChange) {
                     Set<String> feedNames = newTemplate.getFeedNames();
                     if(feedNames != null && !feedNames.isEmpty()) {
                         metadataAccess.commit(() -> opsManagerFeedProvider.updateStreamingFlag(feedNames, newTemplate.isStream()),MetadataAccess.SERVICE);
+                    }
+                }
+
+                if (notifyOfTimeChange) {
+                    Set<String> feedNames = newTemplate.getFeedNames();
+                    if(feedNames != null && !feedNames.isEmpty()) {
+                        metadataAccess.commit(() -> opsManagerFeedProvider.updateTimeBetweenBatchJobs(feedNames, newTemplate.getTimeBetweenStartingBatchJobs()),MetadataAccess.SERVICE);
                     }
                 }
             }
