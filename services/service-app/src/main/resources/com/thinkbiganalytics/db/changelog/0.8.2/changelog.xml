@@ -23,12 +23,12 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
   <include file="alter-feed-add-stream-column.xml" relativeToChangelogFile="true"/>
-  <include file="alter-ops-manager-views.xml" relativeToChangelogFile="true"/>
   <include file="batch_related_flow_files_table.xml" relativeToChangelogFile="true"/>
   <include file="update-version-table.xml" relativeToChangelogFile="true"/>
   <include file="alter-nifi-feed-processor-stats.xml" relativeToChangelogFile="true" />
   <include file="alter-job_execution-add-stream-column.xml" relativeToChangelogFile="true" />
-  <include file="alter_views2.xml" relativeToChangelogFile="true" />
+  <include file="alter_feed_add_time_btwn_batch_jobs_column" relativeToChangelogFile="true" />
 
 </databaseChangeLog>
