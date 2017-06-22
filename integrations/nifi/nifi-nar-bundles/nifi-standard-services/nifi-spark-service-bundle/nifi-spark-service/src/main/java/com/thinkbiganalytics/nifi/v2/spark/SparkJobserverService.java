@@ -1,10 +1,14 @@
 package com.thinkbiganalytics.nifi.v2.spark;
 
+import org.apache.nifi.annotation.behavior.Stateful;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.annotation.lifecycle.OnShutdown;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.state.Scope;
+import org.apache.nifi.components.state.StateManager;
+import org.apache.nifi.components.state.StateMap;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
@@ -15,6 +19,7 @@ import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
 import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
@@ -47,6 +53,7 @@ import javax.annotation.Nonnull;
 
 @Tags({"thinkbig", "spark"})
 @CapabilityDescription("Provides long running spark contexts and shared RDDs using Spark jobserver.")
+@Stateful(scopes = {Scope.LOCAL}, description = "Gives a UUID to the instance of the controller service. This key is used as a suffix for context keys to avoid collision between instances.")
 public class SparkJobserverService extends AbstractControllerService implements JobService {
 
     /**
@@ -80,6 +87,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     private volatile String syncTimeout;
     private volatile Timer contextTimeoutTimer = new Timer();
     private volatile Map<String, SparkContextState> sparkContextsStates = Collections.synchronizedMap(new HashMap<String, SparkContextState>());
+    private volatile UUID uuid;
 
     @Override
     protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
@@ -127,6 +135,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
             }
             syncTimeout = context.getProperty(SYNC_TIMEOUT).getValue();
+            setUUID();
             setupContextTimeoutTask();
 
         } catch (Exception ex) {
@@ -141,12 +150,13 @@ public class SparkJobserverService extends AbstractControllerService implements 
         Boolean contextExists = false;
 
         try {
-            contextExists = client.getContexts().contains(contextName);
+            List<String> contexts = client.getContexts();
+            contextExists = client.getContexts().contains(getServerContextName(contextName));
 
             if (!contextExists) {
-                getLogger().info("Context {} not found on Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
+                getLogger().info("Context {} not found on Spark Jobserver {}", new Object[]{getServerContextName(contextName), jobServerUrl});
             } else {
-                getLogger().info("Context {} exists on Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
+                getLogger().info("Context {} exists on Spark Jobserver {}", new Object[]{getServerContextName(contextName), jobServerUrl});
                 contextExists = true;
             }
 
@@ -174,12 +184,12 @@ public class SparkJobserverService extends AbstractControllerService implements 
                 params.put(ISparkJobServerClientConstants.PARAM_TIMEOUT, syncTimeout);
 
                 getLogger().info("Creating {} {} with {} executors, {} cores and {} memory per executor on Spark Jobserver {}",
-                                 new Object[]{contextType, contextName, numExecutors, numCPUCores, memPerNode, jobServerUrl});
-                contextRunning = client.createContext(contextName, params);
+                                 new Object[]{contextType, getServerContextName(contextName), numExecutors, numCPUCores, memPerNode, jobServerUrl});
+                contextRunning = client.createContext(getServerContextName(contextName), params);
 
                 if (contextRunning) {
                     getLogger().info("Created {} {} on Spark Jobserver {}",
-                                     new Object[]{contextType, contextName, jobServerUrl});
+                                     new Object[]{contextType, getServerContextName(contextName), jobServerUrl});
                 }
             }
         } catch (Exception ex) {
@@ -207,10 +217,10 @@ public class SparkJobserverService extends AbstractControllerService implements 
             try {
                 synchronized (sparkContextsStates) {
                     if (sparkContextsStates.containsKey(contextName)) {
-                        contextDeleted = client.deleteContext(contextName);
+                        contextDeleted = client.deleteContext(getServerContextName(contextName));
                         if (contextDeleted) {
                             sparkContextsStates.remove(contextName);
-                            getLogger().info("Deleted context {} from Spark Jobserver {}", new Object[]{contextName, jobServerUrl});
+                            getLogger().info("Deleted context {} from Spark Jobserver {}", new Object[]{getServerContextName(contextName), jobServerUrl});
                         }
                     }
                 }
@@ -224,7 +234,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
     @Override
     public SparkJobResult executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
 
-        String id = contextName + System.nanoTime();
+        String id = String.format("%s:%s", contextName, System.nanoTime());
 
         synchronized (sparkContextsStates) {
             if (sparkContextsStates.containsKey(contextName)) {
@@ -242,7 +252,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
             params.put(ISparkJobServerClientConstants.PARAM_APP_NAME, appName);
             params.put(ISparkJobServerClientConstants.PARAM_CLASS_PATH, classPath);
-            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT, contextName);
+            params.put(ISparkJobServerClientConstants.PARAM_CONTEXT, getServerContextName(contextName));
 
             if (async) {
                 params.put(ISparkJobServerClientConstants.PARAM_SYNC, "false");
@@ -253,7 +263,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
             jobResult = client.startJob(args, params);
 
-            getLogger().info("Executed {} {} on context {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, jobServerUrl});
+            getLogger().info("Executed {} {} on context {} on Spark Jobserver {}", new Object[]{appName, classPath, getServerContextName(contextName), jobServerUrl});
 
         } catch (Exception ex) {
             getLogger().trace(ex.getMessage(), ex);
@@ -368,4 +378,36 @@ public class SparkJobserverService extends AbstractControllerService implements 
             return "spark.jobserver.context.DefaultSparkContextFactory";
         }
     }
+
+    /**
+     * Uses StateManager to set or get a UUID for the controller service
+     */
+    private void setUUID() {
+        try {
+            StateManager stateManager = getStateManager();
+            StateMap stateMap = stateManager.getState(Scope.LOCAL);
+
+            if (stateMap.getVersion() == -1L) {
+                Map<String, String> stateProperties = new HashMap<>(stateMap.toMap());
+                uuid = UUID.randomUUID();
+                stateProperties.put("serverID", uuid.toString());
+                stateManager.setState(stateProperties, Scope.LOCAL);
+                getLogger().info("Created new SparkJobserverService UUID: {}", new Object[]{uuid.toString()});
+            } else {
+                uuid = UUID.fromString(stateMap.get("serverID"));
+                getLogger().info("Retrieved SparkJobserverServiceUUID: {}", new Object[]{uuid.toString()});
+            }
+
+        } catch (IOException ioe) {
+            getLogger().trace(ioe.getMessage(), ioe);
+        }
+    }
+
+    /**
+     * Gets the controller service friendly name of the Spark Context
+     *
+     * @param contextName the name of the Spark Context
+     * @return contextName@uuid
+     */
+    private String getServerContextName(String contextName) { return String.format("%s@%s", contextName, uuid.toString()); }
 }
