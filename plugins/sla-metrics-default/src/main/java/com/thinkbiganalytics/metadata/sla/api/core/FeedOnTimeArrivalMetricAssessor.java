@@ -88,8 +88,9 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         }
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
+        LOG.debug("Calculated the Expected Date to be {}  (as DateTime: {} ) ",expectedDate, expectedTime);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
-
+        LOG.debug("CurrentTime is: {}.  Comparing {} against the lateTime of {} ",DateTime.now(),lastFeedTime,lateTime);
         builder.compareWith(expectedDate, feedName);
 
         if (lastFeedTime == null) {
@@ -97,14 +98,15 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             builder.message("Feed with the specified name " + feedName + " not found ")
                 .result(AssessmentResult.WARNING);
         } else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
-            LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
+            LOG.debug("Data for feed {} arrived on {}, which was before late time: {}", feedName, lastFeedTime, lateTime);
 
-            builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
+            builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time:  " + lateTime)
                 .result(AssessmentResult.SUCCESS);
         } else if (DateTime.now().isBefore(lateTime)) {
+            LOG.debug("CurrentTime {} is before the lateTime of {}.  Not Assessing",DateTime.now(),lateTime);
             return;
         } else {
-            LOG.debug("Data for feed {} has not arrived before the late time: ", feedName, lateTime);
+            LOG.debug("Data for feed {} has not arrived before the late time: {} ", feedName, lateTime);
 
             builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime)
                 .result(AssessmentResult.FAILURE);
