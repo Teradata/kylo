@@ -52,20 +52,34 @@ public class FileAuthConfig {
     @Value("${security.auth.file.groups:groups.properties}")
     private String groupsResource;
 
+    @Value("${security.auth.file.password.hash.enabled:false}")
+    private boolean passwordHashEnabled;
+
+    @Value("${security.auth.file.password.hash.algorithm:MD5}")
+    private String hashAlgorithm;
+
+    @Value("${security.auth.file.password.hash.encoding:base64}")
+    private String hashEncoding;
+
     @Bean(name = "servicesFileLoginConfiguration")
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                            .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(this.servicesLoginFlag)      
-                            .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "groups.default.properties")
-                            .option("usersProperties", usersResource)
-                            .option("rolesProperties", groupsResource)
-                            .add()
-                        .build();
+        LoginConfigurationBuilder.ModuleBuilder building = builder
+                .loginModule(JaasAuthConfig.JAAS_SERVICES)
+                .moduleClass(UsersRolesLoginModule.class)
+                .controlFlag(this.servicesLoginFlag)
+                .option("defaultUsersProperties", "users.default.properties")
+                .option("defaultRolesProperties", "groups.default.properties")
+                .option("usersProperties", usersResource)
+                .option("rolesProperties", groupsResource);
+
+        if(passwordHashEnabled) {
+            building.option("hashAlgorithm", hashAlgorithm)
+                    .option("hashEncoding", hashEncoding);
+        }
+
+        return building.add().build();
 
         // @formatter:on
     }
@@ -74,16 +88,21 @@ public class FileAuthConfig {
     public LoginConfiguration uiFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_UI)
-                            .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(this.uiLoginFlag)
-                            .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "groups.default.properties")
-                            .option("usersProperties", usersResource)
-                            .option("rolesProperties", groupsResource)
-                            .add()
-                        .build();
+        LoginConfigurationBuilder.ModuleBuilder building = builder
+                .loginModule(JaasAuthConfig.JAAS_UI)
+                .moduleClass(UsersRolesLoginModule.class)
+                .controlFlag(this.uiLoginFlag)
+                .option("defaultUsersProperties", "users.default.properties")
+                .option("defaultRolesProperties", "groups.default.properties")
+                .option("usersProperties", usersResource)
+                .option("rolesProperties", groupsResource);
+
+        if(passwordHashEnabled) {
+            building.option("hashAlgorithm", hashAlgorithm)
+                    .option("hashEncoding", hashEncoding);
+        }
+
+        return building.add().build();
 
         // @formatter:on
     }
