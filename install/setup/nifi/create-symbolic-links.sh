@@ -17,8 +17,27 @@ ln -f -s $NIFI_HOME/data/lib/kylo-nifi-core-v1-nar-*.nar $NIFI_HOME/current/lib/
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-spark-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-spark-nar.nar
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-nar.nar
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-service-nar.nar
-ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-elasticsearch-nar.nar
+
+##find the nifi version to send in the correct provenance nar
+
+framework_name=$(find $NIFI_HOME/current/lib/ -name "nifi-framework-api*.jar")
+prefix="$NIFI_HOME/current/lib/nifi-framework-api-"
+len=${#prefix}
+ver=${framework_name:$len}
+
+if [[ $ver == 1.0* ]] || [[ $ver == 1.1* ]] ;
+then
+  echo "Using provenance repository for NiFi version $ver"
+  ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
+elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] ;
+then
+   echo "Using provenance repository for NiFi version $ver"
+  ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1.2-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
+fi
+
+##end provenance nar
+
 
 if [ -z ${SPARK_PROFILE} ]; then
         SPARK_SUBMIT=$(which spark-submit)

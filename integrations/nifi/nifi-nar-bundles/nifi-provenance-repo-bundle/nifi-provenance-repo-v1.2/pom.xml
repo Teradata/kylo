@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-nifi-provenance-repo</artifactId>
+  <artifactId>kylo-nifi-provenance-repo-v1.2</artifactId>
   <parent>
     <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
     <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
@@ -12,35 +12,18 @@
   <packaging>jar</packaging>
 
   <properties>
-    <nifi.version>1.1.2</nifi.version>
+    <nifi.version>1.2.0</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
+
+
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-jms</artifactId>
+      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+      <artifactId>kylo-nifi-provenance-repo</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>kylo-metadata-rest-model</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-provenance-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-activemq-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-
 
     <dependency>
       <groupId>org.apache.nifi</groupId>
@@ -98,38 +81,6 @@
       <artifactId>spring-jms</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.blogspot.mydailyjava</groupId>
-      <artifactId>guava-cache-overflow-extension</artifactId>
-      <version>0.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-osgi-bundle</artifactId>
-      <version>1.0.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mapdb</groupId>
-      <artifactId>mapdb</artifactId>
-      <version>3.0.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-pool2</artifactId>
-      <version>2.0</version>
-    </dependency>
-
-
     <!-- Testing -->
     <dependency>
       <groupId>org.assertj</groupId>
@@ -157,48 +108,5 @@
 
 
 
-
   </dependencies>
-<!--
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>com.soebes.maven.plugins</groupId>
-        <artifactId>iterator-maven-plugin</artifactId>
-        <version>0.5.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>iterator</goal>
-            </goals>
-            <configuration>
-              <items>
-                <item>1.1.2</item>
-                <item>1.2.0</item>
-              </items>
-              <pluginExecutors>
-                <pluginExecutor>
-                  <goal>single</goal>
-                  <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                  </plugin>
-                  <configuration>
-                    <descriptors>
-                      <descriptor>${project.basedir}/src/main/assembly/descriptor.xml</descriptor>
-                    </descriptors>
-                  </configuration>
-                </pluginExecutor>
-              </pluginExecutors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-  -->
-
 </project>
-
-

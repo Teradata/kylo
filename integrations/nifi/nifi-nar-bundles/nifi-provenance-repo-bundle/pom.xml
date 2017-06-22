@@ -18,8 +18,10 @@
 
   <modules>
     <module>nifi-provenance-repo</module>
+    <module>nifi-provenance-repo-v1.2</module>
     <module>nifi-provenance-repo-v1</module>
     <module>nifi-provenance-repo-v1-nar</module>
+    <module>nifi-provenance-repo-v1.2-nar</module>
   </modules>
 
 </project>

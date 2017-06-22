@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class ConfigurationProperties {
 
-    private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(ConfigurationProperties.class);
 
     public static String DEFAULT_BACKUP_LOCATION = "/opt/nifi/feed-event-statistics.gz";
     public static Integer DEFAULT_MAX_EVENTS = 10;

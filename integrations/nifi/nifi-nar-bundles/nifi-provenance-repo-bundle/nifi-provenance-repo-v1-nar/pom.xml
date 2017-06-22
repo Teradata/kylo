@@ -19,31 +19,18 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>kylo-nifi-core-service-nar</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-provenance-repository-nar</artifactId>
+      <version>${nifi.version}</version>
       <type>nar</type>
     </dependency>
 
     <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjrt</artifactId>
-      <version>1.8.9</version>
-    </dependency>
-
-
-    <dependency>
       <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
-      <artifactId>kylo-nifi-provenance-repo</artifactId>
+      <artifactId>kylo-nifi-provenance-repo-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <!--
-    <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-nifi-rest-client-v1</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    -->
+
   </dependencies>
 
 </project>
