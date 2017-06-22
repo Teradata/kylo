@@ -602,6 +602,9 @@ define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/mod
 
         // Initialize state
         init();
+
+        // Ensure Kylo Spark Shell is running
+        $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start");
     };
 
 
