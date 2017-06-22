@@ -163,6 +163,7 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
         ./nifi/install-nifi.sh $nifi_home nifi users
     fi
 
+
     if [ "$java_type" == "2" ] ; then
         ./java/change-nifi-java-home.sh /opt/java/current $nifi_home/current
     elif  [ "$java_type" == "3" ] ; then
@@ -175,5 +176,8 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     else
         ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder nifi users
     fi
+
+    sed -i "s|kylo.provenance.cache.location=\/opt\/nifi\/feed-event-statistics.gz|kylo.provenance.cache.location=$nifi_home\/feed-event-statistics.gz|" $nifi_home/ext-config/config.properties
+
 
 fi
