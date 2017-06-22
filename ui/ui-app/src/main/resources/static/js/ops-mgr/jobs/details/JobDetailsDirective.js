@@ -66,6 +66,12 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         this.jobData = {};
         this.jobExecutionId = null;
 
+        /**
+         * Flag indicating the loading of the passed in JobExecutionId was unable to bring back data
+         * @type {boolean}
+         */
+        this.unableToFindJob = false;
+
         this.showJobParameters = true;
         this.toggleJobParameters = toggleJobParameters;
         this.relatedJobs = [];
@@ -119,7 +125,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             cancelLoadJobDataTimeout();
 
             if (force || !self.refreshing) {
-
+                self.unableToFindJob = false;
                 if (force) {
                     angular.forEach(self.activeJobRequests, function(canceler, i) {
                         canceler.resolve();
@@ -146,12 +152,17 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
                             self.loading = false;
                         }
                     }
+                    else {
+                        self.unableToFindJob = true;
+                    }
 
                     finishedRequest(canceler);
 
                 }
                 var errorFn = function(err) {
                     finishedRequest(canceler);
+                    self.unableToFindJob = true;
+                    addJobErrorMessage(err)
                 }
                 var finallyFn = function() {
 
@@ -382,7 +393,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         }
 
         function updateJob(executionId, job) {
-            clearErrorMessage(executionId);
+            clearErrorMessage();
             var existingJob = self.jobData;
             if (existingJob && executionId == job.executionId) {
                 transformJobData(job);
@@ -412,15 +423,14 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             //  loadRelatedJobs(executionId);
         }
 
-        function addJobErrorMessage(executionId, errMsg) {
-            var existingJob = self.allData['JOB'];
+        function addJobErrorMessage(errMsg) {
+            var existingJob = self.jobData;
             if (existingJob) {
-                errMsg = errMsg.split('<br/>').join('\n');
                 existingJob.errorMessage = errMsg;
             }
         }
 
-        function clearErrorMessage(executionId) {
+        function clearErrorMessage() {
             var existingJob = self.jobData;
             if (existingJob) {
                 existingJob.errorMessage = '';
