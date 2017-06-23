@@ -26,12 +26,14 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.script.ScriptException;
 import javax.ws.rs.core.Response;
 
+@Ignore
 public class SparkShellTransformControllerTest {
 
     /**
