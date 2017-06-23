@@ -59,13 +59,26 @@ public class ActiveDirectoryAuthConfig {
                                                            LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                .loginModule(JaasAuthConfig.JAAS_SERVICES)
+        builder
+            .loginModule(JaasAuthConfig.JAAS_SERVICES)
+                .moduleClass(ActiveDirectoryLoginModule.class)
+                .controlFlag(this.servicesLoginFlag)
+                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
+                .add();
+        
+        // If authentication to AD is through a service account then this
+        // LoginModule may participate in the token-based authentication 
+        // (like SPNEGO, OAuth, etc.) configurations as well.
+        if (authProvider.isUsingServiceCredentials()) {
+            builder
+                .loginModule(JaasAuthConfig.JAAS_SERVICES_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
                     .controlFlag(this.servicesLoginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .add()
-                .build();
+                    .add();
+        }
+        
+        return builder.build();
 
         // @formatter:on
     }
@@ -76,13 +89,26 @@ public class ActiveDirectoryAuthConfig {
                                                      LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                .loginModule(JaasAuthConfig.JAAS_UI)
+        builder
+            .loginModule(JaasAuthConfig.JAAS_UI)
+                .moduleClass(ActiveDirectoryLoginModule.class)
+                .controlFlag(this.uiLoginFlag)
+                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
+                .add();
+        
+        // If authentication to AD is through a service account then this
+        // LoginModule may participate in the token-based authentication 
+        // (like SPNEGO, OAuth, etc.) configurations as well.
+        if (authProvider.isUsingServiceCredentials()) {
+            builder
+                .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.servicesLoginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .add()
-                .build();
+                    .add();
+        }
+        
+        return builder.build();
 
         // @formatter:on
     }
@@ -145,10 +171,10 @@ public class ActiveDirectoryAuthConfig {
         @Override
         protected ActiveDirectoryAuthenticationProvider createInstance() throws Exception {
             ActiveDirectoryAuthenticationProvider provider = new ActiveDirectoryAuthenticationProvider(this.domain, 
-                                                                                                                   this.uri.toASCIIString(), 
-                                                                                                                   this.enableGroups, 
-                                                                                                                   this.serviceUser, 
-                                                                                                                   this.servicePassword);
+                                                                                                       this.uri.toASCIIString(), 
+                                                                                                       this.enableGroups, 
+                                                                                                       this.serviceUser, 
+                                                                                                       this.servicePassword);
             provider.setConvertSubErrorCodesToExceptions(true);
             provider.setUserDetailsContextMapper(this.mapper);
             return provider;

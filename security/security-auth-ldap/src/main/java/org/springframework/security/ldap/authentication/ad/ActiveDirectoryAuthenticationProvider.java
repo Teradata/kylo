@@ -120,6 +120,15 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
         
     }
     
+    /**
+     * Specifies whether this provider has be configured to authenticate to AD using 
+     * a the credentials of a service account username/password.
+     * @return if this provider is configured with service credentials
+     */
+    public boolean isUsingServiceCredentials() {
+        return this.serviceToken != null;
+    }
+    
     /* (non-Javadoc)
      * @see org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider#authenticate(org.springframework.security.core.Authentication)
      */
