@@ -120,6 +120,9 @@ public class FeedStatistics {
                 }
 
             }
+            else {
+                key = key + ":" + feedFlowFileId;
+            }
         }
         else {
             key +=":" + feedFlowFileId;
