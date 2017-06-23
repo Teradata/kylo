@@ -603,8 +603,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             assignFeedDatasources(feed, domainFeed);
 
             boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
+            Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
             //sync the feed information to ops manager
-            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName,isStream));
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName,isStream, timeBetweenBatchJobs));
 
             // Update hadoop security group polices if the groups changed
             if (!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {

@@ -97,7 +97,7 @@ public interface OpsManagerFeedProvider {
      *
      * @return the saved feed
      */
-    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName, boolean isStream);
+    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName, boolean isStream, Long timeBetweenBatchJobs);
 
     /**
      * Delete a feed and all of its operational metadata (i.e. jobs, steps, etc)
