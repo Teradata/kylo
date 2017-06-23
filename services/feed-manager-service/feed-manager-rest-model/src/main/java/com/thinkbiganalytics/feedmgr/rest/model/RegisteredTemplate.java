@@ -139,9 +139,6 @@ public class RegisteredTemplate {
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
         this.isStream = registeredTemplate.isStream();
-        this.setOwner(registeredTemplate.getOwner());
-        this.setRoleMemberships(registeredTemplate.getRoleMemberships());
-        this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
         this.setTimeBetweenStartingBatchJobs(registeredTemplate.getTimeBetweenStartingBatchJobs());
         this.initializeProcessors();
