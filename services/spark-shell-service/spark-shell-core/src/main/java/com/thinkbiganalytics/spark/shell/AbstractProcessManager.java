@@ -206,11 +206,11 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
         if (clientProcess.isPresent()) {
             clientProcess.get().setHostname(registration.getHost());
             clientProcess.get().setPort(registration.getPort());
-            clientProcess.get().setReady();
+            clientProcess.get().setReady(true);
         } else if (systemProcess != null && clientId.equals(systemProcess.getClientId())) {
             systemProcess.setHostname(registration.getHost());
             systemProcess.setPort(registration.getPort());
-            systemProcess.setReady();
+            systemProcess.setReady(true);
         } else {
             log.warn("Tried to register unknown Spark Shell client: {}", clientId);
         }
@@ -252,7 +252,7 @@ public abstract class AbstractProcessManager implements ApplicationRunner, Spark
                     existingProcess.get().setHostname(changedProcess.getHostname());
                     existingProcess.get().setPort(changedProcess.getPort());
                     if (setReady) {
-                        existingProcess.get().setReady();
+                        existingProcess.get().setReady(false);
                     }
                 }
             } else if (changedProcess.getUsername() != null) {

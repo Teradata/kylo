@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 
@@ -106,7 +107,7 @@ public class AbstractProcessManagerTest {
             ready = true;
             invocation.callRealMethod();
             return null;
-        }).when(process).setReady();
+        }).when(process).setReady(Mockito.anyBoolean());
         Mockito.doAnswer(invocation -> {
             process.stateChanged(appHandle);
             return null;
@@ -360,7 +361,7 @@ public class AbstractProcessManagerTest {
          * @param users      the username to password mapping
          */
         MockProcessManager(@Nonnull final SparkShellProperties properties, @Nonnull final Properties users) {
-            super(properties, users);
+            super(properties, new KerberosSparkProperties(), users);
         }
 
         @Nonnull

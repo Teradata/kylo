@@ -99,7 +99,7 @@ public class SparkLauncherSparkShellProcessTest {
         // Test registration
         process.setHostname(HOSTNAME);
         process.setPort(PORT);
-        process.setReady();
+        process.setReady(true);
         Assert.assertEquals(1, processReady.get());
 
         // Test retrieving hostname and port
@@ -147,7 +147,7 @@ public class SparkLauncherSparkShellProcessTest {
         // Test registration
         process.setHostname(HOSTNAME);
         process.setPort(PORT);
-        process.setReady();
+        process.setReady(true);
         Assert.assertEquals(1, processReady.get());
 
         // Test retrieving hostname and port

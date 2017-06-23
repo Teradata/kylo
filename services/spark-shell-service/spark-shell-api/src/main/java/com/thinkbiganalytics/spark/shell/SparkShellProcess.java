@@ -51,4 +51,11 @@ public interface SparkShellProcess {
      * @throws IllegalStateException if the Spark Shell client is not ready to receive commands
      */
     int getPort();
+
+    /**
+     * Indicates that this process is managed locally and not by another node in a cluster.
+     *
+     * @return {@code true} if this process runs locally, or {@code false} otherwise
+     */
+    boolean isLocal();
 }

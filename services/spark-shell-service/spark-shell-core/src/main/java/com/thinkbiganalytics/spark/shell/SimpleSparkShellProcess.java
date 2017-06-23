@@ -65,4 +65,9 @@ public class SimpleSparkShellProcess implements SparkShellProcess {
     public int getPort() {
         return port;
     }
+
+    @Override
+    public boolean isLocal() {
+        return false;
+    }
 }

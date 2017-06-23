@@ -211,6 +211,11 @@ public class SparkLauncherSparkShellProcess implements Serializable, SparkAppHan
         }
     }
 
+    @Override
+    public boolean isLocal() {
+        return (handle != null && username != null);
+    }
+
     /**
      * Indicates that this client is ready to process requests.
      */
@@ -238,12 +243,14 @@ public class SparkLauncherSparkShellProcess implements Serializable, SparkAppHan
 
     /**
      * Indicates to all waiting threads that the Spark Shell client is ready to receive requests.
+     *
+     * @param fireEvent {@code true} to fire the {@link SparkShellProcessListener#processReady(SparkShellProcess)} event
      */
-    public void setReady() {
+    public void setReady(final boolean fireEvent) {
         if (startSignal != null) {
             startSignal.countDown();
         }
-        if (listeners != null) {
+        if (listeners != null && fireEvent) {
             listeners.forEach(listener -> listener.processReady(this));
         }
     }
