@@ -33,6 +33,7 @@ import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedChangedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
@@ -261,6 +262,16 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
         if(feeds != null){
             for(JpaOpsManagerFeed feed: feeds){
+                //if we move from a stream to a batck we need to stop/complete the running stream job
+                if(feed.isStream() && !isStream){
+                   BatchJobExecution jobExecution = batchJobExecutionProvider.findLatestJobForFeed(feed.getName());
+                   if(jobExecution != null && !jobExecution.isFinished()){
+                       jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
+                       jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+                       jobExecution.setEndTime(DateTime.now());
+                       batchJobExecutionProvider.save(jobExecution);
+                   }
+                }
                feed.setStream(isStream);
             }
             repository.save(feeds);
