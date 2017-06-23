@@ -379,6 +379,13 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1.2-nar/target/kylo-nifi-provenance-repo-v1.2-nar-${project.version}.nar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target/kylo-nifi-spark-v1-nar-${project.version}.nar</source>
       <outputDirectory>setup/nifi</outputDirectory>
       <fileMode>755</fileMode>
