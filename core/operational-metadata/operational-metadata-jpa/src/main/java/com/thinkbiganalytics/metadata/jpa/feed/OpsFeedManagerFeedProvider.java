@@ -139,13 +139,14 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     }
 
     @Override
-    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName,boolean isStream) {
+    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName,boolean isStream, Long timeBetweenBatchJobs) {
         OpsManagerFeed feed = findById(feedManagerId);
         if (feed == null) {
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedManagerId);
             ((JpaOpsManagerFeed) feed).setStream(isStream);
+            ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
         }
         else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
