@@ -46,19 +46,6 @@
                     </div>
                 </div>
 
-                <div layout="column" ng-if="!vm.model.reusableTemplate">
-                    <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
-                    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
-                        <label class="label-small md-container-ignore">Destination Table</label>
-                        <md-radio-group ng-model="vm.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()">
-                            <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="33">
-                                {{tableOption.displayName}}
-                                <div class="hint">{{tableOption.description}}</div>
-                            </md-radio-button>
-                        </md-radio-group>
-                    </md-input-container>
-                </div>
-
                 <div layout="column" ng-if="!vm.model.isStream">
                     <md-subheader class="md-subhead left-aligned">Batch template</md-subheader>
 
@@ -74,6 +61,21 @@
 
                     </div>
                 </div>
+
+                <div layout="column" ng-if="!vm.model.reusableTemplate">
+                    <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
+                    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
+                        <label class="label-small md-container-ignore">Destination Table</label>
+                        <md-radio-group ng-model="vm.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()">
+                            <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="33">
+                                {{tableOption.displayName}}
+                                <div class="hint">{{tableOption.description}}</div>
+                            </md-radio-button>
+                        </md-radio-group>
+                    </md-input-container>
+                </div>
+
+
 
                 <div layout="column" ng-if="vm.model.reusableTemplate">
                     <md-subheader class="md-subhead left-aligned">Reusable Template</md-subheader>
