@@ -20,13 +20,16 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
+import org.apache.activemq.transport.TransportFactory;
+import org.apache.activemq.transport.tcp.TcpTransportFactory;
+import org.apache.activemq.util.FactoryFinder;
 import org.apache.nifi.authorization.Authorizer;
 import org.apache.nifi.events.EventReporter;
 import org.apache.nifi.provenance.IdentifierLookup;
 import org.apache.nifi.provenance.PersistentProvenanceRepository;
 import org.apache.nifi.provenance.ProvenanceAuthorizableFactory;
+import org.apache.nifi.provenance.ProvenanceRepository;
 import org.apache.nifi.provenance.RepositoryConfiguration;
 import org.apache.nifi.provenance.serialization.RecordWriter;
 import org.apache.nifi.util.NiFiProperties;
@@ -39,14 +42,13 @@ import java.io.IOException;
 /**
  * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to Ops Manager
  */
-public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository {
+public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository implements ProvenanceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
 
 private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new KyloProvenanceEventRepositoryUtil();
 
     public KyloPersistentProvenanceEventRepository() {
-        //  init();
         super();
     }
 
@@ -64,6 +66,8 @@ private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new Ky
 
     private void init() {
         provenanceEventRepositoryUtil.init();
+        //initialize the manager to gather and send the statistics
+        FeedStatisticsManager.getInstance();
     }
 
 
