@@ -30,6 +30,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.PrintWriter;
@@ -147,7 +148,7 @@ public class RefreshableDataSource implements DataSource {
     private DataSource getDataSource() {
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
         if (userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
-            String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
             return datasources.get(currentUser);
         } else {
             return datasources.get(DEFAULT_DATASOURCE_NAME);
