@@ -89,8 +89,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             lastFeedTime = jobExecution.getEndTime();
         }
 
-        Long nowDiff = DateTime.now().getMillis() - lastFeedTime.getMillis();
+        Long nowDiff = 0L;
         Period nowDiffPeriod = new Period(nowDiff.longValue());
+
+        if(lastFeedTime != null) {
+         nowDiff =   DateTime.now().getMillis() - lastFeedTime.getMillis();
+             nowDiffPeriod = new Period(nowDiff.longValue());
+        }
         Long latePeriodMillis = metric.getLatePeriod().toStandardDuration().getMillis();
         Long duration = CronExpressionUtil.getCronInterval(metric.getExpectedExpression());
         Period acceptedPeriod = new Period(duration + latePeriodMillis);
