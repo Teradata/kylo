@@ -214,8 +214,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
 
         this.assessor.assess(metric, this.builder);
-
-        verify(this.builder).result(AssessmentResult.FAILURE);
+         // data is late by 1 min, but it has a 4 hr grace period
+        verify(this.builder).result(AssessmentResult.SUCCESS);
     }
 
 
