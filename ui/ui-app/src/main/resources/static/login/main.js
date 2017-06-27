@@ -1,4 +1,6 @@
 require.config({
+    waitSeconds: 0,
+    urlArgs: "ver=0.7.2-snapshot",
     baseUrl: "login",
     paths: {
         "angular":"../bower_components/angular/angular",
