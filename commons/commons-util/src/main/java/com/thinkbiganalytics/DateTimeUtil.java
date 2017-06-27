@@ -99,7 +99,12 @@ public class DateTimeUtil {
 
 
     public static String formatPeriod(Period period) {
-        return period.toString(STANDARD_PERIOD_FORMAT);
+        if(period != null) {
+            return period.toString(STANDARD_PERIOD_FORMAT);
+        }
+        else {
+            return "";
+        }
     }
 
     /**

@@ -134,7 +134,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
 
         bldr.append("\"").append(this.feedName).append("\" ")
             .append(generateCronDescription(this.getExpectedExpression().toString()))
-            .append(", and no more than ").append(this.latePeriod.getHours()).append(" hours late");
+            .append(", and no more than ").append(DateTimeUtil.formatPeriod(this.latePeriod));
         return bldr.toString();
     }
 
