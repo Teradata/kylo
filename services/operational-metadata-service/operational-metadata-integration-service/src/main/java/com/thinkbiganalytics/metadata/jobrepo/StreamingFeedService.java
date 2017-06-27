@@ -84,7 +84,7 @@ public class StreamingFeedService {
             if (feedName.isPresent()) {
                 metadataAccess.commit(() -> {
                     OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName.get());
-                    if (feed.isStream()) {
+                    if (feed != null && feed.isStream()) {
                         //update the job status
                         BatchJobExecution jobExecution = batchJobExecutionProvider.findLatestJobForFeed(feedName.get());
                         if (state.equals(Feed.State.ENABLED)) {
