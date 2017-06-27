@@ -31,6 +31,7 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
 import com.thinkbiganalytics.policy.PolicyProperty;
@@ -143,7 +144,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
             .omitNullValues()
             .add("feedName", this.feedName)
             .add("expectedExpression", this.expectedExpression)
-            .add("latePeriod", this.latePeriod)
+            .add("latePeriod", DateTimeUtil.formatPeriod(this.latePeriod))
             .toString();
     }
 
