@@ -353,7 +353,7 @@ if ! which spark-submit >/dev/null 2>&1; then
 fi
 
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-services/conf:/opt/nifi/mysql/*
+KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/mariadb-java-client-1.5.7.jar
 if [[ -n \$SPARK_CONF_DIR ]]; then
         if [ -r \$SPARK_CONF_DIR/spark-defaults.conf ]; then
 		CLASSPATH_FROM_SPARK_CONF=\$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
