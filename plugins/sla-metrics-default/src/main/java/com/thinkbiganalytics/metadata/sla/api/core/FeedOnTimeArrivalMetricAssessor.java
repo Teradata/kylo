@@ -119,7 +119,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         } else if (nowDiff <= (duration + latePeriodMillis)) {
             LOG.debug("Data for feed {} has arrived before the late time: {}. The last successful feed was on {}.  It has been {} since data has arrived.  The allowed duration is {} ", feedName,
                       lateTime, lastFeedTime, DateTimeUtil.formatPeriod(nowDiffPeriod), DateTimeUtil.formatPeriod(acceptedPeriod));
-            builder.message("Data for feed " + feedName + " has arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime + ".  It has been " + DateTimeUtil
+            builder.message("Data for feed " + feedName + " has arrived on time.  \n The last successful feed was on " + lastFeedTime + ". It has been " + DateTimeUtil
                 .formatPeriod(nowDiffPeriod) + " since data has arrived.  The allowed duration is " + DateTimeUtil.formatPeriod(acceptedPeriod))
                 .result(AssessmentResult.SUCCESS);
         } else if (nowDiff > (duration + latePeriodMillis)) {
@@ -127,8 +127,8 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             LOG.debug("Data for feed {} has not arrived before the late time: {}. The last successful feed was on {}.  It has been {} since data has arrived.  The allowed duration is {} ", feedName,
                       lateTime, lastFeedTime,
                       DateTimeUtil.formatPeriod(nowDiffPeriod), DateTimeUtil.formatPeriod(acceptedPeriod));
-            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime + ".  It has been " + DateTimeUtil
-                .formatPeriod(nowDiffPeriod) + " since data has arrived.  The allowed duration is " + DateTimeUtil.formatPeriod(acceptedPeriod))
+            builder.message("Data for feed " + feedName + " has not arrived on time. \n The last successful feed was on " + lastFeedTime + ".  It has been " + DateTimeUtil
+                .formatPeriod(nowDiffPeriod) + " since data has arrived. The allowed duration is " + DateTimeUtil.formatPeriod(acceptedPeriod))
                 .result(AssessmentResult.FAILURE);
         } else if (DateTime.now().isBefore(lateTime)) { //&& lastFeedTime.isBefore(expectedTime)
             LOG.debug("CurrentTime {} is before the lateTime of {}.  Not Assessing", DateTime.now(), lateTime);
