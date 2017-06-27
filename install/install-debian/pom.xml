@@ -39,7 +39,7 @@
               <dataSet>
                 <data>
                   <src>../install-tar/target/kylo-${project.version}-dependencies.tar.gz</src>
-                  <dst>${rpm.install.dir}</dst>
+                  <dst>${rpm.install.dir}/kylo-${project.version}-dependencies.tar.gz</dst>
                   <type>file</type>
                   <missingSrc>fail</missingSrc>
                   <mapper>
