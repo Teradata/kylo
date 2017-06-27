@@ -41,6 +41,22 @@ public class DateTimeUtil {
 
     static PeriodFormatter periodFormatter = new PeriodFormatterBuilder().append(null, new StringPeriodParser()).toFormatter();
 
+    static final PeriodFormatter STANDARD_PERIOD_FORMAT = new PeriodFormatterBuilder()
+        .appendDays()
+        .appendSuffix(" day", " days")
+        .appendSeparator(" ")
+        .minimumPrintedDigits(2)
+        .appendHours()
+        .appendSuffix(" hr ", " hrs ")
+        .appendMinutes()
+        .minimumPrintedDigits(2)
+        .appendSuffix(" min ", " min ")
+        .appendSeconds()
+        .printZeroIfSupported()
+        .minimumPrintedDigits(2)
+        .appendSuffix(" sec ", " sec ")
+        .toFormatter();
+
     public static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     public static DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
@@ -79,6 +95,11 @@ public class DateTimeUtil {
      */
     public static String getNowFormattedWithTimeZone() {
         return dateTimeFormatWithTimeZone.print(DateTime.now());
+    }
+
+
+    public static String formatPeriod(Period period) {
+        return period.toString(STANDARD_PERIOD_FORMAT);
     }
 
     /**
