@@ -34,8 +34,8 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
-              <deb>$${project.build.directory}/deb/kylo-${version}.deb</deb>
-              <controlDir>${project.build.directory}/install-${version}-dependencies/deb-control</controlDir>
+              <deb>${build.directory}/deb/kylo-${version}.deb</deb>
+              <controlDir>${build.directory}/kylo-install-debian-${version}-dependencies/deb-control</controlDir>
               <dataSet>
                 <data>
                   <src>../install-tar/target/kylo-${project.version}-dependencies.tar.gz</src>
