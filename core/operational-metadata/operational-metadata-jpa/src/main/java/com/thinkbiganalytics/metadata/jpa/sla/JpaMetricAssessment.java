@@ -71,6 +71,7 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
     private Metric metric;
 
     @Column(name = "MESSAGE")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String message;
 
     @Enumerated(EnumType.STRING)
