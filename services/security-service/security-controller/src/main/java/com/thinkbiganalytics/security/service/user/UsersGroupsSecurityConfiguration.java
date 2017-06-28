@@ -22,6 +22,7 @@ package com.thinkbiganalytics.security.service.user;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
@@ -47,7 +48,7 @@ public class UsersGroupsSecurityConfiguration {
 
         return () -> metadata.commit(() -> {
             return builder
-                        .module("services")
+                        .module(AllowedActions.SERVICES)
                             .action(UsersGroupsAccessContol.USERS_GROUPS_SUPPORT)
                             .action(UsersGroupsAccessContol.ACCESS_USERS)
                             .action(UsersGroupsAccessContol.ADMIN_USERS)

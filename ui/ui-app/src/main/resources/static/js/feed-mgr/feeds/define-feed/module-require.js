@@ -1,6 +1,6 @@
 define(['angular','angular-ui-router','kylo-feedmgr','feed-mgr/feeds/get-table-data-properties/GetTableDataPropertiesController',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController',
-        'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController',
+        'feed-mgr/feeds/define-feed/feed-details/DefineFeedAccessControlDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedDataProcessingDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedDetailsDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedGeneralInfoDirective',
@@ -8,7 +8,9 @@ define(['angular','angular-ui-router','kylo-feedmgr','feed-mgr/feeds/get-table-d
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedScheduleDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedTableDirective',
         'feed-mgr/feeds/define-feed/feed-details/feed-errors-card-header',
-        'feed-mgr/feeds/define-feed/custom-processor-rendering'], function (angular) {
+        'feed-mgr/feeds/define-feed/custom-processor-rendering',
+        'feed-mgr/feeds/define-feed/DefineFeedStepController',
+        'feed-mgr/feeds/define-feed/TableOptionsStepperDirective'], function (angular) {
 
 });
 

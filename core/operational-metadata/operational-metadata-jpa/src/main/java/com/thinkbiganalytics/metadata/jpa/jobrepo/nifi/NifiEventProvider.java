@@ -22,12 +22,17 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
+import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.inject.Inject;
 
 /**
  * Provider creating and accessing the {@link JpaNifiEvent}
@@ -35,10 +40,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class NifiEventProvider {
 
+    public static String ITEM_LAST_MODIFIED_KEY = "NIFI_EVENT";
+
     @Autowired
     private JPAQueryFactory factory;
 
     private NifiEventRepository repository;
+
+    @Inject
+    private ItemLastModifiedProvider itemLastModifiedProvider;
 
     @Autowired
     public NifiEventProvider(NifiEventRepository repository) {
@@ -48,7 +58,7 @@ public class NifiEventProvider {
     public static NifiEvent toNifiEvent(ProvenanceEventRecordDTO eventRecordDTO) {
         JpaNifiEvent nifiEvent = new JpaNifiEvent(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
         nifiEvent.setFeedName(eventRecordDTO.getFeedName());
-        nifiEvent.setEventTime(eventRecordDTO.getEventTime());
+        nifiEvent.setEventTime(new DateTime(eventRecordDTO.getEventTime()));
         nifiEvent.setEventDetails(eventRecordDTO.getDetails());
         nifiEvent.setEventDuration(eventRecordDTO.getEventDuration());
         nifiEvent.setFeedProcessGroupId(eventRecordDTO.getFeedProcessGroupId());
@@ -61,20 +71,21 @@ public class NifiEventProvider {
         nifiEvent.setChildFlowFileIds(StringUtils.join(eventRecordDTO.getChildUuids(), ","));
         nifiEvent.setJobFlowFileId(eventRecordDTO.getJobFlowFileId());
         nifiEvent.setIsStartOfJob(eventRecordDTO.isStartOfJob());
-        nifiEvent.setIsEndOfJob(eventRecordDTO.isEndOfJob());
+        nifiEvent.setIsEndOfJob(eventRecordDTO.isFinalJobEvent());
         nifiEvent.setSourceConnectionId(eventRecordDTO.getSourceConnectionIdentifier());
         String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributeMap());
         nifiEvent.setAttributesJson(attributesJSON);
         nifiEvent.setIsFinalJobEvent(eventRecordDTO.isFinalJobEvent());
         nifiEvent.setIsFailure(eventRecordDTO.isFailure());
-        nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
-        nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
+     //   nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
+      //  nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
         nifiEvent.setClusterNodeAddress(eventRecordDTO.getClusterNodeAddress());
         nifiEvent.setClusterNodeId(eventRecordDTO.getClusterNodeId());
         return nifiEvent;
     }
 
     public NifiEvent create(NifiEvent t) {
+        itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()),t.getEventId().toString());
         return repository.save((JpaNifiEvent) t);
     }
 
@@ -84,6 +95,30 @@ public class NifiEventProvider {
 
     public boolean exists(ProvenanceEventRecordDTO eventRecordDTO) {
         return repository.exists(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
+    }
+
+
+
+    private String getLastModifiedKey(String clusterId) {
+        if(StringUtils.isBlank(clusterId) || "Node".equalsIgnoreCase(clusterId) || "non-clustered-node-id".equalsIgnoreCase(clusterId)){
+            return ITEM_LAST_MODIFIED_KEY;
+        }
+        else {
+            return ITEM_LAST_MODIFIED_KEY + "-" + clusterId;
+        }
+    }
+
+    public Long findLastProcessedEventId(String clusterNodeId) {
+        ItemLastModified lastModified = itemLastModifiedProvider.findByKey(getLastModifiedKey(clusterNodeId));
+        if(lastModified != null){
+            return Long.parseLong(lastModified.getValue());
+        }
+        return null;
+    }
+
+    public Long resetLastProcessedEventId(String clusterNodeId) {
+        ItemLastModified lastModified =  itemLastModifiedProvider.update(getLastModifiedKey(clusterNodeId),"0");
+        return lastModified != null ? Long.parseLong(lastModified.getValue()) : null;
     }
 
 }

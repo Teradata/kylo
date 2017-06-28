@@ -32,9 +32,18 @@ import java.nio.file.Path;
  */
 public interface SecurityPaths {
 
-    public static final Path METADATA = JcrUtil.path("metadata");
-    public static final Path SECURITY = METADATA.resolve("security");
-    public static final Path PROTOTYPES = SECURITY.resolve("prototypes");
+    Path METADATA = JcrUtil.path("metadata");
+    Path SECURITY = METADATA.resolve("security");
+    Path PROTOTYPES = SECURITY.resolve("prototypes");
+    Path ROLES = SECURITY.resolve("roles");
+    
+    static Path roleEntityPath(String entityName) {
+        return ROLES.resolve(entityName);
+    }
+    
+    static Path rolePath(String entityName, String roleName) {
+        return roleEntityPath(entityName).resolve(roleName);
+    }
 
     static Path prototypeActionsPath(String name) {
         return PROTOTYPES.resolve(name);

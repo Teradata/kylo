@@ -33,7 +33,6 @@ import java.util.Set;
  */
 public interface FeedManagerTemplateService {
 
-    String nifiTemplateIdForTemplateName(String templateName);
 
     /**
      * Register a template, save it, and return
@@ -59,32 +58,13 @@ public interface FeedManagerTemplateService {
      */
     RegisteredTemplate getRegisteredTemplate(String templateId);
 
-    /**
-     * Return a template matching the incoming name
-     *
-     * @param templateName a template name
-     * @return a template matching the incoming name
-     */
-    RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
     /**
-     * Return a template matching just on the NiFi templateId .
-     * This will only call out to NiFi and match on the Nifi template id.
-     *
-     * @param nifiTemplateId   the NiFi template id
-     * @param nifiTemplateName the name of the template
-     * @return a template matching the NiFi templateId .
+     * finds a template by its name
+     * @param templateName the template name
+     * @return a registered template
      */
-    RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
-
-    /**
-     * Return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     *
-     * @param templateId   a registered template id, or a nifi template id (for new nifi templates (not yet registered in Kylo)
-     * @param templateName the name of the template
-     * @return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     */
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
+    RegisteredTemplate findRegisteredTemplateByName(final String templateName);
 
     /**
      * Deletes a template
@@ -94,7 +74,7 @@ public interface FeedManagerTemplateService {
     boolean deleteRegisteredTemplate(String templateId);
 
     /**
-     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#ENABLED}
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.State#ENABLED}
      *
      * @param templateId the template id
      * @return the updated template
@@ -102,7 +82,7 @@ public interface FeedManagerTemplateService {
     RegisteredTemplate enableTemplate(String templateId);
 
     /**
-     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#DISABLED}
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.State#DISABLED}
      *
      * @param templateId the template id
      * @return the updated template
@@ -124,13 +104,6 @@ public interface FeedManagerTemplateService {
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
 
-    /**
-     * Synchronize the Nifi template Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
-     *
-     * @param template the template to sync
-     * @return the updated template
-     */
-    RegisteredTemplate syncTemplateId(RegisteredTemplate template);
 
 
     /**
@@ -162,7 +135,7 @@ public interface FeedManagerTemplateService {
      * For a given Template and its related connection info to the reusable templates, walk the graph to return the Processors.
      * The system will first walk the incoming templateid.  If the {@code connectionInfo} parameter is set it will make the connections to the incoming template and continue walking those processors
      *
-     * @param nifiTemplateId the NiFi templateId required to start walking the flow
+     * @param templateId the NiFi templateId required to start walking the flow
      * @param connectionInfo the connections required to connect
      * @return a list of all the processors for a template and possible connections
      */
@@ -171,7 +144,7 @@ public interface FeedManagerTemplateService {
     /**
      * Return a list of Processors and their properties for the incoming template
      *
-     * @param nifiTemplateId a NiFi template id
+     * @param templateId a NiFi template id
      * @return a list of Processors and their properties for the incoming template
      */
     List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String templateId);

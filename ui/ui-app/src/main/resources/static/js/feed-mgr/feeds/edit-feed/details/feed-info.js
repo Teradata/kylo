@@ -1,31 +1,33 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, moduleName) {
 
-    var directive = function () {
+    var thinkbigFeedInfo = function () {
         return {
             restrict: "EA",
             bindToController: {
-                selectedTabIndex: '='
+                selectedTabIndex: "="
             },
-            controllerAs: 'vm',
+            controllerAs: "vm",
             scope: {},
-            templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-info.html',
-            controller: "FeedInfoController",
-            link: function ($scope, element, attrs, controller) {
-
-            }
-
+            templateUrl: "js/feed-mgr/feeds/edit-feed/details/feed-info.html",
+            controller: "FeedInfoController"
         };
-    }
-
-    var controller = function ($scope) {
-
-        var self = this;
-
     };
 
-    angular.module(moduleName).controller('FeedInfoController', ["$scope",controller]);
+    var FeedInfoController = function (FeedService) {
+        this.model = FeedService.editFeedModel;
 
-    angular.module(moduleName)
-        .directive('thinkbigFeedInfo', directive);
+        // Determine table option
+        if (this.model.registeredTemplate.templateTableOption === null) {
+            if (this.model.registeredTemplate.defineTable) {
+                this.model.registeredTemplate.templateTableOption = "DEFINE_TABLE";
+            } else if (this.model.registeredTemplate.dataTransformation) {
+                this.model.registeredTemplate.templateTableOption = "DATA_TRANSFORMATION";
+            } else {
+                this.model.registeredTemplate.templateTableOption = "NO_TABLE";
+            }
+        }
+    };
 
+    angular.module(moduleName).controller("FeedInfoController", ["FeedService", FeedInfoController]);
+    angular.module(moduleName).directive("thinkbigFeedInfo", thinkbigFeedInfo);
 });

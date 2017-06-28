@@ -24,6 +24,7 @@ import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;

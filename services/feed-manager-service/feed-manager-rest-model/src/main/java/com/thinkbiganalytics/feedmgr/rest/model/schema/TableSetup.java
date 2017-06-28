@@ -182,12 +182,15 @@ public class TableSetup {
     public void simplifyFieldPoliciesForSerialization() {
         if (fieldPolicies != null) {
             getFieldPolicies().stream().forEach(fieldPolicy -> {
-                if (fieldPolicy.getStandardization() != null) {
+               if (fieldPolicy.getStandardization() != null) {
                     fieldPolicy.getStandardization().stream().forEach(policy -> policy.simplifyForSerialization());
                 }
                 if (fieldPolicy.getValidation() != null) {
                     fieldPolicy.getValidation().stream().forEach(policy -> policy.simplifyForSerialization());
                 }
+
+                boolean isPartitionColumn = getPartitions().stream().anyMatch(partitionArrayItem -> partitionArrayItem.getSourceField().equalsIgnoreCase(fieldPolicy.getFieldName()));
+                fieldPolicy.setPartitionColumn(isPartitionColumn);
             });
         }
     }
@@ -218,7 +221,7 @@ public class TableSetup {
      * ensure the source names are set to some value
      */
     private void ensureSourceTableSchemaFieldNames() {
-        if (sourceTableSchema != null & sourceTableSchema.getFields() != null) {
+        if (sourceTableSchema != null && sourceTableSchema.getFields() != null) {
             long nullFields = sourceTableSchema.getFields().stream().filter(field -> StringUtils.isBlank(field.getName())).count();
             //if the source fields are all null and the counts match that from the dest table, reset the source to the dest names
             if (nullFields == sourceTableSchema.getFields().size() && tableSchema.getFields() != null && tableSchema.getFields().size() == sourceTableSchema.getFields().size()) {

@@ -31,9 +31,11 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.security.action.Action;
 
 import org.springframework.stereotype.Service;
 
+import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +48,17 @@ import javax.annotation.Nonnull;
  */
 @Service
 public interface MetadataService {
+    
+    /**
+     * Checks the current security context has been granted permission to perform the specified action(s) 
+     * on the feed with the specified feed ID.  If the feed does not exist then no check is made.
+     * @param id the feed ID
+     * @param action an action to check
+     * @param more any additional actions to check
+     * @return true if the feed existed, otherwise false
+     * @throws AccessControlException thrown if the feed exists and the action(s) checked are not permitted
+     */
+    boolean checkFeedPermission(String id, Action action, Action... more);
 
     /**
      * Register a template, save it, and return
@@ -64,41 +77,6 @@ public interface MetadataService {
     List<NifiProperty> getTemplateProperties(String templateId);
 
     /**
-     * Return a registered template by its id
-     *
-     * @param templateId a template id
-     * @return a registered template, or null if not found
-     */
-    RegisteredTemplate getRegisteredTemplate(String templateId);
-
-    /**
-     * Return a template matching the incoming name
-     *
-     * @param templateName a template name
-     * @return a template matching the incoming name
-     */
-    RegisteredTemplate getRegisteredTemplateByName(String templateName);
-
-    /**
-     * Return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     *
-     * @param templateId   a registered template id, or a nifi template id (for new nifi templates (not yet registered in Kylo)
-     * @param templateName the name of the template
-     * @return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     */
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
-
-    /**
-     * Return a template matching just on the NiFi templateId .
-     * This will only call out to NiFi and match on the Nifi template id.
-     *
-     * @param nifiTemplateId   the NiFi template id
-     * @param nifiTemplateName the name of the template
-     * @return a template matching the NiFi templateId .
-     */
-    RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
-
-    /**
      * Deletes a template
      *
      * @param templateId a registered template id
@@ -113,19 +91,19 @@ public interface MetadataService {
     List<RegisteredTemplate> getRegisteredTemplates();
 
     /**
+     * Finds a template by its name
+     * @param templateName the name of the template to look for
+     * @return the template
+     */
+    RegisteredTemplate findRegisteredTemplateByName(final String templateName);
+
+    /**
      * Create a new Feed in NiFi
      *
      * @param feedMetadata metadata about the feed
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
-
-    /**
-     * Save the feed metadata to Kylo
-     *
-     * @param feed metadata about the feed
-     */
-    void saveFeed(FeedMetadata feed);
 
     /**
      * Deletes the specified feed.
@@ -208,7 +186,6 @@ public interface MetadataService {
      * @return a feed matching the feedId
      */
     FeedMetadata getFeedById(String feedId, boolean refreshTargetTableSchema);
-
 
     /**
      * Return the categories

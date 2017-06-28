@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  install
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/3.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+  <id>dependencies</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <baseDirectory>install/target</baseDirectory>
+  <files>
+    <file>
+      <source>${project.basedir}/src/deb/control/control</source>
+      <outputDirectory>deb-control</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>${project.basedir}/../scripts/post-install.sh</source>
+      <destName>postinst</destName>
+      <outputDirectory>deb-control</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>${project.basedir}/../scripts/pre-install.sh</source>
+      <destName>preinst</destName>
+      <outputDirectory>deb-control</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>${project.basedir}/../scripts/post-remove.sh</source>
+      <destName>postrm</destName>
+      <outputDirectory>deb-control</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <source>${project.basedir}/../scripts/pre-remove.sh</source>
+      <destName>prerm</destName>
+      <outputDirectory>deb-control</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+  </files>
+</assembly>

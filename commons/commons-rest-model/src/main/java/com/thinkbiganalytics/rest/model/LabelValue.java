@@ -20,6 +20,8 @@ package com.thinkbiganalytics.rest.model;
  * #L%
  */
 
+import java.util.Map;
+
 /**
  * supply a label, value and optional hint describing the object.
  * This is used in the Annotation framework to display data to the User interface and describe various options
@@ -40,6 +42,11 @@ public class LabelValue {
      */
     private String hint;
 
+    /**
+     * Additional properties
+     */
+    private Map<String,Object> properties;
+
     public LabelValue() {
 
     }
@@ -54,6 +61,14 @@ public class LabelValue {
         this.value = value;
         this.hint = hint;
     }
+
+    public LabelValue(String label, String value, String hint, Map<String,Object>properties) {
+        this.label = label;
+        this.value = value;
+        this.hint = hint;
+        this.properties = properties;
+    }
+
 
 
     /**
@@ -100,5 +115,14 @@ public class LabelValue {
      */
     public void setHint(String hint) {
         this.hint = hint;
+    }
+
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 }

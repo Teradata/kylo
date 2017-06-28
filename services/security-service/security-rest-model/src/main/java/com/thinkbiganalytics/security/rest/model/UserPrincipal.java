@@ -20,11 +20,14 @@ package com.thinkbiganalytics.security.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Set;
 
 /**
  * Metadata for a user with access to Kylo.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPrincipal {
 
     /**

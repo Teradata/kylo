@@ -22,7 +22,7 @@
     <header-section>
         <div layout="row" layout-align="space-between-center" flex>
             <div class="card-title" flex>Complete & Register</div>
-            <h2 class="card-sub-header">4 of 4</h2>
+            <h2 class="card-sub-header">5 of 5</h2>
         </div>
     </header-section>
 
@@ -46,17 +46,20 @@
                     </div>
                 </div>
 
-                <div layout="column" ng-if="!vm.model.reusableTemplate">
-                    <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
-                    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
-                        <label class="label-small md-container-ignore">Destination Table</label>
-                        <md-radio-group ng-model="vm.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()">
-                            <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="33">
-                                {{tableOption.displayName}}
-                                <div class="hint">{{tableOption.description}}</div>
-                            </md-radio-button>
-                        </md-radio-group>
-                    </md-input-container>
+                <div layout="column" ng-if="!vm.model.isStream">
+                    <md-subheader class="md-subhead left-aligned">Batch template</md-subheader>
+
+                    <div layout="column">
+                        <md-input-container class="md-block" flex="100">
+                            <label>Job creation flow rate interval (millis) </label>
+                            <input name="timeBetweenStartingBatchJobs" ng-model="vm.model.timeBetweenStartingBatchJobs" type="number"  />
+                            <div class="hint">
+                                If Operations Manager receives more than 1 starting event within this given interval it will suppress the creation of the next job<br/>
+                                Set this to -1L or 0L to always create a job instance for each starting flow.
+                            </div>
+                        </md-input-container>
+
+                    </div>
                 </div>
 
                 <div layout="column" ng-if="vm.model.reusableTemplate">

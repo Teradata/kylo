@@ -20,46 +20,49 @@ package com.thinkbiganalytics.spark.datavalidator;
  * #L%
  */
 
-import com.holdenkarau.spark.testing.SharedJavaSparkContext;
+import com.thinkbiganalytics.policy.BaseFieldPolicy;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
+import com.thinkbiganalytics.policy.FieldPolicyBuilder;
+import com.thinkbiganalytics.policy.standardization.LowercaseStandardizer;
+import com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
+import com.thinkbiganalytics.policy.validation.CharacterValidator;
+import com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.policy.validation.LookupValidator;
 import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
-import org.apache.spark.api.java.JavaRDD;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class ValidatorTest extends SharedJavaSparkContext implements Serializable {
-
-    private static final long serialVersionUID = -5681683598336701496L;
+public class ValidatorTest {
 
     private Validator validator;
+
+
 
     @Before
     public void setUp() throws Exception {
         URL url = getClass().getClassLoader().getResource("example-policy.json");
-        Path pathToPolicyFile = Paths.get(url.toURI());
+        Path pathToPolicyFile = (url != null) ? Paths.get(url.toURI()) : Paths.get("");
         validator = new Validator();
         validator.setArguments("emp", "sampletable", "20001", pathToPolicyFile.toString());
     }
@@ -78,6 +81,38 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
         Param second = hiveParams.get(1);
         assertEquals("hive.setting.2", second.getName());
         assertEquals("value.2", second.getValue());
+    }
+
+    @Test
+    public void testParseRemainingParametersStorageLevel() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file", "--storageLevel", "MEMORY_ONLY"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        String storageLevel = params.getStorageLevel();
+        assertEquals("MEMORY_ONLY", storageLevel);
+    }
+
+    @Test
+    public void testDefaultStorageLevel() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        String defaultStorageLevel = params.getStorageLevel();
+        assertEquals("MEMORY_AND_DISK", defaultStorageLevel);
+    }
+
+    @Test
+    public void testParseRemainingParametersNumPartitions() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file", "--storageLevel", "MEMORY_ONLY", "--numPartitions", "10"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        Integer numRDDPartitions = params.getNumPartitions();
+        assertEquals("10", String.valueOf(numRDDPartitions));
+    }
+
+    @Test
+    public void testDefaultNumPartitions() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        Integer defaultRDDPartitions = params.getNumPartitions();
+        assertEquals("-1", String.valueOf(defaultRDDPartitions));
     }
 
     @Test
@@ -105,25 +140,112 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
 
     private ValidationResult rangeValidate(Number min, Number max, String dataType, String value) {
         RangeValidator validatorPolicy = new RangeValidator(min, max);
-        List<ValidationPolicy> validationPolicies = new ArrayList<>();
-        validationPolicies.add(validatorPolicy);
-        List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
-        return validator.validateField(fieldPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(validatorPolicy);
+
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName("field1").feedFieldName("field1").addPolicies(policies).build();
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, value, HCatDataType.createFromDataType("field1", dataType));
+        return result.getFinalValidationResult();
     }
 
     @Test
     public void standardizeRegex() {
         SimpleRegexReplacer standardizer = new SimpleRegexReplacer("(?i)foo", "bar");
+        String fieldName = "field1";
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(standardizer);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
 
-        List<ValidationPolicy> validationPolicies = new ArrayList<>();
-        List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
-        standardizationPolicies.add(standardizer);
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
-        assertEquals(validator.standardizeField(fieldPolicy, "aafooaa"), "aabaraa");
-        assertNull(validator.standardizeField(fieldPolicy, null));
-        assertEquals(validator.standardizeField(fieldPolicy, ""), "");
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals(result.getFieldValue(),"aabaraa");
+
+        result = validator.standardizeAndValidateField(fieldPolicy, null, fieldDataType);
+        assertNull(result.getFieldValue());
+
+        result = validator.standardizeAndValidateField(fieldPolicy, "", fieldDataType);
+        assertEquals(result.getFieldValue(),"");
     }
+
+
+
+    @Test
+    public void standardizeAndValidate() {
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("aabaraa"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals(result.getFieldValue(), "aatestaa");
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+    }
+
+    @Test
+    public void invalidStandardizeAndValidate() {
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("blah"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType);
+        assertEquals("aabaraa",result.getFieldValue() );
+        assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+    }
+
+    @Test
+    public void nullValueStandardizeAndValidate() {
+        String fieldValue = null;
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(new SimpleRegexReplacer("(?i)foo", "bar"));
+        policies.add(new LookupValidator("blah"));
+        policies.add(new SimpleRegexReplacer("(?i)bar", "test"));
+        policies.add(new LookupValidator("aatestaa"));
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, null, fieldDataType);
+        assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+
+    }
+
+    @Test
+    public void mixedStandardizeAndValidate() {
+        String fieldValue = "TeSt_fiELd";
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(UppercaseStandardizer.instance());
+        policies.add(new CharacterValidator("UPPERCASE"));
+        policies.add(LowercaseStandardizer.instance());
+        policies.add(new CharacterValidator("LOWERCASE"));
+        policies.add(UppercaseStandardizer.instance());
+        policies.add(new CharacterValidator("UPPERCASE"));
+        policies.add(LowercaseStandardizer.instance());
+        policies.add(new CharacterValidator("LOWERCASE"));
+
+
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, fieldValue, fieldDataType);
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+        assertEquals("test_field", result.getFieldValue());
+
+    }
+
 
 
     @Test
@@ -134,7 +256,12 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
 
     private ValidationResult notNullValidate(String dataType, String value, boolean allowEmptyString, boolean trimString) {
         NotNullValidator validatorPolicy = new NotNullValidator(allowEmptyString, trimString);
-        return validator.validateValue(validatorPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(validatorPolicy);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName("field1").feedFieldName("field1").build();
+
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, value, HCatDataType.createFromDataType("field1", dataType));
+        return result.getFinalValidationResult();
     }
 
     @Test
@@ -144,37 +271,5 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
         Map<String, FieldPolicy> policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
         assertEquals(policyMap.size(), 10);
 
-    }
-
-    @Test
-    public void testCleansedRowResultsValidationCounts() {
-
-        // Create and run the test
-        CleansedRowResult cleansedRowResult1 = new CleansedRowResult();
-        cleansedRowResult1.rowIsValid = true;
-        boolean[] columnsValid1 = {true, true, true, true, true};
-        cleansedRowResult1.columnsValid = columnsValid1;
-
-        CleansedRowResult cleansedRowResult2 = new CleansedRowResult();
-        cleansedRowResult2.rowIsValid = false;
-        boolean[] columnsValid2 = {true, false, true, true, false};
-        cleansedRowResult2.columnsValid = columnsValid2;
-
-        CleansedRowResult cleansedRowResult3 = new CleansedRowResult();
-        cleansedRowResult3.rowIsValid = false;
-        boolean[] columnsValid3 = {false, false, true, true, false};
-        cleansedRowResult3.columnsValid = columnsValid3;
-
-        List<CleansedRowResult> cleansedRowResultsList = Arrays.asList(cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
-                                                                       cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
-                                                                       cleansedRowResult1, cleansedRowResult2, cleansedRowResult3);
-        JavaRDD<CleansedRowResult> inputRDD = jsc().parallelize(cleansedRowResultsList, 4);
-        long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 5);
-
-        // Create the expected output
-        long[] expectedOutput = {1l, 2l, 0l, 0l, 2l, 7l, 2l};
-
-        // Run assertions on output and expected output
-        assertArrayEquals(expectedOutput, output);
     }
 }

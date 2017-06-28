@@ -38,19 +38,17 @@
           {{value.label}}
         </md-option>
       </md-select>
-
+      <div ng-if="property.errorMessage" class="hint">
+        {{property.errorMessage}}
+      </div>
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
-      </div>
-      <div ng-messages="vm.theForm[property.formKey].$error " md-auto-hide="false">
-        <div ng-message="required">This field is required.</div>
-        <div ng-message="pattern">{{property.patternInvalidMessage}}</div>
       </div>
     </md-input-container>
 
     <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
       <label>{{property.displayName}}</label>
-      <input required ng-model="property.value" name="{{property.formKey}}"
+      <input required ng-model="property.value" name="{{property.formKey}}" ng-disabled="!vm.rule.editable"
              cron-expression-validator
              ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 

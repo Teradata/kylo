@@ -59,6 +59,17 @@ public class ZipFileUtil {
         return isValid;
     }
 
+    public static String zipEntryToString(byte[] buffer, ZipInputStream zis, ZipEntry entry) throws IOException {
+        // consume all the data from this entry
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int len = 0;
+        while ((len = zis.read(buffer)) > 0) {
+            out.write(buffer, 0, len);
+        }
+        out.close();
+        return new String(out.toByteArray(), "UTF-8");
+    }
+
 
     /**
      *
@@ -139,5 +150,7 @@ public class ZipFileUtil {
         }
         return baos.toByteArray();
     }
+
+
 }
 

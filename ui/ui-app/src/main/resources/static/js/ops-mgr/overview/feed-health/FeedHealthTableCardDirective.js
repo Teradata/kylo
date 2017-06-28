@@ -33,7 +33,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
         //Setup the Tabs
-        var tabNames =  ['All','Running','Healthy','Unhealthy'];
+        var tabNames =  ['All','Running','Healthy','Unhealthy','Streaming'];
         this.tabs = TabService.registerTabs(this.pageName,tabNames, this.paginationData.activeTab);
         this.tabMetadata = TabService.metadata(this.pageName);
 
@@ -80,7 +80,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         };
 
         this.feedDetails = function(event, feed){
-            StateService.OpsManager().Feed().navigateToFeedDetails(feed.feed);
+            if(feed.stream) {
+                StateService.OpsManager().Feed().navigateToFeedStats(feed.feed);
+            }
+            else {
+                StateService.OpsManager().Feed().navigateToFeedDetails(feed.feed);
+            }
         }
 
 
@@ -103,7 +108,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Feed':'feed','Health':'healthText','Status':'displayStatus','Since':'timeSinceEndTime','Last Run Time':'runTime'};
+            var options = {'Feed':'feed','Health':'healthText','Status':'displayStatus','Since':'timeSinceEndTime','Last Run Time':'runTime','Stream':'stream'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'feed','desc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
@@ -155,6 +160,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             var healthyTab = TabService.getTab(self.pageName,'Healthy');
             var unhealthyTab = TabService.getTab(self.pageName,'Unhealthy');
             var runningTab = TabService.getTab(self.pageName,'Running');
+            var streamingTab = TabService.getTab(self.pageName,'Streaming');
 
             angular.forEach(feeds,function(feed,i){
                 //add it to the All tab
@@ -175,6 +181,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 }
                 if(feed.healthText.toLowerCase() == 'unhealthy' || feed.healthText.toLowerCase() == 'unknown'){
                     unhealthyTab.addContent(feed);
+                }
+                if(feed.stream){
+                    streamingTab.addContent(feed);
                 }
 
 

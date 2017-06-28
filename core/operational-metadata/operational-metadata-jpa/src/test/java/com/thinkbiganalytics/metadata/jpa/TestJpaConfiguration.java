@@ -25,6 +25,7 @@ package com.thinkbiganalytics.metadata.jpa;
 
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -35,6 +36,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import reactor.bus.EventBus;
@@ -43,6 +45,11 @@ import reactor.bus.EventBus;
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @Configuration
 public class TestJpaConfiguration {
+
+    @Bean
+    AccessController accessController(){
+        return Mockito.mock(AccessController.class);
+    }
 
 
     /**

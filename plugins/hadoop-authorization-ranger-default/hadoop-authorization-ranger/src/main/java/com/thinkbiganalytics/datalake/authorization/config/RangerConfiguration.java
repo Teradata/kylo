@@ -31,7 +31,7 @@ import org.springframework.context.annotation.PropertySource;
 /**
  */
 @Configuration
-@PropertySource("classpath:/conf/authorization.ranger.properties")
+@PropertySource("classpath:authorization.ranger.properties")
 public class RangerConfiguration {
 
     @Bean(name = "hadoopAuthorizationService")

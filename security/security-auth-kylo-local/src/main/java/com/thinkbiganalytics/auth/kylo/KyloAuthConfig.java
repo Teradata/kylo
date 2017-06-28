@@ -46,8 +46,11 @@ import javax.inject.Inject;
 @Profile("auth-kylo")
 public class KyloAuthConfig {
 
-    @Value("${security.auth.kylo.login.services:required}")
-    private String servicesLoginFlag;
+    @Value("${security.auth.kylo.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.kylo.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -68,15 +71,16 @@ public class KyloAuthConfig {
      * @param builder the login configuration builder
      * @return the services login configuration
      */
-    @Bean(name = "servicesKyloLoginConfiguration")
+    @Bean(name = "kyloLoginConfiguration")
     @Nonnull
     public LoginConfiguration servicesKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         // @formatter:off
 
         return builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(KyloLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
                     .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)
@@ -84,7 +88,7 @@ public class KyloAuthConfig {
                     .add()
                 .loginModule(JaasAuthConfig.JAAS_SERVICES_TOKEN)
                     .moduleClass(KyloLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
                     .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)

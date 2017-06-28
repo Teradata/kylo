@@ -20,7 +20,14 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.spark.rest.model.Datasource;
+import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
@@ -32,15 +39,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -74,6 +85,30 @@ public class SparkShellProxyController {
      * Resources for error messages
      */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
+
+    /**
+     * Ensures the user has the correct permissions
+     */
+    @Inject
+    private AccessController accessController;
+
+    /**
+     * Provides access to {@code Datasource} objects
+     */
+    @Inject
+    private DatasourceProvider datasourceProvider;
+
+    /**
+     * The {@code Datasource} transformer
+     */
+    @Inject
+    private DatasourceModelTransform datasourceTransform;
+
+    /**
+     * Metadata access service
+     */
+    @Inject
+    private MetadataAccess metadata;
 
     /**
      * Manages Spark Shell processes
@@ -155,6 +190,7 @@ public class SparkShellProxyController {
     @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Registers a new Spark Shell process with Kylo.")
     @ApiResponses({
                       @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
@@ -166,7 +202,7 @@ public class SparkShellProxyController {
     public Response register(@Nonnull final RegistrationRequest registration) {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         try {
-            processManager.register(auth.getPrincipal().toString(), auth.getCredentials().toString(), registration);
+            processManager.register(auth.getPrincipal().toString(), registration);
             return Response.noContent().build();
         } catch (final IllegalArgumentException e) {
             throw error(Response.Status.FORBIDDEN, "register.forbidden", null);
@@ -186,7 +222,7 @@ public class SparkShellProxyController {
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 400, message = "The request could not be parsed.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
                   })
     @Nonnull
@@ -204,6 +240,49 @@ public class SparkShellProxyController {
             if (request.getParent().getTable() == null) {
                 throw error(Response.Status.BAD_REQUEST, "transform.missingParentTable", null);
             }
+        }
+
+        // Add data source details
+        if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
+            // Verify access to data sources
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+
+            final List<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> datasourceIds = metadata.read(
+                () -> request.getDatasources().stream()
+                    .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
+                    .map(datasourceProvider::resolve)
+                    .map(id -> {
+                        final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
+                        if (datasource != null) {
+                            return datasource.getId();
+                        } else {
+                            throw new BadRequestException("No datasource exists with the given ID: " + id);
+                        }
+                    })
+                    .collect(Collectors.toList())
+            );
+
+            // Retrieve table names using system user
+            final List<Datasource> datasources = metadata.read(
+                () -> datasourceIds.stream()
+                    .map(datasourceProvider::getDatasource)
+                    .map(datasource -> {
+                        if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+                            return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
+                        } else {
+                            throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
+                        }
+                    })
+                    .map(datasource -> {
+                        if (datasource instanceof com.thinkbiganalytics.metadata.datasource.JdbcDatasource) {
+                            return new JdbcDatasource((com.thinkbiganalytics.metadata.datasource.JdbcDatasource) datasource);
+                        } else {
+                            throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
+                        }
+                    })
+                    .collect(Collectors.toList()),
+                MetadataAccess.SERVICE);
+            request.setDatasources(datasources);
         }
 
         // Execute request
@@ -232,7 +311,7 @@ public class SparkShellProxyController {
         try {
             entity.setMessage(STRINGS.getString(key));
         } catch (final MissingResourceException e) {
-            log.warn("Missing resource message: " + key, e);
+            log.warn("Missing resource message: {}", key, e);
             entity.setMessage(key);
         }
 
@@ -253,8 +332,9 @@ public class SparkShellProxyController {
     @Nonnull
     private SparkShellProcess getSparkShellProcess() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        final String username = (auth.getPrincipal() instanceof User) ? ((User) auth.getPrincipal()).getUsername() : auth.getPrincipal().toString();
         try {
-            return processManager.getProcessForUser(auth.getPrincipal().toString());
+            return processManager.getProcessForUser(username);
         } catch (final Exception e) {
             throw error(Response.Status.INTERNAL_SERVER_ERROR, "start.error", e);
         }

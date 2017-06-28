@@ -22,11 +22,14 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.SearchResult;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -48,7 +51,13 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Search", description = "global search"))
 public class ElasticSearchRestController {
 
-    @Autowired
+    /**
+     * Ensures the user has the correct permissions.
+     */
+    @Inject
+    AccessController accessController;
+
+    @Inject
     ElasticSearch elasticSearch;
 
     @GET
@@ -56,10 +65,14 @@ public class ElasticSearchRestController {
     @ApiOperation("Queries a search engine.")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "The search results.", response = SearchResult.class),
+                      @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "The search engine is unavailable.", response = RestResponseStatus.class)
                   })
+    @Nonnull
     public Response search(@QueryParam("q") String query, @QueryParam("rows") @DefaultValue("20") Integer rows, @QueryParam("start") @DefaultValue("0") Integer start) {
-        SearchResult result = elasticSearch.search(query, rows, start);
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_GLOBAL_SEARCH);
+
+        final SearchResult result = elasticSearch.search(query, rows, start);
         return Response.ok(result).build();
     }
 }

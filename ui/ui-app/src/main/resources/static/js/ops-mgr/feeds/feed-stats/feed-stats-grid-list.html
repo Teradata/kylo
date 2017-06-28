@@ -1,0 +1,146 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<div>
+  <div layout="column" ng-if="vm.dataLoaded" layout-padding>
+
+    <div flex layout="column">
+      <!-- HEADER SECTION -->
+    <div layout="row">
+      <span class="card-title kpi-header">Feed Statistics</span>
+      <span flex></span>
+
+      <div layout="column">
+        <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
+        <span class="md-caption">Last Refreshed</span>
+      </div>
+    </div>
+
+    <div layout="row">
+      <md-input-container class="md-block layout-padding-top-bottom">
+        <label class="md-container-ignore label-small layout-padding-top">Time Frame</label>
+        <md-select ng-model="vm.timeFrame" ng-change="vm.onTimeFrameChange()" aria-label="Rule Type">
+          <md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions track by opt.value">{{ opt.label }}</md-option>
+        </md-select>
+      </md-input-container>
+      <span flex></span>
+      <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+        <div layout="column">
+          <span style="padding-top:30px;">&nbsp;</span>
+          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        </div>
+
+      </div>
+    </div>
+    </div>
+    <!-- END HEADER -->
+    <!-- grid -->
+    <div flex >
+      <md-grid-list
+          md-cols-xs="1" md-cols-sm="2" md-cols-md="6" md-cols-gt-md="6"
+          md-row-height-gt-md="1:1" md-row-height="2:2"
+          md-gutter="12px" md-gutter-gt-sm="8px" class="feed-stats-grid">
+
+        <md-grid-tile class="gray" >
+          <div layout="column" layout-align="start start">
+            <span style="font-weight:bold;padding:5px;">{{vm.summaryStatistics.flowsStarted | number}} started</span>
+            <span style="font-weight:bold;padding:5px;">{{vm.summaryStatistics.flowsFinished | number}} finished</span>
+            <span style="font-weight:bold;padding:5px;">{{vm.summaryStatistics.flowsRunning | number}} active</span>
+          </div>
+          <md-grid-tile-footer>
+            <h3>Flows </h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+        <md-grid-tile class="yellow">
+          <h3>{{vm.summaryStatistics.flowsStartedPerSecond | number}} / sec</h3>
+          <md-grid-tile-footer>
+            <h3>Flow Rate</h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+
+        <md-grid-tile class="blue">
+          <div layout="column" layout-align="start center" style="margin-top:-50px;">
+          <nvd3 flex options="vm.eventsPieChartOptions" data="vm.eventsPieChartData" api="vm.eventsPieChartApi"></nvd3>
+            <span style="font-weight:bold;padding:5px; margin-top:-15px;">{{vm.failedEventsPercent}} % failed</span>
+          </div>
+          <md-grid-tile-footer>
+            <h3>Success/Failure Events</h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+        <md-grid-tile class="green"
+                      md-rowspan="3"
+                      md-colspan="3"
+                      md-cols-md="2" md-colspan-sm="1" md-colspan-xs="1">
+          <nvd3 flex options="vm.topNProcessorChartOptions" data="vm.topNProcessorChartData" api="vm.topNProcessorChartApi" config="{deepWatchOptions:true}"></nvd3>
+          <md-grid-tile-footer>
+            <h3>Top {{vm.topN}} Average Processor Duration</h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+        <md-grid-tile class="gray"
+                      md-rowspan="2" md-colspan="3" md-colspan-sm="1" md-colspan-xs="1" md-cols-md="2">
+          <nvd3 flex options="vm.summaryStatisticsChartOptions" data="vm.summaryStatisticsChartData" api="vm.summaryStatisticsChartApi"></nvd3>
+          <md-grid-tile-footer>
+            <h3>Average Flow Duration</h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+        <md-grid-tile class="blue"
+                      md-colspan="6"  md-rowspan="3" md-cols-md="2" md-colspan-sm="1" md-colspan-xs="1" >
+          <!-- feed time series -->
+          <div flex>
+            <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
+          </div>
+          <md-grid-tile-footer>
+            <h3>Flows Started/Completed</h3>
+          </md-grid-tile-footer>
+        </md-grid-tile>
+
+      </md-grid-list>
+    </div>
+
+
+    <!-- processor duration -->
+    <div>
+    <md-input-container class="md-block layout-padding-top-bottom">
+      <label class="md-container-ignore label-small layout-padding-top">Processor Metric</label>
+      <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
+        <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
+      </md-select>
+    </md-input-container>
+    <div flex layout="row" layout-align="start end">
+      <span flex></span>
+      <span flex="20" ng-if="vm.showProcessorChartLoading">
+          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        </span>
+    </div>
+    <nvd3 flex options="vm.processorChartOptions" data="vm.processorChartData" api="vm.processorChartApi" config="{deepWatchOptions:true}"></nvd3>
+    </div>
+  </div>
+  <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+
+
+
+</div>
+
+</div>

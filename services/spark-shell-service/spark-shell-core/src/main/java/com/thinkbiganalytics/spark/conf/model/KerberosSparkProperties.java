@@ -26,6 +26,16 @@ package com.thinkbiganalytics.spark.conf.model;
 public class KerberosSparkProperties {
 
     /**
+     * Seconds to cache a Kerberos ticket
+     */
+    private int initInterval = 43200;
+
+    /**
+     * Seconds to wait for acquiring a ticket
+     */
+    private int initTimeout = 10;
+
+    /**
      * Enables or disables Kerberos authentication
      */
     private boolean kerberosEnabled = false;
@@ -46,14 +56,25 @@ public class KerberosSparkProperties {
     private String realm;
 
     /**
-     * Seconds to cache a Kerberos ticket
+     * Seconds to wait for acquiring a Kerberos ticket
      */
-    private int renewInterval;
+    private int retryInterval = 120;
 
-    /**
-     * Seconds to wait for acquring a Kerberos ticket
-     */
-    private int retryInterval;
+    public int getInitInterval() {
+        return initInterval;
+    }
+
+    public void setInitInterval(int initInterval) {
+        this.initInterval = initInterval;
+    }
+
+    public int getInitTimeout() {
+        return initTimeout;
+    }
+
+    public void setInitTimeout(int initTimeout) {
+        this.initTimeout = initTimeout;
+    }
 
     public boolean isKerberosEnabled() {
         return kerberosEnabled;
@@ -85,14 +106,6 @@ public class KerberosSparkProperties {
 
     public void setRealm(String realm) {
         this.realm = realm;
-    }
-
-    public int getRenewInterval() {
-        return renewInterval;
-    }
-
-    public void setRenewInterval(int renewInterval) {
-        this.renewInterval = renewInterval;
     }
 
     public int getRetryInterval() {

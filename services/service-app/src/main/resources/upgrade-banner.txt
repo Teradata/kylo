@@ -1,0 +1,10 @@
+
+${AnsiColor.GREEN} ██╗  ██╗██╗   ██╗██╗      ██████╗   ${AnsiColor.BLUE}  ██╗   ██╗██████╗  ██████╗ ██████╗  █████╗ ██████╗ ███████╗
+${AnsiColor.GREEN} ██║ ██╔╝╚██╗ ██╔╝██║     ██╔═══██╗  ${AnsiColor.BLUE}  ██║   ██║██╔══██╗██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██╔════╝
+${AnsiColor.GREEN} █████╔╝  ╚████╔╝ ██║     ██║   ██║  ${AnsiColor.BLUE}  ██║   ██║██████╔╝██║  ███╗██████╔╝███████║██║  ██║█████╗
+${AnsiColor.GREEN} ██╔═██╗   ╚██╔╝  ██║     ██║   ██║  ${AnsiColor.BLUE}  ██║   ██║██╔═══╝ ██║   ██║██╔══██╗██╔══██║██║  ██║██╔══╝
+${AnsiColor.GREEN} ██║  ██╗   ██║   ███████╗╚██████╔╝  ${AnsiColor.BLUE}  ╚██████╔╝██║     ╚██████╔╝██║  ██║██║  ██║██████╔╝███████╗
+${AnsiColor.GREEN} ╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ${AnsiColor.BLUE}   ╚═════╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝
+${AnsiColor.BRIGHT_BLUE}
+:: Running Kylo upgrade application
+${AnsiColor.DEFAULT}

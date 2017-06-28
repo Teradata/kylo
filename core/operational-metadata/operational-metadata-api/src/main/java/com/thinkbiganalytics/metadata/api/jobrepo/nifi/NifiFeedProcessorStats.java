@@ -145,6 +145,20 @@ public interface NifiFeedProcessorStats {
      */
     void setTotalCount(Long totalCount);
 
+
+    /**
+     *
+     * @return the number of events that failed
+     */
+    Long getFailedCount();
+
+    /**
+     * set the total events that are failure events
+     * @param totalFailureCount
+     */
+    void setFailedCount(Long failedCount);
+
+
     /**
      * return the total jobs started by this feed and processor
      *
@@ -310,6 +324,23 @@ public interface NifiFeedProcessorStats {
      * set the cluster node address
      */
     void setClusterNodeAddress(String clusterNodeAddress);
+
+
+
+    Long getCollectionIntervalSeconds();
+
+    void setCollectionIntervalSeconds(Long collectionIntervalSeconds);
+
+
+    Long getJobsStartedPerSecond();
+
+    void setJobsStartedPerSecond(Long jobsStartedPerSecond);
+
+    Long getJobsFinishedPerSecond();
+
+    void setJobsFinishedPerSecond(Long jobsFinishedPerSecond);
+
+
 
 
 }

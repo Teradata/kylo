@@ -21,6 +21,8 @@ package com.thinkbiganalytics.policy.standardization;
  */
 
 
+import com.thinkbiganalytics.policy.BaseFieldPolicy;
+
 import java.io.Serializable;
 
 /**
@@ -30,7 +32,7 @@ import java.io.Serializable;
  *
  * @see Standardizer class annotation
  */
-public interface StandardizationPolicy extends Serializable {
+public interface StandardizationPolicy extends BaseFieldPolicy, Serializable {
 
     /**
      * Convert a incoming {@code value} to new value.
@@ -39,5 +41,21 @@ public interface StandardizationPolicy extends Serializable {
      * @return the new value
      */
     String convertValue(String value);
+
+    /**
+     * Whether a policy accepts a type of value
+     *
+     * @param value the value to transform/cleanse
+     * @return true/false indicting whether the policy can accept the type of value
+     */
+    Boolean accepts(Object value);
+
+    /**
+     * Convert an incoming {@code value} to new value
+     *
+     * @param value the value to transform/cleanse
+     * @return the new value
+     */
+    Object convertRawValue(Object value);
 
 }

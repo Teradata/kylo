@@ -43,6 +43,7 @@ public class BaseUiPolicyRule {
     private String objectClassType;
     private String objectShortClassType;
     private String propertyValuesDisplayString;
+    private Integer sequence;
 
     public BaseUiPolicyRule() {
 
@@ -144,6 +145,13 @@ public class BaseUiPolicyRule {
         this.propertyValuesDisplayString = propertyValuesDisplayString;
     }
 
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 
     @JsonIgnore
     public void buildValueDisplayString() {

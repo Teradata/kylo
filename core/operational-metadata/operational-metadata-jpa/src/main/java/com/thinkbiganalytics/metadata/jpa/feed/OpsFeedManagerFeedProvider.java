@@ -27,19 +27,18 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
-import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
-import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.metadata.api.feed.*;
+import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
@@ -47,11 +46,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.inject.Inject;
+import java.util.Set;
 
 /**
  * Provider allowing access to feeds {@link OpsManagerFeed}
@@ -70,10 +69,15 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     @Autowired
     private JPAQueryFactory factory;
 
+    @Inject
+    private AccessController controller;
+
     /**
      * list of delete feed listeners
      **/
     private List<DeleteFeedListener> deleteFeedListeners = new ArrayList<>();
+
+    private List <OpsManagerFeedChangedListener> feedChangedListeners = new ArrayList<>();
 
 
     @Autowired
@@ -112,19 +116,42 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         return null;
     }
 
+    public List<? extends OpsManagerFeed> findByFeedNames(Set<String> feedNames) {
+        return findByFeedNames(feedNames,true);
+    }
+
+    public List<? extends OpsManagerFeed> findByFeedNames(Set<String> feedNames, boolean addAclFilter) {
+        if (feedNames != null && !feedNames.isEmpty()) {
+            if(addAclFilter) {
+                return repository.findByName(feedNames);
+            }
+            else {
+                return repository.findByNameWithoutAcl(feedNames);
+            }
+        }
+        return null;
+    }
+
+
     public void save(List<? extends OpsManagerFeed> feeds) {
         repository.save((List<JpaOpsManagerFeed>) feeds);
     }
 
     @Override
-    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName) {
+    public OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName,boolean isStream, Long timeBetweenBatchJobs) {
         OpsManagerFeed feed = findById(feedManagerId);
         if (feed == null) {
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedManagerId);
-            repository.save((JpaOpsManagerFeed) feed);
+            ((JpaOpsManagerFeed) feed).setStream(isStream);
+            ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
         }
+        else {
+            ((JpaOpsManagerFeed) feed).setStream(isStream);
+        }
+       feed = repository.save((JpaOpsManagerFeed) feed);
+        notifyOnFeedChanged(feed);
         return feed;
     }
 
@@ -185,6 +212,10 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
 
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
         com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
@@ -201,10 +232,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
-
+            .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
             .where(jobExecution.startTime.goe(DateTime.now().minus(period))
-                       .and(jobExecution.jobInstance.feed.name.eq(feedName)))
-            .groupBy(jobState, jobExecution.startYear,
+                       .and(feed.name.eq(feedName))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled())))
+            .groupBy(jobExecution.status,
+                     jobExecution.startYear,
                      jobExecution.startMonth,
                      jobExecution.startDay);
 
@@ -223,9 +257,56 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
      * This will call the stored procedure abandon_feed_jobs
      */
     public void abandonFeedJobs(String feed) {
-        repository.abandonFeedJobs(feed);
+
+        String exitMessage = String.format("Job manually abandoned @ %s", DateTimeUtil.getNowFormattedWithTimeZone());
+
+        repository.abandonFeedJobs(feed, exitMessage);
     }
 
+    /**
+     * Sets the stream flag for the list of feeds
+     * @param feedNames the feed names to update
+     * @param isStream true if stream/ false if not
+     */
+    public void updateStreamingFlag(Set<String> feedNames, boolean isStream) {
+        List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
+        if(feeds != null){
+            for(JpaOpsManagerFeed feed: feeds){
+                //if we move from a stream to a batck we need to stop/complete the running stream job
+                if(feed.isStream() && !isStream){
+                   BatchJobExecution jobExecution = batchJobExecutionProvider.findLatestJobForFeed(feed.getName());
+                   if(jobExecution != null && !jobExecution.isFinished()){
+                       jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
+                       jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+                       jobExecution.setEndTime(DateTime.now());
+                       batchJobExecutionProvider.save(jobExecution);
+                   }
+                }
+               feed.setStream(isStream);
+            }
+            repository.save(feeds);
+        }
+        feeds.stream().forEach(feed -> notifyOnFeedChanged(feed));
+
+    }
+
+
+    /**
+     *
+     * @param feedNames a set of category.feed names
+     * @param timeBetweenBatchJobs  a time in millis to suppress new job creation
+     */
+    @Override
+    public void updateTimeBetweenBatchJobs(Set<String> feedNames, Long timeBetweenBatchJobs) {
+        List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
+        if(feeds != null){
+            for(JpaOpsManagerFeed feed: feeds){
+                feed.setTimeBetweenBatchJobs(timeBetweenBatchJobs);
+            }
+            repository.save(feeds);
+        }
+        feeds.stream().forEach(feed -> notifyOnFeedChanged(feed));
+    }
 
     /**
      * Subscribe to feed deletion events
@@ -240,5 +321,12 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         deleteFeedListeners.stream().forEach(listener -> listener.onFeedDelete(feed));
     }
 
+    public void subscribe(OpsManagerFeedChangedListener listener) {
+        feedChangedListeners.add(listener);
+    }
+
+    public void notifyOnFeedChanged(OpsManagerFeed feed) {
+        feedChangedListeners.stream().forEach(listener -> listener.onFeedChange(feed));
+    }
 
 }

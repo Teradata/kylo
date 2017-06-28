@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark;
  */
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
 
@@ -30,6 +31,13 @@ import java.util.List;
  * A collection of objects that can be transformed using Spark functions.
  */
 public interface DataSet {
+
+    /**
+     * Returns the content of this data set as a Spark RDD.
+     *
+     * @return a Spark RDD
+     */
+    RDD<Row> rdd();
 
     /**
      * Returns the content of this data set as a Spark RDD.

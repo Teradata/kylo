@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-commons</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -28,6 +28,12 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    
 
     <!-- Quartz framework -->
     <dependency>
@@ -54,6 +60,10 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-context</artifactId>
     </dependency>
 
 

@@ -1,75 +1,30 @@
-<!--
-  #%L
-  thinkbig-ui-feed-manager
-  %%
-  Copyright (C) 2017 ThinkBig Analytics
-  %%
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-  
-      http://www.apache.org/licenses/LICENSE-2.0
-  
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  #L%
-  -->
-<div > <form name="defineFeedForm">
-            <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-on-select="vm.onStepSelect()" md-no-ink-bar="true" md-no-ink="true" sticky-tabs>
-                <md-tab  >
-                    <md-tab-label>
-                       <div class="{{vm.steps[0].type}} step-label"><ng-md-icon md-icon icon="{{vm.steps[0].icon}}" size="{{vm.steps[0].iconSize}}" ng-attr-style="fill-rule:evenodd;fill: {{vm.steps[0].iconStyle}}" ></ng-md-icon> General Info</div>
-                    </md-tab-label>
-                    <md-tab-body>
+<div>
+  <form name="defineFeedForm">
+    <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-on-select="vm.onStepSelect()" md-no-ink-bar="true" md-no-ink="true" sticky-tabs>
 
-                        <thinkbig-define-feed-general-info step-index="0"></thinkbig-define-feed-general-info>
+      <kylo-define-feed-step title="General Info" step="vm.steps[0]">
+        <thinkbig-define-feed-general-info step-index="0"></thinkbig-define-feed-general-info>
+      </kylo-define-feed-step>
 
-                    </md-tab-body>
-                </md-tab>
-                <md-tab ng-disabled="vm.steps[1].disabled">
-                    <md-tab-label>
-                        <div class="{{vm.steps[1].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[1].icon}}" size="{{vm.steps[1].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[1].iconStyle}}"></ng-md-icon> Feed Details</div>
-                    </md-tab-label>
-                    <md-tab-body>
-                        <thinkbig-define-feed-details step-index="1" ></thinkbig-define-feed-details>
-                    </md-tab-body>
-                </md-tab>
-                <md-tab ng-disabled="vm.steps[2].disabled">
-                    <md-tab-label>
-                        <div class="{{vm.steps[2].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[2].icon}}" size="{{vm.steps[2].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[2].iconStyle}}"></ng-md-icon> Table</div>
-                    </md-tab-label>
-                    <md-tab-body>
-                        <thinkbig-define-feed-table step-index="2" ng-if="vm.selectedStepIndex == 2" ></thinkbig-define-feed-table>
-                       </md-tab-body>
-                </md-tab>
-                <md-tab ng-disabled="vm.steps[3].disabled">
-                    <md-tab-label>
-                        <div class="{{vm.steps[3].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[3].icon}}" size="{{vm.steps[3].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[3].iconStyle}}"></ng-md-icon> Data Processing</div>
-                    </md-tab-label>
-                    <md-tab-body>
-                        <thinkbig-define-feed-data-processing step-index="3" ></thinkbig-define-feed-data-processing>
-                    </md-tab-body>
-                </md-tab>
-                <md-tab ng-disabled="vm.steps[4].disabled">
-                    <md-tab-label>
-                        <div class="{{vm.steps[4].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[4].icon}}" size="{{vm.steps[4].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[4].iconStyle}}"></ng-md-icon> Properties</div>
-                    </md-tab-label>
-                    <md-tab-body>
-                        <thinkbig-define-feed-properties step-index="4"></thinkbig-define-feed-properties>
-                    </md-tab-body>
-                </md-tab>
-                <md-tab ng-disabled="vm.steps[5].disabled">
-                    <md-tab-label>
-                        <div class="{{vm.steps[5].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[5].icon}}" size="{{vm.steps[5].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[5].iconStyle}}"></ng-md-icon> Schedule</div>
-                    </md-tab-label>
-                    <md-tab-body>
-                             <thinkbig-define-feed-schedule step-index="5" ></thinkbig-define-feed-schedule>
-                    </md-tab-body>
-                </md-tab>
+      <kylo-define-feed-step title="Feed Details" step="vm.steps[1]">
+        <thinkbig-define-feed-details step-index="1"></thinkbig-define-feed-details>
+      </kylo-define-feed-step>
 
-            </md-tabs>
-</form>
+      <kylo-table-options-stepper ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE'" selected-step-index="vm.selectedStepIndex" steps="vm.steps" step-index="2"
+                                  type="{{vm.coreDataModel.templateTableOption}}"></kylo-table-options-stepper>
+
+      <kylo-define-feed-step title="Properties" step="vm.steps[vm.coreDataModel.totalSteps - 3]">
+        <thinkbig-define-feed-properties step-index="{{vm.coreDataModel.totalSteps - 3}}"></thinkbig-define-feed-properties>
+      </kylo-define-feed-step>
+
+      <kylo-define-feed-step title="Access Control" step="vm.steps[vm.coreDataModel.totalSteps - 2]">
+        <thinkbig-define-feed-access-control step-index="{{vm.coreDataModel.totalSteps - 2}}"></thinkbig-define-feed-access-control>
+      </kylo-define-feed-step>
+
+      <kylo-define-feed-step title="Schedule" step="vm.steps[vm.coreDataModel.totalSteps - 1]">
+        <thinkbig-define-feed-schedule step-index="{{vm.coreDataModel.totalSteps - 1}}"></thinkbig-define-feed-schedule>
+      </kylo-define-feed-step>
+
+    </md-tabs>
+  </form>
 </div>

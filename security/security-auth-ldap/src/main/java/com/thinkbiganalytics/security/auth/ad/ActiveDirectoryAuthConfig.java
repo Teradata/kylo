@@ -34,8 +34,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.authentication.ad.DelegatingActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
@@ -48,42 +47,49 @@ import java.net.URI;
 @Profile("auth-ad")
 public class ActiveDirectoryAuthConfig {
 
-    @Value("${security.auth.ad.login.ui:required}")
-    private String uiLoginFlag;
+    @Value("${security.auth.ad.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.ad.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
-    @Value("${security.auth.ad.login.services:required}")
-    private String servicesLoginFlag;
-
-    @Bean(name = "servicesActiveDirectoryLoginConfiguration")
-    public LoginConfiguration servicesAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
+    @Bean(name = "activeDirectoryLoginConfiguration")
+    public LoginConfiguration servicesAdLoginConfiguration(ActiveDirectoryAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
                                                            LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                .loginModule(JaasAuthConfig.JAAS_SERVICES)
+        builder
+            .order(this.loginOrder)
+            .loginModule(JaasAuthConfig.JAAS_SERVICES)
+                .moduleClass(ActiveDirectoryLoginModule.class)
+                .controlFlag(this.loginFlag)
+                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
+                .add()
+            .loginModule(JaasAuthConfig.JAAS_UI)
+                .moduleClass(ActiveDirectoryLoginModule.class)
+                .controlFlag(this.loginFlag)
+                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
+                .add();
+        
+        // If authentication to AD is through a service account then this
+        // LoginModule may participate in the token-based authentication 
+        // (like SPNEGO, OAuth, etc.) configurations as well.
+        if (authProvider.isUsingServiceCredentials()) {
+            builder
+                .loginModule(JaasAuthConfig.JAAS_SERVICES_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
                     .add()
-                .build();
-
-        // @formatter:on
-    }
-
-    @Bean(name = "uiActiveDirectoryLoginConfiguration")
-    public LoginConfiguration uiAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
-                                                     UserDetailsContextMapper userMapper,
-                                                     LoginConfigurationBuilder builder) {
-        // @formatter:off
-
-        return builder
-                .loginModule(JaasAuthConfig.JAAS_UI)
+                .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .add()
-                .build();
+                    .add();
+        }
+        
+        return builder.build();
 
         // @formatter:on
     }
@@ -105,11 +111,13 @@ public class ActiveDirectoryAuthConfig {
     }
 
 
-    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<DelegatingActiveDirectoryLdapAuthenticationProvider> {
+    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<ActiveDirectoryAuthenticationProvider> {
 
         private URI uri;
         private String domain;
         private boolean enableGroups = false;
+        private String serviceUser = null;
+        private String servicePassword = null;
         private UserDetailsContextMapper mapper;
 
         public void setEnableGroups(boolean groupsEnabled) {
@@ -127,19 +135,30 @@ public class ActiveDirectoryAuthConfig {
         public void setMapper(UserDetailsContextMapper mapper) {
             this.mapper = mapper;
         }
-
-        @Override
-        public Class<?> getObjectType() {
-            return DelegatingActiveDirectoryLdapAuthenticationProvider.class;
+        
+        public void setServiceUser(String serviceUser) {
+            this.serviceUser = serviceUser;
+        }
+        
+        public void setServicePassword(String servicePassword) {
+            this.servicePassword = servicePassword;
         }
 
         @Override
-        protected DelegatingActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
-            ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+        public Class<?> getObjectType() {
+            return ActiveDirectoryAuthenticationProvider.class;
+        }
+
+        @Override
+        protected ActiveDirectoryAuthenticationProvider createInstance() throws Exception {
+            ActiveDirectoryAuthenticationProvider provider = new ActiveDirectoryAuthenticationProvider(this.domain, 
+                                                                                                       this.uri.toASCIIString(), 
+                                                                                                       this.enableGroups, 
+                                                                                                       this.serviceUser, 
+                                                                                                       this.servicePassword);
             provider.setConvertSubErrorCodesToExceptions(true);
             provider.setUserDetailsContextMapper(this.mapper);
-
-            return new DelegatingActiveDirectoryLdapAuthenticationProvider(provider, this.enableGroups);
+            return provider;
         }
     }
 

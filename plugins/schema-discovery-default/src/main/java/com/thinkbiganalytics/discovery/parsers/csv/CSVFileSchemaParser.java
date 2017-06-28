@@ -81,7 +81,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         CSVFormat format;
         if (autoDetect) {
             CSVAutoDetect autoDetect = new CSVAutoDetect();
-            format = autoDetect.detectCSVFormat(sampleData);
+            format = autoDetect.detectCSVFormat(sampleData, this.headerRow);
             this.separatorChar = Character.toString(format.getDelimiter());
             this.quoteChar = Character.toString(format.getQuoteCharacter());
         } else {

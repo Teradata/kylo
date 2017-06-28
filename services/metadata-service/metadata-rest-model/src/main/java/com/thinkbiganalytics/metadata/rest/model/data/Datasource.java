@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
 /*-
@@ -23,6 +20,7 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -33,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
 import org.joda.time.DateTime;
 
@@ -48,12 +48,13 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
 @JsonSubTypes({
-                  @JsonSubTypes.Type(value = DirectoryDatasource.class),
-                  @JsonSubTypes.Type(value = HiveTableDatasource.class),
-                  @JsonSubTypes.Type(value = DerivedDatasource.class)
+                  @JsonSubTypes.Type(DirectoryDatasource.class),
+                  @JsonSubTypes.Type(HiveTableDatasource.class),
+                  @JsonSubTypes.Type(DerivedDatasource.class),
+                  @JsonSubTypes.Type(JdbcDatasource.class)
               }
 )
-public class Datasource implements Serializable {
+public class Datasource extends EntityAccessControl implements com.thinkbiganalytics.metadata.datasource.Datasource, Serializable {
 
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime creationTime;
@@ -61,7 +62,6 @@ public class Datasource implements Serializable {
     private String id;
     private String name;
     private String description;
-    private String owner;
     private boolean encrypted;
     private boolean compressed;
     private Set<Feed> sourceForFeeds = new HashSet<>();
@@ -83,36 +83,41 @@ public class Datasource implements Serializable {
         this.name = name;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    @JsonIgnore
+    public void setOwner(final String owner) {
+        final UserPrincipal user = new UserPrincipal();
+        user.setSystemName(owner);
+        setOwner(user);
     }
 
     public DateTime getCreationTime() {

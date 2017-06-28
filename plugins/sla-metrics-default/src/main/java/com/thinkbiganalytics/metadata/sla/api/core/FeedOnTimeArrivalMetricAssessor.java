@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,10 +88,22 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         if (jobExecution != null) {
             lastFeedTime = jobExecution.getEndTime();
         }
+
+        Long nowDiff = 0L;
+        Period nowDiffPeriod = new Period(nowDiff.longValue());
+
+        if(lastFeedTime != null) {
+         nowDiff =   DateTime.now().getMillis() - lastFeedTime.getMillis();
+             nowDiffPeriod = new Period(nowDiff.longValue());
+        }
+        Long latePeriodMillis = metric.getLatePeriod().toStandardDuration().getMillis();
+        Long duration = CronExpressionUtil.getCronInterval(metric.getExpectedExpression());
+        Period acceptedPeriod = new Period(duration + latePeriodMillis);
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
+        LOG.debug("Calculated the Expected Date to be {}  ", expectedTime);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
-
+        LOG.debug("CurrentTime is: {}.  Comparing {} against the lateTime of {} ", DateTime.now(), lastFeedTime, lateTime);
         builder.compareWith(expectedDate, feedName);
 
         if (lastFeedTime == null) {
@@ -97,14 +111,35 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             builder.message("Feed with the specified name " + feedName + " not found ")
                 .result(AssessmentResult.WARNING);
         } else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
-            LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
+            LOG.debug("Data for feed {} arrived on {}, which was before late time: {}", feedName, lastFeedTime, lateTime);
 
-            builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
+            builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time:  " + lateTime)
                 .result(AssessmentResult.SUCCESS);
-        } else if (DateTime.now().isBefore(lateTime)) {
+        }
+        else if(lastFeedTime.isAfter(lateTime)){
+            LOG.debug("Data for feed {} has not arrived before the late time: {} ", feedName, lateTime);
+            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime)
+                .result(AssessmentResult.FAILURE);
+        }
+        else if (nowDiff <= (duration + latePeriodMillis)) {
+            LOG.debug("Data for feed {} has arrived before the late time: {}. The last successful feed was on {}.  It has been {} since data has arrived.  The allowed duration is {} ", feedName,
+                      lateTime, lastFeedTime, DateTimeUtil.formatPeriod(nowDiffPeriod), DateTimeUtil.formatPeriod(acceptedPeriod));
+            builder.message("Data for feed " + feedName + " has arrived on time.  \n The last successful feed was on " + lastFeedTime + ". It has been " + DateTimeUtil
+                .formatPeriod(nowDiffPeriod) + " since data has arrived.  The allowed duration is " + DateTimeUtil.formatPeriod(acceptedPeriod))
+                .result(AssessmentResult.SUCCESS);
+        } else if (nowDiff > (duration + latePeriodMillis)) {
+            //error its been greater that the duration of the cron + lateTime
+            LOG.debug("Data for feed {} has not arrived before the late time: {}. The last successful feed was on {}.  It has been {} since data has arrived.  The allowed duration is {} ", feedName,
+                      lateTime, lastFeedTime,
+                      DateTimeUtil.formatPeriod(nowDiffPeriod), DateTimeUtil.formatPeriod(acceptedPeriod));
+            builder.message("Data for feed " + feedName + " has not arrived on time. \n The last successful feed was on " + lastFeedTime + ".  It has been " + DateTimeUtil
+                .formatPeriod(nowDiffPeriod) + " since data has arrived. The allowed duration is " + DateTimeUtil.formatPeriod(acceptedPeriod))
+                .result(AssessmentResult.FAILURE);
+        } else if (DateTime.now().isBefore(lateTime)) { //&& lastFeedTime.isBefore(expectedTime)
+            LOG.debug("CurrentTime {} is before the lateTime of {}.  Not Assessing", DateTime.now(), lateTime);
             return;
         } else {
-            LOG.debug("Data for feed {} has not arrived before the late time: ", feedName, lateTime);
+            LOG.debug("Data for feed {} has not arrived before the late time: {} ", feedName, lateTime);
 
             builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime)
                 .result(AssessmentResult.FAILURE);

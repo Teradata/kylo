@@ -48,4 +48,20 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
         return defaultStr;
     }
 
+    public Boolean accepts (Object value) {
+        return (value == null || value instanceof String);
+    }
+
+    public Object convertRawValue(Object value) {
+        if (accepts(value)) {
+            if (value == null) {
+                return String.valueOf(defaultStr);
+            }
+            else {
+                return convertValue(value.toString());
+            }
+        }
+
+        return value;
+    }
 }

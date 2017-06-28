@@ -20,20 +20,24 @@ package com.thinkbiganalytics.spark.service;
  * #L%
  */
 
-import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.dataprofiler.Profiler;
+import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.DatasourceProvider;
+import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SQLContext;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -43,79 +47,105 @@ import scala.tools.nsc.interpreter.NamedParam;
 
 public class TransformServiceTest {
 
-    private KerberosTicketConfiguration kerberosTicketConfiguration;
-
-    @Before
-    public void setup() {
-        kerberosTicketConfiguration = new KerberosTicketConfiguration();
-        kerberosTicketConfiguration.setKerberosEnabled(false);
-    }
-
     /**
      * Verify executing a transformation request.
      */
     @Test
     @SuppressWarnings("unchecked")
     public void execute() throws Exception {
-        SQLContext context = Mockito.mock(SQLContext.class);
-        SparkScriptEngine engine = Mockito.mock(SparkScriptEngine.class);
-        Mockito.when(engine.eval(Mockito.anyString(), Mockito.any(List.class))).thenReturn(new Callable<TransformResponse>() {
-            @Override
-            public TransformResponse call() throws Exception {
-                TransformResponse response = new TransformResponse();
-                response.setStatus(TransformResponse.Status.SUCCESS);
-                return response;
-            }
-        });
+        // Mock Spark context service
+        final SparkContextService sparkContextService = Mockito.mock(SparkContextService.class);
+
+        // Mock Spark script engine
+        final SparkScriptEngine engine = Mockito.mock(SparkScriptEngine.class);
+        Mockito.when(engine.eval(Mockito.anyString(), Mockito.anyListOf(NamedParam.class))).thenReturn(new MockTransformResult());
         Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
-        Mockito.when(engine.getSQLContext()).thenReturn(context);
 
         // Test executing a request
-        TransformRequest request = new TransformRequest();
+        final TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
 
-        TransformJobTracker tracker = new TransformJobTracker() {
-
-            @Override
-            public void addSparkListener(@Nonnull SparkScriptEngine engine) {
-
-            }
-        };
-        TransformService service = new TransformService(engine, kerberosTicketConfiguration, tracker) {
-            @Override
-            void createDatabaseWithoutKerberos() {
-                //do nothing such that we don't need to mock out context.sql(...) methods
-                //which would require mocking either DataFrame or Dataset for different versions of Spark
-            }
-        };
-        service.startAsync();
-        service.awaitRunning();
-
-        final TransformResponse response;
-        try {
-            response = service.execute(request);
-        } finally {
-            service.stopAsync();
-        }
-
+        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockTransformJobTracker());
+        final TransformResponse response = service.execute(request);
         Assert.assertEquals(TransformResponse.Status.SUCCESS, response.getStatus());
 
         // Test eval arguments
-        ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
+        final ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
         Mockito.verify(engine).eval(evalScript.capture(), evalBindings.capture());
 
-        String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        final String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
         Assert.assertEquals(expectedScript, evalScript.getValue());
 
-        List<NamedParam> bindings = evalBindings.getValue();
-        Assert.assertEquals(2, bindings.size());
-        Assert.assertEquals("database", bindings.get(0).name());
-        Assert.assertEquals("String", bindings.get(0).tpe());
-        Assert.assertEquals("spark_shell_temp", bindings.get(0).value());
-        Assert.assertEquals("tableName", bindings.get(1).name());
-        Assert.assertEquals("String", bindings.get(1).tpe());
-        Assert.assertTrue(((String) bindings.get(1).value()).matches("^[0-9a-f]{32}$"));
+        final List<NamedParam> bindings = evalBindings.getValue();
+        Assert.assertEquals(3, bindings.size());
+        Assert.assertEquals("profiler", bindings.get(0).name());
+        Assert.assertEquals("com.thinkbiganalytics.spark.dataprofiler.Profiler", bindings.get(0).tpe());
+        Assert.assertNull(bindings.get(0).value());
+        Assert.assertEquals("sparkContextService", bindings.get(1).name());
+        Assert.assertEquals("com.thinkbiganalytics.spark.SparkContextService", bindings.get(1).tpe());
+        Assert.assertEquals(sparkContextService, bindings.get(1).value());
+        Assert.assertEquals("tableName", bindings.get(2).name());
+        Assert.assertEquals("String", bindings.get(2).tpe());
+        Assert.assertTrue(((String) bindings.get(2).value()).matches("^[0-9a-f]{32}$"));
+    }
+
+    /**
+     * Verify executing a transformation request with a data source provider factory.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void executeWithDatasourceProviderFactory() throws Exception {
+        // Mock Spark context service
+        final SparkContextService sparkContextService = Mockito.mock(SparkContextService.class);
+
+        // Mock Spark script engine
+        final SparkScriptEngine engine = Mockito.mock(SparkScriptEngine.class);
+        Mockito.when(engine.eval(Mockito.anyString(), Mockito.anyListOf(NamedParam.class))).thenReturn(new MockTransformResult());
+        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
+
+        // Mock data source provider factory
+        final DatasourceProvider datasourceProvider = Mockito.mock(DatasourceProvider.class);
+        final DatasourceProviderFactory datasourceProviderFactory = Mockito.mock(DatasourceProviderFactory.class);
+        Mockito.when(datasourceProviderFactory.getDatasourceProvider(Mockito.anyCollectionOf(Datasource.class))).thenReturn(datasourceProvider);
+
+        // Mock profiler
+        final Profiler profiler = Mockito.mock(Profiler.class);
+
+        // Test executing a request
+        final TransformRequest request = new TransformRequest();
+        request.setDatasources(Collections.singletonList(Mockito.mock(Datasource.class)));
+        request.setScript("sqlContext.range(1,10)");
+
+        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockTransformJobTracker());
+        service.setDatasourceProviderFactory(datasourceProviderFactory);
+        service.setProfiler(profiler);
+
+        final TransformResponse response = service.execute(request);
+        Assert.assertEquals(TransformResponse.Status.SUCCESS, response.getStatus());
+
+        // Test eval arguments
+        final ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(engine).eval(evalScript.capture(), evalBindings.capture());
+
+        final String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        Assert.assertEquals(expectedScript, evalScript.getValue());
+
+        final List<NamedParam> bindings = evalBindings.getValue();
+        Assert.assertEquals(4, bindings.size());
+        Assert.assertEquals("profiler", bindings.get(0).name());
+        Assert.assertEquals("com.thinkbiganalytics.spark.dataprofiler.Profiler", bindings.get(0).tpe());
+        Assert.assertEquals(profiler, bindings.get(0).value());
+        Assert.assertEquals("sparkContextService", bindings.get(1).name());
+        Assert.assertEquals("com.thinkbiganalytics.spark.SparkContextService", bindings.get(1).tpe());
+        Assert.assertEquals(sparkContextService, bindings.get(1).value());
+        Assert.assertEquals("tableName", bindings.get(2).name());
+        Assert.assertEquals("String", bindings.get(2).tpe());
+        Assert.assertTrue(((String) bindings.get(2).value()).matches("^[0-9a-f]{32}$"));
+        Assert.assertEquals("datasourceProvider", bindings.get(3).name());
+        Assert.assertEquals("com.thinkbiganalytics.spark.shell.DatasourceProvider[org.apache.spark.sql.DataFrame]", bindings.get(3).tpe());
+        Assert.assertEquals(datasourceProvider, bindings.get(3).value());
     }
 
     /**
@@ -123,19 +153,15 @@ public class TransformServiceTest {
      */
     @Test
     public void toScript() throws Exception {
-        // Mock the script engine
-        SparkScriptEngine engine = Mockito.mock(SparkScriptEngine.class);
-        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
-
         // Build the request
-        TransformRequest request = new TransformRequest();
+        final TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
 
         // Test converting request to script
-        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
+                                                              Mockito.mock(TransformJobTracker.class));
 
-        TransformJobTracker tracker = Mockito.mock(TransformJobTracker.class);
-        TransformService service = new TransformService(engine, kerberosTicketConfiguration, tracker);
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
         Assert.assertEquals(expected, service.toScript(request));
     }
 
@@ -145,19 +171,50 @@ public class TransformServiceTest {
     @Test
     public void toScriptWithParent() throws Exception {
         // Build the request
-        TransformRequest.Parent parent = new TransformRequest.Parent();
+        final TransformRequest.Parent parent = new TransformRequest.Parent();
         parent.setScript("sqlContext.range(1,10)");
         parent.setTable("parent_table");
 
-        TransformRequest request = new TransformRequest();
+        final TransformRequest request = new TransformRequest();
         request.setParent(parent);
         request.setScript("parent.withColumn(functions.expr(\"id+1\")");
 
         // Test converting request to script
-        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
+        final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
+                                                              Mockito.mock(TransformJobTracker.class));
 
-        TransformJobTracker tracker = Mockito.mock(TransformJobTracker.class);
-        TransformService service = new TransformService(Mockito.mock(SparkScriptEngine.class), kerberosTicketConfiguration, tracker);
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
         Assert.assertEquals(expected, service.toScript(request));
+    }
+
+    /**
+     * A mock implementation of {@link TransformJobTracker} for testing.
+     */
+    private static class MockTransformJobTracker extends TransformJobTracker {
+
+        /**
+         * Constructs a {@code MockTransformJobTracker}.
+         */
+        MockTransformJobTracker() {
+            super(Thread.currentThread().getContextClassLoader());
+        }
+
+        @Override
+        public void addSparkListener(@Nonnull SparkScriptEngine engine) {
+            // ignored
+        }
+    }
+
+    /**
+     * A mock result from a {@link TransformScript} for testing.
+     */
+    private static class MockTransformResult implements Callable<TransformResponse> {
+
+        @Override
+        public TransformResponse call() throws Exception {
+            final TransformResponse response = new TransformResponse();
+            response.setStatus(TransformResponse.Status.SUCCESS);
+            return response;
+        }
     }
 }

@@ -36,6 +36,7 @@ public class NifiFeedProcessorStats {
     protected Long bytesIn = 0L;
     protected Long bytesOut = 0L;
     protected Long totalCount = 1L;
+    protected Long failedCount = 0L;
     protected Long jobsStarted = 0L;
     protected Long jobsFinished = 0L;
     protected Long jobsFailed = 0L;
@@ -44,6 +45,7 @@ public class NifiFeedProcessorStats {
     protected Long processorsFailed = 0L;
     protected Long flowFilesStarted = 0L;
     protected Long flowFilesFinished = 0L;
+    protected Long maxEventId;
     private String id;
     private String feedName;
     private String processorId;
@@ -52,6 +54,12 @@ public class NifiFeedProcessorStats {
     private DateTime collectionTime;
     private String collectionId;
     private Long resultSetCount;
+
+    private Long jobsStartedPerSecond;
+
+    private Long jobsFinishedPerSecond;
+
+    private Long collectionIntervalSeconds;
 
     public String getId() {
         return id;
@@ -227,5 +235,44 @@ public class NifiFeedProcessorStats {
 
     public void setResultSetCount(Long resultSetCount) {
         this.resultSetCount = resultSetCount;
+    }
+
+    public Long getMaxEventId() {
+        return maxEventId;
+    }
+
+    public void setMaxEventId(Long maxEventId) {
+        this.maxEventId = maxEventId;
+    }
+
+    public Long getFailedCount() {
+        return failedCount;
+    }
+
+    public void setFailedCount(Long failedCount) {
+        this.failedCount = failedCount;
+    }
+
+    public Long getCollectionIntervalSeconds() {
+        return collectionIntervalSeconds;
+    }
+    public void setCollectionIntervalSeconds(Long collectionIntervalSeconds) {
+        this.collectionIntervalSeconds = collectionIntervalSeconds;
+    }
+
+    public Long getJobsStartedPerSecond() {
+        return jobsStartedPerSecond;
+    }
+
+    public void setJobsStartedPerSecond(Long jobsStartedPerSecond) {
+        this.jobsStartedPerSecond = jobsStartedPerSecond;
+    }
+
+    public Long getJobsFinishedPerSecond() {
+        return jobsFinishedPerSecond;
+    }
+
+    public void setJobsFinishedPerSecond(Long jobsFinishedPerSecond) {
+        this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 }

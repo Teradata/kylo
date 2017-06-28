@@ -47,13 +47,17 @@ public class EntityUtil {
     public static String pathForCategory(String categorySystemName) {
         return JcrUtil.path("/metadata", "feeds", categorySystemName).toString();
     }
+    
+    public static String pathForCategoryDetails(String categorySystemName) {
+        return JcrUtil.path("/metadata", "feeds", categorySystemName, "tba:details").toString();
+    }
 
     public static String pathForDatasourceDefinition() {
         return JcrUtil.path("/metadata", "datasourceDefinitions").toString();
     }
 
     public static String pathForFeed(String categorySystemName, String feedSystemName) {
-        return JcrUtil.path("/metadata", "feeds", categorySystemName, feedSystemName).toString();
+        return JcrUtil.path(pathForCategoryDetails(categorySystemName),feedSystemName).toString();
     }
 
     public static String pathForFeedSource(String categorySystemName, String feedSystemName) {

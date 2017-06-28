@@ -22,11 +22,11 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
+import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
-import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.spring.FileResourceService;

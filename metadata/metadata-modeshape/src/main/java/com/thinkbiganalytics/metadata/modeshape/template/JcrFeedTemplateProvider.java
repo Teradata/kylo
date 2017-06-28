@@ -20,43 +20,56 @@ package com.thinkbiganalytics.metadata.modeshape.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
-import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
+import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 /**
  */
 public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate, FeedManagerTemplate.ID> implements FeedManagerTemplateProvider {
 
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
+    private MetadataEventService metadataEventService;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
 
     @Inject
-    private MetadataEventService metadataEventService;
+    private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private AccessController accessController;
 
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
@@ -82,6 +95,15 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
 
         if (newTemplate) {
+            if (this.accessController.isEntityAccessControlled()) {
+                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.TEMPLATE);
+                this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
+                    .ifPresent(actions -> template.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
+                .ifPresent(actions -> template.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+            }
+            
             addPostFeedChangeAction(template, ChangeType.CREATE);
         }
 
@@ -155,6 +177,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     public boolean deleteTemplate(FeedManagerTemplate feedManagerTemplate) throws TemplateDeletionException {
         if (feedManagerTemplate != null && (feedManagerTemplate.getFeeds() == null || feedManagerTemplate.getFeeds().size() == 0)) {
+            feedManagerTemplate.getAllowedActions().checkPermission(TemplateAccessControl.DELETE);
             addPostFeedChangeAction(feedManagerTemplate, ChangeType.DELETE);
             super.delete(feedManagerTemplate);
             return true;

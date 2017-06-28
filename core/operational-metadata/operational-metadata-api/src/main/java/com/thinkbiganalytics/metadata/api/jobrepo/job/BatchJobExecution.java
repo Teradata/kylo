@@ -111,6 +111,8 @@ public interface BatchJobExecution {
      */
     ExecutionConstants.ExitCode getExitCode();
 
+    void setExitCode(ExecutionConstants.ExitCode exitCode);
+
     /**
      * Return the exit message with more descriptions about the result of the job
      *
@@ -197,6 +199,9 @@ public interface BatchJobExecution {
      * @return true if finished, false if still running
      */
     boolean isFinished();
+
+
+    boolean isStream();
 
     /**
      * Various statuses for a Job

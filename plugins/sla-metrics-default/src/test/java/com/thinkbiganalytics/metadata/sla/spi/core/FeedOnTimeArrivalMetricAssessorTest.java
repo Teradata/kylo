@@ -211,10 +211,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
+
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
 
         this.assessor.assess(metric, this.builder);
-
+        // data is late by 1 min, but it has a 4 hr grace period
         verify(this.builder).result(AssessmentResult.FAILURE);
     }
 

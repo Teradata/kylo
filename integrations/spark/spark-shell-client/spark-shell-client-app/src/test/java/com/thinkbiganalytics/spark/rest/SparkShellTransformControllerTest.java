@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark.rest;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.junit.Assert;
@@ -53,6 +54,7 @@ public class SparkShellTransformControllerTest {
 
         // Test transforming
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
         controller.transformService = transformService;
 
         Response response = controller.create(transformRequest);
@@ -72,6 +74,8 @@ public class SparkShellTransformControllerTest {
 
         // Test missing parent script
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
+
         Response response = controller.create(request);
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
 
@@ -95,6 +99,8 @@ public class SparkShellTransformControllerTest {
 
         // Test missing parent table
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
+
         Response response = controller.create(request);
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
 
@@ -109,6 +115,8 @@ public class SparkShellTransformControllerTest {
     @Test
     public void createWithMissingScript() {
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
+
         Response response = controller.create(new TransformRequest());
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
 
@@ -131,6 +139,7 @@ public class SparkShellTransformControllerTest {
 
         // Test script exception
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
         controller.transformService = transformService;
 
         Response response = controller.create(request);
@@ -162,6 +171,7 @@ public class SparkShellTransformControllerTest {
 
         // Test with pending job
         SparkShellTransformController controller = new SparkShellTransformController();
+        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
         controller.transformService = transformService;
 
         Response response = controller.getTable("PendingJob");

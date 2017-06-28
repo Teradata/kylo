@@ -1,20 +1,33 @@
 #!/bin/bash
+#########
+#  Example 1: ./install-java-crypt-ext.sh /opt/java
+#  Example 2: ./install-java /opt/java /tmp/offline-install -o
+#########
 
 #set -x
 
 offline=false
-java_dir=$1
-sec_dir=$java_dir/jre/lib/security
-working_dir=$3
+java_dir=/opt/java
+KYLO_SETUP_FOLDER=$2
 
-if [ $# > 1 ]
+if [ $# -eq 0 ]
 then
-    if [ "$2" = "-o" ] || [ "$2" = "-O" ]
-    then
-        echo "Working in offline mode"
-        offline=true
-    fi
+    echo "No setup folder specified. Defaulting to the java home to /opt/java"
+elif [ $# -eq 1 ]
+then
+    echo "The java home folder is $1 "
+    java_dir=$1
+elif [ $# -eq 3 ] && ([ "$3" = "-o" ] || [ "$3" = "-O" ])
+then
+    echo "Working in offline mode"
+    offline=true
+    java_dir=$1
+else
+    echo "Unknown arguments. The first argument should be the path to the kylo home folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
+    exit 1
 fi
+
+sec_dir=$java_dir/jre/lib/security
 
 if ! [ -d $sec_dir ]
 then
@@ -27,7 +40,7 @@ cd $sec_dir
 
 if [ $offline = true ]
 then
-    cp $working_dir/java/jce_policy-8.zip .
+    cp $KYLO_SETUP_FOLDER/java/jce_policy-8.zip .
 else
     curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip"
 fi

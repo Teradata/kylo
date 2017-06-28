@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
+
 /**
  * Configuration for {@link PropertyExpressionResolverTest}
  */

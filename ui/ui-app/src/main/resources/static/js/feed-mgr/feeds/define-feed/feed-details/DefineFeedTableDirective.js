@@ -23,7 +23,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         return {
             restrict: "EA",
             bindToController: {
-                stepIndex: '@'
+                canRemoveFields: "@",
+                stepIndex: '@',
+                tableLocked: "@",
+                typeLocked: "@"
             },
             scope: {},
             require: ['thinkbigDefineFeedTable', '^thinkbigStepper'],
@@ -57,9 +60,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
 
-        this.tableLocked = false
-        this.dataTypeLocked = false;
-        this.canRemoveFields = true;
         this.showMethodPanel = true;
         this.showTablePanel = true;
         this.uploadBtnDisabled = false;
@@ -84,12 +84,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.calcTableState = function() {
-            self.tableLocked = (self.model.dataTransformationFeed);
-            self.dataTypeLocked = (self.model.dataTransformationFeed);
-            self.canRemoveFields = (!self.model.dataTransformationFeed);
+            self.tableLocked = angular.isDefined(self.tableLocked) && (self.tableLocked === true || self.tableLocked === "true");
+            self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
+            self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
-        }
+        };
+        this.calcTableState();
 
         /*
         Create columns for tracking changes between original source and the target table schema
@@ -116,6 +117,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         function createHistoryRecord(columnDef) {
             return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, precisionScale: columnDef.precisionScale, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
+        }
+
+        /**
+         * Called wehn the Method radio option is changed
+         */
+        this.updateSelectedMethod =function(method){
+            if(method == 'MANUAL' ) {
+                self.model.allowSkipHeaderOption = true;
+            }
+
         }
 
         this.addHistoryItem = function(columnDef) {
@@ -209,6 +220,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 // Ensure column is defined
                 if (!angular.isDefined(self.defineFeedTableForm["name_" + columnDef._id])) {
                     return false;
+                }
+
+                if (columnDef.deleted === true) {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("required", true);
+                    self.defineFeedTableForm["datatype_" + columnDef._id].$setValidity("required", true);
                 }
 
                 // Check for reserved names
@@ -418,6 +434,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
+
+            if(columnDef.derivedDataType != 'decimal'){
+                columnDef.precisionScale = null;
+            }
             self.onFieldChange(columnDef);
 
             fieldNamesUnique(true);
@@ -549,7 +569,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
+
             if (valid) {
+                //ensure we have at least 1 field (not deleted) assigned to the model)
+                var validFields = _.filter(self.model.table.tableSchema.fields,function(field) {
+                    return field.deleted == undefined || field.deleted == false;
+                });
+                valid = validFields.length >0;
                 ensurePartitionData();
             }
             self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;
@@ -658,7 +684,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.table.structured = responseData.structured;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
-                    self.model.skipHeader = true;
+                    self.model.options.skipHeader = true;
                 } else {
                     self.model.allowSkipHeaderOption = false;
                     self.model.options.skipHeader = false;
@@ -692,6 +718,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.partitionFormulas = functions;
                 });
 
+        validate();
+
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
         });
@@ -712,7 +740,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Filter formulas based on column type
             if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-                return _.without(formulas, "year", "month", "day", "hour", "minute");
+                return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
             } else {
                return formulas;
             }

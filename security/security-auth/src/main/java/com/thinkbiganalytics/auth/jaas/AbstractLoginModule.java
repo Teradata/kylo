@@ -228,8 +228,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     protected UsernamePrincipal addNewUserPrincipal(String username) {
         UsernamePrincipal user = new UsernamePrincipal(username);
-        this.userPrincipal = user;
-        addPrincipal(user);
+        setUserPrincipal(user);
         return user;
     }
 

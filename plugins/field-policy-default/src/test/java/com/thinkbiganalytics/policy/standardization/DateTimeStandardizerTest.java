@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import static com.thinkbiganalytics.policy.standardization.DateTimeStandardizer.OutputFormats;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test the {@link DateTimeStandardizer}
@@ -102,5 +104,51 @@ public class DateTimeStandardizerTest {
         assertEquals("2016-07-25", standardizer.convertValue("07-25-201617:18"));
     }
 
+    @Test
+    public void testAcceptValidType() {
+        DateTimeStandardizer standardizer = new DateTimeStandardizer("YYYY-MM-dd", OutputFormats.DATE_ONLY);
+        assertTrue(standardizer.accepts("2017-03-28"));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        DateTimeStandardizer standardizer = new DateTimeStandardizer("YYYY-MM-dd", OutputFormats.DATE_ONLY);
+        Double doubleValue = 1000.05d;
+        assertFalse(standardizer.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() {
+        Object expectedValue = "2016-05-06 15:32:54";
+        Object rawValue = "05/06/2016 22:32:54";
+        DateTimeStandardizer
+            standardizer =
+            new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATETIME_NOMILLIS, "UTC", "PST");
+        assertEquals(expectedValue, standardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        Object expectedValue = Double.valueOf("1000.05");
+        Object rawValue = Double.valueOf("1000.05");
+        DateTimeStandardizer
+            standardizer =
+            new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATETIME_NOMILLIS, "UTC", "PST");
+        assertEquals(expectedValue, standardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults() {
+        DateTimeStandardizer
+            standardizer =
+            new DateTimeStandardizer("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'", OutputFormats.DATETIME_NOMILLIS);
+        Object rawValueObj = "2004-10-19T07:00:00.000Z";
+        Object expectedValueObj = "2004-10-19 07:00:00";
+        String rawValueStr = "2004-10-19T07:00:00.000Z";
+        String expectedValueStr = "2004-10-19 07:00:00";
+        assertEquals(standardizer.convertValue(rawValueStr), standardizer.convertRawValue(rawValueObj).toString());
+        assertEquals(standardizer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(standardizer.convertRawValue(rawValueObj), expectedValueObj);
+    }
 
 }

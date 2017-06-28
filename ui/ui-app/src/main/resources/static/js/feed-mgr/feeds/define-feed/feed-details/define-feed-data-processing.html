@@ -60,28 +60,42 @@
                         <md-tooltip md-direction="top">
                           Specifies fields available for global indexing for search and discovery
                         </md-tooltip>
+                        <md-input-container class="md-block" flex-gt-sm>
+                          <md-checkbox aria-label="Select All"
+                                       ng-checked="vm.indexCheckAll.isChecked"
+                                       md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                                       ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
+                        </md-input-container>
                       </div>
                        <div flex="10" class="md-list-item-text hint">
                           Profile
                          <md-tooltip md-direction="top">
                            Should this field be profiled?
                          </md-tooltip>
+                         <md-input-container class="md-block" flex-gt-sm>
+                           <md-checkbox aria-label="Select All"
+                                        ng-checked="vm.profileCheckAll.isChecked"
+                                        md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                                        ng-click="vm.profileCheckAll.toggleAll()">
+                           </md-checkbox>
+                         </md-input-container>
                        </div>
-                      <div flex="20" class="md-list-item-text hint">
-                        Standardize
-                      </div>
-                      <div flex="20" class="md-list-item-text hint">
-                        Validate
+                      <div flex="40" class="md-list-item-text hint">
+                        Standardize & Validate
                       </div>
                     </div>
                   </md-list-item>
-
+                  <div layout="row" layout-fill flex>
+                    <span style="margin-top:-10px;" layout-fill flex>
+                      <md-divider style="border-top-color:grey"></md-divider>
+                    </span>
+                  </div>
                   <div id="define-feed-data-processing-container">
                     <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
                          ng-click="vm.onSelectedColumn($index)">
 
-                      <div flex="40" class="md-list-item-text">
+                      <div flex="60" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
                           <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
@@ -89,56 +103,37 @@
                       </div>
                       <div flex="10" class="md-list-item-text " layout="column">
                         <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
+                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
                           </md-checkbox>
                         </md-input-container>
                       </div>
                        <div flex="10" class="md-list-item-text " layout="column">
                          <md-input-container class="md-block" flex-gt-sm>
-                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
+                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
                            </md-checkbox>
                          </md-input-container>
                        </div>
-                      <!-- Standardization rule -->
-                      <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed ||  policy.field.dataTypeDescriptor.complex)">
+                      <!--  rules -->
+                      <div flex="40" class="md-list-item-text hint" layout-align="start center">
+                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                             <ng-md-icon icon="add_circle_outline"></ng-md-icon>
                           </md-button>
                           ADD
                         </div>
 
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
+                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                             <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
                           </md-button>
                           ADD
                         </div>
-
-                        <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
-                          {{policy.standardization.length}} Added
+                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+                          <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
+                          <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
                         </div>
                       </div>
 
-                      <!-- Validation rule -->
-                      <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
-                            <ng-md-icon icon="add_circle_outline"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                            <ng-md-icon icon="add_circle_outline"
-                                        style="fill:#2D78B1;"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
-                          {{policy.validation.length}} Added
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </md-list>
@@ -265,7 +260,7 @@
         </div>
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
-                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove
           </md-button>
         </div>
       </body-section>

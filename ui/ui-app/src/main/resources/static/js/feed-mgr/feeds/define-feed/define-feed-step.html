@@ -1,0 +1,11 @@
+<md-tab ng-disabled="step.disabled">
+  <md-tab-label>
+    <div class="{{step.type}} step-label">
+      <ng-md-icon nomorph md-icon icon="{{step.icon}}" size="{{step.iconSize}}" style="fill-rule:evenodd; fill:{{step.iconStyle}}"></ng-md-icon>
+      {{title}}
+    </div>
+  </md-tab-label>
+  <md-tab-body>
+    <kylo-define-feed-step-transclude></kylo-define-feed-step-transclude>
+  </md-tab-body>
+</md-tab>

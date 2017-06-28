@@ -26,7 +26,7 @@
             <div layout="row" layout-align="space-between-center">
                 <div class="card-title">{{::vm.cardTitle}}</div>
 
-                <div class="card-sub-header">{{::vm.stepNumber}} of 4</div>
+                <div class="card-sub-header">{{::vm.stepNumber}} of 5</div>
             </div>
         </header-section>
 
@@ -50,10 +50,11 @@
                                     </div>
                                 </md-input-container>
                                 <div class="register-template-property md-padding" layout="column" layout-fill>
-                                    <h3>{{property.key}}</h3>
+                                    <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
+                                    <span class="hint" ng-if="property.sensitive">This is a sensitive property</span>
                                     <span class="md-warn" ng-show="property.requiredEmpty">This is a required field.  You need to either allow the user to input data, or supply a default value.</span>
 
-                                    <div>{{property.propertyDescriptor.description}}</div>
+                                    <div class="hint">{{property.propertyDescriptor.description}}</div>
 
                                     <div ng-if="property.selected == true" style="padding-top:10px;" class="fade">
                                         <ng-form name="innerForm">
@@ -150,7 +151,30 @@
                                                           ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
                                                 </md-chips>
                                               </div>
+                                                <div>
+                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                                        class="md-block">
+                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                                                            <md-checkbox aria-label="Sensitive"
+                                                                         ng-model="property.sensitive">
+                                                                Sensitive
+                                                            </md-checkbox>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
+                                                <div ng-if="property.userEditable">
+                                                    <md-input-container style="height:30px;margin-bottom:5px;"
+                                                                        class="md-block">
+                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                                                            <md-checkbox aria-label="Required"
+                                                                         ng-model="property.required">
+                                                                Required
+                                                            </md-checkbox>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
                                             </div>
+
                                         </ng-form>
 
                                     </div>

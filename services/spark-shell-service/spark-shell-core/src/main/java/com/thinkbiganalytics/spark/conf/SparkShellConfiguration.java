@@ -20,17 +20,31 @@ package com.thinkbiganalytics.spark.conf;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
+import com.thinkbiganalytics.spark.shell.DefaultProcessManager;
 import com.thinkbiganalytics.spark.shell.JerseySparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.MultiUserProcessManager;
 import com.thinkbiganalytics.spark.shell.ServerProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterDelegate;
+import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterListener;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+
+import javax.annotation.Nonnull;
 
 /**
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
@@ -38,6 +52,19 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @PropertySource("classpath:spark.properties")
 public class SparkShellConfiguration {
+
+    /**
+     * Listens for cluster events and updates the process manager.
+     */
+    @Bean
+    @ConditionalOnBean(SparkShellClusterDelegate.class)
+    public SparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkShellClusterDelegate delegate) {
+        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, delegate);
+        if (delegate instanceof SparkShellProcessManager) {
+            ((SparkShellProcessManager) delegate).addListener(clusterListener);
+        }
+        return clusterListener;
+    }
 
     /**
      * Loads the properties for acquiring a Kerberos ticket.
@@ -53,12 +80,21 @@ public class SparkShellConfiguration {
     /**
      * Creates a Spark Shell process manager for creating new Spark Shell instances.
      *
-     * @param properties the Spark Shell properties
+     * @param sparkShellProperties the Spark Shell properties
+     * @param kerberosProperties   the Kerberos properties for the Spark Shell client
+     * @param users                mapping of username to password
      * @return a Spark Shell process manager
      */
     @Bean
-    public SparkShellProcessManager processManager(final SparkShellProperties properties) {
-        return new ServerProcessManager(properties);
+    public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,
+                                                   @Qualifier("memoryLoginUsers") final Properties users) {
+        if (sparkShellProperties.getServer() != null) {
+            return new ServerProcessManager(sparkShellProperties);
+        } else if (sparkShellProperties.isProxyUser()) {
+            return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users);
+        } else {
+            return new DefaultProcessManager(sparkShellProperties, kerberosProperties, users);
+        }
     }
 
     /**
@@ -78,7 +114,25 @@ public class SparkShellConfiguration {
      */
     @Bean
     @ConfigurationProperties("spark.shell")
-    public SparkShellProperties sparkShellproperties() {
-        return new SparkShellProperties();
+    public SparkShellProperties sparkShellProperties(@Nonnull final ServerProperties server) {
+        final SparkShellProperties properties = new SparkShellProperties();
+
+        // Automatically determine registration url
+        if (properties.getRegistrationUrl() == null) {
+            // Get hostname
+            String address = null;
+            try {
+                address = (server.getAddress() != null) ? server.getAddress().getHostName() : InetAddress.getLocalHost().getHostName();
+            } catch (final UnknownHostException e) {
+                // ignored
+            }
+
+            // Set registration url
+            if (address != null) {
+                properties.setRegistrationUrl("http://" + address + ":8400/proxy/v1/spark/shell/register");
+            }
+        }
+
+        return properties;
     }
 }

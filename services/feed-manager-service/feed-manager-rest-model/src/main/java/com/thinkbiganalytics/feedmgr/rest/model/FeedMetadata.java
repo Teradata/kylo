@@ -22,20 +22,25 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
+import com.thinkbiganalytics.metadata.FeedPropertySection;
+import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,7 +48,7 @@ import java.util.stream.Collectors;
  * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedMetadata implements UIFeed {
+public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     boolean isNew = false;
     private String id;
@@ -59,26 +64,39 @@ public class FeedMetadata implements UIFeed {
     private String templateName;
     private List<NifiProperty> properties;
 
+    @FeedPropertyType(section = FeedPropertySection.SCHEDULE)
     private FeedSchedule schedule;
 
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField
     private String feedName;
+
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField(description = "The system feed name")
     private String systemFeedName;
+
+    @FeedPropertyType(section = FeedPropertySection.SUMMARY)
     @MetadataField
     private String description;
 
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     private List<Tag> tags;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField
     private String dataOwner;
 
     private FeedCategory category;
+
+    @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private TableSetup table;
+
     @MetadataField
     private Date createDate;
     @MetadataField
     private Date updateDate;
 
+    @FeedPropertyType(section = FeedPropertySection.TABLE_DATA)
     private FeedDataTransformation dataTransformation;
 
     private boolean active = true;
@@ -100,9 +118,14 @@ public class FeedMetadata implements UIFeed {
     /**
      * User-defined business metadata
      */
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     private Set<UserProperty> userProperties;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField(description = "List of Ranger/Sentry groups that you want to grant access for this feed")
     private String hadoopSecurityGroups;
+
+    @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
     @MetadataField(description = "Type of authorization system used. NONE, RANGER, or SENTRY")
     private String hadoopAuthorizationType;
     private List<HadoopSecurityGroup> securityGroups;
@@ -110,6 +133,17 @@ public class FeedMetadata implements UIFeed {
      * List of feed IDs dependent on this feed
      */
     private List<FeedSummary> usedByFeeds;
+
+
+    /**
+     * List of data source dependencies.
+     */
+    private List<Datasource> userDatasources;
+
+    /**
+     * Additional key / value pairs for use by plugins.
+     */
+    private Map<String, Object> tableOption;
 
     public FeedMetadata() {
     }
@@ -148,6 +182,9 @@ public class FeedMetadata implements UIFeed {
     }
 
     public List<NifiProperty> getProperties() {
+        if (properties == null) {
+            properties = new ArrayList<NifiProperty>();
+        }
         return properties;
     }
 
@@ -454,5 +491,37 @@ public class FeedMetadata implements UIFeed {
 
     public static enum STATE {
         NEW, ENABLED, DISABLED
+    }
+
+    @JsonIgnore
+    public List<NifiProperty> getConfigurationProperties() {
+        return getProperties().stream().filter(nifiProperty -> nifiProperty.isContainsConfigurationVariables()).collect(Collectors.toList());
+    }
+
+    /**
+     * Return the properties for this feed that are marked as being sensitive
+     */
+    @JsonIgnore
+    public List<NifiProperty> getSensitiveProperties() {
+        return getProperties().stream()
+            .filter(nifiProperty -> nifiProperty.isSensitive() && (!nifiProperty.isInputProperty() || (nifiProperty.isInputProperty()
+                                                                                                       && nifiProperty.getProcessorType().equals(this.getInputProcessorType()))))
+            .collect(Collectors.toList());
+    }
+
+    public List<Datasource> getUserDatasources() {
+        return userDatasources;
+    }
+
+    public void setUserDatasources(List<Datasource> userDatasources) {
+        this.userDatasources = userDatasources;
+    }
+
+    public Map<String, Object> getTableOption() {
+        return tableOption;
+    }
+
+    public void setTableOption(Map<String, Object> tableOption) {
+        this.tableOption = tableOption;
     }
 }

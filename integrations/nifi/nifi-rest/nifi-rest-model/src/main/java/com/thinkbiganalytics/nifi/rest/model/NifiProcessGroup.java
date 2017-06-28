@@ -53,7 +53,7 @@ public class NifiProcessGroup {
     private boolean rolledBack = false;
 
     public NifiProcessGroup() {
-
+        this(new ProcessGroupDTO());
     }
 
     public NifiProcessGroup(ProcessGroupDTO processGroupEntity, ProcessorDTO inputProcessor, List<ProcessorDTO> downstreamProcessors) {

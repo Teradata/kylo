@@ -45,6 +45,22 @@ md-content.md-kylo-theme{
   background-color: #ffffff !important;
 }
 
+.kylo-logo {
+  padding-top:5px;
+}
+
+/** on small views the height of the top bar (search container) gets smaller with default angular styles.
+  this enforces it stay the same height
+ */
+
+@media (max-width: 959px) and (min-width: 0) and (orientation: landscape) {
+  .md-toolbar-tools {
+    height: inherit;
+    max-height: inherit;
+  }
+}
+
+
 .hover:hover {
   background-color: rgba(158, 158, 158, 0.2);
   -webkit-transition: opacity ease-in-out .5s;
@@ -163,7 +179,7 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-right {
-  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .layout-padding-left {
@@ -736,6 +752,7 @@ Status styles
 
 .orange {
   color: #F08C38;
+  fill: #F08C38;
 }
 
 .accent-color, .accent-color-1 {
@@ -1045,4 +1062,73 @@ md-select.rows-per-page .md-select-value {
   position: relative;
   transition: background 0.15s linear;
   width: auto;
+}
+
+
+
+/**
+ * Global Search styles
+ */
+
+.global-search-container-sm {
+  align-self: center;
+  min-width: 300px;
+}
+
+.global-search-container {
+  align-self: center;
+  min-width: 500px;
+  padding-top: 10px;
+}
+
+.global-search-container .border-btn-white {
+  margin-top: 5px;
+}
+
+input.global-search-input {
+  color:white;
+}
+
+input.global-search-input::-webkit-input-placeholder {
+  color: #F9F9F9  !important;
+  text-align: center;
+  font-weight:400
+}
+
+input.global-search-input:-moz-placeholder { /* Firefox 18- */
+  color: #F9F9F9  !important;
+  text-align: center;
+  font-weight:400
+}
+
+input.global-search-input::-moz-placeholder {  /* Firefox 19+ */
+  color: #F9F9F9  !important;
+  text-align: center;
+  font-weight:400
+}
+
+input.global-search-input:-ms-input-placeholder {
+  color: #F9F9F9  !important;
+  text-align: center;
+  font-weight:400
+}
+
+md-input-container.global-search .md-input {
+  border-color: white !important;
+  font-size: 14px;
+}
+
+.elastic-search-property-table {
+  margin-top: 0px;
+  border-collapse: collapse;
+  margin-left: 30px;
+}
+
+.elastic-search-property-table td {
+  padding: 5px;
+  border-collapse: collapse;
+  border-spacing: 0px;
+}
+
+.elastic-search-property-table tr:not(:last-child) td {
 }

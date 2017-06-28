@@ -24,7 +24,9 @@ import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.security.action.Action;
 
+import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -34,6 +36,18 @@ import javax.annotation.Nonnull;
  * Manages Feed Manager categories.
  */
 public interface FeedManagerCategoryService {
+
+    /**
+     * Checks the current security context has been granted permission to perform the specified action(s)
+     * on the category with the specified feed ID.  If the category does not exist then no check is made.
+     *
+     * @param id     the category ID
+     * @param action an action to check
+     * @param more   any additional actions to check
+     * @return true if the category existed, otherwise false
+     * @throws AccessControlException thrown if the category exists and the action(s) checked are not permitted
+     */
+    boolean checkCategoryPermission(String id, Action action, Action... more);
 
     Collection<FeedCategory> getCategories();
 

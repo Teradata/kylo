@@ -33,6 +33,8 @@ import javax.security.auth.spi.LoginModule;
  */
 public interface LoginConfigurationBuilder {
 
+    LoginConfigurationBuilder order(int order);
+    
     ModuleBuilder loginModule(String appName);
 
     LoginConfiguration build();

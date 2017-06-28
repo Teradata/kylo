@@ -1,4 +1,4 @@
-
+define(['angular'],function(angular){
 angular.module('mouseCapture', [])
 
 //
@@ -120,5 +120,5 @@ angular.module('mouseCapture', [])
 
   };
 })
-;
+});
 

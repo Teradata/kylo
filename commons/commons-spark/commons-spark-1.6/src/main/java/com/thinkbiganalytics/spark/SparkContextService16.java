@@ -49,6 +49,11 @@ public class SparkContextService16 implements SparkContextService {
     }
 
     @Override
+    public DataSet toDataSet(SQLContext context, JavaRDD<?> rdd, Class<?> beanClass) {
+        return toDataSet(context.createDataFrame(rdd, beanClass));
+    }
+
+    @Override
     public DataSet sql(HiveContext context, String sql) {
         return toDataSet(context.sql(sql));
     }

@@ -133,6 +133,19 @@ public interface FeedHealth {
      */
     String getLastOpFeedState();
 
+
+    /**
+     *
+     * @return true if streaming feed
+     */
+    boolean isStream();
+
+    /**
+     * Set the streaming flag
+     * @param stream true if stream, false if not
+     */
+    void setStream(boolean stream);
+
     /**
      * State indicating if the Feed has jobs Waiting (idle) or Running
      */

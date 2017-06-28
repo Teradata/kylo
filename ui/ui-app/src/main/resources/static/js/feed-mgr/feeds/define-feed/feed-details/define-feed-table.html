@@ -59,7 +59,7 @@
                       <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
                                        ng-value="method.type"
                                        aria-label="{{method.name}}"
-                                       ng-click="vm.updateSelectedMethod()">
+                                       ng-click="vm.updateSelectedMethod(method.type)">
                         {{method.name}}
                       </md-radio-button>
                     </md-radio-group>
@@ -150,7 +150,7 @@
                            ng-click="vm.onSelectedColumn(columnDef)">
                         <div flex="30" class="md-list-item-text  ">
                           <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
-                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldChange(columnDef)"
+                            <input ng-model="columnDef.name" placeholder="Field Name" ng-required="(columnDef.deleted == false || columnDef.deleted == undefined)" name="name_{{columnDef._id}}" ng-change="vm.onNameFieldChange(columnDef)"
                                    ng-model-options="{updateOn: 'blur'}"
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                                    ng-disabled="vm.tableLocked || columnDef.deleted"
@@ -364,7 +364,7 @@
 
                 <md-input-container>
                   <div layout="row">
-                    <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header" ng-disabled="(vm.model.dataTransformationFeed || vm.model.allowSkipHeaderOption == false)">
+                    <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header" ng-disabled="vm.model.allowSkipHeaderOption == false">
                       Skip header row
                     </md-checkbox>
                   </div>
@@ -426,7 +426,7 @@
         </div>
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
-                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove
           </md-button>
         </div>
       </body-section>

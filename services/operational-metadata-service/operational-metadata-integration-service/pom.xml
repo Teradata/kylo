@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-operational-metadata-service</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -22,6 +22,19 @@
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>kylo-metadata-persistence</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-nifi-cache-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

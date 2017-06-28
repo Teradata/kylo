@@ -19,14 +19,23 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller =  function($scope, $element,$http,$q,$mdToast,$location,$window,RestUrlService, RegisterTemplateService) {
+    var controller =  function($scope, $element,$http,$q,$mdToast,$location,$window,RestUrlService, RegisterTemplateService, UiComponentsService) {
 
         var self = this;
         this.model = RegisterTemplateService.model;
         this.isValid = true;
-        this.expressionProperties =  RegisterTemplateService.propertyList;
 
+        /**
+         * List of available expression properties.
+         * @type {Object[]}
+         */
+        self.availableExpressionProperties = RegisterTemplateService.propertyList;
 
+        /**
+         * Expression properties for auto-complete.
+         * @type {Object[]}
+         */
+        self.expressionProperties =  self.availableExpressionProperties;
 
         //BroadcastService.subscribe($scope,StepperService.ACTIVE_STEP_EVENT,onActiveStep)
 
@@ -82,6 +91,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             else {
                 property.renderOptions['selectCustom'] ='false';
                 property.selectOptions = undefined;
+                if(property.renderType =='password'){
+                    property.sensitive = true;
+                }
             }
         }
 
@@ -118,15 +130,10 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
        // $anchorScroll.yOffset = 200;
          this.searchExpressionProperties = function(term) {
-            var propertyList = [];
-
-            angular.forEach(RegisterTemplateService.propertyList,function(property,i) {
-                if(property.key.toUpperCase().indexOf(term.toUpperCase()) >=0) {
-                    propertyList.push(property)
-                }
+            self.expressionProperties = self.availableExpressionProperties.filter(function (property) {
+                return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
             });
-            self.expressionProperties = propertyList;
-            return $q.when(propertyList);
+            return $q.when(self.expressionProperties);
         };
 
         this.getExpressionPropertyTextRaw = function(item) {
@@ -162,11 +169,23 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             self.topIndex = topIndex;
         }
 
-
+        // Update expression properties when table option changes
+        $scope.$watch(function () {
+            return self.model.templateTableOption;
+        }, function () {
+            if (self.model.templateTableOption !== "NO_TABLE" && angular.isArray(RegisterTemplateService.propertyList)) {
+                UiComponentsService.getTemplateTableOptionMetadataProperties(self.model.templateTableOption)
+                    .then(function (tableOptionMetadataProperties) {
+                        self.availableExpressionProperties = RegisterTemplateService.propertyList.concat(tableOptionMetadataProperties);
+                    });
+            } else {
+                self.availableExpressionProperties = RegisterTemplateService.propertyList;
+            }
+        });
     };
 
 
-    angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope","$element","$http","$q","$mdToast","$location","$window","RestUrlService","RegisterTemplateService",controller]);
+    angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope","$element","$http","$q","$mdToast","$location","$window","RestUrlService","RegisterTemplateService","UiComponentsService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterProcessorProperties', directive);

@@ -168,4 +168,9 @@ public class FeedServiceLevelAgreement extends ServiceLevelAgreement {
     public void setSlaCheckErrors(List<String> slaCheckErrors) {
         serviceLevelAgreement.setSlaCheckErrors(slaCheckErrors);
     }
+
+    @JsonIgnore
+    public int getFeedsCount() {
+        return feeds != null ? feeds.size() : 0;
+    }
 }

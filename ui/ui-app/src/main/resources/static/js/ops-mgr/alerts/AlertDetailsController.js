@@ -158,7 +158,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         self.loadAlert(this.alertId);
 
         // Fetch allowed permissions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });

@@ -1,6 +1,7 @@
 require.config({
     waitSeconds: 0,
     baseUrl: "js",
+    urlArgs: "ver=0.8.1",
     paths: {
         "angular":"../bower_components/angular/angular.min",
         "angular-drag-and-drop-lists":"../bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min",
@@ -24,6 +25,7 @@ require.config({
         "d3":"../bower_components/d3/d3.min",
         "dirPagination":"vendor/dirPagination/dirPagination",
         "draggabilly":"../bower_components/draggabilly/dist/draggabilly.pkgd.min",
+        "fattable": "../bower_components/fattable/fattable",
         "gsap": "../bower_components/gsap/src/uncompressed/TweenMax",
         "jquery":"../bower_components/jquery/dist/jquery.min",
         "jquery-ui":"../bower_components/jquery-ui/jquery-ui.min",
@@ -39,7 +41,7 @@ require.config({
         "kylo-side-nav-module":"side-nav/module",
         "kyloTimer":"common/timer/kylo-timer",
         "lz-string": "../bower_components/lz-string/libs/lz-string.min",
-        "ment-io":"vendor/ment.io/mentio.min",
+        "ment-io":"vendor/ment.io/mentio",
         "moment":"../bower_components/moment/min/moment.min",
         'ng-fx':"../bower_components/ngFx/dist/ngFx.min",
         "ng-text-truncate":"vendor/ng-text-truncate/ng-text-truncate",
@@ -104,7 +106,7 @@ require.config({
         "ng-text-truncate":["angular"],
         'nvd3':{deps:['d3'],exports:'nv'},
         'pivottable':{deps:['c3','jquery']},
-        'vis;':{exports:"vis"},
+        'vis':{exports:"vis"},
         'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app'},
         'routes':{deps:['app'], exports:'routes'}
     },

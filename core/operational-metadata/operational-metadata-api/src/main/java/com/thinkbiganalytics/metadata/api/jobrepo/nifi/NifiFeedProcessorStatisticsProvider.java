@@ -102,26 +102,36 @@ public interface NifiFeedProcessorStatisticsProvider {
      *
      * @return the max event id processed by kylo
      */
-    Long findMaxEventId();
+    Long findLastProcessedEventId();
 
     /**
      * find the max event id processed by kylo for the given cluster id
-     *
+     * @param clusterNodeId the cluseer node id
      * @return the max event id processed by kylo for the given cluster id
      */
-    Long findMaxEventId(String clusterNodeId);
+    Long findLastProcessedEventId(String clusterNodeId);
+
+    /**
+     * Resets the value of the last processed event id for this cluster
+     * @param clusterNodeId the cluseer node id
+     * @return the reset value for this (should be 0L)
+     */
+    Long resetLastProcessedEventId(String clusterNodeId);
 
     /**
      * allow for specifying a time to look back from when querying for statistical information
      */
     public static enum TimeFrame {
 
-        ONE_MIN(new Long(1000 * 60), "Last Minute"), THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"), FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes"),
+        ONE_MIN(new Long(1000 * 60), "Last Minute"), THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"), FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes");
+        //Uncomment after code is in place to better handle the larger datasets
+        /*
         TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"),
         HOUR(new Long(1000 * 60 * 60), "Last Hour"),
         THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"), FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"), TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
         DAY(HOUR.millis * 24, " Last Day"), THREE_DAYS(DAY.millis * 3, " Last 3 Days"), WEEK(DAY.millis * 7, "Last Week"), MONTH(DAY.millis * 30, " Last Month"),
         THREE_MONTHS(MONTH.millis * 3, " Last 3 Months"), SIX_MONTHS(DAY.millis * (365 / 2), "Last 6 Months"), YEAR(DAY.millis * 365, "Last Year");
+        */
 
         protected Long millis;
         private String displayName;

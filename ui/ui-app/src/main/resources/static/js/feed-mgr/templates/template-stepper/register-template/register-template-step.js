@@ -15,7 +15,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService, EntityAccessControlService) {
 
         /**
          * ref back to this controller
@@ -71,24 +71,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.stepNumber = parseInt(this.stepIndex) + 1
 
         /**
-         * The possible options to choose how this template should be displayed in the Feed Stepper
-         * @type {[*]}
-         */
-        this.templateTableOptions =
-            [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'},
-                {type: 'DEFINE_TABLE', displayName: 'Customize destination table', description: 'Allow users to define and customize the destination data table.'}, {
-                type: 'DATA_TRANSFORMATION',
-                displayName: 'Data Transformation',
-                description: 'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'
-            }]
-
-        /**
-         * the selected option for the template
-         * @type {*}
-         */
-        this.templateTableOption = this.model.templateTableOption;
-
-        /**
          * A map of the port names to the port Object
          * used for the connections from the outputs to input ports
          * @type {{}}
@@ -100,25 +82,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * @type {Array} of {label: port.name, value: port.name}
          */
         self.inputPortList = [];
-
-        // setup the Stepper types
-        var initTemplateTableOptions = function () {
-            if (self.templateTableOption == undefined) {
-
-                if (self.model.defineTable) {
-                    self.templateTableOption = 'DEFINE_TABLE'
-                }
-                else if (self.model.dataTransformation) {
-                    self.templateTableOption = 'DATA_TRANSFORMATION'
-                }
-                else if (self.model.reusableTemplate) {
-                    self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
-                }
-                else {
-                    self.templateTableOption = 'NO_TABLE'
-                }
-            }
-        }
 
         /**
          * Calls the server to get all the Datasources and the Flow processors and flow types
@@ -221,33 +184,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         }
 
         /**
-         * Initialze the template options
-         */
-        initTemplateTableOptions();
-
-        /**
          * Initialize the connections and flow data
          */
         initTemplateFlowData();
-
-        /**
-         * Called when the user changes the radio buttons
-         */
-        this.onTableOptionChange = function () {
-
-            if (self.templateTableOption == 'DEFINE_TABLE') {
-                self.model.defineTable = true;
-                self.model.dataTransformation = false;
-            }
-            else if (self.templateTableOption == 'DATA_TRANSFORMATION') {
-                self.model.defineTable = false;
-                self.model.dataTransformation = true;
-            }
-            else if (self.templateTableOption == 'NO_TABLE') {
-                self.model.defineTable = false;
-                self.model.dataTransformation = false;
-            }
-        }
 
         /**
          * Called when the user changes the output port connections
@@ -307,9 +246,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 );
                 StateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, self.model, null);
             }
-            var errorFn = function (err) {
+            var errorFn = function (response) {
                 $mdDialog.hide();
-                var message = 'Error Registering Template ' + err;
+                var message = 'Error Registering Template ' + response.data.message;
                 self.registrationSuccess = false;
                 $mdToast.show(
                     $mdToast.simple()
@@ -321,6 +260,10 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             //get all properties that are selected
             var savedTemplate = RegisterTemplateService.getModelForSave();
+
+            //prepare access control changes if any
+            EntityAccessControlService.updateEntityForSave(savedTemplate);
+
             //get template order
             var order = [];
             _.each(self.templateOrder, function (template) {
@@ -390,7 +333,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             $mdDialog.show({
                 controller: ["$scope","$mdDialog","nifiTemplateId","templateName","message",RegistrationErrorDialogController],
-                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template-error-dialog.html',
+                templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true,
                 fullscreen: true,
@@ -405,7 +348,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", RegisterCompleteRegistrationController]);
+    angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
     angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);

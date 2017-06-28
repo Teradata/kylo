@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     };
 
-    var FeedAdditionalPropertiesController = function($scope, AccessControlService, FeedService, FeedTagService, FeedSecurityGroups) {
+    var FeedAdditionalPropertiesController = function($scope,$q, AccessControlService, EntityAccessControlService,FeedService, FeedTagService, FeedSecurityGroups) {
 
         var self = this;
 
@@ -116,13 +116,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+
+        //Apply the entity access permissions
+        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
+            self.allowEdit = access;
+        });
+
     };
 
-    angular.module(moduleName).controller('FeedAdditionalPropertiesController',["$scope","AccessControlService","FeedService","FeedTagService","FeedSecurityGroups",FeedAdditionalPropertiesController]);
+    angular.module(moduleName).controller('FeedAdditionalPropertiesController',["$scope","$q","AccessControlService","EntityAccessControlService","FeedService","FeedTagService","FeedSecurityGroups",FeedAdditionalPropertiesController]);
     angular.module(moduleName).directive('thinkbigFeedAdditionalProperties', directive);
 });

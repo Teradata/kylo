@@ -56,7 +56,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
 
         String serviceName = "NiFi";
 
-        return new DefaultServiceStatusResponse(serviceName, Arrays.asList(nifiStatus(), nifiReportingTaskStatus()));
+        return new DefaultServiceStatusResponse(serviceName, Arrays.asList(nifiStatus()));
     }
 
 
@@ -77,45 +77,6 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
             component =
                 new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
                     .message("NiFi is up.").build();
-        } catch (Exception e) {
-            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
-        }
-        return component;
-    }
-
-    /**
-     * Check to see if the Reporting task is configured and running
-     *
-     * @return the status of the reporting task
-     */
-    private ServiceComponent nifiReportingTaskStatus() {
-
-        String componentName = "Kylo Reporting Task";
-        ServiceComponent component = null;
-
-        try {
-            Optional<ReportingTaskDTO> task = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NiFiProvenanceConstants.NiFiKyloProvenanceEventReportingTaskType);
-            if (task.isPresent()) {
-                if ("RUNNING".equalsIgnoreCase(task.get().getState())) {
-                    component =
-                        new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.UP)
-                            .message("The reporting task is up and running").build();
-                } else {
-                    component =
-                        new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN)
-                            .addErrorAlert("Reporting Task Status", "The Reporting task is currently " + task.get().getState() + ".  It needs to be RUNNING to process jobs in Kylo", new Date())
-                            .message("The reporting task is not running.  No jobs will be processed in Kylo until it is running").build();
-                }
-            } else {
-                component =
-                    new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN)
-                        .addErrorAlert("Reporting Task Status",
-                                       "The Reporting task does not exist. A " + NiFiProvenanceConstants.NiFiKyloProvenanceEventReportingTaskType + " needs to be RUNNING to process jobs in Kylo",
-                                       new Date())
-                        .message("The reporting task does not exist.  No jobs will be processed in Kylo until the Reporting task is configured and running").build();
-            }
-
-
         } catch (Exception e) {
             component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
         }

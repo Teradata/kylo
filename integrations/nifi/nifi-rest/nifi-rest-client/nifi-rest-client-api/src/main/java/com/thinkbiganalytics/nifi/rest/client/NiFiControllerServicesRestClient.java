@@ -25,6 +25,7 @@ import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
@@ -34,6 +35,17 @@ import javax.annotation.Nonnull;
 public interface NiFiControllerServicesRestClient {
 
     /**
+     * States of controller services.
+     */
+    enum State {
+        /** The controller service is usable */
+        ENABLED,
+
+        /** The controller service is editable */
+        DISABLED
+    }
+
+    /**
      * Deletes a controller service.
      *
      * @param id the controller service id
@@ -41,6 +53,24 @@ public interface NiFiControllerServicesRestClient {
      */
     @Nonnull
     Optional<ControllerServiceDTO> delete(@Nonnull String id);
+
+    /**
+     * Disables and deletes the specified controller service, asynchronously.
+     *
+     * @param id the controller service id
+     * @return the controller service, if found
+     */
+    @Nonnull
+    Future<Optional<ControllerServiceDTO>> disableAndDeleteAsync(@Nonnull String id);
+
+    /**
+     * Creates a new controller service.
+     *
+     * @param controllerService the controller service configuration details
+     * @return the controller service
+     */
+    @Nonnull
+    ControllerServiceDTO create(@Nonnull ControllerServiceDTO controllerService);
 
     /**
      * Gets all controller services.
@@ -60,6 +90,13 @@ public interface NiFiControllerServicesRestClient {
      */
     @Nonnull
     Optional<ControllerServiceDTO> findById(@Nonnull String id);
+
+    /**
+     * Gets the NiFi REST client associated with this controller service client.
+     *
+     * @return the NiFi REST client
+     */
+    NiFiRestClient getClient();
 
     /**
      * Retrieves the types of controller service that NiFi supports.
@@ -87,4 +124,15 @@ public interface NiFiControllerServicesRestClient {
      */
     @Nonnull
     ControllerServiceDTO update(@Nonnull ControllerServiceDTO controllerService);
+
+    /**
+     * Updates the state of the specified controller service.
+     *
+     * @param id the controller service id
+     * @param state the new state
+     * @return the controller service
+     * @throws NifiClientRuntimeException if the state cannot be changed
+     * @throws NifiComponentNotFoundException if the controller service does not exist
+     */
+    ControllerServiceDTO updateStateById(@Nonnull String id, @Nonnull State state);
 }

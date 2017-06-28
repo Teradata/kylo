@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.metadata.jpa.feed.AugmentableQueryRepositoryFactoryBean;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.query.spi.EvaluationContextExtension;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -48,8 +50,11 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"com.thinkbiganalytics.metadata.jpa"}, transactionManagerRef = "operationalMetadataTransactionManager",
-                       entityManagerFactoryRef = "operationalMetadataEntityManagerFactory")
+@EnableJpaRepositories(
+    basePackages = {"com.thinkbiganalytics.metadata.jpa"},
+    transactionManagerRef = "operationalMetadataTransactionManager",
+    entityManagerFactoryRef = "operationalMetadataEntityManagerFactory",
+    repositoryFactoryBeanClass = AugmentableQueryRepositoryFactoryBean.class)
 public class OperationalMetadataConfig {
 
     @Bean(name = "operationalMetadataDateTimeFormatter")
@@ -143,4 +148,8 @@ public class OperationalMetadataConfig {
     }
 
 
+    @Bean
+    public EvaluationContextExtension securityExtension() {
+        return new RoleSetExposingSecurityEvaluationContextExtension();
+    }
 }

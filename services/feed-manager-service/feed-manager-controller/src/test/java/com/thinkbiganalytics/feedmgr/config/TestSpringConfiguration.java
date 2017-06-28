@@ -20,30 +20,47 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
+import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.InMemoryFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.InMemoryFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.InMemoryFeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
+import com.thinkbiganalytics.metadata.jpa.cluster.NiFiFlowCacheClusterUpdateProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -57,13 +74,22 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.service.user.UserService;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.springframework.cloud.config.server.encryption.EncryptionController;
+import org.springframework.cloud.config.server.encryption.SingleTextEncryptorLocator;
+import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import java.security.Principal;
 import java.util.Properties;
@@ -107,17 +133,12 @@ public class TestSpringConfiguration {
 
     @Bean
     public NifiFlowCache nifiFlowCache() {
-        return new NifiFlowCache();
+        return new NifiFlowCacheImpl();
     }
 
     @Bean
     public ModeShapeEngine modeShapeEngine() {
         return Mockito.mock(ModeShapeEngine.class);
-    }
-
-    @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider() {
-        return Mockito.mock(FeedManagerFeedProvider.class);
     }
 
     @Bean
@@ -174,8 +195,6 @@ public class TestSpringConfiguration {
     public Repository repository() {
         return Mockito.mock(Repository.class);
     }
-
-    ;
 
     @Bean
     public TransactionManagerLookup txnLookup() {
@@ -334,5 +353,120 @@ public class TestSpringConfiguration {
     @Bean
     NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
         return new NiFiPropertyDescriptorTransformV1();
+    }
+
+
+    @Bean
+    RegisteredTemplateUtil registeredTemplateUtil() {
+        return new RegisteredTemplateUtil();
+    }
+
+    @Bean
+    RegisteredTemplateService registeredTemplateService() {
+        return new RegisteredTemplateService();
+    }
+
+    @Bean
+    FeedModelTransform feedModelTransform() {
+        return new FeedModelTransform();
+    }
+
+    @Bean
+    CategoryModelTransform categoryModelTransform() {
+        return new CategoryModelTransform();
+    }
+
+    @Bean
+    CategoryProvider feedManagerCategoryProvider() {
+        return new Mockito().mock(CategoryProvider.class);
+    }
+
+    @Bean
+    FeedManagerTemplateProvider feedManagerTemplateProvider() {
+        return new Mockito().mock(FeedManagerTemplateProvider.class);
+    }
+
+    @Bean(name = "hiveJdbcTemplate")
+    JdbcTemplate hiveJdbcTemplate() {
+        return new Mockito().mock(JdbcTemplate.class);
+    }
+
+    @Bean(name = "kerberosHiveConfiguration")
+    KerberosTicketConfiguration kerberosHiveConfiguration() {
+        return new KerberosTicketConfiguration();
+    }
+
+    @Bean
+    HadoopSecurityGroupProvider hadoopSecurityGroupProvider() {
+        return new Mockito().mock(HadoopSecurityGroupProvider.class);
+    }
+
+    @Bean
+    HiveService hiveService() {
+        return new Mockito().mock(HiveService.class);
+    }
+
+    @Bean
+    TemplateModelTransform templateModelTransform() {
+        return new TemplateModelTransform();
+    }
+
+    @Bean
+    EncryptionService encryptionService() {
+        return new EncryptionService();
+    }
+
+    @Bean
+    TextEncryptor textEncryptor(){
+        return textEncryptorLocator().locate(null);
+    }
+
+    @Bean
+    TextEncryptorLocator textEncryptorLocator() {
+        return new SingleTextEncryptorLocator(null);
+    }
+
+    @Bean
+    EncryptionController encryptionController() {
+        return new EncryptionController(textEncryptorLocator());
+    }
+
+    @Bean
+    ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform() {
+        return new ServiceLevelAgreementModelTransform(Mockito.mock(Model.class));
+    }
+
+    @Bean
+    AccessControlledEntityTransform accessControlledEntityTransform() {
+        return Mockito.mock(AccessControlledEntityTransform.class);
+    }
+
+    @Bean
+    SecurityModelTransform actionsTransform() {
+        return Mockito.mock(SecurityModelTransform.class);
+    }
+
+    @Bean
+    UserService userService() {
+        return Mockito.mock(UserService.class);
+    }
+
+    @Bean
+    KyloVersionProvider kyloVersionProvider() {
+        return Mockito.mock(KyloVersionProvider.class);
+    }
+
+    @Bean
+    ClusterService clusterService() {
+        return new JGroupsClusterService();
+    }
+
+    @Bean
+    NifiFlowCacheClusterManager nifiFlowCacheClusterManager() {
+        return Mockito.mock(NifiFlowCacheClusterManager.class);
+    }
+    @Bean
+    NiFiFlowCacheClusterUpdateProvider niFiFlowCacheClusterUpdateProvider(){
+        return Mockito.mock(NiFiFlowCacheClusterUpdateProvider.class);
     }
 }

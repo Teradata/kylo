@@ -1,47 +1,142 @@
 define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
-    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, PolicyInputFormService, FieldPolicyRuleOptionsFactory, feed, field, policyParameter) {
+    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, PolicyInputFormService, FieldPolicyRuleOptionsFactory, FeedFieldPolicyRuleService, feed, field) {
         $scope.feed = feed;
         $scope.options = [];
         $scope.field = field;
         $scope.ruleMode = 'NEW'
 
+        /**
+         * The form for validation
+         * @type {{}}
+         */
         $scope.policyForm = {};
 
+        /**
+         * Flag if we are loading the available policies
+         * @type {boolean}
+         */
         $scope.loadingPolicies = true;
+
+        /**
+         * The field policies associated with the field
+         * @type {null}
+         */
+        $scope.policyRules = null;
+
+        /**
+         *  Renders Radio selection for different types
+         * @type {[*]}
+         */
+        $scope.optionTypes = [{type:'standardization',name:'Standardization'},{type:'validation',name:'Validation'}]
+
+        /**
+         * the selected Typed.. used with the optionTypes
+         * @type {null}
+         */
+        $scope.selectedOptionType = 'standardization';
+
+        /**
+         * The list of either Standardizers or validators depending upon the selectedOptionType (radio button)
+         * @type {Array}
+         */
         $scope.options = [];
-        FieldPolicyRuleOptionsFactory.getOptionsForType(policyParameter).then(function (response) {
+
+        /**
+         * The list of available validators
+         * @type {Array}
+         */
+        var validators = [];
+
+        /**
+         * The list of available standardizers
+         * @type {Array}
+         */
+        var standardizers = [];
+
+        /**
+         * Array of all standardizers and validators
+         * @type {Array}
+         */
+        var validatorsAndStandardizers = [];
+
+        /**
+         * flag to indicate the items have been re ordered/moved
+         * @type {boolean}
+         */
+        $scope.moved = false;
+
+        FieldPolicyRuleOptionsFactory.getStandardizersAndValidators().then(function (response) {
             var currentFeedValue = null;
             if ($scope.feed != null) {
                 currentFeedValue = PolicyInputFormService.currentFeedValue($scope.feed);
                 currentFeedValue = currentFeedValue.toLowerCase();
             }
-            var results = [];
-            if (response.data) {
-                results = _.sortBy(response.data, function (r) {
+            var standardizationResults = [];
+            var validationResults = [];
+            if (response.standardization && response.standardization.data) {
+                standardizationResults = _.sortBy(response.standardization.data, function (r) {
                     return r.name;
                 });
+
+                _.each(standardizationResults,function(result){
+                    result.type = 'standardization';
+                })
             }
-            $scope.options = PolicyInputFormService.groupPolicyOptions(results, currentFeedValue);
+
+            if (response.validation && response.validation.data) {
+                validationResults = _.sortBy(response.validation.data, function (r) {
+                    return r.name;
+                });
+
+                _.each(validationResults,function(result){
+                    result.type = 'validation';
+                })
+            }
+            standardizers = PolicyInputFormService.groupPolicyOptions(standardizationResults, currentFeedValue);
+            validators = PolicyInputFormService.groupPolicyOptions(validationResults, currentFeedValue);
+            validatorsAndStandardizers = _.union(validators,standardizers);
+            //set the correct options in the drop down
+            changedOptionType($scope.selectedOptionType);
+
             ruleTypesAvailable();
             $scope.loadingPolicies = false;
         });
 
-        var arr = field[policyParameter];
 
-        if (arr != null && arr != undefined) {
-            $scope.policyRules = angular.copy(arr);
+        $scope.onChangedOptionType = changedOptionType;
+
+
+        function changedOptionType(type) {
+            $scope.options = type == 'standardization' ? standardizers : validators;
+            $scope.selectedOptionType = type;
         }
 
-        function findRuleType(ruleName) {
-            return _.find($scope.options, function (opt) {
-                return opt.name == ruleName;
+
+         function setupPoliciesForFeed(){
+             var arr = FeedFieldPolicyRuleService.getAllPolicyRules(field);
+             if (arr != null && arr != undefined) {
+                 $scope.policyRules = angular.copy(arr);
+             }
+         }
+        setupPoliciesForFeed();
+
+
+
+
+
+        function findRuleType(ruleName, type) {
+            return _.find(validatorsAndStandardizers, function (opt) {
+                return opt.name == ruleName && opt.type == type;
             });
         }
 
         function ruleTypesAvailable() {
             if ($scope.editRule != null) {
-                $scope.ruleType = findRuleType($scope.editRule.name);
+                $scope.ruleType = findRuleType($scope.editRule.name, $scope.editRule.type);
+                if($scope.ruleType && $scope.ruleType.type != $scope.selectedOptionType) {
+                    changedOptionType($scope.ruleType.type);
+                }
             }
         }
 
@@ -59,17 +154,34 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
          modeText = "Edit";
          }
          */
-        $scope.title = modeText + " " + FieldPolicyRuleOptionsFactory.getTitleForType(policyParameter);
-
+        $scope.title = modeText + " Field Policies";
+        $scope.titleText = 'Add a new policy';
         $scope.addText = 'ADD RULE';
-        $scope.cancelText = 'CANCEL EDIT';
+        $scope.cancelText = 'CANCEL ADD';
 
         function _cancelEdit() {
             $scope.editMode = 'NEW';
             $scope.addText = 'ADD RULE';
             $scope.cancelText = 'CANCEL ADD';
+            $scope.titleText = 'Add a new policy';
+
             $scope.ruleType = null;
             $scope.editRule = null;
+        }
+
+        function resequence(){
+            _.each($scope.policyRules,function(rule, i) {
+                rule.sequence = i;
+            });
+
+        }
+
+        $scope.onMovedPolicyRule = function ($index) {
+            $scope.policyRules.splice($index, 1);
+            $scope.moved = true;
+            $scope.pendingEdits = true;
+            resequence();
+
         }
 
         /**
@@ -150,11 +262,12 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             }
             $scope.editMode = 'EDIT';
             $scope.addText = 'SAVE EDIT';
+            $scope.titleText = 'Edit the policy';
             $scope.editIndex = index;
             //get a copy of the saved rule
             var editRule = angular.copy($scope.policyRules[index]);
             //copy the rule from options with all the select options
-            var startingRule = angular.copy(_.find($scope.options,function(optRule) { return optRule.name == editRule.name}));
+            var startingRule = angular.copy(findRuleType(editRule.name, editRule.type));
             //reset the values
             _.each(startingRule.properties,function(ruleProperty){
                 var editRuleProperty =_.find(editRule.properties,function(editProperty){
@@ -168,20 +281,43 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             });
             //reassign the editRule object to the one that has all the select values
             editRule = startingRule;
+
+
+
+
+
+
+
             editRule.groups = PolicyInputFormService.groupProperties(editRule);
             PolicyInputFormService.updatePropertyIndex(editRule);
             //make all rules editable
             editRule.editable = true;
             $scope.editRule = editRule;
-            var match = _.find($scope.options, function (option) {
-                return option.name == rule.name;
-            })
+            var match = findRuleType(rule.name, rule.type)
             $scope.ruleType = angular.copy(match);
+
+
+            if($scope.ruleType && $scope.ruleType.type != $scope.selectedOptionType) {
+                changedOptionType($scope.ruleType.type);
+            }
+            $scope.selectedOptionType = editRule.type;
 
         }
 
         $scope.done = function ($event) {
-            field[policyParameter] = $scope.policyRules;
+            var validators = [];
+            var standardizers = [];
+            _.each($scope.policyRules,function(rule, i) {
+                rule.sequence = i;
+                if(rule.type == 'validation'){
+                    validators.push(rule);
+                }
+                else  if(rule.type == 'standardization'){
+                    standardizers.push(rule);
+                }
+            })
+            field['validation'] =validators;
+            field['standardization'] =standardizers;
             $mdDialog.hide('done');
         }
 
@@ -220,7 +356,7 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
     };
 
-    angular.module(moduleName).controller('FeedFieldPolicyRuleDialogController', ["$scope","$mdDialog","$mdToast","$http","StateService","FeedService","PolicyInputFormService","FieldPolicyRuleOptionsFactory","feed","field","policyParameter",controller]);
+    angular.module(moduleName).controller('FeedFieldPolicyRuleDialogController', ["$scope","$mdDialog","$mdToast","$http","StateService","FeedService","PolicyInputFormService","FieldPolicyRuleOptionsFactory", "FeedFieldPolicyRuleService","feed","field",controller]);
 
 
     angular.module(moduleName).factory('FieldPolicyRuleOptionsFactory', ["$http","$q","RestUrlService",function ($http, $q, RestUrlService) {
@@ -251,7 +387,18 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                 }
 
             },
+            getStandardizersAndValidators: function () {
+                return this.getOptionsForType('standardization-validation');
+            },
             getOptionsForType: function (type) {
+                if (type == 'standardization-validation') {
+                    var defer = $q.defer();
+                    var requests = {validation:getValidationOptions(), standardization:getStandardizationOptions()};
+                    $q.all(requests).then(function(response){
+                        defer.resolve(response);
+                    });
+                    return defer.promise;
+                }
                 if (type == 'standardization') {
                     return getStandardizationOptions();
                 }
@@ -261,6 +408,51 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                 else if (type == 'schemaParser') {
                     return getParserOptions();
                 }
+            }
+        };
+        return data;
+
+    }]);
+
+
+    angular.module(moduleName).factory('FeedFieldPolicyRuleService', [function () {
+
+
+        var data = {
+            getAllPolicyRules :function(field) {
+                var arr = [];
+
+                var standardizers =field['standardization'];
+                var validators =field['validation'];
+
+               //add in the type so we know what we are dealing with
+                if(standardizers) {
+                    _.each(standardizers, function (item) {
+                        item.type = 'standardization';
+                    });
+                }
+
+                if(validators) {
+                    _.each(validators, function (item) {
+                        item.type = 'validation';
+                    });
+                }
+
+                var tmpArr = _.union(standardizers,validators);
+
+                var hasSequence = _.find(tmpArr,function(item){
+                        return item.sequence != null && item.sequence != undefined;
+                    }) != undefined;
+
+                //if we dont have a sequence, add it in
+                if(!hasSequence){
+                    _.each(tmpArr,function(item,idx){
+                        item.sequence = idx;
+                    });
+                }
+
+                arr = _.sortBy(tmpArr,'sequence');
+                return arr;
             }
         };
         return data;

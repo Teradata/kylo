@@ -58,7 +58,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     private DateTime createdTime = DateTime.now();
 
     @Convert(converter = UsernamePrincipalConverter.class)
-    @Column(name = "USER", columnDefinition = "varchar(100)")
+    @Column(name = "USER_NAME", columnDefinition = "varchar(100)")
     private UsernamePrincipal user;
 
     @Column(name = "LOG_TYPE", length = 45, nullable = false)
@@ -145,7 +145,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
 
         private static final long serialVersionUID = 1L;
 
-        @Column(name = "id", columnDefinition = "binary(16)")
+        @Column(name = "id")
         private UUID uuid;
 
         public AuditLogId() {

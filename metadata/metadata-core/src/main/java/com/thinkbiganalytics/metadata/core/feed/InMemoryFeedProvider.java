@@ -142,17 +142,17 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> ensureFeed(Category.ID categoryId, String feedSystemName) {
+    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
         throw new UnsupportedOperationException("Unable to ensure feed by categoryId with InMemoryProvider");
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName, String feedSystemName) {
+    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
         return ensureFeed(categorySystemName, feedSystemName, null);
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName, String name, String descr, ID destId) {
+    public Feed ensureFeed(String categorySystemName, String name, String descr, ID destId) {
         Datasource dds = this.datasetProvider.getDatasource(destId);
 
         if (dds == null) {
@@ -166,7 +166,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName, String name, String descr, ID srcId, ID destId) {
+    public Feed ensureFeed(String categorySystemName, String name, String descr, ID srcId, ID destId) {
         Datasource sds = this.datasetProvider.getDatasource(srcId);
         Datasource dds = this.datasetProvider.getDatasource(destId);
 
@@ -187,7 +187,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName, String name, String descr) {
+    public Feed ensureFeed(String categorySystemName, String name, String descr) {
         synchronized (this.feeds) {
             for (Feed feed : this.feeds.values()) {
                 if (feed.getName().equals(name)) {
@@ -223,7 +223,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
+    public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
 
         if (feed != null) {
@@ -261,13 +261,13 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> addDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID targetId, com.thinkbiganalytics.metadata.api.feed.Feed.ID dependentId) {
+    public Feed addDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID targetId, com.thinkbiganalytics.metadata.api.feed.Feed.ID dependentId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Feed<?> removeDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.feed.Feed.ID depId) {
+    public Feed removeDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.feed.Feed.ID depId) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -278,7 +278,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> getFeed(Feed.ID id) {
+    public Feed getFeed(Feed.ID id) {
         return this.feeds.get(id);
     }
 
@@ -288,12 +288,12 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed<?> findBySystemName(String systemName) {
+    public Feed findBySystemName(String systemName) {
         return findBySystemName(null, systemName);
     }
 
     @Override
-    public Feed<?> findBySystemName(String categorySystemName, String systemName) {
+    public Feed findBySystemName(String categorySystemName, String systemName) {
         FeedCriteria c = feedCriteria();
         if (categorySystemName != null) {
             c.category(categorySystemName);
@@ -342,7 +342,88 @@ public class InMemoryFeedProvider implements FeedProvider {
         feeds.remove(feedId);
     }
 
-    private FeedSource ensureFeedSource(BaseFeed<?> feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#create(java.lang.Object)
+     */
+    @Override
+    public Feed create(Feed t) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#findById(java.io.Serializable)
+     */
+    @Override
+    public Feed findById(com.thinkbiganalytics.metadata.api.feed.Feed.ID id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#findAll()
+     */
+    @Override
+    public List<Feed> findAll() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#update(java.lang.Object)
+     */
+    @Override
+    public Feed update(Feed t) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#delete(java.lang.Object)
+     */
+    @Override
+    public void delete(Feed t) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#deleteById(java.io.Serializable)
+     */
+    @Override
+    public void deleteById(com.thinkbiganalytics.metadata.api.feed.Feed.ID id) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
+     */
+    @Override
+    public com.thinkbiganalytics.metadata.api.feed.Feed.ID resolveId(Serializable fid) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findByTemplateId(com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.ID)
+     */
+    @Override
+    public List<? extends Feed> findByTemplateId(com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.ID templateId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findByCategoryId(com.thinkbiganalytics.metadata.api.category.Category.ID)
+     */
+    @Override
+    public List<? extends Feed> findByCategoryId(com.thinkbiganalytics.metadata.api.category.Category.ID categoryId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
             srcIds.put(src.getDatasource().getId(), src);
@@ -368,7 +449,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
-    private Feed<?> setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
+    private Feed setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
         feed.setPrecondition(sla);
         return feed;
     }
@@ -421,7 +502,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             }
 
             if (!this.destIds.isEmpty()) {
-                List<FeedDestination> destinations = input.getDestinations();
+                List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
                     if (this.destIds.contains(dest.getDatasource().getId())) {
                         return true;
@@ -431,7 +512,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             }
 
             if (!this.sourceIds.isEmpty()) {
-                List<FeedSource> sources = input.getSources();
+                List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
                     if (this.sourceIds.contains(src.getDatasource().getId())) {
                         return true;

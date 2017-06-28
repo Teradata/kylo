@@ -35,6 +35,7 @@ public abstract class BasePolicyRuleBuilder<T, B extends BasePolicyRuleBuilder> 
     protected String shortDescription;
     protected List<FieldRuleProperty> properties;
     protected String objectClassType;
+    protected Integer sequence;
 
     public BasePolicyRuleBuilder(String name) {
         this.name = name;
@@ -75,6 +76,11 @@ public abstract class BasePolicyRuleBuilder<T, B extends BasePolicyRuleBuilder> 
 
     public B objectClassType(Class clazz) {
         this.objectClassType = clazz.getName();
+        return (B) this;
+    }
+
+    public B shortDescription(Integer sequence) {
+        this.sequence = sequence;
         return (B) this;
     }
 

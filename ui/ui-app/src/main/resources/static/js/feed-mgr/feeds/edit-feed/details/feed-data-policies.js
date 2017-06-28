@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService, StateService) {
+    var controller = function ($scope, $mdDialog, $timeout, $q,AccessControlService, EntityAccessControlService,FeedService, StateService,FeedFieldPolicyRuleService) {
 
         var self = this;
 
@@ -33,6 +33,111 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.editFeedDataPoliciesForm = {};
 
         this.editableSection = false;
+
+
+
+        var checkAll = {
+            isChecked:true,
+            isIndeterminate: false,
+            totalChecked:0,
+            clicked:function(checked){
+                if(checked){
+                    this.totalChecked++;
+                }
+                else {
+                    this.totalChecked--;
+                }
+                this.markChecked();
+            },
+            markChecked:function(){
+                if(this.totalChecked == self.editModel.fieldPolicies.length){
+                    this.isChecked = true;
+                    this.isIndeterminate = false;
+                }
+                else if(this.totalChecked >0) {
+                    this.isChecked = false;
+                    this.isIndeterminate = true;
+                }
+                else if(this.totalChecked == 0){
+                    this.isChecked = false;
+                    this.isIndeterminate = false;
+                }
+            }
+        }
+
+        /**
+         * Toggle Check All/None on Profile column
+         * Default it to true
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.profileCheckAll = angular.extend({
+            isChecked:true,
+            isIndeterminate: false,
+            toggleAll: function() {
+                var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.editModel.fieldPolicies,function(field) {
+                    field.profile = checked;
+                });
+                if(checked){
+                    this.totalChecked = self.editModel.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                self.profileCheckAll.totalChecked = 0;
+                _.each(self.editModel.fieldPolicies,function(field) {
+                    if(field.profile){
+                        self.profileCheckAll.totalChecked++;
+                    }
+                });
+                self.profileCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+        /**
+         *
+         * Toggle check all/none on the index column
+         *
+         * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
+         */
+        this.indexCheckAll = angular.extend({
+            isChecked:false,
+            isIndeterminate: false,
+            toggleAll: function() {
+                var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.editModel.fieldPolicies,function(field) {
+                    field.index = checked;
+                });
+                this.isChecked = checked;
+
+                if(checked){
+                    this.totalChecked = self.editModel.fieldPolicies.length;
+                }
+                else {
+                    this.totalChecked = 0;
+                }
+                this.markChecked();
+            },
+            setup:function(){
+                self.indexCheckAll.totalChecked = 0;
+                _.each(self.editModel.fieldPolicies,function(field) {
+                    if(field.index){
+                        self.indexCheckAll.totalChecked++;
+                    }
+                });
+                self.indexCheckAll.markChecked();
+            }
+        },checkAll);
+
+
+
+
+
+
 
         $scope.$watch(function () {
             return FeedService.editFeedModel;
@@ -72,7 +177,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         populateFieldNameMap();
         applyDefaults();
 
-        this.permissionGroups = ['Marketing', 'Human Resources', 'Administrators', 'IT'];
         this.compressionOptions = FeedService.allCompressionOptions();
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
@@ -113,10 +217,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         this.onChangePrimaryKey = function () {
             validateMergeStrategies();
-        }
-
-        this.navigateToEditFeedInStepper = function(){
-            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
         }
 
         this.onChangeMergeStrategy = function () {
@@ -160,12 +260,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             if (self.editModel.table.options.compressionFormat === undefined) {
                 self.editModel.options.compressionFormat = 'NONE'
             }
+            self.indexCheckAll.setup();
+            self.profileCheckAll.setup();
 
             $timeout(validateMergeStrategies, 400);
         }
 
         this.onCancel = function () {
 
+        }
+
+        this.getAllFieldPolicies = function(field) {
+            return FeedFieldPolicyRuleService.getAllPolicyRules(field);
         }
 
         this.onSave = function (ev) {
@@ -217,7 +323,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             });
         }
 
-        this.showFieldRuleDialog = function (field, policyParam) {
+        this.showFieldRuleDialog = function (field) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
@@ -226,8 +332,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 fullscreen: true,
                 locals: {
                     feed:self.model,
-                    field: field,
-                    policyParameter: policyParam
+                    field: field
                 }
             })
                 .then(function (msg) {
@@ -237,14 +342,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
-                });
+        //Apply the entity access permissions
+        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
+            self.allowEdit = access;
+        });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","AccessControlService","FeedService","StateService",controller]);
+    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","$q","AccessControlService","EntityAccessControlService","FeedService","StateService","FeedFieldPolicyRuleService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDataPolicies', directive);

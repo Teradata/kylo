@@ -1,5 +1,6 @@
 define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
-    var controller = function($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService) {
+    var controller = function($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService,
+                              EntityAccessControlService) {
 
         var self = this;
 
@@ -14,7 +15,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         this.cardTitle = 'Feeds';
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton("feeds", function() {
@@ -96,6 +97,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                 //simplify feedData
                 var simpleFeedData = [];
                 if (response.data) {
+                    var entityAccessControlled = AccessControlService.isEntityAccessControlled();
                     angular.forEach(response.data, function(feed) {
                         if (feed.state == 'ENABLED') {
                             feed.stateIcon = 'check_circle'
@@ -113,7 +115,9 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                             stateIcon: feed.stateIcon,
                             feedName: feed.feedName,
                             category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
-                            updateDate: feed.updateDate
+                            updateDate: feed.updateDate,
+                            allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
+                            allowExport: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
                         })
                     });
                 }
@@ -132,13 +136,14 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         getFeeds();
 
         // Fetch the allowed actions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
                 });
     };
 
 
-        angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService", controller]);
+        angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService",
+                                                                      "FeedService","StateService", "EntityAccessControlService", controller]);
 
 });

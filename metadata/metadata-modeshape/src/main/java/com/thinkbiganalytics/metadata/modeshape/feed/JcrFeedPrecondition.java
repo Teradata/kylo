@@ -75,7 +75,7 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
      * @see com.thinkbiganalytics.metadata.api.feed.FeedPrecondition#getFeed()
      */
     @Override
-    public Feed<?> getFeed() {
+    public Feed getFeed() {
         return this.feed;
     }
 

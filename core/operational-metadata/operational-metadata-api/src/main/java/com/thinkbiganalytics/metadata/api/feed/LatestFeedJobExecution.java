@@ -101,4 +101,10 @@ public interface LatestFeedJobExecution {
      * @return the latest job instance id
      */
     Long getJobInstanceId();
+
+    /**
+     *
+     * @return true if Stream, false if not
+     */
+    boolean isStream();
 }

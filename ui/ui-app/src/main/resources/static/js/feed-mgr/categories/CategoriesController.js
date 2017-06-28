@@ -45,7 +45,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
         };
 
         // Register Add button
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton('categories', function() {

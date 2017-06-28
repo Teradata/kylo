@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
@@ -16,6 +16,7 @@
     <module>service-monitor-cloudera</module>
     <module>service-monitor-nifi</module>
     <module>service-monitor-pipeline-db</module>
+    <module>service-monitor-kylo-cluster</module>
     <module>field-policy-default</module>
     <module>precondition-default</module>
     <module>sla-metrics-default</module>

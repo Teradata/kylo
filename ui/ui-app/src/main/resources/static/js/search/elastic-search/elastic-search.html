@@ -1,22 +1,3 @@
-<!--
-  #%L
-  thinkbig-ui-feed-manager
-  %%
-  Copyright (C) 2017 ThinkBig Analytics
-  %%
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-  
-      http://www.apache.org/licenses/LICENSE-2.0
-  
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  #L%
-  -->
 <div>
 
 
@@ -32,9 +13,8 @@
 
                     <div ng-if="vm.searchResult != null">
                     Displaying {{vm.searchResult.from}} to {{vm.searchResult.to}} of {{vm.searchResult.totalHits}}  <span class="hint">({{(vm.searchResult.tookInMillis/1000).toFixed(3)}} seconds)</span>
-                    <Br/>
-
-<br/><br/>
+                    <br/>
+                    <br/><br/>
                         <div  ng-if="vm.searchResult.searchHits.length >0 ">
                             <md-list flex layout-fill >
                                 <md-list-item class="md-3-line layout-padding-top-bottom" dir-paginate="searchHit in vm.searchResult.searchHits|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="search"  total-items="vm.searchResult.totalHits" current-page="vm.paginationData.currentPage"  ng-click="vm.onSearchResultItemClick($event,searchHit)">
@@ -132,8 +112,11 @@
                             </md-list>
                         </div>
                     </div>
-                  <div ng-if="vm.searchResult == null">
+                  <div ng-if="vm.searchResult == null && !vm.searching">
                     No results found
+                  </div>
+                  <div ng-if="vm.searching">
+                    <md-progress-circular md-mode="indeterminate" ></md-progress-circular>
                   </div>
                 </body-section>
              </card-layout>

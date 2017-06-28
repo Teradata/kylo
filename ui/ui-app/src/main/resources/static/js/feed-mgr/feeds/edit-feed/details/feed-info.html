@@ -18,9 +18,11 @@
   #L%
   -->
 <div class="md-padding">
-<thinkbig-feed-definition></thinkbig-feed-definition>
-<thinkbig-feed-nifi-properties></thinkbig-feed-nifi-properties>
-<thinkbig-feed-data-policies ></thinkbig-feed-data-policies>
-    <thinkbig-feed-additional-properties></thinkbig-feed-additional-properties>
-    <thinkbig-feed-schedule></thinkbig-feed-schedule>
+  <thinkbig-feed-definition></thinkbig-feed-definition>
+  <thinkbig-feed-nifi-properties ng-if="vm.model.inputProcessor.properties.length > 0 || vm.model.nonInputProcessors.length > 0"></thinkbig-feed-nifi-properties>
+
+  <kylo-table-options-details ng-if="vm.model.registeredTemplate.templateTableOption != 'NO_TABLE'" type="{{vm.model.registeredTemplate.templateTableOption}}"></kylo-table-options-details>
+
+  <thinkbig-feed-additional-properties></thinkbig-feed-additional-properties>
+  <thinkbig-feed-schedule></thinkbig-feed-schedule>
 </div>
