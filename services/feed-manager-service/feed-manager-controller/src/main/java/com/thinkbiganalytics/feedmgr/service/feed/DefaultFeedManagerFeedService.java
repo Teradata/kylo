@@ -20,6 +20,39 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * #L%
  */
 
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
@@ -87,37 +120,6 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
@@ -270,14 +272,19 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         });
 
     }
-
+    
     @Override
     public Collection<FeedMetadata> getFeeds() {
+        return getFeeds(-1, -1);
+    }
+
+    public Collection<FeedMetadata> getFeeds(int limit, int start) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             Collection<FeedMetadata> feeds = null;
-            List<Feed> domainFeeds = feedProvider.findAll();
+            List<Feed> domainFeeds = findAllFeeds(limit, start);
+            
             if (domainFeeds != null) {
                 feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
             }
@@ -295,15 +302,30 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
 
     }
-
+    
+    @Override
+    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
+        if (verbose) {
+            return getFeeds(limit, start);
+        } else {
+            return getFeedSummaryData(limit, start);
+        }
+        
+    }
+    
     @Override
     public List<FeedSummary> getFeedSummaryData() {
+        return getFeedSummaryData(-1, -1);
+    }
+
+    public List<FeedSummary> getFeedSummaryData(int limit, int start) {
 
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             List<FeedSummary> feeds = null;
-            Collection<? extends Feed> domainFeeds = feedProvider.findAll();
+            List<Feed> domainFeeds = findAllFeeds(limit, start);
+            
             if (domainFeeds != null) {
                 feeds = feedModelTransform.domainToFeedSummary(domainFeeds);
             }
@@ -388,6 +410,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     }
 
+
+    private List<Feed> findAllFeeds(int limit, int start) {
+        List<Feed> domainFeeds;
+        if (limit > 0) {
+            Pageable pageable = new PageRequest((start / limit), limit);
+            Page<Feed> page = feedProvider.findPage(pageable);
+            domainFeeds = page.getContent();
+        } else {
+            domainFeeds = feedProvider.findAll();
+        }
+        return domainFeeds;
+    }
 
     /**
      * Create/Update a Feed in NiFi

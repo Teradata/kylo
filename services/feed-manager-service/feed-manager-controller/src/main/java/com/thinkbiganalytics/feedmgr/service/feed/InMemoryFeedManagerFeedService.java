@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -107,7 +108,14 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         } else {
             return getFeedSummaryData();
         }
-
+    }
+    
+    @Override
+    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
+        return getFeeds(verbose).stream()
+                        .skip(Math.max(start - 1, 0))
+                        .limit(limit)
+                        .collect(Collectors.toList());
     }
 
     public List<FeedSummary> getFeedSummaryData() {

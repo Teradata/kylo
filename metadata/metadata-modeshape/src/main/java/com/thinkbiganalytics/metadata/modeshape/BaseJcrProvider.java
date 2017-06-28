@@ -34,9 +34,14 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +55,7 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
+import javax.jcr.query.RowIterator;
 
 /**
  */
@@ -244,6 +250,32 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
+    
+    public int findCount() {
+        return findCount(null);
+    }
+
+    public int findCount(String whereClause) {
+        String jcrQuery = "SELECT [mode:id] FROM [" + getNodeType(getJcrEntityClass()) + "] " + (whereClause == null ? "" : whereClause);
+        int count = 0;
+        
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), jcrQuery);
+            
+            if (result != null) {
+                RowIterator rowItr = result.getRows();
+                
+                while (rowItr.hasNext()) {
+                    rowItr.nextRow();
+                    count++;
+                }
+            }
+            
+            return count;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
+        }
+    }
 
     public <D, R> Iterable<D> findIterable(String query, Class<D> domainClass, Class<R> resultClass) {
         return () -> {
@@ -274,7 +306,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             }
             return null;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
+            throw new MetadataRepositoryException("Unable to findFirst for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
 
@@ -291,7 +323,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             }
             return null;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
+            throw new MetadataRepositoryException("Unable to findFirst for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
 
@@ -301,6 +333,22 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         String jcrQuery = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "]";
         return find(jcrQuery);
 
+    }
+    
+    @Override
+    public Page<T> findPage(Pageable pageable) {
+        int count = findCount();
+        
+        if (count > 0) {
+            StringBuilder bldr = new StringBuilder("SELECT * FROM [").append(getNodeType(getJcrEntityClass())).append("] ");
+            appendSort(bldr, pageable);
+            appendOffset(bldr, pageable);
+            
+            List<T> list = find(bldr.toString());
+            return new PageImpl<>(list, pageable, count);
+        } else {
+            return new PageImpl<T>(Collections.emptyList());
+        }
     }
 
     @Override
@@ -361,6 +409,37 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     protected String sanitizeTitle(String title) {
         return StringEscapeUtils.escapeJava(title);
+    }
+
+    protected void appendOffset(StringBuilder bldr, Pageable pageable) {
+        bldr.append(" LIMIT ").append(pageable.getPageSize()).append(" OFFSET ").append(pageable.getOffset());
+    }
+
+    protected void appendSort(StringBuilder bldr, Pageable pageable) {
+        boolean first = true;
+        
+        if (pageable.getSort() != null && pageable.getSort().iterator().hasNext()) {
+            bldr.append("ORDER BY ");
+            for (Sort.Order order : pageable.getSort()) {
+                if (! first) {
+                    bldr.append(", ");
+                    first = false;
+                }
+                
+                String jcrPropName = deriveJcrPropertyName(order.getProperty());
+                bldr.append("[").append(order.getProperty()).append("] ").append(order.getDirection()).append(" ");
+            }
+        }
+    }
+
+    /**
+     * Derives what actual JCR node property name corresponds to the given property name.
+     * Subclasses should override this to return the appropriate JCR property name associated
+     * with the entity's public API property name.  The default behavior is to just return
+     * the unmodified input property name.
+     */
+    protected String deriveJcrPropertyName(String property) {
+        return property;
     }
 
 }

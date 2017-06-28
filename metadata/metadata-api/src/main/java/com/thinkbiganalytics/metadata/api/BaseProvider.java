@@ -23,6 +23,9 @@ package com.thinkbiganalytics.metadata.api;
 import java.io.Serializable;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  */
 public interface BaseProvider<T, PK extends Serializable> {
@@ -32,6 +35,8 @@ public interface BaseProvider<T, PK extends Serializable> {
     T findById(PK id);
 
     List<T> findAll();
+    
+    Page<T> findPage(Pageable page);
 
     T update(T t);
 

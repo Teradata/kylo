@@ -60,6 +60,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * A provider of {@link Feed} objects that stores everything in memory.
  */
@@ -365,6 +368,15 @@ public class InMemoryFeedProvider implements FeedProvider {
      */
     @Override
     public List<Feed> findAll() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.BaseProvider#findAll(org.springframework.data.domain.Pageable)
+     */
+    @Override
+    public Page<Feed> findPage(Pageable page) {
         // TODO Auto-generated method stub
         return null;
     }

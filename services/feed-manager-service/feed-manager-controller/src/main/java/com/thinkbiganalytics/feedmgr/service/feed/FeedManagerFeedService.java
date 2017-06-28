@@ -97,6 +97,20 @@ public interface FeedManagerFeedService {
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
     /**
+     * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
+     * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * <p>
+     * The sized of the returned list will not be greater than the limit parameter, and the first element 
+     * of the list will be the n'th feed in the list of all feeds as specified by the start parameter.
+     *
+     * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @param limit the max size of the feed list
+     * @param start the n'th starting feed in the list
+     * @return a list of feed objects
+     */
+    Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start);
+    
+    /**
      * @return a list of feeds
      */
     List<FeedSummary> getFeedSummaryData();

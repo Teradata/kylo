@@ -322,6 +322,11 @@ public class FeedManagerMetadataService implements MetadataService {
     public Collection<FeedMetadata> getFeeds() {
         return feedProvider.getFeeds();
     }
+    
+    @Override
+    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
+        return feedProvider.getFeeds(verbose, limit, start);
+    }
 
     @Override
     public Collection<? extends UIFeed> getFeeds(boolean verbose) {

@@ -330,8 +330,16 @@ public class FeedRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
     )
-    public Response getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
-        Collection<? extends UIFeed> feeds = getMetadataService().getFeeds(verbose);
+    public Response getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
+                             @QueryParam("sort") @DefaultValue("") String sort,
+                             @QueryParam("limit") Integer limit,
+                             @QueryParam("start") @DefaultValue("1") Integer start) {
+        Collection<? extends UIFeed> feeds;
+        if (limit != null) {
+            feeds = getMetadataService().getFeeds(verbose, limit, start);
+        } else {
+            feeds = getMetadataService().getFeeds(verbose);
+        }
         return Response.ok(feeds).build();
     }
 

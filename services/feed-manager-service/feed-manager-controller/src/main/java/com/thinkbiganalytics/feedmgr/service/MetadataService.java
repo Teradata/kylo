@@ -148,6 +148,8 @@ public interface MetadataService {
      */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
+    Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start);
+    
     /**
      * @return a list of feeds
      */
