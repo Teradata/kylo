@@ -44,6 +44,8 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile("auth-memory")
 public class MemoryAuthConfig {
+    
+    public static final int AUTH_MEMORY_ORDER = LoginConfiguration.HIGH_ORDER - 10;
 
     @Bean(name = "memoryLoginRoles")
     public Properties getRoles() {
@@ -56,10 +58,12 @@ public class MemoryAuthConfig {
     }
 
     @Bean(name = "servicesMemoryLoginConfiguration")
-    public LoginConfiguration servicesFileLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder, @Qualifier("memoryLoginUsers") final Properties users,
+    public LoginConfiguration servicesFileLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder, 
+                                                             @Qualifier("memoryLoginUsers") final Properties users,
                                                              @Qualifier("memoryLoginRoles") final Properties roles) {
         // @formatter:off
         return builder
+                .order(AUTH_MEMORY_ORDER)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(MemoryUsersRolesLoginModule.class)
                     .controlFlag(LoginModuleControlFlag.SUFFICIENT)
