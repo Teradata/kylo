@@ -40,11 +40,11 @@ import org.springframework.context.annotation.Profile;
 @Profile("auth-file")
 public class FileAuthConfig {
 
-    @Value("${security.auth.file.login.ui:required}")
-    private String uiLoginFlag;
-
-    @Value("${security.auth.file.login.services:required}")
-    private String servicesLoginFlag;
+    @Value("${security.auth.file.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.file.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
     
     @Value("${security.auth.file.users:users.properties}")
     private String usersResource;
@@ -66,15 +66,16 @@ public class FileAuthConfig {
         // @formatter:off
 
         LoginConfigurationBuilder.ModuleBuilder building = builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                .moduleClass(UsersRolesLoginModule.class)
-                .controlFlag(this.servicesLoginFlag)
-                .option("defaultUsersProperties", "users.default.properties")
-                .option("defaultRolesProperties", "groups.default.properties")
-                .option("usersProperties", usersResource)
-                .option("rolesProperties", groupsResource);
+                    .moduleClass(UsersRolesLoginModule.class)
+                    .controlFlag(this.loginFlag)
+                    .option("defaultUsersProperties", "users.default.properties")
+                    .option("defaultRolesProperties", "groups.default.properties")
+                    .option("usersProperties", usersResource)
+                    .option("rolesProperties", groupsResource);
 
-        if(passwordHashEnabled) {
+        if (passwordHashEnabled) {
             building.option("hashAlgorithm", hashAlgorithm)
                     .option("hashEncoding", hashEncoding);
         }
@@ -89,15 +90,16 @@ public class FileAuthConfig {
         // @formatter:off
 
         LoginConfigurationBuilder.ModuleBuilder building = builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_UI)
-                .moduleClass(UsersRolesLoginModule.class)
-                .controlFlag(this.uiLoginFlag)
-                .option("defaultUsersProperties", "users.default.properties")
-                .option("defaultRolesProperties", "groups.default.properties")
-                .option("usersProperties", usersResource)
-                .option("rolesProperties", groupsResource);
+                    .moduleClass(UsersRolesLoginModule.class)
+                    .controlFlag(this.loginFlag)
+                    .option("defaultUsersProperties", "users.default.properties")
+                    .option("defaultRolesProperties", "groups.default.properties")
+                    .option("usersProperties", usersResource)
+                    .option("rolesProperties", groupsResource);
 
-        if(passwordHashEnabled) {
+        if (passwordHashEnabled) {
             building.option("hashAlgorithm", hashAlgorithm)
                     .option("hashEncoding", hashEncoding);
         }

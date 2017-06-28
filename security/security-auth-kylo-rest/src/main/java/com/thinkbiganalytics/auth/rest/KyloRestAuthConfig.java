@@ -40,8 +40,11 @@ import javax.inject.Inject;
 @Profile("auth-kylo")
 public class KyloRestAuthConfig {
 
-    @Value("${security.auth.kylo.login.ui:required}")
-    private String uiLoginFlag;
+    @Value("${security.auth.kylo.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.kylo.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
     @Bean(name = "loginRestClientConfig")
     @ConfigurationProperties(prefix = "loginRestClientConfig")
@@ -64,20 +67,21 @@ public class KyloRestAuthConfig {
      * @param builder the login configuration builder
      * @return the UI login configuration
      */
-    @Bean(name = "uiKyloRestLoginConfiguration")
+    @Bean(name = "kyloRestLoginConfiguration")
     @Nonnull
     public LoginConfiguration servicesRestLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         // @formatter:off
 
         return builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(KyloRestLoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(KyloRestLoginModule.REST_CLIENT_CONFIG, loginRestClientConfig)
                     .add()
                 .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
                     .moduleClass(KyloRestLoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(KyloRestLoginModule.REST_CLIENT_CONFIG, loginRestClientConfig)
                     .option(KyloRestLoginModule.LOGIN_USER, loginUser)
                     .option(KyloRestLoginModule.LOGIN_PASSWORD, loginPassword)

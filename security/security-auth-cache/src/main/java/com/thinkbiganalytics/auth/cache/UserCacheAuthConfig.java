@@ -56,6 +56,12 @@ public class UserCacheAuthConfig {
     
     @Value("${security.auth.cache.spec:expireAfterWrite=30s,maximumSize=1024}")
     private String cacheSpec;
+    
+    @Value("${security.auth.file.login.check.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).LOWEST_ORDER}}")
+    private int loginCheckOrder;
+    
+    @Value("${security.auth.file.login.save.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).HIGHEST_ORDER}}")
+    private int loginSaveOrder;
 
     @Bean(name = "loginPrincipalCache")
     public Cache<Principal, Set<Principal>> principalCache() {    
@@ -64,7 +70,6 @@ public class UserCacheAuthConfig {
     }
 
     @Bean(name = "servicesCacheAuthenticatingLoginConfiguration")
-    @Order(LoginConfiguration.LOWEST_ORDER)
     public LoginConfiguration servicesCacheAuthenticatingLoginConfiguration(LoginConfigurationBuilder builder,
                                                                             @Named("loginPrincipalCache") Cache<Principal, Set<Principal>> cache) {
         // @formatter:off
@@ -72,6 +77,7 @@ public class UserCacheAuthConfig {
         // Caching only is relevant on the services side because the UI already uses cookies
         // to cache authentication state.
         return builder
+                        .order(this.loginCheckOrder)
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(UserCacheLoginModule.class)
                             .controlFlag(LoginModuleControlFlag.SUFFICIENT)      
@@ -84,7 +90,6 @@ public class UserCacheAuthConfig {
     }
     
     @Bean(name = "servicesCachingLoginConfiguration")
-    @Order(LoginConfiguration.HIGHEST_ORDER)
     public LoginConfiguration servicesCachingLoginConfiguration(LoginConfigurationBuilder builder,
                                                                 @Named("loginPrincipalCache") Cache<Principal, Set<Principal>> cache) {
         // @formatter:off
@@ -92,6 +97,7 @@ public class UserCacheAuthConfig {
         // Caching only is relevant on the services side because the UI already uses cookies
         // to cache authentication state.
         return builder
+                        .order(this.loginSaveOrder)
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(UserCacheLoginModule.class)
                             .controlFlag(LoginModuleControlFlag.OPTIONAL)      

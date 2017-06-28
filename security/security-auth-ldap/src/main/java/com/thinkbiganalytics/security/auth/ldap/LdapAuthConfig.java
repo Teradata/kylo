@@ -52,40 +52,29 @@ import java.net.URI;
 @Profile("auth-ldap")
 public class LdapAuthConfig {
 
-    @Value("${security.auth.ldap.login.ui:required}")
-    private String uiLoginFlag;
+    @Value("${security.auth.ldap.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.ldap.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
-    @Value("${security.auth.ldap.login.services:required}")
-    private String servicesLoginFlag;
-
-    @Bean(name = "servicesLdapLoginConfiguration")
+    @Bean(name = "ldapLoginConfiguration")
     public LoginConfiguration servicesLdapLoginConfiguration(LdapAuthenticator authenticator,
                                                              LdapAuthoritiesPopulator authoritiesPopulator,
                                                              LoginConfigurationBuilder builder) {
         // @formatter:off
 
         return builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(LdapLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(LdapLoginModule.AUTHENTICATOR, authenticator)
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()
-                .build();
-
-        // @formatter:on
-    }
-
-    @Bean(name = "uiLdapLoginConfiguration")
-    public LoginConfiguration uiLdapLoginConfiguration(LdapAuthenticator authenticator,
-                                                       LdapAuthoritiesPopulator authoritiesPopulator,
-                                                       LoginConfigurationBuilder builder) {
-        // @formatter:off
-
-        return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(LdapLoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(LdapLoginModule.AUTHENTICATOR, authenticator)
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()

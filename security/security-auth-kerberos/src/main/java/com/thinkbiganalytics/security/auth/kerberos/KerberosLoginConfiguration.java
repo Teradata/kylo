@@ -38,23 +38,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Profile("auth-krb-login")
 public class KerberosLoginConfiguration {
 
-    @Value("${security.auth.krb.login:required}")
-    private String uiLoginFlag;
+    @Value("${security.auth.krb.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.krb.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
-    @Bean(name = "uiKrbLoginConfiguration")
+    @Bean(name = "krbLoginConfiguration")
     @SuppressWarnings("restriction")
     public LoginConfiguration servicesLdapLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
         return builder
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(com.sun.security.auth.module.Krb5LoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option("storeKey", "true")
                     .add()
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(com.sun.security.auth.module.Krb5LoginModule.class)
-                    .controlFlag(this.uiLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option("storeKey", "true")
                     .add()
                 .build();

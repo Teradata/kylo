@@ -47,22 +47,28 @@ import java.net.URI;
 @Profile("auth-ad")
 public class ActiveDirectoryAuthConfig {
 
-    @Value("${security.auth.ad.login.ui:required}")
-    private String uiLoginFlag;
+    @Value("${security.auth.ad.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.ad.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
 
-    @Value("${security.auth.ad.login.services:required}")
-    private String servicesLoginFlag;
-
-    @Bean(name = "servicesActiveDirectoryLoginConfiguration")
+    @Bean(name = "activeDirectoryLoginConfiguration")
     public LoginConfiguration servicesAdLoginConfiguration(ActiveDirectoryAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
                                                            LoginConfigurationBuilder builder) {
         // @formatter:off
 
         builder
+            .order(this.loginOrder)
             .loginModule(JaasAuthConfig.JAAS_SERVICES)
                 .moduleClass(ActiveDirectoryLoginModule.class)
-                .controlFlag(this.servicesLoginFlag)
+                .controlFlag(this.loginFlag)
+                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
+                .add()
+            .loginModule(JaasAuthConfig.JAAS_UI)
+                .moduleClass(ActiveDirectoryLoginModule.class)
+                .controlFlag(this.loginFlag)
                 .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
                 .add();
         
@@ -73,37 +79,12 @@ public class ActiveDirectoryAuthConfig {
             builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .add();
-        }
-        
-        return builder.build();
-
-        // @formatter:on
-    }
-
-    @Bean(name = "uiActiveDirectoryLoginConfiguration")
-    public LoginConfiguration uiAdLoginConfiguration(ActiveDirectoryAuthenticationProvider authProvider,
-                                                     UserDetailsContextMapper userMapper,
-                                                     LoginConfigurationBuilder builder) {
-        // @formatter:off
-
-        builder
-            .loginModule(JaasAuthConfig.JAAS_UI)
-                .moduleClass(ActiveDirectoryLoginModule.class)
-                .controlFlag(this.uiLoginFlag)
-                .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                .add();
-        
-        // If authentication to AD is through a service account then this
-        // LoginModule may participate in the token-based authentication 
-        // (like SPNEGO, OAuth, etc.) configurations as well.
-        if (authProvider.isUsingServiceCredentials()) {
-            builder
+                    .add()
                 .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
                     .moduleClass(ActiveDirectoryLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.loginFlag)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
                     .add();
         }
