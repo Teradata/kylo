@@ -44,6 +44,12 @@ public class SparkShellOptions {
     private int idleTimeout = INDEFINITE_TIMEOUT;
 
     /**
+     * Process marker used by the run script
+     */
+    @Parameter(names = "--pgrep-marker", description = "Not used")
+    private String marker;
+
+    /**
      * Maximum port number to listen on
      */
     @Parameter(names = "--port-max", description = "Maximum port number to listen on")
