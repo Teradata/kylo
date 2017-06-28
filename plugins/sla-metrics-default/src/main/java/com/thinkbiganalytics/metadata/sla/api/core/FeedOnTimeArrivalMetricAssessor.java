@@ -99,7 +99,6 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         Long latePeriodMillis = metric.getLatePeriod().toStandardDuration().getMillis();
         Long duration = CronExpressionUtil.getCronInterval(metric.getExpectedExpression());
         Period acceptedPeriod = new Period(duration + latePeriodMillis);
-
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
         LOG.debug("Calculated the Expected Date to be {}  ", expectedTime);
@@ -116,7 +115,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
 
             builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time:  " + lateTime)
                 .result(AssessmentResult.SUCCESS);
-        } else if (nowDiff <= (duration + latePeriodMillis)) {
+        }
+        else if(lastFeedTime.isAfter(lateTime)){
+            LOG.debug("Data for feed {} has not arrived before the late time: {} ", feedName, lateTime);
+            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime)
+                .result(AssessmentResult.FAILURE);
+        }
+        else if (nowDiff <= (duration + latePeriodMillis)) {
             LOG.debug("Data for feed {} has arrived before the late time: {}. The last successful feed was on {}.  It has been {} since data has arrived.  The allowed duration is {} ", feedName,
                       lateTime, lastFeedTime, DateTimeUtil.formatPeriod(nowDiffPeriod), DateTimeUtil.formatPeriod(acceptedPeriod));
             builder.message("Data for feed " + feedName + " has arrived on time.  \n The last successful feed was on " + lastFeedTime + ". It has been " + DateTimeUtil
