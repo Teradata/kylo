@@ -20,6 +20,7 @@ package com.thinkbiganalytics.rest;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 
@@ -206,11 +207,12 @@ public class JerseyRestClient {
             client = JerseyClientBuilder.createClient(clientConfig);
         }
 
-        // Register Jackson
+        // Register Jackson for the internal mapper
         objectMapper = new JacksonObjectMapperProvider().getContext(null);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        client.register(JacksonObjectMapperProvider.class);
-        client.register(JacksonFeature.class);
+        //register custom features
+        registerClientFeatures(client);
 
         // Configure authentication
         if (StringUtils.isNotBlank(config.getUsername())) {
@@ -225,6 +227,16 @@ public class JerseyRestClient {
         } else {
             log.info("Jersey Rest Client not initialized.  Host name is Not set!!");
         }
+    }
+
+    /**
+     * Allows custom clients to override and register custom features to the client.
+     * Default does standard Jackson JSON mapping
+     * @param client the Rest Client
+     */
+    protected void registerClientFeatures(Client client) {
+        client.register(JacksonObjectMapperProvider.class);
+        client.register(JacksonFeature.class);
     }
 
 

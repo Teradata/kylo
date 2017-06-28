@@ -12,7 +12,6 @@
   <packaging>jar</packaging>
 
   <properties>
-    <nifi.version>1.1.2</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
