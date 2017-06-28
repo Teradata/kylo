@@ -60,7 +60,7 @@
     
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-security-core</artifactId>
+      <artifactId>kylo-commons-security</artifactId>
       <version>${project.version}</version>
     </dependency>
 

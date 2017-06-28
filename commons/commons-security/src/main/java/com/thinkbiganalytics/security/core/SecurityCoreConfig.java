@@ -5,7 +5,7 @@ package com.thinkbiganalytics.security.core;
 
 /*-
  * #%L
- * kylo-security-core
+ * kylo-commons-security
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -23,6 +23,9 @@ package com.thinkbiganalytics.security.core;
  * #L%
  */
 
+
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.config.server.config.EncryptionAutoConfiguration;
 import org.springframework.cloud.config.server.encryption.SingleTextEncryptorLocator;
@@ -31,8 +34,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
-
-import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 /**
  *

@@ -21,6 +21,8 @@ package com.thinkbiganalytics.rest;
  */
 
 
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
+
 /**
  * Configuration class used by the {@link JerseyRestClient}
  * Parameters here allow you to setup a client and optionally pass in information to connect using Https
@@ -53,13 +55,25 @@ public class JerseyClientConfig {
      * false by default
      **/
     private boolean useConnectionPooling = false;
+    private EncryptionService encryptionService;
 
+    private static class DoNothingEncryptionService extends EncryptionService {
+        @Override
+        public boolean isEncrypted(String str) {
+            return false;
+        }
+    }
 
     public JerseyClientConfig() {
+        this(new DoNothingEncryptionService());
+    }
 
+    public JerseyClientConfig(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
     }
 
     public JerseyClientConfig(String host, String username, String password) {
+        this();
         this.host = host;
         this.username = username;
         this.password = password;
@@ -70,6 +84,7 @@ public class JerseyClientConfig {
     }
 
     public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword) {
+        this();
         this.host = host;
         this.username = username;
         this.password = password;
@@ -81,6 +96,7 @@ public class JerseyClientConfig {
 
     public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, Integer readTimeout,
                               Integer connectTimeout) {
+        this();
         this.host = host;
         this.username = username;
         this.password = password;
@@ -101,7 +117,7 @@ public class JerseyClientConfig {
     }
 
     public String getKeystorePassword() {
-        return keystorePassword;
+        return encryptionService.isEncrypted(keystorePassword) ? encryptionService.decrypt(keystorePassword) : keystorePassword;
     }
 
     public void setKeystorePassword(String keystorePassword) {
@@ -126,7 +142,7 @@ public class JerseyClientConfig {
     }
 
     public String getPassword() {
-        return password;
+        return encryptionService.isEncrypted(password) ? encryptionService.decrypt(password) : password;
     }
 
     public void setPassword(String password) {
@@ -204,7 +220,7 @@ public class JerseyClientConfig {
     }
 
     public String getTruststorePassword() {
-        return truststorePassword;
+        return encryptionService.isEncrypted(truststorePassword) ? encryptionService.decrypt(truststorePassword) : truststorePassword;
     }
 
     public void setTruststorePassword(String truststorePassword) {
