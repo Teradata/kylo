@@ -150,7 +150,7 @@ public class KyloVersionUtil {
             if (this.minorVersion.contains("-")) {
                 String[] split = this.minorVersion.split("-");
                 this.minorVersion = split[0];
-                tag = split[1];
+                this.tag = split[1];
             }
         }
 

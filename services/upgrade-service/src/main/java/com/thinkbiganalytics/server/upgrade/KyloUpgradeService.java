@@ -154,11 +154,19 @@ public class KyloUpgradeService {
             return this.buildVersion;
         } else {
             int idx = IntStream.range(0, UPGRADE_SEQUENCE.size())
-                .filter(i -> UPGRADE_SEQUENCE.get(i).matches(current.getMajorVersion(), current.getMinorVersion(), current.getPointVersion()))
+                .filter(i -> 
+                        UPGRADE_SEQUENCE.get(i).matches(current.getMajorVersion(), current.getMinorVersion(), current.getPointVersion()) ||
+                        UPGRADE_SEQUENCE.get(i).compareTo(current) > 0)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("The current Kylo version is unrecognized: " + current));
             // If the current version is not the last one in the upgrade sequence then return it, otherwise return null.
-            return idx == UPGRADE_SEQUENCE.size() - 1 ? null : UPGRADE_SEQUENCE.get(idx + 1);
+            if (UPGRADE_SEQUENCE.get(idx).compareTo(current) > 0) {
+                return UPGRADE_SEQUENCE.get(idx);
+            } else if (idx < UPGRADE_SEQUENCE.size() - 1) {
+                return UPGRADE_SEQUENCE.get(idx + 1);
+            } else {
+                return null;
+            }
         }
     }
 }
