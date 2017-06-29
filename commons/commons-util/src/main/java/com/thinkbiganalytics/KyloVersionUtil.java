@@ -145,6 +145,13 @@ public class KyloVersionUtil {
             this.minorVersion = minor;
             this.pointVersion = point;
             this.tag = tag;
+            
+            // Fix the case where the minor version contains a tag due to an old schema version.
+            if (this.minorVersion.contains("-")) {
+                String[] split = this.minorVersion.split("-");
+                this.minorVersion = split[0];
+                tag = split[1];
+            }
         }
 
         /**

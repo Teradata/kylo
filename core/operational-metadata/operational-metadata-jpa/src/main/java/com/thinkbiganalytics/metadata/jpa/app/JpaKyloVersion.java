@@ -131,6 +131,13 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     public void setMinorVersion(String minorVersion) {
         this.minorVersion = minorVersion;
+        
+        // Fix the case where the minor version contains a tag due to an old schema version.
+        if (this.minorVersion.contains("-")) {
+            String[] split = minorVersion.split("-");
+            this.minorVersion = split[0];
+            this.tag = split[1];
+        }
     }
     
     public String getPointVersion() {

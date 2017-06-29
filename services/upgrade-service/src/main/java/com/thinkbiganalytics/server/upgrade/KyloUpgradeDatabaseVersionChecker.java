@@ -93,6 +93,7 @@ public class KyloUpgradeDatabaseVersionChecker {
                 String minorVersion = rs.getString("MINOR_VERSION");
                 String pointVersion = rs.getString("POINT_VERSION");
                 String tag = rs.getString("TAG");
+                
                 version = new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, tag);
             }
 
