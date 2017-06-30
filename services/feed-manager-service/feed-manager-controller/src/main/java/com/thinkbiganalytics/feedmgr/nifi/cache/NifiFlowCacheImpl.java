@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -108,6 +111,15 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private Map<String, NifiFlowProcessor> processorIdMap = new ConcurrentHashMap<>();
 
     private NifiFlowCacheSnapshot latest;
+
+    private List<NiFiFlowCacheListener> listeners = new ArrayList<>();
+
+
+    public void subscribe(NiFiFlowCacheListener listener){
+        this.listeners.add(listener);
+    }
+
+    private AtomicLong reloadCount = new AtomicLong(0);
 
     /**
      * Flag to mark if the cache is loaded or not This is used to determine if the cache is ready to be used
@@ -187,6 +199,11 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         this.nifiConnected = false;
         //reset the flag to force cache initialization on nifi availability
         this.loaded = false;
+       notifyCacheUnavailable();
+    }
+
+    public boolean isConnectedToNiFi(){
+        return this.nifiConnected;
     }
 
 
@@ -276,6 +293,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      */
     @Override
     public synchronized void rebuildAll() {
+
+        boolean notify = reloadCount.get() == 0;
         loaded = false;
 
         List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
@@ -302,8 +321,33 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         });
         lastUpdated = DateTime.now();
         loaded = true;
+        reloadCount.incrementAndGet();
+        if(notify){
+            notifyCacheAvailable();
+        }
 
 
+    }
+
+    private void notifyCacheAvailable(){
+        this.listeners.stream().forEach(listener -> {
+            try {
+                listener.onCacheAvailable();
+            } catch (Exception e) {
+                log.error("Error processing listener onCacheAvailable {}", e.getMessage(), e);
+            }
+        });
+
+    }
+
+    private void notifyCacheUnavailable() {
+        this.listeners.stream().forEach(listener -> {
+            try {
+                listener.onCacheUnavailable();
+            } catch (Exception e) {
+                log.error("Error processing listener onCacheUnavailable {}", e.getMessage(), e);
+            }
+        });
     }
 
     /**
