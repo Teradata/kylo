@@ -70,6 +70,8 @@ public class ActiveMqConfig {
         factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
         factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
         factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
+        factory.getRedeliveryPolicy().setBackOffMultiplier(env.getProperty("jms.backOffMultiplier", Double.class, 5d));
+        factory.getRedeliveryPolicy().setUseExponentialBackOff(env.getProperty("jms.useExponentialBackOff", Boolean.class, false));
         PooledConnectionFactory pool = new PooledConnectionFactory();
         pool.setIdleTimeout(0);
         pool.setConnectionFactory(getCredentialsAdapter(factory));
