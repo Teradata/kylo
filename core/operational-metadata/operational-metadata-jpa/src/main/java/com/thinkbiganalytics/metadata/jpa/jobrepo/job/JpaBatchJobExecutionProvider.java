@@ -39,6 +39,9 @@ import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -46,14 +49,15 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchRelatedFlowFile;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
-import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
@@ -73,17 +77,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.persistence.OptimisticLockException;
@@ -119,6 +123,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private BatchStepExecutionProvider batchStepExecutionProvider;
 
     private BatchRelatedFlowFileRepository batchRelatedFlowFileRepository;
+
+    @Inject
+    private AccessController controller;
+
+    @Inject
+    private MetadataEventService eventService;
 
 
     @Autowired
@@ -245,26 +255,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     /**
-     * if a event is a Merge (JOIN event) that merges other Root flow files (other JobExecutions) it will contain this relationship. These files need to be related together to determine when the final
-     * job is complete.
-     *
-     * @param event     the event that indicates it is related to other job executions
-     * @param nifiEvent the persisted event
-     */
-    private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        //if (event.getFeedFlowFile() != null && event.getFeedFlowFile().hasRelatedBatchFlows() && event.isFinalJobEvent() && event.getJobFlowFileId().equalsIgnoreCase(event.getStreamingBatchFeedFlowFileId())) {
-            //relate the files together
-            List<JpaNifiRelatedRootFlowFiles> relatedRootFlowFiles = new ArrayList<>();
-            String relationId = UUID.randomUUID().toString();
-            //for (String flowFile : event.getFeedFlowFile().getRelatedBatchFeedFlows()) {
-            //    JpaNifiRelatedRootFlowFiles nifiRelatedRootFlowFile = new JpaNifiRelatedRootFlowFiles(nifiEvent, flowFile, relationId);
-            //    relatedRootFlowFiles.add(nifiRelatedRootFlowFile);
-           // }
-            relatedRootFlowFilesRepository.save(relatedRootFlowFiles);
-      //  }
-    }
-
-    /**
      * Check to see if the NifiEvent has the attributes indicating it is a Check Data Job
      */
     private boolean isCheckDataJob(ProvenanceEventRecordDTO event) {
@@ -316,10 +306,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (jobExecution.getJobExecutionId() == null) {
             log.error("Warning execution id is null for ending event {} ", event);
         }
-        if(event.isStream()) {
+        if (event.isStream()) {
             jobExecution.finishStreamingJob();
-        }
-        else {
+        } else {
             if (event.isFailure()) {  //event.hasFailureEvents
                 jobExecution.failJob();
             } else {
@@ -371,30 +360,27 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
-        if(event.isStream()){
+        if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
-            if(event.isStartOfJob() || event.isFinalJobEvent()) {
+            if (event.isStartOfJob() || event.isFinalJobEvent()) {
                 return getOrCreateStreamJobExecution(event);
-            }
-            else {
+            } else {
                 return null;
             }
-        }
-        else {
-            if(feed == null) {
-              feed =  opsManagerFeedRepository.findByName(event.getFeedName());
+        } else {
+            if (feed == null) {
+                feed = opsManagerFeedRepository.findByName(event.getFeedName());
             }
-            if(isProcessBatchEvent(event, feed)) {
+            if (isProcessBatchEvent(event, feed)) {
                 return getOrCreateBatchJobExecution(event);
-            }
-            else {
+            } else {
                 return null;
             }
         }
 
     }
 
-    private BatchRelatedFlowFile getOtherBatchJobFlowFile(ProvenanceEventRecordDTO event){
+    private BatchRelatedFlowFile getOtherBatchJobFlowFile(ProvenanceEventRecordDTO event) {
 
         BatchRelatedFlowFile relatedFlowFile = batchRelatedFlowFileRepository.findOne(event.getJobFlowFileId());
         return relatedFlowFile;
@@ -405,58 +391,57 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (feed != null) {
             time = feed.getTimeBetweenBatchJobs();
         }
-       if(time == null) {
+        if (time == null) {
             time = 1000L;
-       }
-       return time;
+        }
+        return time;
     }
 
 
     private BatchRelatedFlowFile relateFlowFiles(String eventFlowFileId, String batchJobExecutionFlowFile, Long batchJobExecutionId) {
-        JpaBatchRelatedFlowFile relatedFlowFile = new JpaBatchRelatedFlowFile(eventFlowFileId,batchJobExecutionFlowFile,batchJobExecutionId);
+        JpaBatchRelatedFlowFile relatedFlowFile = new JpaBatchRelatedFlowFile(eventFlowFileId, batchJobExecutionFlowFile, batchJobExecutionId);
         return batchRelatedFlowFileRepository.save(relatedFlowFile);
     }
 
 
-private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+    private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
 
         //if we have a job already for this event then let it pass
-    JpaBatchJobExecution jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
-    if(jobExecution != null) {
-        return true;
-    }
-    else {
-        jobExecution = (JpaBatchJobExecution) findLatestJobForFeed(event.getFeedName());
-
+        JpaBatchJobExecution jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
         if (jobExecution != null) {
-            String jobFlowFile = jobExecution.getNifiEventJobExecution().getFlowFileId();
-            if (jobFlowFile.equals(event.getJobFlowFileId())) {
-                return true;
-            } else {
-                boolean isSkipped = getOtherBatchJobFlowFile(event) != null;
-                Long diff = event.getEventTime() - jobExecution.getStartTime().getMillis();
-                Long threshold = timeBetweenStartingJobs(feed);
-                if (!isSkipped && threshold != -1 && jobExecution != null && diff >= 0 && diff < threshold) {
+            return true;
+        } else {
+            jobExecution = (JpaBatchJobExecution) findLatestJobForFeed(event.getFeedName());
 
-                    //relate this to that and return
-                    BatchRelatedFlowFile related = getOtherBatchJobFlowFile(event);
-                    if (related == null) {
-                        relateFlowFiles(event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
-                        event.setJobFlowFileId(jobFlowFile);
-                        log.info("Relating {} to {}, {} ", event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
-                    }
-                    return false;
+            if (jobExecution != null) {
+                String jobFlowFile = jobExecution.getNifiEventJobExecution().getFlowFileId();
+                if (jobFlowFile.equals(event.getJobFlowFileId())) {
+                    return true;
                 } else {
-                    return !isSkipped;
+                    boolean isSkipped = getOtherBatchJobFlowFile(event) != null;
+                    Long diff = event.getEventTime() - jobExecution.getStartTime().getMillis();
+                    Long threshold = timeBetweenStartingJobs(feed);
+                    if (!isSkipped && threshold != -1 && jobExecution != null && diff >= 0 && diff < threshold) {
+
+                        //relate this to that and return
+                        BatchRelatedFlowFile related = getOtherBatchJobFlowFile(event);
+                        if (related == null) {
+                            relateFlowFiles(event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
+                            event.setJobFlowFileId(jobFlowFile);
+                            log.info("Relating {} to {}, {} ", event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
+                        }
+                        return false;
+                    } else {
+                        return !isSkipped;
+                    }
                 }
+
+
             }
-
-
         }
-    }
         return true;
 
-}
+    }
 
 
     private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event) {
@@ -497,10 +482,10 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
             save = true;
         }
         if (save) {
-           jobExecution = jobExecutionRepository.save(jobExecution);
-           if(isNew){
-               log.info("Created new Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(),event);
-           }
+            jobExecution = jobExecutionRepository.save(jobExecution);
+            if (isNew) {
+                log.info("Created new Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
+            }
 
         }
         return jobExecution;
@@ -511,25 +496,24 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
-           BatchJobExecution latestJobExecution = findLatestJobForFeed(event.getFeedName());
-           if(latestJobExecution == null || (latestJobExecution != null && !latestJobExecution.isStream())) {
-               //If the latest Job is not set to be a Stream and its still running we need to fail it and create the new streaming job.
-               if(latestJobExecution != null && !latestJobExecution.isFinished()) {
-                   ProvenanceEventRecordDTO tempFailedEvent = new ProvenanceEventRecordDTO();
-                   tempFailedEvent.setFeedName(event.getFeedName());
-                   tempFailedEvent.setAttributeMap(new HashMap<>());
-                   tempFailedEvent.setIsFailure(true);
-                   tempFailedEvent.setDetails("Failed Running Batch event as this Feed has now become a Stream");
-                   finishJob(tempFailedEvent,(JpaBatchJobExecution)latestJobExecution);
-                   jobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
-                   jobExecutionRepository.save((JpaBatchJobExecution)latestJobExecution);
-               }
+            BatchJobExecution latestJobExecution = findLatestJobForFeed(event.getFeedName());
+            if (latestJobExecution == null || (latestJobExecution != null && !latestJobExecution.isStream())) {
+                //If the latest Job is not set to be a Stream and its still running we need to fail it and create the new streaming job.
+                if (latestJobExecution != null && !latestJobExecution.isFinished()) {
+                    ProvenanceEventRecordDTO tempFailedEvent = new ProvenanceEventRecordDTO();
+                    tempFailedEvent.setFeedName(event.getFeedName());
+                    tempFailedEvent.setAttributeMap(new HashMap<>());
+                    tempFailedEvent.setIsFailure(true);
+                    tempFailedEvent.setDetails("Failed Running Batch event as this Feed has now become a Stream");
+                    finishJob(tempFailedEvent, (JpaBatchJobExecution) latestJobExecution);
+                    jobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
+                    jobExecutionRepository.save((JpaBatchJobExecution) latestJobExecution);
+                }
 
-               jobExecution = createNewJobExecution(event);
-               jobExecution.setStream(true);
-           }
-            else {
-                jobExecution = (JpaBatchJobExecution)latestJobExecution;
+                jobExecution = createNewJobExecution(event);
+                jobExecution.setStream(true);
+            } else {
+                jobExecution = (JpaBatchJobExecution) latestJobExecution;
             }
         } catch (OptimisticLockException e) {
             //read
@@ -538,11 +522,10 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
 
         boolean save = isNew;
 
-        if(!jobExecution.isStream()){
+        if (!jobExecution.isStream()) {
             jobExecution.setStream(true);
             save = true;
         }
-
 
         if (save) {
             jobExecutionRepository.save(jobExecution);
@@ -552,17 +535,17 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
 
 
     @Override
-    public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+    public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         if (jobExecution == null) {
             return null;
         }
-        JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
-      //  checkAndRelateJobs(event, nifiEvent);
+        //   JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
+        //  checkAndRelateJobs(event, nifiEvent);
 
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
         if (jobExecution.isFinished()) {
             //ensure failures
-            batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
+            //    batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
         }
         return jobExecution;
     }
@@ -573,11 +556,11 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
      * @return the saved job execution
      */
     @Override
-    public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+    public BatchJobExecution save(ProvenanceEventRecordDTO event) {
         OpsManagerFeed feed = opsManagerFeedRepository.findByName(event.getFeedName());
-        JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event,feed);
-        if(jobExecution != null) {
-            return save(jobExecution, event, nifiEvent);
+        JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event, feed);
+        if (jobExecution != null) {
+            return save(jobExecution, event);
         }
         return null;
     }
@@ -830,6 +813,30 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
         return relatedRootFlowFilesRepository.findRelatedFlowFiles(flowFileId);
     }
 
+    public void notifyFailure(BatchJobExecution jobExecution, String feedName, String status) {
+        if (feedName == null) {
+            feedName = jobExecution.getJobInstance().getFeed().getName();
+        }
+        if (StringUtils.isBlank(status)) {
+            status = "Failed Job";
+        }
+        FeedOperation.State state = FeedOperation.State.FAILURE;
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
+    }
+
+
+    public void notifySuccess(BatchJobExecution jobExecution, String feedName, String status) {
+        if (feedName == null) {
+            feedName = jobExecution.getJobInstance().getFeed().getName();
+        }
+        if (StringUtils.isBlank(status)) {
+            status = "Job Succeeded for feed: " + feedName;
+        }
+        FeedOperation.State state = FeedOperation.State.SUCCESS;
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
+    }
+
+
 
 
     /*
@@ -845,5 +852,34 @@ private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, OpsManagerFe
 
     }
     */
+
+    protected static class OpId implements FeedOperation.ID {
+
+        private final String idValue;
+
+        public OpId(Serializable value) {
+            this.idValue = value.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (getClass().isAssignableFrom(obj.getClass())) {
+                OpId that = (OpId) obj;
+                return Objects.equals(this.idValue, that.idValue);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.idValue);
+        }
+
+        @Override
+        public String toString() {
+            return this.idValue;
+        }
+    }
 
 }

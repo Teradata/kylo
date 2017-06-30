@@ -23,6 +23,7 @@ package com.thinkbiganalytics.activemq.config;
 import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
+import org.springframework.util.StringUtils;
 
 import javax.jms.ConnectionFactory;
 
@@ -63,11 +65,16 @@ public class ActiveMqConfig {
 
     @Bean
     public ConnectionFactory connectionFactory() {
-        PooledConnectionFactory pool = new PooledConnectionFactory();
-        pool.setIdleTimeout(0);
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
         factory.setTrustAllPackages(true);
-        pool.setConnectionFactory(factory);
+        factory.setRedeliveryPolicy(new RedeliveryPolicy());
+        factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
+        factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
+        factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
+        PooledConnectionFactory pool = new PooledConnectionFactory();
+        pool.setIdleTimeout(0);
+        pool.setConnectionFactory(getCredentialsAdapter(factory));
+
         log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
         return pool;
     }
@@ -79,25 +86,29 @@ public class ActiveMqConfig {
         factory.setConnectionFactory(connectionFactory);
         //factory.setSubscriptionDurable(true);
         factory.setClientId(env.getProperty("jms.client.id:thinkbig.feedmgr"));
-        factory.setConcurrency("1-1");
+        String concurrency = env.getProperty("jms.connections.concurrent");
+        if (StringUtils.isEmpty(concurrency)) {
+            concurrency = "1-1";
+        }
+        factory.setConcurrency(concurrency);
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
+        factory.setSessionTransacted(true);
         return factory;
     }
 
-    /*
-    @Bean
-    @Profile("activemq-credentials")
-    public UserCredentialsConnectionFactoryAdapter jmsUserCredentialsConnectionFactoryAdapter(ConnectionFactory connectionFactory){
-        UserCredentialsConnectionFactoryAdapter userCredentialsConnectionFactoryAdapter = new UserCredentialsConnectionFactoryAdapter();
-        userCredentialsConnectionFactoryAdapter.setTargetConnectionFactory(connectionFactory);
+    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory) {
+        UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
+        adapter.setTargetConnectionFactory(connectionFactory);
         String username = env.getProperty("jms.activemq.broker.username");
         String password = env.getProperty("jms.activemq.broker.password");
-        userCredentialsConnectionFactoryAdapter.setUsername(username);
-        userCredentialsConnectionFactoryAdapter.setUsername(password);
-        return userCredentialsConnectionFactoryAdapter;
+        adapter.setUsername(username);
+        adapter.setPassword(password);
+
+        log.info("Connecting to ActiveMQ {} ", username != null ? "as " + username : "anonymously");
+
+        return adapter;
     }
-    */
 
 
     @Bean
@@ -109,8 +120,7 @@ public class ActiveMqConfig {
     @Bean
     @Qualifier("jmsTemplate")
     public JmsMessagingTemplate jmsMessagingTemplate(ConnectionFactory connectionFactory) {
-        JmsMessagingTemplate template = new JmsMessagingTemplate(connectionFactory);
-        return template;
+        return new JmsMessagingTemplate(connectionFactory);
     }
 
 

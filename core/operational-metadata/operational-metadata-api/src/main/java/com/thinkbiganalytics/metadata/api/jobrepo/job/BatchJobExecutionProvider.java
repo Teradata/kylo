@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.joda.time.DateTime;
@@ -76,14 +75,14 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      *
      * @return the job execution
      */
-    BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
+    BatchJobExecution save(ProvenanceEventRecordDTO event);
 
     /**
      * save the Provenance event and return the associated job execution
      *
      * @return the job execution
      */
-    BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
+    BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event);
 
     /**
      * find a given job exeuction using the NiFi event id and corresponding job flow file id
@@ -111,7 +110,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * This will create a new job execution if one does not exist for this event using the {@link ProvenanceEventRecordDTO#jobFlowFileId}
      *
      * @param event a provenance event
-     * @param feed the feed related to this event
+     * @param feed  the feed related to this event
      * @return the job execution
      */
     BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
@@ -194,7 +193,11 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * @param flowFileId a flowfile id
      * @return a list of related flowfile ids
      */
-    public List<String> findRelatedFlowFiles(String flowFileId);
+    List<String> findRelatedFlowFiles(String flowFileId);
 
+
+    void notifyFailure(BatchJobExecution jobExecution, String feedName, String status);
+
+    void notifySuccess(BatchJobExecution jobExecution, String feedName, String status);
 
 }

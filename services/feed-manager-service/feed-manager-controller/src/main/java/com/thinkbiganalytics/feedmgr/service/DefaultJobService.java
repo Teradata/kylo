@@ -25,10 +25,13 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -131,6 +134,8 @@ public class DefaultJobService implements JobService {
                 msg += " Job manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                 execution.setExitMessage(msg);
                 this.jobExecutionProvider.save(execution);
+                this.jobExecutionProvider.notifyFailure(execution,null,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+
             }
             return execution;
         });
