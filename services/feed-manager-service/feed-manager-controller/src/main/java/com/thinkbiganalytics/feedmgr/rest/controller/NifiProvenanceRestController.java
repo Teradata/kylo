@@ -158,25 +158,4 @@ public class NifiProvenanceRestController {
     }
 
 
-    @GET
-    @Path("/max-event-id")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the maximum event id received from the specified node.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
-    )
-    public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
-        return metadataAccess.read(() -> {
-            Long maxId = 0L;
-            if (StringUtils.isNotBlank(clusterNodeId)) {
-                maxId = statsProvider.findMaxEventId(clusterNodeId);
-            } else {
-                maxId = statsProvider.findMaxEventId();
-            }
-            if (maxId == null) {
-                maxId = -1L;
-            }
-            return Response.ok(maxId).build();
-        }, MetadataAccess.SERVICE);
-    }
 }
