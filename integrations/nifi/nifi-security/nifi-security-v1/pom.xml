@@ -12,7 +12,6 @@
   <artifactId>kylo-nifi-security-v1</artifactId>
 
   <properties>
-    <nifi.version>1.2.0</nifi.version>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
   </properties>
 

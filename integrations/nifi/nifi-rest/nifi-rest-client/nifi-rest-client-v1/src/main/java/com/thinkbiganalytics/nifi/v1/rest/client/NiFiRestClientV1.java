@@ -66,49 +66,49 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
      * NiFi Connections REST client
      */
     @Nullable
-    private NiFiConnectionsRestClientV1 connections;
+    protected NiFiConnectionsRestClientV1 connections;
 
     /**
      * NiFi Controller Services REST client
      */
     @Nullable
-    private NiFiControllerServicesRestClientV1 controllerServices;
+    protected NiFiControllerServicesRestClientV1 controllerServices;
 
     /**
      * NiFi Ports REST client
      */
     @Nullable
-    private NiFiPortsRestClientV1 ports;
+    protected NiFiPortsRestClientV1 ports;
 
     /**
      * NiFi Process Groups REST client
      */
     @Nullable
-    private NiFiProcessGroupsRestClientV1 processGroups;
+    protected NiFiProcessGroupsRestClientV1 processGroups;
 
     /**
      * NiFi Processors REST client
      */
     @Nullable
-    private NiFiProcessorsRestClientV1 processors;
+    protected NiFiProcessorsRestClientV1 processors;
 
     /**
      * NiFi Templates REST client
      */
     @Nullable
-    private NiFiTemplatesRestClientV1 templates;
+    protected NiFiTemplatesRestClientV1 templates;
 
     /**
      * NiFi Flows REST client
      */
     @Nullable
-    private NiFiFlowVisitorClient flows;
+    protected NiFiFlowVisitorClient flows;
 
     /**
      * Reporting tasks client
      */
     @Nullable
-    private NiFiReportingTaskRestClientV1 reportingTasks;
+    protected NiFiReportingTaskRestClientV1 reportingTasks;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.

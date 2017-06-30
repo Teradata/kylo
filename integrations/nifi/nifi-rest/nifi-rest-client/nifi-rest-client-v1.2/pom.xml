@@ -10,10 +10,10 @@
     <version>0.8.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>kylo-nifi-rest-client-v1</artifactId>
+  <artifactId>kylo-nifi-rest-client-v1.2</artifactId>
 
   <properties>
-    <nifi.version>1.1.2</nifi.version>
+    <nifi.version>1.2.0</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
@@ -29,31 +29,8 @@
     <!-- Kylo dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-commons-rest-client</artifactId>
+      <artifactId>kylo-nifi-rest-client-v1</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-rest-client-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-rest-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.nifi</groupId>
-      <artifactId>nifi-client-dto</artifactId>
-      <version>${nifi.version}</version>
     </dependency>
 
   </dependencies>
@@ -66,7 +43,7 @@
           <descriptors>
             <descriptor>src/main/assembly/descriptor.xml</descriptor>
           </descriptors>
-	  <tarLongFileMode>posix</tarLongFileMode>
+          <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
           <execution>

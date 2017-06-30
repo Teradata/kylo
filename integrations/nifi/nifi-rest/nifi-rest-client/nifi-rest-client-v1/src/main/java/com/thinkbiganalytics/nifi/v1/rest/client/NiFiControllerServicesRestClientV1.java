@@ -2,7 +2,7 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-client-v1
+ * thinkbig-nifi-rest-client-v1.2
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -28,7 +28,6 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
-import org.apache.nifi.web.api.dto.ControllerServiceApiDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
@@ -37,10 +36,6 @@ import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -62,7 +57,7 @@ public class NiFiControllerServicesRestClientV1 extends AbstractNiFiControllerSe
     /**
      * REST client for communicating with NiFi
      */
-    private final NiFiRestClientV1 client;
+    protected final NiFiRestClientV1 client;
 
     /**
      * Constructs a {@code NiFiControllerServicesRestClientV1} with the specified NiFi REST client.
@@ -140,28 +135,7 @@ public class NiFiControllerServicesRestClientV1 extends AbstractNiFiControllerSe
     @Nonnull
     @Override
     public Set<DocumentedTypeDTO> getTypes(@Nonnull final String serviceType) {
-        // Find the bundle that contains the API
-        final Optional<ControllerServiceApiDTO> controllerServiceApi = getTypes().stream()
-            .map(DocumentedTypeDTO::getControllerServiceApis)
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .filter(api -> api.getType().equals(serviceType))
-            .findAny();
-
-        // Query for types implementing the API
-        final Map<String, Object> query = new HashMap<>();
-        query.put("serviceType", serviceType);
-
-        controllerServiceApi.map(ControllerServiceApiDTO::getBundle)
-            .ifPresent(bundle -> {
-                query.put("serviceBundleGroup", bundle.getGroup());
-                query.put("serviceBundleArtifact", bundle.getArtifact());
-                query.put("serviceBundleVersion", bundle.getVersion());
-            });
-
-        return Optional.ofNullable(client.get("/flow/controller-service-types", query, ControllerServiceTypesEntity.class))
-            .map(ControllerServiceTypesEntity::getControllerServiceTypes)
-            .orElseGet(Collections::emptySet);
+        return client.get("/flow/controller-service-types", Collections.singletonMap("serviceType", serviceType), ControllerServiceTypesEntity.class).getControllerServiceTypes();
     }
 
     @Nonnull
