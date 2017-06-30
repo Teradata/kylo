@@ -24,7 +24,6 @@
     <module>security-auth-kerberos</module>
     <module>security-auth-memory</module>
     <module>security-auth-cache</module>
-    <module>security-core</module>
   </modules>
 
   <dependencies>

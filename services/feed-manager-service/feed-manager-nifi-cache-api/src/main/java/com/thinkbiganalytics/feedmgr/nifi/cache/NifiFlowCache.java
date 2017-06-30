@@ -40,6 +40,8 @@ public interface NifiFlowCache {
 
     boolean isKyloClustered();
 
+    boolean isConnectedToNiFi();
+
     NifiFlowCacheSnapshot getLatest();
 
     NiFiFlowCacheSync syncAndReturnUpdates(String syncId);
@@ -59,4 +61,6 @@ public interface NifiFlowCache {
     void updateProcessorIdNames(String templateName, Collection<ProcessorDTO> processors);
 
     void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections);
+
+    void subscribe(NiFiFlowCacheListener listener);
 }

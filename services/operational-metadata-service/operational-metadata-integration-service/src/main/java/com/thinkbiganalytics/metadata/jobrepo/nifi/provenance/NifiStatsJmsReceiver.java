@@ -25,14 +25,14 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.nifi.activemq.Queues;
-import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
@@ -45,6 +45,7 @@ import javax.inject.Inject;
  */
 public class NifiStatsJmsReceiver {
 
+    private static final Logger log = LoggerFactory.getLogger(NifiStatsJmsReceiver.class);
 
     @Inject
     private NifiFeedProcessorStatisticsProvider nifiEventStatisticsProvider;
@@ -58,14 +59,19 @@ public class NifiStatsJmsReceiver {
 
     @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
+        if (provenanceEventFeedUtil.isNifiFlowCacheAvailable()) {
 
-        metadataAccess.commit(() -> {
-            List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
-            for (NifiFeedProcessorStats stat : summaryStats) {
-                nifiEventStatisticsProvider.create(stat);
-            }
-            return summaryStats;
-        }, MetadataAccess.SERVICE);
+            metadataAccess.commit(() -> {
+                List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
+                for (NifiFeedProcessorStats stat : summaryStats) {
+                    nifiEventStatisticsProvider.create(stat);
+                }
+                return summaryStats;
+            }, MetadataAccess.SERVICE);
+        } else {
+            log.info("NiFi is not up yet.  Sending back to JMS for later dequeue ");
+            throw new JmsProcessingException("Unable to process Statistics Events.  NiFi is either not up, or there is an error trying to populate the Kylo NiFi Flow Cache. ");
+        }
 
     }
 
@@ -76,7 +82,7 @@ public class NifiStatsJmsReceiver {
                                                                  Long collectionIntervalMillis = feedProcessorStats.getCollectionIntervalMillis();
                                                                  String feedProcessorId = feedProcessorStats.getStartingProcessorId();
                                                                  String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);  //ensure not null
-                                                                 if(StringUtils.isNotBlank(feedName)) {
+                                                                 if (StringUtils.isNotBlank(feedName)) {
                                                                      String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
 
                                                                      feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
@@ -88,7 +94,8 @@ public class NifiStatsJmsReceiver {
                                                                                                                                      nifiFeedProcessorStats.setFeedName(feedName);
                                                                                                                                      nifiFeedProcessorStats
                                                                                                                                          .setProcessorId(processorStats.getProcessorId());
-                                                                                                                                     nifiFeedProcessorStats.setCollectionIntervalSeconds((collectionIntervalMillis/1000));
+                                                                                                                                     nifiFeedProcessorStats.setCollectionIntervalSeconds(
+                                                                                                                                         (collectionIntervalMillis / 1000));
                                                                                                                                      String
                                                                                                                                          processorName =
                                                                                                                                          provenanceEventFeedUtil
@@ -105,7 +112,6 @@ public class NifiStatsJmsReceiver {
         return nifiFeedProcessorStatsList;
 
     }
-
 
 
     private NifiFeedProcessorStats toSummaryStats(GroupedStats groupedStats) {
@@ -128,7 +134,7 @@ public class NifiStatsJmsReceiver {
         nifiFeedProcessorStats.setJobDuration(groupedStats.getJobDuration());
         nifiFeedProcessorStats.setMaxEventId(groupedStats.getMaxEventId());
         nifiFeedProcessorStats.setFailedCount(groupedStats.getProcessorsFailed());
-        if(provenanceEventFeedUtil.isFailure(groupedStats.getSourceConnectionIdentifier())){
+        if (provenanceEventFeedUtil.isFailure(groupedStats.getSourceConnectionIdentifier())) {
             nifiFeedProcessorStats.setFailedCount(groupedStats.getTotalCount() + groupedStats.getProcessorsFailed());
         }
 

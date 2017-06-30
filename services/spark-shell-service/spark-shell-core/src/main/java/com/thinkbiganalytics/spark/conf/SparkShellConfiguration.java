@@ -42,6 +42,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -87,13 +88,16 @@ public class SparkShellConfiguration {
      */
     @Bean
     public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,
-                                                   @Qualifier("memoryLoginUsers") final Properties users) {
+                                                   @Qualifier("memoryLoginUsers") final Optional<Properties> users) {
         if (sparkShellProperties.getServer() != null) {
             return new ServerProcessManager(sparkShellProperties);
+        } else if (!users.isPresent()) {
+            throw new IllegalArgumentException("Invalid Spark configuration. Either set spark.shell.server.host and spark.shell.server.port in spark.properties or add the auth-memory Spring profile"
+                                               + " to application.properties.");
         } else if (sparkShellProperties.isProxyUser()) {
-            return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users);
+            return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users.get());
         } else {
-            return new DefaultProcessManager(sparkShellProperties, kerberosProperties, users);
+            return new DefaultProcessManager(sparkShellProperties, kerberosProperties, users.get());
         }
     }
 

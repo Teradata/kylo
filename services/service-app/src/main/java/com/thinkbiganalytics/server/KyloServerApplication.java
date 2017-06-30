@@ -24,6 +24,7 @@ import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
+import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ import java.util.concurrent.Executors;
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
 @EnableConfigurationProperties
-@Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class})
+@Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class, SecurityCoreConfig.class})
 @ComponentScan("com.thinkbiganalytics")
 public class KyloServerApplication implements SchedulingConfigurer {
 

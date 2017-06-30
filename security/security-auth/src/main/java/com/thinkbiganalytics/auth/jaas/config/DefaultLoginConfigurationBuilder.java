@@ -36,6 +36,7 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -43,9 +44,19 @@ import org.springframework.core.annotation.Order;
  */
 public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuilder {
 
+    private Integer order = null;
     private DefaultLoginConfiguration configuration = new DefaultLoginConfiguration();
 
     public DefaultLoginConfigurationBuilder() {
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder#order(int)
+     */
+    @Override
+    public LoginConfigurationBuilder order(int order) {
+        this.order = order;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -61,7 +72,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
      */
     @Override
     public LoginConfiguration build() {
-        return this.configuration;
+        return this.order != null ? new OrderedLoginConfiguration(this.order, this.configuration) : this.configuration;
     }
 
     protected void addEntry(String appName, AppConfigurationEntry configEntries) {
@@ -72,7 +83,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
 
         private String appName;
         private Class<? extends LoginModule> moduleClass;
-        private LoginModuleControlFlag flag;
+        private LoginModuleControlFlag flag = LoginModuleControlFlag.REQUIRED;
         private Map<String, Object> options = new HashMap<>();
         private DefaultLoginConfigurationBuilder confBuilder;
 
@@ -133,7 +144,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
     @Order(LoginConfiguration.DEFAULT_ORDER)
     public class DefaultLoginConfiguration implements LoginConfiguration {
 
-        private Map<String, List<AppConfigurationEntry>> configEntries = new HashMap<>();
+        protected Map<String, List<AppConfigurationEntry>> configEntries = new HashMap<>();
 
         @Override
         public AppConfigurationEntry[] getApplicationEntries(String appName) {
@@ -157,6 +168,34 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
             }
 
             list.add(entry);
+        }
+        
+        protected Map<String, List<AppConfigurationEntry>> getConfigEntries() {
+            return this.configEntries;
+        }
+    }
+    
+    public class OrderedLoginConfiguration extends DefaultLoginConfiguration implements Ordered {
+        private int order;
+        
+        public OrderedLoginConfiguration(int order, DefaultLoginConfiguration srcConfig) {
+            this.order = order;
+            this.configEntries = new HashMap<>(srcConfig.configEntries);
+        }
+        
+        /* (non-Javadoc)
+         * @see org.springframework.core.Ordered#getOrder()
+         */
+        @Override
+        public int getOrder() {
+            return this.order;
+        }
+        
+        /**
+         * @param order the order to set
+         */
+        public void setOrder(int order) {
+            this.order = order;
         }
     }
 }

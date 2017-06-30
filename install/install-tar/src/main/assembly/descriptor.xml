@@ -161,6 +161,11 @@
       <directory>${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/kylo-nifi-rest-client-v1-${project.version}-distribution/kylo-nifi-rest-client-v1-${project.version}/lib/nifi-v1</directory>
       <fileMode>755</fileMode>
     </fileSet>
+    <fileSet>
+      <outputDirectory>kylo-services/lib/nifi-v1.2</outputDirectory>
+      <directory>${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1.2/target/kylo-nifi-rest-client-v1.2-${project.version}-distribution/kylo-nifi-rest-client-v1.2-${project.version}/lib/nifi-v1</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
 
     <!-- Setup Folder -->
     <fileSet>

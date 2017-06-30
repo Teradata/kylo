@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
 
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+
 /**
  * Represents high level flow and job statistics for a given feed and processor
  */
@@ -332,13 +334,13 @@ public interface NifiFeedProcessorStats {
     void setCollectionIntervalSeconds(Long collectionIntervalSeconds);
 
 
-    Long getJobsStartedPerSecond();
+    BigDecimal getJobsStartedPerSecond();
 
-    void setJobsStartedPerSecond(Long jobsStartedPerSecond);
+    void setJobsStartedPerSecond(BigDecimal jobsStartedPerSecond);
 
-    Long getJobsFinishedPerSecond();
+    BigDecimal getJobsFinishedPerSecond();
 
-    void setJobsFinishedPerSecond(Long jobsFinishedPerSecond);
+    void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond);
 
 
 

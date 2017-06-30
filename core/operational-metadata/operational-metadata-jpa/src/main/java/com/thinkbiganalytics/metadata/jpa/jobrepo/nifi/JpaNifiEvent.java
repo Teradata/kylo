@@ -38,6 +38,7 @@ import javax.persistence.Table;
 /**
  * Entity to store the NiFi Provenance Events
  */
+@Deprecated
 @Entity
 @Table(name = "NIFI_EVENT")
 public class JpaNifiEvent extends AbstractAuditedEntity implements NifiEvent {

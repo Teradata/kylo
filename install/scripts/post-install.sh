@@ -220,6 +220,11 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties | grep -o nifi-v.)
+##v1.3 uses v1.2 jars
+if [[ KYLO_NIFI_PROFILE == "nifi-v1.3" ]];
+then
+KYLO_NIFI_PROFILE = "nifi-1.2"
+fi
 java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
@@ -230,6 +235,12 @@ export KYLO_SERVICES_OPTS=-Xmx768m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
 KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties | grep -o nifi-v.)
+##v1.3 uses v1.2 jars
+if [[ KYLO_NIFI_PROFILE == "nifi-v1.3" ]];
+then
+KYLO_NIFI_PROFILE = "nifi-1.2"
+fi
+
 java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh

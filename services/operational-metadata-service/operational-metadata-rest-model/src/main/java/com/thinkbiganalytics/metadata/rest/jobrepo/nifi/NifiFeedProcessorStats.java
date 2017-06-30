@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+
 /**
  * A model classs to represent the stats of a feed
  */
@@ -55,9 +57,9 @@ public class NifiFeedProcessorStats {
     private String collectionId;
     private Long resultSetCount;
 
-    private Long jobsStartedPerSecond;
+    private BigDecimal jobsStartedPerSecond;
 
-    private Long jobsFinishedPerSecond;
+    private BigDecimal jobsFinishedPerSecond;
 
     private Long collectionIntervalSeconds;
 
@@ -260,19 +262,19 @@ public class NifiFeedProcessorStats {
         this.collectionIntervalSeconds = collectionIntervalSeconds;
     }
 
-    public Long getJobsStartedPerSecond() {
+    public BigDecimal getJobsStartedPerSecond() {
         return jobsStartedPerSecond;
     }
 
-    public void setJobsStartedPerSecond(Long jobsStartedPerSecond) {
+    public void setJobsStartedPerSecond(BigDecimal jobsStartedPerSecond) {
         this.jobsStartedPerSecond = jobsStartedPerSecond;
     }
 
-    public Long getJobsFinishedPerSecond() {
+    public BigDecimal getJobsFinishedPerSecond() {
         return jobsFinishedPerSecond;
     }
 
-    public void setJobsFinishedPerSecond(Long jobsFinishedPerSecond) {
+    public void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond) {
         this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 }
