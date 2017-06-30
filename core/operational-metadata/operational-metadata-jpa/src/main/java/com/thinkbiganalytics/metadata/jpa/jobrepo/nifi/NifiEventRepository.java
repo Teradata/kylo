@@ -28,13 +28,9 @@ import org.springframework.data.repository.query.Param;
 /**
  * Spring data repository for accessing the {@link JpaNifiEvent}
  */
+@Deprecated
 public interface NifiEventRepository extends JpaRepository<JpaNifiEvent, JpaNifiEvent.NiFiEventPK> {
 
 
-    @Query(value = "SELECT max(nifiEvent.eventId) from JpaNifiEvent nifiEvent")
-    public Long findMaxEventId();
-
-    @Query(value = "SELECT max(nifiEvent.eventId) from JpaNifiEvent nifiEvent where nifiEvent.clusterNodeId = :clusterNodeId")
-    public Long findMaxEventId(@Param("clusterNodeId") String clusterNodeId);
 
 }

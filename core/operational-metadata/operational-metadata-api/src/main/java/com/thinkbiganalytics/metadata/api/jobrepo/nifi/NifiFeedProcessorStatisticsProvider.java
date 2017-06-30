@@ -97,20 +97,6 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
 
-    /**
-     * find the max event id processed by kylo
-     *
-     * @return the max event id processed by kylo
-     */
-    Long findMaxEventId();
-
-    /**
-     * find the max event id processed by kylo for the given cluster id
-     *
-     * @return the max event id processed by kylo for the given cluster id
-     */
-    Long findMaxEventId(String clusterNodeId);
-
 
     /**
      * allow for specifying a time to look back from when querying for statistical information
