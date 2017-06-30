@@ -183,16 +183,19 @@ private ProvenanceEventRecord applySleepTime(ProvenanceEventRecord eventRecord, 
 
 
 
-        ProvenanceEventRecord eventRecord = builder.setEventTime(System.currentTimeMillis())
+        builder.setEventTime(System.currentTimeMillis())
             .setFlowFileEntryDate(entryDate)
             .setEventType(ProvenanceEventType.CLONE)
             .setComponentId(componentId)
             .setComponentType(componentType)
             .setCurrentContentClaim("container", "section", "identifier", 0L, 0L)
-            .setFlowFileUUID(flowfileId)
-            .setChildUuids(childFlowFileIds)
-            .setParentUuids(parentFlowFileIds)
-            .build();
+            .setFlowFileUUID(flowfileId);
+
+        childFlowFileIds.stream().forEach(id -> builder.addChildUuid(id));
+        parentFlowFileIds.stream().forEach(id -> builder.addParentUuid(id));
+            //.setChildUuids(childFlowFileIds)
+            //.setParentUuids(parentFlowFileIds)
+        ProvenanceEventRecord eventRecord = builder.build();
 
 
         allFlowFiles.add(eventRecord);
