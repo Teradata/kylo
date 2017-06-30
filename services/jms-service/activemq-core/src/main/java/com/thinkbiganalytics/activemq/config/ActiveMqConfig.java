@@ -23,6 +23,7 @@ package com.thinkbiganalytics.activemq.config;
 import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.RedeliveryPolicy;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,10 @@ public class ActiveMqConfig {
     public ConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
         factory.setTrustAllPackages(true);
+        factory.setRedeliveryPolicy(new RedeliveryPolicy());
+        factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
+        factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
+        factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
         PooledConnectionFactory pool = new PooledConnectionFactory();
         pool.setIdleTimeout(0);
         pool.setConnectionFactory(getCredentialsAdapter(factory));
@@ -81,17 +86,18 @@ public class ActiveMqConfig {
         //factory.setSubscriptionDurable(true);
         factory.setClientId(env.getProperty("jms.client.id:thinkbig.feedmgr"));
         String concurrency = env.getProperty("jms.connections.concurrent");
-        if(StringUtils.isEmpty(concurrency)) {
-           concurrency = "1-1";
+        if (StringUtils.isEmpty(concurrency)) {
+            concurrency = "1-1";
         }
         factory.setConcurrency(concurrency);
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
         factory.setSessionTransacted(true);
+
         return factory;
     }
 
-    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory){
+    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory) {
         UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
         adapter.setTargetConnectionFactory(connectionFactory);
         String username = env.getProperty("jms.activemq.broker.username");
