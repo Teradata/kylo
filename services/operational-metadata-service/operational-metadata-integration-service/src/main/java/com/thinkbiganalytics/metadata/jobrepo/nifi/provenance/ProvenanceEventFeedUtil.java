@@ -20,43 +20,24 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedChangedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -80,8 +61,9 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
 
+
     @PostConstruct
-    private void init(){
+    private void init() {
         opsManagerFeedProvider.subscribe(this);
         opsManagerFeedProvider.subscribeFeedDeletion(this);
     }
@@ -89,7 +71,7 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
     /**
      * Empty feed object for Loading Cache
      */
-   public static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
+    public static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
         @Override
         public ID getId() {
             return null;
@@ -134,7 +116,6 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
     public ProvenanceEventFeedUtil() {
 
-
         // create the loading Cache to get the Feed Manager Feeds.  If its not in the cache, query the JCR store for the Feed object otherwise return the NULL_FEED object
         opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
                                                                   @Override
@@ -153,8 +134,8 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         );
     }
 
-    public void updateFeed(OpsManagerFeed feed){
-        opsManagerFeedCache.put(feed.getName(),feed);
+    public void updateFeed(OpsManagerFeed feed) {
+        opsManagerFeedCache.put(feed.getName(), feed);
     }
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
@@ -175,12 +156,12 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         return event;
     }
 
-    public OpsManagerFeed getFeed(ProvenanceEventRecordDTO event){
+    public OpsManagerFeed getFeed(ProvenanceEventRecordDTO event) {
         String feedName = event.getFeedName();
-        if(StringUtils.isBlank(feedName)){
+        if (StringUtils.isBlank(feedName)) {
             feedName = getFeedName(event.getFirstEventProcessorId());
         }
-        if(StringUtils.isNotBlank(feedName)) {
+        if (StringUtils.isNotBlank(feedName)) {
             OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
             if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
                 return feed;
@@ -189,7 +170,6 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         }
         return null;
     }
-
 
 
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
@@ -202,7 +182,7 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
             KyloProcessorFlowType flowType = getProcessorFlowType(event.getSourceConnectionIdentifier());
             event.setProcessorType(flowType);
 
-            if(flowType.equals(KyloProcessorFlowType.FAILURE)){
+            if (flowType.equals(KyloProcessorFlowType.FAILURE)) {
                 event.setIsFailure(true);
             }
         }
@@ -210,19 +190,19 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
     }
 
 
-    public boolean isFailure(String sourceConnectionIdentifer){
+    public boolean isFailure(String sourceConnectionIdentifer) {
         return KyloProcessorFlowType.FAILURE.equals(getProcessorFlowType(sourceConnectionIdentifer));
     }
 
-    private KyloProcessorFlowType getProcessorFlowType(String sourceConnectionIdentifer){
+    private KyloProcessorFlowType getProcessorFlowType(String sourceConnectionIdentifer) {
 
         if (sourceConnectionIdentifer != null) {
             NiFiFlowCacheConnectionData connectionData = getFlowCache().getConnectionIdToConnection().get(sourceConnectionIdentifer);
             if (connectionData != null && connectionData.getName() != null) {
                 if (connectionData.getName().toLowerCase().contains("failure")) {
-                   return KyloProcessorFlowType.FAILURE;
+                    return KyloProcessorFlowType.FAILURE;
                 } else if (connectionData.getName().toLowerCase().contains("warn")) {
-                  return KyloProcessorFlowType.WARNING;
+                    return KyloProcessorFlowType.WARNING;
                 }
             }
         }
@@ -254,29 +234,29 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         return false;
     }
 
-public void deletedFeed(String feedName){
+    public void deletedFeed(String feedName) {
         opsManagerFeedCache.invalidate(feedName);
-}
+    }
 
 
-public String getFeedName(ProvenanceEventRecordDTO event){
+    public String getFeedName(ProvenanceEventRecordDTO event) {
         return getFeedName(event.getFirstEventProcessorId());
-}
+    }
 
-    public String getFeedName(String feedProcessorId){
+    public String getFeedName(String feedProcessorId) {
         return getFlowCache().getProcessorIdToFeedNameMap().get(feedProcessorId);
     }
 
-    public String getFeedProcessGroupId(String feedProcessorId){
+    public String getFeedProcessGroupId(String feedProcessorId) {
         return getFlowCache().getProcessorIdToFeedProcessGroupId().get(feedProcessorId);
     }
 
-    public String getProcessorName(String processorId){
+    public String getProcessorName(String processorId) {
         return getFlowCache().getProcessorIdToProcessorName().get(processorId);
     }
 
 
-     private NifiFlowCacheSnapshot getFlowCache() {
+    private NifiFlowCacheSnapshot getFlowCache() {
         return nifiFlowCache.getLatest();
     }
 
@@ -295,5 +275,13 @@ public String getFeedName(ProvenanceEventRecordDTO event){
     public void onFeedDelete(OpsManagerFeed feed) {
         log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
         deletedFeed(feed.getName());
+    }
+
+    public boolean isNifiFlowCacheAvailable() {
+        return nifiFlowCache.isAvailable();
+    }
+
+    public boolean isConnectedToNifi() {
+        return nifiFlowCache.isConnectedToNiFi();
     }
 }
