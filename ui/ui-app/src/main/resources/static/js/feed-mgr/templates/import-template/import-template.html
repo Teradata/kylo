@@ -117,11 +117,11 @@
             </md-input-container>
               <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
                 <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Overwrite if exists" >
-                  Replace the reusable template
+                  Import the reusable template
                 </md-checkbox>
 
                 <div class="hint" style="margin-top:-10px">
-                  If a reusable template with the same name (as inside the .zip) already exists in NiFi, it will be replaced and re-initialized.
+                  It the archive contains a reusable template it will be imported.  If a reusable template with the same name already exists in NiFi, it will be replaced and re-initialized.
                 </div>
               </md-input-container>
 
