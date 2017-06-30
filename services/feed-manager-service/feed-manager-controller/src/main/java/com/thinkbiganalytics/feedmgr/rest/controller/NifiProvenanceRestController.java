@@ -158,45 +158,4 @@ public class NifiProvenanceRestController {
     }
 
 
-    @POST
-    @Path("/reset-max-event-id/{clusterNodeId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Resets the max event id if NiFi rolls over the cache")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the cache status.", response = Boolean.class)
-    )
-    public Response resetMaxEventId(@PathParam("clusterNodeId") String clusterNodeId) {
-        Long eventId =  metadataAccess.commit(() -> {
-            Long lastEventId = statsProvider.findLastProcessedEventId();
-            Long evId= statsProvider.resetLastProcessedEventId(clusterNodeId);
-            eventProvider.resetLastProcessedEventId(clusterNodeId);
-            log.info("NiFi Provenance processing: Resetting the last event Id from {} to {} ",lastEventId,evId);
-            return evId;
-        },MetadataAccess.SERVICE);
-        return Response.ok(eventId).build();
-    }
-
-
-
-    @GET
-    @Path("/max-event-id")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the maximum event id received from the specified node.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
-    )
-    public Response findLastProcessedEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
-        return metadataAccess.read(() -> {
-            Long maxId = 0L;
-            if (StringUtils.isNotBlank(clusterNodeId)) {
-                maxId = statsProvider.findLastProcessedEventId(clusterNodeId);
-            } else {
-                maxId = statsProvider.findLastProcessedEventId();
-            }
-            if (maxId == null) {
-                maxId = -1L;
-            }
-            return Response.ok(maxId).build();
-        }, MetadataAccess.SERVICE);
-    }
 }
