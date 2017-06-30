@@ -25,7 +25,7 @@
 <changeSet author="sr186054" id="add-FEED-TIME_BTWN_BATCH_JOBS-column">
     <addColumn schemaName="kylo"
             tableName="FEED">
-        <column name="TIME_BTWN_BATCH_JOBS" type="int(11)" defaultValue="N"/>
+        <column name="TIME_BTWN_BATCH_JOBS" type="int(11)" defaultValue="1000"/>
     </addColumn>
 </changeSet>
 
