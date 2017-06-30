@@ -33,6 +33,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -170,9 +171,10 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
                              stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"),stats.failedCount.sum().as("failedCount"),
                              stats.maxEventTime,
-                             MathExpressions.round(stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds)).as("jobsStartedPerSecond"),
-                             MathExpressions.round(stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds)).as("jobsFinishedPerSecond"),
+                             stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
+                             stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
                              //stats.maxEventTime,
+                             stats.collectionIntervalSeconds.as("collectionIntervalSeconds"),
                              stats.jobsFailed.sum().as("jobsFailed"), stats.totalCount.sum().as("totalCount"),
                              stats.count().as("resultSetCount"))
         )
@@ -186,33 +188,5 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
 
-    public Long findLastProcessedEventId() {
-        return findLastProcessedEventId(null);
-    }
-
-    public Long findLastProcessedEventId(String clusterNodeId) {
-        return findMaxEventId(clusterNodeId);
-    }
-
-    public Long findMaxEventId(String clusterNodeId) {
-        Long eventId = -1L;
-        if (StringUtils.isNotBlank(clusterNodeId)) {
-            eventId = statisticsRepository.findMaxEventId(clusterNodeId);
-            if (eventId == null) {
-                eventId = nifiEventRepository.findMaxEventId(clusterNodeId);
-            }
-        } else {
-            eventId = findMaxEventId();
-        }
-        return eventId;
-    }
-
-    public Long findMaxEventId() {
-        Long eventId = statisticsRepository.findMaxEventId();
-        if (eventId == null) {
-            eventId = nifiEventRepository.findMaxEventId();
-        }
-        return eventId;
-    }
 
 }

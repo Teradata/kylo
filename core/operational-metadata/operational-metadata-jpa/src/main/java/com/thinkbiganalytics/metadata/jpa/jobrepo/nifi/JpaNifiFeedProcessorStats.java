@@ -28,6 +28,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -121,10 +123,10 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     private String collectionId;
 
     @Transient
-    private Long jobsStartedPerSecond;
+    private BigDecimal jobsStartedPerSecond;
 
     @Transient
-    private Long jobsFinishedPerSecond;
+    private BigDecimal jobsFinishedPerSecond;
 
     public JpaNifiFeedProcessorStats(String feedName, String processorId) {
         this.feedName = feedName;
@@ -397,19 +399,19 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
         this.collectionIntervalSeconds = collectionIntervalSeconds;
     }
 
-    public Long getJobsStartedPerSecond() {
+    public BigDecimal getJobsStartedPerSecond() {
         return jobsStartedPerSecond;
     }
 
-    public void setJobsStartedPerSecond(Long jobsStartedPerSecond) {
+    public void setJobsStartedPerSecond(BigDecimal jobsStartedPerSecond) {
         this.jobsStartedPerSecond = jobsStartedPerSecond;
     }
 
-    public Long getJobsFinishedPerSecond() {
+    public BigDecimal getJobsFinishedPerSecond() {
         return jobsFinishedPerSecond;
     }
 
-    public void setJobsFinishedPerSecond(Long jobsFinishedPerSecond) {
+    public void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond) {
         this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 }
