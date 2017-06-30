@@ -37,7 +37,6 @@ public class OperationStatus implements Serializable {
 
     private final Feed.ID feedId;
     private final String feedName; // {category}.{feedSystemName}
-    private final String feedFlowFileId;
     private final FeedOperation.ID operationId;
     private final FeedOperation.State state;
     private final String status;
@@ -48,17 +47,9 @@ public class OperationStatus implements Serializable {
         this.operationId = opId;
         this.state = state;
         this.status = status;
-        this.feedFlowFileId = null;
     }
 
-    public OperationStatus(String feedName, FeedOperation.ID opId, FeedOperation.State state, String status,  String feedFlowFileId) {
-        this.feedId = null;
-        this.feedName = feedName;
-        this.operationId = opId;
-        this.state = state;
-        this.status = status;
-        this.feedFlowFileId = feedFlowFileId;
-    }
+
 
     public OperationStatus(Feed.ID id, FeedOperation.ID opId, FeedOperation.State state, String status) {
         this.feedId = id;
@@ -66,7 +57,6 @@ public class OperationStatus implements Serializable {
         this.operationId = opId;
         this.state = state;
         this.status = status;
-        this.feedFlowFileId = null;
     }
 
     public Feed.ID getFeedId() {
@@ -89,7 +79,5 @@ public class OperationStatus implements Serializable {
         return status;
     }
 
-    public String getFeedFlowFileId() {
-        return feedFlowFileId;
-    }
+
 }
