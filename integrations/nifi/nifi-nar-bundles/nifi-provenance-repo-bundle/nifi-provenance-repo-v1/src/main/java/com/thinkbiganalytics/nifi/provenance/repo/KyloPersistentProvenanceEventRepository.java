@@ -65,6 +65,8 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
     private void init() {
         provenanceEventRepositoryUtil.init();
+        //initialize the manager to gather and send the statistics
+        FeedStatisticsManager.getInstance();
     }
 
 
