@@ -42,12 +42,12 @@ public class KyloUpgrader {
     private static final Logger log = LoggerFactory.getLogger(KyloUpgrader.class);
 
     public static final String KYLO_UPGRADE = "kyloUpgrade";
-    
-    
+
+
     public void upgrade() {
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
         ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(KyloUpgradeConfig.class)
-                        .web(false)
+                        .web(true)
                         .profiles(KYLO_UPGRADE)
                         .run();
         try {
