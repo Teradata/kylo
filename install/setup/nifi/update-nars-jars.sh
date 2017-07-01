@@ -11,7 +11,7 @@ then
 else
     echo "Unknown arguments. You need to pass NIFI_HOME KYLO_SETUP_FOLDER NIFI_USER NIFI_GROUP "
     echo "Example values:"
-    echo "NIFI_HOME: $NIFI_HOME"
+    echo "NIFI_HOME: $NIFI_HOME /opt/nifi"
     echo "KYLO_SETUP_FOLDER: /opt/kylo/setup"
     echo "NIFI_USER: nifi"
     echo "NIFI_GROUP: users"
