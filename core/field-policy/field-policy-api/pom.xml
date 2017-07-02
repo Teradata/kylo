@@ -1,24 +1,193 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-field-policy-api</artifactId>
+    <!-- NOTE: Maven Repository promotion is activated by the property 'maven-repo-promotion'. See below. -->
 
-  <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>kylo-field-policy</artifactId>
-    <version>0.8.2-SNAPSHOT</version>
-  </parent>
-  <properties>
-    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-  </properties>
+    <artifactId>kylo-field-policy-api</artifactId>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-ui-annotation-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
+    <parent>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>kylo-field-policy</artifactId>
+        <version>0.8.2-SNAPSHOT</version>
+    </parent>
+
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://opensource.org/licenses/Apache-2.0</url>
+            <distribution>repo</distribution>
+            <comments>Apache License, Version 2.0</comments>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>Kylo JIRA at atlassian.net</system>
+        <url>https://kylo-io.atlassian.net</url>
+    </issueManagement>
+
+
+    <scm>
+        <connection>
+            scm:git:https://github.com/Teradata/kylo.git
+        </connection>
+        <developerConnection>
+            scm:git:https://github.com/Teradata/kylo.git
+        </developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/Teradata/kylo</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>scottreisdorf</id>
+            <name>Scott Reisdorf</name>
+            <email>Scott.Reisdorf@thinkbiganalytics.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-7</timezone>
+        </developer>
+    </developers>
+
+
+    <properties>
+        <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+
+        <!-- Maven plugin versions -->
+        <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
+        <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+        <nexus-staging-maven-plugin.version>1.6.3</nexus-staging-maven-plugin.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-ui-annotation-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>maven-repo-promotion</id>
+            <activation>
+                <property>
+                    <name>maven-repo-promotion</name>
+                    <value>true</value>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Customize JAR manifest settings -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>${maven-jar-plugin.version}</version>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <!-- Write Implementation-* entries to manifest -->
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                    <!-- Write Specification-* entries to manifest -->
+                                    <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </plugin>
+
+
+                    <plugin>
+                        <!-- Build Source JAR -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven-source-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <!-- Build JavaDoc JAR -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven-javadoc-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+
+                    <plugin>
+                        <!--
+                        Sign all the artifacts with GPG.
+                        Important: GPG key must be present on the system, otherwise fails.
+                        -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <!-- Promote artifacts to SonaType snapshots Nexus and release them AUTOMATICALLY -->
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${nexus-staging-maven-plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <!--
+                        NOTE: this points to SonaType SNAPSHOTS Nexus, but due to the settings
+                        on nexus-staging-maven-plugin plugin, promotion to releases will
+                        happen AUTOMATICALLY, DURING THE BUILD.
+                    -->
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
 
 </project>
