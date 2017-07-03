@@ -111,8 +111,13 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
-    public boolean readyToProcess() {
-        return provenanceEventFeedUtil.isNifiFlowCacheAvailable();
+    /**
+     * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
+     * @param events the events.
+     * @return
+     */
+    public boolean readyToProcess(ProvenanceEventRecordDTOHolder events) {
+     return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && events.getEvents().stream().allMatch(event -> provenanceEventFeedUtil.validateNiFiFeedInformation(event)));
     }
 
 
@@ -138,7 +143,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(), events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        if (readyToProcess()) {
+        if (readyToProcess(events)) {
             events.getEvents().stream().map(event -> provenanceEventFeedUtil.enrichEventWithFeedInformation(event))
                 .filter(event -> provenanceEventFeedUtil.isRegisteredWithFeedManager(event))
                 .forEach(event -> processEvent(event, 0));

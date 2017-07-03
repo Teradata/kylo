@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisti
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
@@ -56,10 +57,24 @@ public class NifiStatsJmsReceiver {
     @Inject
     private ProvenanceEventFeedUtil provenanceEventFeedUtil;
 
+    /**
+     * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
+     * @param stats  the stats to process
+     * @return
+     */
+    public boolean readyToProcess(AggregatedFeedProcessorStatisticsHolder stats) {
+        return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && stats.getFeedStatistics().values().stream().allMatch(feedProcessorStats -> {
+            String feedProcessorId = feedProcessorStats.getStartingProcessorId();
+            String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
+            return StringUtils.isNotBlank(feedName);
+        }));
+    }
+
+
 
     @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
-        if (provenanceEventFeedUtil.isNifiFlowCacheAvailable()) {
+        if (readyToProcess(stats)) {
 
             metadataAccess.commit(() -> {
                 List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
