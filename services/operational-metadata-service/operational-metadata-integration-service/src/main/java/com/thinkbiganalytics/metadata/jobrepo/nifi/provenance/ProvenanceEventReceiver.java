@@ -162,7 +162,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
 
-            log.info("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
+            log.debug("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
             //ensure the job is there
             BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, provenanceEventFeedUtil.getFeed(event)),
                                                                    MetadataAccess.SERVICE);
@@ -286,7 +286,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
                 if (relatedFlowFiles.isEmpty()) {
                     relatedFlowFiles.add(event.getFlowFileUuid());
                 }
-                log.info("Failed Job {}/{}. Found {} related flow files. ", event.getEventId(), event.getFlowFileUuid(), relatedFlowFiles.size());
+                log.debug("Failed Job {}/{}. Found {} related flow files. ", event.getEventId(), event.getFlowFileUuid(), relatedFlowFiles.size());
                 List<BulletinDTO> bulletinDTOS = nifiBulletinExceptionExtractor.getErrorBulletinsForFlowFiles(relatedFlowFiles);
                 if (bulletinDTOS != null && !bulletinDTOS.isEmpty()) {
                     //write them back to the job
