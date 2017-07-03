@@ -134,6 +134,18 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         );
     }
 
+    /**
+     * Ensure the event has all the necessary information needed to be processed from the NiFi Flow Cache
+     * @param event the provenance event
+     * @return true if the data exists in the cache, false if not
+     */
+    public boolean validateNiFiFeedInformation(ProvenanceEventRecordDTO event) {
+        String feedName = getFeedName(event.getFirstEventProcessorId());
+        String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
+        String processorName = getProcessorName(event.getComponentId());
+        return StringUtils.isNotBlank(feedName) && StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(processorName);
+    }
+
     public void updateFeed(OpsManagerFeed feed) {
         opsManagerFeedCache.put(feed.getName(), feed);
     }
