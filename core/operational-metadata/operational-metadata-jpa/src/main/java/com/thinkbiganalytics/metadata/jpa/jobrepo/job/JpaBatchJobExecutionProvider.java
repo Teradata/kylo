@@ -538,14 +538,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (jobExecution == null) {
             return null;
         }
-        //   JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
-        //  checkAndRelateJobs(event, nifiEvent);
-
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
-        if (jobExecution.isFinished()) {
-            //ensure failures
-            //    batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
-        }
         return jobExecution;
     }
 
