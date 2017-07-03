@@ -201,42 +201,49 @@ public class BaseStatistics implements Serializable {
     }
 
     public void addBytesIn(Long bytesIn){
-        this.bytesIn +=bytesIn;
+        this.bytesIn += nvl(bytesIn);
     }
     public void addBytesOut(Long bytesOut){
-        bytesOut += bytesOut;
+        this.bytesOut += nvl(bytesOut);
     }
 
     public void addDuration(Long duration){
-        this.duration += duration;
+        this.duration += nvl(duration);
     }
 
     public void addTotalCount(Long totalCount){
-        this.totalCount += totalCount;
+        this.totalCount += nvl(totalCount);
     }
 
     public void addJobsStarted( Long jobsStarted){
-        this.jobsStarted += jobsStarted;
+        this.jobsStarted += nvl(jobsStarted);
     }
 
     public void addJobsFinished(Long jobsFinished){
-        this.jobsFinished += jobsFinished;
+        this.jobsFinished += nvl(jobsFinished);
     }
 
     public void addSuccessfulJobDuration(Long successfulJobDuration){
-        this.successfulJobDuration += successfulJobDuration;
+        this.successfulJobDuration += nvl(successfulJobDuration);
     }
 
     public void addJobDuration(Long jobDuration){
-        this.jobDuration += jobDuration;
+        this.jobDuration += nvl(jobDuration);
     }
 
     public void addProcessorsFailed(Long processorsFailed){
-        this.processorsFailed += processorsFailed;
+        this.processorsFailed += nvl(processorsFailed);
     }
 
     public void addJobsFailed(Long jobsFailed){
-        this.jobsFailed += jobsFailed;
+        this.jobsFailed += nvl(jobsFailed);
+    }
+
+    private Long nvl(Long item, Long nullValue){
+        return item == null ? nullValue : item;
+    }
+    private Long nvl(Long item){
+        return nvl(item,0L);
     }
 
     public String getSourceConnectionIdentifier() {
