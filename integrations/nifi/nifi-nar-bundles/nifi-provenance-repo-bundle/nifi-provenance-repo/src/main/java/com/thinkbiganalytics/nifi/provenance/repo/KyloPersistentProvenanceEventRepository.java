@@ -20,13 +20,11 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.authorization.Authorizer;
 import org.apache.nifi.events.EventReporter;
 import org.apache.nifi.provenance.PersistentProvenanceRepository;
 import org.apache.nifi.provenance.ProvenanceAuthorizableFactory;
-import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.RepositoryConfiguration;
 import org.apache.nifi.provenance.serialization.RecordWriter;
 import org.apache.nifi.util.NiFiProperties;
@@ -44,7 +42,8 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
     private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
 
 
-    private FeedStatisticsManager feedStatisticsManager;
+    private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new KyloProvenanceEventRepositoryUtil();
+
 
 
     public KyloPersistentProvenanceEventRepository() {
@@ -65,21 +64,11 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
 
     private void init() {
-        loadSpring();
-        initializeFeedEventStatistics();
-
+        provenanceEventRepositoryUtil.init();
+        //initialize the manager to gather and send the statistics
+        FeedStatisticsManager.getInstance();
     }
 
-
-    @Override
-    public void registerEvent(ProvenanceEventRecord event) {
-        super.registerEvent(event);
-    }
-
-    @Override
-    public void registerEvents(Iterable<ProvenanceEventRecord> events) {
-        super.registerEvents(events);
-    }
 
     @Override
     protected RecordWriter[] createWriters(final RepositoryConfiguration config, final long initialRecordId) throws IOException {
@@ -92,55 +81,10 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
         return interceptEventIdWriters;
     }
 
-    private void loadSpring() {
-        try {
-            SpringApplicationContext.getInstance().initializeSpring("classpath:provenance-application-context.xml");
-        } catch (BeansException | IllegalStateException e) {
-            log.error("Failed to load spring configurations", e);
-        }
-    }
-
-
-    /**
-     * Write any feed flow relationships in memory (running flows) to disk
-     */
-    public final void persistFeedEventStatisticsToDisk() {
-        log.info("onShutdown: Attempting to persist any active flow files to disk");
-        try {
-            //persist running flowfile metadata to disk
-            boolean success = FeedEventStatistics.getInstance().backup();
-            if (success) {
-                log.info("onShutdown: Successfully Finished persisting Kylo Flow processing data to {}", new Object[]{FeedEventStatistics.getInstance().getBackupLocation()});
-            } else {
-                log.info("onShutdown: FAILED Finished persisting Kylo Flow processing data.");
-            }
-        } catch (Exception e) {
-            //ok to swallow exception here.  this is called when NiFi is shutting down
-        }
-    }
-
     @Override
     public synchronized void close() throws IOException {
         super.close();
-        persistFeedEventStatisticsToDisk();
-    }
-
-    private void initializeFeedEventStatistics() {
-        String backupLocation = ConfigurationProperties.getInstance().getFeedEventStatisticsBackupLocation();
-        if (backupLocation != null) {
-            FeedEventStatistics.getInstance().setBackupLocation(backupLocation);
-        }
-        boolean success = FeedEventStatistics.getInstance().loadBackup();
-        if (success) {
-            log.info("Successfully loaded backup from {} ", FeedEventStatistics.getInstance().getBackupLocation());
-        } else {
-            log.error("Error loading backup");
-        }
-    }
-
-
-    private FeedStatisticsManager getFeedStatisticsManager() {
-        return feedStatisticsManager;
+        provenanceEventRepositoryUtil.persistFeedEventStatisticsToDisk();
     }
 
     @Override
@@ -149,13 +93,6 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
     }
 
-    /*
-   NiFi 1.2 method
-
-    public void initialize(EventReporter eventReporter, Authorizer authorizer, ProvenanceAuthorizableFactory resourceFactory, IdentifierLookup idLookup) throws IOException {
-        super.initialize(eventReporter, authorizer, resourceFactory);
-    }
-    */
 
 
 }

@@ -79,35 +79,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         }
     }
 
-    /**
-     * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
-     * be called when a Job Completes as it will verify all failures and then update the correct step status to reflect the failure if there is one.
-     *
-     * @param jobExecution the job execution
-     * @return {@code true} if the steps were evaluated, {@code false} if no work was needed to be done
-     */
-    public boolean ensureFailureSteps(BatchJobExecution jobExecution) {
 
-        //find all the Steps for this Job that have records in the Failure table for this job flow file
-        List<JpaBatchStepExecution> stepsNeedingToBeFailed = batchStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
-        if (stepsNeedingToBeFailed != null) {
-            for (JpaBatchStepExecution se : stepsNeedingToBeFailed) {
-                //find the event associated to this step
-                NifiEventStepExecution nifiEventStepExecution = nifiEventStepExecutionRepository.findByStepExecution(se.getStepExecutionId());
-                String flowFileId = null;
-                String componentId = null;
-                if (nifiEventStepExecution != null) {
-                    flowFileId = nifiEventStepExecution.getJobFlowFileId();
-                    componentId = nifiEventStepExecution.getComponentId();
-                }
-                failStep(jobExecution, se, flowFileId, componentId);
-            }
-            //save them
-            batchStepExecutionRepository.save(stepsNeedingToBeFailed);
-            return true;
-        }
-        return false;
-    }
 
     public BatchStepExecution update(BatchStepExecution stepExecution) {
         return batchStepExecutionRepository.save((JpaBatchStepExecution) stepExecution);

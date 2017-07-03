@@ -20,14 +20,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * #L%
  */
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -37,7 +32,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
@@ -51,12 +45,9 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchRelatedFlowFile;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
-import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
-import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
@@ -123,9 +114,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private BatchStepExecutionProvider batchStepExecutionProvider;
 
     private BatchRelatedFlowFileRepository batchRelatedFlowFileRepository;
-
-    @Inject
-    private AccessController controller;
 
     @Inject
     private MetadataEventService eventService;
@@ -686,8 +674,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .join(jobInstance.feed, feed)
             .where((feed.name.eq(feedName).or(feed.id.in(checkFeedQuery)))
                        .and(GenericQueryDslFilter.buildFilter(jobExecution, filters)
-                      ))
-                .fetchAll();
+                       ))
+            .fetchAll();
 
         pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
         return findAll(query, pageable);

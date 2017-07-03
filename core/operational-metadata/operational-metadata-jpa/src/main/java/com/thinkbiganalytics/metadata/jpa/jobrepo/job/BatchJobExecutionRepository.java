@@ -117,19 +117,17 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
 
 
     @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
-                   + "where nifiEvent.feedName = :feedName")
+                   + "join JpaBatchJobInstance jobInstance on jobInstance.id = job.jobInstance.id "
+                   + "join JpaOpsManagerFeed feed on feed.id = jobInstance.feed.id "
+                   + "where feed.name = :feedName")
     List<JpaBatchJobExecution> findJobsForFeed(@Param("feedName") String feedName);
 
 
     @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "join JpaBatchJobInstance jobInstance on jobInstance.id = job.jobInstance.id "
+                   + "join JpaOpsManagerFeed feed on feed.id = jobInstance.feed.id "
                    + "left join fetch JpaBatchJobExecutionContextValue executionContext on executionContext.jobExecutionId = job.jobExecutionId "
-                   + "where nifiEvent.feedName = :feedName "
+                   + "where feed.name = :feedName "
                    + "and job.status = 'COMPLETED' "
                    + "and job.endTime > :sinceDate ")
     Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
