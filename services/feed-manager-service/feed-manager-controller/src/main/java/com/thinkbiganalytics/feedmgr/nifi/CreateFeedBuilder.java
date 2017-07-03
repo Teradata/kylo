@@ -617,6 +617,10 @@ public class CreateFeedBuilder {
             input.getConfig().setSchedulingPeriod(schedule);
             input.getConfig().setSchedulingStrategy(strategy);
             input.getConfig().setConcurrentlySchedulableTaskCount(feedSchedule.getConcurrentTasks());
+            //clear the properties before updating the schedule
+            if(input.getConfig().getProperties() != null) {
+                input.getConfig().getProperties().clear();
+            }
             try {
                 restClient.updateProcessor(input);
             } catch (Exception e) {
