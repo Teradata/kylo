@@ -219,13 +219,13 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
-PROFILES=$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
+PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
 KYLO_NIFI_PROFILE="nifi-v1"
-if [[ ${PROFILES} == *"nifi-v1.2"* ]] || [[ ${PROFILES} == *"nifi-v1.3"* ]];
+if [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
-echo "using NiFi profile: ${KYLO_NIFI_PROFILE}"
+echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
 java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
@@ -236,13 +236,13 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-PROFILES=$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
+PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
 KYLO_NIFI_PROFILE="nifi-v1"
-if [[ ${PROFILES} == *"nifi-v1.2"* ]] || [[ ${PROFILES} == *"nifi-v1.3"* ]];
+if [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
-echo "using NiFi profile: ${KYLO_NIFI_PROFILE}"
+echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
