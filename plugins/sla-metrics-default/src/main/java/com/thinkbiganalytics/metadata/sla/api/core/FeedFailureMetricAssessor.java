@@ -25,6 +25,8 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,13 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         builder.metric(metric);
 
         String feedName = metric.getFeedName();
+        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.getLastFeedFailure(feedName);
+        DateTime lastTime =feedFailureService.initializeTime;
+        if(lastFeedFailure != null){
+            lastTime = lastFeedFailure.getDateTime();
+        }
+        //compare with the latest feed time
+        builder.compareWith(feedName, lastTime.getMillis());
         if (feedFailureService.hasFailure(feedName)) {
             builder.message("Feed " + feedName + " has failed ")
                 .result(AssessmentResult.FAILURE);
