@@ -416,7 +416,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                         if (related == null) {
                             relateFlowFiles(event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
                             event.setJobFlowFileId(jobFlowFile);
-                            log.info("Relating {} to {}, {} ", event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
+                            log.debug("Relating {} to {}, {} ", event.getJobFlowFileId(), jobFlowFile, jobExecution.getJobExecutionId());
                         }
                         return false;
                     } else {
