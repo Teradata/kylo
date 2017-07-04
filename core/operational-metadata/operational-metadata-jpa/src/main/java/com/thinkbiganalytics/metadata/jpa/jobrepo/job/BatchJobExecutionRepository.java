@@ -44,25 +44,19 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "where nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);
 
-
     @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "join JpaBatchJobInstance jobInstance on jobInstance.id = job.jobInstance.id "
+                   + "join JpaOpsManagerFeed feed on feed.id = jobInstance.feed.id "
                    + "left join fetch JpaBatchJobExecutionContextValue executionContext on executionContext.jobExecutionId = job.jobExecutionId "
-                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB
-                   + " where nifiEvent.feedName = :feedName "
+                   + "where feed.name = :feedName "
                    + "and job.status = 'COMPLETED' "
-                   + "and job.endTime > :sinceDate "
-                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+                   + "and job.endTime > :sinceDate ")
     Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
 
     @Query("select job from JpaBatchJobExecution as job "
            + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
            + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
-           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + "where feed.name = :feedName "
-           + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH
            + "and job.endTimeMillis = (SELECT max(job2.endTimeMillis)"
            + "     from JpaBatchJobExecution as job2 "
            + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
