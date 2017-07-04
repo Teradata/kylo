@@ -17,6 +17,7 @@
 
   <modules>
     <module>example-auth-custom</module>
+    <module>example-ui-get-file-processor-template</module>
   </modules>
 
   <dependencyManagement>
