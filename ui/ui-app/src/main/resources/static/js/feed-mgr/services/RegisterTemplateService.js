@@ -404,8 +404,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         processor.feedPropertiesUrl = null;
                     }
                     if (processor.feedPropertiesUrl == null) {
-                        processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, mode);
-
+                        FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
                     }
                 }
 

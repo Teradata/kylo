@@ -21,32 +21,36 @@
  * Return a custom Property input template for a given Processor
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedInputProcessorOptionsFactory', function () {
+    angular.module(moduleName).factory('FeedInputProcessorOptionsFactory',['UiComponentsService', function ( UiComponentsService) {
 
         var data = {
 
-            templateForProcessor: function (processor, mode) {
-                if (processor.type == "com.thinkbiganalytics.nifi.GetTableData" || processor.type == "com.thinkbiganalytics.nifi.v2.ingest.GetTableData") {
-                    if (mode == 'create') {
-                        return 'js/feed-mgr/feeds/get-table-data-properties/get-table-data-create.html'
-                    }
-                    else {
-                        return 'js/feed-mgr/feeds/get-table-data-properties/get-table-data-edit.html'
-                    }
-                }
-                if (processor.type == "com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop") {
-                    if (mode == 'create') {
-                        return 'js/feed-mgr/feeds/get-table-data-properties/import-sqoop-create.html'
-                    }
-                    else {
-                        return 'js/feed-mgr/feeds/get-table-data-properties/import-sqoop-edit.html'
-                    }
-                }
-                return null;
+            setFeedProcessingTemplateUrl: function (processor, mode) {
+
+                UiComponentsService.getProcessorTemplates().then(function(templates) {
+
+                 var matchingTemplate = _.find(templates,function(processorTemplate) {
+                       return _.find(processorTemplate.processorTypes,function(type) {
+                            return processor.type == type;
+                        }) != null;
+                    });
+                 if(matchingTemplate != null) {
+                     if(mode == 'create') {
+                         processor.feedPropertiesUrl = matchingTemplate.stepperTemplateUrl;
+                     }
+                     else {
+                         processor.feedPropertiesUrl = matchingTemplate.feedDetailsTemplateUrl;
+                     }
+                 }
+
+
+                });
+
+
             }
 
         };
         return data;
 
-    });
+    }]);
 });

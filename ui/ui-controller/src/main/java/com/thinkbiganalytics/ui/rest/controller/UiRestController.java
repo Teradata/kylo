@@ -20,6 +20,7 @@ package com.thinkbiganalytics.ui.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,22 @@ public class UiRestController {
     @Autowired(required = false)
     private List<TemplateTableOption> templateTableOptions;
 
+    @Autowired(required = false)
+    private List<ProcessorTemplate> processorTemplates;
+
     @GET
     @Path("template-table-options")
     @Produces(MediaType.APPLICATION_JSON)
     public List<TemplateTableOption> getTemplateTableOptions() {
         return (templateTableOptions != null) ? templateTableOptions : Collections.emptyList();
     }
+
+    @GET
+    @Path("processor-templates")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ProcessorTemplate> getProcessorTemplate() {
+        return (processorTemplates != null) ? processorTemplates : Collections.emptyList();
+    }
+
+
 }

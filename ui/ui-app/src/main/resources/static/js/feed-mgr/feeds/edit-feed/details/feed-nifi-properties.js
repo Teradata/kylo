@@ -59,16 +59,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             //validate();
         });
 
-        function setInputProcessorFeedPropertiesUrl(processor) {
-
-            if (processor.feedPropertiesUrl == undefined) {
-                processor.feedPropertiesUrl = null;
-            }
-            if (processor.feedPropertiesUrl == null) {
-                processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, 'edit');
-            }
-        }
-
         function updateInputProcessor(newVal) {
             angular.forEach(self.editModel.inputProcessors, function (processor) {
                 if (processor.processorId == newVal) {
@@ -80,7 +70,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     }
                     self.editModel.inputProcessor = processor;
                     self.editModel.inputProcessorType = processor.type;
-                    //  setInputProcessorFeedPropertiesUrl(processor);
                     return false;
                 }
             })

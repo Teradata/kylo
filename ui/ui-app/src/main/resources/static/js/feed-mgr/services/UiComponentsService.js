@@ -24,6 +24,11 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             TEMPLATE_TABLE_OPTIONS: null,
 
             /**
+             * Cache of the processor templates
+             */
+            PROCESSOR_TEMPLATES: null,
+
+            /**
              * Gets the template table option with the specified type.
              * @param {string} type - the unique identifier for the table option
              * @returns {Promise} resolves to the TemplateTableOption
@@ -80,6 +85,23 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                 } else {
                     var result = $q.defer();
                     result.resolve(UiComponentsService.TEMPLATE_TABLE_OPTIONS);
+                    return result.promise;
+                }
+            },
+            /**
+             * Gets the list of template table option plugins.
+             * @returns {Promise} resolves to the list of TemplateTableOption objects
+             */
+            getProcessorTemplates: function () {
+                if (UiComponentsService.PROCESSOR_TEMPLATES === null) {
+                    return $http.get(RestUrlService.UI_PROCESSOR_TEMPLATES)
+                        .then(function (response) {
+                            UiComponentsService.PROCESSOR_TEMPLATES = response.data;
+                            return UiComponentsService.PROCESSOR_TEMPLATES;
+                        });
+                } else {
+                    var result = $q.defer();
+                    result.resolve(UiComponentsService.PROCESSOR_TEMPLATES);
                     return result.promise;
                 }
             }

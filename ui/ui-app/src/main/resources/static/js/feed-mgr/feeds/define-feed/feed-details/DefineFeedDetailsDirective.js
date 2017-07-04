@@ -166,15 +166,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             getRegisteredTemplate();
         });
 
-        function setRenderTemplateForProcessor(processor) {
-            if (processor.feedPropertiesUrl == undefined) {
-                processor.feedPropertiesUrl = null;
-            }
-            if (processor.feedPropertiesUrl == null) {
-                processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, 'create');
 
-            }
-        }
 
         /**
          * Updates the details when the processor is changed.

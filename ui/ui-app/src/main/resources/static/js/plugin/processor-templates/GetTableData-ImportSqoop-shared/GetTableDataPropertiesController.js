@@ -18,7 +18,7 @@
  * #L%
  */
 
-define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
+define(['angular'], function (angular) {
 
     var directive = function () {
         return {
@@ -39,7 +39,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             },
             controllerAs: 'ctl',
             scope: {},
-            templateUrl: 'js/feed-mgr/feeds/get-table-data-properties/get-table-data-properties.html',
+            templateUrl: 'js/plugin/processor-templates/GetTableData-ImportSqoop-shared/get-table-data-properties.html',
             controller: "GetTableDataPropertiesController",
             link: function ($scope, element, attrs, controllers) {
             }
@@ -576,6 +576,8 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
     };
 
+    var moduleName = "kylo.plugin.processor-template.tabledata";
+    angular.module(moduleName, [])
     angular.module(moduleName).controller('GetTableDataPropertiesController',["$scope","$q","$http","$mdToast","RestUrlService","FeedService","EditFeedNifiPropertiesService","DBCPTableSchemaService", controller]);
 
     angular.module(moduleName)
