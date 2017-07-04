@@ -29,6 +29,10 @@ html, body {
   padding: 0px;
 }
 
+body {
+  background-color: #F9F9F9;
+}
+
 /* Always show scrollbars */
 ::-webkit-scrollbar {
   -webkit-appearance: none;
