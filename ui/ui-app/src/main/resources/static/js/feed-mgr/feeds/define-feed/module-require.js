@@ -8,7 +8,6 @@ define(['angular','angular-ui-router','kylo-feedmgr',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedScheduleDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedTableDirective',
         'feed-mgr/feeds/define-feed/feed-details/feed-errors-card-header',
-        'feed-mgr/feeds/define-feed/custom-processor-rendering',
         'feed-mgr/feeds/define-feed/DefineFeedStepController',
         'feed-mgr/feeds/define-feed/TableOptionsStepperDirective'], function (angular) {
 

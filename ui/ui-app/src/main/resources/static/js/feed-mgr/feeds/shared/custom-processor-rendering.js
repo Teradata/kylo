@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
     var directive = function ($compile, $templateRequest) {
         return {
             restrict: "EA",
