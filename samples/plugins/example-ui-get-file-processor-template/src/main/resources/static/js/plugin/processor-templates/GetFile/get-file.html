@@ -22,7 +22,7 @@
       add the property change handler
       -->
   <div ng-repeat="property in ctl.processor.properties track by property.key">
-    <md-input-container ng-class="{'condensed':property.renderType == 'radio', 'big-blue':property.key == 'Input Directory' }" nifi-property-input the-form="theForm" property="property" on-property-change="ctl.onPropertyChange(property)" class="md-block layout-padding-top-bottom" flex-gt-sm>
+    <md-input-container ng-class="{'condensed':property.renderType == 'radio', 'big-blue':property.key == 'Input Directory' }" nifi-property-input the-form="theForm" property="property" on-property-change="ctl.onPropertyChange" class="md-block layout-padding-top-bottom" flex-gt-sm>
     </md-input-container>
   </div>
 
