@@ -22,13 +22,13 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
                 $scope.onPropertyChanged = function(){
                     if($scope.onPropertyChange != undefined){
-                        $scope.onPropertyChange()($scope.property);
+                        $scope.onPropertyChange($scope.property);
                     }
                 }
 
                 if( $scope.property.renderType == 'select' && $scope.property.value != null) {
                     if($scope.onPropertyChange != undefined){
-                        $scope.onPropertyChange()($scope.property);
+                        $scope.onPropertyChange($scope.property);
                     }
                 }
 
