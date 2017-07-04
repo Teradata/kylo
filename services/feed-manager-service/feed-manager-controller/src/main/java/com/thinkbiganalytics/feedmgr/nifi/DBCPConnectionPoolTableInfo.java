@@ -22,8 +22,12 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
@@ -38,6 +42,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +63,15 @@ public class DBCPConnectionPoolTableInfo {
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
+
+    @Inject
+    private DatasourceProvider datasetProvider;
+
+    @Inject
+    private DatasourceModelTransform datasourceTransform;
+
+    @Inject
+    private MetadataAccess metadataAccess;
 
     /**
      * Returns a list of table names matching a pattern
@@ -162,19 +176,55 @@ public class DBCPConnectionPoolTableInfo {
 
             PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
 
-            if (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && dataSourceProperties.getPassword().startsWith("**")) {
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+
+            if (valid) {
+                log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
+                         dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            }
+        }
+        return null;
+    }
+
+    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, DescribeTableWithControllerService serviceProperties) {
+        boolean valid = (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && !dataSourceProperties.getPassword().startsWith("**"));
+        if (!valid) {
+            List<Datasource> matchingDatasources = metadataAccess.read(() -> {
+                JdbcDatasource userDatasource = null;
+                //attempt to get the properties from the stored datatsource
+                return datasetProvider
+                    .getDatasources(datasetProvider.datasetCriteria().type(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class).name(serviceProperties.getControllerServiceName()))
+                    .stream()
+                    .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN)).filter(datasource -> datasource instanceof JdbcDatasource)
+                    .collect(Collectors.toList());
+            }, MetadataAccess.SERVICE);
+
+            if (matchingDatasources != null) {
+                JdbcDatasource
+                    userDatasource =
+                    (JdbcDatasource) matchingDatasources.stream().filter(ds -> ((JdbcDatasource) ds).getDatabaseUser().equalsIgnoreCase(dataSourceProperties.getUser())).findFirst().orElse(null);
+                if (userDatasource == null) {
+                    userDatasource = (JdbcDatasource) matchingDatasources.get(0);
+                }
+                if (userDatasource != null) {
+                    dataSourceProperties.setUser(userDatasource.getDatabaseUser());
+                    dataSourceProperties.setPassword(userDatasource.getPassword());
+                    log.info("Returned user defined datasource for {} service and user {} ", serviceProperties.getControllerServiceName(), userDatasource.getDatabaseUser());
+                    valid = true;
+                }
+            }
+            if (!valid) {
                 String propertyKey = nifiControllerServiceProperties.getEnvironmentControllerServicePropertyPrefix(serviceProperties.getControllerServiceName()) + ".password";
                 String example = propertyKey + "=PASSWORD";
                 log.error("Unable to connect to Controller Service {}, {}.  You need to specifiy a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
             }
-            log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
-                     dataSourceProperties.getUrl());
-            DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
-            DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-            return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
         }
-        return null;
+        return valid;
+
     }
 
 
@@ -204,11 +254,16 @@ public class DBCPConnectionPoolTableInfo {
                                              : serviceProperties.getControllerServiceDTO().getProperties();
 
             PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
-            log.info("describing Table {}.{} against Controller Service: {} ({}) with uri of {} ", serviceProperties.getSchemaName(), serviceProperties.getTableName(),
-                     serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), dataSourceProperties.getUrl());
-            DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
-            DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-            return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+            if (valid) {
+                log.info("describing Table {}.{} against Controller Service: {} ({}) with uri of {} ", serviceProperties.getSchemaName(), serviceProperties.getTableName(),
+                         serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            } else {
+                return null;
+            }
         }
         return null;
 
