@@ -85,7 +85,7 @@ public class KyloUpgradeDatabaseVersionChecker {
             DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
 
             connection = dataSource.getConnection();
-            String query = "SELECT * FROM kylo.KYLO_VERSION ";
+            String query = "SELECT * FROM kylo.KYLO_VERSION ORDER BY MAJOR_VERSION DESC, MINOR_VERSION DESC, POINT_VERSION DESC, TAG DESC";
             statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
             if (rs.next()) {

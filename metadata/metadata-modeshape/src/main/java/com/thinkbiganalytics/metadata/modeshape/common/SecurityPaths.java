@@ -31,6 +31,8 @@ import java.nio.file.Path;
  * Defines and resolves security-related paths within the JCR repository.
  */
 public interface SecurityPaths {
+    
+    String ENTITY_ACCESS_CONTROL_ENABLED = "tba:entityAccessControlled";
 
     Path METADATA = JcrUtil.path("metadata");
     Path SECURITY = METADATA.resolve("security");

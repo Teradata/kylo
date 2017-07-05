@@ -28,12 +28,15 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupB
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRoleProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -47,6 +50,8 @@ import javax.jcr.Node;
  */
 @Configuration
 public class ModeShapeAuthConfig {
+    
+    private static final Logger log = LoggerFactory.getLogger(ModeShapeAuthConfig.class);
 
     @Inject
     private MetadataAccess metadata;
@@ -84,21 +89,25 @@ public class ModeShapeAuthConfig {
             allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
         }, MetadataAccess.SERVICE);
     }
-
-//    @Order(PostMetadataConfigAction.LATE_ORDER)
-//    public static class SetupServicesAction implements PostMetadataConfigAction {
-//
-//        @Inject
-//        private MetadataAccess metadata;
-//
-//        @Override
-//        public void run() {
-//            metadata.commit(() -> { 
-//                Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-//                Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
-//
-//                allowedModuleActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
-//            }, MetadataAccess.SERVICE);
-//        }
-//    }
+    
+    @Bean
+    @Order(PostMetadataConfigAction.EARLY_ORDER)
+    public PostMetadataConfigAction checkEntityAccessControl() {
+        AccessController accessController = accessController();
+        
+        return () -> metadata.commit(() -> {
+            Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
+            boolean propertyFlag = accessController.isEntityAccessControlled();
+            boolean metadataFlag = JcrPropertyUtil.getBoolean(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED);
+            
+            if (metadataFlag == true && propertyFlag == false) {
+                log.error(  "\n*************************************************************************************************************************************\n"
+                            + "Kylo has previously been started with entity access control enabled and the current configuration is attempting to set it as disabled\n"
+                            + "*************************************************************************************************************************************");
+                throw new IllegalStateException("Entity access control is configured as disabled when it was previously enabled");
+            } else {
+                JcrPropertyUtil.setProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED, propertyFlag);
+            }
+        }, MetadataAccess.SERVICE);
+    }
 }
