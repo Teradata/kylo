@@ -22,13 +22,17 @@ package com.thinkbiganalytics.ui.rest.controller;
 
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
+import com.thinkbiganalytics.ui.service.UiTemplateService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -38,11 +42,23 @@ import javax.ws.rs.core.MediaType;
 @Path("v1/ui")
 public class UiRestController {
 
+    private static Logger log = LoggerFactory.getLogger(UiRestController.class);
+
+    @Autowired
+    private UiTemplateService uiTemplateService;
+
     @Autowired(required = false)
     private List<TemplateTableOption> templateTableOptions;
 
-    @Autowired(required = false)
     private List<ProcessorTemplate> processorTemplates;
+
+    @PostConstruct
+    private void init(){
+        processorTemplates = uiTemplateService.loadProcessorTemplateDefinitionFiles();
+        if(!processorTemplates.isEmpty()) {
+            log.info("Loaded {} custom processor templates ", processorTemplates.size());
+        }
+    }
 
     @GET
     @Path("template-table-options")
@@ -57,6 +73,7 @@ public class UiRestController {
     public List<ProcessorTemplate> getProcessorTemplate() {
         return (processorTemplates != null) ? processorTemplates : Collections.emptyList();
     }
+
 
 
 }

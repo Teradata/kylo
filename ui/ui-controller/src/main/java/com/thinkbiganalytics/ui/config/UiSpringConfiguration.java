@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.ui.rest;
+package com.thinkbiganalytics.ui.config;
 
 /*-
  * #%L
@@ -9,9 +9,9 @@ package com.thinkbiganalytics.ui.rest;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,22 +20,26 @@ package com.thinkbiganalytics.ui.rest;
  * #L%
  */
 
-import org.glassfish.jersey.servlet.ServletContainer;
-import org.glassfish.jersey.servlet.ServletProperties;
-import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import com.thinkbiganalytics.ui.service.FileResourceLoaderService;
+import com.thinkbiganalytics.ui.service.UiTemplateService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Created by sr186054 on 7/5/17.
+ */
 @Configuration
-public class SpringJerseyConfiguration {
+public class UiSpringConfiguration {
 
-    @Bean(name = "mainJerseyServlet")
-    public ServletRegistrationBean jerseyServlet() {
-        final ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(new JerseyConfig()));
-        registration.addUrlMappings("/api/*");
-        registration.addInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getName());
-        return registration;
+    @Bean
+    public FileResourceLoaderService fileResourceLoaderService(){
+        return new FileResourceLoaderService();
     }
 
+    @Bean
+    public UiTemplateService uiTemplateService(){
+        return new UiTemplateService();
+    }
 
 }

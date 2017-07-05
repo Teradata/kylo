@@ -25,5 +25,6 @@
     <module>hadoop-authorization-ranger-default</module>
     <module>hadoop-authorization-sentry-default</module>
     <module>schema-discovery-default</module>
+    <module>ui-sqoop-table-data-processor-template</module>
   </modules>
 </project>

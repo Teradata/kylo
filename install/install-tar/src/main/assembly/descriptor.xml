@@ -70,6 +70,18 @@
       <fileMode>755</fileMode>
     </fileSet>
 
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/ui-sqoop-table-data-processor-template/target</directory>
+      <outputDirectory>kylo-ui/plugin</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-ui-sqoop-table-data-processor-template-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+
+
     <!-- kylo services files -->
     <fileSet>
       <outputDirectory>/kylo-services/bin</outputDirectory>
