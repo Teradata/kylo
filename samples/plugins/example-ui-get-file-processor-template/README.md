@@ -5,6 +5,7 @@ Kylo allows you to code your own custom angular template for a NiFi Processor
 
 ```json
 {
+  "processorDisplayName":"An optional String to have the code Match on the processorType and the label of the processor.  If Null or not set it will just use the processorType to match when rendering the template",
   "processorTypes":[ Array of the fully qualified NiFi Processor class name(s)],
   "stepperTemplateUrl":"the html file to be used when creating the Feed.  Return null to have the system use its default rendering",
   "feedDetailsTemplateUrl":"the html file to be used when editing a feed.  Return null to have the system use its default rendering"

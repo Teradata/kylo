@@ -1,4 +1,5 @@
 {
+  "processorDisplayName":"Filesystem",
   "processorTypes":["org.apache.nifi.processors.standard.GetFile"],
   "stepperTemplateUrl":"js/plugin/processor-templates/GetFile/get-file-processor.html",
   "feedDetailsTemplateUrl":"js/plugin/processor-templates/GetFile/get-file-processor.html"

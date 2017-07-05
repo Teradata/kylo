@@ -27,6 +27,8 @@ import java.util.List;
 
 public class ProcessorTemplateDefinition implements ProcessorTemplate {
 
+    private String processorDisplayName;
+
     /**
      * An array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
      */
@@ -65,5 +67,14 @@ public class ProcessorTemplateDefinition implements ProcessorTemplate {
 
     public void setFeedDetailsTemplateUrl(String feedDetailsTemplateUrl) {
         this.feedDetailsTemplateUrl = feedDetailsTemplateUrl;
+    }
+
+    @Override
+    public String getProcessorDisplayName() {
+        return processorDisplayName;
+    }
+
+    public void setProcessorDisplayName(String processorDisplayName) {
+        this.processorDisplayName = processorDisplayName;
     }
 }

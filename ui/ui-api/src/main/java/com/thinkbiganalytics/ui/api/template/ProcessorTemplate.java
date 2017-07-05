@@ -31,6 +31,12 @@ public interface ProcessorTemplate {
 
 
     /**
+     * Match against the display name of the processor
+     * @return
+     */
+    String getProcessorDisplayName();
+
+    /**
      * Return an array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
      * @return Return an array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
      */
