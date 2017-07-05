@@ -20,34 +20,50 @@ package com.thinkbiganalytics.ui.template;
  * #L%
  */
 
-
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
-
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
+
+public class ProcessorTemplateDefinition implements ProcessorTemplate {
+
+    /**
+     * An array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
+     */
+    List processorTypes;
+
+    /**
+     * The url for the template used when creating a new feed
+     */
+    private String stepperTemplateUrl;
 
 
-@Component
-public class ImportSqoopProcessorTemplate implements ProcessorTemplate {
+    /**
+     * The url for the template used when editing a new feed
+     */
+    private String feedDetailsTemplateUrl;
 
-    @Override
     public List getProcessorTypes() {
-        return Lists.newArrayList(new String[]{"com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"});
+        return processorTypes;
     }
 
-    @Nullable
-    @Override
+    public void setProcessorTypes(List processorTypes) {
+        this.processorTypes = processorTypes;
+    }
+
     public String getStepperTemplateUrl() {
-        return "js/plugin/processor-templates/ImportSqoop/import-sqoop-create.html";
+        return stepperTemplateUrl;
     }
 
-    @Nullable
-    @Override
+    public void setStepperTemplateUrl(String stepperTemplateUrl) {
+        this.stepperTemplateUrl = stepperTemplateUrl;
+    }
+
     public String getFeedDetailsTemplateUrl() {
-        return "js/plugin/processor-templates/ImportSqoop/import-sqoop-edit.html";
+        return feedDetailsTemplateUrl;
+    }
+
+    public void setFeedDetailsTemplateUrl(String feedDetailsTemplateUrl) {
+        this.feedDetailsTemplateUrl = feedDetailsTemplateUrl;
     }
 }
