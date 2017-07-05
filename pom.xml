@@ -101,11 +101,11 @@
     <module>commons</module>
     <module>core</module>
     <module>security</module>
+    <module>ui</module>
     <module>plugins</module>
     <module>metadata</module>
     <module>services</module>
     <module>integrations</module>
-    <module>ui</module>
     <module>install</module>
     <module>docs</module>
     <module>samples</module>

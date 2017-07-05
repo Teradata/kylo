@@ -1,0 +1,5 @@
+{
+  "processorTypes":["com.thinkbiganalytics.nifi.GetTableData","com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
+  "stepperTemplateUrl":"js/plugin/processor-templates/GetTableData/get-table-data-create.html",
+  "feedDetailsTemplateUrl":"js/plugin/processor-templates/GetTableData/get-table-data-edit.html"
+}
