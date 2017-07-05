@@ -30,9 +30,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 UiComponentsService.getProcessorTemplates().then(function(templates) {
 
                  var matchingTemplate = _.find(templates,function(processorTemplate) {
-                       return _.find(processorTemplate.processorTypes,function(type) {
-                            return processor.type == type;
-                        }) != null;
+                         return _.find(processorTemplate.processorTypes, function (type) {
+                                 if(processorTemplate.processorDisplayName != null && processorTemplate.processorDisplayName != undefined && processorTemplate.processorDisplayName != ""  ) {
+                                     return processor.type == type && processor.name == processorTemplate.processorDisplayName;
+                                 }
+                                 else {
+                                     return processor.type == type;
+                                 }
+                             }) != null;
                     });
                  if(matchingTemplate != null) {
                      if(mode == 'create') {

@@ -5,7 +5,8 @@ Kylo allows you to code your own custom angular template for a NiFi Processor
 
 ```json
 {
-  "processorTypes":[ Array of the fully qualified NiFi Processor class name(s)],
+  "processorDisplayName":"An optional String to have the code Match on the processorType and the label of the processor.  If Null or not set it will just use the processorType to match when rendering the template",
+  "processorTypes":[ "Array of the fully qualified NiFi Processor class name(s)"],
   "stepperTemplateUrl":"the html file to be used when creating the Feed.  Return null to have the system use its default rendering",
   "feedDetailsTemplateUrl":"the html file to be used when editing a feed.  Return null to have the system use its default rendering"
 }
@@ -35,7 +36,7 @@ An example JSON file is here:
    - Processor JSON
     ```json
     {
-      "properties": [ <property.json>', ...],
+      "properties": [ "<property.json>, ..."],
       "type": "org.apache.nifi.processors.standard.GetFile",
       "name": "Filesystem",
       "inputProcessor": true,
@@ -51,7 +52,7 @@ An example JSON file is here:
       "processorName": "Filesystem",
       "processorType": "org.apache.nifi.processors.standard.GetFile",
       "key": "File Filter",
-      "value": "mydata\\d{1, 3}.csvfffg",
+      "value": "mydata\\d{1, 3}.csv",
       "expressionProperties": null,
       "propertyDescriptor": {
         "name": "File Filter",

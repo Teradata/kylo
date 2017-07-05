@@ -14,9 +14,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -490,6 +490,20 @@ chmod 744 $rpmLogDir/kylo*
 
 chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
+# Setup kylo-service command
+cp $rpmInstallDir/kylo-service /usr/bin/kylo-service
+chown root:root /usr/bin/kylo-service
+chmod 755 /usr/bin/kylo-service
+
+# Setup kylo-tail command
+mkdir -p /etc/kylo/
+
 echo "   INSTALL COMPLETE"
+<<<<<<< HEAD:install/src/main/scripts/post-install.sh
+echo "   - The command kylo-service can be used to control and check the Kylo services as well as optional services. Use the command kylo-service help to find out more information. "
+echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/kylo-ui/conf' and '$rpmInstallDir/kylo-services/conf' folder.  See deployment guide for details."
+echo "   - To remove kylo run $rpmInstallDir/remove-kylo.sh "
+=======
 echo "   - Please configure the application using the property files and scripts located under the '$INSTALL_HOME/kylo-ui/conf' and '$INSTALL_HOME/kylo-services/conf' folder.  See deployment guide for details."
 echo "   - To remove kylo run $INSTALL_HOME/remove-kylo.sh "
+>>>>>>> upstream/master:install/scripts/post-install.sh

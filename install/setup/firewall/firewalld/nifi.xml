@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>NiFi (HTTP)</short>
+  <description>This firewalld configuration file is for the Apache NiFi service. NiFi is a workflow tool which enables automatic data flow between systems. </description>
+  <port protocol="tcp" port="8079"/>
+</service>
