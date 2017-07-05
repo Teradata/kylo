@@ -67,6 +67,7 @@ import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.optional.ssh.SSHExec;
@@ -138,7 +139,7 @@ public class IntegrationTestBase {
     public void setupRestAssured() throws URISyntaxException {
         UserContext.setUser(UserContext.User.ADMIN);
 
-        RestAssured.baseURI = kyloConfig.getHost();
+        RestAssured.baseURI = kyloConfig.getProtocol() + kyloConfig.getHost();
         RestAssured.port = kyloConfig.getPort();
         RestAssured.basePath = kyloConfig.getBasePath();
 
@@ -229,6 +230,9 @@ public class IntegrationTestBase {
         scp.setPort(sshConfig.getPort());
         scp.setUsername(sshConfig.getUsername());
         scp.setPassword(sshConfig.getPassword());
+        if (StringUtils.isNotBlank(sshConfig.getKeyfile())) {
+            scp.setKeyfile(sshConfig.getKeyfile());
+        }
         scp.setLocalFile(localFile);
         scp.setTodir(String.format("%s@%s:%s", sshConfig.getUsername(), sshConfig.getHost(), remoteDir));
         LOG.info(scp.toString());

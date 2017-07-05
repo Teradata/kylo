@@ -24,23 +24,34 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:integration-test.properties"/>
+        <property name="locations">
+            <list>
+                <value>classpath:integration-test.properties</value>
+                <!--<value>classpath:integration-test-{ENV}.properties</value>-->
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+        <property name="searchSystemEnvironment" value="true" />
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
     </bean>
 
     <bean class="com.thinkbiganalytics.integration.KyloConfig">
-        <property name="host" value="${kylo.host}"/>
-        <property name="port" value="${kylo.port}"/>
-        <property name="basePath" value="${kylo.basePath}"/>
+        <property name="protocol" value="${kylo_protocol}"/>
+        <property name="host" value="${kylo_host}"/>
+        <property name="port" value="${kylo_port}"/>
+        <property name="basePath" value="${kylo_basePath}"/>
     </bean>
 
     <bean class="com.thinkbiganalytics.integration.SshConfig">
-        <property name="host" value="${ssh.host}"/>
-        <property name="port" value="${ssh.port}"/>
-        <property name="username" value="${ssh.username}"/>
-        <property name="password" value="${ssh.password}"/>
-        <property name="knownHosts" value="${ssh.known-hosts}"/>
+        <property name="host" value="${ssh_host}"/>
+        <property name="port" value="${ssh_port}"/>
+        <property name="username" value="${ssh_username}"/>
+        <property name="password" value="${ssh_password}"/>
+        <property name="keyfile" value="${ssh_keyfile}"/>
+        <property name="knownHosts" value="${ssh_known-hosts}"/>
     </bean>
 
 </beans>

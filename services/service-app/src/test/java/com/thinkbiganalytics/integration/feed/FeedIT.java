@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -94,6 +95,17 @@ public class FeedIT extends IntegrationTestBase {
         //TODO edit the feed / re-run / re-assert
     }
 
+    @Override
+    protected void cleanup() {
+        //do nothing to run temp() test
+    }
+
+
+    @Test
+    public void temp() {
+        copyDataToDropzone();
+    }
+
     private void waitForFeedToComplete() {
         //wait for feed completion by waiting for certain amount of time and then
         waitFor(FEED_COMPLETION_WAIT_DELAY, TimeUnit.SECONDS, "for feed to complete");
@@ -128,11 +140,6 @@ public class FeedIT extends IntegrationTestBase {
 
         //TODO assert data via global search
 
-    }
-
-//    @Test
-    public void temp() {
-        assertHiveData();
     }
 
     private void assertHiveData() {

@@ -30,6 +30,15 @@ public class KyloConfig {
     private String basePath;
     private String username;
     private String password;
+    private String protocol;
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
 
     public String getHost() {
         return host;
