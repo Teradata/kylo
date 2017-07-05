@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>kylo-ui (HTTP)</short>
+  <description>This firewalld configuration file is for the kylo-ui service. This is a web front end for controlling Kylo. The associated service is called kylo-ui which can be controlled using upstart/systemd.</description>
+  <port protocol="tcp" port="8400"/>
+</service>
