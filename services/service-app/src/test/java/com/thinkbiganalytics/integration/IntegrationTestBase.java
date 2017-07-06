@@ -852,8 +852,9 @@ public class IntegrationTestBase {
         LOG.info("Copying data to dropzone");
 
         //drop files in dropzone to run the feed
+        ssh(String.format("sudo chmod a+w %s", VAR_DROPZONE));
         scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
-        ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
+        ssh(String.format("sudo chown -R nifi:nifi %s", VAR_DROPZONE));
     }
 
     protected ActionGroup getServicePermissions(String group) {
