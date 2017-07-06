@@ -59,6 +59,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.isValid = false;
 
         this.stepperController = null;
+
+        /**
+         * flag to indicate if the data is still loading
+         * @type {boolean}
+         */
+        this.loading = false;
+
         var watchers = [];
 
         this.codemirrorRenderTypes = RegisterTemplateService.codemirrorRenderTypes;
@@ -118,6 +125,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
+            self.loading = false;
+            validate();
         }
 
         /**
@@ -143,7 +152,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * Validates the step for enable/disable of the step and continue button
          */
         function validate() {
-            self.isValid = self.model.systemFeedName != '' && self.model.systemFeedName != null && self.model.templateId != null
+            self.isValid = self.loading == false && self.model.systemFeedName != '' && self.model.systemFeedName != null && self.model.templateId != null
                            && (self.inputProcessors.length == 0 || (self.inputProcessors.length > 0 && self.inputProcessorId != null));
         }
 
@@ -163,6 +172,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         var templateIdWatch = $scope.$watch(function() {
             return self.model.templateId;
         }, function(newVal) {
+            self.loading = true;
             getRegisteredTemplate();
         });
 
@@ -184,8 +194,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
-            // var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.model.nonInputProcessors);
-
+          
             if (renderGetTableData) {
                 self.model.table.method = 'EXISTING_TABLE';
                 self.model.options.skipHeader = true;
