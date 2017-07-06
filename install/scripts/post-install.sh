@@ -499,11 +499,7 @@ chmod 755 /usr/bin/kylo-service
 mkdir -p /etc/kylo/
 
 echo "   INSTALL COMPLETE"
-<<<<<<< HEAD:install/src/main/scripts/post-install.sh
 echo "   - The command kylo-service can be used to control and check the Kylo services as well as optional services. Use the command kylo-service help to find out more information. "
 echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/kylo-ui/conf' and '$rpmInstallDir/kylo-services/conf' folder.  See deployment guide for details."
 echo "   - To remove kylo run $rpmInstallDir/remove-kylo.sh "
-=======
-echo "   - Please configure the application using the property files and scripts located under the '$INSTALL_HOME/kylo-ui/conf' and '$INSTALL_HOME/kylo-services/conf' folder.  See deployment guide for details."
-echo "   - To remove kylo run $INSTALL_HOME/remove-kylo.sh "
->>>>>>> upstream/master:install/scripts/post-install.sh
+
