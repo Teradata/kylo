@@ -21,6 +21,10 @@ package com.thinkbiganalytics.integration;
  */
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 
@@ -28,6 +32,8 @@ import javax.annotation.PostConstruct;
  * Configuration required to connect to host which runs Nifi
  */
 public class SshConfig {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SshConfig.class);
 
     private String host;
     private Integer port;
@@ -38,6 +44,15 @@ public class SshConfig {
 
     @PostConstruct
     public void initIt() throws Exception {
+        LOG.info(new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+            .append("host", host)
+            .append("port", port)
+            .append("username", username)
+            .append("password", StringUtils.isNotBlank(password) ? "removed" : "not provided")
+            .append("keyfile", keyfile)
+            .append("known-hosts", knownHosts)
+            .toString());
+
         if (StringUtils.isNotBlank(password) && StringUtils.isNotBlank(keyfile)) {
             throw new IllegalStateException("Must not set both keyfile and password at the same time. Set one or the other.");
         }

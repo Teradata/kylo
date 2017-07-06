@@ -70,6 +70,7 @@ import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.optional.ssh.SSHBase;
 import org.apache.tools.ant.taskdefs.optional.ssh.SSHExec;
 import org.apache.tools.ant.taskdefs.optional.ssh.Scp;
 import org.junit.After;
@@ -222,20 +223,9 @@ public class IntegrationTestBase {
                 return String.format("scp -P%s %s %s@%s:%s", sshConfig.getPort(), localFile, sshConfig.getUsername(), sshConfig.getHost(), remoteDir);
             }
         };
-        scp.setTrust(true);
-        scp.setProject(new Project());
-        scp.setKnownhosts(sshConfig.getKnownHosts());
-        scp.setVerbose(true);
-        scp.setHost(sshConfig.getHost());
-        scp.setPort(sshConfig.getPort());
-        scp.setUsername(sshConfig.getUsername());
-        scp.setPassword(sshConfig.getPassword());
-        if (StringUtils.isNotBlank(sshConfig.getKeyfile())) {
-            scp.setKeyfile(sshConfig.getKeyfile());
-        }
+        setupSshConnection(scp);
         scp.setLocalFile(localFile);
         scp.setTodir(String.format("%s@%s:%s", sshConfig.getUsername(), sshConfig.getHost(), remoteDir));
-        LOG.info(scp.toString());
         scp.execute();
     }
 
@@ -246,19 +236,28 @@ public class IntegrationTestBase {
                 return String.format("ssh -p %s %s@%s %s", sshConfig.getPort(), sshConfig.getUsername(), sshConfig.getHost(), command);
             }
         };
-        ssh.setTrust(true);
-        Project project = new Project();
-        ssh.setProject(project);
+        setupSshConnection(ssh);
         ssh.setOutputproperty("output");
+        ssh.setCommand(command);
+        ssh.execute();
+        return ssh.getProject().getProperty("output");
+    }
+
+    private void setupSshConnection(SSHBase ssh) {
+        ssh.setTrust(true);
+        ssh.setProject(new Project());
         ssh.setKnownhosts(sshConfig.getKnownHosts());
+        ssh.setVerbose(true);
         ssh.setHost(sshConfig.getHost());
         ssh.setPort(sshConfig.getPort());
         ssh.setUsername(sshConfig.getUsername());
-        ssh.setPassword(sshConfig.getPassword());
-        ssh.setCommand(command);
+        if (StringUtils.isNotBlank(sshConfig.getPassword())) {
+            ssh.setPassword(sshConfig.getPassword());
+        }
+        if (StringUtils.isNotBlank(sshConfig.getKeyfile())) {
+            ssh.setKeyfile(sshConfig.getKeyfile());
+        }
         LOG.info(ssh.toString());
-        ssh.execute();
-        return project.getProperty("output");
     }
 
     protected void waitFor(int delay, TimeUnit timeUnit, String msg) {
