@@ -36,7 +36,8 @@ An example JSON file is here:
    - Processor JSON
     ```json
     {
-      "properties": [ "<property.json>, ..."],
+      "allProperties": ["<property.json>, ... All properties for the processor"],
+      "properties": [ "<property.json>, ... Only those properties Registered for 'user input'.  Typically these are only the ones displayed for the end user"],
       "type": "org.apache.nifi.processors.standard.GetFile",
       "name": "Filesystem",
       "inputProcessor": true,
