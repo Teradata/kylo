@@ -88,11 +88,11 @@ public class SparkShellConfiguration {
      */
     @Bean
     public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,
-                                                   @Qualifier("memoryLoginUsers") final Optional<Properties> users) {
+                                                   @Qualifier("sparkLoginUsers") final Optional<Properties> users) {
         if (sparkShellProperties.getServer() != null) {
             return new ServerProcessManager(sparkShellProperties);
         } else if (!users.isPresent()) {
-            throw new IllegalArgumentException("Invalid Spark configuration. Either set spark.shell.server.host and spark.shell.server.port in spark.properties or add the auth-memory Spring profile"
+            throw new IllegalArgumentException("Invalid Spark configuration. Either set spark.shell.server.host and spark.shell.server.port in spark.properties or add the auth-spark Spring profile"
                                                + " to application.properties.");
         } else if (sparkShellProperties.isProxyUser()) {
             return new MultiUserProcessManager(sparkShellProperties, kerberosProperties, users.get());

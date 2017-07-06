@@ -135,7 +135,7 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-security-auth-memory</artifactId>
+      <artifactId>kylo-security-auth-spark</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

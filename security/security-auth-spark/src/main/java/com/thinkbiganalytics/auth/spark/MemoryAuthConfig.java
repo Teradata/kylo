@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.auth.file;
+package com.thinkbiganalytics.auth.spark;
 
 /*-
  * #%L
- * kylo-security-auth-memory
+ * kylo-security-auth-spark
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -42,28 +42,28 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
  */
 @Configuration
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Profile("auth-memory")
+@Profile("auth-spark")
 public class MemoryAuthConfig {
     
-    public static final int AUTH_MEMORY_ORDER = LoginConfiguration.HIGH_ORDER - 10;
+    public static final int AUTH_SPARK_ORDER = LoginConfiguration.HIGH_ORDER - 10;
 
-    @Bean(name = "memoryLoginRoles")
+    @Bean(name = "sparkLoginRoles")
     public Properties getRoles() {
         return new Properties();
     }
 
-    @Bean(name = "memoryLoginUsers")
+    @Bean(name = "sparkLoginUsers")
     public Properties getUsers() {
         return new Properties();
     }
 
-    @Bean(name = "servicesMemoryLoginConfiguration")
+    @Bean(name = "servicesSparkLoginConfiguration")
     public LoginConfiguration servicesFileLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder, 
-                                                             @Qualifier("memoryLoginUsers") final Properties users,
-                                                             @Qualifier("memoryLoginRoles") final Properties roles) {
+                                                             @Qualifier("sparkLoginUsers") final Properties users,
+                                                             @Qualifier("sparkLoginRoles") final Properties roles) {
         // @formatter:off
         return builder
-                .order(AUTH_MEMORY_ORDER)
+                .order(AUTH_SPARK_ORDER)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(MemoryUsersRolesLoginModule.class)
                     .controlFlag(LoginModuleControlFlag.SUFFICIENT)
