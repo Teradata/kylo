@@ -20,6 +20,8 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -89,6 +91,13 @@ public class RegisteredTemplateService {
 
     @Inject
     private RegisteredTemplateUtil registeredTemplateUtil;
+
+
+    /**
+     * A cache of the NiFi template properties.
+     * Properties for a given template are cached and updated when the template changes
+     */
+    private Cache<String,TemplatePropertiesCache> templatePropertiesCache  = CacheBuilder.newBuilder().build();
 
 
 
@@ -183,6 +192,8 @@ public class RegisteredTemplateService {
         if (registeredTemplate != null) {
             if (registeredTemplateRequest.isIncludeAllProperties()) {
                 registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate, registeredTemplateRequest);
+                registeredTemplate.initializeProcessors();
+                ensureRegisteredTemplateInputProcessors(registeredTemplate);
             }
             if (NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiFeedConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
                 registeredTemplate.setAllowPreconditions(true);
@@ -427,13 +438,37 @@ public class RegisteredTemplateService {
             registeredTemplate = new RegisteredTemplate();
             registeredTemplate.setNifiTemplateId(nifiTemplateId);
 
-            properties = nifiRestClient.getPropertiesForTemplate(nifiTemplate, true);
+            properties = getTemplateProperties(nifiTemplate, true);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
             registeredTemplate.setProperties(properties);
         }
 
         return registeredTemplate;
+
+    }
+
+
+    /**
+     * Cache the Template properties.  Return the cached properties if the template hasnt been updated
+     * @param templateDTO the nifi template
+     * @param includePropertyDescriptors true to include descriptors, false to not include the descriptors
+     * @return a list of properties
+     */
+   private List<NifiProperty> getTemplateProperties(TemplateDTO templateDTO, boolean includePropertyDescriptors){
+
+        String cacheKey = templateDTO.getName()+includePropertyDescriptors;
+       TemplatePropertiesCache cachedProperties = templatePropertiesCache.getIfPresent(cacheKey);
+       if(cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()){
+          List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateDTO, includePropertyDescriptors);
+          if(cachedProperties == null){
+              cachedProperties = new TemplatePropertiesCache(templateDTO.getId(),includePropertyDescriptors,templateDTO.getTimestamp().getTime());
+         templatePropertiesCache.put(cacheKey,cachedProperties);
+          }
+          cachedProperties.setProperties(properties);
+          cachedProperties.setLastUpdated(templateDTO.getTimestamp().getTime());
+       }
+       return cachedProperties.getProperties();
 
     }
 
@@ -458,7 +493,7 @@ public class RegisteredTemplateService {
 
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
-                properties = nifiRestClient.getPropertiesForTemplate(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors());
+                properties = getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors());
                 //first attempt to match the properties by the processorid and processor name
                 NifiPropertyUtil
                     .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
@@ -822,5 +857,43 @@ public class RegisteredTemplateService {
         return null;
     }
 
+
+
+    private class TemplatePropertiesCache {
+        private String templateId;
+        private boolean includePropertyDescriptors;
+        private Long lastUpdated;
+        private List<NifiProperty> properties;
+
+        public TemplatePropertiesCache(String templateId, boolean includePropertyDescriptors, Long lastUpdated) {
+            this.templateId = templateId;
+            this.includePropertyDescriptors = includePropertyDescriptors;
+            this.lastUpdated = lastUpdated;
+        }
+
+        public String getTemplateId() {
+            return templateId;
+        }
+
+        public boolean isIncludePropertyDescriptors() {
+            return includePropertyDescriptors;
+        }
+
+        public Long getLastUpdated() {
+            return lastUpdated;
+        }
+
+        public void setLastUpdated(Long lastUpdated) {
+            this.lastUpdated = lastUpdated;
+        }
+
+        public List<NifiProperty> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(List<NifiProperty> properties) {
+            this.properties = properties;
+        }
+    }
 
 }

@@ -353,10 +353,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 //temp placeholder until Register Templates allows for user defined input processor selection
 
                 _.each(processorArray, function (processor, i) {
+                    processor.allProperties = processor.properties;
+
                     var validProperties = _.reject(processor.properties, function (property) {
                         return !property.userEditable;
                     });
-                    processor.allProperties = processor.properties;
+
 
                     processor.properties = validProperties;
                     if (validProperties != null && validProperties.length > 0) {
