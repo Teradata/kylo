@@ -95,15 +95,15 @@ public class FeedIT extends IntegrationTestBase {
         //TODO edit the feed / re-run / re-assert
     }
 
-    @Override
-    protected void cleanup() {
+//    @Override
+//    protected void cleanup() {
         //do nothing to run temp() test
-    }
+//    }
 
 
-    @Test
+//    @Test
     public void temp() {
-        copyDataToDropzone();
+        importSystemFeeds();
     }
 
     private void waitForFeedToComplete() {

@@ -20,18 +20,35 @@ package com.thinkbiganalytics.integration;
  * #L%
  */
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+
 /**
  * Configuration required to connect to running Kylo instance
  */
 public class KyloConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(KyloConfig.class);
+
     private String host;
     private int port;
     private String basePath;
-    private String username;
-    private String password;
     private String protocol;
 
+    @PostConstruct
+    public void initIt() throws Exception {
+        LOG.info(new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                     .append("protocol", protocol)
+                     .append("host", host)
+                     .append("port", port)
+                     .append("basePath", basePath)
+                     .toString());
+    }
     public String getProtocol() {
         return protocol;
     }
@@ -62,21 +79,5 @@ public class KyloConfig {
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }
