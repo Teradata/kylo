@@ -491,7 +491,7 @@ chmod 744 $rpmLogDir/kylo*
 chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
 # Setup kylo-service command
-cp $rpmInstallDir/kylo-service /usr/bin/kylo-service
+cp $INSTALL_HOME/kylo-service /usr/bin/kylo-service
 chown root:root /usr/bin/kylo-service
 chmod 755 /usr/bin/kylo-service
 
@@ -500,6 +500,6 @@ mkdir -p /etc/kylo/
 
 echo "   INSTALL COMPLETE"
 echo "   - The command kylo-service can be used to control and check the Kylo services as well as optional services. Use the command kylo-service help to find out more information. "
-echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/kylo-ui/conf' and '$rpmInstallDir/kylo-services/conf' folder.  See deployment guide for details."
-echo "   - To remove kylo run $rpmInstallDir/remove-kylo.sh "
+echo "   - Please configure the application using the property files and scripts located under the '$INSTALL_HOME/kylo-ui/conf' and '$INSTALL_HOME/kylo-services/conf' folder.  See deployment guide for details."
+echo "   - To remove kylo run $INSTALL_HOME/remove-kylo.sh "
 
