@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
  */
 public class JmsCleanupEventConsumer implements CleanupEventConsumer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JmsPreconditionEventConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JmsCleanupEventConsumer.class);
 
     /**
      * Map of feed category and name to listener
