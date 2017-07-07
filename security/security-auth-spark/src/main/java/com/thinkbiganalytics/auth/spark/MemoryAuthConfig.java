@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 
 import java.util.Properties;
 
@@ -41,11 +39,10 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
  * Configures a memory-based login module.
  */
 @Configuration
-@Order(Ordered.HIGHEST_PRECEDENCE)
 @Profile("auth-spark")
 public class MemoryAuthConfig {
-    
-    public static final int AUTH_SPARK_ORDER = LoginConfiguration.HIGH_ORDER - 10;
+
+    public static final int AUTH_SPARK_ORDER = LoginConfiguration.LOW_ORDER + 10;
 
     @Bean(name = "sparkLoginRoles")
     public Properties getRoles() {
