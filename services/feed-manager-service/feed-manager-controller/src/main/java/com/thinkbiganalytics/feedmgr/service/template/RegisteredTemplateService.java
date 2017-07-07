@@ -337,7 +337,7 @@ public class RegisteredTemplateService {
           canEdit = checkTemplatePermission(template.getId(),TemplateAccessControl.EDIT_TEMPLATE);
         }
         if(canEdit) {
-             registeredTemplate = findRegisteredTemplate(registeredTemplateRequest);
+             registeredTemplate = template; 
             if (registeredTemplate == null) {
                 registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
             }
