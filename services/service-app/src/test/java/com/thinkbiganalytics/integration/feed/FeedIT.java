@@ -42,12 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -90,7 +88,7 @@ public class FeedIT extends IntegrationTestBase {
 
         waitForFeedToComplete();
 
-        assertExecutedJobs(feed);
+        assertExecutedJobs(response);
 
         //TODO edit the feed / re-run / re-assert
     }
