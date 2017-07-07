@@ -21,10 +21,12 @@ package com.thinkbiganalytics.spark;
  */
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 
 /**
  * Command-line options for the Spark Shell client.
  */
+@Parameters(separators = " =")
 public class SparkShellOptions {
 
     /**
