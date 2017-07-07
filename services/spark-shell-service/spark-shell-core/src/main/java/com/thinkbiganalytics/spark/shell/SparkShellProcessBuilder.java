@@ -440,7 +440,7 @@ public class SparkShellProcessBuilder {
      */
     String getAppResource() {
         if (appResource == null) {
-            final String resourceName = "kylo-spark-shell-client-v" + getSparkVersion() + "-" + KyloVersionUtil.getBuildVersion().getVersion() + ".jar";
+            final String resourceName = "kylo-spark-shell-client-v" + getSparkVersion() + "-" + KyloVersionUtil.getBuildVersion() + ".jar";
             appResource = Stream.of(new EnvironmentAppLocator(), new CodeSourceAppLocator())
                 .map(locator -> locator.locate(resourceName))
                 .map(file -> file.filter(File::exists).map(File::getPath).orElse(null))
