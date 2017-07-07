@@ -8,7 +8,7 @@
     <version>0.8.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>kylo-security-auth-memory</artifactId>
+  <artifactId>kylo-security-auth-spark</artifactId>
 
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
