@@ -57,7 +57,9 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      */
     @Override
     public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
-        listeners.put(generateKey(category, feedName), listener);
+        String key = generateKey(category, feedName);
+        LOG.debug("Adding listener for {}", key);
+        listeners.put(key, listener);
     }
 
     /**
@@ -70,9 +72,14 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
         LOG.debug("Received JMS message - topic: {}, message: {}", MetadataQueues.CLEANUP_TRIGGER, event);
         LOG.info("Received feed cleanup trigger event: {}", event);
 
-        CleanupListener listener = listeners.get(generateKey(event.getCategoryName(), event.getFeedName()));
+        String key = generateKey(event.getCategoryName(), event.getFeedName());
+        LOG.debug("Looking up listener for {}", key);
+        CleanupListener listener = listeners.get(key);
         if (listener != null) {
+            LOG.debug("Found listener for {}, triggering event {}", key, event);
             listener.triggered(event);
+        } else {
+            LOG.debug("Found no listener for {}", key);
         }
     }
 
@@ -83,6 +90,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      */
     @Override
     public void removeListener(@Nonnull CleanupListener listener) {
+        LOG.debug("Remove listener {}", listener);
         listeners.values().remove(listener);
     }
 
