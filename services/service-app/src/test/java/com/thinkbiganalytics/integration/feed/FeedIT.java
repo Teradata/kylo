@@ -79,6 +79,7 @@ public class FeedIT extends IntegrationTestBase {
         //create new category
         FeedCategory category = createCategory("Functional Tests");
 
+        //TODO replace import via AdminController with AdminControllerV2
         ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
@@ -94,15 +95,24 @@ public class FeedIT extends IntegrationTestBase {
     }
 
 //    @Override
-//    protected void cleanup() {
-        //do nothing to run temp() test
+//    public void teardown() {
+//        super.teardown();
 //    }
 
+//    @Override
+//    protected void cleanup() {
+//    }
 
 //    @Test
-    public void temp() {
-        importSystemFeeds();
-    }
+//    public void temp() {
+//        disableExistingFeeds();
+//        deleteExistingFeeds();
+//        deleteExistingReusableVersionedFlows();
+//        deleteExistingTemplates();
+//        deleteExistingCategories();
+
+//        FeedCategory category = createCategory("Functional Tests");
+//    }
 
     private void waitForFeedToComplete() {
         //wait for feed completion by waiting for certain amount of time and then

@@ -111,7 +111,7 @@ public class IntegrationTestBase {
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
-    private static final int PROCESSOR_STOP_WAIT_DELAY = 5;
+    private static final int PROCESSOR_STOP_WAIT_DELAY = 20;
     private static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
@@ -282,6 +282,7 @@ public class IntegrationTestBase {
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
+        //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
     }
 
     protected void disableExistingFeeds() {
