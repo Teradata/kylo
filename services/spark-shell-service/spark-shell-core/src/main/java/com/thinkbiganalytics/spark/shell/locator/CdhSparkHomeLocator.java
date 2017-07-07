@@ -33,6 +33,6 @@ public class CdhSparkHomeLocator implements SparkHomeLocator {
     @Nonnull
     @Override
     public Optional<File> locate() {
-        return Optional.of(new File("/opt/cloudera/parcels/CDH/lib/spark"));
+        return Optional.of(new File("/usr/lib/spark"));
     }
 }

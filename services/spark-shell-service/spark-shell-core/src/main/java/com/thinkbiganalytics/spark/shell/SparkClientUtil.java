@@ -20,7 +20,9 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.shell.locator.CdhSparkHomeLocator;
 import com.thinkbiganalytics.spark.shell.locator.EnvironmentSparkHomeLocator;
+import com.thinkbiganalytics.spark.shell.locator.HdpSparkHomeLocator;
 import com.thinkbiganalytics.spark.shell.locator.SparkHomeLocator;
 
 import org.apache.commons.lang3.StringUtils;
@@ -73,9 +75,9 @@ public final class SparkClientUtil {
      */
     public static String getSparkHome() {
         if (sparkHome == null) {
-            sparkHome = Stream.of(new EnvironmentSparkHomeLocator())
+            sparkHome = Stream.of(new EnvironmentSparkHomeLocator(), new CdhSparkHomeLocator(), new HdpSparkHomeLocator())
                 .map(SparkHomeLocator::locate)
-                .filter(file -> file.map(fp -> new File(fp, "bin/spark-shell")).map(File::exists).orElse(false))
+                .filter(file -> file.map(fp -> new File(fp, "bin/spark-submit")).map(File::exists).orElse(false))
                 .map(Optional::get)
                 .map(File::getAbsolutePath)
                 .findFirst()
