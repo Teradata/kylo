@@ -38,6 +38,7 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.InMemoryFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.InMemoryFeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -364,6 +365,11 @@ public class TestSpringConfiguration {
     @Bean
     RegisteredTemplateService registeredTemplateService() {
         return new RegisteredTemplateService();
+    }
+
+    @Bean
+    public NiFiTemplateCache niFiTemplateCache() {
+        return new NiFiTemplateCache();
     }
 
     @Bean
