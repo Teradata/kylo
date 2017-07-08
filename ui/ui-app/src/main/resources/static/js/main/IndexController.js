@@ -4,7 +4,7 @@
 define(['angular'], function (angular) {
 
     var controller = function ($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions, $mdDialog, StateService,
-                               ElasticSearchService, SideNavService, AccessControlService) {
+                               SearchService, SideNavService, AccessControlService) {
         var self = this;
         /**
          * Function to toggle the left nav
@@ -79,7 +79,7 @@ define(['angular'], function (angular) {
          * Search for something
          */
         this.search = function () {
-            ElasticSearchService.searchQuery = this.searchQuery;
+            SearchService.searchQuery = this.searchQuery;
             if (self.currentState.name != 'search') {
                 StateService.Search().navigateToSearch();
             }
@@ -152,7 +152,7 @@ define(['angular'], function (angular) {
     };
 
     return angular.module("kylo").controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-                                                                 "$rootScope", "$transitions", "$mdDialog", "StateService", "ElasticSearchService", "SideNavService", "AccessControlService",
+                                                                 "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
                                                                  controller]);
 
 });

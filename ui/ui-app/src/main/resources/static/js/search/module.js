@@ -9,13 +9,13 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/Acce
             },
             views: {
                 'content': {
-                    templateUrl: 'js/search/elastic-search/elastic-search.html',
-                    controller: "ElasticSearchController",
+                    templateUrl: 'js/search/common/search.html',
+                    controller: "SearchController",
                     controllerAs: "vm"
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['search/elastic-search/ElasticSearchController'])
+                loadMyCtrl: lazyLoadController(['search/common/SearchController'])
             },
             data:{
                 breadcrumbRoot:false,

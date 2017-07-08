@@ -754,6 +754,16 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         });
                 },
 
+                getFeedByName: function(feedName) {
+                    var deferred = $q.defer();
+                    $http.get(RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
+                        .then(function (response) {
+                            var feedResponse = response.data;
+                            return deferred.resolve(feedResponse);
+                        });
+                    return deferred.promise;
+                },
+
                 /**
                  * Gets the list of available Hive partition functions.
                  *

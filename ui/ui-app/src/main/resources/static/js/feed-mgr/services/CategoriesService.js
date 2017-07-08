@@ -179,6 +179,41 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                     }
                     return null;
                 },
+                findCategoryBySystemName: function (systemName) {
+                  if (systemName != undefined) {
+                      var self = this;
+                      var category = _.find(self.categories, function (category) {
+                          return category.systemName == systemName;
+                      });
+                      return category;
+                  }
+                  return null;
+                },
+                getCategoryBySystemName:function(systemName){
+                    var self = this;
+                    var deferred = $q.defer();
+                    var categoryCache = self.findCategoryBySystemName(systemName);
+                    if(typeof categoryCache === 'undefined' || categoryCache === null) {
+                        $http.get(RestUrlService.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL(systemName))
+                            .then(function (response) {
+                                var categoryResponse = response.data;
+                                deferred.resolve(categoryResponse);
+                            });
+                    }
+                    else {
+                        deferred.resolve(categoryCache);
+                    }
+                    return deferred.promise;
+                },
+                getCategoryById:function(categoryId) {
+                    var deferred = $q.defer();
+                    $http.get(RestUrlService.CATEGORY_DETAILS_BY_ID_URL(categoryId))
+                        .then(function(response) {
+                            var categoryResponse = response.data;
+                            return deferred.resolve(categoryResponse);
+                        });
+                    return deferred.promise;
+                },
                 categories: [],
                 querySearch: function (query) {
 

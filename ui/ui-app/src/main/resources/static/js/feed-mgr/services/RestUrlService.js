@@ -53,7 +53,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
 
         this.CATEGORIES_URL = this.ROOT + "/proxy/v1/feedmgr/categories";
 
-        this.ELASTIC_SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
 
         this.HIVE_SERVICE_URL = this.ROOT + "/proxy/v1/hive";
 
@@ -186,6 +186,19 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.UPLOAD_FILE_FEED_URL = function (feedId) {
             return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
         }
+
+        this.FEED_DETAILS_BY_NAME_URL = function (feedName) {
+            return self.FEEDS_BASE_URL + "/by-name/" + feedName;
+        };
+
+        this.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = function (categoryName) {
+            return self.CATEGORIES_URL + "/by-name/" + categoryName;
+        };
+
+        this.CATEGORY_DETAILS_BY_ID_URL = function (categoryId) {
+            return self.CATEGORIES_URL + "/by-id/" + categoryId;
+        };
+
         /**
          * Gets the URL for retrieving the user fields for a new feed.
          *

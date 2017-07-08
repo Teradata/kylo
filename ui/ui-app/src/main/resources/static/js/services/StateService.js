@@ -270,6 +270,8 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.Search = SearchStates;
             data.FeedManager = FeedManagerStates;
             data.OpsManager = OpsManagerStates;
+            data.Tables = TableStates;
+            data.Categories = CategoryStates;
             data.go = function (state, params) {
                 $state.go(state, params);
             }

@@ -18,10 +18,10 @@
  * #L%
  */
 define(['angular','services/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('ElasticSearchService',["$q","$http","CommonRestUrlService", function ($q, $http, CommonRestUrlService) {
+    angular.module(moduleName).factory('SearchService',["$q", "$http", "CommonRestUrlService", function ($q, $http, CommonRestUrlService) {
 
         function performSearch(query, rowsPerPage, start) {
-            return $http.get(CommonRestUrlService.ELASTIC_SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}}).then(function (response) {
+            return $http.get(CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}}).then(function (response) {
                 return response.data;
 
             });
