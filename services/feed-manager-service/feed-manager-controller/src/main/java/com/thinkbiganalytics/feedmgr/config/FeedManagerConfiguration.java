@@ -48,6 +48,7 @@ import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -205,6 +206,11 @@ public class FeedManagerConfiguration {
     @Bean
     public RegisteredTemplateUtil registeredTemplateUtil() {
         return new RegisteredTemplateUtil();
+    }
+
+    @Bean
+    public NiFiTemplateCache niFiTemplateCache() {
+        return new NiFiTemplateCache();
     }
 
     @Bean
