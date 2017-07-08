@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.es;
+package com.thinkbiganalytics.search.config;
 
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * kylo-search-solr
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,15 +20,16 @@ package com.thinkbiganalytics.es;
  * #L%
  */
 
+import java.io.Serializable;
+
 /**
- * Configuration object to help setup the {@link ElasticSearch} client
- * This is configured as a spring bean {@link com.thinkbiganalytics.feedmgr.config.FeedManagerConfiguration}
+ * Solr client configuration
  */
-public class ElasticSearchClientConfig {
+public class SolrSearchClientConfiguration implements Serializable {
 
     private String host;
-    private String clusterName;
     private Integer port;
+    private String indexStorageDirectory;
 
     public String getHost() {
         return host;
@@ -38,19 +39,19 @@ public class ElasticSearchClientConfig {
         this.host = host;
     }
 
-    public String getClusterName() {
-        return clusterName;
-    }
-
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
-
     public Integer getPort() {
         return port;
     }
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getIndexStorageDirectory() {
+        return indexStorageDirectory;
+    }
+
+    public void setIndexStorageDirectory(String indexStorageDirectory) {
+        this.indexStorageDirectory = indexStorageDirectory;
     }
 }
