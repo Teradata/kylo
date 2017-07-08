@@ -20,12 +20,13 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.es.ElasticSearch;
-import com.thinkbiganalytics.es.SearchResult;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.search.api.Search;
+import com.thinkbiganalytics.search.rest.model.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -49,7 +50,7 @@ import io.swagger.annotations.Tag;
 @Path("/v1/feedmgr/search")
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Search", description = "global search"))
-public class ElasticSearchRestController {
+public class SearchRestController {
 
     /**
      * Ensures the user has the correct permissions.
@@ -57,8 +58,8 @@ public class ElasticSearchRestController {
     @Inject
     AccessController accessController;
 
-    @Inject
-    ElasticSearch elasticSearch;
+    @Autowired(required = false)
+    Search searchEngine;
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -71,8 +72,14 @@ public class ElasticSearchRestController {
     @Nonnull
     public Response search(@QueryParam("q") String query, @QueryParam("rows") @DefaultValue("20") Integer rows, @QueryParam("start") @DefaultValue("0") Integer start) {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_GLOBAL_SEARCH);
-
-        final SearchResult result = elasticSearch.search(query, rows, start);
-        return Response.ok(result).build();
+        if (searchEngine != null) {
+            final SearchResult result = searchEngine.search(query, rows, start);
+            return Response.ok(result)
+                .build();
+        } else {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("Search functionality is not available since no search engine is configured.")
+                .build();
+        }
     }
 }

@@ -203,6 +203,11 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-search-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
@@ -269,14 +274,6 @@
       <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
-    </dependency>
-
 
     <dependency>
       <groupId>org.springframework</groupId>

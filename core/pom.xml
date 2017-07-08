@@ -26,5 +26,6 @@
     <module>hadoop-authorization</module>
     <module>operational-metadata</module>
     <module>cluster-manager</module>
+    <module>search</module>
   </modules>
 </project>

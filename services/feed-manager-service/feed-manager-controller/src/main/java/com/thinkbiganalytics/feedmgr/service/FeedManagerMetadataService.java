@@ -364,6 +364,11 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
+    public FeedCategory getCategoryById(String categoryId) {
+        return categoryProvider.getCategoryById(categoryId);
+    }
+
+    @Override
     public void saveCategory(FeedCategory category) {
         categoryProvider.saveCategory(category);
     }

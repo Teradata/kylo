@@ -163,6 +163,42 @@
     </fileSet>
 
     <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch/src/main/resources</directory>
+      <outputDirectory>kylo-services/conf</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>elasticsearch.properties</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch/target</directory>
+      <outputDirectory>kylo-services/plugin</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-search-elasticsearch-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-solr/src/main/resources</directory>
+      <outputDirectory>kylo-services/conf</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>solrsearch.properties</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-solr/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-search-solr-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
       <outputDirectory>kylo-services/lib</outputDirectory>
       <directory>${project.parent.parent.basedir}/services/service-app/target/kylo-service-app-${project.version}-distribution/kylo-service-app-${project.version}/lib</directory>
       <fileMode>755</fileMode>

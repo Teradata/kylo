@@ -29,7 +29,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
@@ -106,6 +105,46 @@ public class FeedCategoryRestController {
 
     private MetadataService getMetadataService() {
         return metadataService;
+    }
+
+    /* Get category details by system name */
+    @GET
+    @Path("/by-name/{categorySystemName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets category details by system name")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the category details.", response = FeedCategory.class),
+                      @ApiResponse(code = 400, message = "The category system name is invalid.", response = RestResponseStatus.class)
+                  })
+    public Response getCategoryByName(@PathParam("categorySystemName") String categorySystemName) {
+        FeedCategory category = getMetadataService().getCategoryBySystemName(categorySystemName);
+
+        if (category != null) {
+            return Response.ok(category).build();
+        }
+        else {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
+    }
+
+    /* Get category details by id */
+    @GET
+    @Path("/by-id/{categoryId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets category details by id")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the category details.", response = FeedCategory.class),
+                      @ApiResponse(code = 400, message = "The category id is invalid.", response = RestResponseStatus.class)
+                  })
+    public Response getCategoryById(@UUID @PathParam("categoryId") String categoryId) {
+        FeedCategory category = getMetadataService().getCategoryById(categoryId);
+
+        if (category != null) {
+            return Response.ok(category).build();
+        }
+        else {
+            return Response.status(Status.BAD_REQUEST).build();
+        }
     }
 
     @GET
@@ -259,7 +298,7 @@ public class FeedCategoryRestController {
                         .map(g -> Response.ok(g).build())
                         .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Response.Status.NOT_FOUND));
     }
-    
+
     @GET
     @Path("{categoryId}/actions/change")
     @Produces(MediaType.APPLICATION_JSON)

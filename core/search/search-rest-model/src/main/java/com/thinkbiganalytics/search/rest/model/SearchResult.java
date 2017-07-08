@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.es;
+package com.thinkbiganalytics.search.rest.model;
 
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * kylo-search-rest-model
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,23 +20,29 @@ package com.thinkbiganalytics.es;
  * #L%
  */
 
-import org.elasticsearch.search.SearchHit;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * An object storing the elastic search query, metadata about the results, and the results themselves
+ * Store the execution metadata and actual results of a search
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchResult {
 
     private String query;
-
     private Long totalHits;
     private Long tookInMillis;
-    private Double maxScore;
     private Long from;
     private Long to;
-    private List<SearchHit> searchHits;
+    private String engine;
+
+    private Map<SearchResultType, Long> searchResultsSummary;
+    private List<SearchResultData> searchResults;
+
+    public SearchResult() {
+    }
 
     public String getQuery() {
         return query;
@@ -54,6 +60,18 @@ public class SearchResult {
         this.totalHits = totalHits;
     }
 
+    public Long getFrom() {
+        return this.from;
+    }
+
+    public void setFrom(Long from) {
+        this.from = from;
+    }
+
+    public Long getTo() {
+        return this.to;
+    }
+
     public Long getTookInMillis() {
         return tookInMillis;
     }
@@ -62,35 +80,31 @@ public class SearchResult {
         this.tookInMillis = tookInMillis;
     }
 
-    public Double getMaxScore() {
-        return maxScore;
-    }
-
-    public void setMaxScore(Double maxScore) {
-        this.maxScore = maxScore;
-    }
-
-    public Long getFrom() {
-        return from;
-    }
-
-    public void setFrom(Long from) {
-        this.from = from;
-    }
-
-    public Long getTo() {
-        return to;
-    }
-
     public void setTo(Long to) {
         this.to = to;
     }
 
-    public List<SearchHit> getSearchHits() {
-        return searchHits;
+    public String getEngine() {
+        return engine;
     }
 
-    public void setSearchHits(List<SearchHit> searchHits) {
-        this.searchHits = searchHits;
+    public void setEngine(String engine) {
+        this.engine = engine;
+    }
+
+    public List<SearchResultData> getSearchResults() {
+        return searchResults;
+    }
+
+    public void setSearchResults(List<SearchResultData> searchResults) {
+        this.searchResults = searchResults;
+    }
+
+    public Map<SearchResultType, Long> getSearchResultsSummary() {
+        return searchResultsSummary;
+    }
+
+    public void setSearchResultsSummary(Map<SearchResultType, Long> searchResultsSummary) {
+        this.searchResultsSummary = searchResultsSummary;
     }
 }

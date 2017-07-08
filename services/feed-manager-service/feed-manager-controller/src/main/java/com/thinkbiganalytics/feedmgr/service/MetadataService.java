@@ -203,6 +203,13 @@ public interface MetadataService {
     FeedCategory getCategoryBySystemName(final String name);
 
     /**
+     * Return a category via its id
+     * @param categoryId category id
+     * @return the matching category, or null if not found
+     */
+    FeedCategory getCategoryById(final String categoryId);
+
+    /**
      * save a category
      *
      * @param category a category to save
