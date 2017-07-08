@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape;
 
 /*-
@@ -24,14 +21,17 @@ package com.thinkbiganalytics.metadata.modeshape;
  */
 
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
+import com.thinkbiganalytics.search.api.RepositoryIndexConfiguration;
 
 import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.modeshape.schematic.document.EditableDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -61,6 +61,8 @@ public class ModeShapeEngineConfig {
     @Inject
     private Environment environment;
 
+    @Autowired (required = false)
+    RepositoryIndexConfiguration repositoryIndexConfiguration;
 
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
@@ -79,6 +81,19 @@ public class ModeShapeEngineConfig {
 
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
         RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
+
+        if (repositoryIndexConfiguration != null) {
+            RepositoryConfiguration updatedConfigWithIndexes = repositoryIndexConfiguration.build();
+            EditableDocument original = config.edit();
+            EditableDocument added = updatedConfigWithIndexes.edit();
+            original.merge(added);
+            RepositoryConfiguration updatedConfig = new RepositoryConfiguration(original, config.getName());
+            log.debug("Original ModeShape configuration: {}", config.toString());
+            log.debug("ModeShape indexing configuration: {}", updatedConfigWithIndexes.toString());
+            log.debug("Updated ModeShape configuration: {}", updatedConfig.toString());
+            config = updatedConfig;
+            log.info("ModeShape indexing configured");
+        }
 
         Problems problems = config.validate();
         if (problems.hasErrors()) {
