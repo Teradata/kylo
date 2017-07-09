@@ -65,8 +65,11 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @Override
     public boolean isUpToDate() {
-        KyloVersion currentVersion = getCurrentVersion();
-        return currentVersion != null && currentVersion.equals(getBuildVersion());
+        KyloVersion buildVer = KyloVersionUtil.getBuildVersion();
+        KyloVersion currentVer = getCurrentVersion();
+        return currentVer != null && buildVer.matches(currentVer.getMajorVersion(),
+                                                        currentVer.getMinorVersion(),
+                                                        currentVer.getPointVersion());
     }
 
     @Override
