@@ -7,9 +7,12 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         var self = this;
         this.data = {};
 
-        this.paginationData = function (pageName, tabName) {
+        this.paginationData = function (pageName, tabName,defaultRowsPerPage) {
             if (self.data[pageName] === undefined) {
-                self.data[pageName] = {rowsPerPage: '5', tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName}
+                if(defaultRowsPerPage == undefined) {
+                    defaultRowsPerPage = 5;
+                }
+                self.data[pageName] = {rowsPerPage: ''+defaultRowsPerPage, tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName}
             }
             if (tabName == undefined) {
                 tabName = pageName;
