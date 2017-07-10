@@ -83,6 +83,7 @@ cp $NIFI_SETUP_DIR/nifi /etc/init.d
 
 echo "Updating the home folder for the init.d script"
 sed -i "s|dir=\"\/opt\/nifi\/current\/bin\"|dir=\"$NIFI_INSTALL_HOME\/current\/bin\"|" /etc/init.d/nifi
+sed -i "s|RUN_AS_USER=nifi|RUN_AS_USER=$NIFI_USER|" /etc/init.d/nifi
 
 
 if [ "$linux_type" == "chkonfig" ]; then
