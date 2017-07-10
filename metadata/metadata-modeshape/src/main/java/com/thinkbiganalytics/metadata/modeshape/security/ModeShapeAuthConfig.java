@@ -33,6 +33,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
+import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
+
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
@@ -97,17 +101,25 @@ public class ModeShapeAuthConfig {
         
         return () -> metadata.commit(() -> {
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-            boolean propertyFlag = accessController.isEntityAccessControlled();
-            boolean metadataFlag = JcrPropertyUtil.getBoolean(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED);
+            boolean propertyEnabled = accessController.isEntityAccessControlled();
+            boolean metadataEnabled = wasAccessControllEnabled(securityNode);
             
-            if (metadataFlag == true && propertyFlag == false) {
+            if (metadataEnabled == true && propertyEnabled == false) {
                 log.error(  "\n*************************************************************************************************************************************\n"
                             + "Kylo has previously been started with entity access control enabled and the current configuration is attempting to set it as disabled\n"
                             + "*************************************************************************************************************************************");
                 throw new IllegalStateException("Entity access control is configured as disabled when it was previously enabled");
             } else {
-                JcrPropertyUtil.setProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED, propertyFlag);
+                JcrPropertyUtil.setProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED, propertyEnabled);
             }
         }, MetadataAccess.SERVICE);
+    }
+
+    private boolean wasAccessControllEnabled(Node securityNode) {
+        if (JcrPropertyUtil.hasProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED)) {
+            return JcrPropertyUtil.getBoolean(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED);
+        } else {
+            return roleProvider().getRoles().values().stream().anyMatch(roles -> roles.size() > 0);
+        }
     }
 }
