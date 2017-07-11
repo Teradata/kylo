@@ -80,6 +80,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -504,7 +505,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     tempFailedEvent.setIsFailure(true);
                     tempFailedEvent.setDetails("Failed Running Batch event as this Feed has now become a Stream");
                     finishJob(tempFailedEvent, (JpaBatchJobExecution) latestJobExecution);
-                    jobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
+                    latestJobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
                     jobExecutionRepository.save((JpaBatchJobExecution) latestJobExecution);
                 }
 
@@ -570,6 +571,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Override
     public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
         return jobExecutionRepository.findOne(jobExecutionId);
+    }
+
+
+    @Override
+    public List<? extends BatchJobExecution>  findRunningJobsForFeed(String feedName) {
+     List<? extends BatchJobExecution> jobs = jobExecutionRepository.findJobsForFeedMatchingStatus(feedName,BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+     return jobs != null ? jobs : Collections.emptyList();
     }
 
     /**
