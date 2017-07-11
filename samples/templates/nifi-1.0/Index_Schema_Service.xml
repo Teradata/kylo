@@ -1,0 +1,885 @@
+<?xml version="1.0" ?>
+<template encoding-version="1.0">
+  <description></description>
+  <groupId>3fea91f6-015c-1000-4f44-8d4d056cd732</groupId>
+  <name>Index Schema Service</name>
+  <snippet>
+    <connections>
+      <id>1ca61366-1d5f-154a-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>764b9a62-0159-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>1ca61365-1d5f-154a-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>2bd64d8c-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>0 MB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>0</backPressureObjectThreshold>
+      <destination>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d89-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d88-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>2bd64d8d-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>0 MB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>0</backPressureObjectThreshold>
+      <destination>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d88-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d87-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>2bd64d90-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>0 MB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>0</backPressureObjectThreshold>
+      <destination>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d87-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d86-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>764d14f1-0159-1000-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>2bd64d86-2b1f-1ef0-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>matched</selectedRelationships>
+      <source>
+        <groupId>3fea91f6-015c-1000-0000-000000000000</groupId>
+        <id>764b9a62-0159-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <controllerServices>
+      <id>b2cba917-0159-1000-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <comments></comments>
+      <descriptors>
+        <entry>
+          <key>Database Connection URL</key>
+          <value>
+            <name>Database Connection URL</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Database Driver Class Name</key>
+          <value>
+            <name>Database Driver Class Name</name>
+          </value>
+        </entry>
+        <entry>
+          <key>database-driver-locations</key>
+          <value>
+            <name>database-driver-locations</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Database User</key>
+          <value>
+            <name>Database User</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Password</key>
+          <value>
+            <name>Password</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Max Wait Time</key>
+          <value>
+            <name>Max Wait Time</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Max Total Connections</key>
+          <value>
+            <name>Max Total Connections</name>
+          </value>
+        </entry>
+      </descriptors>
+      <name>MySQL</name>
+      <properties>
+        <entry>
+          <key>Database Connection URL</key>
+          <value>jdbc:mysql://localhost</value>
+        </entry>
+        <entry>
+          <key>Database Driver Class Name</key>
+          <value>org.mariadb.jdbc.Driver</value>
+        </entry>
+        <entry>
+          <key>database-driver-locations</key>
+          <value>file:///opt/nifi/mysql/mariadb-java-client-1.5.7.jar</value>
+        </entry>
+        <entry>
+          <key>Database User</key>
+          <value>root</value>
+        </entry>
+        <entry>
+          <key>Password</key>
+        </entry>
+        <entry>
+          <key>Max Wait Time</key>
+          <value>500 millis</value>
+        </entry>
+        <entry>
+          <key>Max Total Connections</key>
+          <value>8</value>
+        </entry>
+      </properties>
+      <state>DISABLED</state>
+      <type>org.apache.nifi.dbcp.DBCPConnectionPool</type>
+    </controllerServices>
+    <controllerServices>
+      <id>17aabfb7-015c-1000-0000-000000000000</id>
+      <parentGroupId>b0245294-015b-1000-0000-000000000000</parentGroupId>
+      <comments></comments>
+      <descriptors>
+        <entry>
+          <key>default-credentials</key>
+          <value>
+            <name>default-credentials</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Access Key</key>
+          <value>
+            <name>Access Key</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Secret Key</key>
+          <value>
+            <name>Secret Key</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Credentials File</key>
+          <value>
+            <name>Credentials File</name>
+          </value>
+        </entry>
+        <entry>
+          <key>profile-name</key>
+          <value>
+            <name>profile-name</name>
+          </value>
+        </entry>
+        <entry>
+          <key>anonymous-credentials</key>
+          <value>
+            <name>anonymous-credentials</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Assume Role ARN</key>
+          <value>
+            <name>Assume Role ARN</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Assume Role Session Name</key>
+          <value>
+            <name>Assume Role Session Name</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Session Time</key>
+          <value>
+            <name>Session Time</name>
+          </value>
+        </entry>
+        <entry>
+          <key>assume-role-external-id</key>
+          <value>
+            <name>assume-role-external-id</name>
+          </value>
+        </entry>
+      </descriptors>
+      <name>AWSCredentialsProviderControllerService</name>
+      <properties>
+        <entry>
+          <key>default-credentials</key>
+          <value>false</value>
+        </entry>
+        <entry>
+          <key>Access Key</key>
+        </entry>
+        <entry>
+          <key>Secret Key</key>
+        </entry>
+        <entry>
+          <key>Credentials File</key>
+        </entry>
+        <entry>
+          <key>profile-name</key>
+        </entry>
+        <entry>
+          <key>anonymous-credentials</key>
+          <value>false</value>
+        </entry>
+        <entry>
+          <key>Assume Role ARN</key>
+        </entry>
+        <entry>
+          <key>Assume Role Session Name</key>
+        </entry>
+        <entry>
+          <key>Session Time</key>
+          <value>3600</value>
+        </entry>
+        <entry>
+          <key>assume-role-external-id</key>
+        </entry>
+      </properties>
+      <state>ENABLED</state>
+      <type>org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService</type>
+    </controllerServices>
+    <processors>
+      <id>1ca61365-1d5f-154a-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>0.0</x>
+        <y>0.0</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Queue URL</key>
+            <value>
+              <name>Queue URL</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Auto Delete Messages</key>
+            <value>
+              <name>Auto Delete Messages</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Access Key</key>
+            <value>
+              <name>Access Key</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Secret Key</key>
+            <value>
+              <name>Secret Key</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Credentials File</key>
+            <value>
+              <name>Credentials File</name>
+            </value>
+          </entry>
+          <entry>
+            <key>AWS Credentials Provider service</key>
+            <value>
+              <identifiesControllerService>org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderService</identifiesControllerService>
+              <name>AWS Credentials Provider service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Region</key>
+            <value>
+              <name>Region</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Batch Size</key>
+            <value>
+              <name>Batch Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Communications Timeout</key>
+            <value>
+              <name>Communications Timeout</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Character Set</key>
+            <value>
+              <name>Character Set</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Visibility Timeout</key>
+            <value>
+              <name>Visibility Timeout</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Receive Message Wait Time</key>
+            <value>
+              <name>Receive Message Wait Time</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Proxy Host</key>
+            <value>
+              <name>Proxy Host</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Proxy Host Port</key>
+            <value>
+              <name>Proxy Host Port</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Queue URL</key>
+            <value>https://sqs.us-east-1.amazonaws.com/171699809974/thinkbig-nifi-index-registration</value>
+          </entry>
+          <entry>
+            <key>Auto Delete Messages</key>
+            <value>true</value>
+          </entry>
+          <entry>
+            <key>Access Key</key>
+          </entry>
+          <entry>
+            <key>Secret Key</key>
+          </entry>
+          <entry>
+            <key>Credentials File</key>
+          </entry>
+          <entry>
+            <key>AWS Credentials Provider service</key>
+            <value>17aabfb7-015c-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>Region</key>
+            <value>us-east-1</value>
+          </entry>
+          <entry>
+            <key>Batch Size</key>
+            <value>10</value>
+          </entry>
+          <entry>
+            <key>Communications Timeout</key>
+            <value>30 secs</value>
+          </entry>
+          <entry>
+            <key>Character Set</key>
+            <value>UTF-8</value>
+          </entry>
+          <entry>
+            <key>Visibility Timeout</key>
+            <value>15 mins</value>
+          </entry>
+          <entry>
+            <key>Receive Message Wait Time</key>
+            <value>0 sec</value>
+          </entry>
+          <entry>
+            <key>Proxy Host</key>
+          </entry>
+          <entry>
+            <key>Proxy Host Port</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>GetSQS</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.aws.sqs.GetSQS</type>
+    </processors>
+    <processors>
+      <id>2bd64d86-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1060.942092304128</x>
+        <y>1.0982264824378944</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Database Connection Pooling Service</key>
+            <value>
+              <identifiesControllerService>org.apache.nifi.dbcp.DBCPService</identifiesControllerService>
+              <name>Database Connection Pooling Service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>SQL select query</key>
+            <value>
+              <name>SQL select query</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Wait Time</key>
+            <value>
+              <name>Max Wait Time</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Database Connection Pooling Service</key>
+            <value>b2cba917-0159-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>SQL select query</key>
+            <value>SELECT d.NAME DATABASE_NAME, d.OWNER_NAME OWNER, t.CREATE_TIME, t.TBL_NAME, t.TBL_TYPE,
+    c.COLUMN_NAME, c.TYPE_NAME
+    FROM ${config.hive.schema}.COLUMNS_V2 c
+    JOIN ${config.hive.schema}.SDS s on s.CD_ID = c.CD_ID
+    JOIN  ${config.hive.schema}.TBLS t ON s.SD_ID=t.SD_ID
+    JOIN  ${config.hive.schema}.DBS d on d.DB_ID = t.DB_ID
+    where d.name = '${category}' and t.tbl_name = '${feed}';</value>
+          </entry>
+          <entry>
+            <key>Max Wait Time</key>
+            <value>0 seconds</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Query Hive Table Schema</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.ExecuteSQL</type>
+    </processors>
+    <processors>
+      <id>2bd64d87-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1061.2643150950898</x>
+        <y>208.58478405523147</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>JSON container options</key>
+            <value>
+              <name>JSON container options</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Wrap Single Record</key>
+            <value>
+              <name>Wrap Single Record</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Avro schema</key>
+            <value>
+              <name>Avro schema</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>JSON container options</key>
+            <value>array</value>
+          </entry>
+          <entry>
+            <key>Wrap Single Record</key>
+            <value>true</value>
+          </entry>
+          <entry>
+            <key>Avro schema</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Convert Metadata SQL to JSON</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.avro.ConvertAvroToJSON</type>
+    </processors>
+    <processors>
+      <id>2bd64d88-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1068.025255545167</x>
+        <y>401.598694345897</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Database Name Field</key>
+            <value>
+              <name>Database Name Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Database Owner Field</key>
+            <value>
+              <name>Database Owner Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Table Create Time Field</key>
+            <value>
+              <name>Table Create Time Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Table Name Field</key>
+            <value>
+              <name>Table Name Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Table Type Field</key>
+            <value>
+              <name>Table Type Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Column Name Field</key>
+            <value>
+              <name>Column Name Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Column Type Field</key>
+            <value>
+              <name>Column Type Field</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Database Name Field</key>
+            <value>NAME</value>
+          </entry>
+          <entry>
+            <key>Database Owner Field</key>
+            <value>OWNER_NAME</value>
+          </entry>
+          <entry>
+            <key>Table Create Time Field</key>
+            <value>CREATE_TIME</value>
+          </entry>
+          <entry>
+            <key>Table Name Field</key>
+            <value>TBL_NAME</value>
+          </entry>
+          <entry>
+            <key>Table Type Field</key>
+            <value>TBL_TYPE</value>
+          </entry>
+          <entry>
+            <key>Column Name Field</key>
+            <value>COLUMN_NAME</value>
+          </entry>
+          <entry>
+            <key>Column Type Field</key>
+            <value>TYPE_NAME</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Merge Metadata Columns</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>com.thinkbiganalytics.nifi.v2.elasticsearch.MergeHiveTableMetadata</type>
+    </processors>
+    <processors>
+      <id>2bd64d89-2b1f-1ef0-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1071.4816891232394</x>
+        <y>597.552810433633</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>IndexName</key>
+            <value>
+              <name>IndexName</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Type</key>
+            <value>
+              <name>Type</name>
+            </value>
+          </entry>
+          <entry>
+            <key>HostName</key>
+            <value>
+              <name>HostName</name>
+            </value>
+          </entry>
+          <entry>
+            <key>ClusterName</key>
+            <value>
+              <name>ClusterName</name>
+            </value>
+          </entry>
+          <entry>
+            <key>IdField</key>
+            <value>
+              <name>IdField</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>IndexName</key>
+            <value>metadata</value>
+          </entry>
+          <entry>
+            <key>Type</key>
+            <value>hive-tables</value>
+          </entry>
+          <entry>
+            <key>HostName</key>
+            <value>localhost</value>
+          </entry>
+          <entry>
+            <key>ClusterName</key>
+            <value>demo-cluster</value>
+          </entry>
+          <entry>
+            <key>IdField</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Index Metadata Elasticsearch</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>com.thinkbiganalytics.nifi.v2.elasticsearch.IndexElasticSearch</type>
+    </processors>
+    <processors>
+      <id>764b9a62-0159-1000-0000-000000000000</id>
+      <parentGroupId>3fea91f6-015c-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>513.0019508768873</x>
+        <y>9.942893915554123</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Destination</key>
+            <value>
+              <name>Destination</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Return Type</key>
+            <value>
+              <name>Return Type</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Path Not Found Behavior</key>
+            <value>
+              <name>Path Not Found Behavior</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Null Value Representation</key>
+            <value>
+              <name>Null Value Representation</name>
+            </value>
+          </entry>
+          <entry>
+            <key>category</key>
+            <value>
+              <name>category</name>
+            </value>
+          </entry>
+          <entry>
+            <key>feed</key>
+            <value>
+              <name>feed</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Destination</key>
+            <value>flowfile-attribute</value>
+          </entry>
+          <entry>
+            <key>Return Type</key>
+            <value>auto-detect</value>
+          </entry>
+          <entry>
+            <key>Path Not Found Behavior</key>
+            <value>warn</value>
+          </entry>
+          <entry>
+            <key>Null Value Representation</key>
+            <value>empty string</value>
+          </entry>
+          <entry>
+            <key>category</key>
+            <value>$.category</value>
+          </entry>
+          <entry>
+            <key>feed</key>
+            <value>$.feed</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Extract Request Parameters</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>matched</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>unmatched</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.EvaluateJsonPath</type>
+    </processors>
+  </snippet>
+  <timestamp>06/15/2017 18:36:06 UTC</timestamp>
+</template>
