@@ -203,7 +203,6 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
         ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group
     fi
 
-    sed -i "s|kylo.provenance.cache.location=\/opt\/nifi\/feed-event-statistics.gz|kylo.provenance.cache.location=$nifi_home\/feed-event-statistics.gz|" $nifi_home/ext-config/config.properties
 
 
 fi

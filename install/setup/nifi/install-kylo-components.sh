@@ -85,16 +85,13 @@ echo "Updating the home folder for the init.d script"
 sed -i "s|dir=\"\/opt\/nifi\/current\/bin\"|dir=\"$NIFI_INSTALL_HOME\/current\/bin\"|" /etc/init.d/nifi
 sed -i "s|RUN_AS_USER=nifi|RUN_AS_USER=$NIFI_USER|" /etc/init.d/nifi
 
+echo "Updating the provenance cache location"
+sed -i "s|kylo.provenance.cache.location=\/opt\/nifi\/feed-event-statistics.gz|kylo.provenance.cache.location=$NIFI_INSTALL_HOME\/feed-event-statistics.gz|" $NIFI_INSTALL_HOME/ext-config/config.properties
 
 if [ "$linux_type" == "chkonfig" ]; then
     chkconfig nifi on
 elif [ "$linux_type" == "update-rc.d" ]; then
     update-rc.d nifi defaults 98 10
-fi
-
-echo "Starting NiFi service"
-if [[ -z ${KYLO_INSTALL_NIFI_SUPPRESS_START} ]]; then
-	service nifi start
 fi
 
 echo "Installation Complete"
