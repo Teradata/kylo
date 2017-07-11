@@ -103,7 +103,7 @@ public class FeedStatistics {
             }
 
             startingFeedFlowQueue.add(event.getEventTime());
-            if(startingFeedFlowQueue.size() >= 10) {
+            if(startingFeedFlowQueue.size() >= throttleStartingFeedFlowsThreshold) {
                 Long diff = event.getEventTime() - startingFeedFlowQueue.peek();
                 if (diff < throttleStartingFeedFlowsTimePeriod) {
                     //we got more than x events within the threshold... throttle
