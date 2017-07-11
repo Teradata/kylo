@@ -1,7 +1,7 @@
 #!/bin/bash
 
 offline=false
-if [ $# -gt 1 ]
+if [ $# -ge 1 ]
 then
     if [ "$1" = "-o" ] || [ "$1" = "-O" ]
     then
