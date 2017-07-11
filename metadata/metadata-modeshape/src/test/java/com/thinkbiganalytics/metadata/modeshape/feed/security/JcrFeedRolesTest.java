@@ -94,9 +94,9 @@ public class JcrFeedRolesTest {
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
             
-            this.roleProvider.createRole(SecurityRole.FEED, "editor", "Editor", "Can edit feeds")
+            this.roleProvider.createRole(SecurityRole.FEED, "testEditor", "Editor", "Can edit feeds")
                 .setPermissions(FeedAccessControl.EDIT_DETAILS, FeedAccessControl.ENABLE_DISABLE, FeedAccessControl.EXPORT);
-            this.roleProvider.createRole(SecurityRole.FEED, "viewer", "Viewer", "Can view feeds only")
+            this.roleProvider.createRole(SecurityRole.FEED, "testViewer", "Viewer", "Can view feeds only")
                 .setPermissions(FeedAccessControl.ACCESS_FEED);
             
             Category cat = categoryProvider.ensureCategory("test");
@@ -136,10 +136,10 @@ public class JcrFeedRolesTest {
     @Test
     public void testSeeOnlyOwnFeeds() {
         metadata.commit(() -> {
-            this.feedProvider.findById(idA).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER1));
-            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER2));
-            this.feedProvider.findById(idB).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER1));
-            this.feedProvider.findById(idC).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER2));
+            this.feedProvider.findById(idA).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER1));
+            this.feedProvider.findById(idB).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER2));
+            this.feedProvider.findById(idB).getRoleMembership("testViewer").ifPresent(m -> m.addMember(TEST_USER1));
+            this.feedProvider.findById(idC).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER2));
         }, JcrMetadataAccess.SERVICE);
 
         int feedCnt1 = metadata.read(() -> this.feedProvider.getFeeds().size(), TEST_USER1);
@@ -168,8 +168,8 @@ public class JcrFeedRolesTest {
         }, TEST_USER3);
         
         metadata.commit(() -> {
-            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER3));
-            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idA).getRoleMembership("testViewer").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER3));
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
@@ -190,9 +190,9 @@ public class JcrFeedRolesTest {
     @Test
     public void testRemoveMembership() {
         metadata.commit(() -> {
-            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.addMember(TEST_USER3));
-            this.feedProvider.findById(idA).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER3));
-            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idA).getRoleMembership("testViewer").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idA).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("testEditor").ifPresent(m -> m.addMember(TEST_USER3));
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
@@ -210,7 +210,7 @@ public class JcrFeedRolesTest {
         }, TEST_USER3);
         
         metadata.commit(() -> {
-            this.feedProvider.findById(idA).getRoleMembership("editor").ifPresent(m -> m.removeMember(TEST_USER3));
+            this.feedProvider.findById(idA).getRoleMembership("testEditor").ifPresent(m -> m.removeMember(TEST_USER3));
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {
@@ -228,8 +228,8 @@ public class JcrFeedRolesTest {
         }, TEST_USER3);
         
         metadata.commit(() -> {
-            this.feedProvider.findById(idA).getRoleMembership("viewer").ifPresent(m -> m.removeMember(TEST_USER3));
-            this.feedProvider.findById(idB).getRoleMembership("editor").ifPresent(m -> m.removeMember(TEST_USER3));
+            this.feedProvider.findById(idA).getRoleMembership("testViewer").ifPresent(m -> m.removeMember(TEST_USER3));
+            this.feedProvider.findById(idB).getRoleMembership("testEditor").ifPresent(m -> m.removeMember(TEST_USER3));
         }, JcrMetadataAccess.SERVICE);
         
         metadata.read(() -> {

@@ -81,6 +81,12 @@ public class ModeShapeAuthConfig {
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
+    
+    @Bean
+    @Order(PostMetadataConfigAction.EARLY_ORDER)
+    public PostMetadataConfigAction checkEntityAccessControl() {
+        return new CheckEntityAccessControlAction();
+    }
 
     @Bean
     @Order(PostMetadataConfigAction.LATE_ORDER - 10)
@@ -92,34 +98,5 @@ public class ModeShapeAuthConfig {
 
             allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
         }, MetadataAccess.SERVICE);
-    }
-    
-    @Bean
-    @Order(PostMetadataConfigAction.EARLY_ORDER)
-    public PostMetadataConfigAction checkEntityAccessControl() {
-        AccessController accessController = accessController();
-        
-        return () -> metadata.commit(() -> {
-            Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-            boolean propertyEnabled = accessController.isEntityAccessControlled();
-            boolean metadataEnabled = wasAccessControllEnabled(securityNode);
-            
-            if (metadataEnabled == true && propertyEnabled == false) {
-                log.error(  "\n*************************************************************************************************************************************\n"
-                            + "Kylo has previously been started with entity access control enabled and the current configuration is attempting to set it as disabled\n"
-                            + "*************************************************************************************************************************************");
-                throw new IllegalStateException("Entity access control is configured as disabled when it was previously enabled");
-            } else {
-                JcrPropertyUtil.setProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED, propertyEnabled);
-            }
-        }, MetadataAccess.SERVICE);
-    }
-
-    private boolean wasAccessControllEnabled(Node securityNode) {
-        if (JcrPropertyUtil.hasProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED)) {
-            return JcrPropertyUtil.getBoolean(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED);
-        } else {
-            return roleProvider().getRoles().values().stream().anyMatch(roles -> roles.size() > 0);
-        }
     }
 }

@@ -25,14 +25,17 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
 
 import javax.inject.Inject;
 
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.security.CheckEntityAccessControlAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -87,6 +90,14 @@ public class JcrSecurityRoleProviderTestConfig {
     @Primary
     public SecurityRoleProvider roleProvider() {
         return new JcrSecurityRoleProvider();
+    }
+    
+    @Bean
+    @Primary
+    @Order(PostMetadataConfigAction.EARLY_ORDER)
+    public PostMetadataConfigAction checkEntityAccessControl() {
+        // Mock this action so that the default roles do not get created.
+        return Mockito.mock(PostMetadataConfigAction.class);
     }
 
 }

@@ -149,6 +149,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         }
         else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
+            ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
         }
        feed = repository.save((JpaOpsManagerFeed) feed);
         notifyOnFeedChanged(feed);
@@ -272,7 +273,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         List<JpaOpsManagerFeed> feeds = (List<JpaOpsManagerFeed>)findByFeedNames(feedNames,false);
         if(feeds != null){
             for(JpaOpsManagerFeed feed: feeds){
-                //if we move from a stream to a batck we need to stop/complete the running stream job
+                //if we move from a stream to a batch we need to stop/complete the running stream job
                 if(feed.isStream() && !isStream){
                    BatchJobExecution jobExecution = batchJobExecutionProvider.findLatestJobForFeed(feed.getName());
                    if(jobExecution != null && !jobExecution.isFinished()){
@@ -281,6 +282,17 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
                        jobExecution.setEndTime(DateTime.now());
                        batchJobExecutionProvider.save(jobExecution);
                    }
+                }
+                else if(!feed.isStream() && isStream) {
+                    //if we move from a batch to a stream we need to complete any jobs that are running.
+                    batchJobExecutionProvider.findRunningJobsForFeed(feed.getName()).stream().forEach(jobExecution -> {
+                        jobExecution.setExitCode(ExecutionConstants.ExitCode.STOPPED);
+                        jobExecution.setEndTime(DateTime.now());
+                        jobExecution.setExitMessage("Stopping and Abandoning the Job.  The job was running while the feed/template changed from a batch to a stream");
+                        jobExecution.setStatus(BatchJobExecution.JobStatus.ABANDONED);
+                        batchJobExecutionProvider.save(jobExecution);
+                        log.info("Stopping and Abandoning the Job {} for feed {}.  The job was running while the feed/template changed from a batch to a stream",jobExecution.getJobExecutionId(),feed.getName());
+                    });
                 }
                feed.setStream(isStream);
             }
