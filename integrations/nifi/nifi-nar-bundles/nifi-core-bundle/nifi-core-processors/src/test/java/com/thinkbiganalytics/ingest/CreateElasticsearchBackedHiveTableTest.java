@@ -30,7 +30,6 @@ import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -44,12 +43,6 @@ import static org.junit.Assert.assertEquals;
 
 public class CreateElasticsearchBackedHiveTableTest {
 
-    private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
-    private final TestRunner runner = TestRunners.newTestRunner(CreateElasticsearchBackedHiveTable.class);
-    private MockThriftService thriftService;
-
-    private CreateElasticsearchBackedHiveTable table = new CreateElasticsearchBackedHiveTable();
-
     public static final String CATEGORY = "test_category";
     public static final String FEED = "test_feed";
     public static final String NODES = "localhost:8300";
@@ -57,6 +50,10 @@ public class CreateElasticsearchBackedHiveTableTest {
     public static final String JAR_URL = "jar://url";
     public static final String FIELD_SPEC = "name|string\nid|int\nphone|string";
     public static final String ID_FIELD = "id";
+    private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
+    private final TestRunner runner = TestRunners.newTestRunner(CreateElasticsearchBackedHiveTable.class);
+    private MockThriftService thriftService;
+    private CreateElasticsearchBackedHiveTable table = new CreateElasticsearchBackedHiveTable();
 
     @Before
     public void setUp() throws Exception {
@@ -76,19 +73,20 @@ public class CreateElasticsearchBackedHiveTableTest {
         ColumnSpec spec3 = new ColumnSpec("PHONE", "string", "");
         ColumnSpec[] specs = {spec, spec2, spec3};
         List<String> statements = table.getHQLStatements(specs, NODES, FEED, CATEGORY, "true", "true", "", JAR_URL, FIELD_STRING);
-        assertEquals(statements.get(0), "ADD JAR " + JAR_URL);
-        assertEquals(statements.get(1), "CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                                        + "_index (`name` string, `phone` string, processing_dttm string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = '"
-                                        + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
+        assertEquals("ADD JAR " + JAR_URL, statements.get(0));
+        assertEquals("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
+                     + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) "
+                     + "STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                     + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')", statements.get(1));
     }
 
     @Test
     public void testGeneratingHQL() throws Exception {
         String hql = table.generateHQL("id int, count int, name string", NODES, FEED, CATEGORY, "true", "true", "");
-        assertEquals(hql,
-                     "CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                     + "_index (id int, count int, name string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = '"
-                     + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
+        assertEquals("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
+                     + "_index (id int, count int, name string, kylo_schema string, kylo_table string) STORED BY "
+                     + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                     + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')", hql);
     }
 
     @Test
@@ -100,12 +98,13 @@ public class CreateElasticsearchBackedHiveTableTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", CATEGORY, "metadata.systemFeedName", FEED));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+        assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                                                        + "_index (`name` string, `phone` string, processing_dttm string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = '"
+                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) STORED BY "
+                                                        + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                                                         + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
@@ -122,12 +121,13 @@ public class CreateElasticsearchBackedHiveTableTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", CATEGORY, "metadata.systemFeedName", FEED));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+        assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                                                        + "_index (`name` string, `phone` string, processing_dttm string) STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'test_category/test_feed', 'es.nodes' = '"
+                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) STORED BY "
+                                                        + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                                                         + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true', 'es.mapping.id' = '" + ID_FIELD + "')");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
