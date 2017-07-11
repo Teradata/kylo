@@ -20,6 +20,11 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement;
+import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+import com.thinkbiganalytics.util.ColumnSpec;
+import com.thinkbiganalytics.util.TableType;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -41,14 +46,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement;
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
-import com.thinkbiganalytics.util.ColumnSpec;
-import com.thinkbiganalytics.util.TableType;
-
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
 
 
 /**
@@ -123,8 +123,8 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         .expressionLanguageSupported(true)
         .defaultValue("${metadata.table.fieldIndexString}")
         .build();
-
-
+    private final static String KYLO_DATA_INDEX_NAME = "kylo-data";
+    private final static String KYLO_DATA_INDEX_TYPE = "hive-data";
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -215,6 +215,9 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
     }
 
     public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField) {
+        // elastic search records for the kylo-data index require the kylo_schema and kylo_table
+        columnsSQL = columnsSQL + ", kylo_schema string, kylo_table string";
+
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
             .append(categoryName)
@@ -225,9 +228,9 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
             .append(columnsSQL)
             .append(") ")
             .append("STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = '")
-            .append(categoryName)
+            .append(KYLO_DATA_INDEX_NAME)
             .append("/")
-            .append(feedName)
+            .append(KYLO_DATA_INDEX_TYPE)
             .append("', 'es.nodes' = '")
             .append(nodes)
             .append("', 'es.nodes.wan.only' = '")
