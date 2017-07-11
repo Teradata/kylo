@@ -22,7 +22,9 @@ package com.thinkbiganalytics.nifi.v2.thrift;
 
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.v2.ingest.IngestProperties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -54,15 +56,7 @@ import java.util.concurrent.TimeUnit;
 )
 public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
-    // Relationships
-    public static final Relationship REL_SUCCESS = new Relationship.Builder()
-        .name("success")
-        .description("Successfully created FlowFile from .")
-        .build();
-    public static final Relationship REL_FAILURE = new Relationship.Builder()
-        .name("failure")
-        .description("SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship")
-        .build();
+
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
         .description("The Controller Service that is used to obtain connection to database")
@@ -81,8 +75,8 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
     public ExecuteHQLStatement() {
         final Set<Relationship> r = new HashSet<>();
-        r.add(REL_SUCCESS);
-        r.add(REL_FAILURE);
+        r.add(IngestProperties.REL_SUCCESS);
+        r.add(IngestProperties.REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
@@ -102,29 +96,42 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLog();
+    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
         }
 
-        final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         final String ddlQuery = context.getProperty(SQL_DDL_STATEMENT).evaluateAttributeExpressions(flowFile).getValue();
+        String[] hiveStatements = StringUtils.split(ddlQuery, ';');
+        final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
+
+        executeStatements(session, flowFile, hiveStatements, thriftService);
+    }
+
+    public void executeStatements(ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
+        final ComponentLog logger = getLog();
 
         final StopWatch stopWatch = new StopWatch(true);
 
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
+            boolean result = false;
 
-            boolean result = st.execute(ddlQuery);
+            for (String statement : hiveStatements) {
+                //  leading whitespace will cause Hive statement to fail
+                statement = statement.trim();
+                logger.debug("Executing statement: '{}'", new Object[] {statement} );
+                result = st.execute(statement);
+            }
+
             session.getProvenanceReporter().modifyContent(flowFile, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-            session.transfer(flowFile, REL_SUCCESS);
+            session.transfer(flowFile, IngestProperties.REL_SUCCESS);
         } catch (final Exception e) {
-            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{ddlQuery, flowFile, e});
-            session.transfer(flowFile, REL_FAILURE);
+            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements, flowFile, e});
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
+            throw new ProcessException(e);
         }
     }
-
 
 }
