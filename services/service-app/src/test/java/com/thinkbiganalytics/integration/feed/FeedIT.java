@@ -124,6 +124,8 @@ public class FeedIT extends IntegrationTestBase {
         DefaultExecutedJob[] jobs = getJobs();
         Assert.assertEquals(3, jobs.length);
 
+        //TODO assert all executed jobs are successful
+
         DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feed.getFeedName().toLowerCase()).equals(job.getFeedName())).findFirst().get();
         Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());
         Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), ingest.getExitCode());

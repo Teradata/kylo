@@ -101,7 +101,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
-        assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
+        assertAnalystCantEditFeedPermissions(HTTP_NOT_FOUND);
         assertAnalystCantDeleteFeed(HTTP_FORBIDDEN);
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_READ_ONLY);
