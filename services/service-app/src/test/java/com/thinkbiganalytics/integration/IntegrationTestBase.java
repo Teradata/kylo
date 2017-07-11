@@ -111,7 +111,7 @@ public class IntegrationTestBase {
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
-    private static final int PROCESSOR_STOP_WAIT_DELAY = 20;
+    private static final int PROCESSOR_STOP_WAIT_DELAY = 10;
     private static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
@@ -295,8 +295,10 @@ public class IntegrationTestBase {
         for (FeedSummary feed : feeds) {
             disableFeed(feed.getFeedId());
         }
-        //give time for processors to stop
-        waitFor(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS, "for processors to stop");
+        if (feeds.length > 0) {
+            //give time for processors to stop
+            waitFor(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS, "for processors to stop");
+        }
     }
 
     protected void deleteExistingFeeds() {
@@ -379,8 +381,11 @@ public class IntegrationTestBase {
     }
 
     protected void importSystemFeeds() {
-        importFeed("index_schema_service.zip");
-        importFeed("index_text_service.zip");
+        ExportImportFeedService.ImportFeed schemaIndex = importFeed("index_schema_service_elasticsearch.feed.zip");
+        enableFeed(schemaIndex.getNifiFeed().getFeedMetadata().getFeedId());
+
+        ExportImportFeedService.ImportFeed textIndex = importFeed("index_text_service_elasticsearch.feed.zip");
+        enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
 
     protected int getTotalNumberOfRecords(String feedId) {

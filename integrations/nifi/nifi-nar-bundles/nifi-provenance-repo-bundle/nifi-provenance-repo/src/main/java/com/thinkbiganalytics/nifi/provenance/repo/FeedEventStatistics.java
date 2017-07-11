@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -197,7 +198,7 @@ public class FeedEventStatistics implements Serializable {
             return true;
 
         } catch (Exception ex) {
-            log.error("Error backing up FeedEventStatistics to {}. {} ", location, ex.getMessage(), ex);
+            log.error("Error backing up feed event statistics to {}. {} ", location, ex.getMessage(), ex);
         }
         return false;
     }
@@ -217,7 +218,12 @@ public class FeedEventStatistics implements Serializable {
             ois.close();
 
         } catch (Exception ex) {
-            log.error("Error loading backup from {}. {} ", location, ex.getMessage(), ex);
+            if(!(ex instanceof FileNotFoundException)) {
+                log.error("Unable to load feed event statistics backup from {}. {} ", location, ex.getMessage(),ex);
+            }
+            else {
+                log.info("Kylo feed event statistics backup file not found. Not loading backup from {}. ", location);
+            }
         }
         if (inStats != null) {
             boolean success = this.load(inStats);
