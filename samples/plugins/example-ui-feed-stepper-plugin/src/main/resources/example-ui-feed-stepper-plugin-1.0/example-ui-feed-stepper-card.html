@@ -1,0 +1,24 @@
+<card-layout body-css="md-padding">
+  <header-section>
+    <div layout="row" layout-align="space-between-center" flex>
+      <div class="card-title" flex>Example Plugin</div>
+      <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+    </div>
+    <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
+      <div class="card-sub-header" flex>Example feed wizard step</div>
+      <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+    </div>
+  </header-section>
+
+  <body-section>
+    <ng-form name="vm.form">
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>My Plugin Property</label>
+        <input ng-model="vm.model.tableOption.examplePluginProperty">
+        </input>
+      </md-input-container>
+
+      <thinkbig-step-buttons can-continue="vm.form.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+    </ng-form>
+  </body-section>
+</card-layout>
