@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 
 
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -121,6 +123,13 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "join JpaOpsManagerFeed feed on feed.id = jobInstance.feed.id "
                    + "where feed.name = :feedName")
     List<JpaBatchJobExecution> findJobsForFeed(@Param("feedName") String feedName);
+
+    @Query("select job from JpaBatchJobExecution as job "
+           + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + "where feed.name = :feedName "
+           + "and job.status in (:jobStatus) ")
+    List<JpaBatchJobExecution> findJobsForFeedMatchingStatus(@Param("feedName") String feedName, @Param("jobStatus")BatchJobExecution.JobStatus... jobStatus );
 
 
     @Query(value = "select job from JpaBatchJobExecution as job "
