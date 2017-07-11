@@ -57,7 +57,8 @@ public class ElasticSearchService implements Search {
     @Override
     public SearchResult search(String query, int size, int start) {
         buildTransportClient();
-        SearchResponse searchResponse = executeSearch(query, size, start);
+        String queryForExecution = rewriteQuery(query);
+        SearchResponse searchResponse = executeSearch(queryForExecution, size, start);
         return transformResult(query, size, start, searchResponse);
     }
 
@@ -113,5 +114,16 @@ public class ElasticSearchService implements Search {
     private SearchResult transformResult(String query, int size, int start, SearchResponse searchResponse) {
         ElasticSearchSearchResultTransform elasticSearchSearchResultTransform = new ElasticSearchSearchResultTransform();
         return elasticSearchSearchResultTransform.transformResult(query, size, start, searchResponse);
+    }
+
+    private String rewriteQuery(String query) {
+        final String SINGLE_STAR = "*";
+        final String DOUBLE_STAR = "**";
+
+        if ((query!=null) && (query.trim().equals(SINGLE_STAR))) {
+            return DOUBLE_STAR;
+        }
+
+        return query;
     }
 }
