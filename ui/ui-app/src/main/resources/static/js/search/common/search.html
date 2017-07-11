@@ -12,7 +12,7 @@
             <div ng-if="vm.searchResult.searchResults.length >0 ">
               <md-list flex layout-fill>
                 <md-list-item class="md-3-line" dir-paginate="searchHit in vm.searchResult.searchResults|itemsPerPage:vm.paginationData.rowsPerPage"
-                              pagination-id="search" total-items="vm.searchResult.totalHits" current-page="vm.paginationData.currentPage" ng-click="vm.onSearchResultItemClick($event,searchHit)">
+                              pagination-id="search" total-items="vm.searchResult.totalHits" current-page="vm.currentPage" ng-click="vm.onSearchResultItemClick($event,searchHit)">
                   <div flex="10" style="z-index: 1" layout="column" layout-xs="row">
                   <span style="z-index: 1">
                     <md-tooltip md-direction="left">
@@ -22,14 +22,14 @@
                       <span ng-if="searchHit.type == 'KYLO_CATEGORIES'">Category metadata for {{searchHit.categoryTitle}}</span>
                       <span ng-if="searchHit.type == 'KYLO_UNKNOWN'">Unknown result type</span>
                     </md-tooltip>
-                    <ng-md-icon icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);padding-top: 5px;" size="48"></ng-md-icon>
+                    <ng-md-icon icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" size="48"></ng-md-icon>
                   </span>
                   </div>
                   <div flex="90" layout="column" layout-xs="row" layout-fill>
 
                     <div ng-if="searchHit.type == 'KYLO_DATA'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
-                        <div layout="row" layout-xs="column" style="font-weight: normal; padding-bottom: 10px; padding-top: 5px;" class="md-title">
+                        <div layout="row" layout-xs="column" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;" class="item-title">
                           {{searchHit.schemaName}}.{{searchHit.tableName}}
                         </div>
                         <div layout="column" layout-wrap="true">
@@ -58,7 +58,7 @@
 
                     <div ng-if="searchHit.type == 'KYLO_SCHEMA'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
-                        <div layout="row" layout-xs="column" style="font-weight: normal;padding-bottom: 10px; padding-top: 5px;" class="md-title">
+                        <div layout="row" layout-xs="column" style="font-weight: bold;padding-bottom: 10px; padding-top: 5px;" class="item-title">
                           {{searchHit.databaseName}}.{{searchHit.tableName}}
                         </div>
                         <div layout="column" layout-wrap="true">
@@ -92,7 +92,7 @@
 
                     <div ng-if="searchHit.type == 'KYLO_FEEDS'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
-                        <div layout="row" layout-xs="column" class="md-title" style="font-weight: normal; padding-bottom: 10px; padding-top: 5px;">
+                        <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;">
                           <div layout-align="start center">
                             {{searchHit.feedTitle}}
                           </div>
@@ -123,7 +123,7 @@
 
                     <div ng-if="searchHit.type == 'KYLO_CATEGORIES'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
-                        <div layout="row" layout-xs="column" class="md-title" style="font-weight: normal; padding-bottom: 10px; padding-top: 5px;">
+                        <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold; padding-bottom: 10px; padding-top: 5px;">
                           <div layout-align="start center">
                             {{searchHit.categoryTitle}}
                           </div>
@@ -151,7 +151,7 @@
 
                     <div ng-if="searchHit.type == 'KYLO_UNKNOWN'" layout="row" layout-xs="column" layout-wrap="true">
                       <div flex="100">
-                        <div layout="row" layout-xs="column" class="md-title" style="font-weight: normal;">
+                        <div layout="row" layout-xs="column" class="item-title" style="font-weight: bold;">
                           <div layout-align="start center">
                             Unknown result type
                           </div>

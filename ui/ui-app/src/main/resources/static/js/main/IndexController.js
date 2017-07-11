@@ -127,6 +127,9 @@ define(['angular'], function (angular) {
             if (self.currentState.name != 'search') {
                 self.searchQuery = '';
             }
+            else {
+                self.searchQuery = SearchService.searchQuery;
+            }
             $rootScope.previousState = transition.from().name;
             $rootScope.currentState = transition.to().name;
 

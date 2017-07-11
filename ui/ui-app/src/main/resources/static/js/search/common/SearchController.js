@@ -1,6 +1,6 @@
 define(['angular', "search/module-name"], function (angular, moduleName) {
 
-    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, SearchService, Utils, CategoriesService, StateService, FeedService) {
+    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, SearchService, Utils, CategoriesService, StateService, FeedService,PaginationDataService) {
 
         var self = this;
         /**
@@ -15,13 +15,16 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
          */
         this.searching = false;
 
+
+        //Pagination Data
+        this.pageName = "search";
         /**
          * Pagination data
          * @type {{rowsPerPage: number, currentPage: number, rowsPerPageOptions: [*]}}
          */
-        this.paginationData = {rowsPerPage: 10, currentPage: 1, rowsPerPageOptions: ['5', '10', '20', '50', '100']};
-
-        var supportedDisplays = ['tweets', 'feed', 'table-metadata', 'hive-query', 'index-pattern'];
+        this.paginationData = PaginationDataService.paginationData(this.pageName, this.pageName,10);
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
+        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
 
         this.categoryForIndex = function (indexName) {
             var category = CategoriesService.findCategoryByName(indexName);
@@ -33,28 +36,25 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
 
         $scope.$watch(function () {
             return SearchService.searchQuery
-        }, function (newVal) {
-            self.search();
+        }, function (newVal,oldVal) {
+            if(newVal != oldVal || self.searchResult == null) {
+                var resetCurrentPage = newVal != oldVal;
+                self.search(resetCurrentPage);
+            }
         });
 
-        this.search = function () {
-            var search = true;
-            //changing the paginationData.currentPAge will trigger a search.
-            //only search if they page was not already 1
-
-            if (self.paginationData.currentPage > 1) {
-                search = false;
+        this.search = function (resetCurrentPage) {
+            if(resetCurrentPage == undefined || resetCurrentPage == true) {
+                PaginationDataService.currentPage(self.pageName, null, 1);
+                self.currentPage = 1;
             }
-            self.paginationData.currentPage = 1;
-            if (search) {
                 self._search();
-            }
         };
         this._search = function () {
             self.searchError = null;
             self.searching = true;
             var limit = self.paginationData.rowsPerPage;
-            var start = (limit * self.paginationData.currentPage) - limit; //self.query.page(self.selectedTab));
+            var start = (limit * self.currentPage) - limit; //self.query.page(self.selectedTab));
 
             SearchService.search(SearchService.searchQuery, limit, start).then(function (result) {
                 self.searchResult = result;
@@ -78,8 +78,12 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
         };
 
         this.onPaginationChange = function (page, limit) {
-            self.paginationData.currentPage = page;
-            self._search();
+            var prevPage = PaginationDataService.currentPage(self.pageName);
+            PaginationDataService.currentPage(self.pageName, null, page);
+            self.currentPage = page;
+            if(prevPage == undefined || prevPage != page) {
+                self._search();
+            }
         };
 
         this.cleanValue = function (str) {
@@ -125,16 +129,12 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
         };
 
         this.renderHtml = function (htmlCode) {
-            return $sce.trustAsHtml(Utils.maskProfanity(htmlCode));
+            return $sce.trustAsHtml(htmlCode);
         };
-
-        this.isGenericSearchHitDisplay = function (searchHit) {
-            return !_.contains(supportedDisplays, searchHit.type);
-        }
     };
 
     angular.module(moduleName).controller('SearchController',
-        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService", controller]);
+        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService","PaginationDataService", controller]);
 });
 
 

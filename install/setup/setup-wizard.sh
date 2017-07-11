@@ -78,11 +78,24 @@ while [[ ! $install_activemq =~ $yes_no ]]; do
 
     if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
         read -p "Enter the Activemq home folder location, hit Enter for '/opt/activemq': " activemq_home
+
+        if [[ -z "$activemq_home" ]]; then
+            activemq_home=/opt/activemq
+        fi
+
+        read -p "Enter the user Activemq should run as, hit Enter for 'activemq': " activemq_user
+
+        if [[ -z "$activemq_user" ]]; then
+            activemq_user=activemq
+        fi
+
+        read -p "Enter the linux group Activemq should run as, hit Enter for 'activemq': " activemq_group
+
+        if [[ -z "$activemq_group" ]]; then
+            activemq_group=activemq
+        fi
     fi
 
-    if [[ -z "$activemq_home" ]]; then
-        activemq_home=/opt/activemq
-    fi
 done
 
 echo " ";
@@ -91,11 +104,24 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
 
     if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
          read -p "Enter the NiFi home folder location, hit Enter for '/opt/nifi': " nifi_home
+
+         if [[ -z "$nifi_home" ]]; then
+            nifi_home=/opt/nifi
+        fi
+
+        read -p "Enter the user NiFi should run as, hit Enter for 'nifi': " nifi_user
+
+         if [[ -z "$nifi_user" ]]; then
+            nifi_user=nifi
+        fi
+
+        read -p "Enter the linux group NiFi should run as, hit Enter for 'nifi': " nifi_group
+
+         if [[ -z "$nifi_group" ]]; then
+            nifi_group=nifi
+        fi
     fi
 
-    if [[ -z "$nifi_home" ]]; then
-        nifi_home=/opt/nifi
-    fi
 done
 
 while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
@@ -148,9 +174,9 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     echo "installing ActiveMQ"
     if [ $offline = true ]
     then
-        ./activemq/install-activemq.sh $activemq_home activemq activemq $current_dir -O
+        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $current_dir -O
     else
-        ./activemq/install-activemq.sh $activemq_home activemq activemq
+        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group
     fi
 
 fi
@@ -158,9 +184,9 @@ fi
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     if [ $offline = true ]
     then
-        ./nifi/install-nifi.sh $nifi_home nifi users $current_dir -O
+        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group $current_dir -O
     else
-        ./nifi/install-nifi.sh $nifi_home nifi users
+        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group
     fi
 
 
@@ -172,12 +198,11 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
 
     if [ $offline = true ]
     then
-        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder nifi users $current_dir -O
+        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group $current_dir -O
     else
-        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder nifi users
+        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group
     fi
 
-    sed -i "s|kylo.provenance.cache.location=\/opt\/nifi\/feed-event-statistics.gz|kylo.provenance.cache.location=$nifi_home\/feed-event-statistics.gz|" $nifi_home/ext-config/config.properties
 
 
 fi
