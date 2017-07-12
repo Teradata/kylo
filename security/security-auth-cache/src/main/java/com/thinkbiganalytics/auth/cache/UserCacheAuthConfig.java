@@ -54,7 +54,7 @@ import org.springframework.core.annotation.Order;
 @Profile("auth-cache")
 public class UserCacheAuthConfig {
     
-    @Value("${security.auth.cache.spec:expireAfterWrite=30s,maximumSize=1024}")
+    @Value("${security.auth.cache.spec:expireAfterWrite=30s,maximumSize=512}")
     private String cacheSpec;
     
     @Value("${security.auth.file.login.check.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).LOWEST_ORDER}}")
