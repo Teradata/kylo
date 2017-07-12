@@ -10,7 +10,7 @@ then
     fi
 fi
 
-current_dir=$(pwd)
+current_dir=$(dirname $0)
 echo "The working directory is $current_dir"
 
 echo "Welcome to the Kylo setup wizard. Lets get started !!!"
@@ -150,7 +150,7 @@ if [ "$java_type" == "1" ] ; then
 elif [ "$java_type" == "2" ] ; then
     if [ $offline = true ]
     then
-        ./java/install-java8.sh $current_dir -O
+        ./java/install-java8.sh $kylo_home_folder $current_dir -O
     else
         ./java/install-java8.sh $kylo_home_folder
     fi

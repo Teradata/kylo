@@ -48,7 +48,7 @@ cd $JAVA_INSTALL_FOLDER
 
 if [ $offline = true ]
 then
-    cp $OFFLINE_SETUP_FOLDER/java/jdk-8u92-linux-x64.tar.gz .
+    cp $OFFLINE_SETUP_FOLDER/java/jdk-*.gz .
 else
     wget -c -O "$JDK_FILE_NAME" --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" "$JDK_DOWNLOAD_URL"
 fi
