@@ -62,7 +62,6 @@ import javax.inject.Inject;
  * application.properties ambari.services.status=HIVE/[HIVE_CLIENT],HDFS - this will track the HIVE Service and just the
  * HIVE_CLIENT ambari.services.status=HDFS,HIVE,MAPREDUCE2,SQOOP - this will track all services and all components
  */
-@Configuration
 @PropertySource("classpath:/conf/ambari.properties")
 public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
