@@ -4,6 +4,7 @@ import com.thinkbiganalytics.discovery.schema.QueryResultColumn
 import com.thinkbiganalytics.spark.SparkContextService
 import com.thinkbiganalytics.spark.dataprofiler.Profiler
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import org.apache.hadoop.hive.ql.session.SessionState
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.slf4j.LoggerFactory
 
@@ -50,6 +51,15 @@ abstract class TransformScript16(destination: String, profiler: Profiler, sqlCon
     /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
     private class QueryResultCallable16 extends QueryResultCallable {
         override def call(): TransformResponse = {
+            // SPARK-17245 Create a new session if SessionState is unavailable
+            if (SessionState.get() == null) {
+                try {
+                    sqlContext.setConf("com.thinkbiganalytics.spark.spark17245", "")
+                } catch {
+                    case _: NullPointerException => sqlContext.newSession()
+                }
+            }
+
             // Cache data frame
             val cache = dataFrame.cache
             cache.registerTempTable(destination)
