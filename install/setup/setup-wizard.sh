@@ -166,7 +166,7 @@ if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     then
         ./elasticsearch/install-elasticsearch.sh $current_dir -O
     else
-        ./elasticsearch/install-elasticsearch.sh
+        ./elasticsearch/install-elasticsearch.sh $kylo_home_folder/setup
     fi
 fi
 
