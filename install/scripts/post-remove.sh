@@ -71,6 +71,6 @@ rm -rf /var/log/kylo-ui
 rm -rf /var/log/kylo-services
 
 echo "     6. Deleting kylo-service "
-rm rf /usr/bin/kylo-service
+rm -rf /usr/bin/kylo-service
 
 echo "    REMOVAL COMPLETE! "
