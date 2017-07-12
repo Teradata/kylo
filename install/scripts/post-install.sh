@@ -366,7 +366,7 @@ if ! which spark-submit >/dev/null 2>&1; then
 fi
 
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/mariadb-java-client-1.5.7.jar
+KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-spark-shell-pgrep-marker:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/mariadb-java-client-1.5.7.jar
 if [[ -n \$SPARK_CONF_DIR ]]; then
         if [ -r \$SPARK_CONF_DIR/spark-defaults.conf ]; then
 		CLASSPATH_FROM_SPARK_CONF=\$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
@@ -377,7 +377,29 @@ if [[ -n \$SPARK_CONF_DIR ]]; then
 fi
 spark-submit --master local --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
 EOF
+cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
+#!/bin/bash
+
+if ! which spark-submit >/dev/null 2>&1; then
+	>&2 echo "ERROR: spark-submit not on path.  Has spark been installed?"
+	exit 1
+fi
+
+JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
+SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
+KYLO_DRIVER_CLASS_PATH=$INSTALL_HOME/kylo-spark-shell-pgrep-marker:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/mariadb-java-client-1.5.7.jar
+if [[ -n \$SPARK_CONF_DIR ]]; then
+        if [ -r \$SPARK_CONF_DIR/spark-defaults.conf ]; then
+		CLASSPATH_FROM_SPARK_CONF=\$(grep -E '^spark.driver.extraClassPath' \$SPARK_CONF_DIR/spark-defaults.conf | awk '{print \$2}')
+		if [[ -n \$CLASSPATH_FROM_SPARK_CONF ]]; then
+			KYLO_DRIVER_CLASS_PATH=\${KYLO_DRIVER_CLASS_PATH}:\$CLASSPATH_FROM_SPARK_CONF
+		fi
+	fi
+fi
+spark-submit --master local --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options "-Dlog4j.configuration=log4j-spark.properties $JAVA_DEBUG_OPTS" $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
+EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
+chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
 echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"
 
 # header of the service file depends on system used
