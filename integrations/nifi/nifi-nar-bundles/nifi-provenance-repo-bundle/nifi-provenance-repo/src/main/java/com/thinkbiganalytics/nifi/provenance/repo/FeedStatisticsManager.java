@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -67,11 +68,16 @@ public class FeedStatisticsManager {
     }
 
 
-    private ThreadFactory gatherStatsThreadFactory = new ThreadFactoryBuilder()
+    private ThreadFactory gatherStatsThreadFactory = new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat("FeedStatisticsManager-GatherStats-%d").build();
 
-    private ThreadFactory sendJmsThreadFactory = new ThreadFactoryBuilder()
+    private ThreadFactory sendJmsThreadFactory = new ThreadFactoryBuilder().setDaemon(true)
         .setNameFormat("FeedStatisticsManager-SendStats-%d").build();
+
+    /**
+     * Scheduled task to gather stats and send to JMS
+     */
+    private ScheduledFuture gatherStatsScheduledFuture;
 
     /**
      * Service to schedule the sending of events to activemq
@@ -163,6 +169,9 @@ public class FeedStatisticsManager {
         lock.lock();
         sendJmsTimeMillis = interval;
         try {
+            if(gatherStatsScheduledFuture != null){
+                gatherStatsScheduledFuture.cancel(true);
+            }
             initGatherStatisticsTimerThread(interval);
 
         } finally {
@@ -192,8 +201,10 @@ public class FeedStatisticsManager {
     /**
      * Start the timer thread
      */
-    private void initGatherStatisticsTimerThread(Long time) {
-        jmsGatherEventsToSendService.scheduleAtFixedRate(gatherStatisticsTask, time, time, TimeUnit.MILLISECONDS);
+    private ScheduledFuture initGatherStatisticsTimerThread(Long time) {
+        gatherStatsScheduledFuture = jmsGatherEventsToSendService.scheduleAtFixedRate(gatherStatisticsTask, time, time, TimeUnit.MILLISECONDS);
+        return gatherStatsScheduledFuture;
+
     }
 
 }

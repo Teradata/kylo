@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +45,8 @@ public class ConfigurationProperties {
     public static Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD = 15;
     public static Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS = 1000;
 
+    public static String DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS = "{\"CLONE\":[\"ConvertCSVToAvro\"]}";
+
     private Properties properties = new Properties();
 
     private Long runInterval = DEFAULT_RUN_INTERVAL_MILLIS;
@@ -52,9 +55,13 @@ public class ConfigurationProperties {
     private Integer throttleStartingFeedFlowsThreshold = DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD;
     private Integer throttleStartingFeedFlowsTimePeriodMillis = DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS;
 
+    //JSON MAP of eventType to processors that create children that are removed without provenance.
+    private String orphanChildFlowFileProcessorsString;
+
     public static String BACKUP_LOCATION_KEY = "backupLocation";
     public static String MAX_FEED_EVENTS_KEY = "maxFeedEvents";
     public static String RUN_INTERVAL_KEY = "runInterval";
+    public static String ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY="orphanChildFlowFileProcessors";
 
 
     private static final ConfigurationProperties instance = new ConfigurationProperties();
@@ -67,13 +74,32 @@ public class ConfigurationProperties {
         return instance;
     }
 
+
+    private String getConfigLocation(){
+        return  System.getProperty("kylo.nifi.configPath");
+    }
+
+    private FileInputStream getConfigFileInputStream(String location) throws Exception{
+        return new FileInputStream(location + "/config.properties");
+    }
+
+    private File getConfigFile(String location){
+        return new File(location + "/config.properties");
+    }
+
+    private Long lastModified = null;
+
     private void load() {
         String location = null;
         try {
-            location = System.getProperty("kylo.nifi.configPath");
+            location = getConfigLocation();
             properties.clear();
-            properties.load(new FileInputStream(location + "/config.properties"));
+            File file = getConfigFile(getConfigLocation());
+            properties.load(getConfigFileInputStream(location));
             setValues();
+            if(file.exists()) {
+                lastModified = file.lastModified();
+            }
         } catch (Exception e) {
             log.error("Unable to load properties for location: {} , {} ", location, e.getMessage(), e);
         }
@@ -86,6 +112,11 @@ public class ConfigurationProperties {
 
         this.throttleStartingFeedFlowsThreshold = new Integer(properties.getProperty("kylo.provenance.event.count.throttle.threshold", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD + ""));
         this.throttleStartingFeedFlowsTimePeriodMillis = new Integer(properties.getProperty("kylo.provenance.event.throttle.threshold.time.millis", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS + ""));
+        orphanChildFlowFileProcessorsString = properties.getProperty("kylo.provenance.orphan.child.flowfile.processors", DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS);
+        //only update this on the initial run.  Any changes will be detected and updated with the ConfigurationPropertiesRefresher
+        if(lastModified == null) {
+            FeedEventStatistics.getInstance().updateEventTypeProcessorTypeSkipChildren(orphanChildFlowFileProcessorsString);
+        }
     }
 
     public String getFeedEventStatisticsBackupLocation() {
@@ -111,19 +142,26 @@ public class ConfigurationProperties {
         return runInterval == null ? DEFAULT_RUN_INTERVAL_MILLIS : runInterval;
     }
 
+
+
     public void populateChanges(Map<String, PropertyChange> changes, boolean old) {
         changes.computeIfAbsent(BACKUP_LOCATION_KEY, key -> new PropertyChange(key)).setValue(backupLocation, old);
         changes.computeIfAbsent(MAX_FEED_EVENTS_KEY, key -> new PropertyChange(key)).setValue(maxFeedEvents + "", old);
         changes.computeIfAbsent(RUN_INTERVAL_KEY, key -> new PropertyChange(key)).setValue(runInterval + "", old);
-
+        changes.computeIfAbsent(ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY,key -> new PropertyChange(key)).setValue(orphanChildFlowFileProcessorsString, old);
     }
 
     public Map<String, PropertyChange> refresh() {
-        Map<String, PropertyChange> changes = new HashMap<>();
-        populateChanges(changes, true);
-        load();
-        populateChanges(changes, false);
+            Map<String, PropertyChange> changes = new HashMap<>();
+            populateChanges(changes, true);
+            load();
+            populateChanges(changes, false);
         return changes.values().stream().filter(propertyChange -> propertyChange.changed()).collect(Collectors.toMap(change -> change.getPropertyName(), Function.identity()));
+    }
+
+    public boolean isModified(){
+        File file = getConfigFile(getConfigLocation());
+        return (lastModified != null && file.exists() && file.lastModified() != lastModified  );
     }
 
 

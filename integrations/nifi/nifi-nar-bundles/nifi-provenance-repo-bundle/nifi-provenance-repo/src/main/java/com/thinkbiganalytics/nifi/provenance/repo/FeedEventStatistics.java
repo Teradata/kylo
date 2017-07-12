@@ -21,10 +21,12 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -75,27 +78,25 @@ public class FeedEventStatistics implements Serializable {
      * Events with Detailed Tracking need to be added to the special cache to ensure step capture and timing information.
      * DROP events on Flowfiles indicate the end of the flow file.  Flows that split/merge will relate to other flow files.  Sometimes the DROP of the previous flow file will
      * be processed in a different order than the next flow file.  Beacuse of this the removal of data needs to be done after the fact to ensure the flows capture the correct data in ops manager
-     *
      */
-    RemovalListener<Long,String> flowFileRemovalListener = new RemovalListener<Long, String>() {
+    RemovalListener<Long, String> flowFileRemovalListener = new RemovalListener<Long, String>() {
         @Override
         public void onRemoval(RemovalNotification<Long, String> removalNotification) {
             Long eventId = removalNotification.getKey();
             String flowFileId = removalNotification.getValue();
-            clearData(eventId,flowFileId);
+            clearData(eventId, flowFileId);
         }
     };
 
     /**
      * An Expiring cache of the flowfile information that is tracked and Sent to Kylo Ops Manager as ProvenanceEventDTO objects
-     *  Map<EventId, eventFlowFileId>.  The eventId is tied to the flowfile id that initiated the final DROP event type
-     *  Wait 1 minute before expiring and cleaning up these resources.
+     * Map<EventId, eventFlowFileId>.  The eventId is tied to the flowfile id that initiated the final DROP event type
+     * Wait 1 minute before expiring and cleaning up these resources.
      **/
-    protected Cache<Long,String> detailedTrackingFlowFilesToDelete =  CacheBuilder.newBuilder()
-        .expireAfterWrite(1,TimeUnit.MINUTES)
+    protected Cache<Long, String> detailedTrackingFlowFilesToDelete = CacheBuilder.newBuilder()
+        .expireAfterWrite(1, TimeUnit.MINUTES)
         .removalListener(flowFileRemovalListener)
         .build();
-
 
     ///Track Timing Information for each event
 
@@ -153,10 +154,13 @@ public class FeedEventStatistics implements Serializable {
     /**
      * file location to persist this data if NiFi goes Down midstream
      * This value is set via the KyloPersistenetProvenanceEventRepository during initialization
-     *
-     * @see KyloPersistentProvenanceEventRepository#initializeFeedEventStatistics()
      */
     private String backupLocation = "/opt/nifi/feed-event-statistics.gz";
+
+    /**
+     * Map of the NiFi Event to Nifi Class that should be skipped
+     */
+    private Map<String, Set<String>> eventTypeProcessorTypeSkipChildren = new HashMap<>();
 
 
     private static final FeedEventStatistics instance = new FeedEventStatistics();
@@ -175,6 +179,32 @@ public class FeedEventStatistics implements Serializable {
 
     public void setBackupLocation(String backupLocation) {
         this.backupLocation = backupLocation;
+    }
+
+    private boolean shouldSkipChildren(ProvenanceEventType eventType, String componentType) {
+        boolean
+            skip =
+            componentType != null && eventType != null && eventTypeProcessorTypeSkipChildren != null && eventTypeProcessorTypeSkipChildren.containsKey(eventType.name())
+            && eventTypeProcessorTypeSkipChildren
+                   .get(eventType.name()) != null && eventTypeProcessorTypeSkipChildren
+                .get(eventType.name()).stream().anyMatch(type -> componentType.equalsIgnoreCase(type));
+        if (skip) {
+            //log it
+            log.info("Skip processing children flow files {} for {} ", eventType, componentType);
+        }
+        return skip;
+    }
+
+    public void updateEventTypeProcessorTypeSkipChildren(String json) {
+        try {
+            Map<String, Set<String>> m = ObjectMapperSerializer.deserialize(json, new TypeReference<Map<String, Set<String>>>() {
+            });
+            this.eventTypeProcessorTypeSkipChildren = m;
+            log.info("Reset the Orphan Flowfile processor Map with {} ", json);
+        } catch (Exception e) {
+            log.error("Unable to update the {}.  Invalid JSON supplied {} ", ConfigurationProperties.ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY, e.getMessage(), e);
+        }
+
     }
 
     public boolean backup() {
@@ -197,7 +227,7 @@ public class FeedEventStatistics implements Serializable {
             return true;
 
         } catch (Exception ex) {
-            log.error("Error backing up FeedEventStatistics to {}. {} ", location, ex.getMessage(), ex);
+            log.error("Error backing up feed event statistics to {}. {} ", location, ex.getMessage(), ex);
         }
         return false;
     }
@@ -217,7 +247,11 @@ public class FeedEventStatistics implements Serializable {
             ois.close();
 
         } catch (Exception ex) {
-            log.error("Error loading backup from {}. {} ", location, ex.getMessage(), ex);
+            if (!(ex instanceof FileNotFoundException)) {
+                log.error("Unable to load feed event statistics backup from {}. {} ", location, ex.getMessage(), ex);
+            } else {
+                log.info("Kylo feed event statistics backup file not found. Not loading backup from {}. ", location);
+            }
         }
         if (inStats != null) {
             boolean success = this.load(inStats);
@@ -329,7 +363,7 @@ public class FeedEventStatistics implements Serializable {
 
 
         }
-        if (startingFlowFile != null && event.getChildUuids() != null && !event.getChildUuids().isEmpty()) {
+        if (startingFlowFile != null && event.getChildUuids() != null && !event.getChildUuids().isEmpty() && !shouldSkipChildren(event.getEventType(), event.getComponentType())) {
             for (String child : event.getChildUuids()) {
                 allFlowFileToFeedFlowFile.put(child, startingFlowFile);
                 //Add children flow files to active processing
@@ -487,15 +521,14 @@ public class FeedEventStatistics implements Serializable {
         }
     }
 
-    private void clearData(Long eventId, String eventFlowFileId){
+    private void clearData(Long eventId, String eventFlowFileId) {
         String feedFlowFile = getFeedFlowFileId(eventFlowFileId);
         clearMapsForEventFlowFile(eventFlowFileId);
-        if ( isEndingFeedFlow(eventId)) {
+        if (isEndingFeedFlow(eventId)) {
             clearMapsForFeedFlowFile(feedFlowFile);
             eventsThatCompleteFeedFlow.remove(eventId);
         }
     }
-
 
 
     public void checkAndClear(String eventFlowFileId, String eventType, Long eventId) {
@@ -505,14 +538,14 @@ public class FeedEventStatistics implements Serializable {
 
             if (!isTrackingDetails) {
                 //if we are not tracking ProvenanceEventDTO details then we can just expire all the flowfile data
-                clearData(eventId,eventFlowFileId);
+                clearData(eventId, eventFlowFileId);
             } else {
                 //if we are tracking details it needs to be added to an expiring map.
                 //Sometimes the DROP event for the flowfile will come in before the next event causing us to loose the tracking information
                 //this will happen in a very short time, so adding to an expiring cache to help manage the cleanup of these entries is needed.
                 detailedTrackingFlowFilesToDelete.put(eventId, eventFlowFileId);
             }
-         }
+        }
 
         eventDuration.remove(eventId);
         eventStartTime.remove(eventId);
@@ -521,7 +554,8 @@ public class FeedEventStatistics implements Serializable {
 
     /**
      * is this the last DROP event for a feed that is being tracked to go to ops manager
-     * @param event the event
+     *
+     * @param event   the event
      * @param eventId the id
      * @return true if last event, false if not
      */
@@ -545,7 +579,7 @@ public class FeedEventStatistics implements Serializable {
             AtomicInteger activeCounts = feedFlowProcessing.get(feedFlowFileId);
             if (activeCounts != null) {
                 feedFlowProcessing.get(feedFlowFileId).decrementAndGet();
-                if (activeCounts.get() == 0) {
+                if (activeCounts.get() <= 0) {
                     //Feed is finished
                     eventsThatCompleteFeedFlow.add(eventId);
                     feedFlowFileEndTime.put(feedFlowFileId, event.getEventTime());
@@ -564,7 +598,7 @@ public class FeedEventStatistics implements Serializable {
     }
 
     public void cleanup(ProvenanceEventRecord event, Long eventId) {
-            checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId);
+        checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId);
     }
 
 
