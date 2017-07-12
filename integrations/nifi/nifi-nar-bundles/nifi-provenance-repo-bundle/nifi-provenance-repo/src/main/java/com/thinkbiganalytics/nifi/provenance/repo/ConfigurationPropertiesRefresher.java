@@ -42,35 +42,43 @@ public class ConfigurationPropertiesRefresher {
 
     @PostConstruct
     private void init() {
-
-        //initTimerThread();
+        initTimerThread();
     }
 
     public void checkAndRefreshProperties() {
-        Map<String, ConfigurationProperties.PropertyChange> changes = ConfigurationProperties.getInstance().refresh();
+        if(ConfigurationProperties.getInstance().isModified()) {
+            Map<String, ConfigurationProperties.PropertyChange> changes = ConfigurationProperties.getInstance().refresh();
 
-        if (changes != null && !changes.isEmpty()) {
-            ConfigurationProperties.PropertyChange runInterval = changes.get(ConfigurationProperties.RUN_INTERVAL_KEY);
-            if (runInterval != null) {
-                FeedStatisticsManager.getInstance().resetStatisticsInterval(new Long(runInterval.getNewValue()));
-                log.info("Reset {} ", runInterval);
-            }
-            ConfigurationProperties.PropertyChange maxEvents = changes.get(ConfigurationProperties.MAX_FEED_EVENTS_KEY);
-            if (maxEvents != null) {
-                FeedStatisticsManager.getInstance().resetMaxEvents(new Integer(maxEvents.getNewValue()));
-                log.info("Reset {} ", maxEvents);
-            }
-            ConfigurationProperties.PropertyChange backupLocation = changes.get(ConfigurationProperties.BACKUP_LOCATION_KEY);
-            if (backupLocation != null) {
-                FeedEventStatistics.getInstance().setBackupLocation(backupLocation.getNewValue());
-                log.info("Reset {} ", backupLocation);
-            }
+            if (changes != null && !changes.isEmpty()) {
+                ConfigurationProperties.PropertyChange runInterval = changes.get(ConfigurationProperties.RUN_INTERVAL_KEY);
+                if (runInterval != null) {
+                    FeedStatisticsManager.getInstance().resetStatisticsInterval(new Long(runInterval.getNewValue()));
+                    log.info("Reset {} ", runInterval);
+                }
+                ConfigurationProperties.PropertyChange maxEvents = changes.get(ConfigurationProperties.MAX_FEED_EVENTS_KEY);
+                if (maxEvents != null) {
+                    FeedStatisticsManager.getInstance().resetMaxEvents(new Integer(maxEvents.getNewValue()));
+                    log.info("Reset {} ", maxEvents);
+                }
+                ConfigurationProperties.PropertyChange backupLocation = changes.get(ConfigurationProperties.BACKUP_LOCATION_KEY);
+                if (backupLocation != null) {
+                    FeedEventStatistics.getInstance().setBackupLocation(backupLocation.getNewValue());
+                    log.info("Reset {} ", backupLocation);
+                }
+                ConfigurationProperties.PropertyChange orphanChildFlowFiles = changes.get(ConfigurationProperties.ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY);
+                if (orphanChildFlowFiles != null) {
+                    FeedEventStatistics.getInstance().updateEventTypeProcessorTypeSkipChildren(orphanChildFlowFiles.getNewValue());
+                }
 
+            }
         }
     }
 
 
+
+
     private void initTimerThread() {
+        log.info("Timer thread running every {} seconds to detect changes in the config.properties ",30);
         service.scheduleAtFixedRate(() -> {
             checkAndRefreshProperties();
         }, 30, 30, TimeUnit.SECONDS);
