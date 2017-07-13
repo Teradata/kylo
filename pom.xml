@@ -96,6 +96,8 @@
     <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
     <liquibase-hibernate4.version>3.5</liquibase-hibernate4.version>
     <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
+    <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
+    <maven.site.plugin.version>3.6</maven.site.plugin.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -931,6 +933,16 @@
           <version>${plugin.surefire.version}</version>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${maven.site.plugin.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
           <version>${plugin.license.version}</version>
@@ -948,16 +960,57 @@
     <profile>
       <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
       <!--* Integration Tests are not run if profile is not selected-->
-      <!--mvn clean -Pintegration-tests integration-test-->
+      <!--mvn clean -Pintegration-tests verify-->
 
       <id>integration-tests</id>
       <build>
         <plugins>
           <plugin>
+            <!-- Generates HTML report from Failsafe JUnit XML reports -->
+            <!-- Must be defined in pom.xml before Failsafe plugin, because
+            its bound to the same 'verify' phase and will not be called if
+            after failsafe's 'verify' goal which fails the build if there are
+            junit test failures -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-report-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>failsafe-report-only</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!-- Create CSS for existing Surefire HTML reports -->
+            <!-- Just like surefire plugin this has to appear before failsafe plugin in the pom.xml
+             because its bound to the same phase-->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <configuration>
+              <!-- no need to run the whole of 'site' generation, just create
+              CSS for already existing Surefire HTML reports -->
+              <generateReports>false</generateReports>
+            </configuration>
+            <executions>
+              <execution>
+                <id>verify</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>site</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <!-- Runs JUnit integration tests -->
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
+                <id>integration-test</id>
+                <phase>integration-test</phase>
                 <configuration>
                   <includes>
                     <include>**/*IT.class</include>
@@ -965,6 +1018,13 @@
                 </configuration>
                 <goals>
                   <goal>integration-test</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>verify</id>
+                <phase>verify</phase>
+                <goals>
+                  <!-- Will fail the build if there are junit test failures -->
                   <goal>verify</goal>
                 </goals>
               </execution>
