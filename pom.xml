@@ -966,44 +966,6 @@
       <build>
         <plugins>
           <plugin>
-            <!-- Generates HTML report from Failsafe JUnit XML reports -->
-            <!-- Must be defined in pom.xml before Failsafe plugin, because
-            its bound to the same 'verify' phase and will not be called if
-            after failsafe's 'verify' goal which fails the build if there are
-            junit test failures -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-report-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>verify</phase>
-                <goals>
-                  <goal>failsafe-report-only</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- Create CSS for existing Surefire HTML reports -->
-            <!-- Just like surefire plugin this has to appear before failsafe plugin in the pom.xml
-             because its bound to the same phase-->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-site-plugin</artifactId>
-            <configuration>
-              <!-- no need to run the whole of 'site' generation, just create
-              CSS for already existing Surefire HTML reports -->
-              <generateReports>false</generateReports>
-            </configuration>
-            <executions>
-              <execution>
-                <id>verify</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>site</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <!-- Runs JUnit integration tests -->
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
