@@ -78,6 +78,7 @@
       </text>
 
     <g ng-repeat="attribute in node.data.nodeAttributes.attributes" ng-attr-transform="translate(30,{{75+($index*25)}})">
+      <title>{{attribute.description}}</title>
 
       <!-- checked -->
       <svg fill="#3483BA" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" ng-hide="attribute.selected == false"  ng-click="node.data.nodeAttributes.deselect(attribute)">
