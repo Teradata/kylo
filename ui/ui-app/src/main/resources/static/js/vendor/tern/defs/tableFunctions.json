@@ -289,9 +289,9 @@
     },
     "Column": {
       "as": {
-        "!type": "fn(alias: string) -> Column",
-        "!doc": "Gives the column an alias.",
-        "!spark": ".as(%s)",
+        "!type": "fn(alias: string, opt_metadata: Metadata) -> Column",
+        "!doc": "Gives the column an alias and optional metadata.",
+        "!spark": ".as(%s%,?o)",
         "!sparkType": "column"
       },
       "cast": {
@@ -2398,6 +2398,15 @@
     "!doc": "Extracts the year as an integer from a given date/timestamp/string.",
     "!spark": "functions.year(%c)",
     "!sparkType": "column"
+  },
+
+  "!KYLO_FUNCTIONS": "These functions allow interactions with Kylo.",
+
+  "description": {
+    "!type": "fn(value: string) -> Metadata",
+    "!doc": "A column description",
+    "!spark": "new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", %s).build()",
+    "!sparkType": "Metadata"
   },
 
   "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",

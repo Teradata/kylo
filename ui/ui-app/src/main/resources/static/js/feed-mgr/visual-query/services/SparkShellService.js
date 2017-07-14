@@ -23,6 +23,7 @@
  * A column in a QueryResult.
  *
  * @typedef {Object} QueryResultColumn
+ * @property {string} comment a human-readable description of this column
  * @property {string} databaseName name of the database containing the table
  * @property {string} dataType name of the data type for the column
  * @property {string} displayName a human-readable name for the column
@@ -254,9 +255,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http", "$mdDialog", "
                 } else {
                     dataType = col.dataType;
                 }
-                var colDef = {
-                    name: col.hiveColumnLabel, description: "", dataType: dataType, primaryKey: false, nullable: false,
-                    sampleValues: []};
+                var colDef = {name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []};
                 if (dataType === 'decimal') {
                     //parse out the precisionScale
                     var precisionScale = '20,2';

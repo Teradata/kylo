@@ -88,8 +88,12 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/m
                         script += ", ";
                     }
                     script += target.val.fields[0] + ".col(\"" + StringUtils.escapeScala(target.val.fields[1]) + "\")";
-                    if (target.name !== null) {
-                        script += ".alias(\"" + StringUtils.escapeScala(target.name) + "\")"
+                    if (target.name !== null || target.description !== null) {
+                        script += ".as(\"" + StringUtils.escapeScala((target.name !== null) ? target.name : target.val.fields[1]) + "\"";
+                        if (target.description !== null) {
+                            script += ", new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", \"" + StringUtils.escapeScala(target.description) + "\").build()";
+                        }
+                        script += ")"
                     }
                 });
                 script += ")\n";

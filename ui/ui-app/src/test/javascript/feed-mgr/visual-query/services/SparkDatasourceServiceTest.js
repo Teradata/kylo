@@ -29,10 +29,11 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 11,
                     "name": "tickit.sales",
                     "nodeAttributes": {
-                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false}, {"name": "buyerid", "dataType": "int", "selected": false},
-                            {"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "qtysold", "dataType": "string", "selected": true}, {"name": "pricepaid", "dataType": "double", "selected": true},
-                            {"name": "commission", "dataType": "double", "selected": true}], "sql": "`tickit`.`sales`"
+                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false, "description": null}, {"name": "buyerid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "eventid", "dataType": "int", "selected": false, "description": null}, {"name": "dateid", "dataType": "smallint", "selected": false, "description": null},
+                            {"name": "qtysold", "dataType": "string", "selected": true, "description": "number of tickets"},
+                            {"name": "pricepaid", "dataType": "double", "selected": true, "description": null}, {"name": "commission", "dataType": "double", "selected": true, "description": null}],
+                        "sql": "`tickit`.`sales`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 4}, "left": {"location": "LEFT", "id": 1}, "right": {"location": "RIGHT", "id": 2}, "top": {"location": "TOP", "id": 3}},
                     "inputConnectors": [{"name": ""}],
@@ -41,7 +42,8 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                 }], "connections": []
             });
             expect(spark).toBe("val tbl11 = sqlContext.table(\"tickit.sales\").alias(\"tbl11\")\n"
-                               + "var df = tbl11.select(tbl11.col(\"qtysold\"), tbl11.col(\"pricepaid\"), tbl11.col(\"commission\"))\n");
+                               + "var df = tbl11.select(tbl11.col(\"qtysold\").as(\"qtysold\", new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", \"number of tickets\").build()),"
+                               + " tbl11.col(\"pricepaid\"), tbl11.col(\"commission\"))\n");
         }));
 
         it("should produce Spark for joined tables", mocks.inject(function (SparkDatasourceService) {
@@ -50,8 +52,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 10,
                     "name": "tickit.users",
                     "nodeAttributes": {
-                        "attributes": [{"name": "userid", "dataType": "int", "selected": false}, {"name": "username", "dataType": "string", "selected": true},
-                            {"name": "firstname", "dataType": "string", "selected": true}, {"name": "lastname", "dataType": "string", "selected": true}], "sql": "`tickit`.`users`"
+                        "attributes": [{"name": "userid", "dataType": "int", "selected": false, "description": null}, {"name": "username", "dataType": "string", "selected": true, "description": null},
+                            {"name": "firstname", "dataType": "string", "selected": true, "description": null}, {"name": "lastname", "dataType": "string", "selected": true, "description": null}],
+                        "sql": "`tickit`.`users`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 8}, "left": {"location": "LEFT", "id": 5}, "right": {"location": "RIGHT", "id": 6}, "top": {"location": "TOP", "id": 7}},
                     "inputConnectors": [{"name": ""}],
@@ -61,10 +64,11 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 11,
                     "name": "tickit.sales",
                     "nodeAttributes": {
-                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false}, {"name": "buyerid", "dataType": "int", "selected": false},
-                            {"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "qtysold", "dataType": "string", "selected": true}, {"name": "pricepaid", "dataType": "double", "selected": true},
-                            {"name": "commission", "dataType": "double", "selected": true}], "sql": "`tickit`.`sales`"
+                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false, "description": null}, {"name": "buyerid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "eventid", "dataType": "int", "selected": false, "description": null}, {"name": "dateid", "dataType": "smallint", "selected": false, "description": null},
+                            {"name": "qtysold", "dataType": "string", "selected": true, "description": null}, {"name": "pricepaid", "dataType": "double", "selected": true, "description": null},
+                            {"name": "commission", "dataType": "double", "selected": true, "description": null}],
+                        "sql": "`tickit`.`sales`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 12}, "left": {"location": "LEFT", "id": 9}, "right": {"location": "RIGHT", "id": 10}, "top": {"location": "TOP", "id": 11}},
                     "inputConnectors": [{"name": ""}],
@@ -74,8 +78,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 12,
                     "name": "tickit.event",
                     "nodeAttributes": {
-                        "attributes": [{"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "eventname", "dataType": "string", "selected": true}], "sql": "`tickit`.`event`"
+                        "attributes": [{"name": "eventid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "dateid", "dataType": "smallint", "selected": false, "description": null}, {"name": "eventname", "dataType": "string", "selected": true, "description": null}],
+                        "sql": "`tickit`.`event`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 16}, "left": {"location": "LEFT", "id": 13}, "right": {"location": "RIGHT", "id": 14}, "top": {"location": "TOP", "id": 15}},
                     "inputConnectors": [{"name": ""}],
@@ -85,7 +90,8 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 13,
                     "name": "tickit.venue",
                     "nodeAttributes": {
-                        "attributes": [{"name": "venueid", "dataType": "int", "selected": false}, {"name": "venuename", "dataType": "string", "selected": true}],
+                        "attributes": [{"name": "venueid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "venuename", "dataType": "string", "selected": true, "description": null}],
                         "sql": "`tickit`.`venue`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 20}, "left": {"location": "LEFT", "id": 17}, "right": {"location": "RIGHT", "id": 18}, "top": {"location": "TOP", "id": 19}},
@@ -126,7 +132,10 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                 "nodes": [{
                     "id": 10,
                     "name": "sample.t1",
-                    "nodeAttributes": {"attributes": [{"name": "id", "dataType": "smallint", "selected": true}, {"name": "id_1", "dataType": "smallint", "selected": true}], "sql": "`sample`.`t1`"},
+                    "nodeAttributes": {
+                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true, "description": null}, {"name": "id_1", "dataType": "smallint", "selected": true, "description": null}],
+                        "sql": "`sample`.`t1`"
+                    },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 24}, "left": {"location": "LEFT", "id": 21}, "right": {"location": "RIGHT", "id": 22}, "top": {"location": "TOP", "id": 23}},
                     "inputConnectors": [{"name": ""}],
                     "outputConnectors": [{"name": ""}],
@@ -135,8 +144,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 11,
                     "name": "sample.t2",
                     "nodeAttributes": {
-                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true}, {"name": "t1_id", "dataType": "smallint", "selected": true},
-                            {"name": "sample_t1_id", "dataType": "smallint", "selected": true}], "sql": "`sample`.`t2`"
+                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true, "description": null}, {"name": "t1_id", "dataType": "smallint", "selected": true, "description": null},
+                            {"name": "sample_t1_id", "dataType": "smallint", "selected": true, "description": null}],
+                        "sql": "`sample`.`t2`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 28}, "left": {"location": "LEFT", "id": 25}, "right": {"location": "RIGHT", "id": 26}, "top": {"location": "TOP", "id": 27}},
                     "inputConnectors": [{"name": ""}],
@@ -147,8 +157,8 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
             });
             expect(spark).toBe("val tbl10 = sqlContext.table(\"sample.t1\").alias(\"tbl10\")\n"
                                + "val tbl11 = sqlContext.table(\"sample.t2\").alias(\"tbl11\")\n"
-                               + "var df = tbl10.join(tbl11).select(tbl10.col(\"id\").alias(\"id_2\"), tbl10.col(\"id_1\"), tbl11.col(\"id\").alias(\"t2_id\"),"
-                               + " tbl11.col(\"t1_id\").alias(\"t2_t1_id\"), tbl11.col(\"sample_t1_id\").alias(\"t2_sample_t1_id\"))\n");
+                               + "var df = tbl10.join(tbl11).select(tbl10.col(\"id\").as(\"id_2\"), tbl10.col(\"id_1\"), tbl11.col(\"id\").as(\"t2_id\"), tbl11.col(\"t1_id\").as(\"t2_t1_id\"),"
+                               + " tbl11.col(\"sample_t1_id\").as(\"t2_sample_t1_id\"))\n");
         }));
 
         it("should produce Spark for pre-joined tables", mocks.inject(function (SparkDatasourceService) {
@@ -157,8 +167,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 10,
                     "name": "tickit.users",
                     "nodeAttributes": {
-                        "attributes": [{"name": "userid", "dataType": "int", "selected": false}, {"name": "username", "dataType": "string", "selected": true},
-                            {"name": "firstname", "dataType": "string", "selected": true}, {"name": "lastname", "dataType": "string", "selected": true}], "sql": "`tickit`.`users`"
+                        "attributes": [{"name": "userid", "dataType": "int", "selected": false, "description": null}, {"name": "username", "dataType": "string", "selected": true, "description": null},
+                            {"name": "firstname", "dataType": "string", "selected": true, "description": null}, {"name": "lastname", "dataType": "string", "selected": true, "description": null}],
+                        "sql": "`tickit`.`users`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 32}, "left": {"location": "LEFT", "id": 29}, "right": {"location": "RIGHT", "id": 30}, "top": {"location": "TOP", "id": 31}},
                     "inputConnectors": [{"name": ""}],
@@ -168,10 +179,10 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 11,
                     "name": "tickit.sales",
                     "nodeAttributes": {
-                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false}, {"name": "buyerid", "dataType": "int", "selected": false},
-                            {"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "qtysold", "dataType": "string", "selected": true}, {"name": "pricepaid", "dataType": "double", "selected": true},
-                            {"name": "commission", "dataType": "double", "selected": true}], "sql": "`tickit`.`sales`"
+                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false, "description": null}, {"name": "buyerid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "eventid", "dataType": "int", "selected": false, "description": null}, {"name": "dateid", "dataType": "smallint", "selected": false, "description": null},
+                            {"name": "qtysold", "dataType": "string", "selected": true, "description": null}, {"name": "pricepaid", "dataType": "double", "selected": true, "description": null},
+                            {"name": "commission", "dataType": "double", "selected": true, "description": null}], "sql": "`tickit`.`sales`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 36}, "left": {"location": "LEFT", "id": 33}, "right": {"location": "RIGHT", "id": 34}, "top": {"location": "TOP", "id": 35}},
                     "inputConnectors": [{"name": ""}],
@@ -191,10 +202,10 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 11,
                     "name": "tickit.sales",
                     "nodeAttributes": {
-                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false}, {"name": "buyerid", "dataType": "int", "selected": false},
-                            {"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "qtysold", "dataType": "string", "selected": true}, {"name": "pricepaid", "dataType": "double", "selected": true},
-                            {"name": "commission", "dataType": "double", "selected": true}], "sql": "`tickit`.`sales`"
+                        "attributes": [{"name": "salesid", "dataType": "int", "selected": false, "description": null}, {"name": "buyerid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "eventid", "dataType": "int", "selected": false, "description": null}, {"name": "dateid", "dataType": "smallint", "selected": false, "description": null},
+                            {"name": "qtysold", "dataType": "string", "selected": true, "description": null}, {"name": "pricepaid", "dataType": "double", "selected": true, "description": null},
+                            {"name": "commission", "dataType": "double", "selected": true, "description": null}], "sql": "`tickit`.`sales`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 40}, "left": {"location": "LEFT", "id": 37}, "right": {"location": "RIGHT", "id": 38}, "top": {"location": "TOP", "id": 39}},
                     "inputConnectors": [{"name": ""}],
@@ -204,8 +215,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 12,
                     "name": "tickit.event",
                     "nodeAttributes": {
-                        "attributes": [{"name": "eventid", "dataType": "int", "selected": false}, {"name": "dateid", "dataType": "smallint", "selected": false},
-                            {"name": "eventname", "dataType": "string", "selected": true}], "sql": "`tickit`.`event`"
+                        "attributes": [{"name": "eventid", "dataType": "int", "selected": false, "description": null},
+                            {"name": "dateid", "dataType": "smallint", "selected": false, "description": null}, {"name": "eventname", "dataType": "string", "selected": true, "description": null}],
+                        "sql": "`tickit`.`event`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 44}, "left": {"location": "LEFT", "id": 41}, "right": {"location": "RIGHT", "id": 42}, "top": {"location": "TOP", "id": 43}},
                     "inputConnectors": [{"name": ""}],
@@ -215,7 +227,8 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "id": 14,
                     "name": "tickit.date",
                     "nodeAttributes": {
-                        "attributes": [{"name": "dateid", "dataType": "smallint", "selected": false}, {"name": "caldate", "dataType": "date", "selected": true}],
+                        "attributes": [{"name": "dateid", "dataType": "smallint", "selected": false, "description": null},
+                            {"name": "caldate", "dataType": "date", "selected": true, "description": null}],
                         "sql": "`tickit`.`date`"
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 48}, "left": {"location": "LEFT", "id": 45}, "right": {"location": "RIGHT", "id": 46}, "top": {"location": "TOP", "id": 47}},
@@ -255,7 +268,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "name": "sample.t1",
                     "datasourceId": "HIVE",
                     "nodeAttributes": {
-                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true}, {"name": "id_1", "dataType": "smallint", "selected": true}],
+                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true, "description": null}, {"name": "id_1", "dataType": "smallint", "selected": true, "description": null}],
                         "reference": ["sample", "t1"]
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 24}, "left": {"location": "LEFT", "id": 21}, "right": {"location": "RIGHT", "id": 22}, "top": {"location": "TOP", "id": 23}},
@@ -267,8 +280,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "name": "sample.t2",
                     "datasourceId": "0e63b63e-e1c3-4502-99fb-b86272bc6ede",
                     "nodeAttributes": {
-                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true}, {"name": "t1_id", "dataType": "smallint", "selected": true},
-                            {"name": "sample_t1_id", "dataType": "smallint", "selected": true}], "reference": ["sample", "t2"]
+                        "attributes": [{"name": "id", "dataType": "smallint", "selected": true, "description": "t2 id"},
+                            {"name": "t1_id", "dataType": "smallint", "selected": true, "description": null}, {"name": "sample_t1_id", "dataType": "smallint", "selected": true, "description": null}],
+                        "reference": ["sample", "t2"]
                     },
                     "connectors": {"bottom": {"location": "BOTTOM", "id": 28}, "left": {"location": "LEFT", "id": 25}, "right": {"location": "RIGHT", "id": 26}, "top": {"location": "TOP", "id": 27}},
                     "inputConnectors": [{"name": ""}],
@@ -279,8 +293,9 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
             });
             expect(spark).toBe("val tbl10 = sqlContext.table(\"sample.t1\").alias(\"tbl10\")\n"
                                + "val tbl11 = datasourceProvider.getTableFromDatasource(\"sample.t2\", \"0e63b63e-e1c3-4502-99fb-b86272bc6ede\", sqlContext).alias(\"tbl11\")\n"
-                               + "var df = tbl10.join(tbl11).select(tbl10.col(\"id\").alias(\"id_2\"), tbl10.col(\"id_1\"), tbl11.col(\"id\").alias(\"t2_id\"),"
-                               + " tbl11.col(\"t1_id\").alias(\"t2_t1_id\"), tbl11.col(\"sample_t1_id\").alias(\"t2_sample_t1_id\"))\n");
+                               + "var df = tbl10.join(tbl11).select(tbl10.col(\"id\").as(\"id_2\"), tbl10.col(\"id_1\"),"
+                               + " tbl11.col(\"id\").as(\"t2_id\", new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", \"t2 id\").build()), tbl11.col(\"t1_id\").as(\"t2_t1_id\"),"
+                               + " tbl11.col(\"sample_t1_id\").as(\"t2_sample_t1_id\"))\n");
         }));
     });
 });

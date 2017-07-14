@@ -85,10 +85,26 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
          */
         this.sparkShellService = function () {
             var model = FeedService.createFeedModel.dataTransformation;
-            var source = (angular.isObject(self.sqlModel) && angular.isArray(model.datasourceIds)
-                          && (model.datasourceIds.length > 1 || (model.datasourceIds.length === 1 && model.datasourceIds[0] != undefined && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE)))
-                ? self.sqlModel
-                : self.sql;
+
+            // Select source model
+            var useSqlModel = false;
+            if (angular.isObject(self.sqlModel)) {
+                // Check for non-Hive datasource
+                if (angular.isArray(model.datasourceIds) && model.datasourceIds.length > 0) {
+                    useSqlModel = (model.datasourceIds.length > 1 || (angular.isDefined(model.datasourceIds[0]) && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE));
+                }
+                if (!useSqlModel) {
+                    useSqlModel = _.chain(self.sqlModel.nodes)
+                        .map(_.property("nodeAttributes"))
+                        .map(_.property("attributes"))
+                        .flatten(true)
+                        .filter(function (attr) {
+                            return (attr.selected && attr.description !== null);
+                        });
+                }
+            }
+
+            var source = useSqlModel ? self.sqlModel : self.sql;
 
             // if we dont have any datasources, default it to Hive data source
             if(model.datasources == null || model.datasources.length == 0){

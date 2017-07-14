@@ -72,7 +72,7 @@ abstract class TransformScript(destination: String, profiler: Profiler) {
 
             // Generate the column statistics
             val profile: Option[util.List[OutputRow]] = Option(profiler)
-                .map(_.profile(dataset, new ProfilerConfiguration))
+                .flatMap(p => Option(p.profile(dataset, new ProfilerConfiguration)))
                 .map(_.getColumnStatisticsMap.asScala)
                 .map(_.flatMap(_._2.getStatistics))
                 .map(_.toSeq)
@@ -102,6 +102,7 @@ abstract class TransformScript(destination: String, profiler: Profiler) {
             var index = 1
             schema.fields.map(field => {
                 val column = new DefaultQueryResultColumn
+                column.setComment(if (field.metadata.contains("comment")) field.metadata.getString("comment") else null)
                 column.setDataType(DataTypeUtils.getHiveObjectInspector(field.dataType).getTypeName)
                 column.setHiveColumnLabel(field.name)
                 column.setTableName(destination)

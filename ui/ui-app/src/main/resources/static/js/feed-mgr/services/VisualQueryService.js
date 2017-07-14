@@ -102,6 +102,7 @@
  * A result target.
  *
  * @typedef {Object} ResTarget
+ * @param {?string} description the comment for the column
  * @param {?string} name the column label for an 'AS ColumnLabel' clause, or NULL if there was none
  * @param {ColumnRef} val the value expression to compute or assign
  */
@@ -474,6 +475,7 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
 
                             // Add column to target list
                             targetList.push({
+                                description: attr.description,
                                 name: (alias !== attr.name) ? alias : null,
                                 val: {fields: [table, attr.name]}
                             });

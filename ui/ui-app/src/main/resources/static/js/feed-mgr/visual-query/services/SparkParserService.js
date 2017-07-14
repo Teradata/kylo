@@ -669,14 +669,14 @@ angular.module(moduleName).factory("SparkParserService", [function() {
         switch (spark.type) {
             case SparkType.COLUMN:
             case SparkType.CONDITION_CHAIN:
-                return ".select(new Column(\"*\"), " + spark.source + ")";
+                return ".select(" + DATA_FRAME_VARIABLE + "(\"*\"), " + spark.source + ")";
 
             case SparkType.DATA_FRAME:
                 return spark.source;
 
             case SparkType.LITERAL:
                 var column = SparkExpression.format("%c", spark);
-                return ".select(new Column(\"*\"), " + column + ")";
+                return ".select(" + DATA_FRAME_VARIABLE + "(\"*\"), " + column + ")";
 
             case SparkType.TRANSFORM:
                 return ".transform(" + spark.source + ")";
@@ -711,7 +711,7 @@ angular.module(moduleName).factory("SparkParserService", [function() {
 
             case "Identifier":
                 var label = StringUtils.quote(sparkShellService.getColumnLabel(node.name));
-                return new SparkExpression("new Column(\"" + label + "\")", SparkType.COLUMN, node.start, node.end);
+                return new SparkExpression(DATA_FRAME_VARIABLE + "(\"" + label + "\")", SparkType.COLUMN, node.start, node.end);
 
             case "Literal":
                 return new SparkExpression(node.raw, SparkType.LITERAL, node.start, node.end);

@@ -107,7 +107,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                 "import org.apache.spark.sql._\n"
                 + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                 + "df = df\n"
-                + "df = df.select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\")).divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
+                + "df = df.select(df(\"*\"), df(\"commission\").divide(df(\"pricepaid\")).divide(df(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
                 + "df\n");
         }));
 
@@ -116,13 +116,13 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
             it("from applied transformation", mocks.inject(function (SparkShellService) {
                 var service = new SparkShellService("SELECT * FROM invalid");
                 service.states_[0].columns = [
-                    {dataType: "string", hiveColumnLabel: "username"},
-                    {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold"}
+                    {dataType: "string", hiveColumnLabel: "username", comment: null},
+                    {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold", comment: "avg tkt price"}
                 ];
                 expect(service.getFields()).toEqual([
-                    {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: [], derivedDataType: "string"},
+                    {name: "username", description: null, dataType: "string", primaryKey: false, nullable: false, sampleValues: [], derivedDataType: "string"},
                     {
-                        name: "(pricepaid - commission) / qtysold", description: "", dataType: "decimal", primaryKey: false, nullable: false, sampleValues: [], precisionScale: "8,2",
+                        name: "(pricepaid - commission) / qtysold", description: "avg tkt price", dataType: "decimal", primaryKey: false, nullable: false, sampleValues: [], precisionScale: "8,2",
                         derivedDataType: "decimal"
                     }
                 ]);
@@ -192,7 +192,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "import org.apache.spark.sql._\n"
                     + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                     + "df = df.limit(1000)\n"
-                    + "df = df.select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\")).divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
+                    + "df = df.select(df(\"*\"), df(\"commission\").divide(df(\"pricepaid\")).divide(df(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))\n"
                     + "df\n");
             }));
             it("from a DataFrame expression", mocks.inject(function (SparkShellService) {
@@ -249,7 +249,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "import org.apache.spark.sql._\n"
                     + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                     + "df = df.limit(1000)\n"
-                    + "df = df.filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(new Column(\"pricepaid\").minus(new Column(\"commission\")).gt(functions.lit(200))))\n"
+                    + "df = df.filter(df(\"qtysold\").equalTo(functions.lit(2)).and(df(\"pricepaid\").minus(df(\"commission\")).gt(functions.lit(200))))\n"
                     + "df\n");
             }));
             it("from an object expression", mocks.inject(function (SparkShellService) {
@@ -270,7 +270,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "import org.apache.spark.sql._\n"
                     + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                     + "df = df.limit(1000)\n"
-                    + "df = df.select(new Column(\"*\"), new Column(\"eventname\").over(Window.partitionBy(new Column(\"venuecity\"))))\n"
+                    + "df = df.select(df(\"*\"), df(\"eventname\").over(Window.partitionBy(df(\"venuecity\"))))\n"
                     + "df\n");
             }));
             it("from an optional expression", mocks.inject(function (SparkShellService) {
@@ -287,7 +287,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "import org.apache.spark.sql._\n"
                     + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                     + "df = df.limit(1000)\n"
-                    + "df = df.select(new Column(\"*\"), functions.rand())\n"
+                    + "df = df.select(df(\"*\"), functions.rand())\n"
                     + "df\n");
             }));
             it("from a vararg expression", mocks.inject(function (SparkShellService) {
@@ -315,7 +315,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     "import org.apache.spark.sql._\n"
                     + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                     + "df = df.limit(1000)\n"
-                    + "df = df.groupBy(new Column(\"username\"), new Column(\"eventname\")).sum(\"qtysold\", \"pricepaid\")\n"
+                    + "df = df.groupBy(df(\"username\"), df(\"eventname\")).sum(\"qtysold\", \"pricepaid\")\n"
                     + "df\n");
             }));
         });
@@ -399,8 +399,8 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                 "import org.apache.spark.sql._\n"
                 + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                 + "df = df.limit(1000)\n"
-                + "df = df.select(new Column(\"*\"), functions.lit(42))\n"
-                + "df = df.select(new Column(\"*\"), functions.lit(\"thinkbig\"))\n"
+                + "df = df.select(df(\"*\"), functions.lit(42))\n"
+                + "df = df.select(df(\"*\"), functions.lit(\"thinkbig\"))\n"
                 + "df\n");
 
             // Delete first formula
@@ -409,7 +409,7 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                 "import org.apache.spark.sql._\n"
                 + "var df = sqlContext.sql(\"SELECT * FROM invalid\")\n"
                 + "df = df.limit(1000)\n"
-                + "df = df.select(new Column(\"*\"), functions.lit(\"thinkbig\"))\n"
+                + "df = df.select(df(\"*\"), functions.lit(\"thinkbig\"))\n"
                 + "df\n");
         }));
 
