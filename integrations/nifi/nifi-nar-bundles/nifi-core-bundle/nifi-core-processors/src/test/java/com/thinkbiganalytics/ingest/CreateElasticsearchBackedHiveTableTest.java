@@ -45,6 +45,8 @@ public class CreateElasticsearchBackedHiveTableTest {
 
     public static final String CATEGORY = "test_category";
     public static final String FEED = "test_feed";
+    public static final String FEED_ROOT = "s3a://hive-bucket/model.db";
+    public static final String LOCATION = FEED_ROOT + "/" + CATEGORY + "/" + FEED + "/index";
     public static final String NODES = "localhost:8300";
     public static final String FIELD_STRING = "Name,Phone";
     public static final String JAR_URL = "jar://url";
@@ -72,20 +74,24 @@ public class CreateElasticsearchBackedHiveTableTest {
         ColumnSpec spec2 = new ColumnSpec("iD", "int", "");
         ColumnSpec spec3 = new ColumnSpec("PHONE", "string", "");
         ColumnSpec[] specs = {spec, spec2, spec3};
-        List<String> statements = table.getHQLStatements(specs, NODES, FEED, CATEGORY, "true", "true", "", JAR_URL, FIELD_STRING);
+        List<String> statements = table.getHQLStatements(specs, NODES, FEED_ROOT, FEED, CATEGORY, "true", "true", "", JAR_URL, FIELD_STRING);
         assertEquals("ADD JAR " + JAR_URL, statements.get(0));
         assertEquals("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
                      + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) "
-                     + "STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                     + "STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' "
+                     + "LOCATION '" + LOCATION + "' "
+                     + "TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                      + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')", statements.get(1));
     }
 
     @Test
     public void testGeneratingHQL() throws Exception {
-        String hql = table.generateHQL("id int, count int, name string", NODES, FEED, CATEGORY, "true", "true", "");
+        String hql = table.generateHQL("id int, count int, name string", NODES, FEED_ROOT, FEED, CATEGORY, "true", "true", "");
         assertEquals("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
                      + "_index (id int, count int, name string, kylo_schema string, kylo_table string) STORED BY "
-                     + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                     + "'org.elasticsearch.hadoop.hive.EsStorageHandler' "
+                     + "LOCATION '" + LOCATION + "' "
+                     + "TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                      + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')", hql);
     }
 
@@ -94,6 +100,7 @@ public class CreateElasticsearchBackedHiveTableTest {
         // Test with only required properties
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, FIELD_SPEC);
         runner.setProperty(CreateElasticsearchBackedHiveTable.NODES, NODES);
+        runner.setProperty(CreateElasticsearchBackedHiveTable.FEED_ROOT, FEED_ROOT);
         runner.setProperty(CreateElasticsearchBackedHiveTable.FIELD_INDEX_STRING, FIELD_STRING);
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", CATEGORY, "metadata.systemFeedName", FEED));
         runner.run();
@@ -103,8 +110,10 @@ public class CreateElasticsearchBackedHiveTableTest {
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) STORED BY "
-                                                        + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) "
+                                                        + "STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' "
+                                                        + "LOCATION '" + LOCATION + "' "
+                                                        + "TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                                                         + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true')");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
@@ -115,6 +124,7 @@ public class CreateElasticsearchBackedHiveTableTest {
         // Test with all properties
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, FIELD_SPEC);
         runner.setProperty(CreateElasticsearchBackedHiveTable.NODES, NODES);
+        runner.setProperty(CreateElasticsearchBackedHiveTable.FEED_ROOT, FEED_ROOT);
         runner.setProperty(CreateElasticsearchBackedHiveTable.FIELD_INDEX_STRING, FIELD_STRING);
         runner.setProperty(CreateElasticsearchBackedHiveTable.JAR_URL, JAR_URL);
         runner.setProperty(CreateElasticsearchBackedHiveTable.ID_FIELD, ID_FIELD);
@@ -126,8 +136,10 @@ public class CreateElasticsearchBackedHiveTableTest {
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS " + CATEGORY + "." + FEED
-                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) STORED BY "
-                                                        + "'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
+                                                        + "_index (`name` string, `phone` string, processing_dttm string, kylo_schema string, kylo_table string) "
+                                                        + "STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' "
+                                                        + "LOCATION '" + LOCATION + "' "
+                                                        + "TBLPROPERTIES('es.resource' = 'kylo-data/hive-data', 'es.nodes' = '"
                                                         + NODES + "', 'es.nodes.wan.only' = 'true', 'es.index.auto.create' = 'true', 'es.mapping.id' = '" + ID_FIELD + "')");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
