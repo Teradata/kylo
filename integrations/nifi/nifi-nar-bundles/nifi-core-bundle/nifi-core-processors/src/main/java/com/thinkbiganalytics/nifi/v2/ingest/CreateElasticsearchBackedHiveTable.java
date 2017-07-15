@@ -37,6 +37,8 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +68,15 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         .name("Nodes")
         .description("A comma separated list of one or more Elasticsearch nodes to be used.")
         .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor FEED_ROOT = new PropertyDescriptor.Builder()
+        .name("Feed Root Path")
+        .description("Specify the full HDFS or S3 root path for the index table.")
+        .required(true)
+        .defaultValue("${s3ingest.s3.protocol}://${s3ingest.hiveBucket}/${hive.profile.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -139,6 +150,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(NODES);
+        pds.add(FEED_ROOT);
         pds.add(ID_FIELD);
         pds.add(FIELD_SPECIFICATION);
         pds.add(FEED_NAME);
@@ -177,22 +189,29 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
-        validateArrayProperty("column specification", columnSpecs, session, flowFile);
+        validateArrayProperty(FIELD_SPECIFICATION.getDisplayName(), columnSpecs, session, flowFile);
 
         final String feedName = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-        validateStringProperty("feed name", feedName, session, flowFile);
+        validateStringProperty(FEED_NAME.getDisplayName(), feedName, session, flowFile);
 
         final String categoryName = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-        validateStringProperty("category name", categoryName, session, flowFile);
+        validateStringProperty(FEED_CATEGORY.getDisplayName(), categoryName, session, flowFile);
 
         final String nodes = context.getProperty(NODES).evaluateAttributeExpressions(flowFile).getValue();
-        validateStringProperty("elasticsearch nodes", nodes, session, flowFile);
+        validateStringProperty(NODES.getDisplayName(), nodes, session, flowFile);
 
         final String indexString = context.getProperty(FIELD_INDEX_STRING).evaluateAttributeExpressions(flowFile).getValue();
-        validateStringProperty("index string", indexString, session, flowFile);
+        validateStringProperty(FIELD_INDEX_STRING.getDisplayName(), indexString, session, flowFile);
 
-        List<String> hiveStatements = getHQLStatements(columnSpecs, nodes, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
+        final String feedRoot = context.getProperty(FEED_ROOT).evaluateAttributeExpressions(flowFile).getValue();
+        validateStringProperty(FEED_ROOT.getDisplayName(), indexString, session, flowFile);
+
+        List<String> hiveStatements = getHQLStatements(columnSpecs, nodes, feedRoot, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
+
+
+
+
 
         executeStatements(session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
 
@@ -214,9 +233,13 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         }
     }
 
-    public String generateHQL(String columnsSQL, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField) {
+    public String generateHQL(String columnsSQL, String nodes, String locationRoot, String feedName, String categoryName, String useWan, String autoIndex, String idField) {
         // elastic search records for the kylo-data index require the kylo_schema and kylo_table
         columnsSQL = columnsSQL + ", kylo_schema string, kylo_table string";
+
+        // Construct location
+        Path path = Paths.get(locationRoot, categoryName, feedName, "index" );
+        String location = path.toString().replace(":/", "://");
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
@@ -227,7 +250,11 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
             .append(" (")
             .append(columnsSQL)
             .append(") ")
-            .append("STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' TBLPROPERTIES('es.resource' = '")
+            .append("STORED BY 'org.elasticsearch.hadoop.hive.EsStorageHandler' ")
+            .append("LOCATION '")
+            .append(location)
+            .append( "' ")
+            .append("TBLPROPERTIES('es.resource' = '")
             .append(KYLO_DATA_INDEX_NAME)
             .append("/")
             .append(KYLO_DATA_INDEX_TYPE)
@@ -248,7 +275,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         return sb.toString();
     }
 
-    public List<String> getHQLStatements(ColumnSpec[] columnSpecs, String nodes, String feedName, String categoryName, String useWan, String autoIndex, String idField,
+    public List<String> getHQLStatements(ColumnSpec[] columnSpecs, String nodes, String locationRoot, String feedName, String categoryName, String useWan, String autoIndex, String idField,
                                          String jarUrl, String indexFieldString) {
 
         final ColumnSpec[] partitions = {};
@@ -262,7 +289,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
             .collect(Collectors.toList());
 
         String columnsSQL = tableType.deriveColumnSpecification(indexCols.toArray(new ColumnSpec[indexCols.size()]), partitions, "");
-        String hql = generateHQL(columnsSQL, nodes, feedName, categoryName, useWan, autoIndex, idField);
+        String hql = generateHQL(columnsSQL, nodes, locationRoot, feedName, categoryName, useWan, autoIndex, idField);
 
         List<String> hiveStatements = new ArrayList<>();
 
