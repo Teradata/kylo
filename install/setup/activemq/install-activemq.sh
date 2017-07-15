@@ -70,7 +70,7 @@ echo "Installing as a service"
 
 chown -R $ACTIVEMQ_USER:$ACTIVEMQ_GROUP $ACTIVEMQ_INSTALL_HOME
 cp $ACTIVEMQ_INSTALL_HOME/current/bin/env /etc/default/activemq
-sed -i '~s/^ACTIVEMQ_USER=""/ACTIVEMQ_USER="$ACTIVEMQ_USER"/' /etc/default/activemq
+sed -i "~s|^ACTIVEMQ_USER=\"\"|ACTIVEMQ_USER=\"$ACTIVEMQ_USER\"|" /etc/default/activemq
 chmod 644 /etc/default/activemq
 ln -snf  $ACTIVEMQ_INSTALL_HOME/current/bin/activemq /etc/init.d/activemq
 
