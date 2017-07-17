@@ -46,10 +46,7 @@ public class FileResourceLoaderService {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    public FileResourceLoaderService(){
-    }
-
-    private String resourceAsString(Resource resource) {
+    public String resourceAsString(Resource resource) {
         try {
             if (resource != null) {
                 InputStream is = resource.getInputStream();
@@ -72,10 +69,9 @@ public class FileResourceLoaderService {
         return resourceAsString(resource);
     }
 
-    Resource[] loadResources(String pattern) throws IOException {
+    public Resource[] loadResources(String pattern) throws IOException {
         return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(pattern);
     }
-
 
     public List<String> loadResourcesAsString(String pattern) {
         try {

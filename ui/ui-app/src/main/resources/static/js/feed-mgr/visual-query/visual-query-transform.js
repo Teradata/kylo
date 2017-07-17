@@ -194,7 +194,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
          * Creates a Tern server.
          */
         function createTernServer() {
-            $http.get('js/vendor/tern/defs/tableFunctions.json').then(function (response) {
+            $http.get(RestUrlService.UI_BASE_URL + "/spark-functions").then(function (response) {
                 self.sparkShellService.setFunctionDefs(response.data);
 
                 self.ternServer = new CodeMirror.TernServer({defs: [response.data]});

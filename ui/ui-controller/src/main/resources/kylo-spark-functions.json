@@ -1,0 +1,9 @@
+{
+  "!name": "kylo-spark-functions",
+  "description": {
+    "!type": "fn(value: string) -> Metadata",
+    "!doc": "A column description",
+    "!spark": "new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", %s).build()",
+    "!sparkType": "Metadata"
+  }
+}

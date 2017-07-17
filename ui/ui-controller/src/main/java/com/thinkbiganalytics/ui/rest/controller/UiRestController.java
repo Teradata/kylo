@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
@@ -40,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 
 @Component
 @Path("v1/ui")
+@Produces(MediaType.APPLICATION_JSON)
 public class UiRestController {
 
     private static Logger log = LoggerFactory.getLogger(UiRestController.class);
@@ -52,28 +54,33 @@ public class UiRestController {
 
     private List<ProcessorTemplate> processorTemplates;
 
+    private Map<String, Object> sparkFunctions;
+
     @PostConstruct
-    private void init(){
+    private void init() {
         processorTemplates = uiTemplateService.loadProcessorTemplateDefinitionFiles();
-        if(!processorTemplates.isEmpty()) {
+        if (!processorTemplates.isEmpty()) {
             log.info("Loaded {} custom processor templates ", processorTemplates.size());
         }
+
+        sparkFunctions = uiTemplateService.loadSparkFunctionsDefinitions();
     }
 
     @GET
     @Path("template-table-options")
-    @Produces(MediaType.APPLICATION_JSON)
     public List<TemplateTableOption> getTemplateTableOptions() {
         return (templateTableOptions != null) ? templateTableOptions : Collections.emptyList();
     }
 
     @GET
     @Path("processor-templates")
-    @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessorTemplate> getProcessorTemplate() {
         return (processorTemplates != null) ? processorTemplates : Collections.emptyList();
     }
 
-
-
+    @GET
+    @Path("spark-functions")
+    public Map<String, Object> getSparkFunctions() {
+        return sparkFunctions;
+    }
 }

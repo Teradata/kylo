@@ -1,5 +1,5 @@
 {
-  "!name":"tableDataFunctions",
+  "!name": "apache-spark-functions",
   "!define": {
     "AFTSurvivalRegression": {
       "run": {
@@ -2400,15 +2400,6 @@
     "!sparkType": "column"
   },
 
-  "!KYLO_FUNCTIONS": "These functions allow interactions with Kylo.",
-
-  "description": {
-    "!type": "fn(value: string) -> Metadata",
-    "!doc": "A column description",
-    "!spark": "new org.apache.spark.sql.types.MetadataBuilder().putString(\"comment\", %s).build()",
-    "!sparkType": "Metadata"
-  },
-
   "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
 
   "acos": {
@@ -3163,7 +3154,7 @@
   },
   "isin": {
     "!type": "fn(value: Column, list_varargs: Column) -> Column",
-    "!doc":"Determines if the value is contained in the list.",
+    "!doc": "Determines if the value is contained in the list.",
     "!spark": "%c.isin(%*c)",
     "!sparkType": "column"
   },
