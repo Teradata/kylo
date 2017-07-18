@@ -21,10 +21,10 @@ package com.thinkbiganalytics.feedmgr.config;
  */
 
 
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
@@ -37,6 +37,7 @@ import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategory
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
+import com.thinkbiganalytics.feedmgr.service.domaintype.DomainTypeTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
@@ -67,7 +68,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
-import org.springframework.util.Assert;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -267,5 +267,13 @@ public class FeedManagerConfiguration {
     @Bean
     public NifiFlowCacheClusterManager nifiFlowCacheClusterManager() {
         return new NifiFlowCacheClusterManager();
+    }
+
+    /**
+     * Transforms domain type objects between the REST and domain models.
+     */
+    @Bean
+    public DomainTypeTransform domainTypeTransform() {
+        return new DomainTypeTransform();
     }
 }
