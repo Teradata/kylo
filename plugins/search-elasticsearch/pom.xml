@@ -16,6 +16,17 @@
   </properties>
   <artifactId>kylo-search-elasticsearch</artifactId>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.modeshape.bom</groupId>
+        <artifactId>modeshape-bom-embedded</artifactId>
+        <version>${modeshape.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -51,14 +62,6 @@
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-elasticsearch-index-provider</artifactId>
       <version>${elasticsearchindexprovider.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.modeshape.bom</groupId>
-      <artifactId>modeshape-bom-embedded</artifactId>
-      <version>${modeshape.version}</version>
-      <type>pom</type>
-      <scope>import</scope>
     </dependency>
 
     <dependency>
