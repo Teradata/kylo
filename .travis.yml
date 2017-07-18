@@ -9,7 +9,6 @@ sudo: required
 # Set build lifecycle options
 env:
   global:
-  - MAVEN_OPTS="-Xms2g -Xmx4g"
   - MAVEN_SKIP_RC=true
 
 addons:
