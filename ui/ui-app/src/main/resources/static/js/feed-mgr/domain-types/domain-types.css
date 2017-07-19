@@ -1,0 +1,7 @@
+form[name=vm\.domainTypeForm] .CodeMirror-line {
+  padding-left: 0;
+}
+
+form[name=vm\.domainTypeForm] readonly-section .CodeMirror {
+  border: none;
+}

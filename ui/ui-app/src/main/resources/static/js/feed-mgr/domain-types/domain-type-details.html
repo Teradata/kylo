@@ -1,0 +1,99 @@
+<div>
+  <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+  <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
+    <header-section>
+      <div layout="row" layout-align="center start">
+        <div class="card-title">Domain Type Details</div>
+        <span flex></span>
+        <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};padding-right:16px;" size="30"></ng-md-icon>
+      </div>
+    </header-section>
+    <body-section>
+      <form name="vm.domainTypeForm">
+        <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                                 editable="vm.isEditable" is-valid="vm.domainTypeForm.$valid" allow-edit="vm.allowAdmin">
+          <readonly-section>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Type Name</span>
+
+              <div flex>
+                {{vm.model.title}}
+              </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Description</span>
+
+              <div flex>
+                {{vm.model.description}}
+              </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Regular Expression</span>
+
+              <div flex ng-model="vm.model.regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.viewerOptions"></div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
+              <span flex="25" class="property-name">Icon</span>
+
+              <div layout="column" style="height:45px">
+                <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
+              </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Rules</span>
+
+              <div flex>
+                <ul class="layout-padding-left-16" style="margin:0">
+                  <li ng-repeat="rule in vm.getAllFieldPolicies(vm.model)">{{rule.name}}</li>
+                </ul>
+              </div>
+            </div>
+          </readonly-section>
+          <editable-section>
+            <md-input-container class="md-block">
+              <label>Title</label>
+              <input ng-model="vm.editModel.title" ng-required="true"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Description</label>
+              <input ng-model="vm.editModel.description"/>
+            </md-input-container>
+
+            <md-input-container class="md-block">
+              <label>Regular Expression</label>
+              <div flex name="regex" ng-model="vm.editModel.regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.editorOptions"></div>
+              <div ng-messages="vm.domainTypeForm.regex.$error" md-auto-hide="false">
+                <div ng-message="syntaxError">{{vm.regexSyntaxError}}</div>
+              </div>
+            </md-input-container>
+
+            <div layout="column">
+              <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+                <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
+                <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit; fill:{{vm.editModel.iconColor}}"></ng-md-icon>
+                <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
+              </div>
+            </div>
+
+            <div layout="column">
+              <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+                <span class="md-input-label" style="font-size: 11px;" flex="25">Rules </span>
+                <div ng-click="vm.showFieldRuleDialog(vm.editModel)" style="color:#2D78B1;">
+                  <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
+                    <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
+                  </md-button>
+                  ADD
+                </div>
+                <div ng-if="vm.hasFieldPolicies(vm.editModel)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+                  <span ng-if="vm.editModel.fieldPolicy.standardization.length > 0">{{vm.editModel.fieldPolicy.standardization.length}} Standardizers</span>
+                  <span ng-if="vm.editModel.fieldPolicy.validation.length > 0">{{vm.editModel.fieldPolicy.validation.length}} Validators</span>
+                </div>
+              </div>
+            </div>
+          </editable-section>
+        </vertical-section-layout>
+      </form>
+    </body-section>
+  </card-layout>
+</div>
