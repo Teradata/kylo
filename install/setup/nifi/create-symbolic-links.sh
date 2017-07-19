@@ -1,14 +1,14 @@
 #!/bin/bash
 
+NIFI_HOME=$1
+NIFI_USER=$2
+NIFI_GROUP=$3
+
 if [ $# -ne 3 ]
 then
     echo "Wrong number of arguments. You must pass in the NIFI_HOME location, NIFI_USER, and NIFI_GROUP"
     exit 1
 fi
-
-NIFI_HOME=$1
-NIFI_USER=$2
-NIFI_GROUP=$3
 
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-core-service-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-core-service-nar.nar
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-standard-services-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-standard-services-nar.nar

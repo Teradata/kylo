@@ -2,23 +2,25 @@
 NIFI_INSTALL_HOME=$1
 NIFI_USER=$2
 NIFI_GROUP=$3
-working_dir=$4
+WORKING_DIR=$4
 NIFI_DATA=$NIFI_INSTALL_HOME/data
-NIFI_VERSION=1.0.0
+NIFI_VERSION=${6:-1.3.0}
 
+# If we copy the NiFi tarball from $WORKING_DIR/nifi/ instead of downloading it
 offline=false
 
-if [ $# -eq 3 ]
-then
-    echo "The NIFI home folder is $NIFI_INSTALL_HOME using permissions  $NIFI_USER:$NIFI_GROUP"
-elif [ $# -eq 5 ] && ([ "$5" = "-o" ] || [ "$5" = "-O" ])
+if [ "$5" = "-o" ] || [ "$5" = "-O" ]
 then
     echo "Working in offline mode"
         offline=true
-else
-    echo "Unknown arguments. Arg1 should be the nifi_home. Arg2 should be the nifi user, Arg3 should be the nifi group. For offline mode pass Arg4 the kylo setup folder and Arg5 the -o -or -O option "
+fi
+
+if [ $# -lt 3 ] || [ $# -gt 6 ]; then
+    echo "Unknown arguments. Arg1 should be the nifi_home. Arg2 should be the nifi user, Arg3 should be the nifi group. For offline mode pass Arg4 the kylo setup folder and Arg5 the -o -or -O option. Arg6 is the NiFi Version override "
     exit 1
 fi
+
+echo "The NIFI home folder is $NIFI_INSTALL_HOME using permissions $NIFI_USER:$NIFI_GROUP"
 
 echo "Installing NiFI"
 mkdir $NIFI_INSTALL_HOME
@@ -26,10 +28,10 @@ cd $NIFI_INSTALL_HOME
 
 if [ $offline = true ]
 then
-    cp $working_dir/nifi/nifi-${NIFI_VERSION}-bin.tar.gz .
+    cp $WORKING_DIR/nifi/nifi-${NIFI_VERSION}-bin.tar.gz .
 else
-    echo "Download nifi distro and install"
-    curl -O https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz
+    echo "Downloading NiFi ${NIFI_VERSION} distro"
+    curl -f -O https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz
 fi
 
 if ! [ -f nifi-${NIFI_VERSION}-bin.tar.gz ]
@@ -38,6 +40,7 @@ then
     exit 1
 fi
 
+echo "Installing NiFi"
 tar -xvf nifi-${NIFI_VERSION}-bin.tar.gz
 rm -f nifi-${NIFI_VERSION}-bin.tar.gz
 ln -s nifi-${NIFI_VERSION} current
