@@ -174,6 +174,13 @@ public class PropertyExpressionResolverTest {
         Assert.assertEquals("${table_field_policy_json_file},/usr/hdp/current/spark-client/conf/hive-site.xml",extraFiles.getValue());
         Assert.assertTrue(resolver.resolveExpression(metadata, extraFiles));
         Assert.assertEquals("${table_field_policy_json_file},/usr/hdp/current/spark-client/conf/hive-site.xml",extraFiles.getValue());
+
+
+        final NifiProperty hiveSchema = createProperty(STATIC_KEY,"${config.hive.schema}");
+        Assert.assertTrue(resolver.resolveExpression(metadata, hiveSchema));
+        Assert.assertEquals("hive",hiveSchema.getValue());
+
+
     }
 
 
