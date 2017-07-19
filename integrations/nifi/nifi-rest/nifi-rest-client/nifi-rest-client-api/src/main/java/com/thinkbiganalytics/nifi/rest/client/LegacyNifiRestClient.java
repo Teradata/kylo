@@ -67,7 +67,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -162,6 +161,13 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         return group;
     }
 
+    public NifiProcessGroup createNewTemplateInstance(String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigProperties, boolean createReusableFlow,
+                                                      ReusableTemplateCreationCallback creationCallback) {
+        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, templateProperties, staticConfigProperties, createReusableFlow, creationCallback);
+        NifiProcessGroup group = creator.createTemplate();
+        return group;
+    }
+
     public void markConnectionPortsAsRunning(ProcessGroupDTO entity) {
         //1 startAll
         try {
@@ -201,16 +207,15 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     /**
      * Expose all Properties for a given Template as parameters for external use
      */
-    public List<NifiProperty> getPropertiesForTemplate(String templateId,boolean includePropertyDescriptors) {
+    public List<NifiProperty> getPropertiesForTemplate(String templateId, boolean includePropertyDescriptors) {
         TemplateDTO dto = getTemplateById(templateId);
-        return getPropertiesForTemplate(dto,includePropertyDescriptors);
+        return getPropertiesForTemplate(dto, includePropertyDescriptors);
     }
 
     /**
-     *
      * Expose all Properties for a given Template as parameters for external use
      *
-     * @param dto the Template to parse
+     * @param dto                        the Template to parse
      * @param includePropertyDescriptors true to include propertyDescriptor details on each property, false to just include the property key
      * @return all the properties included in this template
      */
@@ -221,14 +226,13 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
 
     /**
-     *
-     * @param parentProcessGroup the parent group for which this template will reside
-     * @param dto the template to parse
+     * @param parentProcessGroup         the parent group for which this template will reside
+     * @param dto                        the template to parse
      * @param includePropertyDescriptors true to include propertyDescriptor details on each property, false to just include the property key
      * @return all the properties included in this template
      */
     public List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, boolean includePropertyDescriptors) {
-        if(includePropertyDescriptors) {
+        if (includePropertyDescriptors) {
             TemplateCreationHelper helper = new TemplateCreationHelper(this);
             ProcessGroupDTO groupDTO = helper.createTemporaryTemplateFlow(dto.getId());
             dto.setSnippet(groupDTO.getContents());

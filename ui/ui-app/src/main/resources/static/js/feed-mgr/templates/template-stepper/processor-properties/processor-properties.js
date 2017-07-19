@@ -19,7 +19,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller =  function($scope, $element,$http,$q,$mdToast,$location,$window,RestUrlService, RegisterTemplateService, UiComponentsService) {
+    var controller =  function($scope, $element,$http,$q,$mdToast,$location,$window,RestUrlService, RegisterTemplateService,FeedService, UiComponentsService) {
 
         var self = this;
         this.model = RegisterTemplateService.model;
@@ -58,6 +58,14 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             var propertiesKey = self.processorPropertiesFieldName+"Properties";
             var processorsKey = self.processorPropertiesFieldName+"Processors";
             self.allProperties = self.model[propertiesKey]
+
+            // Find controller services
+            _.chain(self.allProperties).filter(function(property) {
+                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                })
+                .each(FeedService.findControllerServicesForProperty);
+
+
             self.processors = self.model[processorsKey];
             if(self.showOnlySelected){
                 showSelected();
@@ -185,7 +193,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
     };
 
 
-    angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope","$element","$http","$q","$mdToast","$location","$window","RestUrlService","RegisterTemplateService","UiComponentsService",controller]);
+    angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope","$element","$http","$q","$mdToast","$location","$window","RestUrlService","RegisterTemplateService","FeedService","UiComponentsService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterProcessorProperties', directive);
