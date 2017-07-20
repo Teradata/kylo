@@ -7,12 +7,28 @@
  * @property {FieldPolicy} fieldPolicy the field policy
  * @property {string} icon the name of the icon
  * @property {string} iconColor the icon color
- * @property {string} regex the regular expression for matching sample data
+ * @property {string} regexFlags the flags for the regular expression
+ * @property {string} regexPattern the regular expression for matching sample data
  * @property {string} title a human-readable title
  */
 
 define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
     angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService", function ($http, $q, RestUrlService) {
+
+        /**
+         * Gets the RegExp for the specified domain type.
+         *
+         * @param {DomainType} domainType the domain type
+         * @returns {(RegExp|null)} the regular expression
+         */
+        function getRegExp(domainType) {
+            if (angular.isUndefined(domainType.$regexp)) {
+                var flags = angular.isString(domainType.regexFlags) ? domainType.regexFlags : "";
+                var pattern = (angular.isString(domainType.regexPattern) && domainType.regexPattern.length > 0) ? domainType.regexPattern : null;
+                domainType.$regexp = (pattern !== null) ? new RegExp(pattern, flags) : null;
+            }
+            return domainType.$regexp;
+        }
 
         /**
          * Interacts with the Domain Types REST API.
@@ -43,20 +59,20 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
              * @returns {DomainType|null} the matching domain type or null if none match
              */
             detectDomainType: function (values, domainTypes) {
-                var valueArray = angular.isArray(values) ? values : [values];
+                // Remove empty values
+                var valueArray = _.filter(angular.isArray(values) ? values : [values], function (value) {
+                    return (angular.isString(value) && value.length > 0);
+                });
+
+                // Find matching domain type
                 var matchingDomainType = _.find(domainTypes, function (domainType) {
-                    if (angular.isUndefined(domainType.$regexp)) {
-                        domainType.$regexp = (angular.isString(domainType.regex) && domainType.regex.length > 0) ? new RegExp(domainType.regex) : null;
-                    }
-                    if (domainType.$regexp === null) {
-                        return false;
-                    }
+                    var regexp = getRegExp(domainType);
                     return valueArray.every(function (value) {
-                        var result = domainType.$regexp.exec(value);
+                        var result = regexp.exec(value);
                         return (result !== null && result.index === 0 && result[0].length === value.length);
                     });
                 });
-                return angular.isDefined(matchingDomainType) ? matchingDomainType : null;
+                return angular.isObject(matchingDomainType) ? matchingDomainType : null;
             },
 
             /**
@@ -85,6 +101,14 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             },
 
             /**
+             * Gets the RegExp for the specified domain type.
+             *
+             * @param {DomainType} domainType the domain type
+             * @returns {(RegExp|null)} the regular expression
+             */
+            getRegExp: getRegExp,
+
+            /**
              * Creates a new domain type.
              *
              * @returns {DomainType} the domain type
@@ -98,7 +122,8 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     },
                     icon: null,
                     iconColor: null,
-                    regex: null,
+                    regexFlags: "",
+                    regexPattern: "",
                     title: ""
                 };
             },

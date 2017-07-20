@@ -53,14 +53,24 @@ public interface DomainType extends Serializable {
     void setIconColor(String value);
 
     /**
+     * Gets the flags for the regular expression.
+     */
+    String getRegexFlags();
+
+    /**
+     * Sets the flags for the regular expression.
+     */
+    void setRegexFlags(String value);
+
+    /**
      * Gets the regular expression for matching sample data.
      */
-    String getRegex();
+    String getRegexPattern();
 
     /**
      * Sets the regular expression for matching sample data.
      */
-    void setRegex(String value);
+    void setRegexPattern(String value);
 
     /**
      * Gets a human-readable title.

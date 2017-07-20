@@ -1,3 +1,8 @@
+.cm-s-default span.cm-regex-decorator {
+  color: #b9babf;
+  font-weight: bold
+}
+
 .cm-s-default span.cm-regex-error {
   border-bottom: solid 2px red
 }

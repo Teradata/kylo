@@ -24,7 +24,7 @@ define(["codemirror-require/module"], function () {
                 return "regex-quant";
             }
             if (ch == "{") {
-                if (stream.match(/(\d|\d,\d?)\}/))  return "regex-quant";
+                if (stream.match(/(\d|\d,\d?)\}/)) return "regex-quant";
             }
 
             if (ch == "[" && stream.match(/[^\]]+\]/)) {
@@ -52,6 +52,10 @@ define(["codemirror-require/module"], function () {
 
             if (ch == ".") {
                 return "regex-charclass"
+            }
+
+            if (ch == "/") {
+                return (stream.column() === 0 || stream.match(/[iu]*$/)) ? "regex-decorator" : "regex-error";
             }
         };
 

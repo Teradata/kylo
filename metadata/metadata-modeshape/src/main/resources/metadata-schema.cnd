@@ -347,7 +347,8 @@
 	- tba:fieldPolicyJson (STRING)
 	- tba:icon (STRING)
 	- tba:iconColor (STRING)
-	- tba:regex (STRING)
+	- tba:regexFlags (STRING)
+	- tba:regexPattern (STRING)
 
 /**
 * [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable

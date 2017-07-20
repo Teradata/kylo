@@ -1,10 +1,12 @@
 package com.thinkbiganalytics.feedmgr.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DomainType {
 
     private String description;
@@ -12,7 +14,8 @@ public class DomainType {
     private String icon;
     private String iconColor;
     private String id;
-    private String regex;
+    private String regexFlags;
+    private String regexPattern;
     private String title;
 
     public String getDescription() {
@@ -55,12 +58,20 @@ public class DomainType {
         this.id = id;
     }
 
-    public String getRegex() {
-        return regex;
+    public String getRegexFlags() {
+        return regexFlags;
     }
 
-    public void setRegex(String regex) {
-        this.regex = regex;
+    public void setRegexFlags(String regexFlags) {
+        this.regexFlags = regexFlags;
+    }
+
+    public String getRegexPattern() {
+        return regexPattern;
+    }
+
+    public void setRegexPattern(String regexPattern) {
+        this.regexPattern = regexPattern;
     }
 
     public String getTitle() {

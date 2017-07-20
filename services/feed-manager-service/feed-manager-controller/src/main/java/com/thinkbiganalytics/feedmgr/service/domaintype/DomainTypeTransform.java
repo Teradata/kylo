@@ -35,7 +35,8 @@ public class DomainTypeTransform {
         domainModel.setFieldPolicyJson(ObjectMapperSerializer.serialize(restModel.getFieldPolicy()));
         domainModel.setIcon(restModel.getIcon());
         domainModel.setIconColor(restModel.getIconColor());
-        domainModel.setRegex(restModel.getRegex());
+        domainModel.setRegexFlags(restModel.getRegexFlags());
+        domainModel.setRegexPattern(restModel.getRegexPattern());
         domainModel.setTitle(restModel.getTitle());
         return domainModel;
     }
@@ -51,7 +52,8 @@ public class DomainTypeTransform {
         restModel.setIcon(domainModel.getIcon());
         restModel.setIconColor(domainModel.getIconColor());
         restModel.setId(domainModel.getId().toString());
-        restModel.setRegex(domainModel.getRegex());
+        restModel.setRegexFlags(domainModel.getRegexFlags());
+        restModel.setRegexPattern(domainModel.getRegexPattern());
         restModel.setTitle(domainModel.getTitle());
         return restModel;
     }

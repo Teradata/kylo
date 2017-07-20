@@ -5,7 +5,7 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
      *
      * @constructor
      */
-    function DomainTypeDetailsController($mdDialog, $mdToast, $transition$, DomainTypesService, FeedFieldPolicyRuleService, StateService) {
+    function DomainTypeDetailsController($mdDialog, $mdToast, $scope, $transition$, DomainTypesService, FeedFieldPolicyRuleService, StateService) {
         var self = this;
 
         /**
@@ -19,6 +19,20 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
          * @type {DomainType}
          */
         self.editModel = {};
+        $scope.$watch(function () {
+            return self.editModel.$regexpFlags;
+        }, function () {
+            self.editModel.regexFlags = _.chain(self.editModel.$regexpFlags)
+                .pairs()
+                .filter(function (entry) {
+                    return entry[1];
+                })
+                .map(function (entry) {
+                    return entry[0];
+                })
+                .value()
+                .join("");
+        }, true);
 
         /**
          * CodeMirror editor options.
@@ -50,12 +64,27 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
          * @type {DomainType}
          */
         self.model = {};
+        $scope.$watch(function () {
+            return self.model;
+        }, function () {
+            self.model.$regex = "/" + self.model.regexPattern + "/" + self.model.regexFlags;
+        });
+
+        /**
+         * List of available RegExp flags.
+         * @type {Array.<{flag: string, title: string, description: string}>}
+         */
+        self.regexpFlags = [
+            {flag: "i", title: "Ignore case"},
+            {flag: "m", title: "Multiline", description: "Treat beginning and end characters (^ and $) as working over multiple lines."},
+            {flag: "u", title: "Unicode", description: "Treat pattern as a sequence of unicode code points"}
+        ];
 
         /**
          * Last syntax error when compiling regular expression.
          * @type {string}
          */
-        self.regexSyntaxError = "";
+        self.regexpSyntaxError = "";
 
         /**
          * CodeMirror viewer options.
@@ -106,14 +135,14 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
                 try {
                     new RegExp(value);
                     container.removeClass("md-input-invalid");
-                    self.regexSyntaxError = "";
+                    self.regexpSyntaxError = "";
                 } catch (err) {
                     container.addClass("md-input-invalid");
-                    self.regexSyntaxError = err.toString();
+                    self.regexpSyntaxError = err.toString();
                 }
 
-                if (angular.isDefined(self.domainTypeForm["regex"])) {
-                    self.domainTypeForm["regex"].$setValidity("syntaxError", self.regexSyntaxError.length === 0);
+                if (angular.isDefined(self.domainTypeForm["regexPattern"])) {
+                    self.domainTypeForm["regexPattern"].$setValidity("syntaxError", self.regexpSyntaxError.length === 0);
                 }
             });
 
@@ -185,6 +214,12 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
          */
         self.onEdit = function () {
             self.editModel = angular.copy(self.model);
+
+            // Map flags to object
+            self.editModel.$regexpFlags = {};
+            for (var i=0; i < self.editModel.regexFlags.length; ++i) {
+                self.editModel.$regexpFlags[self.editModel.regexFlags[i]] = true;
+            }
         };
 
         /**
@@ -215,6 +250,7 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
                 .then(function () {
                     self.model = model;
                 }, function (err) {
+                    self.isEditable = true;
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
@@ -268,6 +304,6 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
         self.onLoad();
     }
 
-    angular.module(moduleName).controller("DomainTypeDetailsController", ["$mdDialog", "$mdToast", "$transition$", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService",
+    angular.module(moduleName).controller("DomainTypeDetailsController", ["$mdDialog", "$mdToast", "$scope", "$transition$", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService",
                                                                           DomainTypeDetailsController]);
 });

@@ -37,9 +37,14 @@ public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements D
     private final static String ICON_COLOR = "tba:iconColor";
 
     /**
-     * Name of regex JCR field
+     * Name of regex flags JCR field
      */
-    private final static String REGEX = "tba:regex";
+    private final static String REGEX_FLAGS = "tba:regexFlags";
+
+    /**
+     * Name of regex pattern JCR field
+     */
+    private final static String REGEX_PATTERN = "tba:regexPattern";
 
     /**
      * Constructs a domain type from the specified JCR node.
@@ -88,13 +93,23 @@ public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements D
     }
 
     @Override
-    public String getRegex() {
-        return getProperty(REGEX, String.class);
+    public String getRegexFlags() {
+        return getProperty(REGEX_FLAGS, String.class);
     }
 
     @Override
-    public void setRegex(final String value) {
-        setProperty(REGEX, value);
+    public void setRegexFlags(String value) {
+        setProperty(REGEX_FLAGS, value);
+    }
+
+    @Override
+    public String getRegexPattern() {
+        return getProperty(REGEX_PATTERN, String.class);
+    }
+
+    @Override
+    public void setRegexPattern(final String value) {
+        setProperty(REGEX_PATTERN, value);
     }
 
     /**

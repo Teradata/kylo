@@ -30,7 +30,7 @@
             <div layout="row" class="layout-padding-top-bottom">
               <span flex="25" class="property-name">Regular Expression</span>
 
-              <div flex ng-model="vm.model.regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.viewerOptions"></div>
+              <div flex ng-model="vm.model.$regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.viewerOptions"></div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
               <span flex="25" class="property-name">Icon</span>
@@ -60,13 +60,28 @@
               <input ng-model="vm.editModel.description"/>
             </md-input-container>
 
-            <md-input-container class="md-block">
-              <label>Regular Expression</label>
-              <div flex name="regex" ng-model="vm.editModel.regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.editorOptions"></div>
-              <div ng-messages="vm.domainTypeForm.regex.$error" md-auto-hide="false">
-                <div ng-message="syntaxError">{{vm.regexSyntaxError}}</div>
-              </div>
-            </md-input-container>
+            <div layout="row">
+              <md-input-container class="md-block" flex="95" style="margin-top:0">
+                <label>Regular Expression</label>
+                <div flex name="regexPattern" ng-model="vm.editModel.regexPattern" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.editorOptions"></div>
+                <div ng-messages="vm.domainTypeForm.regexPattern.$error" md-auto-hide="false">
+                  <div ng-message="syntaxError">{{vm.regexpSyntaxError}}</div>
+                </div>
+              </md-input-container>
+              <md-menu flex="5">
+                <md-button class="md-icon-button md-accent" arial-label="Open expression flags menu" ng-click="$mdMenu.open($event)">
+                  <ng-md-icon icon="flag"></ng-md-icon>
+                </md-button>
+                <md-menu-content>
+                  <md-menu-item ng-repeat="regexpFlag in vm.regexpFlags">
+                    <md-list-item title="{{regexpFlag.description}}">
+                      <md-checkbox ng-model="vm.editModel.$regexpFlags[regexpFlag.flag]"></md-checkbox>
+                      <p>{{regexpFlag.title}}</p>
+                    </md-list-item>
+                  </md-menu-item>
+                </md-menu-content>
+              </md-menu>
+            </div>
 
             <div layout="column">
               <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
