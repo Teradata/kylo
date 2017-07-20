@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular, moduleName) {
 
     var directive = function () {
         return {
@@ -8,7 +8,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 stepIndex: '@'
             },
             controllerAs: 'vm',
-            require:['thinkbigDefineFeedDataProcessing','^thinkbigStepper'],
+            require: ['thinkbigDefineFeedDataProcessing', '^thinkbigStepper'],
             scope: {},
             templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing.html',
             controller: "DefineFeedDataProcessingController",
@@ -20,23 +20,28 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
 
         };
-    }
+    };
 
-    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils) {
-        this.isValid = true;
-
+    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService) {
         var self = this;
+
+        this.isValid = true;
         this.model = FeedService.createFeedModel;
-        this.stepNumber = parseInt(this.stepIndex)+1
+        this.stepNumber = parseInt(this.stepIndex) + 1;
         this.selectedColumn = {};
 
+        /**
+         * List of available domain types.
+         * @type {DomainType[]}
+         */
+        self.availableDomainTypes = [];
 
         var checkAll = {
-            isChecked:true,
+            isChecked: true,
             isIndeterminate: false,
-            totalChecked:0,
-            clicked:function(checked){
-                if(checked){
+            totalChecked: 0,
+            clicked: function (checked) {
+                if (checked) {
                     this.totalChecked++;
                 }
                 else {
@@ -44,21 +49,21 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
                 this.markChecked();
             },
-            markChecked:function(){
-                if(this.totalChecked == self.model.table.fieldPolicies.length){
+            markChecked: function () {
+                if (this.totalChecked == self.model.table.fieldPolicies.length) {
                     this.isChecked = true;
                     this.isIndeterminate = false;
                 }
-                else if(this.totalChecked >0) {
+                else if (this.totalChecked > 0) {
                     this.isChecked = false;
                     this.isIndeterminate = true;
                 }
-                else if(this.totalChecked == 0){
+                else if (this.totalChecked == 0) {
                     this.isChecked = false;
                     this.isIndeterminate = false;
                 }
             }
-        }
+        };
 
         /**
          * Toggle Check All/None on Profile column
@@ -66,14 +71,14 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
          */
         this.profileCheckAll = angular.extend({
-            isChecked:true,
+            isChecked: true,
             isIndeterminate: false,
-            toggleAll: function() {
-            var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-                _.each(self.model.table.fieldPolicies,function(field) {
+            toggleAll: function () {
+                var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                _.each(self.model.table.fieldPolicies, function (field) {
                     field.profile = checked;
                 });
-                if(checked){
+                if (checked) {
                     this.totalChecked = self.model.table.fieldPolicies.length;
                 }
                 else {
@@ -81,17 +86,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
                 this.markChecked();
             },
-            setup:function(){
-                 self.profileCheckAll.totalChecked = 0;
-                _.each(self.model.table.fieldPolicies,function(field) {
-                    if(field.profile){
+            setup: function () {
+                self.profileCheckAll.totalChecked = 0;
+                _.each(self.model.table.fieldPolicies, function (field) {
+                    if (field.profile) {
                         self.profileCheckAll.totalChecked++;
                     }
                 });
                 self.profileCheckAll.markChecked();
             }
-        },checkAll);
-
+        }, checkAll);
 
         /**
          *
@@ -100,16 +104,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @type {{isChecked: boolean, isIndeterminate: boolean, toggleAll: controller.indexCheckAll.toggleAll}}
          */
         this.indexCheckAll = angular.extend({
-            isChecked:false,
+            isChecked: false,
             isIndeterminate: false,
-            toggleAll: function() {
+            toggleAll: function () {
                 var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-                _.each(self.model.table.fieldPolicies,function(field) {
+                _.each(self.model.table.fieldPolicies, function (field) {
                     field.index = checked;
                 });
                 this.isChecked = checked;
 
-                if(checked){
+                if (checked) {
                     this.totalChecked = self.model.table.fieldPolicies.length;
                 }
                 else {
@@ -117,19 +121,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 }
                 this.markChecked();
             },
-            setup:function(){
+            setup: function () {
                 self.indexCheckAll.totalChecked = 0;
-                _.each(self.model.table.fieldPolicies,function(field) {
-                    if(field.index){
+                _.each(self.model.table.fieldPolicies, function (field) {
+                    if (field.index) {
                         self.indexCheckAll.totalChecked++;
                     }
                 });
                 self.indexCheckAll.markChecked();
             }
-        },checkAll);
-
-
-
+        }, checkAll);
 
         /**
          * The form in angular
@@ -137,12 +138,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         this.dataProcessingForm = {};
 
-
         this.expandFieldPoliciesPanel = function () {
             $mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance) {
                 instance.expand();
             });
-        }
+        };
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         if (self.model.id == null && angular.isDefined(self.defaultMergeStrategy)) {
@@ -157,7 +157,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 validateMergeStrategies();
 
                 // Update the data type display
-                _.each(self.model.table.tableSchema.fields, function(columnDef, idx) {
+                _.each(self.model.table.tableSchema.fields, function (columnDef, idx) {
                     columnDef.dataTypeDisplay = FeedService.getDataTypeDisplay(columnDef);
                     var policy = self.model.table.fieldPolicies[idx];
                     policy.name = columnDef.name;
@@ -167,6 +167,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
                 self.indexCheckAll.setup();
 
+                // Match fields to a domain type
+                self.model.table.fieldPolicies
+                    .filter(function (policy) {
+                        return (angular.isUndefined(policy.domainTypeId) && policy.field.derivedDataType === "string");
+                    })
+                    .forEach(self.detectDomainTypeForPolicy);
             }
         }
 
@@ -177,34 +183,33 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         // Open panel by default
         self.expandFieldPoliciesPanel();
 
-
-        this.transformChip = function(chip) {
+        this.transformChip = function (chip) {
             // If it is an object, it's already a known chip
             if (angular.isObject(chip)) {
                 return chip;
             }
             // Otherwise, create a new one
-            return { name: chip }
-        }
+            return {name: chip}
+        };
 
         this.compressionOptions = ['NONE'];
 
-        this.onTableFormatChange = function(opt){
+        this.onTableFormatChange = function (opt) {
 
             var format = self.model.table.targetFormat;
-            if(format == 'STORED AS ORC' ){
+            if (format == 'STORED AS ORC') {
                 self.compressionOptions = self.allCompressionOptions['ORC'];
             }
-            else  if(format == 'STORED AS PARQUET' ){
+            else if (format == 'STORED AS PARQUET') {
                 self.compressionOptions = self.allCompressionOptions['PARQUET'];
             }
             else {
                 self.compressionOptions = ['NONE'];
             }
-        }
+        };
 
-        function findProperty(key){
-            return _.find(self.model.inputProcessor.properties,function(property){
+        function findProperty(key) {
+            return _.find(self.model.inputProcessor.properties, function (property) {
                 //return property.key = 'Source Database Connection';
                 return property.key == key;
             });
@@ -212,7 +217,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.onChangeMergeStrategy = function () {
             validateMergeStrategies();
-        }
+        };
 
         function validateMergeStrategies() {
             var validPK = FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
@@ -226,8 +231,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.isValid = validRollingSync && validPK;
         }
 
-
-
         this.getSelectedColumn = function () {
             return self.selectedColumn;
         };
@@ -238,46 +241,101 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var firstSelection = self.selectedColumn == null;
             self.selectedColumn = selectedColumn;
 
-            if(firstSelection){
+            if (firstSelection) {
                 //trigger scroll to stick the selection to the screen
-                Utils.waitForDomElementReady('#selectedColumnPanel2',function() {
+                Utils.waitForDomElementReady('#selectedColumnPanel2', function () {
                     angular.element('#selectedColumnPanel2').triggerHandler('stickIt');
                 })
             }
         };
 
-        this.showFieldRuleDialog = function(field) {
+        this.showFieldRuleDialog = function (field) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
                 parent: angular.element(document.body),
-                clickOutsideToClose:false,
+                clickOutsideToClose: false,
                 fullscreen: true,
-                locals : {
+                locals: {
                     feed: self.model,
-                    field:field
+                    field: field
                 }
             })
-                .then(function(msg) {
-
-
-                }, function() {
-
+                .then(function () {
+                    if (angular.isDefined(field.domainType)) {
+                        var domainStandardization = _.map(field.domainType.fieldPolicy.standardization, _.property("name"));
+                        var domainValidation = _.map(field.domainType.fieldPolicy.validation, _.property("name"));
+                        var fieldStandardization = _.map(field.standardization, _.property("name"));
+                        var fieldValidation = _.map(field.validation, _.property("name"));
+                        if (!angular.equals(domainStandardization, fieldStandardization) || !angular.equals(domainValidation, fieldValidation)) {
+                            delete field.domainType;
+                            delete field.selectedDomainType;
+                        }
+                    }
                 });
+        };
+
+        /**
+         * Display a confirmation when the domain type of a field is changed and there are existing standardizers and validators.
+         *
+         * @param {FieldPolicy} policy the field policy
+         */
+        self.onDomainTypeChange = function (policy) {
+            if ((angular.isArray(policy.standardization) && policy.standardization.length > 0) || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
+                var confirm = $mdDialog.confirm({
+                    title: "Overwrite Rules?",
+                    textContent: "This will overwrite the existing standardizers and validators for this field. Are you sure you want to proceed?",
+                    ok: "Proceed",
+                    cancel: "Cancel"
+                });
+                $mdDialog.show(confirm)
+                    .then(function () {
+                        self.setDomainTypeForField(policy, policy.domainType);
+                    }, function () {
+                        policy.domainType = policy.selectedDomainType;
+                    });
+            } else {
+                self.setDomainTypeForField(policy, policy.domainType);
+            }
+        };
+
+        /**
+         * Sets the domain type of the specified field.
+         *
+         * @param {FieldPolicy} policy the field policy
+         * @param {string} domainType the domain type
+         */
+        self.setDomainTypeForField = function (policy, domainType) {
+            policy.selectedDomainType = domainType;
+            policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
+            policy.validation = angular.copy(domainType.fieldPolicy.validation);
+        };
+
+        /**
+         * Detects an appropriate domain type for the field.
+         *
+         * @param {FieldPolicy} policy the field policy
+         */
+        self.detectDomainTypeForPolicy = function (policy) {
+            var domainType = DomainTypesService.detectDomainType(policy.field.sampleValues, self.availableDomainTypes);
+            if (domainType !== null) {
+                policy.domainType = domainType;
+                self.setDomainTypeForField(policy, domainType);
+            }
         };
 
         // Initialize UI
         this.onTableFormatChange();
+        DomainTypesService.findAll()
+            .then(function (domainTypes) {
+                self.availableDomainTypes = domainTypes;
+            });
     };
 
-
-    angular.module(moduleName).controller('DefineFeedDataProcessingController', ["$scope","$http","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","BroadcastService","StepperService","Utils",controller]);
-
-    angular.module(moduleName)
-        .directive('thinkbigDefineFeedDataProcessing', directive);
-
-
-})
+    angular.module(moduleName).controller('DefineFeedDataProcessingController', ["$scope", "$http", "$mdDialog", "$mdExpansionPanel", "RestUrlService", "FeedService", "BroadcastService",
+                                                                                 "StepperService", "Utils", "DomainTypesService", controller]);
+    angular.module(moduleName).directive('thinkbigDefineFeedDataProcessing', directive);
+});
 
 
 

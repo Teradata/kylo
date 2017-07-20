@@ -36,6 +36,30 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             },
 
             /**
+             * Detects the appropriate domain type for the specified values.
+             *
+             * @param {(string|string[])} values the values to test
+             * @param {DomainType[]} domainTypes the list of domain types
+             * @returns {DomainType|null} the matching domain type or null if none match
+             */
+            detectDomainType: function (values, domainTypes) {
+                var valueArray = angular.isArray(values) ? values : [values];
+                var matchingDomainType = _.find(domainTypes, function (domainType) {
+                    if (angular.isUndefined(domainType.$regexp)) {
+                        domainType.$regexp = (angular.isString(domainType.regex) && domainType.regex.length > 0) ? new RegExp(domainType.regex) : null;
+                    }
+                    if (domainType.$regexp === null) {
+                        return false;
+                    }
+                    return valueArray.every(function (value) {
+                        var result = domainType.$regexp.exec(value);
+                        return (result !== null && result.index === 0 && result[0].length === value.length);
+                    });
+                });
+                return angular.isDefined(matchingDomainType) ? matchingDomainType : null;
+            },
+
+            /**
              * Finds all domain types.
              *
              * @returns {Promise} with the list of domain types

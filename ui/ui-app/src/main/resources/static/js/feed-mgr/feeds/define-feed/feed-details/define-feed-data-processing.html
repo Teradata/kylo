@@ -52,10 +52,13 @@
 
                   <md-list-item>
                     <div layout="row" layout-fill>
-                      <div flex="40" class="md-list-item-text hint">
+                      <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="10" class="md-list-item-text hint">
+                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
+                        Domain Type
+                      </div>
+                      <div flex="10" class="md-list-item-text hint" layout="column" layout-align="start center">
                         Index
                         <md-tooltip md-direction="top">
                           Specifies fields available for global indexing for search and discovery
@@ -67,20 +70,20 @@
                                        ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
                         </md-input-container>
                       </div>
-                       <div flex="10" class="md-list-item-text hint">
-                          Profile
-                         <md-tooltip md-direction="top">
-                           Should this field be profiled?
-                         </md-tooltip>
-                         <md-input-container class="md-block" flex-gt-sm>
-                           <md-checkbox aria-label="Select All"
-                                        ng-checked="vm.profileCheckAll.isChecked"
-                                        md-indeterminate="vm.profileCheckAll.isIndeterminate"
-                                        ng-click="vm.profileCheckAll.toggleAll()">
-                           </md-checkbox>
-                         </md-input-container>
-                       </div>
-                      <div flex="40" class="md-list-item-text hint">
+                      <div flex="10" class="md-list-item-text hint" layout="column" layout-align="start center">
+                        Profile
+                        <md-tooltip md-direction="top">
+                          Should this field be profiled?
+                        </md-tooltip>
+                        <md-input-container class="md-block" flex-gt-sm>
+                          <md-checkbox aria-label="Select All"
+                                       ng-checked="vm.profileCheckAll.isChecked"
+                                       md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                                       ng-click="vm.profileCheckAll.toggleAll()">
+                          </md-checkbox>
+                        </md-input-container>
+                      </div>
+                      <div flex="30" class="md-list-item-text hint" style="padding-left:5px;">
                         Standardize & Validate
                       </div>
                     </div>
@@ -95,26 +98,35 @@
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
                          ng-click="vm.onSelectedColumn($index)">
 
-                      <div flex="60" class="md-list-item-text">
+                      <div flex="30" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
                           <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
-                      <div flex="10" class="md-list-item-text " layout="column">
+                      <div flex="20" class="md-list-item-text " style="padding-left:5px;">
+                        <md-input-container class="md-block md-dense condensed" flex-gt-sm>
+                          <md-select ng-model="policy.domainType" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
+                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType" aria-label="{{domainType.title}}">
+                              <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
+                            </md-option>
+                          </md-select>
+                        </md-input-container>
+                      </div>
+                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
                         <md-input-container class="md-block" flex-gt-sm>
                           <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
                           </md-checkbox>
                         </md-input-container>
                       </div>
-                       <div flex="10" class="md-list-item-text " layout="column">
-                         <md-input-container class="md-block" flex-gt-sm>
-                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
-                           </md-checkbox>
-                         </md-input-container>
-                       </div>
+                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
+                        <md-input-container class="md-block" flex-gt-sm>
+                          <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
+                          </md-checkbox>
+                        </md-input-container>
+                      </div>
                       <!--  rules -->
-                      <div flex="40" class="md-list-item-text hint" layout-align="start center">
+                      <div flex="30" class="md-list-item-text hint" layout-align="start center">
                         <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
                           <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                             <ng-md-icon icon="add_circle_outline"></ng-md-icon>
@@ -128,7 +140,8 @@
                           </md-button>
                           ADD
                         </div>
-                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)"
+                             class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
                           <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
                           <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
                         </div>
