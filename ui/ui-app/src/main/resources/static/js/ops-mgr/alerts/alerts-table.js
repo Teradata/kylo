@@ -5,7 +5,8 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
             restrict: "E",
             bindToController: {
                 cardTitle: "@",
-                pageName: '@'
+                pageName: '@',
+                query:"=",
             },
             controllerAs: 'vm',
             scope: {},
@@ -42,12 +43,27 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
 
         var PAGE_DIRECTION = {forward: 'f', backward: 'b', none: 'n'};
 
+        this.additionalMenuOptions = loadAdditionalMenuOptions();
+
+        this.selectedAdditionalMenuOption = selectedAdditionalMenuOption;
+
+        this.showCleared = false;
 
         /**
          * The filter supplied in the page
          * @type {string}
          */
-        this.filter = '';
+        this.filter =  angular.isDefined(self.query) ? self.query : '';
+
+        $scope.$watch(function() {
+            return self.filter;
+        }, function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                return loadJobs(true).promise;
+            }
+
+        })
+
 
         /**
          * Array holding onto the active alert promises
@@ -147,6 +163,33 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         }
 
         /**
+         * Loads the additional menu options that appear in the more_vert options
+         * @returns {Array}
+         */
+        function loadAdditionalMenuOptions() {
+            var options = [];
+                options.push(TableOptionsService.newOption("Actions", 'actions_header', true, false))
+                options.push(TableOptionsService.newOption("Show Cleared", 'showCleared', false, false));
+            return options;
+        }
+
+
+        function selectedAdditionalMenuOption(item) {
+            if (item.type == 'showCleared') {
+                self.showCleared = !self.showCleared;
+                if(self.showCleared) {
+                    item.label = "Hide Cleared";
+                }
+                else {
+                    item.label = "Show Cleared";
+                }
+                loadAlerts();
+            }
+
+        }
+
+
+        /**
          * Called when a user Clicks on a table Option
          * @param option
          */
@@ -158,17 +201,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
             loadAlerts();
         };
 
-        /**
-         * Sample set of alerts... remove once $http is working
-         * @returns {Array}
-         */
-        function sampleAlerts() {
-            var alerts = [];
-            for (var i = 0; i < 50; i++) {
-                alerts.push({level: "MAJOR", state: "UNHANDLED", startTime: new Date().getTime(), description: "Test alert " + i})
-            }
-            return alerts;
-        }
+
 
         //Load Alerts
 
@@ -255,12 +288,15 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                         params.before = self.newestTime + 1;
                     }
                 }
+                params.cleared = self.showCleared;
 
                 if (tabTitle != 'All') {
                 	params.level=tabTitle;
                 }
+                if(filter != '') {
+                    params.filter = filter;
+                }
 
-                ///TODO FILL IN THIS CALL OUT with the correct URL
                 $http.get(OpsManagerRestUrlService.ALERTS_URL, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             self.showProgress = true;
@@ -322,6 +358,10 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         });
     }
 
+    function AlertsController($transition$) {
+        this.query = $transition$.params().query;
+    }
+    angular.module(moduleName).controller("AlertsController",["$transition$",AlertsController]);
     angular.module(moduleName).controller("AlertsTableController", ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService","TabService","OpsManagerRestUrlService",AlertsTableController]);
     angular.module(moduleName).directive("tbaAlertsTable", directive);
 });

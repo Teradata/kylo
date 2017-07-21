@@ -98,9 +98,9 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     @Test(groups = "create")
     public void testCreateAlert() throws Exception {
         this.beforeTime = DateTime.now().minusMillis(50);
-        Alert alert1 = this.manager.create(URI.create("http://example.com/test/alert/1"), Level.MINOR, LONG_DESCR, "1st content");
+        Alert alert1 = this.manager.create(URI.create("http://example.com/test/alert/1"), "subtype",Level.MINOR, LONG_DESCR, "1st content");
         Thread.sleep(100);
-        Alert alert2 = this.manager.create(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
+        Alert alert2 = this.manager.create(URI.create("http://example.com/test/alert/2"), "subtype",Level.CRITICAL, "2nd description", "2nd content");
         Thread.sleep(100);
 
         assertThat(alert1)

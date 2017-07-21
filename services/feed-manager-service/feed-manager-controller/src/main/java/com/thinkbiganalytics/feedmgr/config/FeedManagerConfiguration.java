@@ -54,6 +54,7 @@ import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.DefaultServiceLevelAgreementService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
@@ -170,7 +171,7 @@ public class FeedManagerConfiguration {
 
     @Bean
     public ServiceLevelAgreementService serviceLevelAgreementService() {
-        return new ServiceLevelAgreementService();
+        return new DefaultServiceLevelAgreementService();
     }
 
 

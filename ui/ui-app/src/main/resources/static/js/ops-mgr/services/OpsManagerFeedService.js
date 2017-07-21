@@ -101,21 +101,21 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                              feedHealth.sinceTimeString = new moment(feedHealth.lastUnhealthyTime).fromNow();
                          }
                          if (feedHealth.healthy) {
-                             AlertsService.removeFeedFailureAlertByName(feedHealth.feed);
+                        //     AlertsService.removeFeedFailureAlertByName(feedHealth.feed);
                          }
                          else {
                              unhealthyFeedNames.push(feedHealth.feed);
-                             AlertsService.addFeedHealthFailureAlert(feedHealth);
+                      //       AlertsService.addFeedHealthFailureAlert(feedHealth);
                          }
                      });
                      //only unhealthy will come back
                      //if feedName is not in the response list, but currently failed.. remove it
-                     var failedFeeds = AlertsService.feedFailureAlerts;
-                     angular.forEach(failedFeeds, function (alert, feedName) {
-                         if (_.indexOf(unhealthyFeedNames, feedName) == -1) {
-                             AlertsService.removeFeedFailureAlertByName(feedName);
-                         }
-                     });
+               //      var failedFeeds = AlertsService.feedFailureAlerts;
+            //         angular.forEach(failedFeeds, function (alert, feedName) {
+            //             if (_.indexOf(unhealthyFeedNames, feedName) == -1) {
+            //                 AlertsService.removeFeedFailureAlertByName(feedName);
+             //            }
+              //       });
 
                  }
                  data.fetchFeedHealthTimeout();

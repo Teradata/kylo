@@ -38,6 +38,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -346,7 +347,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         if (getJobExecutionContext() != null && !getJobExecutionContext().isEmpty()) {
             return getJobExecutionContext().stream().collect(Collectors.toMap(ctx -> ctx.getKeyName(), ctx -> ctx.getStringVal()));
         }
-        return null;
+        return new HashMap<>();
     }
 
     public Map<String, BatchJobExecutionContextValue> getJobExecutionContextKeyMap() {

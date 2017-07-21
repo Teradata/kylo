@@ -45,6 +45,11 @@
       <artifactId>kylo-job-repository-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-operational-metadata-integration-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Spring -->
     <dependency>

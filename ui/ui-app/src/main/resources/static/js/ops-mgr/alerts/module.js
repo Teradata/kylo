@@ -11,13 +11,17 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
             views: {
                 'content': {
                     templateUrl: 'js/ops-mgr/alerts/alerts-table.html',
+                    controller:'AlertsController',
+                    controllerAs:'vm'
                 }
+            },
+            params: {
+                query: null
             },
             resolve: {
                 loadPage: lazyLoad()
             },
             data:{
-                breadcrumbRoot:true,
                 displayName:'Alerts',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.ALERTS.permissions

@@ -31,9 +31,18 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertResponder;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
+import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
@@ -64,6 +73,7 @@ import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -88,12 +98,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.OptimisticLockException;
 
 
@@ -106,7 +120,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private static final Logger log = LoggerFactory.getLogger(JpaBatchJobExecutionProvider.class);
 
     private static String PARAM_TB_JOB_TYPE = "tb.jobType";
-
 
     @Autowired
     private JPAQueryFactory factory;
@@ -136,6 +149,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private NifiFeedStatisticsProvider feedStatisticsProvider;
+
+
+    @Inject
+    @Named("kyloAlertManager")
+    protected AlertManager alertManager;
+
+    @Inject
+    private AlertProvider provider;
+
 
 
     @Autowired
@@ -842,6 +864,34 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return relatedRootFlowFilesRepository.findRelatedFlowFiles(flowFileId);
     }
 
+
+    @Override
+    public BatchJobExecution abandonJob(Long executionId) {
+        BatchJobExecution execution = findByJobExecutionId(executionId);
+        if (execution != null && !execution.getStatus().equals(BatchJobExecution.JobStatus.ABANDONED)) {
+            if (execution.getStartTime() == null) {
+                execution.setStartTime(DateTimeUtil.getNowUTCTime());
+            }
+            execution.setStatus(BatchJobExecution.JobStatus.ABANDONED);
+            if (execution.getEndTime() == null) {
+                execution.setEndTime(DateTimeUtil.getNowUTCTime());
+            }
+            String abandonMessage = "Job manually abandoned @ " + DateTimeUtil.getNowFormattedWithTimeZone();
+            String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
+            msg += abandonMessage;
+            execution.setExitMessage(msg);
+            //also stop any running steps??
+            save(execution);
+
+            //clear the associated alert
+            String alertId = execution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
+            if (StringUtils.isNotBlank(alertId)) {
+                    provider.respondTo(provider.resolve(alertId), (alert1, response) -> response.handle(abandonMessage));
+             }
+
+        }
+        return execution;
+    }
     public void notifyFailure(BatchJobExecution jobExecution, String feedName, String status) {
         if (feedName == null) {
             feedName = jobExecution.getJobInstance().getFeed().getName();
@@ -851,6 +901,32 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
         FeedOperation.State state = FeedOperation.State.FAILURE;
         this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
+
+        Alert alert = null;
+
+        //see if the feed has an unhandled alert already.
+        String feedId = jobExecution.getJobInstance().getFeed().getId().toString();
+        String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
+        String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feedName;
+        if (StringUtils.isNotBlank(alertId)) {
+          alert =  provider.getAlert(provider.resolve(alertId)).orElse(null);
+        }
+        if(alert == null) {
+            alert = alertManager.createEntityAlert(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
+                                        Alert.Level.FATAL,
+                                        message, alertManager.createEntityIdentificationAlertContent(feedId,
+                                                                                                     SecurityRole.ENTITY_TYPE.FEED, jobExecution.getJobExecutionId()));
+            Alert.ID providerAlertId = provider.resolve(alert.getId(),alert.getSource());
+
+            JpaBatchJobExecutionContextValue executionContext = new JpaBatchJobExecutionContextValue(jobExecution, KYLO_ALERT_ID_PROPERTY);
+            executionContext.setStringVal(providerAlertId.toString());
+            ((JpaBatchJobExecution)jobExecution).addJobExecutionContext(executionContext);
+            save(jobExecution);
+        }
+        else {
+                //rest the alert
+                provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message,null));
+        }
     }
 
 
@@ -910,5 +986,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             return this.idValue;
         }
     }
+
+
 
 }

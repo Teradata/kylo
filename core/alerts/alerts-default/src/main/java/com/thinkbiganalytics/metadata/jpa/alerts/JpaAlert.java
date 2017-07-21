@@ -23,9 +23,12 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
  * #L%
  */
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 
@@ -67,9 +70,16 @@ public class JpaAlert implements Alert {
     @Column(name = "TYPE", length = 128, nullable = false)
     private String typeString;
 
+    @Column(name = "SUB_TYPE", length = 128, nullable = false)
+    private String subtype;
+
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CREATE_TIME")
+    @QueryType(PropertyType.COMPARABLE)
     private DateTime createdTime;
+
+    @Column(name = "CREATE_TIME", insertable = false, updatable = false)
+    private Long createdTimeMillis;
 
     @Column(name = "DESCRIPTION", length = 255)
     private String description;
@@ -95,26 +105,39 @@ public class JpaAlert implements Alert {
     @OrderBy("changeTime DESC, state ASC")
     private List<AlertChangeEvent> events = new ArrayList<>();
 
+
+    @Column(name = "ENTITY_ID")
+    private AlertEntityId entityId;
+
+    @Column(name = "ENTITY_TYPE")
+    private String entityType;
+
     @Transient
     private AlertSource source;
+
 
     public JpaAlert() {
         super();
     }
 
-    public JpaAlert(URI type, Level level, Principal user, String description, Serializable content) {
-        this(type, level, user, description, State.UNHANDLED, content);
+    public JpaAlert(URI type, String subtype, Level level, Principal user, String description, Serializable content) {
+        this(type, subtype, level, user, description, State.UNHANDLED, content);
     }
 
-    public JpaAlert(URI type, Level level, Principal user, String description, State state, Serializable content) {
+    public JpaAlert(URI type, String subtype, Level level, Principal user, String description, State state, Serializable content) {
         this.id = AlertId.create();
         this.typeString = type.toASCIIString();
+        this.subtype = subtype;
         this.level = level;
         this.content = content;
         this.createdTime = DateTime.now();
         this.state = state;
         setDescription(description);
-
+        if (content instanceof EntityIdentificationAlertContent) {
+            this.entityId = new AlertEntityId(((EntityIdentificationAlertContent) content).getEntityId());
+            this.entityType = ((EntityIdentificationAlertContent) content).getEntityType().name();
+            this.content = ((EntityIdentificationAlertContent) content).getContent();
+        }
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
     }
@@ -143,9 +166,18 @@ public class JpaAlert implements Alert {
         this.typeString = type.toASCIIString();
     }
 
+    @Override
+    public String getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.Alert#getDescription()
-     */
+             * @see com.thinkbiganalytics.alerts.api.Alert#getDescription()
+             */
     @Override
     public String getDescription() {
         return this.description;
@@ -181,12 +213,16 @@ public class JpaAlert implements Alert {
     @Override
     public DateTime getCreatedTime() {
         return this.createdTime;
-//        return this.events.get(0).getChangeTime();
+    }
+
+
+    public Long getCreatedTimeMillis() {
+        return createdTimeMillis;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.Alert#getSource()
-     */
+         * @see com.thinkbiganalytics.alerts.api.Alert#getSource()
+         */
     @Override
     public AlertSource getSource() {
         return this.source;
@@ -249,6 +285,22 @@ public class JpaAlert implements Alert {
         this.typeString = typeString;
     }
 
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
+    }
+
+    public AlertEntityId getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(AlertEntityId entityId) {
+        this.entityId = entityId;
+    }
+
     public void addEvent(JpaAlertChangeEvent event) {
         this.state = event.getState();
         this.events.add(event);
@@ -287,6 +339,39 @@ public class JpaAlert implements Alert {
     }
 
     public static class AlertContentConverter extends JsonAttributeConverter<Serializable> {
+
+    }
+
+
+    @Embeddable
+    public static class AlertEntityId extends BaseJpaId implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Column(name = "entity_id")
+        private UUID value;
+
+        public AlertEntityId() {
+        }
+
+
+        public AlertEntityId(Serializable ser) {
+            super(ser);
+        }
+
+        public static AlertEntityId create() {
+            return new AlertEntityId(UUID.randomUUID());
+        }
+
+        @Override
+        public UUID getUuid() {
+            return this.value;
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.value = uuid;
+        }
 
     }
 

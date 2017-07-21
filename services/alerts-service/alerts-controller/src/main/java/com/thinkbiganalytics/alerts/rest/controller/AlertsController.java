@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.alerts.rest.controller;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,18 +47,19 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
-import com.thinkbiganalytics.alerts.rest.model.Alert.State;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
+import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+import com.thinkbiganalytics.metadata.alerts.KyloEntityAwareAlertManager;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -78,7 +81,13 @@ public class AlertsController {
     private AlertManager alertManager;
 
     @Inject
+    private KyloEntityAwareAlertManager kyloEntityAwareAlertService;
+
+    @Inject
     private AccessController accessController;
+
+    @Inject
+    private AlertsModel alertsModel;
 
     
     @GET
@@ -88,16 +97,55 @@ public class AlertsController {
         @ApiResponse(code = 200, message = "Returns the alerts.", response = AlertRange.class)
     )
     public AlertRange getAlerts(@QueryParam("limit") Integer limit,
+                                @QueryParam("type") String type,
+                                @QueryParam("subtype") String subtype,
                                 @QueryParam("state") String state,
                                 @QueryParam("level") String level,
                                 @QueryParam("before") String before,
                                 @QueryParam("after") String after,
-                                @QueryParam("cleared") @DefaultValue("false") String cleared) {
+                                @QueryParam("cleared") @DefaultValue("false") String cleared,
+                                @QueryParam("filter") String filter) {
         List<Alert> alerts = new ArrayList<>();
-        AlertCriteria criteria = createCriteria(limit, state, level, before, after, cleared);
-
+        AlertCriteria criteria = createCriteria(limit,type,subtype, state, level, before, after, cleared);
+        criteria.orFilter(filter);
         provider.getAlerts(criteria).forEachRemaining(alerts::add);
-        return new AlertRange(alerts.stream().map(this::toModel).collect(Collectors.toList()));
+        return new AlertRange(alerts.stream().map(alertsModel::toModel).collect(Collectors.toList()));
+    }
+
+
+    @GET
+    @Path("/summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists summary grouped alerts.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns summary of the alerts grouped.", response = AlertRange.class)
+    )
+    public Collection<AlertSummaryGrouped> getAlertSummary(@QueryParam("state") String state,
+                                      @QueryParam("level") String level,
+                                      @QueryParam("type") String type,
+                                      @QueryParam("subtype") String subtype,
+                                      @QueryParam("cleared") @DefaultValue("false") String cleared) {
+        List<AlertSummary> alerts = new ArrayList<>();
+        AlertCriteria criteria = createCriteria(null, type,subtype,state, level, null, null, cleared);
+
+        provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
+        return alertsModel.groupAlertSummaries(alerts);
+    }
+
+    @GET
+    @Path("/summary/unhandled")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists summary grouped alerts.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns summary of the alerts grouped.", response = AlertRange.class)
+    )
+    public Collection<AlertSummaryGrouped> getAlertSummaryUnhandled( @QueryParam("type") String type,
+                                                                     @QueryParam("subtype") String subtype) {
+        List<AlertSummary> alerts = new ArrayList<>();
+        AlertCriteria criteria = createCriteria(null, type,subtype,Alert.State.UNHANDLED.name(), null, null, null, "false");
+
+        provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
+        return alertsModel.groupAlertSummaries(alerts);
     }
 
     @GET
@@ -112,7 +160,7 @@ public class AlertsController {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
-            .map(this::toModel)
+            .map(alertsModel::toModel)
             .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }
 
@@ -126,9 +174,9 @@ public class AlertsController {
     public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
         
-        Alert.Level level = toDomain(req.getLevel());
-        Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
-        return toModel(alert);
+        Alert.Level level = alertsModel.toDomain(req.getLevel());
+        Alert alert = alertManager.create(req.getType(), req.getSubtype(),level, req.getDescription(), null);
+        return alertsModel.toModel(alert);
     }
 
 
@@ -147,7 +195,7 @@ public class AlertsController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
         
         Alert.ID id = provider.resolve(idStr);
-        final Alert.State state = toDomain(req.getState());
+        final Alert.State state = alertsModel.toDomain(req.getState());
 
         class UpdateResponder implements AlertResponder {
 
@@ -180,68 +228,53 @@ public class AlertsController {
         UpdateResponder responder = new UpdateResponder();
 
         provider.respondTo(id, responder);
-        return toModel(responder.result);
+        return alertsModel.toModel(responder.result);
     }
 
-    private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
-        com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
-        result.setId(alert.getId().toString());
-        result.setActionable(alert.isActionable());
-        result.setCreatedTime(alert.getCreatedTime());
-        result.setLevel(toModel(alert.getLevel()));
-        result.setState(toModel(alert.getState()));
-        result.setType(alert.getType());
-        result.setDescription(alert.getDescription());
-        result.setCleared(alert.isCleared());
-        alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
-        return result;
-    }
 
-    private com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent toModel(AlertChangeEvent event) {
-        com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent result = new com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent();
-        result.setCreatedTime(event.getChangeTime());
-        result.setDescription(event.getDescription());
-        result.setState(toModel(event.getState()));
-        result.setUser(event.getUser() != null ? event.getUser().getName() : null);
-        return result;
-    }
-
-    private Level toModel(Alert.Level level) {
-        // Currently identical
-        return Level.valueOf(level.name());
-    }
-
-    private State toModel(Alert.State state) {
-        // Currently identical
-        return State.valueOf(state.name());
-    }
-
-    private Alert.State toDomain(State state) {
-        return Alert.State.valueOf(state.name());
-    }
-
-    private Alert.Level toDomain(Level level) {
-        // Currently identical
-        return Alert.Level.valueOf(level.name());
-    }
-
-    private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after, String cleared) {
+    private AlertCriteria createCriteria(Integer limit, String type, String subtype,String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
 
         if (limit != null) {
             criteria.limit(limit);
         }
+        if (type != null) {
+            try {
+                criteria.type(URI.create(type));
+            }catch (IllegalArgumentException e){
+
+            }
+        }
+        if (subtype != null) {
+            criteria.subtype(subtype);
+        }
         if (stateStr != null) {
-            criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+            try {
+                criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (levelStr != null) {
+            try {
             criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (before != null) {
+            try {
             criteria.before(Formatters.parseDateTime(before));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (after != null) {
+            try {
             criteria.after(Formatters.parseDateTime(after));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (cleared != null) {
             criteria.includedCleared(Boolean.parseBoolean(cleared));
@@ -256,6 +289,8 @@ public class AlertsController {
         AlertCriteria criteria = provider.criteria();
 
         try {
+            Optional.ofNullable(params.get("type")).ifPresent(list -> list.forEach(typeStr -> criteria.type(URI.create(typeStr))));
+            Optional.ofNullable(params.get("subtype")).ifPresent(list -> list.forEach(subtype -> criteria.subtype(subtype)));
             Optional.ofNullable(params.get("limit")).ifPresent(list -> list.forEach(limitStr -> criteria.limit(Integer.parseInt(limitStr))));
             Optional.ofNullable(params.get("state")).ifPresent(list -> list.forEach(stateStr -> criteria.state(Alert.State.valueOf(stateStr.toUpperCase()))));
             Optional.ofNullable(params.get("level")).ifPresent(list -> list.forEach(levelStr -> criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()))));

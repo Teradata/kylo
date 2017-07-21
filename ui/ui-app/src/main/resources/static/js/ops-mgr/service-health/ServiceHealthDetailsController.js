@@ -27,6 +27,9 @@ define(['angular','ops-mgr/service-health/module-name'], function (angular,modul
 
 
         this.service = ServicesStatusData.services[this.serviceName];
+        if(_.isEmpty(ServicesStatusData.services)){
+            ServicesStatusData.fetchServiceStatus();
+        }
 
         $scope.$watch(function(){
             return ServicesStatusData.services;

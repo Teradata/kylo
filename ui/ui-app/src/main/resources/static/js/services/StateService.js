@@ -262,6 +262,9 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.navigateToAlertDetails = function (alertId) {
                 $state.go("alert-details", {alertId: alertId});
             };
+            data.navigateToAlerts = function (query) {
+                $state.go("alerts", {query: query});
+            };
             return data;
         }
 

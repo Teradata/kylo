@@ -49,11 +49,14 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     private int limit = Integer.MAX_VALUE;
     private Set<URI> types = new HashSet<>();
+    private Set<String> subtypes = new HashSet<>();
     private Set<Alert.State> states = new HashSet<>();
     private Set<Alert.Level> levels = new HashSet<>();
     private DateTime afterTime;
     private DateTime beforeTime;
     private boolean includeCleared = false;
+
+    private String orFilter;
 
 
     /**
@@ -66,11 +69,12 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         updated.set(updated.get().before(this.beforeTime));
         updated.set(updated.get().includedCleared(this.isIncludeCleared()));
         this.types.forEach((t) -> updated.set(updated.get().type(t)));
+        this.subtypes.forEach((t) -> updated.set(updated.get().subtype(t)));
         this.states.forEach((s) -> updated.set(updated.get().state(s)));
         this.levels.forEach((l) -> updated.set(updated.get().level(l)));
+        updated.set(updated.get().orFilter(orFilter));
         return updated.get();
     }
-
 
     /* (non-Javadoc)
      * @see java.util.function.Predicate#test(java.lang.Object)
@@ -122,6 +126,16 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return this;
     }
 
+    public AlertCriteria subtype(String subtype, String... others) {
+        if (subtype != null) {
+            this.subtypes.add(subtype);
+        }
+        if (others != null) {
+            Arrays.stream(others).forEach(otherType -> this.subtypes.add(otherType));
+        }
+        return this;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertCriteria#state(com.thinkbiganalytics.alerts.api.Alert.State)
      */
@@ -149,7 +163,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         }
         return this;
     }
-
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertCriteria#after(org.joda.time.DateTime)
      */
@@ -177,6 +190,11 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return this;
     }
 
+    @Override
+    public AlertCriteria orFilter(String orFilter) {
+        this.orFilter = orFilter;
+        return this;
+    }
 
     protected boolean testTypes(Alert alert) {
         return this.types.stream().anyMatch(uri -> {
@@ -236,5 +254,13 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     protected boolean isIncludeCleared() {
         return includeCleared;
+    }
+
+    public Set<String> getSubtypes() {
+        return subtypes;
+    }
+
+    public String getOrFilter() {
+        return orFilter;
     }
 }

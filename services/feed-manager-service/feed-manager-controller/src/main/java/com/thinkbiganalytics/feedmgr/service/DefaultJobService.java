@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -82,23 +83,7 @@ public class DefaultJobService implements JobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         metadataAccess.commit(() -> {
-            BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId);
-            if (execution != null) {
-                if (execution.getStartTime() == null) {
-                    execution.setStartTime(DateTimeUtil.getNowUTCTime());
-                }
-                execution.setStatus(BatchJobExecution.JobStatus.ABANDONED);
-                if (execution.getEndTime() == null) {
-                    execution.setEndTime(DateTimeUtil.getNowUTCTime());
-                }
-                String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += "Job manually abandoned @ " + DateTimeUtil.getNowFormattedWithTimeZone();
-                execution.setExitMessage(msg);
-                //also stop any running steps??
-                this.jobExecutionProvider.save(execution);
-
-            }
-            return execution;
+          return  this.jobExecutionProvider.abandonJob(executionId);
         });
     }
 
