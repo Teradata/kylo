@@ -49,4 +49,17 @@ public interface AlertSource {
     Optional<Alert> getAlert(Alert.ID id);
 
     Iterator<Alert> getAlerts(AlertCriteria criteria);
+
+    /**
+     *
+     * @return the id for this source
+     */
+    ID getId();
+
+    /**
+     * The opaque identifier of this source
+     */
+    interface ID extends Serializable {
+
+    }
 }

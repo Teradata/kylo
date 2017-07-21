@@ -23,6 +23,8 @@ package com.thinkbiganalytics.alerts.api;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.spi.AlertSource;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -52,6 +54,18 @@ public interface AlertProvider {
      */
     Alert.ID resolve(Serializable value);
 
+
+    /**
+     * Generates an ID that associated with a source and the ID that the source produced.
+     * This method is not generally used by alert clients but is here to support producers
+     * of alerts using an AlertManager and need an ID supported by this provider.
+     *
+     * @param id the ID coming from the source
+     * @param source the source of the alert ID
+     * @return a (potentially) new alert ID that targets the given source
+     */
+    Alert.ID resolve(Alert.ID id, AlertSource source);
+
     /**
      * Registers a listener that will be called whenever the state of an alert
      * changes, such as when one is created or responded to by responder that
@@ -74,6 +88,15 @@ public interface AlertProvider {
      * @return the alert, or null if no alert exists with that ID
      */
     Optional<Alert> getAlert(Alert.ID id);
+
+
+    /**
+     * gets the alert for a given source
+     * @param id the alert id (without the source
+     * @param src the alert source
+     * @return the alert
+     */
+    Optional<Alert> getAlert(Alert.ID id, AlertSource src);
 
     /**
      * Retrieves alerts matching the given criteria.  Specifying null retrieve all known alerts.

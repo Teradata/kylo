@@ -39,6 +39,7 @@ import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
@@ -46,6 +47,7 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -79,6 +82,13 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     private JpaAlertRepository repository;
 
 
+    private AlertSource.ID id = new AlertManagerId();
+
+    @Override
+    public AlertSource.ID getId() {
+       return id;
+    }
+
     /**
      * @param repo
      */
@@ -91,7 +101,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#resolve(java.io.Serializable)
      */
     @Override
-    public ID resolve(Serializable id) {
+    public Alert.ID resolve(Serializable id) {
         if (id instanceof JpaAlert.AlertId) {
             return (JpaAlert.AlertId) id;
         } else {
@@ -136,7 +146,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Optional<Alert> getAlert(ID id) {
+    public Optional<Alert> getAlert(Alert.ID id) {
         return this.metadataAccess.read(() -> {
             return Optional.of(findAlert(id).map(a -> asValue(a)).orElseThrow(() -> new AlertNotfoundException(id)));
         }, MetadataAccess.SERVICE);
@@ -222,7 +232,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#remove(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Alert remove(ID id) {
+    public Alert remove(Alert.ID id) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(id);
 
         return this.metadataAccess.commit(() -> {
@@ -519,6 +529,30 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 return query.where(preds.toArray(new Predicate[preds.size()]));
             }
         }
+    }
+
+
+    public static class AlertManagerId implements ID {
+
+
+        private static final long serialVersionUID = 7691516770322504702L;
+
+        private String idValue = DefaultAlertManager.class.getSimpleName();
+
+
+        public AlertManagerId() {
+        }
+
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
     }
 
 }

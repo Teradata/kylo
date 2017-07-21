@@ -28,6 +28,10 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.feed.*;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -49,8 +53,13 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Provider allowing access to feeds {@link OpsManagerFeed}
@@ -71,6 +80,9 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     @Inject
     private AccessController controller;
+
+    @Inject
+    private AlertProvider alertProvider;
 
     /**
      * list of delete feed listeners
@@ -262,6 +274,11 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         String exitMessage = String.format("Job manually abandoned @ %s", DateTimeUtil.getNowFormattedWithTimeZone());
 
         repository.abandonFeedJobs(feed, exitMessage);
+
+        //all the alerts manager to handle all job failures
+        AlertCriteria criteria = alertProvider.criteria().type(OperationalAlerts.feedAlertType(feed));
+        Iterator<? extends Alert> alerts = alertProvider.getAlerts(criteria);
+        StreamSupport.stream(Spliterators.spliteratorUnknownSize(alerts,Spliterator.ORDERED),false).forEach(alert -> alertProvider.respondTo(alert.getId(), (alert1, response) -> response.handle(exitMessage)));
     }
 
     /**

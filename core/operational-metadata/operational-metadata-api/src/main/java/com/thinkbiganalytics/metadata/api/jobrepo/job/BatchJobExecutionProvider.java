@@ -48,6 +48,8 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     String NIFI_KYLO_JOB_TYPE_PROPERTY = "kylo.jobType";
 
+    String KYLO_ALERT_ID_PROPERTY = "Kylo Alert Id";
+
     /**
      * Execution context property name that references the name of the Feed on a job
      */
@@ -98,6 +100,14 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * @return the updated job execution
      */
     BatchJobExecution save(BatchJobExecution jobExecution);
+
+
+    /**
+     * Abandons the Job
+     * @param executionId the job id
+     * @return the JobExecution
+     */
+    BatchJobExecution abandonJob(Long executionId);
 
     /**
      * find or create the job execution from the provenance event

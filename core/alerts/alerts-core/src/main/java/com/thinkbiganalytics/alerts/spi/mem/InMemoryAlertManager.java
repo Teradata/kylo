@@ -82,6 +82,12 @@ public class InMemoryAlertManager implements AlertManager {
     private volatile Executor receiversExecutor;
     private AtomicInteger changeCount = new AtomicInteger(0);
 
+    private AlertManagerId id = new AlertManagerId();
+
+    @Override
+    public ID getId() {
+        return id;
+    }
 
     /**
      *
@@ -140,7 +146,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Optional<Alert> getAlert(ID id) {
+    public Optional<Alert> getAlert(Alert.ID id) {
         return Optional.ofNullable(this.alertsById.getOrDefault(id, NULL_REF).get());
     }
 
@@ -150,7 +156,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public ID resolve(Serializable ser) {
+    public Alert.ID resolve(Serializable ser) {
         if (ser instanceof String) {
             return new AlertID((String) ser);
         } else if (ser instanceof UUID) {
@@ -230,7 +236,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Alert remove(ID id) {
+    public Alert remove(Alert.ID id) {
         this.alertsLock.writeLock().lock();
         try {
             AtomicReference<GenericAlert> ref = this.alertsById.remove(id);
@@ -470,7 +476,7 @@ public class InMemoryAlertManager implements AlertManager {
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
 
         @Override
-        protected boolean removeEldestEntry(java.util.Map.Entry<ID, AtomicReference<Alert>> eldest) {
+        protected boolean removeEldestEntry(java.util.Map.Entry<Alert.ID, AtomicReference<Alert>> eldest) {
             if (this.size() > MAX_ALERTS) {
                 InMemoryAlertManager.this.alertsByTime.values().remove(eldest.getValue());
                 return true;
@@ -594,6 +600,29 @@ public class InMemoryAlertManager implements AlertManager {
         public <C extends Serializable> C getContent() {
             return (C) this.content;
         }
+    }
+
+    public static class AlertManagerId implements ID {
+
+
+        private static final long serialVersionUID = 7691516770322504702L;
+
+        private String idValue = InMemoryAlertManager.class.getSimpleName();
+
+
+        public AlertManagerId() {
+        }
+
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
     }
 
 }
