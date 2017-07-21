@@ -135,6 +135,10 @@
           <artifactId>httpcore</artifactId>
           <groupId>org.apache.httpcomponents</groupId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
