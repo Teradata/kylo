@@ -24,6 +24,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         }
 
 
+
+
 //JOB urls
 
         this.JOBS_QUERY_URL = this.JOBS_BASE;
@@ -94,6 +96,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.ALERTS_URL = "/proxy/v1/alerts";
 
         this.ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/alerts/summary/unhandled";
+
+        this.FEED_ALERTS_URL = function(feedName) {
+            return self.FEEDS_BASE +"/"+feedName+"/alerts";
+        }
 
     });
 });

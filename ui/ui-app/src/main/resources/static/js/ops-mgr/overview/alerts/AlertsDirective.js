@@ -25,6 +25,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         this.alertsService = AlertsService;
         this.alerts = [];
 
+        /**
+         * Handle on the feed alerts refresh interval
+         * @type {null}
+         */
+        this.feedRefresh = null;
+
 
 
         if(this.feedName == undefined || this.feedName == ''){
@@ -37,60 +43,27 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     self.alerts = newVal;
                 }
             );
+            AlertsService.startRefreshingAlerts();
         }
         else {
             self.alerts = [];
-            //TODO implement
-            /*
-            this.alerts = [AlertsService.feedFailureAlerts[self.feedName]];
-            $scope.$watch(
-                function () {
-                    return AlertsService.feedFailureAlerts;
-                },
-                function (newVal) {
-                    if(newVal && newVal[self.feedName]){
-                        self.alerts = [newVal[self.feedName]]
-                    }
-                    else {
-                        self.alerts = [];
-                    }
-                },true
-            );
-            */
+            stopFeedRefresh();
+            fetchFeedAlerts();
+           self.feedRefresh = $interval(fetchFeedAlerts,5000);
         }
 
+        function fetchFeedAlerts(){
+            AlertsService.fetchFeedAlerts(self.feedName).then(function(alerts) {
+                self.alerts =alerts;
+            });
+        }
 
-/*
- function refresh(){
- if(self.feedName == undefined || self.feedName == ''){
- self.alerts = AlertsService.alerts;
- }
- else {
- self.alerts = [AlertsService.feedFailureAlerts[self.feedName]];
- }
- }
-
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
+        function stopFeedRefresh(){
+            if(self.feedRefresh != null){
+                $interval.cancel(self.feedRefresh);
+                self.feedRefresh = null;
             }
         }
-
-        this.setRefreshInterval = function () {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(refresh, self.refreshIntervalTime);
-
-            }
-        }
-
-        this.init = function () {
-            self.setRefreshInterval();
-        }
-
-        this.init();
-*/
 
 
         this.navigateToAlerts = function(alertsSummary) {
@@ -101,20 +74,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 query += ","+alertsSummary.subtype;
             }
             StateService.OpsManager().Alert().navigateToAlerts(query);
-            /*
-            if(alert.type == 'Feed' && self.feedName == undefined){
-                StateService.OpsManager().Feed().navigateToFeedDetails(alert.name);
-            }
-            else if(alert.type == 'Service' ) {
-                StateService.OpsManager().ServiceStatus().navigateToServiceDetails(alert.name);
-            }
-            */
 
         }
 
         $scope.$on('$destroy', function () {
-       //     self.clearRefreshInterval();
+            stopFeedRefresh();
+            AlertsService.stopRefreshingAlerts();
         });
+
     };
 
     angular.module(moduleName).controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService",controller]);

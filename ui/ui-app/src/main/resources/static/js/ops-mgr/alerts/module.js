@@ -22,7 +22,6 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
                 loadPage: lazyLoad()
             },
             data:{
-                breadcrumbRoot:true,
                 displayName:'Alerts',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.ALERTS.permissions

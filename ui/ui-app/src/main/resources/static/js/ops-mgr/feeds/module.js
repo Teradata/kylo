@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','ops-mgr/alerts/module','ops-mgr/overview/module','angular-nvd3'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, ['nvd3']);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -31,7 +31,7 @@ define(['angular','ops-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','consta
 
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path,['ops-mgr/jobs/module','ops-mgr/jobs/module-require','ops-mgr/feeds/module-require']);
+            return lazyLoadUtil.lazyLoadController(path,['ops-mgr/jobs/module','ops-mgr/jobs/module-require','ops-mgr/feeds/module-require','ops-mgr/alerts/module-require','ops-mgr/overview/module-require']);
         }
 
     }]);

@@ -23,6 +23,11 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-service-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-job-repository-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -36,6 +41,13 @@
       <artifactId>kylo-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
 
 
     <dependency>

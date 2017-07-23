@@ -130,6 +130,21 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                                 event.stateText = self.getStateText(event.state);
                             });
                         }
+                        self.alertData.links = [];
+                        //add in the detail URLs
+                        if(self.alertData.type == 'http://kylo.io/alert/job/failure') {
+                            if(angular.isDefined(self.alertData.content)) {
+                                var jobExecutionId = self.alertData.content;
+                                self.alertData.links.push({label: "Job Execution", value: "job-details({executionId:'" + jobExecutionId + "'})"});
+                            }
+                            self.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+self.alertData.subtype+"'})"});
+
+                        }
+
+                        else   if(self.alertData.type == 'http://kylo.io/alert/service') {
+                            self.alertData.links.push({label:"Service Details",  value:"service-details({serviceName:'"+self.alertData.subtype+"'})"});
+                        }
+
                     });
             }
         };

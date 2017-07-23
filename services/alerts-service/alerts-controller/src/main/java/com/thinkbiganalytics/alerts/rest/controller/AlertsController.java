@@ -2,11 +2,8 @@ package com.thinkbiganalytics.alerts.rest.controller;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,7 +23,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /*-
@@ -50,16 +46,13 @@ import org.springframework.stereotype.Component;
  */
 
 import com.thinkbiganalytics.Formatters;
-import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
-import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
-import com.thinkbiganalytics.alerts.rest.model.Alert.State;
+import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
@@ -89,6 +82,9 @@ public class AlertsController {
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private AlertsModel alertsModel;
+
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -109,7 +105,7 @@ public class AlertsController {
         AlertCriteria criteria = createCriteria(limit,type,subtype, state, level, before, after, cleared);
         criteria.orFilter(filter);
         provider.getAlerts(criteria).forEachRemaining(alerts::add);
-        return new AlertRange(alerts.stream().map(this::toModel).collect(Collectors.toList()));
+        return new AlertRange(alerts.stream().map(alertsModel::toModel).collect(Collectors.toList()));
     }
 
 
@@ -129,7 +125,7 @@ public class AlertsController {
         AlertCriteria criteria = createCriteria(null, type,subtype,state, level, null, null, cleared);
 
         provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
-        return groupAlertSummaries(alerts);
+        return alertsModel.groupAlertSummaries(alerts);
     }
 
     @GET
@@ -145,7 +141,7 @@ public class AlertsController {
         AlertCriteria criteria = createCriteria(null, type,subtype,Alert.State.UNHANDLED.name(), null, null, null, "false");
 
         provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
-        return groupAlertSummaries(alerts);
+        return alertsModel.groupAlertSummaries(alerts);
     }
 
     @GET
@@ -160,7 +156,7 @@ public class AlertsController {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
-            .map(this::toModel)
+            .map(alertsModel::toModel)
             .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }
 
@@ -174,9 +170,9 @@ public class AlertsController {
     public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
         
-        Alert.Level level = toDomain(req.getLevel());
+        Alert.Level level = alertsModel.toDomain(req.getLevel());
         Alert alert = alertManager.create(req.getType(), req.getSubtype(),level, req.getDescription(), null);
-        return toModel(alert);
+        return alertsModel.toModel(alert);
     }
 
 
@@ -195,7 +191,7 @@ public class AlertsController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
         
         Alert.ID id = provider.resolve(idStr);
-        final Alert.State state = toDomain(req.getState());
+        final Alert.State state = alertsModel.toDomain(req.getState());
 
         class UpdateResponder implements AlertResponder {
 
@@ -228,76 +224,9 @@ public class AlertsController {
         UpdateResponder responder = new UpdateResponder();
 
         provider.respondTo(id, responder);
-        return toModel(responder.result);
+        return alertsModel.toModel(responder.result);
     }
 
-    private  String alertSummaryDisplayName(AlertSummary alertSummary){
-        String type = alertSummary.getType();
-        String part = type;
-        if(part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
-            part = StringUtils.substringAfter(part, AlertConstants.KYLO_ALERT_TYPE_PREFIX);
-        }
-        else {
-            int idx = StringUtils.lastOrdinalIndexOf(part, "/", 2);
-            part = StringUtils.substring(part, idx);
-        }
-        String[] parts = part.split("/");
-        StringBuffer displayNameSb = new StringBuffer();
-       return Arrays.asList(parts).stream().map(s ->StringUtils.capitalize(s)).collect(Collectors.joining(" "));
-    }
-
-    private Collection<AlertSummaryGrouped> groupAlertSummaries(List<AlertSummary> alertSummaries) {
-        Map<String,AlertSummaryGrouped> group = new HashMap<>();
-        alertSummaries.forEach(alertSummary -> {
-            String key = alertSummary.getType()+":"+alertSummary.getSubtype();
-            String displayName = alertSummaryDisplayName(alertSummary);
-            group.computeIfAbsent(key,key1->new AlertSummaryGrouped(alertSummary.getType(),alertSummary.getSubtype(),displayName)).add(toModel(alertSummary.getLevel()),alertSummary.getCount(),alertSummary.getLastAlertTimestamp());
-        });
-        return group.values();
-    }
-
-
-    private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
-        com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
-        result.setId(alert.getId().toString());
-        result.setActionable(alert.isActionable());
-        result.setCreatedTime(alert.getCreatedTime());
-        result.setLevel(toModel(alert.getLevel()));
-        result.setState(toModel(alert.getState()));
-        result.setType(alert.getType());
-        result.setDescription(alert.getDescription());
-        result.setCleared(alert.isCleared());
-        alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
-        return result;
-    }
-
-    private com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent toModel(AlertChangeEvent event) {
-        com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent result = new com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent();
-        result.setCreatedTime(event.getChangeTime());
-        result.setDescription(event.getDescription());
-        result.setState(toModel(event.getState()));
-        result.setUser(event.getUser() != null ? event.getUser().getName() : null);
-        return result;
-    }
-
-    private Level toModel(Alert.Level level) {
-        // Currently identical
-        return Level.valueOf(level.name());
-    }
-
-    private State toModel(Alert.State state) {
-        // Currently identical
-        return State.valueOf(state.name());
-    }
-
-    private Alert.State toDomain(State state) {
-        return Alert.State.valueOf(state.name());
-    }
-
-    private Alert.Level toDomain(Level level) {
-        // Currently identical
-        return Alert.Level.valueOf(level.name());
-    }
 
     private AlertCriteria createCriteria(Integer limit, String type, String subtype,String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();

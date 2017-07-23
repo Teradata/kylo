@@ -2,6 +2,14 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.rest.AlertsModel;
+import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
@@ -14,11 +22,15 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,6 +86,16 @@ public class FeedsRestController {
 
     @Inject
     private MetadataAccess metadataAccess;
+
+    @Inject
+    private ServiceLevelAgreementService serviceLevelAgreementService;
+
+
+    @Inject
+    private AlertProvider alertProvider;
+
+    @Inject
+    private AlertsModel alertsModel;
 
     @GET
     @Path("/{feedName}/latest")
@@ -213,5 +235,60 @@ public class FeedsRestController {
     public List<String> getFeedNames() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> opsFeedManagerFeedProvider.getFeedNames());
+    }
+
+
+
+    /**
+     * Get alerts associated to the feed
+     * Combine both SLA and Feed alerts
+     * @param feedId
+     * @return
+     */
+    @GET
+    @Path("/{feedName}/alerts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the name of every feed.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the feed names.", response = String.class, responseContainer = "List")
+    )
+    public Collection<AlertSummaryGrouped> getFeedAlerts(@PathParam("feedName") String feedName,@QueryParam("feedId") String feedId){
+        return getAlerts(feedName,feedId);
+    }
+
+    private Collection<AlertSummaryGrouped> getAlerts(String feedName, String feedId){
+        //get necessary feed info
+        if(StringUtils.isBlank(feedId) && StringUtils.isNotBlank(feedName)){
+            //get the feedId for this feed name
+            OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
+            if(feed != null){
+                feedId = feed.getId().toString();
+            }
+        }
+        else if(StringUtils.isNotBlank(feedId) && StringUtils.isBlank(feedName)) {
+            OpsManagerFeed feed = opsFeedManagerFeedProvider.findById(opsFeedManagerFeedProvider.resolveId(feedId));
+            if(feed != null){
+                feedName = feed.getName();
+            }
+        }
+
+        if(StringUtils.isBlank(feedId) && StringUtils.isBlank(feedName)){
+            return Collections.emptyList();
+        }
+
+
+
+        // get slas for feed
+        List<FeedServiceLevelAgreement> slas = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
+        List<String> slaNames = new ArrayList<>();
+        if(slas != null && !slas.isEmpty()){
+            slaNames = slas.stream().map(sla -> sla.getName()).collect(Collectors.toList());
+        }
+        List<AlertSummary> alerts = new ArrayList<>();
+        AlertCriteria criteria = alertProvider.criteria().state(Alert.State.UNHANDLED).subtype(feedName, slaNames.toArray(new String[slaNames.size()]));
+        alertProvider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
+
+
+        return alertsModel.groupAlertSummaries(alerts);
     }
 }
