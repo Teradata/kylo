@@ -21,9 +21,7 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.AugmentableQueryRepositoryFactoryBean;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JobFailureAlertResponder;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
@@ -155,11 +153,4 @@ public class OperationalMetadataConfig {
         return new RoleSetExposingSecurityEvaluationContextExtension();
     }
 
-
-    @Bean(name = "jobFailureAlertResponder")
-    public JobFailureAlertResponder jobFailureAlertResponder(@Qualifier("alertProvider") AlertProvider alertProvider) {
-        JobFailureAlertResponder responder = new JobFailureAlertResponder();
-        alertProvider.addResponder(responder);
-        return responder;
-    }
 }

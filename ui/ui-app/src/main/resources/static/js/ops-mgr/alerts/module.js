@@ -11,7 +11,12 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','const
             views: {
                 'content': {
                     templateUrl: 'js/ops-mgr/alerts/alerts-table.html',
+                    controller:'AlertsController',
+                    controllerAs:'vm'
                 }
+            },
+            params: {
+                query: null
             },
             resolve: {
                 loadPage: lazyLoad()

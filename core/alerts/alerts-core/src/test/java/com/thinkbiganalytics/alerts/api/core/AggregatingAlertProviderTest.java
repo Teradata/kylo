@@ -385,6 +385,10 @@ public class AggregatingAlertProviderTest {
             return URI.create("http://com.example/alert/test");
         }
 
+        public String getSubtype() {
+            return "subtype";
+        }
+
         @Override
         public String getDescription() {
             return "";

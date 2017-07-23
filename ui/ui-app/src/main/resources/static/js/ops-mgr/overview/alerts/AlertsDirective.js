@@ -6,12 +6,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope: true,
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime: "@",
                 feedName:'@'
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/alerts/alerts-template.html',
-            controller: "AlertsController",
+            controller: "AlertsOverviewController",
             link: function ($scope, element, attrs) {
                 $scope.$on('$destroy', function () {
 
@@ -23,18 +22,16 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     var controller = function ($scope, $element, $interval, AlertsService, StateService) {
         var self = this;
-        this.dataLoaded = false;
-        this.refreshIntervalTime = 1000;
         this.alertsService = AlertsService;
         this.alerts = [];
 
 
 
         if(this.feedName == undefined || this.feedName == ''){
-            this.alerts = AlertsService.alerts;
+            this.alerts = AlertsService.alertsSummary.data;
             $scope.$watchCollection(
                 function () {
-                    return AlertsService.alerts;
+                    return AlertsService.alertsSummary.data;
                 },
                 function (newVal) {
                     self.alerts = newVal;
@@ -42,6 +39,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             );
         }
         else {
+            self.alerts = [];
+            //TODO implement
+            /*
             this.alerts = [AlertsService.feedFailureAlerts[self.feedName]];
             $scope.$watch(
                 function () {
@@ -56,6 +56,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     }
                 },true
             );
+            */
         }
 
 
@@ -92,13 +93,22 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 */
 
 
-        this.navigateToAlert = function(alert) {
+        this.navigateToAlerts = function(alertsSummary) {
+
+            //generate Query
+            var query = "UNHANDLED,"+ alertsSummary.type;
+            if(alertsSummary.subtype != null && alertsSummary.subtype != null) {
+                query += ","+alertsSummary.subtype;
+            }
+            StateService.OpsManager().Alert().navigateToAlerts(query);
+            /*
             if(alert.type == 'Feed' && self.feedName == undefined){
                 StateService.OpsManager().Feed().navigateToFeedDetails(alert.name);
             }
             else if(alert.type == 'Service' ) {
                 StateService.OpsManager().ServiceStatus().navigateToServiceDetails(alert.name);
             }
+            */
 
         }
 
@@ -107,7 +117,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
     };
 
-    angular.module(moduleName).controller('AlertsController', ["$scope","$element","$interval","AlertsService","StateService",controller]);
+    angular.module(moduleName).controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService",controller]);
 
 
     angular.module(moduleName)

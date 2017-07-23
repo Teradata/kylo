@@ -1,7 +1,12 @@
 package com.thinkbiganalytics.alerts.rest.controller;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,6 +26,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 /*-
@@ -44,16 +50,19 @@ import org.springframework.stereotype.Component;
  */
 
 import com.thinkbiganalytics.Formatters;
+import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
 import com.thinkbiganalytics.alerts.rest.model.Alert.State;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
+import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
@@ -88,16 +97,55 @@ public class AlertsController {
         @ApiResponse(code = 200, message = "Returns the alerts.", response = AlertRange.class)
     )
     public AlertRange getAlerts(@QueryParam("limit") Integer limit,
+                                @QueryParam("type") String type,
+                                @QueryParam("subtype") String subtype,
                                 @QueryParam("state") String state,
                                 @QueryParam("level") String level,
                                 @QueryParam("before") String before,
                                 @QueryParam("after") String after,
-                                @QueryParam("cleared") @DefaultValue("false") String cleared) {
+                                @QueryParam("cleared") @DefaultValue("false") String cleared,
+                                @QueryParam("filter") String filter) {
         List<Alert> alerts = new ArrayList<>();
-        AlertCriteria criteria = createCriteria(limit, state, level, before, after, cleared);
-
+        AlertCriteria criteria = createCriteria(limit,type,subtype, state, level, before, after, cleared);
+        criteria.orFilter(filter);
         provider.getAlerts(criteria).forEachRemaining(alerts::add);
         return new AlertRange(alerts.stream().map(this::toModel).collect(Collectors.toList()));
+    }
+
+
+    @GET
+    @Path("/summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists summary grouped alerts.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns summary of the alerts grouped.", response = AlertRange.class)
+    )
+    public Collection<AlertSummaryGrouped> getAlertSummary(@QueryParam("state") String state,
+                                      @QueryParam("level") String level,
+                                      @QueryParam("type") String type,
+                                      @QueryParam("subtype") String subtype,
+                                      @QueryParam("cleared") @DefaultValue("false") String cleared) {
+        List<AlertSummary> alerts = new ArrayList<>();
+        AlertCriteria criteria = createCriteria(null, type,subtype,state, level, null, null, cleared);
+
+        provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
+        return groupAlertSummaries(alerts);
+    }
+
+    @GET
+    @Path("/summary/unhandled")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists summary grouped alerts.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns summary of the alerts grouped.", response = AlertRange.class)
+    )
+    public Collection<AlertSummaryGrouped> getAlertSummaryUnhandled( @QueryParam("type") String type,
+                                                                     @QueryParam("subtype") String subtype) {
+        List<AlertSummary> alerts = new ArrayList<>();
+        AlertCriteria criteria = createCriteria(null, type,subtype,Alert.State.UNHANDLED.name(), null, null, null, "false");
+
+        provider.getAlertsSummary(criteria).forEachRemaining(alerts::add);
+        return groupAlertSummaries(alerts);
     }
 
     @GET
@@ -127,7 +175,7 @@ public class AlertsController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
         
         Alert.Level level = toDomain(req.getLevel());
-        Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
+        Alert alert = alertManager.create(req.getType(), req.getSubtype(),level, req.getDescription(), null);
         return toModel(alert);
     }
 
@@ -183,6 +231,32 @@ public class AlertsController {
         return toModel(responder.result);
     }
 
+    private  String alertSummaryDisplayName(AlertSummary alertSummary){
+        String type = alertSummary.getType();
+        String part = type;
+        if(part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
+            part = StringUtils.substringAfter(part, AlertConstants.KYLO_ALERT_TYPE_PREFIX);
+        }
+        else {
+            int idx = StringUtils.lastOrdinalIndexOf(part, "/", 2);
+            part = StringUtils.substring(part, idx);
+        }
+        String[] parts = part.split("/");
+        StringBuffer displayNameSb = new StringBuffer();
+       return Arrays.asList(parts).stream().map(s ->StringUtils.capitalize(s)).collect(Collectors.joining(" "));
+    }
+
+    private Collection<AlertSummaryGrouped> groupAlertSummaries(List<AlertSummary> alertSummaries) {
+        Map<String,AlertSummaryGrouped> group = new HashMap<>();
+        alertSummaries.forEach(alertSummary -> {
+            String key = alertSummary.getType()+":"+alertSummary.getSubtype();
+            String displayName = alertSummaryDisplayName(alertSummary);
+            group.computeIfAbsent(key,key1->new AlertSummaryGrouped(alertSummary.getType(),alertSummary.getSubtype(),displayName)).add(toModel(alertSummary.getLevel()),alertSummary.getCount(),alertSummary.getLastAlertTimestamp());
+        });
+        return group.values();
+    }
+
+
     private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
         com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
         result.setId(alert.getId().toString());
@@ -225,23 +299,49 @@ public class AlertsController {
         return Alert.Level.valueOf(level.name());
     }
 
-    private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after, String cleared) {
+    private AlertCriteria createCriteria(Integer limit, String type, String subtype,String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
 
         if (limit != null) {
             criteria.limit(limit);
         }
+        if (type != null) {
+            try {
+                criteria.type(URI.create(type));
+            }catch (IllegalArgumentException e){
+
+            }
+        }
+        if (subtype != null) {
+            criteria.subtype(subtype);
+        }
         if (stateStr != null) {
-            criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+            try {
+                criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (levelStr != null) {
+            try {
             criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (before != null) {
+            try {
             criteria.before(Formatters.parseDateTime(before));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (after != null) {
+            try {
             criteria.after(Formatters.parseDateTime(after));
+            }catch (IllegalArgumentException e){
+
+            }
         }
         if (cleared != null) {
             criteria.includedCleared(Boolean.parseBoolean(cleared));
@@ -256,6 +356,8 @@ public class AlertsController {
         AlertCriteria criteria = provider.criteria();
 
         try {
+            Optional.ofNullable(params.get("type")).ifPresent(list -> list.forEach(typeStr -> criteria.type(URI.create(typeStr))));
+            Optional.ofNullable(params.get("subtype")).ifPresent(list -> list.forEach(subtype -> criteria.subtype(subtype)));
             Optional.ofNullable(params.get("limit")).ifPresent(list -> list.forEach(limitStr -> criteria.limit(Integer.parseInt(limitStr))));
             Optional.ofNullable(params.get("state")).ifPresent(list -> list.forEach(stateStr -> criteria.state(Alert.State.valueOf(stateStr.toUpperCase()))));
             Optional.ofNullable(params.get("level")).ifPresent(list -> list.forEach(levelStr -> criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()))));

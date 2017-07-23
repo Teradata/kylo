@@ -35,6 +35,7 @@ import java.net.URI;
  */
 public interface AlertCriteria {
 
+
     /**
      * Sets the maximum size of the list alerts retrieved.  The default, if no
      * limit is given, is AlertSource dependent.
@@ -50,6 +51,13 @@ public interface AlertCriteria {
      * @return the updated criteria
      */
     AlertCriteria type(URI type, URI... others);
+
+    /**
+     * @param type   a type upon which to filter
+     * @param others TODO
+     * @return the updated criteria
+     */
+    AlertCriteria subtype(String subtype, String... others);
 
     /**
      * @param state  a state upon which to filter
@@ -86,4 +94,12 @@ public interface AlertCriteria {
      * @return the updated criteria
      */
     AlertCriteria includedCleared(boolean flag);
+
+    /**
+     * filter on all fields in an or condition
+     * @param orFilter the filter string
+     * @return the updated criteria
+     */
+    AlertCriteria orFilter(String orFilter);
+
 }

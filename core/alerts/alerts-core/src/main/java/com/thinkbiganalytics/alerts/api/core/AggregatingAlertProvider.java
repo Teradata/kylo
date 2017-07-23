@@ -31,6 +31,7 @@ import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
@@ -254,6 +255,12 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         return combineAlerts(criteria, srcs).iterator();
     }
 
+
+    public Iterator<? extends AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        Map<String, AlertSource> srcs = snapshotAllSources();
+        return combineAlertSummary(criteria, srcs).iterator();
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(org.joda.time.DateTime)
      */
@@ -344,6 +351,21 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             .map(alert -> wrapAlert(alert, alert.getSource()))
             .sorted((a1, a2) -> a2.getCreatedTime().compareTo(a1.getCreatedTime()));
     }
+
+    private Stream<AlertSummary> combineAlertSummary(AlertCriteria criteria, Map<String, AlertSource> srcs) {
+        Criteria critImpl = (Criteria) criteria;
+
+        return srcs.values().stream()
+            .map(src -> {
+                AlertCriteria srcCrit = src.criteria();
+                critImpl.transfer(srcCrit);
+                Iterable<AlertSummary> alerts = () -> src.getAlertsSummary(srcCrit);
+                return StreamSupport.stream(alerts.spliterator(), false);
+            })
+            .flatMap(s -> s);
+    }
+
+
 
     private void notifyChanged(Alert alert) {
         notifyListeners(alert);

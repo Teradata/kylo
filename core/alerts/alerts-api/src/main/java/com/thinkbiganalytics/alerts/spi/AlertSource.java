@@ -25,6 +25,7 @@ package com.thinkbiganalytics.alerts.spi;
 
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -49,6 +50,8 @@ public interface AlertSource {
     Optional<Alert> getAlert(Alert.ID id);
 
     Iterator<Alert> getAlerts(AlertCriteria criteria);
+
+    Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria);
 
     /**
      *

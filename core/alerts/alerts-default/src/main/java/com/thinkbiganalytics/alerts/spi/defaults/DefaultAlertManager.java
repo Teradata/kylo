@@ -23,8 +23,14 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.Visitor;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
@@ -35,17 +41,22 @@ import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertNotfoundException;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.jpa.alerts.DefaultAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.jpa.support.QueryDslPathInspector;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -60,11 +71,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -165,6 +178,15 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 .iterator();
         }, MetadataAccess.SERVICE);
     }
+
+    public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        return this.metadataAccess.read(() -> {
+            Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
+            return critImpl.createSummaryQuery().fetch().stream()
+                .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+                .iterator();
+        }, MetadataAccess.SERVICE);
+    }
 //
 //    /* (non-Javadoc)
 //     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(org.joda.time.DateTime)
@@ -204,13 +226,13 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#create(java.net.URI, com.thinkbiganalytics.alerts.api.Alert.Level, java.lang.String, java.io.Serializable)
      */
     @Override
-    public <C extends Serializable> Alert create(URI type, Level level, String description, C content) {
+    public <C extends Serializable> Alert create(URI type, String subtype,Level level, String description, C content) {
         final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
                                ? SecurityContextHolder.getContext().getAuthentication()
                                : null;
 
         Alert created = this.metadataAccess.commit(() -> {
-            JpaAlert alert = new JpaAlert(type, level, user, description, content);
+            JpaAlert alert = new JpaAlert(type, subtype,level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -290,6 +312,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         private final String description;
         private final Level level;
         private final URI type;
+        private final String subtype;
         private final DateTime createdTime;
         private final Serializable content;
         private final boolean cleared;
@@ -302,6 +325,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             this.description = alert.getDescription();
             this.level = alert.getLevel();
             this.type = alert.getType();
+            this.subtype = alert.getSubtype();
             this.cleared = alert.isCleared();
             this.createdTime = alert.getCreatedTime();
             this.events = Collections.unmodifiableList(alert.getEvents().stream()
@@ -332,6 +356,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         @Override
         public URI getType() {
             return type;
+        }
+
+        @Override
+        public String getSubtype() {
+            return subtype;
         }
 
         @Override
@@ -473,8 +502,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     private class Criteria extends BaseAlertCriteria {
 
+
         public JPAQuery<JpaAlert> createQuery() {
-            List<Predicate> preds = new ArrayList<>();
             QJpaAlert alert = QJpaAlert.jpaAlert;
 
             JPAQuery<JpaAlert> query = queryFactory
@@ -482,6 +511,89 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 .from(alert)
                 .limit(getLimit());
 
+            List<Predicate> preds = filter(alert);
+            BooleanBuilder orFilter = orFilter(alert);
+
+            // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
+            // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
+            if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
+                query.orderBy(alert.createdTime.asc());
+            } else {
+                query.orderBy(alert.createdTime.desc());
+            }
+
+            if (preds.isEmpty() && !orFilter.hasValue()) {
+                return query;
+            } else {
+                BooleanBuilder booleanBuilder = new BooleanBuilder();
+                preds.forEach(p -> booleanBuilder.and(p));
+                if(orFilter.hasValue()) {
+                    booleanBuilder.and(orFilter);
+                }
+                return query.where(booleanBuilder);
+            }
+
+        }
+
+        public JPAQuery<AlertSummary> createSummaryQuery() {
+            QJpaAlert alert = QJpaAlert.jpaAlert;
+
+            JPAQuery
+                query = queryFactory.select(
+                Projections.bean(DefaultAlertSummary.class,
+                                 alert.typeString.as("type"),
+                                 alert.subtype.as("subtype"),
+                                 alert.level.as("level"),
+                                 alert.count().as("count"),
+                                 alert.createdTimeMillis.max().as("lastAlertTimestamp"))
+            )
+                .from(alert)
+                .groupBy(alert.typeString, alert.subtype);
+            List<Predicate> preds = filter(alert);
+
+            BooleanBuilder orFilter = orFilter(alert);
+
+            if (preds.isEmpty() && !orFilter.hasValue()) {
+                return query;
+            } else {
+                BooleanBuilder booleanBuilder = new BooleanBuilder();
+                preds.forEach(p -> booleanBuilder.and(p));
+                if(orFilter.hasValue()) {
+                    booleanBuilder.and(orFilter);
+                }
+                return (JPAQuery<AlertSummary>) query.where(booleanBuilder);
+            }
+        }
+
+        private BooleanBuilder orFilter(QJpaAlert alert){
+            BooleanBuilder globalFilter = new BooleanBuilder();
+            if(StringUtils.isNotBlank(getOrFilter())) {
+                Lists.newArrayList(StringUtils.split(getOrFilter(), ",")).stream().forEach(filter -> {
+                    filter = StringUtils.trim(filter);
+                    if(filter != null) {
+                    BooleanBuilder booleanBuilder = new BooleanBuilder();
+                    List<Predicate> preds = new ArrayList<>();
+                    try {
+                        Alert.State state = Alert.State.valueOf(filter.toUpperCase());
+                        preds.add(alert.state.eq(state));
+                    }catch (IllegalArgumentException e){
+
+                    }
+
+                    preds.add( alert.typeString.like(filter.concat("%")));
+                    preds.add(alert.subtype.like(filter.concat("%")));
+                    booleanBuilder.andAnyOf(preds.toArray(new Predicate[preds.size()]));
+                    globalFilter.and(booleanBuilder);
+                    }
+                });
+
+
+            }
+            return globalFilter;
+        }
+
+        private List<Predicate> filter(QJpaAlert alert){
+            List<Predicate> preds = new ArrayList<>();
             // The "state" criteria now means filter by an alert's current state.
             // To support filtering by any state the alert has transitioned through
             // we can add the commented out code below (the old state behavior)
@@ -515,21 +627,18 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 preds.add(likes);
             }
 
-            // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
-            // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
-            if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
-                query.orderBy(alert.createdTime.asc());
-            } else {
-                query.orderBy(alert.createdTime.desc());
+            if (getSubtypes().size() > 0) {
+                preds.add(alert.subtype.in(getSubtypes()));
             }
-
-            if (preds.isEmpty()) {
-                return query;
-            } else {
-                return query.where(preds.toArray(new Predicate[preds.size()]));
-            }
+            return preds;
         }
+
+
+
+
+
     }
+
 
 
     public static class AlertManagerId implements ID {

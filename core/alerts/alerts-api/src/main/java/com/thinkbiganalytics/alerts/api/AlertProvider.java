@@ -103,6 +103,8 @@ public interface AlertProvider {
      */
     Iterator<? extends Alert> getAlerts(AlertCriteria criteria);
 
+    Iterator<? extends AlertSummary> getAlertsSummary(AlertCriteria criteria);
+
     /**
      * Retrieves all alerts that may have been created after the given time.
      *

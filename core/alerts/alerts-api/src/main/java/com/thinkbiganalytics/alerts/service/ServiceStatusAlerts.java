@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.metadata.api.alerts;
+package com.thinkbiganalytics.alerts.service;
+
 /*-
  * #%L
- * thinkbig-operational-metadata-api
+ * thinkbig-alerts-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -18,20 +19,16 @@ package com.thinkbiganalytics.metadata.api.alerts;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.alerts.AlertConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.URI;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Created by sr186054 on 7/19/17.
+ * Created by sr186054 on 7/22/17.
  */
-public interface OperationalAlerts {
+public interface ServiceStatusAlerts {
 
-    URI JOB_FALURE_ALERT_TYPE = URI.create(AlertConstants.KYLO_ALERT_TYPE_PREFIX +"/job/failure");
-
+    URI SERVICE_STATUS_ALERT_TYPE = URI.create(AlertConstants.KYLO_ALERT_TYPE_PREFIX + "/service");
 
 }

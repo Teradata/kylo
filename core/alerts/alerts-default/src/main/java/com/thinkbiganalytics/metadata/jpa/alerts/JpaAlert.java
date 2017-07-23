@@ -23,6 +23,8 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
  * #L%
  */
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
@@ -67,9 +69,16 @@ public class JpaAlert implements Alert {
     @Column(name = "TYPE", length = 128, nullable = false)
     private String typeString;
 
+    @Column(name = "SUB_TYPE", length = 128, nullable = false)
+    private String subtype;
+
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CREATE_TIME")
+    @QueryType(PropertyType.COMPARABLE)
     private DateTime createdTime;
+
+    @Column(name = "CREATE_TIME", insertable = false, updatable = false)
+    private Long createdTimeMillis;
 
     @Column(name = "DESCRIPTION", length = 255)
     private String description;
@@ -102,13 +111,14 @@ public class JpaAlert implements Alert {
         super();
     }
 
-    public JpaAlert(URI type, Level level, Principal user, String description, Serializable content) {
-        this(type, level, user, description, State.UNHANDLED, content);
+    public JpaAlert(URI type, String subtype, Level level, Principal user, String description, Serializable content) {
+        this(type, subtype,level, user, description, State.UNHANDLED, content);
     }
 
-    public JpaAlert(URI type, Level level, Principal user, String description, State state, Serializable content) {
+    public JpaAlert(URI type, String subtype,Level level, Principal user, String description, State state, Serializable content) {
         this.id = AlertId.create();
         this.typeString = type.toASCIIString();
+        this.subtype = subtype;
         this.level = level;
         this.content = content;
         this.createdTime = DateTime.now();
@@ -143,9 +153,18 @@ public class JpaAlert implements Alert {
         this.typeString = type.toASCIIString();
     }
 
+    @Override
+    public String getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.Alert#getDescription()
-     */
+             * @see com.thinkbiganalytics.alerts.api.Alert#getDescription()
+             */
     @Override
     public String getDescription() {
         return this.description;
@@ -181,12 +200,16 @@ public class JpaAlert implements Alert {
     @Override
     public DateTime getCreatedTime() {
         return this.createdTime;
-//        return this.events.get(0).getChangeTime();
+    }
+
+
+    public Long getCreatedTimeMillis() {
+        return createdTimeMillis;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.Alert#getSource()
-     */
+         * @see com.thinkbiganalytics.alerts.api.Alert#getSource()
+         */
     @Override
     public AlertSource getSource() {
         return this.source;

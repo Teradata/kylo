@@ -27,11 +27,11 @@
     <body-section>
         <md-divider></md-divider>
         <md-list  layout-fill layout="column" class="list-item-table">
-            <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'sinceTime' "  ng-click="vm.navigateToAlert(alert)">
+            <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)">
                 <div style="width:100%" class="item-column" >
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>
-                        <span class="item-title" >{{alert.summary}}</span>
-                        <span class="item-title" style="float:right;">{{alert.type}}</span>
+                        <span class="item-title" >{{alert.subtype}}</span>
+                        <span class="item-title" style="float:right;">{{alert.typeDisplayName}}</span>
                     </div>
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>
                         <span class="error column-title-bottom" ng-if="alert.count ==1">{{alert.count}} ALERT</span>

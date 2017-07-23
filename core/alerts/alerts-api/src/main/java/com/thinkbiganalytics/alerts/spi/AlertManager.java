@@ -50,7 +50,7 @@ public interface AlertManager extends AlertSource {
      * @param description a description of the alert
      * @param content     optional content, the type of which is specific to the kind of alert
      */
-    <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content);
+    <C extends Serializable> Alert create(URI type, String subtype,Alert.Level level, String description, C content);
 
     /**
      * Obtains an AlertResponse object through which AlertResponders will perform updates to the given alert.

@@ -23,7 +23,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.FEEDS_BASE + "/" + feedName + "/daily-status-count";
         }
 
-        this.ALERTS_URL = this.ROOT + "/proxy/v1/alerts";
 
 //JOB urls
 
@@ -91,6 +90,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.ALERT_DETAILS_URL = function (alertId) {
             return "/proxy/v1/alerts/" + alertId;
         };
+
+        this.ALERTS_URL = "/proxy/v1/alerts";
+
+        this.ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/alerts/summary/unhandled";
 
     });
 });

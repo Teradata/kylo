@@ -832,7 +832,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Override
     public BatchJobExecution abandonJob(Long executionId) {
         BatchJobExecution execution = findByJobExecutionId(executionId);
-        if (execution != null) {
+        if (execution != null && !execution.getStatus().equals(BatchJobExecution.JobStatus.ABANDONED)) {
             if (execution.getStartTime() == null) {
                 execution.setStartTime(DateTimeUtil.getNowUTCTime());
             }
@@ -876,7 +876,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
           alert =  provider.getAlert(provider.resolve(alertId)).orElse(null);
         }
         if(alert == null) {
-            alert = alertManager.create(OperationalAlerts.feedJobFailureAlertType(feedName,jobExecution.getJobExecutionId()),
+            alert = alertManager.create(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
+                                        feedName,
                                         Alert.Level.FATAL,
                                         message, jobExecution.getJobExecutionId());
             Alert.ID providerAlertId = provider.resolve(alert.getId(),alert.getSource());

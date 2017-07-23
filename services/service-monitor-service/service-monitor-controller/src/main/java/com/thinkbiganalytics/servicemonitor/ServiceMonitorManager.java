@@ -20,6 +20,11 @@ package com.thinkbiganalytics.servicemonitor;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.service.ServiceStatusAlerts;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.check.ServicesStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
@@ -32,12 +37,15 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.inject.Inject;
 
 /**
  * Application Bean that looks for all beans implementing either ServiceStatusCheck or ServicesStatusCheck
@@ -49,6 +57,13 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
     private List<ServicesStatusCheck> servicesHealth;
     private ApplicationContext applicationContext;
     private int totalServices;
+
+    @Inject
+    AlertProvider alertProvider;
+
+    @Inject
+    AlertManager alertManager;
+
 
     public ServiceMonitorManager() {
         this.services = new ArrayList<>();
@@ -138,7 +153,53 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
             pool.shutdown();
 
         }
+        notifyAlerts(serviceHealthResponseList);
         return serviceHealthResponseList;
+    }
+
+    private void notifyAlerts(List<ServiceStatusResponse> responses){
+
+        if(responses != null){
+            responses.stream().forEach(serviceStatusResponse ->  {
+
+                if (ServiceStatusResponse.STATE.DOWN.equals(serviceStatusResponse.getState())) {
+                    notifyServiceDown(serviceStatusResponse);
+                } else if (ServiceStatusResponse.STATE.UP.equals(serviceStatusResponse.getState())) {
+                    notifyServiceUp(serviceStatusResponse);
+                }
+
+            });
+        }
+
+    }
+
+
+    private void notifyServiceDown(ServiceStatusResponse serviceStatusResponse) {
+        //called every time a service is marked as down/unhealthy
+        //find
+        Iterator<? extends Alert>
+            unhandledAlerts = alertProvider.getAlerts(alertProvider.criteria().type(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE).subtype(serviceStatusResponse.getServiceName()).state(
+            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED));
+        //if there is already an unhandled alert with this same service dont do anything, otherwise create one
+        if(!unhandledAlerts.hasNext()){
+            Alert alert = alertManager.create(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE,
+                                              serviceStatusResponse.getServiceName(),
+                                              com.thinkbiganalytics.alerts.api.Alert.Level.FATAL,
+                                              "Service "+serviceStatusResponse.getServiceName()+" problem",serviceStatusResponse.getServiceName());
+        }
+
+    }
+
+    private void notifyServiceUp(ServiceStatusResponse serviceStatusResponse) {
+        //called every time a service is marked as healthy
+        Iterator<? extends com.thinkbiganalytics.alerts.api.Alert>
+            unhandledAlerts = alertProvider.getAlerts(alertProvider.criteria().type(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE).subtype(serviceStatusResponse.getServiceName()).state(
+            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED));
+        if(unhandledAlerts.hasNext()){
+            Lists.newArrayList(unhandledAlerts).stream().forEach(alert -> {
+                alertProvider.respondTo(alert.getId(), (alert1, response) -> response.handle("Service is back up",null));
+            });
+        }
     }
 
 

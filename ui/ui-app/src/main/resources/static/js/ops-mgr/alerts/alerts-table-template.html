@@ -19,6 +19,8 @@
   -->
 <card-layout flex header-css="filter-header">
     <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+                    additional-options="vm.additionalMenuOptions"
+                    on-selected-additional-option="vm.selectedAdditionalMenuOption"
                     on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
 
     </header-section>
@@ -49,16 +51,22 @@
                                         <span class="item-title">{{alert.state }}</span>
                                         <span class="column-title column-title-bottom">State</span>
                                     </div>
+                                    <div flex="5" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)" ng-if="vm.showCleared">
+                                        <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
+                                        <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
+                                        <span class="column-title column-title-bottom">Cleared</span>
+                                    </div>
 
                                     <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.createdTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                         <span class="column-title column-title-bottom">Start Time</span>
                                     </div>
 
-                                    <div flex="50" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="45" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.description }}</span>
                                         <span class="column-title column-title-bottom">Description</span>
                                     </div>
+
                                 </div>
                                 <md-divider ng-if="!$last"></md-divider>
 
@@ -77,6 +85,7 @@
                                     <tr md-row>
                                         <th md-column name="Level">Level</th>
                                         <th md-column name="State">State</th>
+                                        <th md-column name="Cleared" ng-if="vm.showCleared">Cleared</th>
                                         <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>Start Time</th>
                                         <th md-column name="Description">Description</th>
                                     </tr>
@@ -85,6 +94,10 @@
                                     <tr md-row ng-repeat="alert in tab.data.content" ng-click="vm.alertDetails($event,alert)">
                                         <td md-cell>{{alert.level}}</td>
                                         <td md-cell>{{alert.state}}</td>
+                                        <td md-cell ng-if="vm.showCleared">
+                                            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
+                                            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
+                                        </td>
                                         <td md-cell hide show-gt-sm>{{alert.createdTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
                                         <td md-cell>{{alert.description}}</td>
                                     </tr>

@@ -276,7 +276,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         repository.abandonFeedJobs(feed, exitMessage);
 
         //all the alerts manager to handle all job failures
-        AlertCriteria criteria = alertProvider.criteria().type(OperationalAlerts.feedAlertType(feed));
+        AlertCriteria criteria = alertProvider.criteria().type(OperationalAlerts.JOB_FALURE_ALERT_TYPE).subtype(feed);
         Iterator<? extends Alert> alerts = alertProvider.getAlerts(criteria);
         StreamSupport.stream(Spliterators.spliteratorUnknownSize(alerts,Spliterator.ORDERED),false).forEach(alert -> alertProvider.respondTo(alert.getId(), (alert1, response) -> response.handle(exitMessage)));
     }
