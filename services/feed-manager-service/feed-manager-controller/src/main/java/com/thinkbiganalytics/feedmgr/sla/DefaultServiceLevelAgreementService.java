@@ -31,6 +31,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -84,6 +86,9 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider;
 
 
     private List<ServiceLevelAgreementRule> serviceLevelAgreementRules;
@@ -474,7 +479,15 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
                         }
                     }
                     //relate them
-                    feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    Set<Feed.ID> feedIds = new HashSet<>();
+                    FeedServiceLevelAgreementRelationship feedServiceLevelAgreementRelationship = feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    if(feedServiceLevelAgreementRelationship != null && feedServiceLevelAgreementRelationship.getFeeds() != null){
+                        feedIds  = feedServiceLevelAgreementRelationship.getFeeds().stream().map(f -> f.getId()).collect(Collectors.toSet());
+                    }
+
+                    //Update the JPA mapping in Ops Manager for this SLA and its related Feeds
+                    serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(savedSla.getId(),savedSla.getName(),savedSla.getDescription(),feedIds);
+
                     com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = serviceLevelAgreementTransform.toModel(savedSla, slaFeeds, true);
                     //schedule it
                     serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);

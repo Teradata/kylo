@@ -42,6 +42,10 @@ public interface SecurityRole {
     String DATASOURCE = "datasource";
     List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE, DATASOURCE));
 
+    enum ENTITY_TYPE {
+        FEED,CATEGORY,DATASOURCE,TEMPLATE,SLA
+    }
+
 
     Principal getPrincipal();
 

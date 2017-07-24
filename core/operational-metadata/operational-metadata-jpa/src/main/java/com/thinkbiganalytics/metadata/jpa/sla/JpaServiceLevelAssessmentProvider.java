@@ -22,7 +22,6 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * limitations under the License.
  * #L%
  */
-import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
@@ -54,14 +53,16 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
 
     private JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository;
 
+    private JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository;
+
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
-
     @Autowired
-    public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository) {
+    public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository,JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
         super(JpaServiceLevelAssessment.class);
         this.serviceLevelAssessmentRepository = serviceLevelAssessmentRepository;
+        this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
     }
 
 
@@ -162,6 +163,8 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         return assessment != null && assessment.getAgreement() != null;
     }
 
+
+
     /**
      * Find all BatchJobExecution objects with the provided filter. the filter needs to match
      *
@@ -180,6 +183,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
 
 
     }
+
 
 
 

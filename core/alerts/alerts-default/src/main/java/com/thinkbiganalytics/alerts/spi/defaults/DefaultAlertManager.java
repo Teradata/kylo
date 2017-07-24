@@ -47,6 +47,7 @@ import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.jpa.alerts.DefaultAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
@@ -57,6 +58,7 @@ import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPathInspector;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -662,6 +664,21 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             return idValue;
         }
 
+    }
+
+    public <C extends Serializable>  EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
+        if(content instanceof EntityIdentificationAlertContent){
+           ((EntityIdentificationAlertContent) content).setEntityId(entityId);
+           ((EntityIdentificationAlertContent) content).setEntityType(entityType);
+           return (EntityIdentificationAlertContent) content;
+        }
+        else {
+            EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();
+            c.setEntityId(entityId);
+            c.setEntityType(entityType);
+            c.setContent(content);
+            return c;
+        }
     }
 
 }

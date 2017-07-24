@@ -38,7 +38,7 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      */
     ID getId();
 
-    ;
+    ServiceLevelAgreementDescription getServiceLevelAgreementDescription();
 
     /**
      * @return the time when this assessment was generated
@@ -70,6 +70,5 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
     interface ID extends Serializable {
 
     }
-
 
 }

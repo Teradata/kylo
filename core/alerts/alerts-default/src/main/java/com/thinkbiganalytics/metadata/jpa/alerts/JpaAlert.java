@@ -28,6 +28,7 @@ import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 
@@ -104,6 +105,13 @@ public class JpaAlert implements Alert {
     @OrderBy("changeTime DESC, state ASC")
     private List<AlertChangeEvent> events = new ArrayList<>();
 
+
+    @Column(name = "ENTITY_ID")
+    private String entityId;
+
+    @Column(name = "ENTITY_TYPE")
+    private String entityType;
+
     @Transient
     private AlertSource source;
 
@@ -124,7 +132,10 @@ public class JpaAlert implements Alert {
         this.createdTime = DateTime.now();
         this.state = state;
         setDescription(description);
-
+        if(content instanceof EntityIdentificationAlertContent){
+            this.entityId = ((EntityIdentificationAlertContent)content).getEntityId();
+            this.entityType = ((EntityIdentificationAlertContent)content).getEntityType().name();
+        }
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
     }
@@ -270,6 +281,22 @@ public class JpaAlert implements Alert {
 
     public void setTypeString(String typeString) {
         this.typeString = typeString;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
     }
 
     public void addEvent(JpaAlertChangeEvent event) {

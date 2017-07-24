@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -106,7 +107,8 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
                         newAlert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
                                                        agreement.getName(),
                                                        Alert.Level.FATAL,
-                                                       "Violation of SLA: " + agreement.getName(), assessment.getId());
+                                                       "Violation of SLA: " + agreement.getName(), alertManager.createEntityIdentificationAlertContent(agreement.getId().toString(),
+                                                                                                                                                       SecurityRole.ENTITY_TYPE.SLA,assessment.getId()));
 
 
                     }

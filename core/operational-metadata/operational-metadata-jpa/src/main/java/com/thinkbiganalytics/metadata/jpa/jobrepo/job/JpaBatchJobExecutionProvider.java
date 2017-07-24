@@ -69,6 +69,7 @@ import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -869,7 +870,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         Alert alert = null;
 
         //see if the feed has an unhandled alert already.
-
+        String feedId = jobExecution.getJobInstance().getFeed().getId().toString();
         String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
         String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feedName;
         if (StringUtils.isNotBlank(alertId)) {
@@ -879,7 +880,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             alert = alertManager.create(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
                                         feedName,
                                         Alert.Level.FATAL,
-                                        message, jobExecution.getJobExecutionId());
+                                        message, alertManager.createEntityIdentificationAlertContent(feedId,
+                                                                                                     SecurityRole.ENTITY_TYPE.FEED, jobExecution.getJobExecutionId()));
             Alert.ID providerAlertId = provider.resolve(alert.getId(),alert.getSource());
 
             JpaBatchJobExecutionContextValue executionContext = new JpaBatchJobExecutionContextValue(jobExecution, KYLO_ALERT_ID_PROPERTY);

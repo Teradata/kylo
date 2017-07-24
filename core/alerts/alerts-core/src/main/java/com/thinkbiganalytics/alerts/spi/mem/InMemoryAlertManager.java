@@ -34,6 +34,8 @@ import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -492,6 +494,13 @@ public class InMemoryAlertManager implements AlertManager {
                 throw new IllegalStateException("The alert cannot be updated as it has been already cleared.");
             }
         }
+    }
+
+    @Override
+    public <C extends Serializable> EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
+        EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();
+        c.setContent(content);
+        return c;
     }
 
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
