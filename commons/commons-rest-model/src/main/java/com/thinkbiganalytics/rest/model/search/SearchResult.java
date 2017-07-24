@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.query.model;
+package com.thinkbiganalytics.rest.model.search;
 
 /*-
  * #%L

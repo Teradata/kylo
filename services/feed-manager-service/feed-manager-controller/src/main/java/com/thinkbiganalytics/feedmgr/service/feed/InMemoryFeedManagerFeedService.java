@@ -56,6 +56,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+
 /**
  * In memory implementation
  */
@@ -111,11 +115,13 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
-        return getFeeds(verbose).stream()
+    public Page<UIFeed> getFeeds(boolean verbose, int limit, int start) {
+        Collection<? extends UIFeed> allFeeds = getFeeds(verbose);
+        List<UIFeed> pagedFeeds = getFeeds(verbose).stream()
                         .skip(Math.max(start - 1, 0))
                         .limit(limit)
                         .collect(Collectors.toList());
+        return new PageImpl<>(pagedFeeds, new PageRequest(start/limit, limit), allFeeds.size());
     }
 
     public List<FeedSummary> getFeedSummaryData() {

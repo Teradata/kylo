@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 
 import java.util.Collection;
 import java.util.List;
@@ -324,7 +325,7 @@ public class FeedManagerMetadataService implements MetadataService {
     }
     
     @Override
-    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
+    public Page<UIFeed> getFeedsPage(boolean verbose, int limit, int start) {
         return feedProvider.getFeeds(verbose, limit, start);
     }
 

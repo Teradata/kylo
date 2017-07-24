@@ -39,6 +39,7 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
@@ -55,6 +56,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -73,6 +75,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -137,18 +140,21 @@ public class FeedRestController {
     private static final int MAX_LIMIT = 1000;
     private static final String NAMES = "/names";
 
-    @Autowired
-    MetadataService metadataService;
+    @Inject
+    private MetadataService metadataService;
 
     //Profile needs hive service
-    @Autowired
-    HiveService hiveService;
-
-    @Autowired
-    FeedManagerPreconditionService feedManagerPreconditionService;
+    @Inject
+    private HiveService hiveService;
 
     @Inject
-    DatasourceService datasourceService;
+    private FeedManagerPreconditionService feedManagerPreconditionService;
+    
+    @Inject
+    private FeedModelTransform feedModelTransform;
+
+    @Inject
+    private DatasourceService datasourceService;
 
     @Inject
     private SecurityService securityService;
@@ -157,13 +163,13 @@ public class FeedRestController {
     private SecurityModelTransform actionsTransform;
 
     @Inject
-    ServiceLevelAgreementService serviceLevelAgreementService;
+    private ServiceLevelAgreementService serviceLevelAgreementService;
 
     @Inject
-    RegisteredTemplateService registeredTemplateService;
+    private RegisteredTemplateService registeredTemplateService;
 
     @Inject
-    AccessControlledEntityTransform accessControlledEntityTransform;
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private AccessController accessController;
@@ -330,17 +336,14 @@ public class FeedRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
     )
-    public Response getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
+    public SearchResult getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
                              @QueryParam("sort") @DefaultValue("") String sort,
                              @QueryParam("limit") Integer limit,
-                             @QueryParam("start") @DefaultValue("1") Integer start) {
-        Collection<? extends UIFeed> feeds;
-        if (limit != null) {
-            feeds = getMetadataService().getFeeds(verbose, limit, start);
-        } else {
-            feeds = getMetadataService().getFeeds(verbose);
-        }
-        return Response.ok(feeds).build();
+                             @QueryParam("start") @DefaultValue("0") Integer start) {
+
+        int size = limit != null ? limit : MAX_LIMIT;
+        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, size, start);
+        return this.feedModelTransform.toSearchResult(page);   
     }
 
     @GET

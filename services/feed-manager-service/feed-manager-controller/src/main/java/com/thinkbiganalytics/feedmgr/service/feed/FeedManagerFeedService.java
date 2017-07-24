@@ -39,6 +39,8 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.springframework.data.domain.Page;
+
 /**
  * Common Feed Manager actions
  */
@@ -108,7 +110,7 @@ public interface FeedManagerFeedService {
      * @param start the n'th starting feed in the list
      * @return a list of feed objects
      */
-    Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start);
+    Page<UIFeed> getFeeds(boolean verbose, int limit, int start);
     
     /**
      * @return a list of feeds

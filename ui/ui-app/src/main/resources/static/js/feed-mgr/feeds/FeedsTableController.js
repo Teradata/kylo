@@ -92,6 +92,10 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
         function getFeeds() {
 
+        	var activeTab = TabService.getActiveTab(self.pageName);
+        	var limit = self.paginationData.rowsPerPage;
+        	var start = (limit * activeTab.currentPage) - limit;
+        	
             var successFn = function(response) {
                 self.loading = false;
                 //simplify feedData
@@ -127,7 +131,10 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                 self.loading = false;
 
             }
-            var promise = $http.get(RestUrlService.GET_FEEDS_URL);
+            
+            var params = {start: start, limit: limit};
+            
+            var promise = $http.get(RestUrlService.GET_FEEDS_URL, params);
             promise.then(successFn, errorFn);
             return promise;
 
@@ -143,7 +150,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
     };
 
 
-        angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService",
-                                                                      "FeedService","StateService", "EntityAccessControlService", controller]);
+    angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService",
+                                                                  "FeedService","StateService", "EntityAccessControlService", controller]);
 
 });

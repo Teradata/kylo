@@ -275,20 +275,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     
     @Override
     public Collection<FeedMetadata> getFeeds() {
-        return getFeeds(-1, -1);
+        return getFeeds(0, Integer.MAX_VALUE).getContent();
     }
 
-    public Collection<FeedMetadata> getFeeds(int limit, int start) {
+    public Page<FeedMetadata> getFeeds(int limit, int start) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Collection<FeedMetadata> feeds = null;
-            List<Feed> domainFeeds = findAllFeeds(limit, start);
+            Page<Feed> domainFeeds = findAllFeeds(limit, start);
             
-            if (domainFeeds != null) {
-                feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-            }
-            return feeds;
+            return domainFeeds.map(d -> feedModelTransform.domainToFeedMetadata(d));
         });
 
     }
@@ -304,34 +300,30 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start) {
+    public Page<UIFeed> getFeeds(boolean verbose, int limit, int start) {
         if (verbose) {
-            return getFeeds(limit, start);
+            return getFeeds(limit, start).map(UIFeed.class::cast);
         } else {
-            return getFeedSummaryData(limit, start);
+            return getFeedSummaryData(limit, start).map(UIFeed.class::cast);
         }
         
     }
     
     @Override
     public List<FeedSummary> getFeedSummaryData() {
-        return getFeedSummaryData(-1, -1);
+        return getFeedSummaryData(0, Integer.MAX_VALUE).getContent().stream()
+                        .map(FeedSummary.class::cast)
+                        .collect(Collectors.toList());
     }
 
-    public List<FeedSummary> getFeedSummaryData(int limit, int start) {
-
+    public Page<FeedSummary> getFeedSummaryData(int limit, int start) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            List<FeedSummary> feeds = null;
-            List<Feed> domainFeeds = findAllFeeds(limit, start);
+            Page<Feed> domainFeeds = findAllFeeds(limit, start);
             
-            if (domainFeeds != null) {
-                feeds = feedModelTransform.domainToFeedSummary(domainFeeds);
-            }
-            return feeds;
+            return domainFeeds.map(d -> feedModelTransform.domainToFeedSummary(d));
         });
-
     }
 
     @Override
@@ -411,16 +403,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
 
-    private List<Feed> findAllFeeds(int limit, int start) {
-        List<Feed> domainFeeds;
-        if (limit > 0) {
-            Pageable pageable = new PageRequest((start / limit), limit);
-            Page<Feed> page = feedProvider.findPage(pageable);
-            domainFeeds = page.getContent();
-        } else {
-            domainFeeds = feedProvider.findAll();
-        }
-        return domainFeeds;
+    private Page<Feed> findAllFeeds(int limit, int start) {
+        Pageable pageable = new PageRequest((start / limit), limit);
+        return feedProvider.findPage(pageable);
     }
 
     /**

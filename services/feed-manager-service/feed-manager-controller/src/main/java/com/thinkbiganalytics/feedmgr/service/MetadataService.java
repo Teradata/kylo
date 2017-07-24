@@ -33,6 +33,7 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.action.Action;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.security.AccessControlException;
@@ -148,7 +149,16 @@ public interface MetadataService {
      */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
-    Collection<? extends UIFeed> getFeeds(boolean verbose, int limit, int start);
+    /**
+     * Gets a page worth of feeds, optionally returning a more verbose object populating all the templates and properties.
+     * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     *
+     * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @param limit the size of a page result
+     * @param start the starting feed index within the set of all feeds to be included in the page
+     * @return a page of feeds determined by the values of limit and start
+     */
+    Page<UIFeed> getFeedsPage(boolean verbose, int limit, int start);
     
     /**
      * @return a list of feeds
