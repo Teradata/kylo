@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.Tag;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,9 @@ public class DefaultField implements Field {
     private String precisionScale;
 
     private boolean createdTracker;
+
+    @JsonDeserialize(contentAs = DefaultTag.class)
+    private List<Tag> tags;
 
     @Override
     public String getDerivedDataType() {
@@ -189,8 +193,20 @@ public class DefaultField implements Field {
 
     public String getDescriptionWithoutNewLines() {
         if (description != null) {
-            return description.replace("\n","\\n");
+            return description.replace("\n", "\\n");
         }
         return "";
+    }
+
+    @Override
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    /**
+     * Sets the tags for this column.
+     */
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

@@ -43,7 +43,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
     }
 
-    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils) {
+    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils, FeedTagService) {
 
         this.defineFeedTableForm = {};
         var self = this;
@@ -66,6 +66,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.partitionFormulas = [];
 
         this.feedFormat = '';
+
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        self.feedTagService = FeedTagService;
+
+        /**
+         * Metadata for the selected column tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        self.tagChips = {searchText: null, selectedItem: null};
 
         $scope.$evalAsync(function() {
             self.calcTableState();
@@ -420,6 +432,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     angular.element('#selectedColumnPanel').triggerHandler('stickIt');
                 })
             }
+
+            // Ensure tags is an array
+            if (!angular.isArray(selectedColumn.tags)) {
+                selectedColumn.tags = [];
+            }
         };
 
         /**
@@ -712,6 +729,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        self.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
+        };
+
         // Retrieve partition formulas
         FeedService.getPartitionFunctions()
                 .then(function(functions) {
@@ -725,7 +751,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         });
     };
 
-    angular.module(moduleName).controller('DefineFeedTableController', ["$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils",controller]);
+    angular.module(moduleName).controller('DefineFeedTableController', ["$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils", "FeedTagService", controller]);
 
     angular.module(moduleName)
         .directive('thinkbigDefineFeedTable', directive);

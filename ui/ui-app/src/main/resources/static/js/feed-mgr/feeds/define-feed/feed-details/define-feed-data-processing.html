@@ -265,12 +265,29 @@
                       </md-select>
                     </md-input-container></span>
         </div>
+
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
             <span>Field Description</span>
             <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
           </div>
         </div>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-xs" flex-gt-xs>
+          <label class="label-small md-container-ignore">Tags</label>
+          <md-chips ng-model="vm.selectedColumn.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+            <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(tagChips.searchText)"
+                             md-item-text="item.name" placeholder="Add a Tag">
+              <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+            </md-autocomplete>
+            <md-chip-template>
+              <span>
+                <strong>{{$chip.name}}</strong>
+              </span>
+            </md-chip-template>
+          </md-chips>
+        </md-input-container>
+
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
                      ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove

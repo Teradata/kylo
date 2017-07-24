@@ -22,7 +22,7 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
         };
     };
 
-    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService) {
+    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService, FeedTagService) {
         var self = this;
 
         this.isValid = true;
@@ -138,6 +138,18 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
          */
         this.dataProcessingForm = {};
 
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        self.feedTagService = FeedTagService;
+
+        /**
+         * Metadata for the selected column tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        self.tagChips = {searchText: null, selectedItem: null};
+
         this.expandFieldPoliciesPanel = function () {
             $mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance) {
                 instance.expand();
@@ -247,6 +259,11 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                     angular.element('#selectedColumnPanel2').triggerHandler('stickIt');
                 })
             }
+
+            // Ensure tags is an array
+            if (!angular.isArray(selectedColumn.tags)) {
+                selectedColumn.tags = [];
+            }
         };
 
         this.showFieldRuleDialog = function (field) {
@@ -324,6 +341,15 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
             }
         };
 
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        self.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
+        };
+
         // Initialize UI
         this.onTableFormatChange();
         DomainTypesService.findAll()
@@ -333,7 +359,7 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
     };
 
     angular.module(moduleName).controller('DefineFeedDataProcessingController', ["$scope", "$http", "$mdDialog", "$mdExpansionPanel", "RestUrlService", "FeedService", "BroadcastService",
-                                                                                 "StepperService", "Utils", "DomainTypesService", controller]);
+                                                                                 "StepperService", "Utils", "DomainTypesService", "FeedTagService", controller]);
     angular.module(moduleName).directive('thinkbigDefineFeedDataProcessing', directive);
 });
 

@@ -33,7 +33,9 @@ import com.jayway.restassured.specification.RequestSpecification;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
@@ -45,20 +47,18 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.Tag;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
+import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
-
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
-import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
-import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.security.rest.controller.AccessControlController;
@@ -158,7 +158,6 @@ public class IntegrationTestBase {
         };
         com.jayway.restassured.mapper.ObjectMapper objectMapper = new Jackson2Mapper(factory);
         RestAssured.objectMapper(objectMapper);
-
 
         String path = getClass().getResource(".").toURI().getPath();
         String basedir = path.substring(0, path.indexOf("services"));
@@ -804,7 +803,8 @@ public class IntegrationTestBase {
         table.setSourceTableSchema(schema);
         table.setFeedTableSchema(schema);
         table.setTargetMergeStrategy("DEDUPE_AND_MERGE");
-        table.setFeedFormat("ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES ( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE");
+        table.setFeedFormat(
+            "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES ( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE");
         table.setTargetFormat("STORED AS ORC");
 
         List<FieldPolicy> policies = new ArrayList<>();
@@ -838,8 +838,8 @@ public class IntegrationTestBase {
         feed.setDataOwner("Marketing");
 
         List<Tag> tags = new ArrayList<>();
-        tags.add(new Tag("users"));
-        tags.add(new Tag("registrations"));
+        tags.add(new DefaultTag("users"));
+        tags.add(new DefaultTag("registrations"));
         feed.setTags(tags);
 
         UserPrincipal owner = new UserPrincipal();
