@@ -318,17 +318,16 @@
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
-              <div>{{policy.name}}</div>
+              <md-button md-no-ink class="md-primary kylo-edit-field-button" ng-click="vm.showEditFieldDialog(policy.columnDef)">{{policy.name}}</md-button>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
-              <md-tooltip md-direction="left" ng-if="vm.fieldNameMap[policy.name].description">
-                {{vm.fieldNameMap[policy.name].description}}
+              <md-tooltip md-direction="left" ng-if="policy.columnDef.description">
+                {{policy.columnDef.description}}
               </md-tooltip>
             </md-input-container>
 
           </div>
           <div flex="10" class="md-list-item-text">
-            <md-select ng-model="policy.domainType" md-selected-html="vm.getDomainTypePlaceholder(policy.domainType)" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)"
-                       style="margin:0;width:70px">
+            <md-select ng-model="policy.domainType" md-selected-html="vm.getDomainTypePlaceholder(policy.domainType)" ng-change="vm.onDomainTypeChange(policy)" style="margin:0;width:70px">
               <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType" aria-label="{{domainType.title}}">
                 <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
               </md-option>

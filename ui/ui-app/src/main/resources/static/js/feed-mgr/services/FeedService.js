@@ -298,6 +298,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         updatedTracker: false,
                         sampleValues: [],
                         selectedSampleValue: '',
+                        tags: [],
                         isValid: function () {
                             return this.name != '' && this.derivedDataType != '';
                         },

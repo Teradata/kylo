@@ -40,6 +40,7 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.domaintype.DomainTypeTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedHiveTableService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
@@ -55,6 +56,7 @@ import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
@@ -275,5 +277,10 @@ public class FeedManagerConfiguration {
     @Bean
     public DomainTypeTransform domainTypeTransform() {
         return new DomainTypeTransform();
+    }
+
+    @Bean
+    public FeedHiveTableService feedHiveTableService(@Nonnull final HiveService hiveService) {
+        return new FeedHiveTableService(hiveService);
     }
 }

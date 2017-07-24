@@ -397,6 +397,26 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             policy.validation = angular.copy(domainType.fieldPolicy.validation);
         };
 
+        /**
+         * Shows the Edit Field dialog for the specified field.
+         *
+         * @param {Object} field the field to edit
+         */
+        self.showEditFieldDialog = function (field) {
+            $mdDialog.show({
+                controller: "EditFieldDialogController",
+                escapeToClose: false,
+                fullscreen: true,
+                parent: angular.element(document.body),
+                templateUrl: "js/feed-mgr/feeds/edit-feed/feed-details-edit-field-dialog.html",
+                locals: {
+                    field: field
+                }
+            }).then(function() {
+                field.$edited = true;
+            });
+        };
+
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
             self.allowEdit = access;
@@ -409,7 +429,60 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService",
-                                                                         "FeedService", "StateService", "FeedFieldPolicyRuleService", "DomainTypesService", controller]);
-    angular.module(moduleName).directive('thinkbigFeedDataPolicies', directive);
+    /**
+     * Controls the Edit Field dialog.
+     * @constructor
+     */
+    var EditFieldDialogController = function ($scope, $mdDialog, FeedTagService, field) {
+
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        $scope.feedTagService = FeedTagService;
+
+        /**
+         * The field to edit.
+         * @type {Object}
+         */
+        $scope.field = field;
+        if (!angular.isArray(field.tags)) {
+            field.tags = [];
+        }
+
+        /**
+         * Metadata for the tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        $scope.tagChips = {searchText: null, selectedItem: null};
+
+        /**
+         * Closes and rejects the dialog.
+         */
+        $scope.cancel = function () {
+            $mdDialog.cancel();
+        };
+
+        /**
+         * Closes and accepts the dialog.
+         */
+        $scope.hide = function () {
+            $mdDialog.hide();
+        };
+
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        $scope.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
+        };
+    };
+
+    angular.module(moduleName)
+        .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
+                                                   "FeedFieldPolicyRuleService", "DomainTypesService", controller])
+        .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
+        .directive('thinkbigFeedDataPolicies', directive);
 });
