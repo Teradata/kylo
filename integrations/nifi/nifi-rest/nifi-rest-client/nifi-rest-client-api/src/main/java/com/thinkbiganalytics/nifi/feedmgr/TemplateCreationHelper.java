@@ -349,7 +349,7 @@ public class TemplateCreationHelper {
                                 p -> p.getKey().equalsIgnoreCase(k) && p.getProcessorName().equalsIgnoreCase(processorDTO.getName()) && v.getIdentifiesControllerService()
                                     .equalsIgnoreCase(p.getPropertyDescriptor().getIdentifiesControllerService())
                             ).findFirst().orElse(null);
-                            if (matchingProperty != null) {
+                            if (matchingProperty != null && matchingProperty.getPropertyDescriptor().getAllowableValues() != null) {
                                 NiFiAllowableValue matchingValue = matchingProperty.getPropertyDescriptor().getAllowableValues().stream()
                                     .filter(niFiAllowableValue -> niFiAllowableValue.getValue().equalsIgnoreCase(matchingProperty.getValue())).findFirst().orElse(null);
                                 if (matchingValue != null) {
