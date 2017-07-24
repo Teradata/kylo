@@ -274,7 +274,7 @@ public class JobsRestController {
                                  @QueryParam("filter") String filter,
                                  @Context HttpServletRequest request) {
         return metadataAccess.read(() -> {
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -298,7 +298,7 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return page != null ? page.getContent() : Collections.emptyList();
         });
     }
@@ -323,8 +323,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.RUNNING_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.RUNNING_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -348,8 +348,8 @@ public class JobsRestController {
                                        @Context HttpServletRequest request) {
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.FAILED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.FAILED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
     }
@@ -374,8 +374,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.STOPPED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.STOPPED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -400,8 +400,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.COMPLETED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.COMPLETED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -427,8 +427,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.ABANDONED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.ABANDONED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
     }
@@ -478,36 +478,5 @@ public class JobsRestController {
 
     }
 
-    /**
-     * This will evaluate the {@code incomingFilter} and append/set the value including the {@code defaultFilter} and return a new String with the updated filter
-     */
-    private String ensureDefaultFilter(String incomingFilter, String defaultFilter) {
-        String filter = incomingFilter;
-        if (StringUtils.isBlank(filter) || !StringUtils.containsIgnoreCase(filter, defaultFilter)) {
-            if (StringUtils.isNotBlank(filter)) {
-                if (StringUtils.endsWith(filter, ",")) {
-                    filter += defaultFilter;
-                } else {
-                    filter += "," + defaultFilter;
-                }
-            } else {
-                filter = defaultFilter;
-            }
-        }
-        return filter;
-    }
-
-    private PageRequest pageRequest(Integer start, Integer limit, String sort) {
-        if (StringUtils.isNotBlank(sort)) {
-            Sort.Direction dir = Sort.Direction.ASC;
-            if (sort.startsWith("-")) {
-                dir = Sort.Direction.DESC;
-                sort = sort.substring(1);
-            }
-            return new PageRequest((start / limit), limit, dir, sort);
-        } else {
-            return new PageRequest((start / limit), limit);
-        }
-    }
-
+  
 }

@@ -57,6 +57,14 @@ public class CommonFilterTranslations {
             .put("executionid", "jobExecutionId")
             .put("job", "jobInstance.jobName").build();
 
+
+    static final ImmutableMap<String, String> serviceLevelAssessmentFilters =
+        new ImmutableMap.Builder<String, String>()
+            .put("name", "agreement.name")
+            .put("result", "result")
+            .put("status", "result")
+            .put("state", "result").build();
+
     static final ImmutableList<String> dateToMillisFields =
         new ImmutableList.Builder<String>()
             .add("jobStartTime")

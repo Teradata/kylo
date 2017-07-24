@@ -22,7 +22,10 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * limitations under the License.
  * #L%
  */
-
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
+import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
+import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -32,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -43,7 +48,7 @@ import javax.inject.Inject;
  * Provider accessing the {@link JpaServiceLevelAssessment}
  */
 @Service
-public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessmentProvider {
+public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<JpaServiceLevelAssessment>  implements ServiceLevelAssessmentProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaServiceLevelAssessmentProvider.class);
 
@@ -52,14 +57,10 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
-    /**
-     * metadataAccess.commit(() -> { ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
-     */
-
 
     @Autowired
     public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository) {
-
+        super(JpaServiceLevelAssessment.class);
         this.serviceLevelAssessmentRepository = serviceLevelAssessmentRepository;
     }
 
@@ -160,6 +161,26 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
         }
         return assessment != null && assessment.getAgreement() != null;
     }
+
+    /**
+     * Find all BatchJobExecution objects with the provided filter. the filter needs to match
+     *
+     * @return a paged result set of all the job executions matching the incoming filter
+     */
+    @Override
+    public Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable) {
+        QJpaServiceLevelAssessment serviceLevelAssessment = QJpaServiceLevelAssessment.jpaServiceLevelAssessment;
+
+            pageable = CommonFilterTranslations.resolveSortFilters(serviceLevelAssessment, pageable);
+
+            return findAllWithFetch(serviceLevelAssessment,
+                                    GenericQueryDslFilter.buildFilter(serviceLevelAssessment, filter),//.and(augment(feedPath.id)),
+                                    pageable);
+
+
+
+    }
+
 
 
 }
