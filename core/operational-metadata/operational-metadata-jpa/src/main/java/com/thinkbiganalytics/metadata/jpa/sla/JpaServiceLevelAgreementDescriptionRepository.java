@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  */
-public interface JpaServiceLevelAgreementDescriptionRepository extends JpaRepository<JpaServiceLevelAgreementDescription, JpaServiceLevelAgreementDescription.ServiceLevelAgreementId> {
+public interface JpaServiceLevelAgreementDescriptionRepository extends JpaRepository<JpaServiceLevelAgreementDescription, ServiceLevelAgreementDescriptionId> {
 
 
 }

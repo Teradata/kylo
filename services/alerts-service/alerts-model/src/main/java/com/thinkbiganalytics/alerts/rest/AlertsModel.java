@@ -59,7 +59,7 @@ public class AlertsModel {
         result.setType(alert.getType());
         result.setDescription(alert.getDescription());
         result.setCleared(alert.isCleared());
-        result.setContent(alert.getContent().toString());
+        result.setContent(alert.getContent()!= null ? alert.getContent().toString():null);
         result.setSubtype(alert.getSubtype());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
         return result;

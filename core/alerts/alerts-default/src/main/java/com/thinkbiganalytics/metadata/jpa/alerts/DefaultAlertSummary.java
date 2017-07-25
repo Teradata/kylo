@@ -22,6 +22,9 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
 
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.net.URI;
 
@@ -35,6 +38,11 @@ public class DefaultAlertSummary implements AlertSummary {
     private String subtype;
 
     private Alert.Level level;
+
+    private OpsManagerFeed.ID feedId;
+    private String feedName;
+    private ServiceLevelAgreement.ID slaId;
+    private String slaName;
 
     private Long count;
 
@@ -83,5 +91,37 @@ public class DefaultAlertSummary implements AlertSummary {
 
     public void setLastAlertTimestamp(Long lastAlertTimestamp) {
         this.lastAlertTimestamp = lastAlertTimestamp;
+    }
+
+    public OpsManagerFeed.ID getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(OpsManagerFeed.ID feedId) {
+        this.feedId = feedId;
+    }
+
+    public String getFeedName() {
+        return feedName;
+    }
+
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
+    }
+
+    public ServiceLevelAgreement.ID getSlaId() {
+        return slaId;
+    }
+
+    public void setSlaId(ServiceLevelAgreement.ID slaId) {
+        this.slaId = slaId;
+    }
+
+    public String getSlaName() {
+        return slaName;
+    }
+
+    public void setSlaName(String slaName) {
+        this.slaName = slaName;
     }
 }

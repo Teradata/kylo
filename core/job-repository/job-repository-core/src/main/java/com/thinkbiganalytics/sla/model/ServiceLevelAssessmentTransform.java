@@ -17,7 +17,7 @@ public class ServiceLevelAssessmentTransform {
     public static DefaultServiceLevelAssessment toModel(ServiceLevelAssessment assessment){
         DefaultServiceLevelAssessment model = new DefaultServiceLevelAssessment();
         model.setAgreementName(assessment.getAgreement().getName());
-        model.setAgreementId(assessment.getServiceLevelAgreementId());
+        model.setAgreementId(assessment.getServiceLevelAgreementId() != null ? assessment.getServiceLevelAgreementId().toString(): null);
         if(assessment.getObligationAssessments() != null){
             model.setObligationAssessments(assessment.getObligationAssessments().stream().map(obligationAssessment -> toModel(obligationAssessment)).collect(Collectors.toList()));
         }

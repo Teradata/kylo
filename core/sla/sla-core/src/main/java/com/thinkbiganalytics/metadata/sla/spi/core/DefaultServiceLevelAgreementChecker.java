@@ -146,8 +146,8 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
 
             if (previous != null) {
 
-                if (previous.getAgreement() == null && StringUtils.isNotBlank(assessment.getServiceLevelAgreementId())) {
-                    ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId()));
+                if (previous.getAgreement() == null && assessment.getServiceLevelAgreementId() != null ) {
+                    ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId().toString()));
 
                 }
 

@@ -1,12 +1,30 @@
 package com.thinkbiganalytics.metadata.jpa.sla;
 
+/*-
+ * #%L
+ * thinkbig-operational-metadata-jpa
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +68,12 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
      */
     @Override
     public void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds){
-        JpaServiceLevelAgreementDescription.ServiceLevelAgreementId id = null;
-        if(!(slaId instanceof  JpaServiceLevelAgreementDescription.ServiceLevelAgreementId)){
-            id = new JpaServiceLevelAgreementDescription.ServiceLevelAgreementId(slaId.toString());
+        ServiceLevelAgreementDescriptionId id = null;
+        if(!(slaId instanceof  ServiceLevelAgreementDescriptionId)){
+            id = new ServiceLevelAgreementDescriptionId(slaId.toString());
         }
         else {
-            id = (JpaServiceLevelAgreementDescription.ServiceLevelAgreementId) slaId;
+            id = (ServiceLevelAgreementDescriptionId) slaId;
         }
         JpaServiceLevelAgreementDescription serviceLevelAgreementDescription = serviceLevelAgreementDescriptionRepository.findOne(id);
         if(serviceLevelAgreementDescription == null){
@@ -81,10 +99,10 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
     }
 
     public ServiceLevelAgreement.ID resolveId(Serializable ser) {
-        if (ser instanceof JpaServiceLevelAgreementDescription.ServiceLevelAgreementId) {
-            return (JpaServiceLevelAgreementDescription.ServiceLevelAgreementId) ser;
+        if (ser instanceof ServiceLevelAgreementDescriptionId) {
+            return (ServiceLevelAgreementDescriptionId) ser;
         } else {
-            return new JpaServiceLevelAgreementDescription.ServiceLevelAgreementId(ser);
+            return new ServiceLevelAgreementDescriptionId(ser);
         }
     }
 

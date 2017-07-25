@@ -20,41 +20,26 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
-import com.google.common.collect.ComparisonChain;
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
-
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 
 /**
@@ -70,15 +55,16 @@ public class JpaServiceLevelAgreementDescription implements ServiceLevelAgreemen
 
 
     @EmbeddedId
-    private ServiceLevelAgreementId slaId;
+    private ServiceLevelAgreementDescriptionId slaId;
 
     @Column(name = "NAME")
     private String name;
 
+
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = JpaOpsManagerFeed.class)
+    @ManyToMany(fetch = FetchType.LAZY, targetEntity = JpaOpsManagerFeed.class)
     @JoinTable(name = "SLA_FEED", joinColumns = {
         @JoinColumn(name = "SLA_ID", nullable = false, updatable = false) },
                inverseJoinColumns = { @JoinColumn(name = "FEED_ID",
@@ -90,11 +76,11 @@ public class JpaServiceLevelAgreementDescription implements ServiceLevelAgreemen
     }
 
     @Override
-    public ServiceLevelAgreementId getSlaId() {
+    public ServiceLevelAgreementDescriptionId getSlaId() {
         return slaId;
     }
 
-    public void setSlaId(ServiceLevelAgreementId slaId) {
+    public void setSlaId(ServiceLevelAgreementDescriptionId slaId) {
         this.slaId = slaId;
     }
 
@@ -123,33 +109,6 @@ public class JpaServiceLevelAgreementDescription implements ServiceLevelAgreemen
     public void setFeeds(Set<OpsManagerFeed> feeds) {
         this.feeds = feeds;
     }
-
-    @Embeddable
-    public static class ServiceLevelAgreementId extends BaseJpaId implements ServiceLevelAgreement.ID, Serializable {
-
-        private static final long serialVersionUID = 6965221468619613881L;
-
-        @Column(name = "SLA_ID")
-        private UUID uuid;
-
-        public ServiceLevelAgreementId() {
-        }
-
-        public ServiceLevelAgreementId(Serializable ser) {
-            super(ser);
-        }
-
-        @Override
-        public UUID getUuid() {
-            return this.uuid;
-        }
-
-        @Override
-        public void setUuid(UUID uuid) {
-            this.uuid = uuid;
-        }
-    }
-
 
 
 }

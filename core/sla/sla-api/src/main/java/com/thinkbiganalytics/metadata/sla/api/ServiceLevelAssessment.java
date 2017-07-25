@@ -38,8 +38,6 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      */
     ID getId();
 
-    ServiceLevelAgreementDescription getServiceLevelAgreementDescription();
-
     /**
      * @return the time when this assessment was generated
      */
@@ -50,7 +48,7 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      */
     ServiceLevelAgreement getAgreement();
 
-    String getServiceLevelAgreementId();
+    ServiceLevelAgreement.ID getServiceLevelAgreementId();
 
     /**
      * @return a message describing the result of this assessment

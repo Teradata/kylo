@@ -23,14 +23,19 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.Visitor;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
@@ -49,6 +54,7 @@ import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.sla.QServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.alerts.DefaultAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
@@ -56,7 +62,12 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
+import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPathInspector;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -97,6 +108,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     private JpaAlertRepository repository;
 
 
+    static final ImmutableMap<String, String> alertSlaFilters =
+        new ImmutableMap.Builder<String, String>()
+            .put("sla", "name")
+            .put("slaDescription", "description").build();
+
     private AlertSource.ID id = new AlertManagerId();
 
     @Override
@@ -110,6 +126,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     public DefaultAlertManager(JpaAlertRepository repo) {
         super(JpaAlert.class);
         this.repository = repo;
+        CommonFilterTranslations.addFilterTranslations(QJpaServiceLevelAgreementDescription.class,alertSlaFilters);
     }
 
     /* (non-Javadoc)
@@ -507,14 +524,18 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
         public JPAQuery<JpaAlert> createQuery() {
             QJpaAlert alert = QJpaAlert.jpaAlert;
+            QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+            QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
 
             JPAQuery<JpaAlert> query = queryFactory
                 .select(alert)
                 .from(alert)
+                .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
+                .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
                 .limit(getLimit());
 
             List<Predicate> preds = filter(alert);
-            BooleanBuilder orFilter = orFilter(alert);
+            BooleanBuilder orFilter = orFilter(alert,feed,sla);
 
             // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
             // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
@@ -539,6 +560,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
         public JPAQuery<AlertSummary> createSummaryQuery() {
             QJpaAlert alert = QJpaAlert.jpaAlert;
+            QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+            QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
 
             JPAQuery
                 query = queryFactory.select(
@@ -546,14 +569,20 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                                  alert.typeString.as("type"),
                                  alert.subtype.as("subtype"),
                                  alert.level.as("level"),
+                                 feed.id.as("feedId"),
+                                 feed.name.as("feedName"),
+                                 sla.slaId.as("slaId"),
+                                 sla.name.as("slaName"),
                                  alert.count().as("count"),
                                  alert.createdTimeMillis.max().as("lastAlertTimestamp"))
             )
                 .from(alert)
+                .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.endsWithIgnoreCase(Expressions.stringPath("'FEED'"))))
+                .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.endsWithIgnoreCase(Expressions.stringPath("'SLA'"))))
                 .groupBy(alert.typeString, alert.subtype);
             List<Predicate> preds = filter(alert);
 
-            BooleanBuilder orFilter = orFilter(alert);
+            BooleanBuilder orFilter = orFilter(alert,feed,sla);
 
             if (preds.isEmpty() && !orFilter.hasValue()) {
                 return query;
@@ -566,8 +595,15 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 return (JPAQuery<AlertSummary>) query.where(booleanBuilder);
             }
         }
+        private String filterStringForFeedAlertEntities(String keyword){
+            return CommonFilterTranslations.feedFilters.keySet().stream().map(key -> key+"=~"+keyword).collect(Collectors.joining(","));
+        }
 
-        private BooleanBuilder orFilter(QJpaAlert alert){
+        private String filterStringForSlaAlertEntities(String keyword){
+            return alertSlaFilters.keySet().stream().map(key -> key+"=~"+keyword).collect(Collectors.joining(","));
+        }
+
+        private BooleanBuilder orFilter(QJpaAlert alert, QJpaOpsManagerFeed feed,QJpaServiceLevelAgreementDescription sla){
             BooleanBuilder globalFilter = new BooleanBuilder();
             if(StringUtils.isNotBlank(getOrFilter())) {
                 Lists.newArrayList(StringUtils.split(getOrFilter(), ",")).stream().forEach(filter -> {
@@ -581,9 +617,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                     }catch (IllegalArgumentException e){
 
                     }
-
-                    preds.add( alert.typeString.like(filter.concat("%")));
+                    preds.add( alert.description.likeIgnoreCase(filter.concat("%")));
+                    preds.add( alert.entityType.likeIgnoreCase(filter.concat("%")));
+                    preds.add( alert.typeString.likeIgnoreCase(filter.concat("%")));
                     preds.add(alert.subtype.like(filter.concat("%")));
+                    //add in joins on the feed or sla name
+                    preds.add(GenericQueryDslFilter.buildOrFilter(feed,filterStringForFeedAlertEntities(filter)));
+                        preds.add(GenericQueryDslFilter.buildOrFilter(sla,filterStringForSlaAlertEntities(filter)));
+
                     booleanBuilder.andAnyOf(preds.toArray(new Predicate[preds.size()]));
                     globalFilter.and(booleanBuilder);
                     }

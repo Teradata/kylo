@@ -26,7 +26,7 @@ import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;
@@ -78,7 +78,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
     private ServiceLevelAgreementDescription serviceLevelAgreementDescription;
 
     @Column(name = "SLA_ID")
-    private String slaId;
+    private ServiceLevelAgreementDescriptionId slaId;
 
     @Column(name = "MESSAGE")
     private String message;
@@ -104,7 +104,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
 
     @Override
-    public String getServiceLevelAgreementId() {
+    public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
         return slaId;
     }
 
@@ -114,14 +114,14 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
     public void setAgreement(ServiceLevelAgreement agreement) {
         this.agreement = agreement;
-        this.setSlaId(agreement.getId().toString());
+        this.setSlaId(new ServiceLevelAgreementDescriptionId(agreement.getId().toString()));
     }
 
-    public String getSlaId() {
+    public ServiceLevelAgreement.ID getSlaId() {
         return slaId;
     }
 
-    public void setSlaId(String slaId) {
+    public void setSlaId(ServiceLevelAgreementDescriptionId slaId) {
         this.slaId = slaId;
     }
 
@@ -155,7 +155,6 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
         this.obligationAssessments = obligationAssessments;
     }
 
-    @Override
     public ServiceLevelAgreementDescription getServiceLevelAgreementDescription() {
         return serviceLevelAgreementDescription;
     }

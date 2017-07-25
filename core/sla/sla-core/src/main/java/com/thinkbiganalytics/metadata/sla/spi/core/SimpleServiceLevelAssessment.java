@@ -27,7 +27,7 @@ import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +56,6 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     private Set<ObligationAssessment> obligationAssessments;
     private ServiceLevelAssessment.ID id;
 
-    private ServiceLevelAgreementDescription serviceLevelAgreementDescription;
 
     /**
      *
@@ -101,8 +100,8 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     }
 
     @Override
-    public String getServiceLevelAgreementId() {
-        return this.sla != null ? this.sla.getId().toString() : null;
+    public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
+        return this.sla != null ? this.sla.getId() : null;
     }
 
     /* (non-Javadoc)
@@ -173,15 +172,6 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
 
     protected void setSla(ServiceLevelAgreement sla) {
         this.sla = sla;
-    }
-
-    @Override
-    public ServiceLevelAgreementDescription getServiceLevelAgreementDescription() {
-        return serviceLevelAgreementDescription;
-    }
-
-    public void setServiceLevelAgreementDescription(ServiceLevelAgreementDescription serviceLevelAgreementDescription) {
-        this.serviceLevelAgreementDescription = serviceLevelAgreementDescription;
     }
 
     @Override

@@ -107,7 +107,7 @@ public class JpaAlert implements Alert {
 
 
     @Column(name = "ENTITY_ID")
-    private String entityId;
+    private AlertEntityId entityId;
 
     @Column(name = "ENTITY_TYPE")
     private String entityType;
@@ -115,15 +115,16 @@ public class JpaAlert implements Alert {
     @Transient
     private AlertSource source;
 
+
     public JpaAlert() {
         super();
     }
 
     public JpaAlert(URI type, String subtype, Level level, Principal user, String description, Serializable content) {
-        this(type, subtype,level, user, description, State.UNHANDLED, content);
+        this(type, subtype, level, user, description, State.UNHANDLED, content);
     }
 
-    public JpaAlert(URI type, String subtype,Level level, Principal user, String description, State state, Serializable content) {
+    public JpaAlert(URI type, String subtype, Level level, Principal user, String description, State state, Serializable content) {
         this.id = AlertId.create();
         this.typeString = type.toASCIIString();
         this.subtype = subtype;
@@ -132,10 +133,10 @@ public class JpaAlert implements Alert {
         this.createdTime = DateTime.now();
         this.state = state;
         setDescription(description);
-        if(content instanceof EntityIdentificationAlertContent){
-            this.entityId = ((EntityIdentificationAlertContent)content).getEntityId();
-            this.entityType = ((EntityIdentificationAlertContent)content).getEntityType().name();
-            this.content =  ((EntityIdentificationAlertContent)content).getContent();
+        if (content instanceof EntityIdentificationAlertContent) {
+            this.entityId = new AlertEntityId(((EntityIdentificationAlertContent) content).getEntityId());
+            this.entityType = ((EntityIdentificationAlertContent) content).getEntityType().name();
+            this.content = ((EntityIdentificationAlertContent) content).getContent();
         }
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
@@ -284,20 +285,20 @@ public class JpaAlert implements Alert {
         this.typeString = typeString;
     }
 
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
-
     public String getEntityType() {
         return entityType;
     }
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    public AlertEntityId getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(AlertEntityId entityId) {
+        this.entityId = entityId;
     }
 
     public void addEvent(JpaAlertChangeEvent event) {
@@ -338,6 +339,39 @@ public class JpaAlert implements Alert {
     }
 
     public static class AlertContentConverter extends JsonAttributeConverter<Serializable> {
+
+    }
+
+
+    @Embeddable
+    public static class AlertEntityId extends BaseJpaId implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Column(name = "entity_id")
+        private UUID value;
+
+        public AlertEntityId() {
+        }
+
+
+        public AlertEntityId(Serializable ser) {
+            super(ser);
+        }
+
+        public static AlertEntityId create() {
+            return new AlertEntityId(UUID.randomUUID());
+        }
+
+        @Override
+        public UUID getUuid() {
+            return this.value;
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.value = uuid;
+        }
 
     }
 

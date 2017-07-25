@@ -149,11 +149,21 @@ public class GenericQueryDslFilter {
                                 op = Ops.IN;
                             }
                             if (convertedValue != null) {
-                                booleanBuilder.and(Expressions.predicate(op, p, Expressions.constant(convertedValue)));
+                                if(filter.isOrFilter()) {
+                                    booleanBuilder.or(Expressions.predicate(op, p, Expressions.constant(convertedValue)));
+                                }
+                                else {
+                                    booleanBuilder.and(Expressions.predicate(op, p, Expressions.constant(convertedValue)));
+                                }
                             }
 
                         } else {
-                            booleanBuilder.and(Expressions.predicate(op, p));
+                            if(filter.isOrFilter()) {
+                                booleanBuilder.or(Expressions.predicate(op, p));
+                            }
+                            else {
+                                booleanBuilder.and(Expressions.predicate(op, p));
+                            }
                         }
 
                     }
@@ -178,6 +188,11 @@ public class GenericQueryDslFilter {
      */
     public static BooleanBuilder buildFilter(EntityPathBase basePath, String filterString) {
         List<SearchCriteria> searchCriterias = parseFilterString(filterString);
+        return buildFilter(basePath, searchCriterias);
+    }
+    public static BooleanBuilder buildOrFilter(EntityPathBase basePath, String filterString) {
+        List<SearchCriteria> searchCriterias = parseFilterString(filterString);
+        searchCriterias.stream().forEach(searchCriteria -> searchCriteria.setAndOr(SearchCriteria.AND_OR.OR));
         return buildFilter(basePath, searchCriterias);
     }
 

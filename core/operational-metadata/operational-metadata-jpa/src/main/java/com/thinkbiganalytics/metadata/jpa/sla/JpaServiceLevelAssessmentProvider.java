@@ -102,7 +102,16 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
      * @return the latest assessment for the sla
      */
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId) {
-        List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(slaId.toString());
+
+        ServiceLevelAgreementDescriptionId jpaId = null;
+        if(slaId instanceof ServiceLevelAgreementDescriptionId){
+        jpaId = (ServiceLevelAgreementDescriptionId)slaId;
+        }
+        else {
+jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
+        }
+
+        List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(jpaId);
         if (latestAssessments != null) {
             JpaServiceLevelAssessment jpaServiceLevelAssessment = (JpaServiceLevelAssessment) latestAssessments.get(0);
             ensureServiceLevelAgreementOnAssessment(jpaServiceLevelAssessment);
@@ -122,7 +131,14 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     @Override
     public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
         if (assessmentId != null) {
-            List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessmentsNotEqualTo(slaId.toString(), assessmentId);
+            ServiceLevelAgreementDescriptionId jpaId = null;
+            if(!(slaId instanceof ServiceLevelAgreementDescriptionId)) {
+                jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
+            }
+            else {
+                jpaId= (ServiceLevelAgreementDescriptionId)slaId;
+            }
+            List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessmentsNotEqualTo(jpaId, assessmentId);
             if (latestAssessments != null && !latestAssessments.isEmpty()) {
                 return latestAssessments.get(0);
             } else {
@@ -156,8 +172,8 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         if (assessment != null && assessment.getAgreement() != null) {
             return true;
         }
-        if (assessment.getAgreement() == null && StringUtils.isNotBlank(assessment.getServiceLevelAgreementId())) {
-            ServiceLevelAgreement agreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId()));
+        if (assessment.getAgreement() == null && assessment.getServiceLevelAgreementId() != null) {
+            ServiceLevelAgreement agreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId().toString()));
             ((JpaServiceLevelAssessment) assessment).setAgreement(agreement);
         }
         return assessment != null && assessment.getAgreement() != null;
@@ -165,11 +181,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
 
 
 
-    /**
-     * Find all BatchJobExecution objects with the provided filter. the filter needs to match
-     *
-     * @return a paged result set of all the job executions matching the incoming filter
-     */
+
     @Override
     public Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable) {
         QJpaServiceLevelAssessment serviceLevelAssessment = QJpaServiceLevelAssessment.jpaServiceLevelAssessment;
