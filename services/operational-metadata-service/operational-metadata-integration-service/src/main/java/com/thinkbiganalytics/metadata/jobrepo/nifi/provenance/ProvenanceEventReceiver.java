@@ -22,7 +22,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
+import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
@@ -32,7 +32,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
-import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -140,7 +140,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      *
      * @param events The events obtained from JMS
      */
-    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process batch: {},  {} events from the {} queue ", events.getBatchId(), events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
         if (readyToProcess(events)) {

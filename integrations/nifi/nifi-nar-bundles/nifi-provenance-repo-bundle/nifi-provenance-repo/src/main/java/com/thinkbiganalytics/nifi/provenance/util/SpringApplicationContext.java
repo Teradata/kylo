@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SpringApplicationContext {
 
     private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
-    private static ApplicationContext applicationContext;
+    private static ClassPathXmlApplicationContext applicationContext;
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
     public static SpringApplicationContext getInstance() {
@@ -52,10 +52,10 @@ public class SpringApplicationContext {
     public void initializeSpring(String configFileName) {
         if (initialized.compareAndSet(false, true)) {
             log.info("Initializing Spring with {} ", configFileName);
-            this.applicationContext = new ClassPathXmlApplicationContext();
-            ((ClassPathXmlApplicationContext) this.applicationContext).setClassLoader(getClass().getClassLoader());
-            ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation(configFileName);
-            ((ClassPathXmlApplicationContext) this.applicationContext).refresh();
+            applicationContext = new ClassPathXmlApplicationContext();
+            applicationContext.setClassLoader(getClass().getClassLoader());
+            applicationContext.setConfigLocation(configFileName);
+            applicationContext.refresh();
         }
     }
 
@@ -73,7 +73,7 @@ public class SpringApplicationContext {
         }
         if (applicationContext != null) {
             try {
-                return this.applicationContext.getBean(beanName);
+                return applicationContext.getBean(beanName);
             } catch (Exception e) {
                 log.error("Error getting bean {} , {} ", beanName, e.getMessage(), e);
             }

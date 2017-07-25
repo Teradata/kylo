@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>kylo-plugins</artifactId>
+        <version>0.8.3-SNAPSHOT</version>
+    </parent>
+    <properties>
+        <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+    </properties>
+    <artifactId>kylo-jms-service-amazon-sqs</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-jms-service-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring aritifacts -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>${aws.java.sdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>amazon-sqs-java-messaging-lib</artifactId>
+            <version>${amazon.sqs.java.messaging.lib.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

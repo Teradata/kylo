@@ -28,5 +28,7 @@
     <module>ui-sqoop-table-data-processor-template</module>
     <module>search-elasticsearch</module>
     <module>search-solr</module>
+    <module>jms-service-activemq</module>
+    <module>jms-service-amazon-sqs</module>
   </modules>
 </project>

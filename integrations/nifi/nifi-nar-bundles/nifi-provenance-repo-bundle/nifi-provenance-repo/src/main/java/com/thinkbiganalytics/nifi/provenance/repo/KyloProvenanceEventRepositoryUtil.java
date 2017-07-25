@@ -66,7 +66,7 @@ public class KyloProvenanceEventRepositoryUtil {
 
     }
 
-    private void loadSpring() {
+    void loadSpring() {
         try {
             SpringApplicationContext.getInstance().initializeSpring("classpath:provenance-application-context.xml");
         } catch (BeansException | IllegalStateException e) {

@@ -17,12 +17,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-jms</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>kylo-metadata-rest-model</artifactId>
     </dependency>
@@ -35,10 +29,19 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-activemq-core</artifactId>
+      <artifactId>kylo-jms-service-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-amazon-sqs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-activemq</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
 
     <dependency>

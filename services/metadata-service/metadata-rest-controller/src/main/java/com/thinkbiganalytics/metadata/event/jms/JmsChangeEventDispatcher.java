@@ -74,7 +74,6 @@ public class JmsChangeEventDispatcher {
      * Spring JMS messaging template
      */
     @Inject
-    @Named("metadataMessagingTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
     /**
      * Metadata transaction wrapper
