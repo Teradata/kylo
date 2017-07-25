@@ -34,6 +34,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.action.Action;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.security.AccessControlException;
@@ -154,11 +155,10 @@ public interface MetadataService {
      * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
      *
      * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
-     * @param limit the size of a page result
-     * @param start the starting feed index within the set of all feeds to be included in the page
+     * @param pageable describes the page to be returned
      * @return a page of feeds determined by the values of limit and start
      */
-    Page<UIFeed> getFeedsPage(boolean verbose, int limit, int start);
+    Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable);
     
     /**
      * @return a list of feeds

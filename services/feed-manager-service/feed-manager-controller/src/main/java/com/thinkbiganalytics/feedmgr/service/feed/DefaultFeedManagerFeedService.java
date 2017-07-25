@@ -124,6 +124,9 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerFeedService.class);
+    
+    private static final Pageable PAGE_ALL = new PageRequest(1, Integer.MAX_VALUE);
+    
     /**
      * Event listener for precondition events
      */
@@ -275,15 +278,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     
     @Override
     public Collection<FeedMetadata> getFeeds() {
-        return getFeeds(0, Integer.MAX_VALUE).getContent();
+        return getFeeds(PAGE_ALL).getContent();
     }
 
-    public Page<FeedMetadata> getFeeds(int limit, int start) {
+    public Page<FeedMetadata> getFeeds(Pageable pageable) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Page<Feed> domainFeeds = findAllFeeds(limit, start);
-            
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable);
             return domainFeeds.map(d -> feedModelTransform.domainToFeedMetadata(d));
         });
 
@@ -300,28 +302,27 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Page<UIFeed> getFeeds(boolean verbose, int limit, int start) {
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable) {
         if (verbose) {
-            return getFeeds(limit, start).map(UIFeed.class::cast);
+            return getFeeds(pageable).map(UIFeed.class::cast);
         } else {
-            return getFeedSummaryData(limit, start).map(UIFeed.class::cast);
+            return getFeedSummaryData(pageable).map(UIFeed.class::cast);
         }
         
     }
     
     @Override
     public List<FeedSummary> getFeedSummaryData() {
-        return getFeedSummaryData(0, Integer.MAX_VALUE).getContent().stream()
+        return getFeedSummaryData(PAGE_ALL).getContent().stream()
                         .map(FeedSummary.class::cast)
                         .collect(Collectors.toList());
     }
 
-    public Page<FeedSummary> getFeedSummaryData(int limit, int start) {
+    public Page<FeedSummary> getFeedSummaryData(Pageable pageable) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Page<Feed> domainFeeds = findAllFeeds(limit, start);
-            
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable);
             return domainFeeds.map(d -> feedModelTransform.domainToFeedSummary(d));
         });
     }
@@ -402,11 +403,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     }
 
-
-    private Page<Feed> findAllFeeds(int limit, int start) {
-        Pageable pageable = new PageRequest((start / limit), limit);
-        return feedProvider.findPage(pageable);
-    }
 
     /**
      * Create/Update a Feed in NiFi

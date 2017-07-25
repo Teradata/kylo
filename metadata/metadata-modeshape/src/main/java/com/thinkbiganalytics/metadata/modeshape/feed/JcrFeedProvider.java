@@ -87,6 +87,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,6 +108,17 @@ import javax.jcr.query.QueryResult;
  * A JCR provider for {@link Feed} objects.
  */
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
+    
+    private static final Map<String, String> JCR_PROP_MAP;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("feedName", "[tba:summary].[tba:systemName]");
+        map.put("state", "[tba:data].[tba:state]");
+        map.put("category.name", "");
+        map.put("templateName", "");
+        map.put("updateDate", "jcr:lastModified");
+        JCR_PROP_MAP = Collections.unmodifiableMap(map);
+    }
 
     @Inject
     private CategoryProvider categoryProvider;
@@ -707,6 +719,22 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
                 .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
         });
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#deriveJcrPropertyName(java.lang.String)
+     */
+    @Override
+    protected String deriveJcrPropertyName(String property) {
+        String jcrProp = JCR_PROP_MAP.get(property);
+        
+        if (jcrProp == null) {
+            throw new IllegalArgumentException("Unknown sort property: " + property);
+        } else if (jcrProp.length() == 0) {
+            return JCR_PROP_MAP.get("feedName");
+        } else {
+            return jcrProp;
+        }
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {

@@ -41,6 +41,7 @@ import org.springframework.data.domain.Sort;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -256,11 +257,15 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     public int findCount(String whereClause) {
-        String jcrQuery = "SELECT [mode:id] FROM [" + getNodeType(getJcrEntityClass()) + "] " + (whereClause == null ? "" : whereClause);
+        StringBuilder bldr = startBaseQuery("[mode:id]");
         int count = 0;
         
+        if (whereClause != null) {
+            bldr.append(whereClause);
+        }
+        
         try {
-            QueryResult result = JcrQueryUtil.query(getSession(), jcrQuery);
+            QueryResult result = JcrQueryUtil.query(getSession(), bldr.toString());
             
             if (result != null) {
                 RowIterator rowItr = result.getRows();
@@ -329,10 +334,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     @Override
     public List<T> findAll() {
-
-        String jcrQuery = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "]";
-        return find(jcrQuery);
-
+        return find(startBaseQuery().toString());
     }
     
     @Override
@@ -340,8 +342,8 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         int count = findCount();
         
         if (count > 0) {
-            StringBuilder bldr = new StringBuilder("SELECT * FROM [").append(getNodeType(getJcrEntityClass())).append("] ");
-            appendSort(bldr, pageable);
+            StringBuilder bldr = startBaseQuery();
+//            appendSort(bldr, pageable);
             appendOffset(bldr, pageable);
             
             List<T> list = find(bldr.toString());
@@ -403,6 +405,23 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         };
     }
 
+    protected StringBuilder startBaseQuery(String... props) {
+        StringBuilder bldr = new StringBuilder("SELECT ");
+        if (props.length == 0) {
+            bldr.append("* ");
+        } else {
+            boolean start = true;
+            for (String prop : props) {
+                if (! start) {
+                    bldr.append(", ");
+                    start = false;
+                }
+                bldr.append(prop);
+            }
+        }
+        return bldr.append(" FROM [").append(getNodeType(getJcrEntityClass())).append("] ");
+    }
+
     protected String sanitizeSystemName(String systemName) {
         return INVALID_SYSTEM_NAME_PATTERN.matcher(systemName).replaceAll("_");
     }
@@ -427,7 +446,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 }
                 
                 String jcrPropName = deriveJcrPropertyName(order.getProperty());
-                bldr.append("[").append(order.getProperty()).append("] ").append(order.getDirection()).append(" ");
+                bldr.append(jcrPropName).append(" ").append(order.getDirection()).append(" ");
             }
         }
     }

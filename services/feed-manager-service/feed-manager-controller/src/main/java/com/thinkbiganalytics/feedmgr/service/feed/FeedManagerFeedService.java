@@ -40,6 +40,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Common Feed Manager actions
@@ -106,11 +107,10 @@ public interface FeedManagerFeedService {
      * of the list will be the n'th feed in the list of all feeds as specified by the start parameter.
      *
      * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
-     * @param limit the max size of the feed list
-     * @param start the n'th starting feed in the list
+     * @param pageable describes the page requested
      * @return a list of feed objects
      */
-    Page<UIFeed> getFeeds(boolean verbose, int limit, int start);
+    Page<UIFeed> getFeeds(boolean verbose, Pageable pageable);
     
     /**
      * @return a list of feeds

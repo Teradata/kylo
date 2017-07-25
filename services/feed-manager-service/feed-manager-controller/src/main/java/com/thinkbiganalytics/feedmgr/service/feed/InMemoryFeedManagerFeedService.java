@@ -59,6 +59,7 @@ import javax.inject.Inject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * In memory implementation
@@ -115,13 +116,15 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Page<UIFeed> getFeeds(boolean verbose, int limit, int start) {
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable) {
         Collection<? extends UIFeed> allFeeds = getFeeds(verbose);
         List<UIFeed> pagedFeeds = getFeeds(verbose).stream()
-                        .skip(Math.max(start - 1, 0))
-                        .limit(limit)
+                        .skip(Math.max(pageable.getOffset() - 1, 0))
+                        .limit(pageable.getPageSize())
                         .collect(Collectors.toList());
-        return new PageImpl<>(pagedFeeds, new PageRequest(start/limit, limit), allFeeds.size());
+        return new PageImpl<>(pagedFeeds, 
+                             new PageRequest(pageable.getOffset() / pageable.getPageSize(), pageable.getPageSize()), 
+                             allFeeds.size());
     }
 
     public List<FeedSummary> getFeedSummaryData() {

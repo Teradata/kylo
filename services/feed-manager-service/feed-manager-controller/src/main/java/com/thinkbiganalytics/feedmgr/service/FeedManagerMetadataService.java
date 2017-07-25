@@ -60,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -325,8 +326,8 @@ public class FeedManagerMetadataService implements MetadataService {
     }
     
     @Override
-    public Page<UIFeed> getFeedsPage(boolean verbose, int limit, int start) {
-        return feedProvider.getFeeds(verbose, limit, start);
+    public Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable) {
+        return feedProvider.getFeeds(verbose, pageable);
     }
 
     @Override

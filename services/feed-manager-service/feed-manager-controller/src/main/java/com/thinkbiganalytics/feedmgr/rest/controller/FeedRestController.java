@@ -76,6 +76,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -337,12 +339,12 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
     )
     public SearchResult getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
-                             @QueryParam("sort") @DefaultValue("") String sort,
+                             @QueryParam("sort") @DefaultValue("feedName") String sort,
                              @QueryParam("limit") Integer limit,
                              @QueryParam("start") @DefaultValue("0") Integer start) {
 
         int size = limit != null ? limit : MAX_LIMIT;
-        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, size, start);
+        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, pageRequest(start, limit, sort));
         return this.feedModelTransform.toSearchResult(page);   
     }
 
@@ -839,6 +841,19 @@ public class FeedRestController {
             throw new InternalServerErrorException(err);
         }
         return Response.ok("").build();
+    }
+
+    private PageRequest pageRequest(Integer start, Integer limit, String sort) {
+        if (StringUtils.isNotBlank(sort)) {
+            Sort.Direction dir = Sort.Direction.ASC;
+            if (sort.startsWith("-")) {
+                dir = Sort.Direction.DESC;
+                sort = sort.substring(1);
+            }
+            return new PageRequest((start / limit), limit, dir, sort);
+        } else {
+            return new PageRequest((start / limit), limit);
+        }
     }
 }
 
