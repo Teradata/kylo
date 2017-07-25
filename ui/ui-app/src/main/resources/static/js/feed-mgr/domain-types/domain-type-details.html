@@ -28,9 +28,24 @@
               </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Data Type</span>
+
+              <div flex>
+                {{vm.model.field.derivedDataType}}
+                <span ng-if="vm.model.field.derivedDataType == 'decimal' && vm.model.field.precisionScale">({{vm.model.field.precisionScale}})</span>
+              </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
               <span flex="25" class="property-name">Regular Expression</span>
 
               <div flex ng-model="vm.model.$regex" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.viewerOptions"></div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+              <span flex="25" class="property-name">Tags</span>
+
+              <md-chips ng-repeat="tag in vm.model.field.tags">
+                <md-chip><strong>{{tag.name}}</strong></md-chip>
+              </md-chips>
             </div>
             <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
               <span flex="25" class="property-name">Icon</span>
@@ -60,8 +75,26 @@
               <input ng-model="vm.editModel.description"/>
             </md-input-container>
 
+            <div layout="row" style="margin-top:-18px">
+              <md-input-container flex class="md-block">
+                <md-select ng-model="vm.editModel.field.derivedDataType" placeholder="Data Type" ng-change="vm.onDataTypeChange()">
+                  <md-option ng-value=""><em>None</em></md-option>
+                  <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+                    {{dataType}}
+                  </md-option>
+                </md-select>
+                <div ng-messages="vm.domainTypeForm.precisionScale.$error" md-auto-hide="false">
+                  <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
+                </div>
+              </md-input-container>
+              <md-input-container flex="10" ng-if="vm.editModel.field.derivedDataType == 'decimal'">
+                <label>Precision</label>
+                <input ng-model="vm.editModel.field.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale">
+              </md-input-container>
+            </div>
+
             <div layout="row">
-              <md-input-container class="md-block" flex="95" style="margin-top:0">
+              <md-input-container class="md-block" flex="95">
                 <label>Regular Expression</label>
                 <div flex name="regexPattern" ng-model="vm.editModel.regexPattern" rows="1" ui-codemirror="{onLoad: vm.codemirrorLoaded}" ui-codemirror-opts="vm.editorOptions"></div>
                 <div ng-messages="vm.domainTypeForm.regexPattern.$error" md-auto-hide="false">
@@ -83,7 +116,22 @@
               </md-menu>
             </div>
 
-            <div layout="column">
+            <md-input-container class="md-block flex-gt-xs" flex-gt-xs>
+              <label class="label-small md-container-ignore">Tags</label>
+              <md-chips ng-model="vm.editModel.field.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+                <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
+                                 md-item-text="item.name" placeholder="Add a Tag">
+                  <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+                </md-autocomplete>
+                <md-chip-template>
+                  <span>
+                    <strong>{{$chip.name}}</strong>
+                  </span>
+                </md-chip-template>
+              </md-chips>
+            </md-input-container>
+
+            <div layout="column" style="margin:18px 0">
               <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
                 <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
                 <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit; fill:{{vm.editModel.iconColor}}"></ng-md-icon>
@@ -91,7 +139,7 @@
               </div>
             </div>
 
-            <div layout="column">
+            <div layout="column" style="margin:18px 0">
               <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
                 <span class="md-input-label" style="font-size: 11px;" flex="25">Rules </span>
                 <div ng-click="vm.showFieldRuleDialog(vm.editModel)" style="color:#2D78B1;">

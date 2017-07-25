@@ -34,7 +34,8 @@ define(['angular',
         'feed-mgr/shared/entity-access-control/EntityAccessControlService',
         'feed-mgr/shared/profile-stats/ProfileStats',
         'feed-mgr/services/UiComponentsService',
-        'feed-mgr/services/DomainTypesService'],function() {
+        'feed-mgr/services/DomainTypesService',
+        'feed-mgr/shared/apply-domain-type/ApplyDomainTypeDialog'],function() {
 
 });
 

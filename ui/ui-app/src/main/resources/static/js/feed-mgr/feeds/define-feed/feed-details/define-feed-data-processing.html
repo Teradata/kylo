@@ -101,13 +101,14 @@
                       <div flex="30" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
-                          <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
+                          <div class="hint">{{policy.field.dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
                       <div flex="20" class="md-list-item-text " style="padding-left:5px;">
                         <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                          <md-select ng-model="policy.domainType" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
-                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType" aria-label="{{domainType.title}}">
+                          <md-select ng-model="policy.domainTypeId" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
+                            <md-option ng-value=""><em>None</em></md-option>
+                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
                               <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
                             </md-option>
                           </md-select>

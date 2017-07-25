@@ -1,0 +1,31 @@
+<md-dialog arial-label="Overwrite Field">
+  <form name="overwriteFieldForm" ng-cloak>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Overwrite Field Details for {{field.name}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon icon="close" size="20"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        Applying the domain type {{domainType.title}} will overwrite the current field with the following properties:
+
+        <ul>
+          <li ng-if="domainType.field.derivedDataType != null">Data Type: {{domainType.field.derivedDataType}}</li>
+          <li>Standardizers: {{standardizerList}}</li>
+          <li>Validators: {{validatorList}}</li>
+          <li>Tags: {{tagList}}</li>
+        </ul>
+      </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()">Cancel</md-button>
+      <md-button class="md-raised md-primary" ng-click="hide()">Apply</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

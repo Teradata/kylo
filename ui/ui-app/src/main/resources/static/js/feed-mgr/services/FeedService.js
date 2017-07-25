@@ -96,6 +96,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 compressionOptions: {"ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY'], "AVRO": ['NONE']},
 
                 /**
+                 * Standard data types for column definitions
+                 */
+                columnDefinitionDataTypes: ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'],
+
+                /**
                  * Returns an array of all the compression options regardless of the {@code targetFormat}
                  * (i.e. ['NONE','SNAPPY','ZLIB']
                  * @returns {Array}
@@ -787,6 +792,32 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         entity = data.model;
                     }
                     return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.FEED);
+                },
+
+                /**
+                 * Applies the specified domain type to the specified field.
+                 *
+                 * @param {Field} field the field to be updated
+                 * @param {FieldPolicy} policy the field policy to be updated
+                 * @param {DomainType} domainType the domain type be be applies
+                 */
+                setDomainTypeForField: function (field, policy, domainType) {
+                    policy.$currentDomainType = domainType;
+                    policy.domainTypeId = domainType.id;
+
+                    if (angular.isObject(domainType.field)) {
+                        field.tags = angular.copy(domainType.field.tags);
+                        if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
+                            field.derivedDataType = domainType.field.derivedDataType;
+                            field.precisionScale = domainType.field.precisionScale;
+                            field.dataTypeDisplay = data.getDataTypeDisplay(field);
+                        }
+                    }
+
+                    if (angular.isObject(domainType.fieldPolicy)) {
+                        policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
+                        policy.validation = angular.copy(domainType.fieldPolicy.validation);
+                    }
                 }
             };
             data.init();
