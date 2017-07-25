@@ -196,6 +196,19 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             };
         };
 
+        var DomainTypeStates = function () {
+            return {
+                navigateToDomainTypeDetails: function (opt_domainTypeId) {
+                    var safeDomainTypeId = angular.isString(opt_domainTypeId) ? encodeURIComponent(opt_domainTypeId) : null;
+                    $state.go("domain-type-details", {domainTypeId: safeDomainTypeId});
+                },
+
+                navigateToDomainTypes: function () {
+                    $state.go("domain-types");
+                }
+            }
+        };
+
         var FeedManagerStates = function () {
             var data = {};
             data.Category = CategoryStates;
@@ -205,6 +218,7 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.Table = TableStates;
             data.Profile = ProfileStates;
             data.Datasource = DatasourceStates;
+            data.DomainType = DomainTypeStates;
             return data;
         }
 

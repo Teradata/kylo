@@ -485,33 +485,65 @@ define(['angular', 'kylo-common', 'kylo-services',
 
 
 
-$stateProvider.state({
-           name: "datasources.**",
-           url: "/datasources",
-           lazyLoad: function(transition) {
-               transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
-                   //upon success go back to the state
-                   $stateProvider.stateService.go("datasources", transition.params());
-                   return args;
-               }, function error(err) {
-                   console.log("Error loading datasources.", err);
-                   return err;
-               });
-           }
-       }).state({
-           name: "datasource-details.**",
-           url: "/datasource-details",
-           lazyLoad: function(transition) {
-               transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
-                   //upon success go back to the state
-                   $stateProvider.stateService.go("datasource-details", transition.params());
-                   return args;
-               }, function error(err) {
-                   console.log("Error loading datasource-details.", err);
-                   return err;
-               });
-           }
-       });       $stateProvider.state({
+        $stateProvider.state({
+            name: "datasources.**",
+            url: "/datasources",
+            lazyLoad: function(transition) {
+                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go("datasources", transition.params());
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading datasources.", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: "datasource-details.**",
+            url: "/datasource-details",
+            lazyLoad: function(transition) {
+                transition.injector().get("$ocLazyLoad").load("feed-mgr/datasources/module").then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go("datasource-details", transition.params());
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading datasource-details.", err);
+                    return err;
+                });
+            }
+        });
+
+        $stateProvider.state({
+            name: "domain-types.**",
+            url: "/domain-types",
+            lazyLoad: function (transition) {
+                transition.injector().get("$ocLazyLoad")
+                    .load("feed-mgr/domain-types/module")
+                    .then(function (args) {
+                        $stateProvider.stateService.go("domain-types", transition.params());
+                        return args;
+                    }, function (err) {
+                        console.log("Error loading domain-types.", err);
+                        return err;
+                    });
+            }
+        }).state({
+            name: "domain-type-details.**",
+            url: "/domain-type-details",
+            lazyLoad: function (transition) {
+                transition.injector().get("$ocLazyLoad")
+                    .load("feed-mgr/domain-types/module")
+                    .then(function (args) {
+                        $stateProvider.stateService.go("domain-type-details", transition.params());
+                        return args;
+                    }, function (err) {
+                        console.log("Error loading domain-type-details.", err);
+                        return err;
+                    });
+            }
+        });
+
+        $stateProvider.state({
            name:'access-denied',
            url:'/access-denied',
            params:{attemptedState:null},

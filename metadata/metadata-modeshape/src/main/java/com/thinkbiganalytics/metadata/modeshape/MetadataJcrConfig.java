@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.domaintype.DomainTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
+import com.thinkbiganalytics.metadata.modeshape.domaintype.JcrDomainTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
@@ -156,5 +158,10 @@ public class MetadataJcrConfig {
                 // Do nothing.
             }
         };
+    }
+
+    @Bean
+    public DomainTypeProvider domainTypeProvider() {
+        return new JcrDomainTypeProvider();
     }
 }

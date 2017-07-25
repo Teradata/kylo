@@ -117,6 +117,7 @@ public class CreateFeedBuilder {
         this.feedName = feedMetadata.getSystemFeedName();
         this.templateId = templateId;
         this.templateCreationHelper = new TemplateCreationHelper(this.restClient);
+        this.templateCreationHelper.setTemplateProperties(feedMetadata.getRegisteredTemplate().getProperties());
         this.propertyExpressionResolver = propertyExpressionResolver;
         this.propertyDescriptorTransform = propertyDescriptorTransform;
     }
@@ -214,6 +215,7 @@ public class CreateFeedBuilder {
                     ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity),
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
+
 
                     List<NifiProperty> updatedControllerServiceProperties = new ArrayList<>();
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already

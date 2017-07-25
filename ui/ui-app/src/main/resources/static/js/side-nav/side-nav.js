@@ -119,6 +119,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants'], function
                     var menu = ({type:'toggle', text: "Admin",narrowText:'Admin',expanded:false});
                     var links = [];
                     links.push({sref: "datasources", type: "link", icon: "storage", text: "Data Sources", defaultActive: false, permission: AccessControlService.DATASOURCE_ACCESS});
+                    links.push({sref: "domain-types", type: "link", icon: "local_offer", text: "Domain Types", defaultActive: false, permission: AccessControlService.FEEDS_ADMIN});
                     links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
@@ -246,10 +247,10 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants'], function
                     if(moduleName.indexOf('opsmgr') >=0){
                         return menuMap[MENU_KEY.OPS_MGR];
                     }
-                    else if(moduleName.indexOf('feedmgr') >=0 && moduleName != 'kylo.feedmgr.datasources' && moduleName != 'kylo.feedmgr.templates'){
+                    else if(moduleName.indexOf('feedmgr') >=0 && moduleName != 'kylo.feedmgr.datasources' && moduleName != "kylo.feedmgr.domain-types" && moduleName != 'kylo.feedmgr.templates'){
                         return menuMap[MENU_KEY.FEED_MGR];
                     }
-                    else if(moduleName.indexOf('auth') >=0 || moduleName == 'kylo.feedmgr.datasources' || moduleName == 'kylo.feedmgr.templates'){
+                    else if(moduleName.indexOf('auth') >=0 || moduleName == 'kylo.feedmgr.datasources' || moduleName == "kylo.feedmgr.domain-types" || moduleName == 'kylo.feedmgr.templates'){
                         return menuMap[MENU_KEY.ADMIN];
                     }
                     else {

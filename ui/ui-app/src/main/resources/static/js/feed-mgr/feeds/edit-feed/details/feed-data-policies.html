@@ -243,8 +243,11 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="35" class="md-list-item-text hint">
+          <div flex="25" class="md-list-item-text hint">
             Field Name
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            Domain<br/>Type
           </div>
           <div flex="10" class="md-list-item-text hint">
             Primary
@@ -313,7 +316,7 @@
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="35" class="md-list-item-text">
+          <div flex="25" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
@@ -322,6 +325,14 @@
               </md-tooltip>
             </md-input-container>
 
+          </div>
+          <div flex="10" class="md-list-item-text">
+            <md-select ng-model="policy.domainType" md-selected-html="vm.getDomainTypePlaceholder(policy.domainType)" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)"
+                       style="margin:0;width:70px">
+              <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType" aria-label="{{domainType.title}}">
+                <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
+              </md-option>
+            </md-select>
           </div>
           <div flex="10" class="md-list-item-text ">
             <md-checkbox ng-model="policy.columnDef.primaryKey" aria-label="Primary Key" ng-change="vm.onChangePrimaryKey()"></md-checkbox>

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # chkconfig: 345 98 20
 # description: nifi
 # processname: nifi

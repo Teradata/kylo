@@ -32,7 +32,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
-import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
@@ -77,7 +76,6 @@ public class MetadataJcrConfigurator {
     private MetadataAccess metadataAccess;
 
 
-
     private List<PostMetadataConfigAction> postConfigActions = new ArrayList<>();
 
     public MetadataJcrConfigurator(List<PostMetadataConfigAction> actions) {
@@ -107,7 +105,7 @@ public class MetadataJcrConfigurator {
         }, MetadataAccess.SERVICE);
 
         this.configured.set(true);
-       firePostConfigActions();
+        firePostConfigActions();
     }
 
     private void removeVersionableFeedType(Session session) throws RepositoryException {
@@ -347,9 +345,13 @@ public class MetadataJcrConfigurator {
             session.getRootNode().addNode("metadata/security/roles", "tba:rolesFolder");
         }
 
+        if (!session.getRootNode().hasNode("metadata/domainTypes")) {
+            session.getRootNode().addNode("metadata/domainTypes", "tba:domainTypesFolder");
+        }
+
         //ensure the role paths exist for the entities
-        for(String entity : SecurityRole.ENTITIES) {
-            String entityPath = "metadata/security/roles/"+entity;
+        for (String entity : SecurityRole.ENTITIES) {
+            String entityPath = "metadata/security/roles/" + entity;
             if (!session.getRootNode().hasNode(entityPath)) {
                 session.getRootNode().addNode(entityPath, "tba:rolesFolder");
             }

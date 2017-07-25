@@ -62,6 +62,14 @@ public class TemplateInstanceCreator {
 
     private ReusableTemplateCreationCallback creationCallback;
 
+    private List<NifiProperty> templateProperties;
+
+    public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
+                                   ReusableTemplateCreationCallback creationCallback) {
+        this(restClient, templateId, staticConfigPropertyMap, createReusableFlow, creationCallback);
+        this.templateProperties = templateProperties;
+    }
+
     public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
                                    ReusableTemplateCreationCallback creationCallback) {
         this.restClient = restClient;
@@ -98,6 +106,7 @@ public class TemplateInstanceCreator {
             if (template != null) {
 
                 TemplateCreationHelper templateCreationHelper = new TemplateCreationHelper(this.restClient);
+                templateCreationHelper.setTemplateProperties(templateProperties);
                 String processGroupId = null;
 
                 ProcessGroupDTO group = null;
@@ -171,6 +180,7 @@ public class TemplateInstanceCreator {
                     }
 
                     log.info("Attempt to update/validate controller services for template.");
+
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     boolean updatedControllerServices = false;
                     if (input != null) {
@@ -180,7 +190,7 @@ public class TemplateInstanceCreator {
                     }
                     log.info("attempt to update controllerservices on {} processors ", (nonInputProcessors != null ? nonInputProcessors.size() : 0));
                     List<NifiProperty> updatedProperties = templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, staticConfigPropertyStringMap);
-                    if(!updatedControllerServices){
+                    if (!updatedControllerServices) {
                         updatedControllerServices = !updatedProperties.isEmpty();
                     }
                     log.info("Controller service validation complete");
@@ -189,10 +199,9 @@ public class TemplateInstanceCreator {
                     nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     inputProcessors = NifiProcessUtil.getInputProcessors(entity);
-                    if(inputProcessors != null && !inputProcessors.isEmpty()) {
+                    if (inputProcessors != null && !inputProcessors.isEmpty()) {
                         input = inputProcessors.get(0);
                     }
-
 
                     ///make the input/output ports in the category group as running
                     if (isCreateReusableFlow()) {

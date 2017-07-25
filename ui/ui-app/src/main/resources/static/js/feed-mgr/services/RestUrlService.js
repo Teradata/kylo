@@ -36,6 +36,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
         this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
         this.UI_BASE_URL = this.ROOT + "/api/v1/ui";
+        this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
 
         this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
         this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";

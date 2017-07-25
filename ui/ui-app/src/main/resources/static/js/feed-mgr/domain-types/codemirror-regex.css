@@ -1,0 +1,28 @@
+.cm-s-default span.cm-regex-decorator {
+  color: #b9babf;
+  font-weight: bold
+}
+
+.cm-s-default span.cm-regex-error {
+  border-bottom: solid 2px red
+}
+
+.cm-s-default span.cm-regex-esc {
+  color: #C0C
+}
+
+.cm-s-default span.cm-regex-quant, .cm-s-default span.cm-regex-alt {
+  color: #35F
+}
+
+.cm-s-default span.cm-regex-anchor {
+  color: #930
+}
+
+.cm-s-default span.cm-regex-group {
+  color: #090
+}
+
+.cm-s-default span.cm-regex-charclass, .cm-s-default span.cm-regex-set {
+  color: #D70
+}

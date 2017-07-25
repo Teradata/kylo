@@ -347,7 +347,7 @@ public class PropertyExpressionResolver {
             public String lookup(String variable) {
                 // Resolve configuration variables
                 final String configValue = getConfigurationPropertyValue(property, variable);
-                if (configValue != null && property.getValue() != null && !property.getValue().contains(configValue)) {
+                if (configValue != null && property.getValue() != null && !property.getValue().equalsIgnoreCase(configValue)) {
                     hasConfig[0] = true;
                     isModified[0] = true;
                     //if this is the first time we found the config var, set the template value correctly
