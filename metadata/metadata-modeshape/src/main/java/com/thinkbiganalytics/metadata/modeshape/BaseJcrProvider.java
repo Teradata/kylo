@@ -343,7 +343,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         
         if (count > 0) {
             StringBuilder bldr = startBaseQuery();
-//            appendSort(bldr, pageable);
+            appendSort(bldr, pageable);
             appendOffset(bldr, pageable);
             
             List<T> list = find(bldr.toString());
@@ -406,9 +406,10 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     protected StringBuilder startBaseQuery(String... props) {
+        String alias = getEntityAlias();
         StringBuilder bldr = new StringBuilder("SELECT ");
         if (props.length == 0) {
-            bldr.append("* ");
+            bldr.append(alias).append(".* ");
         } else {
             boolean start = true;
             for (String prop : props) {
@@ -416,10 +417,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                     bldr.append(", ");
                     start = false;
                 }
-                bldr.append(prop);
+                bldr.append(alias).append(".").append(prop);
             }
         }
-        return bldr.append(" FROM [").append(getNodeType(getJcrEntityClass())).append("] ");
+        return bldr.append(" FROM [").append(getNodeType(getJcrEntityClass())).append("] AS ").append(getEntityAlias()).append(" ");
+    }
+    
+    protected String getEntityAlias() {
+        return "e";
     }
 
     protected String sanitizeSystemName(String systemName) {
@@ -446,7 +451,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 }
                 
                 String jcrPropName = deriveJcrPropertyName(order.getProperty());
-                bldr.append(jcrPropName).append(" ").append(order.getDirection()).append(" ");
+                bldr.append(jcrPropName).append(" ").append(order.getDirection()).append(" NULLS LAST ");
             }
         }
     }

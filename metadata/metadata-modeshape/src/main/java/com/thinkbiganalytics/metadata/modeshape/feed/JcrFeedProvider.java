@@ -82,6 +82,7 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.joda.time.DateTime;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
@@ -109,14 +110,20 @@ import javax.jcr.query.QueryResult;
  */
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
     
+    private static final String SORT_FEED_NAME = "feedName";
+    private static final String SORT_STATE = "state";
+    private static final String SORT_CATEGORY_NAME = "category.name";
+    private static final String SORT_TEMPLATE_NAME = "templateName";
+    private static final String SORT_UPDATE_DATE = "updateDate";
+    
     private static final Map<String, String> JCR_PROP_MAP;
     static {
         Map<String, String> map = new HashMap<>();
-        map.put("feedName", "[tba:summary].[tba:systemName]");
-        map.put("state", "[tba:data].[tba:state]");
-        map.put("category.name", "");
-        map.put("templateName", "");
-        map.put("updateDate", "jcr:lastModified");
+        map.put(SORT_FEED_NAME, "s.[tba:systemName]");
+        map.put(SORT_STATE, "d.[tba:state]");
+        map.put(SORT_CATEGORY_NAME, "c.[tba:systemName]");
+        map.put(SORT_TEMPLATE_NAME, "t.[jcr:title]");
+        map.put(SORT_UPDATE_DATE, "e.[jcr:lastModified]");
         JCR_PROP_MAP = Collections.unmodifiableMap(map);
     }
 
@@ -719,6 +726,31 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
                 .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
         });
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#appendSort(java.lang.StringBuilder, org.springframework.data.domain.Pageable)
+     */
+    @Override
+    protected void appendSort(StringBuilder bldr, Pageable pageable) {
+        List<String> sortProps = new ArrayList<>();
+        pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
+        
+        if (sortProps.contains(SORT_FEED_NAME)) {
+            bldr.append("JOIN [tba:feedSummary] AS s ON ISCHILDNODE(s, e) ");
+        } else if (sortProps.contains(SORT_CATEGORY_NAME)) {
+            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
+            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
+        } else if (sortProps.contains(SORT_TEMPLATE_NAME)) {
+            // NOTE: This join is not working - results in an empty result set
+            bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
+            bldr.append("JOIN [tba:feedDetails] AS fd ON ISCHILDNODE(fd, fs) ");
+            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
+        } else if (sortProps.contains(SORT_STATE)) {
+            bldr.append("JOIN [tba:feedData] AS d ON ISCHILDNODE(d, e) ");
+        }
+        
+        super.appendSort(bldr, pageable);
     }
     
     /* (non-Javadoc)

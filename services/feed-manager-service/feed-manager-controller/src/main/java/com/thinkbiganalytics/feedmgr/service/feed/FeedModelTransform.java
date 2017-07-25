@@ -27,11 +27,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-<<<<<<< HEAD
-=======
 import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
->>>>>>> KYLO-498: Used SearchResults for feed list output
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;

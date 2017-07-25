@@ -50,16 +50,19 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
         this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
+//            getFeeds();
         }
 
         this.onOrderChange = function(order) {
-            PaginationDataService.sort(self.pageName, order);
+//            PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName, order);
+            getFeeds();
         };
 
         this.onPaginationChange = function(page, limit) {
             PaginationDataService.currentPage(self.pageName, null, page);
             self.currentPage = page;
+            getFeeds();
         };
 
         /**
@@ -71,6 +74,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             var savedSort = PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
+            getFeeds();
         }
 
         /**
@@ -78,7 +82,8 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
+            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Last Modified': 'updateDate'};
+//            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'updateDate', 'desc');
             TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
@@ -92,55 +97,62 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
         function getFeeds() {
 
-        	var activeTab = TabService.getActiveTab(self.pageName);
-        	var limit = self.paginationData.rowsPerPage;
-        	var start = (limit * activeTab.currentPage) - limit;
+        	var limit = PaginationDataService.rowsPerPage(self.pageName);
+        	var start = (limit * self.currentPage) - limit;
+        	var sort = self.paginationData.sort;
         	
             var successFn = function(response) {
                 self.loading = false;
-                //simplify feedData
-                var simpleFeedData = [];
                 if (response.data) {
-                    var entityAccessControlled = AccessControlService.isEntityAccessControlled();
-                    angular.forEach(response.data, function(feed) {
-                        if (feed.state == 'ENABLED') {
-                            feed.stateIcon = 'check_circle'
-                        }
-                        else {
-                            feed.stateIcon = 'block'
-                        }
-                        simpleFeedData.push({
-                            templateId: feed.templateId,
-                            templateName: feed.templateName,
-                            exportUrl: RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + feed.id,
-                            id: feed.id,
-                            active: feed.active,
-                            state: feed.state,
-                            stateIcon: feed.stateIcon,
-                            feedName: feed.feedName,
-                            category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
-                            updateDate: feed.updateDate,
-                            allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
-                            allowExport: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
-                        })
-                    });
+                	self.feedData = populateFeeds(response.data.data);
+                	PaginationDataService.setTotal(self.pageName,response.data.recordsFiltered);
+                } else {
+                	self.feedData = [];
                 }
-                self.feedData = simpleFeedData;
             }
+            
             var errorFn = function(err) {
                 self.loading = false;
-
             }
             
-            var params = {start: start, limit: limit};
+            var params = {start: start, limit: limit, sort: sort};
             
-            var promise = $http.get(RestUrlService.GET_FEEDS_URL, params);
+            var promise = $http.get(RestUrlService.GET_FEEDS_URL, {params: params});
             promise.then(successFn, errorFn);
             return promise;
 
         }
 
-        getFeeds();
+        function populateFeeds(feeds) {
+            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+        	var simpleFeedData = [];
+            
+            angular.forEach(feeds, function(feed) {
+                if (feed.state == 'ENABLED') {
+                    feed.stateIcon = 'check_circle'
+                } else {
+                    feed.stateIcon = 'block'
+                }
+                simpleFeedData.push({
+                    templateId: feed.templateId,
+                    templateName: feed.templateName,
+                    exportUrl: RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + feed.id,
+                    id: feed.id,
+                    active: feed.active,
+                    state: feed.state,
+                    stateIcon: feed.stateIcon,
+                    feedName: feed.feedName,
+                    category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
+                    updateDate: feed.updateDate,
+                    allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
+                    allowExport: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
+                })
+            });
+            
+            return simpleFeedData;
+        }
+
+//        getFeeds();
 
         // Fetch the allowed actions
         AccessControlService.getUserAllowedActions()
