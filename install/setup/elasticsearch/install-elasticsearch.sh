@@ -44,38 +44,39 @@ then
 
     if [ "$linux_type" == "chkonfig" ]; then
         echo "Executing RPM"
-        rpm -ivh elasticsearch-2.3.0.rpm
+        rpm -ivh elasticsearch-5.5.0.rpm
     elif [ "$linux_type" == "update-rc.d" ]; then
         echo "Executing DEB"
-        dpkg -i elasticsearch-2.3.0.deb
+        dpkg -i elasticsearch-5.5.0.deb
     fi
-    cp $SETUP_FOLDER/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 else
     cd $SETUP_FOLDER/elasticsearch
 
     if [ "$linux_type" == "chkonfig" ]; then
         echo "Downloading RPM"
-        curl -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.3.0/elasticsearch-2.3.0.rpm
+        curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.rpm
         echo "Executing RPM"
-        rpm -ivh elasticsearch-2.3.0.rpm
-        rm elasticsearch-2.3.0.rpm
+        rpm -ivh elasticsearch-5.5.0.rpm
+        rm elasticsearch-5.5.0.rpm
 
         echo "Setup elasticsearch as a service"
         sudo chkconfig --add elasticsearch
 
     elif [ "$linux_type" == "update-rc.d" ]; then
         echo "Downloading DEB"
-        curl -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.0/elasticsearch-2.3.0.deb
+        curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.deb
         echo "Executing DEB"
-        dpkg -i elasticsearch-2.3.0.deb
-        rm elasticsearch-2.3.0.deb
+        dpkg -i elasticsearch-5.5.0.deb
+        rm elasticsearch-5.5.0.deb
 
         echo "Setup elasticsearch as a service"
         update-rc.d elasticsearch defaults 95 10
     fi
 
-    cp $SETUP_FOLDER/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 fi
+
+sed -i "s|#cluster.name: my-application|cluster.name: demo-cluster|" /etc/elasticsearch/elasticsearch.yml
+sed -i "s|#network.host: 192.168.0.1|network.host: localhost|" /etc/elasticsearch/elasticsearch.yml
 
 echo "Starting Elasticsearch"
 sudo service elasticsearch start
