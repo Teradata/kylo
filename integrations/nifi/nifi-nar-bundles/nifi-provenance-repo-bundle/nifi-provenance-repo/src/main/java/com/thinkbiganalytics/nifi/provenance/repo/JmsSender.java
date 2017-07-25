@@ -20,7 +20,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventJmsWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
@@ -74,11 +74,11 @@ public class JmsSender {
         }
     }
 
-    public ProvenanceEventActiveMqWriter getProvenanceEventActiveMqWriter() {
-        ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter = SpringApplicationContext.getInstance().getBean(ProvenanceEventActiveMqWriter.class);
-        if (provenanceEventActiveMqWriter == null) {
-            log.error("!!!!!!!ProvenanceEventActiveMqWriter is NULL !!!!!!");
+    public ProvenanceEventJmsWriter getProvenanceEventActiveMqWriter() {
+        ProvenanceEventJmsWriter provenanceEventJmsWriter = SpringApplicationContext.getInstance().getBean(ProvenanceEventJmsWriter.class);
+        if (provenanceEventJmsWriter == null) {
+            log.error("!!!!!!!ProvenanceEventJmsWriter is NULL !!!!!!");
         }
-        return provenanceEventActiveMqWriter;
+        return provenanceEventJmsWriter;
     }
 }

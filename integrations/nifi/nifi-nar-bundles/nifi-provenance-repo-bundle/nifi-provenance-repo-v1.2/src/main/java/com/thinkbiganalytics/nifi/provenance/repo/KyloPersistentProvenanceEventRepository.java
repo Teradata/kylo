@@ -21,9 +21,6 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 
-import org.apache.activemq.transport.TransportFactory;
-import org.apache.activemq.transport.tcp.TcpTransportFactory;
-import org.apache.activemq.util.FactoryFinder;
 import org.apache.nifi.authorization.Authorizer;
 import org.apache.nifi.events.EventReporter;
 import org.apache.nifi.provenance.IdentifierLookup;
@@ -35,7 +32,6 @@ import org.apache.nifi.provenance.serialization.RecordWriter;
 import org.apache.nifi.util.NiFiProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 
 import java.io.IOException;
 

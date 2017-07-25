@@ -45,7 +45,7 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-activemq-core</artifactId>
+      <artifactId>kylo-jms-service-api</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

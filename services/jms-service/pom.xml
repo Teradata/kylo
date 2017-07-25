@@ -13,10 +13,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>activemq-core</module>
+    <module>jms-service-api</module>
   </modules>
 
-  <dependencies>
-
-  </dependencies>
 </project>

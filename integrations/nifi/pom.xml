@@ -17,7 +17,6 @@
     <module>nifi-provenance-model</module>
     <module>nifi-rest</module>
     <module>nifi-nar-bundles</module>
-    <module>nifi-jms</module>
     <module>nifi-security</module>
     <module>nifi-framework</module>
   </modules>

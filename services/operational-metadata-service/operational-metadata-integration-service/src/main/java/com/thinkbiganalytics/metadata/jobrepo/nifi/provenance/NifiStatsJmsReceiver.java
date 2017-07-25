@@ -20,13 +20,12 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
-import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
+import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
-import com.thinkbiganalytics.nifi.activemq.Queues;
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
+import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
@@ -42,7 +41,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
-
  */
 public class NifiStatsJmsReceiver {
 
@@ -72,7 +70,7 @@ public class NifiStatsJmsReceiver {
 
 
 
-    @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
+    @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
         if (readyToProcess(stats)) {
 

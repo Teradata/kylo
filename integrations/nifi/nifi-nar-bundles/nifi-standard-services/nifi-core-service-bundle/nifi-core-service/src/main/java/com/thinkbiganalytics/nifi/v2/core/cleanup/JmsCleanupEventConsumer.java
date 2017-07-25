@@ -20,11 +20,11 @@ package com.thinkbiganalytics.nifi.v2.core.cleanup;
  * #L%
  */
 
+import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.metadata.event.jms.MetadataQueues;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventConsumer;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener;
-import com.thinkbiganalytics.nifi.v2.core.precondition.JmsPreconditionEventConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      *
      * @param event the cleanup event
      */
-    @JmsListener(destination = MetadataQueues.CLEANUP_TRIGGER, containerFactory = "metadataListenerContainerFactory")
+    @JmsListener(destination = MetadataQueues.CLEANUP_TRIGGER, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
     public void receiveEvent(@Nonnull final FeedCleanupTriggerEvent event) {
         LOG.debug("Received JMS message - topic: {}, message: {}", MetadataQueues.CLEANUP_TRIGGER, event);
         LOG.info("Received feed cleanup trigger event: {}", event);

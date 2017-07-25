@@ -20,13 +20,12 @@ package com.thinkbiganalytics.nifi.provenance.config;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventJmsWriter;
 import com.thinkbiganalytics.nifi.provenance.repo.ConfigurationPropertiesRefresher;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,8 +46,8 @@ public class NifiProvenanceConfig {
 
 
     @Bean
-    public ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter() {
-        return new ProvenanceEventActiveMqWriter();
+    public ProvenanceEventJmsWriter provenanceEventActiveMqWriter() {
+        return new ProvenanceEventJmsWriter();
     }
 
     @Bean
