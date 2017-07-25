@@ -135,6 +135,7 @@ public class JpaAlert implements Alert {
         if(content instanceof EntityIdentificationAlertContent){
             this.entityId = ((EntityIdentificationAlertContent)content).getEntityId();
             this.entityType = ((EntityIdentificationAlertContent)content).getEntityType().name();
+            this.content =  ((EntityIdentificationAlertContent)content).getContent();
         }
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);

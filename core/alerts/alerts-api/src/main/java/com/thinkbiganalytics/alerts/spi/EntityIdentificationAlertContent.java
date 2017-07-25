@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.alerts.spi;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.io.Serializable;
@@ -18,8 +17,6 @@ public class EntityIdentificationAlertContent<C extends Serializable> implements
 
     C content;
 
-    String contentType;
-
     public EntityIdentificationAlertContent(){
 
     }
@@ -27,7 +24,6 @@ public class EntityIdentificationAlertContent<C extends Serializable> implements
         this.entityId = entityId;
         this.entityType = entityType;
         this.content = content;
-        this.contentType = content.getClass().getName();
     }
 
     public String getEntityId() {
