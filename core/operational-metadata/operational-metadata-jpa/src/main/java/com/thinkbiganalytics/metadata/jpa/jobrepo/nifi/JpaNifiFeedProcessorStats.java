@@ -20,8 +20,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  * #L%
  */
 
-import com.querydsl.core.annotations.PropertyType;
-import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -52,22 +50,22 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
-/*
-    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
-    @Column(name = "MIN_EVENT_TIME_MILLIS")
-    @QueryType(PropertyType.COMPARABLE)
-    private DateTime minEventTimeMillis;
+    /*
+        @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+        @Column(name = "MIN_EVENT_TIME_MILLIS")
+        @QueryType(PropertyType.COMPARABLE)
+        private DateTime minEventTimeMillis;
 
-    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
-    @Column(name = "MAX_EVENT_TIME_MILLIS")
-    @QueryType(PropertyType.COMPARABLE)
-    private DateTime maxEventTimeMillis;
+        @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+        @Column(name = "MAX_EVENT_TIME_MILLIS")
+        @QueryType(PropertyType.COMPARABLE)
+        private DateTime maxEventTimeMillis;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name = "COLLECTION_TIME_MILLIS")
-    @QueryType(PropertyType.COMPARABLE)
-    private DateTime collectionTimeMillis;
-*/
+        @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+        @Column(name = "COLLECTION_TIME_MILLIS")
+        @QueryType(PropertyType.COMPARABLE)
+        private DateTime collectionTimeMillis;
+    */
     @Column(name = "COLLECTION_INTERVAL_SEC")
     protected Long collectionIntervalSeconds = null;
 
@@ -121,6 +119,9 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     private DateTime collectionTime;
     @Column(name = "COLLECTION_ID")
     private String collectionId;
+
+    @Column(name = "LATEST_FLOW_FILE_ID")
+    private String latestFlowFileId;
 
     @Transient
     private BigDecimal jobsStartedPerSecond;
@@ -397,6 +398,14 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Override
     public void setCollectionIntervalSeconds(Long collectionIntervalSeconds) {
         this.collectionIntervalSeconds = collectionIntervalSeconds;
+    }
+
+    public String getLatestFlowFileId() {
+        return latestFlowFileId;
+    }
+
+    public void setLatestFlowFileId(String latestFlowFileId) {
+        this.latestFlowFileId = latestFlowFileId;
     }
 
     public BigDecimal getJobsStartedPerSecond() {

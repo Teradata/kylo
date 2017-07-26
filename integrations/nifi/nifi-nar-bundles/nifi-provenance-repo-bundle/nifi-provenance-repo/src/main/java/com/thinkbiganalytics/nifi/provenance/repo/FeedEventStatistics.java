@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -137,6 +138,7 @@ public class FeedEventStatistics implements Serializable {
      */
     protected Map<String, AtomicInteger> feedFlowProcessing = new ConcurrentHashMap<>();
 
+
     /// Skipped detail tracking and failure counts
 
     /**
@@ -150,6 +152,11 @@ public class FeedEventStatistics implements Serializable {
      */
     protected Map<String, AtomicInteger> feedFlowFileFailureCount = new ConcurrentHashMap<>();
 
+
+    /**
+     * Count of the flows running by feed processor
+     */
+    protected Map<String,AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
 
     /**
      * file location to persist this data if NiFi goes Down midstream
@@ -314,6 +321,8 @@ public class FeedEventStatistics implements Serializable {
             //add the flow to active processing
             feedFlowProcessing.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new AtomicInteger(0)).incrementAndGet();
             feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
+
+            feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(),processorId -> new AtomicLong(0)).incrementAndGet();
 
             //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
         }
@@ -510,6 +519,26 @@ public class FeedEventStatistics implements Serializable {
         allFlowFileToFeedFlowFile.remove(eventFlowFileId);
     }
 
+    /**
+     * Return the count of running feed flow files for a given starting processor id
+     * @param feedProcessorId the starting feed processor id
+     * @return the count of running feed flows
+     */
+    public Long getRunningFeedFlows(String feedProcessorId){
+        return feedProcessorRunningFeedFlows.getOrDefault(feedProcessorId, new AtomicLong(0L)).get();
+    }
+
+    public Map<String,Long> getRunningFeedFlows(){
+        return feedProcessorRunningFeedFlows.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
+    }
+
+    private void decrementRunningProcessorFeedFlows(String feedFlowFile){
+        String feedProcessor = feedFlowFileIdToFeedProcessorId.get(feedFlowFile);
+        if(feedProcessor != null){
+            feedProcessorRunningFeedFlows.get(feedProcessor).decrementAndGet();
+        }
+    }
+
     private void clearMapsForFeedFlowFile(String feedFlowFile) {
         if (feedFlowFile != null) {
             detailedTrackingFeedFlowFileId.remove(feedFlowFile);
@@ -517,6 +546,8 @@ public class FeedEventStatistics implements Serializable {
             feedFlowFileEndTime.remove(feedFlowFile);
             feedFlowFileStartTime.remove(feedFlowFile);
             feedFlowProcessing.remove(feedFlowFile);
+
+
             feedFlowFileIdToFeedProcessorId.remove(feedFlowFile);
         }
     }
@@ -583,6 +614,9 @@ public class FeedEventStatistics implements Serializable {
                     //Feed is finished
                     eventsThatCompleteFeedFlow.add(eventId);
                     feedFlowFileEndTime.put(feedFlowFileId, event.getEventTime());
+                    decrementRunningProcessorFeedFlows(feedFlowFileId);
+
+
                 }
 
             }
