@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -278,14 +279,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     
     @Override
     public Collection<FeedMetadata> getFeeds() {
-        return getFeeds(PAGE_ALL).getContent();
+        return getFeeds(PAGE_ALL, null).getContent();
     }
 
-    public Page<FeedMetadata> getFeeds(Pageable pageable) {
+    public Page<FeedMetadata> getFeeds(Pageable pageable, String filter) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Page<Feed> domainFeeds = feedProvider.findPage(pageable);
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable, filter);
             return domainFeeds.map(d -> feedModelTransform.domainToFeedMetadata(d));
         });
 
@@ -302,27 +303,27 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable) {
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter) {
         if (verbose) {
-            return getFeeds(pageable).map(UIFeed.class::cast);
+            return getFeeds(pageable, filter).map(UIFeed.class::cast);
         } else {
-            return getFeedSummaryData(pageable).map(UIFeed.class::cast);
+            return getFeedSummaryData(pageable, filter).map(UIFeed.class::cast);
         }
         
     }
     
     @Override
     public List<FeedSummary> getFeedSummaryData() {
-        return getFeedSummaryData(PAGE_ALL).getContent().stream()
+        return getFeedSummaryData(PAGE_ALL, null).getContent().stream()
                         .map(FeedSummary.class::cast)
                         .collect(Collectors.toList());
     }
 
-    public Page<FeedSummary> getFeedSummaryData(Pageable pageable) {
+    public Page<FeedSummary> getFeedSummaryData(Pageable pageable, String filter) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Page<Feed> domainFeeds = feedProvider.findPage(pageable);
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable, filter);
             return domainFeeds.map(d -> feedModelTransform.domainToFeedSummary(d));
         });
     }

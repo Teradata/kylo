@@ -44,17 +44,16 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
         $scope.$watch(function () {
             return self.filter;
-        }, function (newVal) {
+        }, function (newVal, oldValue) {
             PaginationDataService.filter(self.pageName, newVal)
+            getFeeds();
         })
 
         this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
-//            getFeeds();
         }
 
         this.onOrderChange = function(order) {
-//            PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName, order);
             getFeeds();
         };
@@ -96,10 +95,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         }
 
         function getFeeds() {
-
-        	var limit = PaginationDataService.rowsPerPage(self.pageName);
-        	var start = (limit * self.currentPage) - limit;
-        	var sort = self.paginationData.sort;
         	
             var successFn = function(response) {
                 self.loading = false;
@@ -114,8 +109,12 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             var errorFn = function(err) {
                 self.loading = false;
             }
-            
-            var params = {start: start, limit: limit, sort: sort};
+
+        	var limit = PaginationDataService.rowsPerPage(self.pageName);
+        	var start = (limit * self.currentPage) - limit;
+        	var sort = self.paginationData.sort;
+        	var filter = self.paginationData.filter;
+            var params = {start: start, limit: limit, sort: sort, filter: filter};
             
             var promise = $http.get(RestUrlService.GET_FEEDS_URL, {params: params});
             promise.then(successFn, errorFn);

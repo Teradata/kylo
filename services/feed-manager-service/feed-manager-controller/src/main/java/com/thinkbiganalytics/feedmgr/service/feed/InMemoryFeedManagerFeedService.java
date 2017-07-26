@@ -116,7 +116,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable) {
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter) {
         Collection<? extends UIFeed> allFeeds = getFeeds(verbose);
         List<UIFeed> pagedFeeds = getFeeds(verbose).stream()
                         .skip(Math.max(pageable.getOffset() - 1, 0))

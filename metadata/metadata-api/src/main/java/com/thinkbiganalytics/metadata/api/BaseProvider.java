@@ -36,7 +36,7 @@ public interface BaseProvider<T, PK extends Serializable> {
 
     List<T> findAll();
     
-    Page<T> findPage(Pageable page);
+    Page<T> findPage(Pageable page, String filter);
 
     T update(T t);
 

@@ -376,7 +376,7 @@ public class InMemoryFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#findAll(org.springframework.data.domain.Pageable)
      */
     @Override
-    public Page<Feed> findPage(Pageable page) {
+    public Page<Feed> findPage(Pageable page, String filter) {
         // TODO Auto-generated method stub
         return null;
     }

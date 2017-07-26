@@ -156,9 +156,10 @@ public interface MetadataService {
      *
      * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
      * @param pageable describes the page to be returned
+     * @param filter TODO
      * @return a page of feeds determined by the values of limit and start
      */
-    Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable);
+    Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable, String filter);
     
     /**
      * @return a list of feeds

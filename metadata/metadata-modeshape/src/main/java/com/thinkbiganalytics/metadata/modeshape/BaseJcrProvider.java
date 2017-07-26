@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.google.common.base.Strings;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -338,11 +340,13 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
     
     @Override
-    public Page<T> findPage(Pageable pageable) {
+    public Page<T> findPage(Pageable pageable, String filter) {
         int count = findCount();
         
         if (count > 0) {
             StringBuilder bldr = startBaseQuery();
+            appendJoins(bldr, pageable, filter);
+            appendFilter(bldr, filter);
             appendSort(bldr, pageable);
             appendOffset(bldr, pageable);
             
@@ -433,6 +437,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     protected String sanitizeTitle(String title) {
         return StringEscapeUtils.escapeJava(title);
+    }
+    
+    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
+        // No joins by default.  Subclasses should override to add any joins needed for sorting and/or filtering.
+    }
+
+    protected void appendFilter(StringBuilder bldr, String filter) {
+        // No filtering by default.  Subclasses should override to filter on any appropriate entity fields.
     }
 
     protected void appendOffset(StringBuilder bldr, Pageable pageable) {

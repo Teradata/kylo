@@ -326,8 +326,8 @@ public class FeedManagerMetadataService implements MetadataService {
     }
     
     @Override
-    public Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable) {
-        return feedProvider.getFeeds(verbose, pageable);
+    public Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable, String filter) {
+        return feedProvider.getFeeds(verbose, pageable, filter);
     }
 
     @Override

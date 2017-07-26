@@ -339,12 +339,15 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
     )
     public SearchResult getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
-                             @QueryParam("sort") @DefaultValue("feedName") String sort,
-                             @QueryParam("limit") Integer limit,
-                             @QueryParam("start") @DefaultValue("0") Integer start) {
+                                 @QueryParam("sort") @DefaultValue("feedName") String sort,
+                                 @QueryParam("filter") String filter,
+                                 @QueryParam("limit") Integer limit,
+                                 @QueryParam("start") @DefaultValue("0") Integer start) {
 
         int size = limit != null ? limit : MAX_LIMIT;
-        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, pageRequest(start, limit, sort));
+        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, 
+                                                              pageRequest(start, size, sort), 
+                                                              filter != null ? filter.trim() : null);
         return this.feedModelTransform.toSearchResult(page);   
     }
 

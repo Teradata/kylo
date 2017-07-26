@@ -108,9 +108,10 @@ public interface FeedManagerFeedService {
      *
      * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
      * @param pageable describes the page requested
+     * @param filter TODO
      * @return a list of feed objects
      */
-    Page<UIFeed> getFeeds(boolean verbose, Pageable pageable);
+    Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter);
     
     /**
      * @return a list of feeds
