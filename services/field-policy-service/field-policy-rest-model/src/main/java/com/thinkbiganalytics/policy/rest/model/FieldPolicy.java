@@ -42,6 +42,8 @@ public class FieldPolicy {
 
     private boolean isPartitionColumn;  //default is false
 
+    private String domainTypeId;
+
     public FieldPolicy() {
 
     }
@@ -100,5 +102,13 @@ public class FieldPolicy {
 
     public void setPartitionColumn(boolean isPartitionColumn) {
         this.isPartitionColumn = isPartitionColumn;
+    }
+
+    public String getDomainTypeId() {
+        return domainTypeId;
+    }
+
+    public void setDomainTypeId(String domainTypeId) {
+        this.domainTypeId = domainTypeId;
     }
 }

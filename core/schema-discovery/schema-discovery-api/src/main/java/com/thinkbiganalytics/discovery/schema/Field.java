@@ -146,6 +146,10 @@ public interface Field {
      */
     String asFieldStructure();
 
+    /**
+     * Gets tags assigned to this column.
+     */
+    List<Tag> getTags();
 }
 
 

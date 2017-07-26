@@ -96,6 +96,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
@@ -182,6 +183,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     NifiFlowCache nifiFlowCache;
     @Inject
     private LegacyNifiRestClient nifiRestClient;
+
+    @Inject
+    private FeedHiveTableService feedHiveTableService;
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -580,7 +584,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
             }
 
-
             //if this is the first time saving this feed create a new one
             Feed domainFeed = feedModelTransform.feedToDomain(feed);
 
@@ -605,7 +608,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
             Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
             //sync the feed information to ops manager
-            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName,isStream, timeBetweenBatchJobs));
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName, isStream, timeBetweenBatchJobs));
 
             // Update hadoop security group polices if the groups changed
             if (!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
@@ -613,6 +616,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
                 hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
             }
+
+            // Update Hive metastore
+            try {
+                feedHiveTableService.updateColumnDescriptions(feed);
+            } catch (final DataAccessException e) {
+                log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+            }
+
+            // Update Kylo metastore
             domainFeed = feedProvider.update(domainFeed);
 
             // Return result
@@ -927,7 +939,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                     ? SecurityContextHolder.getContext().getAuthentication()
                                     : null;
         String feedName = feedMetadata != null ? feedMetadata.getCategoryAndFeedName() : "";
-        FeedChange change = new FeedChange(changeType, feedName,feedName, feedId, state);
+        FeedChange change = new FeedChange(changeType, feedName, feedName, feedId, state);
         FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
         metadataEventService.notify(event);
     }

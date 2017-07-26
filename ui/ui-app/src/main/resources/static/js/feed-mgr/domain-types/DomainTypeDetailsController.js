@@ -5,8 +5,14 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
      *
      * @constructor
      */
-    function DomainTypeDetailsController($mdDialog, $mdToast, $scope, $transition$, DomainTypesService, FeedFieldPolicyRuleService, StateService) {
+    function DomainTypeDetailsController($mdDialog, $mdToast, $scope, $transition$, DomainTypesService, FeedFieldPolicyRuleService, FeedService, FeedTagService, StateService) {
         var self = this;
+
+        /**
+         * Standard data types for column definitions
+         * @type {Array.<string>}
+         */
+        self.availableDefinitionDataTypes = FeedService.columnDefinitionDataTypes.slice();
 
         /**
          * Editable section form.
@@ -48,6 +54,12 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
         };
 
         /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        self.feedTagService = FeedTagService;
+
+        /**
          * Indicates if the edit view is displayed.
          * @type {boolean}
          */
@@ -85,6 +97,12 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
          * @type {string}
          */
         self.regexpSyntaxError = "";
+
+        /**
+         * Metadata for the tags.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        self.tagChips = {searchText: null, selectedItem: null};
 
         /**
          * CodeMirror viewer options.
@@ -186,6 +204,15 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
         };
 
         /**
+         * Updates the field when the data type is changed.
+         */
+        self.onDataTypeChange = function () {
+            if (self.editModel.field.derivedDataType !== "decimal") {
+                self.editModel.field.precisionScale = null;
+            }
+        };
+
+        /**
          * Deletes the current domain type.
          */
         self.onDelete = function () {
@@ -219,6 +246,14 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
             self.editModel.$regexpFlags = {};
             for (var i=0; i < self.editModel.regexFlags.length; ++i) {
                 self.editModel.$regexpFlags[self.editModel.regexFlags[i]] = true;
+            }
+
+            // Ensure tags is array
+            if (!angular.isObject(self.editModel.field)) {
+                self.editModel.field = {};
+            }
+            if (!angular.isArray(self.editModel.field.tags)) {
+                self.editModel.field.tags = [];
             }
         };
 
@@ -300,10 +335,20 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
             });
         };
 
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        self.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
+        };
+
         // Load the domain type details
         self.onLoad();
     }
 
-    angular.module(moduleName).controller("DomainTypeDetailsController", ["$mdDialog", "$mdToast", "$scope", "$transition$", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService",
-                                                                          DomainTypeDetailsController]);
+    angular.module(moduleName)
+        .controller("DomainTypeDetailsController", ["$mdDialog", "$mdToast", "$scope", "$transition$", "DomainTypesService", "FeedFieldPolicyRuleService", "FeedService", "FeedTagService",
+                                                    "StateService", DomainTypeDetailsController]);
 });

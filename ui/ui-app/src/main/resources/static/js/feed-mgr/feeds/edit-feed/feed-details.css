@@ -1,0 +1,13 @@
+.kylo-edit-field-button {
+  line-height: normal;
+  margin: 0;
+  min-height: initial;
+  padding: 0;
+}
+.kylo-apply-domain-type-button {
+  font-size: 12px;
+  line-height: normal;
+  margin: 0;
+  min-height: inherit;
+  padding: 0;
+}

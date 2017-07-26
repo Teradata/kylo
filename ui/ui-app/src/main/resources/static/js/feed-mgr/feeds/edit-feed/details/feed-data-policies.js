@@ -40,6 +40,14 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
          * @type {DomainType[]}
          */
         self.availableDomainTypes = [];
+        DomainTypesService.findAll().then(function (domainTypes) {
+            self.availableDomainTypes = domainTypes;
+            // KYLO-251 Remove data type until schema evolution is supported
+            domainTypes.forEach(function (domainType) {
+                domainType.field.derivedDataType = null;
+                domainType.field.precisionScale = null;
+            });
+        });
 
         var checkAll = {
             isChecked: true,
@@ -240,6 +248,11 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             _.each(fieldPolicies, function (policy) {
                 var columnDef = fieldMap[policy.name][0];
                 policy.columnDef = columnDef;
+                if (angular.isString(policy.domainTypeId) && policy.domainTypeId !== "") {
+                    policy.$currentDomainType = _.find(self.availableDomainTypes, function (domainType) {
+                        return policy.domainTypeId === domainType.id;
+                    });
+                }
             });
 
             self.editModel = {};
@@ -333,28 +346,53 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
                 }
             })
                 .then(function () {
-                    if (angular.isDefined(field.domainType)) {
-                        var domainStandardization = _.map(field.domainType.fieldPolicy.standardization, _.property("name"));
-                        var domainValidation = _.map(field.domainType.fieldPolicy.validation, _.property("name"));
+                    if (angular.isObject(field.$currentDomainType)) {
+                        var domainStandardization = _.map(field.$currentDomainType.fieldPolicy.standardization, _.property("name"));
+                        var domainValidation = _.map(field.$currentDomainType.fieldPolicy.validation, _.property("name"));
                         var fieldStandardization = _.map(field.standardization, _.property("name"));
                         var fieldValidation = _.map(field.validation, _.property("name"));
                         if (!angular.equals(domainStandardization, fieldStandardization) || !angular.equals(domainValidation, fieldValidation)) {
-                            delete field.domainType;
-                            delete field.selectedDomainType;
+                            delete field.$currentDomainType;
+                            field.domainTypeId = null;
                         }
                     }
                 });
         };
 
         /**
+         * Gets the domain type with the specified id.
+         *
+         * @param {string} domainTypeId the domain type id
+         * @returns {(DomainType|null)} the domain type
+         */
+        self.getDomainType = function (domainTypeId) {
+            return _.find(self.availableDomainTypes, function (domainType) {
+                return (domainType.id === domainTypeId);
+            });
+        };
+
+        /**
          * Gets the placeholder HTML for the specified domain type option.
          *
-         * @param {DomainType} domainType the domain type
+         * @param {string} domainTypeId the domain type id
          * @returns {string} the placeholder HTML
          */
-        self.getDomainTypePlaceholder = function (domainType) {
+        self.getDomainTypePlaceholder = function (domainTypeId) {
+            // Find domain type from id
+            var domainType = null;
+            if (angular.isString(domainTypeId) && domainTypeId !== "") {
+                domainType = _.find(self.availableDomainTypes, function (domainType) {
+                    return (domainType.id === domainTypeId);
+                });
+            }
+
+            // Generate the HTML
             if (angular.isObject(domainType)) {
-                var element = $("<ng-md-icon/>").attr("icon", domainType.icon).css("fill", domainType.iconColor).css("margin-left", "12px");
+                var element = $("<ng-md-icon/>")
+                    .attr("icon", domainType.icon)
+                    .attr("title", domainType.title)
+                    .css("fill", domainType.iconColor)
+                    .css("margin-left", "12px");
                 return $sce.trustAsHtml($compile(element)($scope)[0].outerHTML);
             } else {
                 return "";
@@ -367,49 +405,124 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
          * @param {FieldPolicy} policy the field policy
          */
         self.onDomainTypeChange = function (policy) {
-            if ((angular.isArray(policy.standardization) && policy.standardization.length > 0) || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
-                var confirm = $mdDialog.confirm({
-                    title: "Overwrite Rules?",
-                    textContent: "This will overwrite the existing standardizers and validators for this field. Are you sure you want to proceed?",
-                    ok: "Proceed",
-                    cancel: "Cancel"
-                });
-                $mdDialog.show(confirm)
+            // Check if removing domain type
+            if (!angular.isString(policy.domainTypeId) || policy.domainTypeId === "") {
+                delete policy.$currentDomainType;
+                return;
+            }
+
+            // Find domain type from id
+            var domainType = _.find(self.availableDomainTypes, function (domainType) {
+                return (domainType.id === policy.domainTypeId);
+            });
+
+            // Apply domain type to field
+            if ((domainType.field.derivedDataType !== null
+                 && (domainType.field.derivedDataType !== policy.columnDef.derivedDataType || domainType.field.precisionScale !== policy.columnDef.precisionScale))
+                || (angular.isArray(policy.standardization) && policy.standardization.length > 0)
+                || (angular.isArray(policy.columnDef.tags) && policy.columnDef.tags.length > 0)
+                || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
+                $mdDialog.show({
+                    controller: "ApplyDomainTypeDialogController",
+                    escapeToClose: false,
+                    fullscreen: true,
+                    parent: angular.element(document.body),
+                    templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-domain-type-dialog.html",
+                    locals: {
+                        domainType: domainType,
+                        field: policy.columnDef
+                    }
+                })
                     .then(function () {
-                        self.setDomainTypeForField(policy, policy.domainType);
+                        FeedService.setDomainTypeForField(policy.columnDef, policy, domainType);
                     }, function () {
-                        policy.domainType = policy.selectedDomainType;
+                        policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
                     });
             } else {
-                self.setDomainTypeForField(policy, policy.domainType);
+                FeedService.setDomainTypeForField(policy.columnDef, policy, domainType);
             }
         };
 
         /**
-         * Sets the domain type of the specified field.
+         * Shows the Edit Field dialog for the specified field.
          *
-         * @param {FieldPolicy} policy the field policy
-         * @param {string} domainType the domain type
+         * @param {Object} field the field to edit
          */
-        self.setDomainTypeForField = function (policy, domainType) {
-            policy.selectedDomainType = domainType;
-            policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
-            policy.validation = angular.copy(domainType.fieldPolicy.validation);
+        self.showEditFieldDialog = function (field) {
+            $mdDialog.show({
+                controller: "EditFieldDialogController",
+                escapeToClose: false,
+                fullscreen: true,
+                parent: angular.element(document.body),
+                templateUrl: "js/feed-mgr/feeds/edit-feed/feed-details-edit-field-dialog.html",
+                locals: {
+                    field: field
+                }
+            }).then(function() {
+                field.$edited = true;
+            });
         };
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
             self.allowEdit = access;
         });
-
-        // Load available domain types
-        DomainTypesService.findAll()
-            .then(function (domainTypes) {
-                self.availableDomainTypes = domainTypes;
-            });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService",
-                                                                         "FeedService", "StateService", "FeedFieldPolicyRuleService", "DomainTypesService", controller]);
-    angular.module(moduleName).directive('thinkbigFeedDataPolicies', directive);
+    /**
+     * Controls the Edit Field dialog.
+     * @constructor
+     */
+    var EditFieldDialogController = function ($scope, $mdDialog, FeedTagService, field) {
+
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        $scope.feedTagService = FeedTagService;
+
+        /**
+         * The field to edit.
+         * @type {Object}
+         */
+        $scope.field = field;
+        if (!angular.isArray(field.tags)) {
+            field.tags = [];
+        }
+
+        /**
+         * Metadata for the tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        $scope.tagChips = {searchText: null, selectedItem: null};
+
+        /**
+         * Closes and rejects the dialog.
+         */
+        $scope.cancel = function () {
+            $mdDialog.cancel();
+        };
+
+        /**
+         * Closes and accepts the dialog.
+         */
+        $scope.hide = function () {
+            $mdDialog.hide();
+        };
+
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        $scope.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
+        };
+    };
+
+    angular.module(moduleName)
+        .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
+                                                   "FeedFieldPolicyRuleService", "DomainTypesService", controller])
+        .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
+        .directive('thinkbigFeedDataPolicies', directive);
 });

@@ -4,6 +4,7 @@
  * @typedef {Object} DomainType
  * @property {string} [id] the unique identifier
  * @property {string} description a human-readable description
+ * @property {Field} field the field
  * @property {FieldPolicy} fieldPolicy the field policy
  * @property {string} icon the name of the icon
  * @property {string} iconColor the icon color
@@ -61,8 +62,11 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             detectDomainType: function (values, domainTypes) {
                 // Remove empty values
                 var valueArray = _.filter(angular.isArray(values) ? values : [values], function (value) {
-                    return (angular.isString(value) && value.length > 0);
+                    return (value !== null && value.length > 0);
                 });
+                if (!_.every(valueArray, angular.isString)) {
+                    return null;
+                }
 
                 // Find matching domain type
                 var matchingDomainType = _.find(domainTypes, function (domainType) {
@@ -116,6 +120,9 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             newDomainType: function () {
                 return {
                     description: "",
+                    field: {
+                        tags: []
+                    },
                     fieldPolicy: {
                         standardization: [],
                         validation: []

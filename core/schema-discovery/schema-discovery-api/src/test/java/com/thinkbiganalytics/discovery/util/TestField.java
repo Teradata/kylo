@@ -22,6 +22,7 @@ package com.thinkbiganalytics.discovery.util;
 
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.Tag;
 
 import java.util.List;
 import java.util.Vector;
@@ -147,6 +148,11 @@ public class TestField implements Field {
 
     @Override
     public Boolean getUpdatedTracker() {
+        return null;
+    }
+
+    @Override
+    public List<Tag> getTags() {
         return null;
     }
 }

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.service.domaintype;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.domaintype.DomainTypeProvider;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
@@ -52,6 +53,7 @@ public class DomainTypeTransform {
         }
 
         domainModel.setDescription(restModel.getDescription());
+        domainModel.setFieldJson(ObjectMapperSerializer.serialize(restModel.getField()));
         domainModel.setFieldPolicyJson(ObjectMapperSerializer.serialize(restModel.getFieldPolicy()));
         domainModel.setIcon(restModel.getIcon());
         domainModel.setIconColor(restModel.getIconColor());
@@ -68,7 +70,8 @@ public class DomainTypeTransform {
     public com.thinkbiganalytics.feedmgr.rest.model.DomainType toRestModel(@Nonnull final com.thinkbiganalytics.metadata.api.domaintype.DomainType domainModel) {
         final com.thinkbiganalytics.feedmgr.rest.model.DomainType restModel = new com.thinkbiganalytics.feedmgr.rest.model.DomainType();
         restModel.setDescription(domainModel.getDescription());
-        restModel.setFieldPolicy(ObjectMapperSerializer.deserialize(domainModel.getFieldPolicyJson(), FieldPolicy.class));
+        restModel.setField((domainModel.getFieldJson() != null) ? ObjectMapperSerializer.deserialize(domainModel.getFieldJson(), DefaultField.class) : null);
+        restModel.setFieldPolicy((domainModel.getFieldPolicyJson() != null) ? ObjectMapperSerializer.deserialize(domainModel.getFieldPolicyJson(), FieldPolicy.class) : null);
         restModel.setIcon(domainModel.getIcon());
         restModel.setIconColor(domainModel.getIconColor());
         restModel.setId(domainModel.getId().toString());

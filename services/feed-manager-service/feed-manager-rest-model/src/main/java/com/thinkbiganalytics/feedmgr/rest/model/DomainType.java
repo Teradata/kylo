@@ -21,6 +21,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 /**
@@ -30,6 +33,8 @@ import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 public class DomainType {
 
     private String description;
+    @JsonDeserialize(as = DefaultField.class)
+    private Field field;
     private FieldPolicy fieldPolicy;
     private String icon;
     private String iconColor;
@@ -44,6 +49,14 @@ public class DomainType {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Field getField() {
+        return field;
+    }
+
+    public void setField(Field field) {
+        this.field = field;
     }
 
     public FieldPolicy getFieldPolicy() {

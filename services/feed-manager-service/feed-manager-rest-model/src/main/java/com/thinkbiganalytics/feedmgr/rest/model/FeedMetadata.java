@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.thinkbiganalytics.discovery.model.DefaultTag;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
@@ -80,6 +82,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     private String description;
 
     @FeedPropertyType(section = FeedPropertySection.PROPERTIES)
+    @JsonDeserialize(contentAs = DefaultTag.class)
     private List<Tag> tags;
 
     @FeedPropertyType(section = FeedPropertySection.PROPERTIES)

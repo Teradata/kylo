@@ -42,6 +42,11 @@ public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements D
     public static String NODE_TYPE = "tba:domainType";
 
     /**
+     * Name of field metadata JCR field
+     */
+    private final static String FIELD_JSON = "tba:fieldJson";
+
+    /**
      * Name of field policy JCR field
      */
     private final static String FIELD_POLICY_JSON = "tba:fieldPolicyJson";
@@ -80,6 +85,16 @@ public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements D
         } catch (final RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
+    }
+
+    @Override
+    public String getFieldJson() {
+        return getProperty(FIELD_JSON, String.class);
+    }
+
+    @Override
+    public void setFieldJson(String value) {
+        setProperty(FIELD_JSON, value);
     }
 
     @Override
