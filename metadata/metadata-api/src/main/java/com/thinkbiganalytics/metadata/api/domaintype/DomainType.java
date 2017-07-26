@@ -43,6 +43,16 @@ public interface DomainType extends Serializable {
     void setDescription(String value);
 
     /**
+     * Gets the field metadata as a JSON document.
+     */
+    String getFieldJson();
+
+    /**
+     * Sets the field metadata as a JSON document.
+     */
+    void setFieldJson(String value);
+
+    /**
      * Gets the field policy as a JSON document.
      */
     String getFieldPolicyJson();

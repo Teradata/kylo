@@ -101,13 +101,14 @@
                       <div flex="30" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
-                          <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
+                          <div class="hint">{{policy.field.dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
                       <div flex="20" class="md-list-item-text " style="padding-left:5px;">
                         <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                          <md-select ng-model="policy.domainType" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
-                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType" aria-label="{{domainType.title}}">
+                          <md-select ng-model="policy.domainTypeId" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
+                            <md-option ng-value=""><em>None</em></md-option>
+                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
                               <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
                             </md-option>
                           </md-select>
@@ -265,12 +266,29 @@
                       </md-select>
                     </md-input-container></span>
         </div>
+
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
             <span>Field Description</span>
             <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
           </div>
         </div>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-xs" flex-gt-xs>
+          <label class="label-small md-container-ignore">Tags</label>
+          <md-chips ng-model="vm.selectedColumn.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+            <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(tagChips.searchText)"
+                             md-item-text="item.name" placeholder="Add a Tag">
+              <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+            </md-autocomplete>
+            <md-chip-template>
+              <span>
+                <strong>{{$chip.name}}</strong>
+              </span>
+            </md-chip-template>
+          </md-chips>
+        </md-input-container>
+
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
                      ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove

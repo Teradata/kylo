@@ -22,11 +22,11 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
@@ -184,7 +184,7 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
-        RegisteredTemplate template= feedMetadata.getRegisteredTemplate();
+        RegisteredTemplate template = feedMetadata.getRegisteredTemplate();
         prepareForSave(feedMetadata);
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
@@ -303,8 +303,7 @@ public class FeedModelTransform {
             userFieldMap.put(category, userFields);
         }
 
-        @SuppressWarnings("unchecked")
-        final Set<UserProperty> userProperties = UserPropertyTransform.toUserProperties(domain.getUserProperties(), userFields);
+        @SuppressWarnings("unchecked") final Set<UserProperty> userProperties = UserPropertyTransform.toUserProperties(domain.getUserProperties(), userFields);
         feed.setUserProperties(userProperties);
 
         // Convert JCR securitygroup to DTO
@@ -329,7 +328,7 @@ public class FeedModelTransform {
         }
 
         //add in access control items
-        accessControlledEntityTransform.applyAccessControlToRestModel(domain,feed);
+        accessControlledEntityTransform.applyAccessControlToRestModel(domain, feed);
 
         return feed;
     }
@@ -345,7 +344,7 @@ public class FeedModelTransform {
         if (category == null) {
             return null;
         }
-        
+
         FeedSummary feedSummary = new FeedSummary();
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());

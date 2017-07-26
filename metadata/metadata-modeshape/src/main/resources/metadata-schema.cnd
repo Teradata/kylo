@@ -344,6 +344,7 @@
  	- tba:password (STRING)
 
 [tba:domainType] > mix:referenceable, mix:title
+	- tba:fieldJson (STRING)
 	- tba:fieldPolicyJson (STRING)
 	- tba:icon (STRING)
 	- tba:iconColor (STRING)

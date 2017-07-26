@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.feedmgr.rest.model;
+package com.thinkbiganalytics.discovery.model;
 
 /*-
  * #%L
- * thinkbig-feed-manager-rest-model
+ * kylo-schema-discovery-model2
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,19 +21,20 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.discovery.schema.Tag;
 
 /**
+ * A basic {@link Tag}.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Tag {
+public class DefaultTag implements Tag {
 
     private String name;
 
-    public Tag() {
-
+    public DefaultTag() {
     }
 
-    public Tag(String name) {
+    public DefaultTag(String name) {
         this.name = name;
     }
 

@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
@@ -254,8 +255,16 @@ public class HiveService {
             throw dae;
         }
         return queryResult;
-
     }
 
-
+    /**
+     * Executes a single SQL update operation (such as insert, update, or delete).
+     *
+     * @param query the SQL to execute
+     * @return the number of rows affected
+     * @throws DataAccessException if there is any problem
+     */
+    public int update(@Nonnull final String query) {
+        return jdbcTemplate.update(query);
+    }
 }

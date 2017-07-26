@@ -22,7 +22,7 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
         };
     };
 
-    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService) {
+    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService, FeedTagService) {
         var self = this;
 
         this.isValid = true;
@@ -35,6 +35,9 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
          * @type {DomainType[]}
          */
         self.availableDomainTypes = [];
+        DomainTypesService.findAll().then(function (domainTypes) {
+            self.availableDomainTypes = domainTypes;
+        });
 
         var checkAll = {
             isChecked: true,
@@ -138,6 +141,18 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
          */
         this.dataProcessingForm = {};
 
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        self.feedTagService = FeedTagService;
+
+        /**
+         * Metadata for the selected column tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        self.tagChips = {searchText: null, selectedItem: null};
+
         this.expandFieldPoliciesPanel = function () {
             $mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance) {
                 instance.expand();
@@ -166,13 +181,6 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                 self.profileCheckAll.setup();
 
                 self.indexCheckAll.setup();
-
-                // Match fields to a domain type
-                self.model.table.fieldPolicies
-                    .filter(function (policy) {
-                        return (angular.isUndefined(policy.domainTypeId) && policy.field.derivedDataType === "string");
-                    })
-                    .forEach(self.detectDomainTypeForPolicy);
             }
         }
 
@@ -247,6 +255,11 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                     angular.element('#selectedColumnPanel2').triggerHandler('stickIt');
                 })
             }
+
+            // Ensure tags is an array
+            if (!angular.isArray(selectedColumn.tags)) {
+                selectedColumn.tags = [];
+            }
         };
 
         this.showFieldRuleDialog = function (field) {
@@ -262,14 +275,14 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                 }
             })
                 .then(function () {
-                    if (angular.isDefined(field.domainType)) {
-                        var domainStandardization = _.map(field.domainType.fieldPolicy.standardization, _.property("name"));
-                        var domainValidation = _.map(field.domainType.fieldPolicy.validation, _.property("name"));
+                    if (angular.isObject(field.$currentDomainType)) {
+                        var domainStandardization = _.map(field.$currentDomainType.fieldPolicy.standardization, _.property("name"));
+                        var domainValidation = _.map(field.$currentDomainType.fieldPolicy.validation, _.property("name"));
                         var fieldStandardization = _.map(field.standardization, _.property("name"));
                         var fieldValidation = _.map(field.validation, _.property("name"));
                         if (!angular.equals(domainStandardization, fieldStandardization) || !angular.equals(domainValidation, fieldValidation)) {
-                            delete field.domainType;
-                            delete field.selectedDomainType;
+                            delete field.$currentDomainType;
+                            field.domainTypeId = null;
                         }
                     }
                 });
@@ -281,60 +294,60 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
          * @param {FieldPolicy} policy the field policy
          */
         self.onDomainTypeChange = function (policy) {
-            if ((angular.isArray(policy.standardization) && policy.standardization.length > 0) || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
-                var confirm = $mdDialog.confirm({
-                    title: "Overwrite Rules?",
-                    textContent: "This will overwrite the existing standardizers and validators for this field. Are you sure you want to proceed?",
-                    ok: "Proceed",
-                    cancel: "Cancel"
-                });
-                $mdDialog.show(confirm)
+            // Check if removing domain type
+            if (!angular.isString(policy.domainTypeId) || policy.domainTypeId === "") {
+                delete policy.$currentDomainType;
+                return;
+            }
+
+            // Find domain type from id
+            var domainType = _.find(self.availableDomainTypes, function (domainType) {
+                return (domainType.id === policy.domainTypeId);
+            });
+
+            // Apply domain type to field
+            if ((domainType.field.derivedDataType !== null && (domainType.field.derivedDataType !== policy.field.derivedDataType || domainType.field.precisionScale !== policy.field.precisionScale))
+                || (angular.isArray(policy.standardization) && policy.standardization.length > 0)
+                || (angular.isArray(policy.field.tags) && policy.field.tags.length > 0)
+                || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
+                $mdDialog.show({
+                    controller: "ApplyDomainTypeDialogController",
+                    escapeToClose: false,
+                    fullscreen: true,
+                    parent: angular.element(document.body),
+                    templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-domain-type-dialog.html",
+                    locals: {
+                        domainType: domainType,
+                        field: policy.field
+                    }
+                })
                     .then(function () {
-                        self.setDomainTypeForField(policy, policy.domainType);
+                        FeedService.setDomainTypeForField(policy.field, policy, domainType);
                     }, function () {
-                        policy.domainType = policy.selectedDomainType;
+                        policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
                     });
             } else {
-                self.setDomainTypeForField(policy, policy.domainType);
+                FeedService.setDomainTypeForField(policy.field, policy, domainType);
             }
         };
 
         /**
-         * Sets the domain type of the specified field.
-         *
-         * @param {FieldPolicy} policy the field policy
-         * @param {string} domainType the domain type
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
          */
-        self.setDomainTypeForField = function (policy, domainType) {
-            policy.selectedDomainType = domainType;
-            policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
-            policy.validation = angular.copy(domainType.fieldPolicy.validation);
-        };
-
-        /**
-         * Detects an appropriate domain type for the field.
-         *
-         * @param {FieldPolicy} policy the field policy
-         */
-        self.detectDomainTypeForPolicy = function (policy) {
-            var domainType = DomainTypesService.detectDomainType(policy.field.sampleValues, self.availableDomainTypes);
-            if (domainType !== null) {
-                policy.domainType = domainType;
-                self.setDomainTypeForField(policy, domainType);
-            }
+        self.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
         };
 
         // Initialize UI
         this.onTableFormatChange();
-        DomainTypesService.findAll()
-            .then(function (domainTypes) {
-                self.availableDomainTypes = domainTypes;
-            });
     };
 
-    angular.module(moduleName).controller('DefineFeedDataProcessingController', ["$scope", "$http", "$mdDialog", "$mdExpansionPanel", "RestUrlService", "FeedService", "BroadcastService",
-                                                                                 "StepperService", "Utils", "DomainTypesService", controller]);
-    angular.module(moduleName).directive('thinkbigDefineFeedDataProcessing', directive);
+    angular.module(moduleName)
+        .controller('DefineFeedDataProcessingController', ["$scope", "$http", "$mdDialog", "$mdExpansionPanel", "RestUrlService", "FeedService", "BroadcastService", "StepperService", "Utils",
+                                                           "DomainTypesService", "FeedTagService", controller])
+        .directive('thinkbigDefineFeedDataProcessing', directive);
 });
 
 
