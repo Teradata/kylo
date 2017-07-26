@@ -30,6 +30,7 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -120,6 +121,7 @@ public class FeedStatisticsManager {
             eventsToSend = feedStatisticsMap.values().stream().flatMap(stats -> stats.getEventsToSend().stream()).collect(Collectors.toList());
 
             final String collectionId = UUID.randomUUID().toString();
+            Map<String,Long> runningFlowsCount = new HashMap<>();
 
             for (FeedStatistics feedStatistics : feedStatisticsMap.values()) {
                 if (feedStatistics.hasStats()) {
@@ -145,7 +147,7 @@ public class FeedStatisticsManager {
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values());
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(),FeedEventStatistics.getInstance().getRunningFeedFlows());
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
             }
 

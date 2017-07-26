@@ -47,6 +47,8 @@ public class BaseStatistics implements Serializable {
 
     protected String clusterNodeAddress;
 
+    protected String latestFlowFileId;
+
     public BaseStatistics(){
 
     }
@@ -70,6 +72,7 @@ public class BaseStatistics implements Serializable {
         this.clusterNodeId = other.clusterNodeId;
         this.clusterNodeAddress = other.clusterNodeAddress;
         this.sourceConnectionIdentifier = other.sourceConnectionIdentifier;
+        this.latestFlowFileId = other.latestFlowFileId;
     }
 
     public Long getTime() {
@@ -257,6 +260,14 @@ public class BaseStatistics implements Serializable {
         this.sourceConnectionIdentifier = sourceConnectionIdentifier;
     }
 
+    public String getLatestFlowFileId() {
+        return latestFlowFileId;
+    }
+
+    public void setLatestFlowFileId(String latestFlowFileId) {
+        this.latestFlowFileId = latestFlowFileId;
+    }
+
     public void clear() {
         this.time = null;
         this.bytesIn = 0L;
@@ -275,5 +286,6 @@ public class BaseStatistics implements Serializable {
         this.clusterNodeId = null;
         this.clusterNodeAddress = null;
         this.sourceConnectionIdentifier = null;
+        this.latestFlowFileId = null;
     }
 }

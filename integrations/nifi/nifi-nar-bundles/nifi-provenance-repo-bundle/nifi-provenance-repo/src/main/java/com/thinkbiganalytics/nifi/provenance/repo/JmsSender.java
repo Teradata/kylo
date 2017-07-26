@@ -32,7 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Send data to Ops Manager
@@ -43,11 +45,15 @@ public class JmsSender {
 
     List<ProvenanceEventRecordDTO> eventsToSend = null;
     List<AggregatedFeedProcessorStatistics> statsToSend = null;
+    Map<String,Long> processorIdRunningFlows = new HashMap<>();
 
-    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend) {
+    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend, Map<String,Long> processorIdRunningFlows) {
         this.eventsToSend = eventsToSend;
         if (statsToSend != null) {
             this.statsToSend = new ArrayList<>(statsToSend);
+        }
+        if(processorIdRunningFlows != null){
+            this.processorIdRunningFlows = processorIdRunningFlows;
         }
     }
 
@@ -62,6 +68,7 @@ public class JmsSender {
 
             if (statsToSend != null && !statsToSend.isEmpty()) {
                 AggregatedFeedProcessorStatisticsHolder statsHolder = new AggregatedFeedProcessorStatisticsHolder();
+                statsHolder.setProcessorIdRunningFlows(processorIdRunningFlows);
                 statsHolder.setCollectionId(statsToSend.get(0).getCollectionId());
                 statsHolder.setFeedStatistics(statsToSend);
                 getProvenanceEventActiveMqWriter().writeStats(statsHolder);

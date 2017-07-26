@@ -47,6 +47,7 @@ public class FeedProcessorStatisticsAggregator {
 
 
     public void add(GroupedStats stats, ProvenanceEventRecord event, Long eventId) {
+        stats.setLatestFlowFileId(event.getFlowFileUuid());
         stats.addTotalCount(1L);
         stats.addBytesIn(event.getPreviousFileSize() != null ? event.getPreviousFileSize() : 0L);
         stats.addBytesOut(event.getFileSize());
@@ -109,6 +110,9 @@ public class FeedProcessorStatisticsAggregator {
         stats1.addJobDuration(stats2.getJobDuration());
         stats1.addJobsFailed(stats2.getJobsFailed());
         stats1.addSuccessfulJobDuration(stats2.getSuccessfulJobDuration());
+        if(stats1.getLatestFlowFileId() == null && stats2.getLatestFlowFileId() != null){
+            stats1.setLatestFlowFileId(stats2.getLatestFlowFileId());
+        }
     }
 
 
