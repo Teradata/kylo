@@ -47,13 +47,26 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +82,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -105,6 +119,12 @@ public class MetadataClient {
     private static final Function<UriComponentsBuilder, UriComponentsBuilder> ALL_FEEDS = new TargetFeedCriteria();
 
     private final URI base;
+
+    /**
+     * The base uri to access anything under the /proxy folder for Kylo
+     */
+    private final URI proxyBase;
+
     private final RestTemplate template;
     private String category;
 
@@ -154,12 +174,16 @@ public class MetadataClient {
     public MetadataClient(URI base, CredentialsProvider credsProvider, SSLContext sslContext) {
         super();
         this.base = base;
-
+        this.proxyBase = URI.create(this.base.getScheme()+"://"+this.base.getHost()+"/proxy");
         if (credsProvider != null) {
-            HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
+            HttpClient httpClient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
                 .setSSLContext(sslContext != null ? sslContext : null)
                 .build();
-            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth(new HttpHost(base.getHost(), 
+                                                                                                                   base.getPort(), 
+                                                                                                                   base.getScheme()), 
+                                                                                                      httpClient);
             this.template = new RestTemplate(reqFactory);
         } else {
             this.template = new RestTemplate();
@@ -182,6 +206,11 @@ public class MetadataClient {
         return credsProvider;
     }
 
+//    public static CredentialsProvider createBasicCredentialProvider(String username, String password) {
+//        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+//        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+//    }
+    
     /**
      * Converts one or more strings to a path, compatible with the OS representation of a path
      *
@@ -366,6 +395,7 @@ public class MetadataClient {
         }
     }
 
+
     /**
      * get the feed matching the id given
      *
@@ -379,12 +409,13 @@ public class MetadataClient {
     /**
      * get the feed matching the named feed in the category given
      *
-     * @param categoryName the name of the category
-     * @param feedName     the name of the feed
+     * @param category the name of the category
+     * @param feed     the name of the feed
      */
-    public Feed getFeed(String categoryName, String feedName) {
-        return get(path("feed"), Feed.class);
+    public Feed getFeed(String category,String feed) {
+        return get(path("feeds","name",category+"."+feed), Feed.class);
     }
+
 
     /**
      * get the feed
@@ -624,7 +655,20 @@ public class MetadataClient {
      */
     public Long findNiFiMaxEventId(String clusterNodeId) {
         log.info("findNifiMaxEventId ", clusterNodeId);
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
         return get(path("nifi-provenance", "max-event-id"), new MaxNifiEventParameters(clusterNodeId), Long.class);
+    }
+
+    /**
+     * reset the max event for NiFi
+     *
+     * @param clusterNodeId the NifI cluster to query
+     * @return the id of the most recent event
+     */
+    public Long resetNiFiMaxEventId(String clusterNodeId) {
+        log.info("resetMaxEventId ", clusterNodeId);
+        clusterNodeId = org.apache.commons.lang3.StringUtils.isBlank(clusterNodeId)?"NODE" : clusterNodeId;
+        return post(path("nifi-provenance", "reset-max-event-id",clusterNodeId), null, Long.class);
     }
 
     /**
@@ -636,17 +680,52 @@ public class MetadataClient {
         return get(path("nifi-provenance", "nifi-flow-cache", "available"), Boolean.class);
     }
 
+    /**
+     * Gets the data source with the specified id.
+     *
+     * @param id the data source id
+     * @return the data source, if found
+     * @throws RestClientException if the data source is unavailable
+     */
+    public Optional<Datasource> getDatasource(@Nonnull final String id) {
+        try {
+            return Optional.of(get(path("datasource", id),
+                                   uri -> (uri != null) ? uri.queryParam("sensitive", true) : null,
+                                   Datasource.class));
+        } catch (final HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
+    }
+
     private UriComponentsBuilder base(Path path) {
         return UriComponentsBuilder.fromUri(this.base).path("/").path(path.toString());
+    }
+
+    private UriComponentsBuilder baseProxy(Path path) {
+        return UriComponentsBuilder.fromUri(this.proxyBase).path("/").path(path.toString());
     }
 
     private <R> R get(Path path, Class<R> resultType) {
         return get(path, null, resultType);
     }
 
+    private <R> R getProxy(Path path, Class<R> resultType) {
+        return getProxy(path, null, resultType);
+    }
+
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
         return this.template.getForObject(
             (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
+            resultType);
+    }
+
+    private <R> R getProxy(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
+        return this.template.getForObject(
+            (filterFunct != null ? filterFunct.apply(baseProxy(path)) : baseProxy(path)).build().toUri(),
             resultType);
     }
 
@@ -705,6 +784,34 @@ public class MetadataClient {
             return resp.getBody();
         } else {
             throw new WebResponseException(ResponseEntity.status(resp.getStatusCode()).headers(resp.getHeaders()).build());
+        }
+    }
+    
+    
+    /**
+     * Preemptively uses BASIC auth rather than negotiating the auth scheme.
+     */
+    private class HttpComponentsClientHttpRequestFactoryBasicAuth extends HttpComponentsClientHttpRequestFactory {
+
+        private HttpHost host;
+
+        public HttpComponentsClientHttpRequestFactoryBasicAuth(HttpHost host, HttpClient httpClient) {
+            super(httpClient);
+            this.host = host;
+        }
+
+        protected HttpContext createHttpContext(HttpMethod httpMethod, URI uri) {
+            return createHttpContext();
+        }
+
+        private HttpContext createHttpContext() {
+            AuthCache authCache = new BasicAuthCache();
+            BasicScheme basicAuth = new BasicScheme();
+            authCache.put(host, basicAuth);
+
+            BasicHttpContext localcontext = new BasicHttpContext();
+            localcontext.setAttribute(HttpClientContext.AUTH_CACHE, authCache);
+            return localcontext;
         }
     }
 
@@ -1145,6 +1252,7 @@ public class MetadataClient {
         }
 
     }
+
 
 
 }

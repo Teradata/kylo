@@ -37,6 +37,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.slf4j.Logger;
@@ -76,8 +77,9 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     public static final String USR_PREFIX = "usr";
     private static final Logger log = LoggerFactory.getLogger(JcrMetadataAccess.class);
-    private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
-        protected Session initialValue() {
+    
+    private static final ThreadLocal<ActiveSession> activeSession = new ThreadLocal<ActiveSession>() {
+        protected ActiveSession initialValue() {
             return null;
         }
     };
@@ -119,10 +121,20 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
     public static Session getActiveSession() {
-        Session active = activeSession.get();
+        ActiveSession active = activeSession.get();
 
         if (active != null) {
-            return active;
+            return active.session;
+        } else {
+            throw new NoActiveSessionException();
+        }
+    }
+    
+    public static UsernamePrincipal getActiveUser() {
+        ActiveSession active = activeSession.get();
+
+        if (active != null) {
+            return active.userPrincipal;
         } else {
             throw new NoActiveSessionException();
         }
@@ -214,23 +226,21 @@ public class JcrMetadataAccess implements MetadataAccess {
 
 
     public <R> R commit(Credentials creds, MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd) {
-        Session session = activeSession.get();
+        ActiveSession active = activeSession.get();
 
-        if (session == null) {
+        if (active == null) {
             try {
-                activeSession.set(this.repository.login(creds));
+                activeSession.set(new ActiveSession(this.repository.login(creds)));
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
 
                 try {
                     txnMgr.begin();
 
-                    R result = cmd.execute();
+                    R result = execute(creds, cmd);
 
-                    activeSession.get().save();
-
+                    activeSession.get().session.save();
                     checkinNodes();
-
                     txnMgr.commit();
                     performPostTransactionActions(true);
                     return result;
@@ -251,12 +261,12 @@ public class JcrMetadataAccess implements MetadataAccess {
                         }
                     }
 
-                    activeSession.get().refresh(false);
+                    activeSession.get().session.refresh(false);
                     performPostTransactionActions(false);
 
                     throw e;
                 } finally {
-                    activeSession.get().logout();
+                    activeSession.get().session.logout();
                     activeSession.remove();
                     postTransactionActions.remove();
                     checkedOutNodes.remove();
@@ -305,18 +315,18 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
     public <R> R read(Credentials creds, MetadataCommand<R> cmd) {
-        Session session = activeSession.get();
+        ActiveSession session = activeSession.get();
 
         if (session == null) {
             try {
-                activeSession.set(this.repository.login(creds));
+                activeSession.set(new ActiveSession(this.repository.login(creds)));
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
 
                 try {
                     txnMgr.begin();
 
-                    return cmd.execute();
+                    return execute(creds, cmd);
                 } finally {
                     try {
                         txnMgr.rollback();
@@ -324,8 +334,8 @@ public class JcrMetadataAccess implements MetadataAccess {
                         log.error("Failed to rollback transaction", e);
                     }
 
-                    activeSession.get().refresh(false);
-                    activeSession.get().logout();
+                    activeSession.get().session.refresh(false);
+                    activeSession.get().session.logout();
                     activeSession.remove();
                 }
             } catch (SystemException | NotSupportedException | RepositoryException e) {
@@ -346,6 +356,28 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     }
 
+
+    /**
+     * Execute the command in the context of the given credentials.
+     */
+    private <R> R execute(Credentials creds, MetadataCommand<R> cmd) throws Exception {
+        if (creds instanceof OverrideCredentials) {
+            // If using override credentials first replace any existing Authentication (might be null) with
+            // the Authentication built from the overriding principals.
+            OverrideCredentials overrideCreds = (OverrideCredentials) creds;
+            Authentication initialAuth = SecurityContextHolder.getContext().getAuthentication();
+            
+            SecurityContextHolder.getContext().setAuthentication(overrideCreds.getAuthentication());
+            try {
+                return cmd.execute();
+            } finally {
+                // Set the current Authentication back to what it was originally.
+                SecurityContextHolder.getContext().setAuthentication(initialAuth);
+            }
+        } else {
+            return cmd.execute();
+        }
+    }
 
     /**
      * Invokes all of the post-commit consumers; passing the transaction success flag to each.
@@ -373,4 +405,16 @@ public class JcrMetadataAccess implements MetadataAccess {
 
         return creds;
     }
+    
+    
+    private static class ActiveSession {
+        private final Session session;
+        private final UsernamePrincipal userPrincipal;
+        
+        public ActiveSession(Session sess) {
+            this.session = sess;
+            this.userPrincipal = new UsernamePrincipal(sess.getUserID());
+        }
+    }
+
 }

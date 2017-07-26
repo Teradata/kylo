@@ -412,9 +412,8 @@ public class TableMergeSyncSupport implements Serializable {
         final String groupBySQL = StringUtils.join(distinctSelectFields, ",") + "," + spec.toPartitionSelectSQL();
         final String selectSQL = StringUtils.join(selectFields, ",");
         final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
-
         final StringBuilder sb = new StringBuilder();
-        sb.append("insert into table ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ")
+        sb.append("insert overwrite table ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ")
             .append(spec.toDynamicPartitionSpec())
             .append("select ").append(selectAggregateSQL).append(" from (")
             .append(" select ").append(selectSQL).append(",").append(spec.toDynamicSelectSQLSpec())
@@ -427,10 +426,13 @@ public class TableMergeSyncSupport implements Serializable {
         if (targetPartitionWhereClause != null) {
             sb.append(" where (").append(targetPartitionWhereClause).append(")");
         }
-        sb.append(") t group by " + groupBySQL).append(" having min(processing_dttm) = ").append(HiveUtils.quoteString(feedPartitionValue));
+        sb.append(") t group by " + groupBySQL);
 
         return sb.toString();
     }
+
+
+
 
     /**
      * Generates a merge query for inserting overwriting from a source table into the target table appending to any partitions
@@ -704,7 +706,7 @@ public class TableMergeSyncSupport implements Serializable {
     protected void doExecuteSQL(String sql) {
 
         try (final Statement st = conn.createStatement()) {
-            logger.info("Executing doMerge batch sql {}", sql);
+            logger.info("Executing doExecuteSQL batch sql {}", sql);
             st.execute(sql);
         } catch (SQLException e) {
             logger.error("Failed to execute {} with error {}", sql, e);

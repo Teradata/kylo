@@ -1,24 +1,6 @@
-<!--
-  #%L
-  thinkbig-ui-feed-manager
-  %%
-  Copyright (C) 2017 ThinkBig Analytics
-  %%
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-  
-      http://www.apache.org/licenses/LICENSE-2.0
-  
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  #L%
-  -->
 <label ng-class="{'label-small md-container-ignore':property.renderWithCodeMirror || property.renderType =='radio'}"
        ng-if="property.renderType == null || !( property.renderType == 'checkbox-true-false' || property.renderType == 'checkbox-custom')">{{property.key}}</label>
+
 
 <div ng-if="property.renderWithCodeMirror && property.renderType != 'text/x-hive' " ng-model="property.value" ui-codemirror="{
         lineWrapping : true,
@@ -35,40 +17,44 @@
                      allow-execute-query="false"></thinkbig-hql-editor>
 
 <div ng-if="!property.renderWithCodeMirror && !property.isLoading">
-    <input ng-model="property.value" ng-if="property.renderType == 'text' || property.renderType == null" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input name="{{property.formKey}}" ng-model="property.value" ng-if="!property.sensitive && (property.renderType == 'text' || property.renderType == null)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
 
-    <input ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
+    <input name="{{property.formKey}}" ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)"/>
 
-    <textarea ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)">
+    <input name="{{property.formKey}}" ng-model="property.value" type="password" ng-if="property.renderType == 'password' || (property.renderType == 'text' && property.sensitive)" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" />
+
+    <textarea name="{{property.formKey}}" ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-required="property.required" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)">
         {{property.value}}
     </textarea>
 
-    <md-checkbox ng-if="property.renderType == 'checkbox-true-false'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
+    <md-checkbox name="{{property.formKey}}" ng-if="property.renderType == 'checkbox-true-false'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
                  ng-true-value="'true'" ng-false-value="'false'">{{property.key}}
     </md-checkbox>
 
-    <md-checkbox ng-if="property.renderType == 'checkbox-custom'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
+    <md-checkbox name="{{property.formKey}}" ng-if="property.renderType == 'checkbox-custom'" ng-disabled="propertyDisabled" ng-change="onPropertyChanged(property)" ng-model="property.value" aria-label="property.key"
                  ng-true-value="'{{property.renderOptions['trueValue']}}'" ng-false-value="'{{property.renderOptions['falseValue']}}'">{{property.key}}
     </md-checkbox>
 
     <md-radio-group ng-model="property.value" ng-if="property.renderType == 'radio' && property.propertyDescriptor.allowableValues != null " layout="row" layout-wrap="true">
-        <md-radio-button ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}" ng-disabled="propertyDisabled">
+        <md-radio-button name="{{property.formKey}}" ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}" ng-disabled="propertyDisabled">
             {{allowableValue.displayName}}
         </md-radio-button>
     </md-radio-group>
 
-  <md-select ng-model="property.value"
+  <md-select name="{{property.formKey}}" ng-model="property.value"
              ng-if="property.renderType == 'select' && ((property.selectOptions != null && property.selectOptions.length >0) && ( property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0))"
              ng-disabled="propertyDisabled"
-             ng-change="onPropertyChanged(property)">
+             ng-change="onPropertyChanged(property)"
+             ng-required="property.required">
     <md-option ng-repeat="allowableValue in property.selectOptions" value="{{allowableValue}}">
       {{allowableValue}}
     </md-option>
   </md-select>
 
-  <md-select ng-model="property.value" ng-if="property.renderType == 'select' &&  (property.propertyDescriptor.allowableValues != null && property.propertyDescriptor.allowableValues.length > 0)"
+  <md-select name="{{property.formKey}}" ng-model="property.value" ng-if="property.renderType == 'select' &&  (property.propertyDescriptor.allowableValues != null && property.propertyDescriptor.allowableValues.length > 0)"
              ng-disabled="propertyDisabled"
-             ng-change="onPropertyChanged(property)">
+             ng-change="onPropertyChanged(property)"
+             ng-required="property.required">
         <md-option ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}">
             {{allowableValue.displayName}}
         </md-option>
@@ -79,4 +65,12 @@
     <md-progress-circular md-diameter="20px" md-mode="indeterminate"></md-progress-circular>
 </div>
 
+<div ng-messages="theForm[property.formKey].$error" md-auto-hide="false">
+  <div ng-message="required">This field is required.</div>
+</div>
+
 <div class="hint">{{property.propertyDescriptor.description}}</div>
+
+<md-tooltip md-direction="left" ng-if="property.sensitive">
+  This is a sensitive property.
+</md-tooltip>

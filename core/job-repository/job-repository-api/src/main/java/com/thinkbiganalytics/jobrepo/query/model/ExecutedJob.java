@@ -243,4 +243,10 @@ public interface ExecutedJob {
      * @return a user friendly status of this job
      */
     String getDisplayStatus();
+
+    /**
+     *
+     * @return true if this is a stream job, false if not
+     */
+    boolean isStream();
 }

@@ -23,7 +23,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         return {
             restrict: "EA",
             bindToController: {
-                stepIndex: '@'
+                canRemoveFields: "@",
+                stepIndex: '@',
+                tableLocked: "@",
+                typeLocked: "@"
             },
             scope: {},
             require: ['thinkbigDefineFeedTable', '^thinkbigStepper'],
@@ -38,9 +41,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
 
         };
-    }
+    };
 
-    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils) {
+    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils, FeedTagService,
+                               DomainTypesService) {
 
         this.defineFeedTableForm = {};
         var self = this;
@@ -50,22 +54,39 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.isValid = false;
         this.sampleFile = null;
         this.tableCreateMethods = [{type: 'MANUAL', name: 'Manual'}, {type: 'SAMPLE_FILE', name: 'Sample File'}];
-        this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
-        this.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
+        this.availableDefinitionDataTypes = FeedService.columnDefinitionDataTypes.slice();
         this.schemaParser = {};
         this.useUnderscoreInsteadOfSpaces = true;
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
 
-        this.tableLocked = false
-        this.dataTypeLocked = false;
-        this.canRemoveFields = true;
         this.showMethodPanel = true;
         this.showTablePanel = true;
         this.uploadBtnDisabled = false;
         this.partitionFormulas = [];
 
         this.feedFormat = '';
+
+        /**
+         * Provides a list of available tags.
+         * @type {FeedTagService}
+         */
+        self.feedTagService = FeedTagService;
+
+        /**
+         * Metadata for the selected column tag.
+         * @type {{searchText: null, selectedItem: null}}
+         */
+        self.tagChips = {searchText: null, selectedItem: null};
+
+        /**
+         * List of available domain types.
+         * @type {DomainType[]}
+         */
+        self.availableDomainTypes = [];
+        DomainTypesService.findAll().then(function (domainTypes) {
+            self.availableDomainTypes = domainTypes;
+        });
 
         $scope.$evalAsync(function() {
             self.calcTableState();
@@ -84,12 +105,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.calcTableState = function() {
-            self.tableLocked = (self.model.dataTransformationFeed);
-            self.dataTypeLocked = (self.model.dataTransformationFeed);
-            self.canRemoveFields = (!self.model.dataTransformationFeed);
+            self.tableLocked = angular.isDefined(self.tableLocked) && (self.tableLocked === true || self.tableLocked === "true");
+            self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
+            self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
-        }
+        };
+        this.calcTableState();
 
         /*
         Create columns for tracking changes between original source and the target table schema
@@ -118,10 +140,20 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, precisionScale: columnDef.precisionScale, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
         }
 
+        /**
+         * Called wehn the Method radio option is changed
+         */
+        this.updateSelectedMethod =function(method){
+            if(method == 'MANUAL' ) {
+                self.model.allowSkipHeaderOption = true;
+            }
+
+        };
+
         this.addHistoryItem = function(columnDef) {
             var historyItem = createHistoryRecord(columnDef);
             columnDef.history.push(historyItem);
-        }
+        };
 
         /**
          * when adding a new column
@@ -211,6 +243,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     return false;
                 }
 
+                if (columnDef.deleted === true) {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("required", true);
+                    self.defineFeedTableForm["datatype_" + columnDef._id].$setValidity("required", true);
+                }
+
                 // Check for reserved names
                 if (columnDef.name === "processing_dttm") {
                     self.defineFeedTableForm["name_" + columnDef._id].$setValidity("reserved", false);
@@ -287,25 +324,32 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (columnDef == null) {
                 columnDef = newColumnDefinition();
             }
+
+            // Detect domain type and select sample value
+            var policy = newColumnPolicy();
             if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
                 columnDef.selectedSampleValue = columnDef.sampleValues[0];
-            }
-            else {
+                var domainType = DomainTypesService.detectDomainType(columnDef.sampleValues, self.availableDomainTypes);
+                if (domainType !== null) {
+                    FeedService.setDomainTypeForField(columnDef, policy, domainType);
+                }
+            } else {
                 columnDef.selectedSampleValue = null;
             }
+
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
             initFeedColumn(columnDef)
             //add the column to both the source and destination tables as well as the fieldPolicies array
             self.model.table.tableSchema.fields.push(columnDef);
-            self.model.table.fieldPolicies.push(newColumnPolicy())
+            self.model.table.fieldPolicies.push(policy);
             self.model.table.sourceTableSchema.fields.push(newColumnDefinition());
             validate();
             if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                 FeedService.syncTableFieldPolicyNames();
             }
-        }
+        };
 
         this.undoColumn = function (index) {
             var columnDef = self.model.table.tableSchema.fields[index];
@@ -325,7 +369,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
             validate();
-        }
+        };
 
         /**
          * Remove a column from the schema
@@ -354,7 +398,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             partitionNamesUnique();
             //FeedService.syncTableFieldPolicyNames();
             validate();
-        }
+        };
 
         /**
          * Removes the column matching the passed in {@code columnDef} with the array of columns
@@ -366,7 +410,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (idx >= 0) {
                 self.removeColumn(idx);
             }
-        }
+        };
 
         /**
          * Add a partition to the schema
@@ -376,7 +420,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var partitionLength = self.model.table.partitions.length;
             var partition = newPartitionField(partitionLength);
             self.model.table.partitions.push(partition);
-        }
+        };
 
         /**
          * Remove the partition from the schecma
@@ -385,7 +429,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.removePartitionField = function (index) {
             self.model.table.partitions.splice(index, 1);
             partitionNamesUnique();
-        }
+        };
 
         this.getSelectedColumn = function () {
             return self.selectedColumn;
@@ -404,6 +448,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     angular.element('#selectedColumnPanel').triggerHandler('stickIt');
                 })
             }
+
+            // Ensure tags is an array
+            if (!angular.isArray(selectedColumn.tags)) {
+                selectedColumn.tags = [];
+            }
         };
 
         /**
@@ -418,6 +467,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
+
+            if(columnDef.derivedDataType != 'decimal'){
+                columnDef.precisionScale = null;
+            }
             self.onFieldChange(columnDef);
 
             fieldNamesUnique(true);
@@ -431,12 +484,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             });
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
-        }
+        };
 
         this.onFieldChange = function (columnDef) {
             self.selectedColumn = columnDef;
             self.addHistoryItem(columnDef);
-        }
+        };
 
         /**
          * When a partition Source field changes it needs to
@@ -462,7 +515,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.updatePartitionFieldName(partition);
             partitionNamesUnique();
 
-        }
+        };
         /**
          * When a partition formula changes it needs to
          *  - attempt to prefill in the name with some default name.  if its a val formula it will default the partition name to the source field name and leave it disabled
@@ -471,7 +524,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.onPartitionFormulaChange = function (partition) {
             self.updatePartitionFieldName(partition);
             partitionNamesUnique();
-        }
+        };
 
         /**
          * when the partition name changes it needs to
@@ -484,7 +537,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 partition.field = replaceSpaces(partition.field);
             }
             partitionNamesUnique();
-        }
+        };
 
         function unqiueNameValidation() {
             fieldNamesUnique();
@@ -501,7 +554,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             return _.find(self.model.table.fields, function (field) {
                 return field.name == fieldName;
             });
-        }
+        };
 
         /**
          * Ensure that for the partitions the sourceField and sourceDataTypes match the respective schema field data
@@ -541,7 +594,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             else {
                 partition.field = partition.columnDef ? partition.columnDef.name : partition.sourceField;
             }
-        }
+        };
 
         function validate(validForm) {
             if (validForm == undefined) {
@@ -549,12 +602,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
+
             if (valid) {
+                //ensure we have at least 1 field (not deleted) assigned to the model)
+                var validFields = _.filter(self.model.table.tableSchema.fields,function(field) {
+                    return field.deleted == undefined || field.deleted == false;
+                });
+                valid = validFields.length >0;
                 ensurePartitionData();
             }
             self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;
 
-        };
+        }
 
         var tableMethodWatch = $scope.$watch(function() {
             return self.model.table.method;
@@ -605,7 +664,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             $mdExpansionPanel().waitFor('panelOne').then(function (instance) {
                 instance.collapse();
             });
-        }
+        };
 
         /*
          Expand the schema panel
@@ -614,13 +673,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             $mdExpansionPanel().waitFor('panelTwo').then(function (instance) {
                 instance.expand();
             });
-        }
+        };
 
         this.expandChooseMethodPanel = function () {
             $mdExpansionPanel().waitFor('panelOne').then(function (instance) {
                 instance.expand();
             });
-        }
+        };
 
         // choose to expand the choose method initially if no fields have been defined yet
         if(self.model.table.tableSchema.fields.length == 0){
@@ -642,7 +701,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var successFn = function (response) {
                 var responseData = response.data;
                 resetColumns();
-                self.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
+                self.availableDefinitionDataTypes = FeedService.columnDefinitionDataTypes.slice();
                 angular.forEach(responseData.fields, function (field) {
                     var col = newColumnDefinition();
                     col = angular.extend(col, field)
@@ -658,7 +717,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.table.structured = responseData.structured;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
-                    self.model.skipHeader = true;
+                    self.model.options.skipHeader = true;
                 } else {
                     self.model.allowSkipHeaderOption = false;
                     self.model.options.skipHeader = false;
@@ -673,17 +732,26 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
                 validate();
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
-            }
+            };
             var errorFn = function (data) {
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
-            }
+            };
             //clear partitions
             while (self.model.table.partitions.length) {
                 self.model.table.partitions.pop();
             }
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+        };
+
+        /**
+         * Transforms the specified chip into a tag.
+         * @param {string} chip the chip
+         * @returns {Object} the tag
+         */
+        self.transformChip = function (chip) {
+            return angular.isObject(chip) ? chip : {name: chip};
         };
 
         // Retrieve partition formulas
@@ -692,12 +760,14 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.partitionFormulas = functions;
                 });
 
+        validate();
+
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
         });
     };
 
-    angular.module(moduleName).controller('DefineFeedTableController', ["$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils",controller]);
+    angular.module(moduleName).controller('DefineFeedTableController', ["$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils", "FeedTagService", "DomainTypesService", controller]);
 
     angular.module(moduleName)
         .directive('thinkbigDefineFeedTable', directive);
@@ -712,7 +782,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Filter formulas based on column type
             if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-                return _.without(formulas, "year", "month", "day", "hour", "minute");
+                return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
             } else {
                return formulas;
             }

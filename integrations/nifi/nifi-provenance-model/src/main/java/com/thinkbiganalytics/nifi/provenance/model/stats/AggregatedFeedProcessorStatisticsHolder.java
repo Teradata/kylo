@@ -25,10 +25,14 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -38,6 +42,9 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
     DateTime maxTime;
     String collectionId;
     AtomicLong eventCount = new AtomicLong(0L);
+    /**
+     * Map of Starting processorId and stats related to it
+     */
     Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
     private Long minEventId = 0L;
     private Long maxEventId = 0L;
@@ -47,28 +54,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         this.collectionId = UUID.randomUUID().toString();
     }
 
-    /**
-     * Add an event to generate statistics
-     */
-    public void addStat(ProvenanceEventRecordDTO event) {
-        if (minTime == null || event.getEventTime().isBefore(minTime)) {
-            minTime = event.getEventTime();
-        }
-        if (maxTime == null || event.getEventTime().isAfter(maxTime)) {
-            maxTime = event.getEventTime();
-        }
-        feedStatistics.computeIfAbsent(event.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
-            event);
-
-        if (event.getEventId() < minEventId) {
-            minEventId = event.getEventId();
-        }
-        if (event.getEventId() > maxEventId) {
-            maxEventId = event.getEventId();
-        }
-
-        eventCount.incrementAndGet();
-    }
 
 
     public AtomicLong getEventCount() {
@@ -87,10 +72,27 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         return feedStatistics;
     }
 
+    public void setFeedStatistics(Map<String, AggregatedFeedProcessorStatistics> feedStatistics) {
+        this.feedStatistics = feedStatistics;
+    }
+
+    public void setFeedStatistics(List<AggregatedFeedProcessorStatistics> stats){
+        if(stats != null){
+            this.feedStatistics =    stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
+        }
+    }
+
     public void clear() {
         this.collectionId = UUID.randomUUID().toString();
-
         feedStatistics.entrySet().forEach(e -> e.getValue().clear(collectionId));
+    }
+
+    public boolean hasStats(){
+        return feedStatistics.values().stream().anyMatch(s -> s.hasStats());
+    }
+
+    public void setCollectionId(String collectionId) {
+        this.collectionId = collectionId;
     }
 
     @Override

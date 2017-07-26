@@ -7,22 +7,15 @@
   <parent>
     <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
     <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.3-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
 
   <properties>
-    <nifi.version>1.1.0</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-jms</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>kylo-metadata-rest-model</artifactId>
@@ -36,20 +29,17 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-activemq-core</artifactId>
+      <artifactId>kylo-jms-service-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>kylo-nifi-core-service-api</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-amazon-sqs</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>kylo-nifi-core-service</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-activemq</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -65,6 +55,10 @@
       <artifactId>nifi-utils</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-persistent-provenance-repository</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.nifi</groupId>
@@ -104,6 +98,18 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-jms</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.blogspot.mydailyjava</groupId>
+      <artifactId>guava-cache-overflow-extension</artifactId>
+      <version>0.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
 
@@ -152,8 +158,48 @@
     </dependency>
 
 
-  </dependencies>
 
+
+  </dependencies>
+<!--
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.soebes.maven.plugins</groupId>
+        <artifactId>iterator-maven-plugin</artifactId>
+        <version>0.5.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>iterator</goal>
+            </goals>
+            <configuration>
+              <items>
+                <item>1.1.2</item>
+                <item>1.2.0</item>
+              </items>
+              <pluginExecutors>
+                <pluginExecutor>
+                  <goal>single</goal>
+                  <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                  </plugin>
+                  <configuration>
+                    <descriptors>
+                      <descriptor>${project.basedir}/src/main/assembly/descriptor.xml</descriptor>
+                    </descriptors>
+                  </configuration>
+                </pluginExecutor>
+              </pluginExecutors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  -->
 
 </project>
 

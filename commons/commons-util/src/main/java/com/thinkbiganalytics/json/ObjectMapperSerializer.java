@@ -46,7 +46,7 @@ public class ObjectMapperSerializer {
     }
 
     /**
-     * Return a refernce to the Jackson2 ObjectMapper
+     * Return a reference to the Jackson2 ObjectMapper
      *
      * @return the ObjectMapper used to serialize/deserialize
      */
@@ -70,6 +70,7 @@ public class ObjectMapperSerializer {
         try {
             json = getMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
+            log.error("Error serializing object ",e);
             throw new RuntimeException("Error serializing object", e);
         }
         return json;
@@ -87,6 +88,7 @@ public class ObjectMapperSerializer {
         try {
             return getMapper().readValue(json, clazz);
         } catch (IOException e) {
+            log.error("Error de-serializing object for class {} ",clazz,e);
             throw new RuntimeException("error de-serializing object", e);
         }
     }
@@ -105,6 +107,7 @@ public class ObjectMapperSerializer {
         try {
             return getMapper().readValue(json, typeReference);
         } catch (IOException e) {
+            log.error("Error de-serializing object with TypeReference {} ",typeReference,e);
             throw new RuntimeException("error de-serializing object", e);
         }
 

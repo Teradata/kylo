@@ -34,6 +34,7 @@ public class FieldPolicyBuilder {
     private boolean index;
     private String fieldName;
     private String feedFieldName;
+    private boolean isPartitionColumn;
 
     /**
      * list of field level standardization rules captured in the user interface
@@ -50,6 +51,7 @@ public class FieldPolicyBuilder {
         this.feedFieldName = fieldName;
         this.standardization = new ArrayList<>();
         this.validation = new ArrayList<>();
+        this.isPartitionColumn = false;
     }
 
     public FieldPolicyBuilder addValidations(List<FieldValidationRule> validation) {
@@ -77,6 +79,11 @@ public class FieldPolicyBuilder {
         return this;
     }
 
+    public FieldPolicyBuilder setPartitionColumn(boolean isPartitionColumn) {
+        this.isPartitionColumn = isPartitionColumn;
+        return this;
+    }
+
     /**
      * Build a new {@link FieldPolicy}
      *
@@ -90,6 +97,7 @@ public class FieldPolicyBuilder {
         policy.setValidation(this.validation);
         policy.setProfile(this.profile);
         policy.setIndex(this.index);
+        policy.setPartitionColumn(isPartitionColumn);
         return policy;
     }
 

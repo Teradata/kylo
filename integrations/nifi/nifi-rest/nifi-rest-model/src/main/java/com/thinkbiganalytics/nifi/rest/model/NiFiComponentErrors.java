@@ -153,10 +153,10 @@ public class NiFiComponentErrors {
 
         NiFiComponentErrors that = (NiFiComponentErrors) o;
 
-        if (!processorId.equals(that.processorId)) {
+        if (processorId != null && !processorId.equals(that.processorId)) {
             return false;
         }
-        return processGroupId.equals(that.processGroupId);
+        return processGroupId != null && processGroupId.equals(that.processGroupId);
 
     }
 

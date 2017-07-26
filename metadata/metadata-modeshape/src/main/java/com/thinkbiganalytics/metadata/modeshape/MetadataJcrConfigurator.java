@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.security.SimplePrincipal;
@@ -73,6 +74,8 @@ public class MetadataJcrConfigurator {
     private final AtomicBoolean configured = new AtomicBoolean(false);
     @Inject
     private MetadataAccess metadataAccess;
+
+
     private List<PostMetadataConfigAction> postConfigActions = new ArrayList<>();
 
     public MetadataJcrConfigurator(List<PostMetadataConfigAction> actions) {
@@ -84,7 +87,6 @@ public class MetadataJcrConfigurator {
         this.metadataAccess.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-
                 ensureLayout(session);
                 ensureTypes(session);
                 ensureAccessControl(session);
@@ -96,7 +98,6 @@ public class MetadataJcrConfigurator {
         this.metadataAccess.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-
                 removeVersionableFeedType(session);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could remove versioning from feeds", e);
@@ -209,6 +210,7 @@ public class MetadataJcrConfigurator {
     }
 
     private void firePostConfigActions() {
+
         for (PostMetadataConfigAction action : this.postConfigActions) {
             // TODO: catch exceptions and continue?  Currently propagates runtime exceptions and will fail startup.
             action.run();
@@ -325,6 +327,34 @@ public class MetadataJcrConfigurator {
                 session.getRootNode().addNode("metadata", "datasources");
             }
             session.getRootNode().getNode("metadata/datasources").addNode("derived");
+        }
+
+        if (!session.getRootNode().hasNode("metadata/security")) {
+            session.getRootNode().addNode("metadata/security", "tba:securityFolder");
+        }
+        if (!session.getRootNode().hasNode("metadata/security/prototypes")) {
+            session.getRootNode().addNode("metadata/security/prototypes", "tba:prototypesFolder");
+        }
+
+        //ensure the datasources exist in prototypes
+        if (!session.getRootNode().hasNode("metadata/security/prototypes/datasource")) {
+            session.getRootNode().addNode("metadata/security/prototypes/datasource", "tba:allowedActions");
+        }
+
+        if (!session.getRootNode().hasNode("metadata/security/roles")) {
+            session.getRootNode().addNode("metadata/security/roles", "tba:rolesFolder");
+        }
+
+        if (!session.getRootNode().hasNode("metadata/domainTypes")) {
+            session.getRootNode().addNode("metadata/domainTypes", "tba:domainTypesFolder");
+        }
+
+        //ensure the role paths exist for the entities
+        for (String entity : SecurityRole.ENTITIES) {
+            String entityPath = "metadata/security/roles/" + entity;
+            if (!session.getRootNode().hasNode(entityPath)) {
+                session.getRootNode().addNode(entityPath, "tba:rolesFolder");
+            }
         }
     }
 

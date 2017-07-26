@@ -20,7 +20,7 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.StandardColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class StringColumnCase4Test extends ProfilerTest {
 
-    private static ColumnStatistics columnStats;
+    private static StandardColumnStatistics columnStats;
     private static long nullCount;
     private static long totalCount;
     private static long uniqueCount;

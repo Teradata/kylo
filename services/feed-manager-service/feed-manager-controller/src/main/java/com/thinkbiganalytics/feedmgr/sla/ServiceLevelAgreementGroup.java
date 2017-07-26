@@ -39,6 +39,8 @@ public class ServiceLevelAgreementGroup {
     private String name;
     private String description;
 
+    private boolean canEdit;
+
     private List<ServiceLevelAgreementRule> rules;
 
     private List<ServiceLevelAgreementActionUiConfigurationItem> actionConfigurations;
@@ -110,5 +112,14 @@ public class ServiceLevelAgreementGroup {
 
     public void setRuleErrors(List<String> ruleErrors) {
         this.ruleErrors = ruleErrors;
+    }
+
+
+    public boolean isCanEdit() {
+        return canEdit;
+    }
+
+    public void setCanEdit(boolean canEdit) {
+        this.canEdit = canEdit;
     }
 }

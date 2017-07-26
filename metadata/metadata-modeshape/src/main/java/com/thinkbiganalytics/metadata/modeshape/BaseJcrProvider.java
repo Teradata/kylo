@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -116,11 +117,25 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     /**
+     * Tests whether an Entity Node exists for a Parent Path and relative Path.
+     */
+    public boolean hasEntityNode(String parentPath, String relPath) {
+        Session session = getSession();
+
+        try {
+            Node typesNode = session.getNode(parentPath);
+            return JcrUtil.hasNode(typesNode, relPath);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create new entity of type: " + getEntityClass(), e);
+        }
+    }
+    
+    /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
      */
     public Node findOrCreateEntityNode(String parentPath, String relPath, Class<? extends JcrEntity> jcrEntityType) {
         Session session = getSession();
-
+        
         try {
             Node typesNode = session.getNode(parentPath);
             JcrTools tools = new JcrTool();
@@ -176,6 +191,9 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             } else {
                 return null;
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied to feed with ID: {}", id, e);
+            return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
         }

@@ -59,9 +59,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.LOAD_JOB_URL = function (executionId) {
             return self.JOBS_BASE + "/" + executionId;
         }
-        this.JOB_PROGRESS_URL = function (executionId) {
-            return self.JOBS_BASE + "/" + executionId + "/steps";
-        }
 
         this.RELATED_JOBS_URL = function (executionId) {
             return self.JOBS_BASE + "/" + executionId + "/related";
@@ -74,12 +71,14 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         //Provenance Event Stats
         this.STATS_BASE = "/proxy/v1/provenance-stats";
 
+        this.STATS_BASE_V2 = "/proxy/v2/provenance-stats";
+
         this.PROCESSOR_DURATION_FOR_FEED = function (feedName, timeInterval) {
-            return self.STATS_BASE + "/" + feedName + "/processor-duration/" + timeInterval;
+            return self.STATS_BASE_V2 + "/" + feedName + "/processor-duration/" + timeInterval;
         }
 
         this.FEED_STATISTICS_OVER_TIME = function (feedName, timeInterval) {
-            return self.STATS_BASE + "/" + feedName + "/" + timeInterval;
+            return self.STATS_BASE_V2 + "/" + feedName + "/" + timeInterval;
         }
 
         this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";

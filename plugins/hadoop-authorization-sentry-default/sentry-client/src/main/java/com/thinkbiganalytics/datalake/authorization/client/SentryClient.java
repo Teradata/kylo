@@ -1,5 +1,24 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.ldap.core.LdapTemplate;
+
+import com.thinkbiganalytics.datalake.authorization.groups.ldap.LdapGroupList;
+import com.thinkbiganalytics.datalake.authorization.groups.unix.UnixGroupList;
+
 /*-
  * #%L
  * thinkbig-sentry-client
@@ -26,15 +45,6 @@ import com.thinkbiganalytics.datalake.authorization.model.SentryGroup;
 import com.thinkbiganalytics.datalake.authorization.model.SentrySearchPolicy;
 import com.thinkbiganalytics.datalake.authorization.model.SentrySearchPolicyMapper;
 
-import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  */
@@ -45,18 +55,20 @@ public class SentryClient {
 
     private SentryClientConfig clientConfig;
     private JdbcTemplate sentryJdbcTemplate;
-
+    private LdapTemplate ldapTemplate;
+    
     public SentryClient() {
     }
 
     public SentryClient(SentryClientConfig config) {
         this.clientConfig = config;
         this.sentryJdbcTemplate = config.getSentryJdbcTemplate();
-
+        this.ldapTemplate = new LdapTemplate( config.getLdapContextSource());
         try {
             setDriverClass(config.getDriverName());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Unable to set Driver Class " + e.getMessage());
+            log.error("Unable to set Driver Class " + e.getMessage());
+            throw new RuntimeException(e);
         }
 
     }
@@ -69,8 +81,9 @@ public class SentryClient {
      * @param roleName : Role name to be created
      */
     public boolean createRole(String roleName) throws SentryClientException {
-        this.sentryJdbcTemplate.execute("create role " + roleName);
-        log.warn("Sentry role " + roleName + " created successfully.");
+        String createRoleStmt = "create role " + roleName;
+        this.sentryJdbcTemplate.execute(createRoleStmt);
+        log.warn("Sentry role {} created successfully.",roleName);
         return true;
     }
 
@@ -78,8 +91,9 @@ public class SentryClient {
      * @param roleName : Role to be deleted.
      */
     public boolean dropRole(String roleName) throws SentryClientException {
-        this.sentryJdbcTemplate.execute("drop role " + roleName);
-        log.info("Role  " + roleName + " dropped successfully ");
+        String dropRoleStmt= "drop role " + roleName;
+        this.sentryJdbcTemplate.execute(dropRoleStmt);
+        log.info("Role  {} dropped successfully " ,roleName);
         return true;
     }
 
@@ -91,7 +105,7 @@ public class SentryClient {
     public boolean grantRoleToGroup(String roleName, String groupName) throws SentryClientException {
         String queryString = "GRANT ROLE " + roleName + " TO GROUP " + groupName + "";
         this.sentryJdbcTemplate.execute(queryString);
-        log.info("Role " + roleName + " is assigned to group " + groupName + ". ");
+        log.info("Role {} is assigned to group {}. " ,roleName , groupName);
         return true;
     }
 
@@ -102,18 +116,18 @@ public class SentryClient {
      * @param roleName   : Role name to be granted
      */
     public boolean grantRolePriviledges(String previledge, String objectType, String objectName, String roleName) throws SentryClientException {
-        String dbName[] = objectName.split("\\.");
+        String []dbName = objectName.split("\\.");
         String useDB = "use " + dbName[0] + "";
         String queryString = "GRANT " + previledge + " ON " + objectType + " " + objectName + "  TO ROLE " + roleName;
-        log.info("Sentry Query Formed --" + queryString);
+        log.info("Sentry Query Formed : {} " , queryString);
         try {
             this.sentryJdbcTemplate.execute(useDB);
             this.sentryJdbcTemplate.execute(queryString);
-            log.info("Successfully assigned priviledge " + previledge + " to role " + roleName + " on " + objectName + ".");
+            log.info("Successfully assigned priviledge {} to role {} on {}." ,previledge , roleName, objectName );
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
-            log.error("Failed to obtain database name from " + objectName + ". Routing to failure.");
-            throw new ArrayIndexOutOfBoundsException("Failed to obtain database name from " + objectName + ". Routing to failure." + e.getMessage());
+            log.error("Failed to obtain database name from {}. Routing to failure." + e.getMessage() + e , objectName);
+            throw new ArrayIndexOutOfBoundsException();
         }
     }
 
@@ -143,10 +157,10 @@ public class SentryClient {
             /**
              * Return true of role is present in result set
              */
-            log.info("Role " + roleName + " found in Sentry database.");
+            log.info("Role {} found in Sentry database.",roleName);
             return true;
         } else {
-            log.info("Role " + roleName + "  not found in Sentry database.");
+            log.info("Role {}  not found in Sentry database." , roleName);
             return false;
         }
 
@@ -171,7 +185,8 @@ public class SentryClient {
             hdfsUtil.splitPathListAndApplyPolicy(allPathForAclCreation, conf, sentryConfig.getFileSystem(), groups, hdfsPermission);
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create ACL " + e);
+            log.error("Unable to create ACL " + e);
+            throw new RuntimeException(e);
 
         }
     }
@@ -194,39 +209,69 @@ public class SentryClient {
             return true;
 
         } catch (IOException e) {
-            throw new RuntimeException("Unable to flush ACL " + e);
+            log.error("Unable to flush ACL " + e);
+            throw new RuntimeException(e);
 
         }
 
     }
 
-
     /**
-     * Get default Kylo groups
+     * Get Kylo groups from Static List , Unix or LDAP
      */
     public List<HadoopAuthorizationGroup> getAllGroups() {
         List<HadoopAuthorizationGroup> sentryHadoopAuthorizationGroups = new ArrayList<>();
         SentryGroup hadoopAuthorizationGroup = new SentryGroup();
 
-        String sentryGroups = this.clientConfig.getSentryGroups();
-        List<String> sentryGroupsList = new ArrayList<String>(Arrays.asList(sentryGroups.split(",")));
+        String authorizationSentryGroupFetchType = this.clientConfig.getAuthorizationGroupType();
 
-        int sentryId = 0;
-        String sentryIdPrefix = "kyloGroup";
 
-        for (String group : sentryGroupsList) {
-            sentryId = sentryId + 1;
-            sentryIdPrefix = sentryIdPrefix + "_" + sentryId;
-            hadoopAuthorizationGroup.setId(sentryIdPrefix);
-            hadoopAuthorizationGroup.setDescription("This is dummy group generated by Kylo.");
-            hadoopAuthorizationGroup.setName(group);
-            hadoopAuthorizationGroup.setOwner("thinkbig");
-            sentryHadoopAuthorizationGroups.add(hadoopAuthorizationGroup);
+        if("static".equalsIgnoreCase(authorizationSentryGroupFetchType))
+        {
+            /**
+             * Make call for static group list generator
+             */
+            String sentryGroups = this.clientConfig.getSentryGroups();
+            List<String> sentryGroupsList = new ArrayList<>(Arrays.asList(sentryGroups.split(",")));
 
-            sentryIdPrefix = "kyloGroup";
-            hadoopAuthorizationGroup = new SentryGroup();
+            int sentryId = 0;
+            String sentryIdPrefix = "kyloGroup";
+
+            for (String group : sentryGroupsList) {
+                sentryId = sentryId + 1;
+                sentryIdPrefix = sentryIdPrefix + "_" + sentryId;
+                hadoopAuthorizationGroup.setId(sentryIdPrefix);
+                hadoopAuthorizationGroup.setDescription("This is dummy group generated by Kylo.");
+                hadoopAuthorizationGroup.setName(group);
+                hadoopAuthorizationGroup.setOwner("kylo");
+                sentryHadoopAuthorizationGroups.add(hadoopAuthorizationGroup);
+
+                sentryIdPrefix = "kyloGroup";
+                hadoopAuthorizationGroup = new SentryGroup();
+
+            }
 
         }
+
+        if("unix".equalsIgnoreCase(authorizationSentryGroupFetchType))
+        {
+            /**
+             * Make call for Unix Group generator
+             */
+            UnixGroupList unixGroup = new UnixGroupList();
+            sentryHadoopAuthorizationGroups = unixGroup.getHadoopAuthorizationList(this.clientConfig);
+        }
+
+        if("ldap".equalsIgnoreCase(authorizationSentryGroupFetchType))
+        {
+            /**
+             * Make Call for LDAP group generation
+             */
+
+            LdapGroupList ldapGroup = new LdapGroupList();
+            sentryHadoopAuthorizationGroups = ldapGroup.getHadoopAuthorizationList(this.clientConfig , this.ldapTemplate);
+        }
+
         return sentryHadoopAuthorizationGroups;
     }
 

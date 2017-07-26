@@ -40,11 +40,11 @@ import org.springframework.context.annotation.Profile;
 @Profile("auth-file")
 public class FileAuthConfig {
 
-    @Value("${security.auth.file.login.ui:required}")
-    private String uiLoginFlag;
-
-    @Value("${security.auth.file.login.services:required}")
-    private String servicesLoginFlag;
+    @Value("${security.auth.file.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.file.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
     
     @Value("${security.auth.file.users:users.properties}")
     private String usersResource;
@@ -52,20 +52,35 @@ public class FileAuthConfig {
     @Value("${security.auth.file.groups:groups.properties}")
     private String groupsResource;
 
+    @Value("${security.auth.file.password.hash.enabled:false}")
+    private boolean passwordHashEnabled;
+
+    @Value("${security.auth.file.password.hash.algorithm:MD5}")
+    private String hashAlgorithm;
+
+    @Value("${security.auth.file.password.hash.encoding:base64}")
+    private String hashEncoding;
+
     @Bean(name = "servicesFileLoginConfiguration")
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                            .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(this.servicesLoginFlag)      
-                            .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "groups.default.properties")
-                            .option("usersProperties", usersResource)
-                            .option("rolesProperties", groupsResource)
-                            .add()
-                        .build();
+        LoginConfigurationBuilder.ModuleBuilder building = builder
+                .order(this.loginOrder)
+                .loginModule(JaasAuthConfig.JAAS_SERVICES)
+                    .moduleClass(UsersRolesLoginModule.class)
+                    .controlFlag(this.loginFlag)
+                    .option("defaultUsersProperties", "users.default.properties")
+                    .option("defaultRolesProperties", "groups.default.properties")
+                    .option("usersProperties", usersResource)
+                    .option("rolesProperties", groupsResource);
+
+        if (passwordHashEnabled) {
+            building.option("hashAlgorithm", hashAlgorithm)
+                    .option("hashEncoding", hashEncoding);
+        }
+
+        return building.add().build();
 
         // @formatter:on
     }
@@ -74,16 +89,22 @@ public class FileAuthConfig {
     public LoginConfiguration uiFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_UI)
-                            .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(this.uiLoginFlag)
-                            .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "groups.default.properties")
-                            .option("usersProperties", usersResource)
-                            .option("rolesProperties", groupsResource)
-                            .add()
-                        .build();
+        LoginConfigurationBuilder.ModuleBuilder building = builder
+                .order(this.loginOrder)
+                .loginModule(JaasAuthConfig.JAAS_UI)
+                    .moduleClass(UsersRolesLoginModule.class)
+                    .controlFlag(this.loginFlag)
+                    .option("defaultUsersProperties", "users.default.properties")
+                    .option("defaultRolesProperties", "groups.default.properties")
+                    .option("usersProperties", usersResource)
+                    .option("rolesProperties", groupsResource);
+
+        if (passwordHashEnabled) {
+            building.option("hashAlgorithm", hashAlgorithm)
+                    .option("hashEncoding", hashEncoding);
+        }
+
+        return building.add().build();
 
         // @formatter:on
     }

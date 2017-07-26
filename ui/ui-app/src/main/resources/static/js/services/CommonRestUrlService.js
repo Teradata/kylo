@@ -26,12 +26,32 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         this.ROOT = "";
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
 
-        this.ELASTIC_SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
 
 
         this.SECURITY_GROUPS_URL = self.SECURITY_BASE_URL + "/groups";
 
         this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
+
+        /**
+         * get all roles
+         * @type {string}
+         */
+        this.SECURITY_ROLES_URL = self.SECURITY_BASE_URL + "/roles";
+
+        /**
+         * get possible roles for a given Entity type (i.e. Feed, Category, Template)
+         * @param entityType
+         * @returns {string}
+         * @constructor
+         */
+        this.SECURITY_ENTITY_ROLES_URL = function(entityType){
+            return self.SECURITY_BASE_URL + "/roles/"+entityType;
+        }
+
+        this.ENTITY_ACCESS_CONTROLLED_CHECK = self.SECURITY_BASE_URL+"/actions/entity-access-controlled";
+
+
 
     });
 });

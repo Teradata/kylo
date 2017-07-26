@@ -38,7 +38,7 @@ public interface Action {
      * @param name    the name
      * @param title   the title
      * @param descr   the description
-     * @param parents an order list of parent actions (if any) starting from the top
+     * @param parents an ordered list of parent actions (if any) starting from the top
      * @return a new immutable action
      */
     static Action create(String name, String title, String descr, Action... parents) {
@@ -49,11 +49,35 @@ public interface Action {
      * Constructs a new action as a child of the given hierarchy chain of parent actions, if any.
      *
      * @param name    the name
-     * @param parents an order list of parent actions (if any) starting from the top
+     * @param parents an ordered list of parent actions (if any) starting from the top
      * @return a new immutable action
      */
     static Action create(String name, Action... parents) {
         return new ImmutableAction(name, name, "", Arrays.asList(parents));
+    }
+    
+    /**
+     * Constructs a new action as a child of the given hierarchy chain of parent actions, if any.
+     *
+     * @param name    the name
+     * @param title   the title
+     * @param descr   the description
+     * @param parents an ordered list of parent actions (if any) starting from the top
+     * @return a new immutable action
+     */
+    static Action create(String name, String title, String descr, List<Action> parents) {
+        return new ImmutableAction(name, title, descr, parents);
+    }
+    
+    /**
+     * Constructs a new action as a child of the given hierarchy chain of parent actions, if any.
+     *
+     * @param name    the name
+     * @param parents an ordered list of parent actions (if any) starting from the top
+     * @return a new immutable action
+     */
+    static Action create(String name, List<Action> parents) {
+        return new ImmutableAction(name, name, "", parents);
     }
 
     /**

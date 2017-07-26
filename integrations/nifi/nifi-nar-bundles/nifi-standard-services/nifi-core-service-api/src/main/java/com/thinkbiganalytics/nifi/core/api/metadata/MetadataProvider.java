@@ -36,6 +36,7 @@ import org.joda.time.DateTime;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -209,4 +210,12 @@ public interface MetadataProvider {
      * @return the merged properties
      */
     Properties mergeFeedProperties(@Nonnull final String id, @Nonnull final Properties props);
+
+    /**
+     * Gets the data source with the specified id.
+     *
+     * @param id the data source id
+     * @return the data source, if found
+     */
+    Optional<Datasource> getDatasource(@Nonnull String id);
 }

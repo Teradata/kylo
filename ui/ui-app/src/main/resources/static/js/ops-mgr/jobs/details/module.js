@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil', 'kylo-common', 'kylo-services','kylo-opsmgr','ops-mgr/jobs/module'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants', 'kylo-common', 'kylo-services','kylo-opsmgr','ops-mgr/jobs/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
     module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
@@ -6,7 +6,7 @@ define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil',
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('job-details',{
+        $stateProvider.state(AccessConstants.UI_STATES.JOB_DETAILS.state,{
             url:'/job-details/{executionId}',
             params: {
                 executionId:null
@@ -23,7 +23,8 @@ define(['angular','ops-mgr/jobs/details/module-name', 'kylo-utils/LazyLoadUtil',
             },
             data:{
                 displayName:'Job Details',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.JOB_DETAILS.permissions
             }
         });
 

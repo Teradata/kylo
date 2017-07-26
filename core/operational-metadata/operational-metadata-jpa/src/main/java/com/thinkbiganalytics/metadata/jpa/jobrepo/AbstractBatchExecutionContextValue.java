@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo;
 
 
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
+import com.thinkbiganalytics.metadata.jpa.support.NormalizeAndCleanString;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -70,7 +71,8 @@ public abstract class AbstractBatchExecutionContextValue {
     }
 
     public void setStringVal(String stringVal) {
-        this.stringVal = stringVal;
+        this.stringVal = NormalizeAndCleanString.normalizeAndClean(stringVal);
+        //this.stringVal = stringVal;
     }
 
     public DateTime getDateVal() {

@@ -51,28 +51,7 @@
             </md-chips>
         </md-input-container>
 
-        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.securityGroupsEnabled == true">
-            <label class="label-small md-container-ignore">Hadoop Security Groups</label>
-            <md-chips ng-model="vm.model.securityGroups" md-autocomplete-snap
-                      md-transform-chip="vm.transformChip($chip)"
-                      md-require-match="true" class="layout-padding-top-bottom">
-                <md-autocomplete
-                    md-min-length="0"
-                    md-selected-item="vm.securityGroupChips.selectedItem"
-                    md-search-text="vm.securityGroupChips.searchText"
-                    md-items="item in vm.feedSecurityGroups.querySearch(vm.securityGroupChips.searchText)"
-                    md-item-text="item.name"
-                    md-no-cache="true"
-                    placeholder="Add a Hadoop Security Group">
-                    <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
-                </md-autocomplete>
-                <md-chip-template>
-                            <span>
-                              <strong>{{$chip.name}}</strong>
-                            </span>
-                </md-chip-template>
-            </md-chips>
-        </md-input-container>
+
 
 
         <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>

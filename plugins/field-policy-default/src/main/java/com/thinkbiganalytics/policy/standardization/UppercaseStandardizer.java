@@ -41,4 +41,16 @@ public class UppercaseStandardizer implements StandardizationPolicy {
     public String convertValue(String value) {
         return value.toUpperCase();
     }
+
+    public Boolean accepts (Object value) {
+        return (value instanceof String);
+    }
+
+    public Object convertRawValue(Object value) {
+        if (accepts(value)) {
+            return String.valueOf(convertValue(value.toString()));
+        }
+
+        return value;
+    }
 }

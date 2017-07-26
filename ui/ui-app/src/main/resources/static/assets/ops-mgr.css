@@ -124,7 +124,7 @@ tba-jobs md-list-item:hover {
 
 /** Feed Details Page **/
 
-.feed-details md-list-item, md-list-item .md-list-item-inner {
+.feed-details md-list-item, .feed-details md-list-item .md-list-item-inner {
   align-items: flex-start !important;
 }
 

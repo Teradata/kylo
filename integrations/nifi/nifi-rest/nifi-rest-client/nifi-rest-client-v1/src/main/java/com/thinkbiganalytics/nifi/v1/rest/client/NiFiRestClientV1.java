@@ -20,6 +20,9 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.nifi.rest.client.DefaultNiFiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
@@ -45,6 +48,7 @@ import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.BulletinEntity;
 import org.apache.nifi.web.api.entity.ClusteSummaryEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
+import org.glassfish.jersey.jackson.JacksonFeature;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +57,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
 public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient {
@@ -61,49 +66,49 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
      * NiFi Connections REST client
      */
     @Nullable
-    private NiFiConnectionsRestClientV1 connections;
+    protected NiFiConnectionsRestClientV1 connections;
 
     /**
      * NiFi Controller Services REST client
      */
     @Nullable
-    private NiFiControllerServicesRestClientV1 controllerServices;
+    protected NiFiControllerServicesRestClientV1 controllerServices;
 
     /**
      * NiFi Ports REST client
      */
     @Nullable
-    private NiFiPortsRestClientV1 ports;
+    protected NiFiPortsRestClientV1 ports;
 
     /**
      * NiFi Process Groups REST client
      */
     @Nullable
-    private NiFiProcessGroupsRestClientV1 processGroups;
+    protected NiFiProcessGroupsRestClientV1 processGroups;
 
     /**
      * NiFi Processors REST client
      */
     @Nullable
-    private NiFiProcessorsRestClientV1 processors;
+    protected NiFiProcessorsRestClientV1 processors;
 
     /**
      * NiFi Templates REST client
      */
     @Nullable
-    private NiFiTemplatesRestClientV1 templates;
+    protected NiFiTemplatesRestClientV1 templates;
 
     /**
      * NiFi Flows REST client
      */
     @Nullable
-    private NiFiFlowVisitorClient flows;
+    protected NiFiFlowVisitorClient flows;
 
     /**
      * Reporting tasks client
      */
     @Nullable
-    private NiFiReportingTaskRestClientV1 reportingTasks;
+    protected NiFiReportingTaskRestClientV1 reportingTasks;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.
@@ -117,7 +122,7 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     @Nonnull
     @Override
     public AboutDTO about() {
-        return get("/flow/about", null, AboutEntity.class).getAbout();
+        return get("/flow/about", null, AboutEntity.class,false).getAbout();
     }
 
     @Nonnull
@@ -228,11 +233,22 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
         if (reportingTasks == null) {
             return new NiFiReportingTaskRestClientV1(this);
         }
-        return reportingTasks();
+        return reportingTasks;
     }
+
 
     @Override
     protected WebTarget getBaseTarget() {
         return super.getBaseTarget().path("/nifi-api");
+    }
+
+    @Override
+    protected void registerClientFeatures(Client client) {
+        JacksonJsonProvider jacksonJsonProvider =
+            new JacksonJaxbJsonProvider()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        client.register(jacksonJsonProvider);
+        client.register(JacksonFeature.class);
     }
 }

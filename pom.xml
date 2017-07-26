@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.datalake</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.8.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
@@ -26,10 +26,9 @@
     <plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
 
     <!-- dependencies -->
-    <activemq.version>5.13.1</activemq.version>
+    <activemq.version>5.15.0</activemq.version>
     <avro.version>1.7.7</avro.version>
     <spring.version>4.2.5.RELEASE</spring.version>
-    <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
     <jersey.version>2.22.2</jersey.version>
     <jackson.version>2.6.2</jackson.version>
     <hibernate.version>5.1.0.Final</hibernate.version>
@@ -62,7 +61,9 @@
     <junit.version>4.11</junit.version>
     <lucene.version>4.10.4</lucene.version>
     <mockito.version>1.10.19</mockito.version>
-    <nifi.version>1.1.0</nifi.version>
+    <!-- The maria db driver version is references in the post-install.sh file. Manually update it there if you change it here.  -->
+    <mariadb.version>1.5.7</mariadb.version>
+    <nifi.version>1.0.0</nifi.version>
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
@@ -86,20 +87,29 @@
     <pig.version>0.15.0</pig.version>
     <gson.version>2.2.4</gson.version>
     <h2.version>1.4.187</h2.version>
+    <aws.java.sdk.version>1.9.6</aws.java.sdk.version>
+    <amazon.sqs.java.messaging.lib.version>1.0.0</amazon.sqs.java.messaging.lib.version>
 
     <!-- Plugin Versions -->
     <plugin.surefire.version>2.19.1</plugin.surefire.version>
     <plugin.license.version>1.12</plugin.license.version>
+    <liquibase.version>3.5.3</liquibase.version>
+    <!--<liquibase.version>3.3.5</liquibase.version>-->
+    <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
+    <liquibase-hibernate4.version>3.5</liquibase-hibernate4.version>
+    <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
+    <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
+    <maven.site.plugin.version>3.6</maven.site.plugin.version>
   </properties>
   <modules>
     <module>commons</module>
     <module>core</module>
     <module>security</module>
+    <module>ui</module>
     <module>plugins</module>
     <module>metadata</module>
     <module>services</module>
     <module>integrations</module>
-    <module>ui</module>
     <module>install</module>
     <module>docs</module>
     <module>samples</module>
@@ -130,6 +140,12 @@
         <groupId>com.beust</groupId>
         <artifactId>jcommander</artifactId>
         <version>1.48</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mariadb.jdbc</groupId>
+        <artifactId>mariadb-java-client</artifactId>
+        <version>${mariadb.version}</version>
       </dependency>
 
       <!-- Jersey -->
@@ -289,6 +305,11 @@
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-jdbc</artifactId>
+        <version>${spring.boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-autoconfigure</artifactId>
         <version>${spring.boot.version}</version>
       </dependency>
@@ -349,6 +370,11 @@
         <optional>true</optional>
       </dependency>
 
+     <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-context</artifactId>
+       <version>${spring.cloud.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-config</artifactId>
@@ -459,6 +485,11 @@
         <artifactId>spring-security-web</artifactId>
         <version>${spring.security.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
+        <version>${spring.security.version}</version>
+      </dependency>
 
       <!-- JMS + Spring -->
       <dependency>
@@ -543,6 +574,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
         <version>${commons.dbcp2}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-dbcp</groupId>
+        <artifactId>commons-dbcp</artifactId>
+        <version>${commons.dbcp}</version>
       </dependency>
 
       <dependency>
@@ -702,6 +738,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.spark</groupId>
+        <artifactId>spark-launcher_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
         <artifactId>spark-mllib_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
       </dependency>
@@ -726,6 +767,11 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>${slf4j.log4j12.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4j.version}</version>
       </dependency>
 
       <!-- reflections io -->
@@ -871,12 +917,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.3</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.scala-tools</groupId>
           <artifactId>maven-scala-plugin</artifactId>
-          <version>2.15.2</version>
+          <version>${maven.scala.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -889,6 +935,16 @@
           <version>${plugin.surefire.version}</version>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${maven.site.plugin.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
           <version>${plugin.license.version}</version>
@@ -898,31 +954,46 @@
           <artifactId>maven-antrun-plugin</artifactId>
           <version>1.7</version>
         </plugin>
+        <plugin>
+          <groupId>com.github.searls</groupId>
+          <artifactId>jasmine-maven-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
 
   <profiles>
     <profile>
-      <!--* Run Functional Tests (*FT.java) by selecting `integration-tests` Maven profile-->
+      <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
       <!--* Integration Tests are not run if profile is not selected-->
-      <!--mvn clean -Pfunctional-tests integration-test-->
+      <!--mvn clean -Pintegration-tests verify-->
 
-      <id>functional-tests</id>
+      <id>integration-tests</id>
       <build>
         <plugins>
           <plugin>
+            <!-- Runs JUnit integration tests -->
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
+                <id>integration-test</id>
+                <phase>integration-test</phase>
                 <configuration>
                   <includes>
-                    <include>**/*FT.class</include>
+                    <include>**/*IT.class</include>
                   </includes>
                 </configuration>
                 <goals>
                   <goal>integration-test</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>verify</id>
+                <phase>verify</phase>
+                <goals>
+                  <!-- Will fail the build if there are junit test failures -->
                   <goal>verify</goal>
                 </goals>
               </execution>

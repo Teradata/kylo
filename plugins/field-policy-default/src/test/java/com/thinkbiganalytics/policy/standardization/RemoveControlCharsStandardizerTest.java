@@ -23,6 +23,8 @@ package com.thinkbiganalytics.policy.standardization;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * test the {@link RemoveControlCharsStandardizer}
@@ -36,5 +38,46 @@ public class RemoveControlCharsStandardizerTest {
         assertEquals("abc", c.convertValue("a\n\fbc"));
         assertEquals(" ", c.convertValue(" "));
         assertEquals("", c.convertValue(""));
+    }
+
+    @Test
+    public void testAcceptValidType() {
+        RemoveControlCharsStandardizer removeControlCharsStandardizer = RemoveControlCharsStandardizer.instance();
+        assertTrue(removeControlCharsStandardizer.accepts("a\u0000b\u0007c\u008fd\ne"));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        RemoveControlCharsStandardizer removeControlCharsStandardizer = RemoveControlCharsStandardizer.instance();
+        Double doubleValue = 1000.05d;
+        assertFalse(removeControlCharsStandardizer.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() {
+        Object expectedValue = "abcde";
+        Object rawValue = "a\u0000b\u0007c\u008fd\ne";
+        RemoveControlCharsStandardizer removeControlCharsStandardizer = RemoveControlCharsStandardizer.instance();
+        assertEquals(expectedValue, removeControlCharsStandardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        Object expectedValue = Double.valueOf("1000.05\n");
+        Object rawValue = Double.valueOf("1000.05\n");
+        RemoveControlCharsStandardizer removeControlCharsStandardizer = RemoveControlCharsStandardizer.instance();
+        assertEquals(expectedValue, removeControlCharsStandardizer.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults() {
+        RemoveControlCharsStandardizer removeControlCharsStandardizer = RemoveControlCharsStandardizer.instance();
+        Object rawValueObj = "a\u0000b\u0007c\u008fd\ne";
+        Object expectedValueObj = "abcde";
+        String rawValueStr = "a\u0000b\u0007c\u008fd\ne";
+        String expectedValueStr = "abcde";
+        assertEquals(removeControlCharsStandardizer.convertValue(rawValueStr), removeControlCharsStandardizer.convertRawValue(rawValueObj).toString());
+        assertEquals(removeControlCharsStandardizer.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(removeControlCharsStandardizer.convertRawValue(rawValueObj), expectedValueObj);
     }
 }

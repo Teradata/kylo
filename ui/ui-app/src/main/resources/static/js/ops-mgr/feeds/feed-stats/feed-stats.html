@@ -18,18 +18,8 @@
   #L%
   -->
 <div layout="row" flex >
-  <div layout="column" style="width:100%">
-    <div layout="row" flex>
 
-      <div flex="100">
-        <tba-feed-stats-top-n-processors-chart feed-name="{{vm.feedName}}" refresh-interval-time="5000"></tba-feed-stats-top-n-processors-chart>
-      </div>
-
-
-    </div>
-
-
-  </div>
+        <kylo-feed-stats-charts feed-name="{{vm.feedName}}" refresh-interval-time="5000" style="width:100%"></kylo-feed-stats-charts>
 
 
 </div>

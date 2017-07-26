@@ -22,9 +22,13 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +41,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
@@ -48,16 +56,25 @@ import javax.sql.DataSource;
 public class DBCPConnectionPoolTableInfo {
 
     private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
-    @Autowired
-    LegacyNifiRestClient nifiRestClient;
+
     @Autowired
     private NifiControllerServiceProperties nifiControllerServiceProperties;
+
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
 
+    @Inject
+    private DatasourceProvider datasetProvider;
+
+    @Inject
+    private DatasourceModelTransform datasourceTransform;
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
     /**
-     * Return a list of table names matchig a pattern
+     * Returns a list of table names matching a pattern
      *
      * @param serviceId   a NiFi controller service id
      * @param serviceName a NiFi controller service name
@@ -78,6 +95,27 @@ public class DBCPConnectionPoolTableInfo {
         return null;
     }
 
+    /**
+     * Returns a list of table names for the specified data source.
+     *
+     * @param datasource the data source
+     * @param schema     the schema name, or {@code null} for all schemas
+     * @param tableName  a table pattern to look for
+     * @return a list of schema.table names, or {@code null} if not accessible
+     */
+    @Nullable
+    public List<String> getTableNamesForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nullable final String tableName) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
+            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            return getTableNamesForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot get table names for data source: {}", datasource);
+            return null;
+        }
+    }
 
     /**
      * Describe the database table and fields available for a given NiFi controller service
@@ -101,6 +139,26 @@ public class DBCPConnectionPoolTableInfo {
         return null;
     }
 
+    /**
+     * Describes the specified database table accessed through the specified data source.
+     *
+     * @param datasource the data source
+     * @param schema     the schema name, or {@code null} to search all schemas
+     * @param tableName  the table name
+     * @return the database table and fields, or {@code null} if not found
+     */
+    public TableSchema describeTableForDatasource(@Nonnull final JdbcDatasource datasource, @Nullable final String schema, @Nonnull final String tableName) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
+            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            return describeTableForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot describe table for data source: {}", datasource);
+            return null;
+        }
+    }
 
     /**
      * Return a list of schema.table_name
@@ -111,25 +169,62 @@ public class DBCPConnectionPoolTableInfo {
     private List<String> getTableNamesForControllerService(DescribeTableWithControllerService serviceProperties) {
 
         if (serviceProperties != null) {
-            String type = serviceProperties.getControllerServiceType();
-            Map<String, String> properties = nifiControllerServiceProperties.mergeNifiAndEnvProperties(
-                serviceProperties.getControllerServiceDTO().getProperties(), serviceProperties.getControllerServiceName());
+            Map<String, String> properties = serviceProperties.useEnvironmentProperties()
+                                             ? nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
+                                                                                                         serviceProperties.getControllerServiceName())
+                                             : serviceProperties.getControllerServiceDTO().getProperties();
 
             PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
 
-            if (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && dataSourceProperties.getPassword().startsWith("**")) {
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+
+            if (valid) {
+                log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
+                         dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            }
+        }
+        return null;
+    }
+
+    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, DescribeTableWithControllerService serviceProperties) {
+        boolean valid = (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && !dataSourceProperties.getPassword().startsWith("**"));
+        if (!valid) {
+            List<Datasource> matchingDatasources = metadataAccess.read(() -> {
+                JdbcDatasource userDatasource = null;
+                //attempt to get the properties from the stored datatsource
+                return datasetProvider
+                    .getDatasources(datasetProvider.datasetCriteria().type(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class).name(serviceProperties.getControllerServiceName()))
+                    .stream()
+                    .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN)).filter(datasource -> datasource instanceof JdbcDatasource)
+                    .collect(Collectors.toList());
+            }, MetadataAccess.SERVICE);
+
+            if (matchingDatasources != null) {
+                JdbcDatasource
+                    userDatasource =
+                    (JdbcDatasource) matchingDatasources.stream().filter(ds -> ((JdbcDatasource) ds).getDatabaseUser().equalsIgnoreCase(dataSourceProperties.getUser())).findFirst().orElse(null);
+                if (userDatasource == null) {
+                    userDatasource = (JdbcDatasource) matchingDatasources.get(0);
+                }
+                if (userDatasource != null) {
+                    dataSourceProperties.setUser(userDatasource.getDatabaseUser());
+                    dataSourceProperties.setPassword(userDatasource.getPassword());
+                    log.info("Returned user defined datasource for {} service and user {} ", serviceProperties.getControllerServiceName(), userDatasource.getDatabaseUser());
+                    valid = true;
+                }
+            }
+            if (!valid) {
                 String propertyKey = nifiControllerServiceProperties.getEnvironmentControllerServicePropertyPrefix(serviceProperties.getControllerServiceName()) + ".password";
                 String example = propertyKey + "=PASSWORD";
                 log.error("Unable to connect to Controller Service {}, {}.  You need to specifiy a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
             }
-            log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
-                     dataSourceProperties.getUrl());
-            DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
-            DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-            return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
         }
-        return null;
+        return valid;
+
     }
 
 
@@ -153,15 +248,22 @@ public class DBCPConnectionPoolTableInfo {
 
         String type = serviceProperties.getControllerServiceType();
         if (serviceProperties.getControllerServiceType() != null && serviceProperties.getControllerServiceType().equalsIgnoreCase(type)) {
-            Map<String, String> properties = nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
-                                                                                                       serviceProperties.getControllerServiceName());
+            Map<String, String> properties = serviceProperties.useEnvironmentProperties()
+                                             ? nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
+                                                                                                         serviceProperties.getControllerServiceName())
+                                             : serviceProperties.getControllerServiceDTO().getProperties();
 
             PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
-            log.info("describing Table {}.{} against Controller Service: {} ({}) with uri of {} ", serviceProperties.getSchemaName(), serviceProperties.getTableName(),
-                     serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), dataSourceProperties.getUrl());
-            DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
-            DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-            return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+            if (valid) {
+                log.info("describing Table {}.{} against Controller Service: {} ({}) with uri of {} ", serviceProperties.getSchemaName(), serviceProperties.getTableName(),
+                         serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+            } else {
+                return null;
+            }
         }
         return null;
 
@@ -180,7 +282,7 @@ public class DBCPConnectionPoolTableInfo {
     public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, DescribeTableWithControllerService serviceProperties) {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
-        String password = properties.get(serviceProperties.getPasswordPropertyKey());
+        String password = (serviceProperties.getPassword() != null) ? serviceProperties.getPassword() : properties.get(serviceProperties.getPasswordPropertyKey());
         String driverClassName = properties.get(serviceProperties.getDriverClassNamePropertyKey());
         if (StringUtils.isBlank(driverClassName)) {
             driverClassName = nifiControllerServiceProperties.getEnvironmentPropertyValueForControllerService(serviceProperties.getControllerServiceName(), "database_driver_class_name");
@@ -211,6 +313,8 @@ public class DBCPConnectionPoolTableInfo {
         private String tableName;
         private String schemaName;
         private ControllerServiceDTO controllerServiceDTO;
+        private String password;
+        private boolean useEnvironmentProperties = true;
 
 
         public DescribeTableWithControllerServiceBuilder(ControllerServiceDTO controllerServiceDTO) {
@@ -288,6 +392,16 @@ public class DBCPConnectionPoolTableInfo {
             return this;
         }
 
+        public DescribeTableWithControllerServiceBuilder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public DescribeTableWithControllerServiceBuilder useEnvironmentProperties(boolean useEnvironmentProperties) {
+            this.useEnvironmentProperties = useEnvironmentProperties;
+            return this;
+        }
+
         public DescribeTableWithControllerService build() {
             DescribeTableWithControllerService serviceProperties = new DescribeTableWithControllerService();
             serviceProperties.setConnectionStringPropertyKey(this.connectionStringPropertyKey);
@@ -300,6 +414,8 @@ public class DBCPConnectionPoolTableInfo {
             serviceProperties.setPasswordPropertyKey(passwordPropertyKey);
             serviceProperties.setControllerServiceDTO(this.controllerServiceDTO);
             serviceProperties.setDriverClassNamePropertyKey(this.driverClassNamePropertyKey);
+            serviceProperties.setPassword(password);
+            serviceProperties.setUseEnvironmentProperties(useEnvironmentProperties);
             return serviceProperties;
         }
     }
@@ -317,6 +433,8 @@ public class DBCPConnectionPoolTableInfo {
         private String tableName;
         private String schemaName;
         private ControllerServiceDTO controllerServiceDTO;
+        private String password;
+        private boolean useEnvironmentProperties;
 
         public String getConnectionStringPropertyKey() {
             return connectionStringPropertyKey;
@@ -398,6 +516,22 @@ public class DBCPConnectionPoolTableInfo {
             this.controllerServiceDTO = controllerServiceDTO;
         }
 
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public boolean useEnvironmentProperties() {
+            return useEnvironmentProperties;
+        }
+
+        public void setUseEnvironmentProperties(boolean useEnvironmentProperties) {
+            this.useEnvironmentProperties = useEnvironmentProperties;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -430,6 +564,4 @@ public class DBCPConnectionPoolTableInfo {
             return result;
         }
     }
-
-
 }

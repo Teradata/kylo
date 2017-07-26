@@ -44,6 +44,7 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,8 @@ public class TemplateCreationHelper {
     public static final String REUSABLE_TEMPLATES_CATEGORY_NAME = "Reusable Templates";
     private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
     public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
+
+    public static String TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME = "kylo_temporary_template_inspection";
     /**
      * REST client for NiFi API
      */
@@ -86,10 +89,13 @@ public class TemplateCreationHelper {
 
     private Set<ControllerServiceDTO> newlyCreatedControllerServices;
 
+    private List<NifiProperty> templateProperties;
+
     public TemplateCreationHelper(LegacyNifiRestClient restClient) {
         this.restClient = restClient;
         this.nifiRestClient = restClient.getNiFiRestClient();
     }
+
 
     public static String getVersionedProcessGroupName(String name) {
         return NifiTemplateNameUtil.getVersionedProcessGroupName(name);
@@ -97,6 +103,39 @@ public class TemplateCreationHelper {
 
     public static String parseVersionedProcessGroupName(String name) {
         return NifiTemplateNameUtil.parseVersionedProcessGroupName(name);
+    }
+
+    public void setTemplateProperties(List<NifiProperty> templateProperties) {
+        this.templateProperties = templateProperties;
+    }
+
+    /**
+     * Creates an instance of the supplied template under the temporary inspection group inside its own process group
+     *
+     * @param templateId the template to instantiate
+     * @return the process group holding this template
+     */
+    public ProcessGroupDTO createTemporaryTemplateFlow(@Nonnull final String templateId) {
+        ProcessGroupDTO temporaryTemplateInspectionGroup = null;
+        //first get the parent temp group
+        Optional<ProcessGroupDTO> group = nifiRestClient.processGroups().findByName("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME, false, false);
+        if (!group.isPresent()) {
+            temporaryTemplateInspectionGroup = nifiRestClient.processGroups().create("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME);
+        } else {
+            temporaryTemplateInspectionGroup = group.get();
+        }
+
+        //next create the temp group
+        snapshotControllerServiceReferences();
+        ProcessGroupDTO tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        FlowSnippetDTO snippet = instantiateFlowFromTemplate(tempGroup.getId(), templateId);
+        identifyNewlyCreatedControllerServiceReferences();
+        tempGroup.setContents(snippet);
+
+        //now delete it
+        nifiRestClient.processGroups().delete(tempGroup);
+        cleanupControllerServices();
+        return tempGroup;
     }
 
     /**
@@ -282,6 +321,70 @@ public class TemplateCreationHelper {
         mergedControllerServices = map;
     }
 
+    public List<ProcessorDTO> reassignControllerServiceIds(List<ProcessorDTO> processors) {
+
+        List<ProcessorDTO> updatedProcessors = new ArrayList<>();
+        if (processors != null) {
+            Map<String, List<ControllerServiceDTO>> csNameToCs = new HashMap<>();
+
+            Map<String, ControllerServiceDTO> enabledCsNameToCs = new HashMap<>();
+
+            //Create a map of the Controller Service Name to list of matching services
+            getMergedControllerServices().forEach((id, cs) -> {
+                csNameToCs.computeIfAbsent(cs.getName(), name -> new ArrayList<>()).add(cs);
+                if (!enabledCsNameToCs.containsKey(cs.getName()) && cs.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                    enabledCsNameToCs.put(cs.getName(), cs);
+                }
+            });
+
+            processors.stream().forEach(processorDTO -> {
+                Map<String, String> updatedProcessorProperties = new HashMap<>();
+                processorDTO.getConfig().getDescriptors().forEach((k, v) -> {
+                    if (v.getIdentifiesControllerService() != null) {
+
+                        boolean idsMatch = getMergedControllerServices().keySet().stream().anyMatch(id -> id.equalsIgnoreCase(processorDTO.getConfig().getProperties().get(k)));
+                        if (!idsMatch && templateProperties != null && !templateProperties.isEmpty()) {
+
+                            NifiProperty matchingProperty = templateProperties.stream().filter(
+                                p -> p.getKey().equalsIgnoreCase(k) && p.getProcessorName().equalsIgnoreCase(processorDTO.getName()) && v.getIdentifiesControllerService()
+                                    .equalsIgnoreCase(p.getPropertyDescriptor().getIdentifiesControllerService())
+                            ).findFirst().orElse(null);
+                            if (matchingProperty != null && matchingProperty.getPropertyDescriptor().getAllowableValues() != null) {
+                                NiFiAllowableValue matchingValue = matchingProperty.getPropertyDescriptor().getAllowableValues().stream()
+                                    .filter(niFiAllowableValue -> niFiAllowableValue.getValue().equalsIgnoreCase(matchingProperty.getValue())).findFirst().orElse(null);
+                                if (matchingValue != null) {
+                                    String
+                                        validControllerServiceId =
+                                        enabledCsNameToCs.containsKey(matchingValue.getDisplayName()) ? enabledCsNameToCs.get(matchingValue.getDisplayName()).getId()
+                                                                                                      : (csNameToCs.containsKey(matchingValue.getDisplayName()) ? csNameToCs
+                                                                                                          .get(matchingValue.getDisplayName()).get(0).getId() : null);
+                                    if (StringUtils.isNotBlank(validControllerServiceId)) {
+                                        processorDTO.getConfig().getProperties().put(k, validControllerServiceId);
+                                        updatedProcessorProperties.put(k, validControllerServiceId);
+                                        if (!updatedProcessors.contains(processorDTO)) {
+                                            updatedProcessors.add(processorDTO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                });
+                if (!updatedProcessorProperties.isEmpty()) {
+                    ProcessorDTO updatedProcessor = new ProcessorDTO();
+                    updatedProcessor.setId(processorDTO.getId());
+                    updatedProcessor.setConfig(new ProcessorConfigDTO());
+                    updatedProcessor.getConfig().setProperties(updatedProcessorProperties);
+                    restClient.updateProcessor(updatedProcessor);
+                }
+
+            });
+        }
+        return updatedProcessors;
+
+    }
+
     public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors) {
         return updateControllerServiceReferences(processors, null);
     }
@@ -296,6 +399,8 @@ public class TemplateCreationHelper {
     public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors, Map<String, String> controllerServiceProperties) {
 
         try {
+            reassignControllerServiceIds(processors);
+
             //merge the snapshotted services with the newly created ones and update respective processors in the newly created flow
             final Map<String, ControllerServiceDTO> enabledServices = new HashMap<>();
             Map<String, ControllerServiceDTO> allServices = mergedControllerServices;
@@ -330,6 +435,10 @@ public class TemplateCreationHelper {
                                      NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
         }
         return Collections.emptyList();
+    }
+
+    public Map<String, ControllerServiceDTO> getMergedControllerServices() {
+        return mergedControllerServices;
     }
 
     /**

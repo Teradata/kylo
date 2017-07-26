@@ -20,15 +20,13 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
  * #L%
  */
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 
 /**
  */
 public class BaseStatistics implements Serializable {
 
-    protected DateTime time;
+    protected Long time;
     protected long bytesIn = 0L;
     protected long bytesOut = 0L;
     protected long duration = 0L;
@@ -43,16 +41,42 @@ public class BaseStatistics implements Serializable {
     protected long jobDuration = 0L;
     protected long maxEventId = 0L;
 
+    protected String sourceConnectionIdentifier;
+
     protected String clusterNodeId;
 
     protected String clusterNodeAddress;
 
+    public BaseStatistics(){
 
-    public DateTime getTime() {
+    }
+
+
+    public BaseStatistics(BaseStatistics other) {
+        this.time = other.time;
+        this.bytesIn = other.bytesIn;
+        this.bytesOut = other.bytesOut;
+        this.duration = other.duration;
+        this.totalCount = other.totalCount;
+        this.jobsStarted = other.jobsStarted;
+        this.jobsFinished = other.jobsFinished;
+        this.processorsFailed = other.processorsFailed;
+        this.flowFilesStarted = other.flowFilesStarted;
+        this.flowFilesFinished = other.flowFilesFinished;
+        this.jobsFailed = other.jobsFailed;
+        this.successfulJobDuration = other.successfulJobDuration;
+        this.jobDuration = other.jobDuration;
+        this.maxEventId = other.maxEventId;
+        this.clusterNodeId = other.clusterNodeId;
+        this.clusterNodeAddress = other.clusterNodeAddress;
+        this.sourceConnectionIdentifier = other.sourceConnectionIdentifier;
+    }
+
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(DateTime time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
@@ -176,6 +200,62 @@ public class BaseStatistics implements Serializable {
         this.clusterNodeAddress = clusterNodeAddress;
     }
 
+    public void addBytesIn(Long bytesIn){
+        this.bytesIn += nvl(bytesIn);
+    }
+    public void addBytesOut(Long bytesOut){
+        this.bytesOut += nvl(bytesOut);
+    }
+
+    public void addDuration(Long duration){
+        this.duration += nvl(duration);
+    }
+
+    public void addTotalCount(Long totalCount){
+        this.totalCount += nvl(totalCount);
+    }
+
+    public void addJobsStarted( Long jobsStarted){
+        this.jobsStarted += nvl(jobsStarted);
+    }
+
+    public void addJobsFinished(Long jobsFinished){
+        this.jobsFinished += nvl(jobsFinished);
+    }
+
+    public void addSuccessfulJobDuration(Long successfulJobDuration){
+        this.successfulJobDuration += nvl(successfulJobDuration);
+    }
+
+    public void addJobDuration(Long jobDuration){
+        this.jobDuration += nvl(jobDuration);
+    }
+
+    public void addProcessorsFailed(Long processorsFailed){
+        this.processorsFailed += nvl(processorsFailed);
+    }
+
+    public void addJobsFailed(Long jobsFailed){
+        this.jobsFailed += nvl(jobsFailed);
+    }
+
+    private Long nvl(Long item, Long nullValue){
+        return item == null ? nullValue : item;
+    }
+    private Long nvl(Long item){
+        return nvl(item,0L);
+    }
+
+    public String getSourceConnectionIdentifier() {
+        if(sourceConnectionIdentifier == null){
+            sourceConnectionIdentifier = GroupedStats.DEFAULT_SOURCE_CONNECTION_ID;
+        }
+        return sourceConnectionIdentifier;
+    }
+
+    public void setSourceConnectionIdentifier(String sourceConnectionIdentifier) {
+        this.sourceConnectionIdentifier = sourceConnectionIdentifier;
+    }
 
     public void clear() {
         this.time = null;
@@ -194,5 +274,6 @@ public class BaseStatistics implements Serializable {
         this.maxEventId = 0L;
         this.clusterNodeId = null;
         this.clusterNodeAddress = null;
+        this.sourceConnectionIdentifier = null;
     }
 }

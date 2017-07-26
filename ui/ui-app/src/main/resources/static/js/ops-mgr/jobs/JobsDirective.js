@@ -392,7 +392,11 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         }
 
         this.jobDetails = function(event, job) {
-            StateService.OpsManager().Job().navigateToJobDetails(job.executionId);
+            if(job.stream){
+                StateService.OpsManager().Feed().navigateToFeedStats(job.jobName);
+            }else {
+                StateService.OpsManager().Job().navigateToJobDetails(job.executionId);
+            }
         }
 
         var getRunningJobExecutionData = function(instanceId, executionId) {
@@ -456,7 +460,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('failJob', job);
             OpsManagerJobService.failJob(job.executionId, {}, function(response) {
-                updateJob(instanceId, data)
+                updateJob(instanceId, response.data)
                 triggerJobActionListener('failJob', response.data);
             })
         };
@@ -523,7 +527,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         });
 
         // Fetch allowed permissions
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
                 .then(function(actionSet) {
                     self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });

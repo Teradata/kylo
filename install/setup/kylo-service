@@ -1,0 +1,63 @@
+#!/bin/bash
+ACTIONS=("restart" "stop" "start" "status" "list" "enable" "disable")
+SERVICES=("kylo-ui" "kylo-services" "kylo-spark-shell")
+OPTIONAL_SERVICES=("nifi" "activemq" "elasticsearch" "mysqld" "mariadb" "postgresql")
+USER_ACTION=${1,,}
+OPTIONAL=${2,,}
+
+function kylo_echo {
+  echo -e "\e[1mKylo-Service:\e[0m $1"
+}
+
+function run_action_against_service {
+  ACTION=$1
+  SERVICE=$2
+  # Check if upstart or systemd
+  if [ -f "/etc/init.d/$SERVICE" ]; then
+      if [[ $ACTION == "enable" ]]; then
+        chkconfig $SERVICE on
+      else
+        service $SERVICE $ACTION
+      fi
+  elif [[ $(systemctl cat $SERVICE 2>&1) ]]; then
+      if [[ $ACTION == "enable" ]]; then
+          systemctl $ACTION $SERVICE.service
+      else
+         systemctl $ACTION $SERVICE
+      fi
+  else
+    kylo_echo "Error, Cannot perform $USER_ACTION on Kylo Services."
+  fi
+}
+
+# Show help to the user if requested by user.
+for USER_ARG in "$@"
+do
+  if [[ $USER_ARG  == "help" ]]; then
+          kylo_echo "Supported actions for services are restart, stop, start, status, list, enable and disable.
+          For example, the command kylo-service restart will restart all kylo services.
+          Actions can be run on optional services by adding the optional parameter. For example: kylo-service restart optional\n"; exit 1
+  fi
+done
+
+# Check that user specified action is in the list of possible actions
+if [[ ${ACTIONS[@]} =~ $USER_ACTION ]]; then
+      # Check if optional specified
+      if [ ! -z "$OPTIONAL" ]; then
+        if [[ $OPTIONAL == "optional" ]]; then
+          # Run action against all kylo services
+          for SERVICE in "${OPTIONAL_SERVICES[@]}" ; do
+            run_action_against_service $USER_ACTION $SERVICE
+          done
+        else
+          kylo_echo "Error, Unknown second parameter specified, exiting."; exit 1
+        fi
+      else
+        # Run action against all kylo services
+        for SERVICE in "${SERVICES[@]}" ; do
+          run_action_against_service $USER_ACTION $SERVICE
+        done
+      fi
+else
+  kylo_echo "Invalid Action, exiting."; exit 1
+fi

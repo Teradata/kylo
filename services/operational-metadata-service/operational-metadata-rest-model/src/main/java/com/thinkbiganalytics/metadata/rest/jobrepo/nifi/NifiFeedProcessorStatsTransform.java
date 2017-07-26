@@ -36,7 +36,7 @@ public class NifiFeedProcessorStatsTransform {
      */
     public static List<NifiFeedProcessorStats> toModel(List<? extends com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats> domains) {
         if (domains != null && !domains.isEmpty()) {
-            return domains.stream().map(domain -> toModel(domain)).collect(Collectors.toList());
+           return domains.stream().map(domain -> toModel(domain)).collect(Collectors.toList());
         }
         return null;
     }

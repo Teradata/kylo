@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 /*-
@@ -30,7 +27,7 @@ import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -44,9 +41,6 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- *
- */
 @SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class})
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
@@ -54,7 +48,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     private JcrMetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider provider;
+    private AllowedEntityActionsProvider provider;
 
 //    @BeforeClass
 //    public void print() {
@@ -73,7 +67,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test
     public void testAdminGetAvailable() throws Exception {
         this.metadata.read(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAvailableActions("services");
+            Optional<AllowedActions> option = this.provider.getAvailableActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -86,7 +80,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test
     public void testTestGetAvailable() throws Exception {
         this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAvailableActions("services");
+            Optional<AllowedActions> option = this.provider.getAvailableActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -97,7 +91,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "testAdminGetAvailable")
     public void testAdminGetAllowed() throws Exception {
         this.metadata.read(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -110,7 +104,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "testTestGetAvailable", expectedExceptions = AccessControlException.class)
     public void testTestGetAllowed() throws Exception {
         this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -121,7 +115,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = {"testAdminGetAllowed", "testTestGetAllowed"})
     public void testEnableExport() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -131,7 +125,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
         assertThat(changed).isTrue();
 
         boolean passed = this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -145,7 +139,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "testEnableExport", expectedExceptions = AccessControlException.class)
     public void testDisableExport() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -155,7 +149,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
         assertThat(changed).isTrue();
 
         this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -166,7 +160,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "testDisableExport", expectedExceptions = AccessControlException.class)
     public void testEnableOnlyCreate() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
@@ -177,7 +171,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
         assertThat(changed).isTrue();
 
         this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 

@@ -26,7 +26,7 @@ import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
@@ -37,6 +37,8 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -114,6 +116,9 @@ public class NifiIntegrationRestController {
     @Inject
     private SpringEnvironmentProperties environmentProperties;
 
+    @Inject
+    private AccessController accessController;
+
     @GET
     @Path("/auto-align/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -122,6 +127,8 @@ public class NifiIntegrationRestController {
         @ApiResponse(code = 200, message = "The result of the operation.", response = RestResponseStatus.class)
     )
     public Response autoAlign(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         RestResponseStatus status;
         if ("all".equals(processGroupId)) {
             AlignNiFiComponents alignNiFiComponents = new AlignNiFiComponents();
@@ -161,6 +168,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response cleanupVersionedProcessGroups(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         RestResponseStatus status;
         CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient, processGroupId, propertyDescriptorTransform);
         cleanupStaleFeedRevisions.cleanup();
@@ -179,6 +188,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlow(@PathParam("processGroupId") String processGroupId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlow(processGroupId);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
@@ -193,6 +204,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlowForCategoryAndFeed(@PathParam("categoryAndFeedName") String categoryAndFeedName) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlowForCategoryAndFeed(categoryAndFeedName);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
@@ -209,6 +222,8 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFlows() {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         List<NifiFlowProcessGroup> feedFlows = legacyNifiRestClient.getFeedFlows();
         if (feedFlows != null) {
             log.info("********************** getAllFlows  ({})", feedFlows.size());

@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
 /**
  * Represents information about the NiFi Provenance event taken from the {@link com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO}
  */
+@Deprecated
 public interface NifiEvent {
 
     /**

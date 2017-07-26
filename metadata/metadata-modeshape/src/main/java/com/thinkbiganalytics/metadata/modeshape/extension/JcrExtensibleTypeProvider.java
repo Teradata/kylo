@@ -44,6 +44,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -73,7 +74,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             return new JcrExtensibleType(typeNode, nodeType);
         } catch (ItemNotFoundException e) {
             return null;
-        } catch (NoSuchNodeTypeException e) {
+        } catch (NoSuchNodeTypeException | PathNotFoundException e) {
             return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure retriving exstenible type with ID: " + id, e);
@@ -88,7 +89,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             final NodeType nodeType = session.getWorkspace().getNodeTypeManager().getNodeType(typeName);
             final Node typeNode = session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeName);
             return new JcrExtensibleType(typeNode, nodeType);
-        } catch (NoSuchNodeTypeException e) {
+        } catch (NoSuchNodeTypeException | PathNotFoundException e) {
             return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to lookup extensible type: " + name, e);

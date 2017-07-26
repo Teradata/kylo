@@ -28,6 +28,14 @@ import javax.annotation.Nonnull;
 public interface SparkShellProcess {
 
     /**
+     * Gets the client identifier for this process.
+     *
+     * @return a unique identifier for this client
+     */
+    @Nonnull
+    String getClientId();
+
+    /**
      * Gets the hostname for communicating with this Spark Shell client.
      *
      * @return the hostname
@@ -37,10 +45,17 @@ public interface SparkShellProcess {
     String getHostname();
 
     /**
-     * Gets the port number fo communicating with this Spark Shell client.
+     * Gets the port number for communicating with this Spark Shell client.
      *
      * @return the port number
      * @throws IllegalStateException if the Spark Shell client is not ready to receive commands
      */
     int getPort();
+
+    /**
+     * Indicates that this process is managed locally and not by another node in a cluster.
+     *
+     * @return {@code true} if this process runs locally, or {@code false} otherwise
+     */
+    boolean isLocal();
 }

@@ -36,6 +36,7 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     private String tableName;
     private String databaseName;
     private int index;
+    private String comment;
 
     @Override
     public String getField() {
@@ -105,5 +106,15 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     @Override
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    @Override
+    public String getComment() {
+        return comment;
+    }
+
+    @Override
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

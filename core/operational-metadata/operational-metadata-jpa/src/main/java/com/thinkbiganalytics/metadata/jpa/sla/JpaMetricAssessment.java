@@ -64,13 +64,14 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
 
     @Id
     @GeneratedValue
-    @Column(name = "id", columnDefinition = "binary(16)")
+    @Column(name = "id")
     private UUID id;
 
     @Transient
     private Metric metric;
 
     @Column(name = "MESSAGE")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String message;
 
     @Enumerated(EnumType.STRING)

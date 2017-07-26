@@ -17,31 +17,18 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
-                         allow-edit="vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
-                         ng-if="vm.model.registeredTemplate.defineTable || vm.model.registeredTemplate.dataTransformation" the-form="vm.editFeedDataPoliciesForm">
+<vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+                         editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDataPoliciesForm">
 
   <readonly-section>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.defineTable">
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">Source Feed Record Format</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
       </div>
     </div>
-
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
-      <span flex="25" class="property-name">Data Transformations</span>
-    </div>
-
-    <md-list class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
-      <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
-        <md-icon>{{state.context.icon}}</md-icon>
-        <p title="{{state.context.name}}">{{state.context.name}}</p>
-      </md-list-item>
-      <md-divider ng-repeat-end></md-divider>
-    </md-list>
 
     <div layout="row" class="layout-padding-top-bottom">
       <span flex="25" class="property-name">Destination Table Name</span>
@@ -56,8 +43,11 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text hint">
+          <div flex="25" class="md-list-item-text hint">
             Field Name
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            Domain<br/>Type
           </div>
           <div flex="10" class="md-list-item-text hint">
             Primary
@@ -98,10 +88,7 @@
             </md-tooltip>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            Standardize
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            Validate
+            Standardize <br/>& Validate
           </div>
         </div>
       </md-list-item>
@@ -109,9 +96,17 @@
 
       <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text">
+          <div flex="25" class="md-list-item-text">
             <div>{{policy.name}}</div>
             <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
+            <md-tooltip md-direction="left" ng-if="vm.fieldNameMap[policy.name].description">
+              {{vm.fieldNameMap[policy.name].description}}
+            </md-tooltip>
+           </div>
+          <div flex="10" class="md-list-item-text">
+            <ng-md-icon ng-if="policy.domainTypeId != null" icon="{{vm.getDomainType(policy.domainTypeId).icon}}" size="32" title="{{vm.getDomainType(policy.domainTypeId).title}}"
+                        style="fill:{{vm.getDomainType(policy.domainTypeId).iconColor}}">
+            </ng-md-icon>
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
@@ -139,13 +134,8 @@
             <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            <ul ng-if="policy.standardization != null && policy.standardization.length >0">
-              <li ng-repeat="rule in policy.standardization">{{rule.name}}</li>
-            </ul>
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            <ul ng-if="policy.validation != null && policy.validation.length >0">
-              <li ng-repeat="rule in policy.validation">{{rule.name}}</li>
+            <ul>
+              <li ng-repeat="rule in vm.getAllFieldPolicies(policy)">{{rule.name}}</li>
             </ul>
           </div>
         </div>
@@ -241,19 +231,12 @@
   </readonly-section>
   <editable-section>
     <ng-form name="vm.editFeedDataPoliciesForm">
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.defineTable">
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">Source Feed Record Format</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
       </div>
-    </div>
-
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
-      <span flex="25" class="property-name">Data Transformations</span>
-    </div>
-    <div layout="row">
-      <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Transformations...</md-button>
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">
@@ -268,8 +251,11 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text hint">
+          <div flex="25" class="md-list-item-text hint">
             Field Name
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            Domain<br/>Type
           </div>
           <div flex="10" class="md-list-item-text hint">
             Primary
@@ -302,30 +288,60 @@
             <md-tooltip md-direction="top">
               Define what should be sent to "Global Search"
             </md-tooltip>
+            <md-input-container class="md-block" flex-gt-sm>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.indexCheckAll.isChecked"
+                           md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                           ng-click="vm.indexCheckAll.toggleAll()"
+                           style="margin-left:-1px;"></md-checkbox>
+            </md-input-container>
           </div>
           <div flex="10" class="md-list-item-text hint">
             Profile
             <md-tooltip md-direction="top">
               Should this field be profiled?
             </md-tooltip>
+            <md-input-container class="md-block" flex-gt-sm>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.profileCheckAll.isChecked"
+                           md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                           ng-click="vm.profileCheckAll.toggleAll()"
+              style="margin-left:-1px;">
+              </md-checkbox>
+            </md-input-container>
           </div>
           <div flex="15" class="md-list-item-text hint">
-            Standardize
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            Validate
+            Standardize <br/>& Validate
           </div>
         </div>
       </md-list-item>
+      <div layout="row" layout-fill flex>
+        <span style="margin-top:-10px;" layout-fill flex>
+           <md-divider style="border-top-color:grey"></md-divider>
+        </span>
+      </div>
 
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="20" class="md-list-item-text">
+          <div flex="25" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
-              <div>{{policy.name}}</div>
+              <md-button md-no-ink class="md-primary kylo-edit-field-button" ng-click="vm.showEditFieldDialog(policy.columnDef)">{{policy.name}}</md-button>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
+              <md-tooltip md-direction="left" ng-if="policy.columnDef.description">
+                {{policy.columnDef.description}}
+              </md-tooltip>
             </md-input-container>
+
+          </div>
+          <div flex="10" class="md-list-item-text">
+            <md-select ng-model="policy.domainTypeId" md-selected-html="vm.getDomainTypePlaceholder(policy.domainTypeId)" ng-change="vm.onDomainTypeChange(policy)" style="margin:0;width:70px">
+              <md-option ng-value=""><em>None</em></md-option>
+              <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
+                <ng-md-icon icon="{{domainType.icon}}" style="fill:{{domainType.iconColor}}"></ng-md-icon> {{domainType.title}}
+              </md-option>
+            </md-select>
+            <md-button md-no-ink class="kylo-apply-domain-type-button" ng-if="policy.domainTypeId != null" ng-click="vm.onDomainTypeChange(policy)">Reapply</md-button>
           </div>
           <div flex="10" class="md-list-item-text ">
             <md-checkbox ng-model="policy.columnDef.primaryKey" aria-label="Primary Key" ng-change="vm.onChangePrimaryKey()"></md-checkbox>
@@ -344,31 +360,22 @@
                          ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.index" aria-label="Index"></md-checkbox>
+            <md-checkbox ng-model="policy.index" aria-label="Index" ng-click="vm.indexCheckAll.clicked(!policy.index)"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.profile" aria-label="Profile" ></md-checkbox>
+            <md-checkbox ng-model="policy.profile" aria-label="Profile" ng-click="vm.profileCheckAll.clicked(!policy.index)"></md-checkbox>
           </div>
           <div flex="15" class="md-list-item-text hint" layout-align="start center">
-            <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
+            <div ng-click="vm.showFieldRuleDialog(policy)" style="color:#2D78B1;">
               <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                 <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
               </md-button>
               ADD
             </div>
-            <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
-              {{policy.standardization.length}} Added
-            </div>
-          </div>
-          <div flex="15" class="md-list-item-text hint" layout-align="start center">
-            <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
-              <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-              </md-button>
-              ADD
-            </div>
-            <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
-              {{policy.validation.length}} Added
+
+            <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+              <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
+              <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
             </div>
           </div>
         </div>

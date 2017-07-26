@@ -49,6 +49,8 @@ public class FeedFailureService {
     private final MetadataEventListener<FeedOperationStatusEvent> failedFeedEventListener = new FailedFeedEventDispatcher();
     @Inject
     private MetadataEventService eventService;
+
+    public DateTime initializeTime = new DateTime();
     /**
      * Map with the Latest recorded Feed Failure
      */
@@ -73,6 +75,10 @@ public class FeedFailureService {
     @PreDestroy
     public void removeEventListener() {
         eventService.removeListener(failedFeedEventListener);
+    }
+
+    public LastFeedFailure getLastFeedFailure(String feedName){
+        return lastFeedFailureMap.get(feedName);
     }
 
     /**

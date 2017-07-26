@@ -49,6 +49,8 @@ public class OperationStatus implements Serializable {
         this.status = status;
     }
 
+
+
     public OperationStatus(Feed.ID id, FeedOperation.ID opId, FeedOperation.State state, String status) {
         this.feedId = id;
         this.feedName = null;
@@ -76,4 +78,6 @@ public class OperationStatus implements Serializable {
     public String getStatus() {
         return status;
     }
+
+
 }

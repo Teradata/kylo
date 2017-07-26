@@ -5,25 +5,30 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             restrict: "EA",
             scope: {
                 property:'=',
+                theForm:'=',
                 propertyDisabled:'=?',
                 onPropertyChange:'&?'
             },
             templateUrl: 'js/feed-mgr/shared/nifi-property-input/nifi-property-input.html',
             link: function ($scope, element, attrs) {
                 element.addClass('nifi-property-input layout-padding-top-bottom')
+                if($scope.property.formKey == null) {
+                    var formKey = $scope.property.key.split(' ').join('_')+$scope.property.processorName.split(' ').join('_')
+                    $scope.property.formKey = formKey.toLowerCase();
+                }
                 if($scope.propertyDisabled == undefined){
                     $scope.propertyDisabled = false;
                 }
 
                 $scope.onPropertyChanged = function(){
                     if($scope.onPropertyChange != undefined){
-                        $scope.onPropertyChange()($scope.property);
+                        $scope.onPropertyChange($scope.property);
                     }
                 }
 
                 if( $scope.property.renderType == 'select' && $scope.property.value != null) {
                     if($scope.onPropertyChange != undefined){
-                        $scope.onPropertyChange()($scope.property);
+                        $scope.onPropertyChange($scope.property);
                     }
                 }
 

@@ -28,7 +28,12 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -38,16 +43,24 @@ public class FeedChange extends MetadataChange {
     private static final long serialVersionUID = 1L;
 
     private final Feed.ID feedId;
+    private final String feedName;
     private final Feed.State feedState;
+
+
 
     public FeedChange(ChangeType change, ID feedId, State feedState) {
         this(change, "", feedId, feedState);
     }
 
     public FeedChange(ChangeType change, String descr, ID feedId, State feedState) {
+        this(change,descr,null,feedId,feedState);
+    }
+
+    public FeedChange(ChangeType change, String descr, String feedName,ID feedId, State feedState) {
         super(change, descr);
         this.feedId = feedId;
         this.feedState = feedState;
+        this.feedName = StringUtils.isBlank(feedName)? null : feedName;
     }
 
     public Feed.ID getFeedId() {
@@ -56,6 +69,10 @@ public class FeedChange extends MetadataChange {
 
     public Feed.State getFeedState() {
         return feedState;
+    }
+
+    public Optional<String> getFeedName() {
+        return Optional.ofNullable(feedName);
     }
 
     @Override

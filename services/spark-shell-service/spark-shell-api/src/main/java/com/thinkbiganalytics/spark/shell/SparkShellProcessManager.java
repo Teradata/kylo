@@ -30,6 +30,16 @@ import javax.annotation.Nonnull;
 public interface SparkShellProcessManager {
 
     /**
+     * Adds a listener for receiving process state change events.
+     */
+    void addListener(@Nonnull SparkShellProcessListener listener);
+
+    /**
+     * Removes the listener from this process manager.
+     */
+    void removeListener(@Nonnull SparkShellProcessListener listener);
+
+    /**
      * Waits for a Spark Shell process to start for the specified user.
      *
      * @param username the user who will be using the Spark Shell process
@@ -57,12 +67,11 @@ public interface SparkShellProcessManager {
      * has finished starting.</p>
      *
      * @param clientId     the Spark Shell client id
-     * @param clientSecret the Spark Shell client secret
      * @param registration the Spark Shell registration request
      * @throws IllegalArgumentException      if the client id or secret is not recognized
      * @throws UnsupportedOperationException if this process manager does not support registration
      */
-    void register(@Nonnull String clientId, @Nonnull String clientSecret, @Nonnull RegistrationRequest registration);
+    void register(@Nonnull String clientId, @Nonnull RegistrationRequest registration);
 
     /**
      * Starts a new Spark Shell process for the specified user if one is not already running.
@@ -72,5 +81,5 @@ public interface SparkShellProcessManager {
      * @param username the user who will be using the Spark Shell process
      * @throws IllegalStateException if a Spark Shell process cannot be started
      */
-    void start(@Nonnull String username) throws IllegalStateException;
+    void start(@Nonnull String username);
 }

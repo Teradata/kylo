@@ -65,6 +65,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 _.each(getTableDataProcessors, function (processor) {
                     processor.userEditable = renderGetData;
                 });
+                //if the flow starts with the watermark and doesnt have a downstream getTableData then dont render the table
+                if( renderGetData && data.isWatermarkProcessor(inputProcessor) && getTableDataProcessors.length ==0){
+                    renderGetData = false;
+                }
                 return renderGetData;
             },
             updateSqoopProcessorRendering: function (inputProcessor, nonInputProcessors) {

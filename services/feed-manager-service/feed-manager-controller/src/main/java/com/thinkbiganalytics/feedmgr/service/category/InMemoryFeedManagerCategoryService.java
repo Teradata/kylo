@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
+import com.thinkbiganalytics.security.action.Action;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,6 +93,11 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
             categories.put(category.getId(), category);
         }
 
+    }
+
+    @Override
+    public boolean checkCategoryPermission(String id, Action action, Action... more) {
+        return true;
     }
 
     @Override

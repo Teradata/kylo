@@ -80,10 +80,13 @@ public enum TableType {
         Validate.notNull(entity, "entity expected");
 
         Path path = tableLocation.resolve(source).resolve(entity).resolve(tableSuffix);
+        String location = path.toString().replace(":/", "://");
 
         StringBuffer sb = new StringBuffer();
-        sb.append(" LOCATION '")
-            .append(path.toAbsolutePath().toString()).append("'");
+        sb.append(" LOCATION '");
+
+        sb.append(location).append("'");
+
         return sb.toString();
     }
 

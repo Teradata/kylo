@@ -1,0 +1,13 @@
+<md-dialog arial-label="Profile Data" ng-cloak style="width: 100%; height: 100%;" class="md-dialog-fullscreen-fixed">
+  <div class="md-toolbar-tools" layout="row" layout-align="left">
+    <md-dialog-actions layout="row" layout-align="end start" flex class="layout-padding-top">
+      <md-button class="md-raised md-primary" ng-click="cancel()">Close</md-button>
+    </md-dialog-actions>
+    <h4 class="md-title">
+      <span>Profile Data</span>
+    </h4>
+  </div>
+  <md-dialog-content layout="column" layout-padding style="width: 100%; height: 100%;">
+    <profile-stats model="profile"></profile-stats>
+  </md-dialog-content>
+</md-dialog>

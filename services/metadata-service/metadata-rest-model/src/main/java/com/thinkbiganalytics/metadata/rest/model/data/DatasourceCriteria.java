@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
 /*-
@@ -25,17 +22,14 @@ package com.thinkbiganalytics.metadata.rest.model.data;
 
 import org.joda.time.DateTime;
 
-/**
- *
- */
 public interface DatasourceCriteria {
 
-    static final String NAME = "name";
-    static final String OWNER = "owner";
-    static final String ON = "on";
-    static final String AFTER = "after";
-    static final String BEFORE = "before";
-    static final String TYPE = "type";
+    String NAME = "name";
+    String OWNER = "owner";
+    String ON = "on";
+    String AFTER = "after";
+    String BEFORE = "before";
+    String TYPE = "type";
 
     DatasourceCriteria name(String name);
 

@@ -27,6 +27,7 @@ import org.joda.time.ReadablePeriod;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Provider interface for accessing/processing Feeds
@@ -73,12 +74,30 @@ public interface OpsManagerFeedProvider {
     void save(List<? extends OpsManagerFeed> feeds);
 
     /**
+     * Feed Names to update the streaming flag
+     * @param feedNames set of category.feed names
+     * @param isStream true if stream, false if not
+     */
+    void updateStreamingFlag(Set<String> feedNames, boolean isStream);
+
+
+    /**
+     * For Batch Feeds that may start many flowfiles/jobs at once in a short amount of time
+     * we don't necessarily want to show all of those as individual jobs in ops manager as they may merge and join into a single ending flow.
+     * For a flood of starting jobs if ops manager receives more than 1 starting event within this given interval it will supress the creation of the next Job
+     * Set this to -1L or 0L to bypass and always create a job instance per starting flow file.
+     * @param feedNames a set of category.feed names
+     * @param timeBetweenBatchJobs  a time in millis to supress new job creation
+     */
+    void updateTimeBetweenBatchJobs(Set<String> feedNames, Long timeBetweenBatchJobs);
+
+    /**
      * save a feed with a specific feed id and name
      * This is used to save an initial record for a feed when a feed is created
      *
      * @return the saved feed
      */
-    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName);
+    OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName, boolean isStream, Long timeBetweenBatchJobs);
 
     /**
      * Delete a feed and all of its operational metadata (i.e. jobs, steps, etc)
@@ -133,4 +152,10 @@ public interface OpsManagerFeedProvider {
      * @param listener a delete feed listener
      */
     void subscribeFeedDeletion(DeleteFeedListener listener);
+
+    /**
+     * listen when feed changes
+     * @param listener
+     */
+    void subscribe(OpsManagerFeedChangedListener listener);
 }

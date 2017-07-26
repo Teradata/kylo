@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
 
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+
 /**
  * Represents high level flow and job statistics for a given feed and processor
  */
@@ -144,6 +146,20 @@ public interface NifiFeedProcessorStats {
      * set the total event count
      */
     void setTotalCount(Long totalCount);
+
+
+    /**
+     *
+     * @return the number of events that failed
+     */
+    Long getFailedCount();
+
+    /**
+     * set the total events that are failure events
+     * @param totalFailureCount
+     */
+    void setFailedCount(Long failedCount);
+
 
     /**
      * return the total jobs started by this feed and processor
@@ -310,6 +326,23 @@ public interface NifiFeedProcessorStats {
      * set the cluster node address
      */
     void setClusterNodeAddress(String clusterNodeAddress);
+
+
+
+    Long getCollectionIntervalSeconds();
+
+    void setCollectionIntervalSeconds(Long collectionIntervalSeconds);
+
+
+    BigDecimal getJobsStartedPerSecond();
+
+    void setJobsStartedPerSecond(BigDecimal jobsStartedPerSecond);
+
+    BigDecimal getJobsFinishedPerSecond();
+
+    void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond);
+
+
 
 
 }

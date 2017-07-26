@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>kylo-nifi-provenance-repo-v1.2</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+    <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
+    <version>0.8.3-SNAPSHOT</version>
+  </parent>
+  <packaging>jar</packaging>
+
+  <properties>
+    <nifi.version>1.2.0</nifi.version>
+    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+  </properties>
+
+
+
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+      <artifactId>kylo-nifi-provenance-repo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-api</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-utils</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-persistent-provenance-repository</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-volatile-provenance-repository</artifactId>
+      <version>${nifi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-data-provenance-utils</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-framework-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-bootstrap</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-mock</artifactId>
+      <version>${nifi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+
+
+  </dependencies>
+</project>

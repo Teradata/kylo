@@ -21,6 +21,7 @@ package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
  */
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 /**
  * Configuration for Ambari REST client
@@ -29,23 +30,8 @@ public class AmbariJerseyRestClientConfig extends JerseyClientConfig {
 
     private String apiPath = "/api/v1";
 
-    public AmbariJerseyRestClientConfig(String apiPath) {
-        this.apiPath = apiPath;
-    }
-
-    public AmbariJerseyRestClientConfig() {
-
-    }
-
-    public AmbariJerseyRestClientConfig(String host, String username, String password, String apiPath) {
-        super(host, username, password);
-        this.apiPath = apiPath;
-    }
-
-    public AmbariJerseyRestClientConfig(String host, String username, String password, boolean https,
-                                        boolean keystoreOnClasspath, String keystorePath, String keystorePassword, String apiPath) {
-        super(host, username, password, https, keystoreOnClasspath, keystorePath, keystorePassword);
-        this.apiPath = apiPath;
+    public AmbariJerseyRestClientConfig(EncryptionService encryptionService) {
+        super(encryptionService);
     }
 
     public String getApiPath() {

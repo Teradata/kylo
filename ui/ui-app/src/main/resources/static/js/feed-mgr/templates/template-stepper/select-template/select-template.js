@@ -17,12 +17,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 var thisController = controllers[0];
                 var stepperController = controllers[1];
                 thisController.stepperController = stepperController;
+                if(thisController && thisController.isLoading()){
+                    stepperController.showProgress = true;
+                }
             }
 
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, RestUrlService, RegisterTemplateService, StateService, AccessControlService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
+                               UiComponentsService) {
 
         var self = this;
 
@@ -56,14 +60,54 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         self.allowEdit = false;
 
+        /**
+         * Flag to indicate the template is loading
+         * Used for PRogress
+         * @type {boolean}
+         */
+        self.loadingTemplate = false;
+
+        /**
+         * Flag to indicate the select template list is loading
+         * @type {boolean}
+         */
+        self.fetchingTemplateList = false;
+
+        /**
+         * The possible options to choose how this template should be displayed in the Feed Stepper
+         * @type {Array.<TemplateTableOption>}
+         */
+        self.templateTableOptions = [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'}];
+        UiComponentsService.getTemplateTableOptions()
+            .then(function (templateTableOptions) {
+                Array.prototype.push.apply(self.templateTableOptions, templateTableOptions);
+            });
+
+        // setup the Stepper types
+        var initTemplateTableOptions = function () {
+            if (self.model.templateTableOption == null) {
+
+                if (self.model.defineTable) {
+                    self.model.templateTableOption = 'DEFINE_TABLE'
+                } else if (self.model.dataTransformation) {
+                    self.model.templateTableOption = 'DATA_TRANSFORMATION'
+                } else if (self.model.reusableTemplate) {
+                    self.model.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
+                } else {
+                    self.model.templateTableOption = 'NO_TABLE'
+                }
+            }
+        };
+
         function showProgress() {
             if (self.stepperController) {
                 self.stepperController.showProgress = true;
             }
         }
 
+
         function hideProgress() {
-            if (self.stepperController) {
+            if (self.stepperController && !self.isLoading()) {
                 self.stepperController.showProgress = false;
             }
         }
@@ -79,19 +123,27 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         }
 
+        this.isLoading = function(){
+            return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
+        }
+
         /**
          * Gets the templates for the select dropdown
          * @returns {HttpPromise}
          */
         this.getTemplates = function () {
+            self.fetchingTemplateList = true;
             showProgress();
             RegisterTemplateService.getTemplates().then(function (response) {
                 self.templates = response.data;
+                self.fetchingTemplateList = false;
                 hideProgress();
             });
         };
 
         this.changeTemplate = function () {
+            self.errorMessage = null;
+            self.loadingTemplate = true;
             showProgress();
             //Wait for the properties to come back before allowing hte user to go to the next step
             var selectedTemplate = findSelectedTemplate();
@@ -100,11 +152,38 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 templateName = selectedTemplate.name;
             }
             RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId, templateName).then(function (response) {
-                $timeout(function () {
-                    hideProgress();
-                }, 10);
+
+
+
                 RegisterTemplateService.warnInvalidProcessorNames();
-                self.isValid = self.model.valid;
+                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(accessResponse) {
+                    self.isValid = accessResponse.isValid;
+                    self.allowAdmin = accessResponse.allowAdmin;
+                    self.allowEdit = accessResponse.allowEdit;
+                    self.allowAccessControl = accessResponse.allowAccessControl;
+                    if(!accessResponse.isValid) {
+                        //PREVENT access
+                        self.errorMessage ="Access Denied.  You are unable to edit the template. ";
+                    }
+                    else {
+                        if (  !self.allowAccessControl) {
+                            //deactivate the access control step
+                            self.stepperController.deactivateStep(3);
+                        }
+                        else {
+                            self.stepperController.activateStep(3);
+                        }
+                    }
+                        self.loadingTemplate = false;
+                        hideProgress();
+                });
+
+
+            },function(err) {
+                RegisterTemplateService.resetModel();
+                self.errorMessage ="An Error was found loading this template.  Please ensure you have access to edit this template.";
+                self.loadingTemplate = false;
+                hideProgress();
             });
         }
 
@@ -179,18 +258,47 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             });
         };
 
+        /**
+         * Called when the user changes the radio buttons
+         */
+        this.onTableOptionChange = function () {
+            if (self.model.templateTableOption === 'DEFINE_TABLE') {
+                self.model.defineTable = true;
+                self.model.dataTransformation = false;
+            } else if (self.model.templateTableOption === 'DATA_TRANSFORMATION') {
+                self.model.defineTable = false;
+                self.model.dataTransformation = true;
+            } else {
+                self.model.defineTable = false;
+                self.model.dataTransformation = false;
+            }
+        };
+
+        $scope.$watch(function(){
+            return self.model.loading;
+        },function(newVal){
+            if(newVal === false) {
+                initTemplateTableOptions();
+                hideProgress();
+            }
+        });
+
+
         this.getTemplates();
 
-        AccessControlService.getAllowedActions()
+        AccessControlService.getUserAllowedActions()
             .then(function (actionSet) {
                 self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
                 self.allowAdmin = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
                 self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
+
+
     };
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","RestUrlService","RegisterTemplateService","StateService","AccessControlService",controller]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService",
+                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);

@@ -20,9 +20,11 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.CacheSummary;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -34,7 +36,9 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -65,6 +69,9 @@ public class NifiProvenanceRestController {
     private AccessController accessController;
     @Autowired
     private NifiFeedProcessorStatisticsProvider statsProvider;
+
+    @Autowired
+    private NifiEventProvider eventProvider;
 
     @GET
     @Path("/nifi-flow-cache/get-flow-updates")
@@ -107,10 +114,10 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow cache status.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the cache status.", response = NifiFlowCache.CacheSummary.class)
+        @ApiResponse(code = 200, message = "Returns the cache status.", response = CacheSummary.class)
     )
     public Response previewFlowUpdates() {
-        NifiFlowCache.CacheSummary summary = nifiFlowCache.cacheSummary();
+        CacheSummary summary = new CacheSummary();
         return Response.ok(summary).build();
     }
 
@@ -151,25 +158,4 @@ public class NifiProvenanceRestController {
     }
 
 
-    @GET
-    @Path("/max-event-id")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the maximum event id received from the specified node.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
-    )
-    public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
-        return metadataAccess.read(() -> {
-            Long maxId = 0L;
-            if (StringUtils.isNotBlank(clusterNodeId)) {
-                maxId = statsProvider.findMaxEventId(clusterNodeId);
-            } else {
-                maxId = statsProvider.findMaxEventId();
-            }
-            if (maxId == null) {
-                maxId = -1L;
-            }
-            return Response.ok(maxId).build();
-        }, MetadataAccess.SERVICE);
-    }
 }

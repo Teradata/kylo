@@ -32,6 +32,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryAuthenticationProvider;
 
 import java.security.Principal;
 import java.util.Map;
@@ -47,9 +48,11 @@ import javax.security.auth.login.AccountException;
  */
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
-    public static final String AUTH_PROVIDER = "authProvider";
     private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryLoginModule.class);
-    private AbstractLdapAuthenticationProvider authProvider;
+    
+    public static final String AUTH_PROVIDER = "authProvider";
+    
+    private ActiveDirectoryAuthenticationProvider authProvider;
 
 
     /* (non-Javadoc)
@@ -59,7 +62,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
 
-        this.authProvider = (AbstractLdapAuthenticationProvider) getOption(AUTH_PROVIDER)
+        this.authProvider = (ActiveDirectoryAuthenticationProvider) getOption(AUTH_PROVIDER)
             .orElseThrow(() -> new IllegalArgumentException("The \"" + AUTH_PROVIDER + "\" option is required"));
     }
 
@@ -70,8 +73,13 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     protected boolean doLogin() throws Exception {
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
-
-        handle(nameCallback, passwordCallback);
+        
+        if (this.authProvider.isUsingServiceCredentials()) {
+            handle(nameCallback);
+            passwordCallback.setPassword("".toCharArray());
+        } else {
+            handle(nameCallback, passwordCallback);
+        }
 
         if (nameCallback.getName() == null) {
             throw new AccountException("No username provided for authentication");

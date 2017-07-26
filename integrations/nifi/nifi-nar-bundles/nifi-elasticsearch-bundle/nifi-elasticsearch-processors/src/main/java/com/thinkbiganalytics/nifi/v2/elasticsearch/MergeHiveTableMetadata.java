@@ -60,7 +60,7 @@ import java.util.Set;
  * This processor aggregates JSON metadata about a hive table so that a table and it's columns are in one JSON document
  */
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
-@Tags({"hive", "metadata", "thinkbig", "elasticsearch"})
+@Tags({"hive", "metadata", "thinkbig", "elasticsearch", "solr"})
 @CapabilityDescription("Aggregate JSON across multiple documents into one document representing a Hive table (V2)")
 public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
@@ -90,6 +90,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("NAME")
         .build();
 
     /**
@@ -101,6 +102,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("OWNER_NAME")
         .build();
 
     /**
@@ -112,6 +114,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("CREATE_TIME")
         .build();
 
     /**
@@ -123,6 +126,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("TBL_NAME")
         .build();
 
     /**
@@ -134,6 +138,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("TBL_TYPE")
         .build();
 
     /**
@@ -145,6 +150,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("COLUMN_NAME")
         .build();
 
     /**
@@ -156,7 +162,21 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
+        .defaultValue("TYPE_NAME")
         .build();
+
+    /**
+     * A property for the column comment
+     */
+    public static final PropertyDescriptor COLUMN_COMMENT = new PropertyDescriptor.Builder()
+        .name("Column Comment Field")
+        .description("Field representing the column comment")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .defaultValue("COMMENT")
+        .build();
+
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -177,6 +197,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         pds.add(TABLE_TYPE);
         pds.add(COLUMN_NAME);
         pds.add(COLUMN_TYPE);
+        pds.add(COLUMN_COMMENT);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -199,7 +220,6 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
             return;
         }
         try {
-              /* Configuration parameters for spark launcher */
             final String databaseNameField = context.getProperty(DATABASE_NAME).evaluateAttributeExpressions(flowFile).getValue();
             final String databaseOwnerField = context.getProperty(DATABASE_OWNER).evaluateAttributeExpressions(flowFile).getValue();
             final String tableCreateTimeField = context.getProperty(TABLE_CREATE_TIME).evaluateAttributeExpressions(flowFile).getValue();
@@ -207,6 +227,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
             final String tableTypeField = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(flowFile).getValue();
             final String columnNameField = context.getProperty(COLUMN_NAME).evaluateAttributeExpressions(flowFile).getValue();
             final String columnTypeField = context.getProperty(COLUMN_TYPE).evaluateAttributeExpressions(flowFile).getValue();
+            final String columnCommentField = context.getProperty(COLUMN_COMMENT).evaluateAttributeExpressions(flowFile).getValue();
 
             final StringBuffer sb = new StringBuffer();
             session.read(flowFile, new InputStreamCallback() {
@@ -236,6 +257,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
                             String tableType = jsonObj.getString(tableTypeField);
                             String columnName = jsonObj.getString(columnNameField);
                             String columnType = jsonObj.getString(columnTypeField);
+                            String columnComment = jsonObj.getString(columnCommentField);
                             String key = databaseName + tableName;
 
                             if (tables.containsKey(key)) {
@@ -243,6 +265,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
                                 HiveColumn column = new HiveColumn();
                                 column.setColumnName(columnName);
                                 column.setColumnType(columnType);
+                                column.setColumnComment(columnComment);
                                 meta.getHiveColumns().add(column);
 
                             } else {
@@ -255,6 +278,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
                                 HiveColumn column = new HiveColumn();
                                 column.setColumnName(columnName);
                                 column.setColumnType(columnType);
+                                column.setColumnComment(columnComment);
                                 meta.getHiveColumns().add(column);
                                 tables.put(key, meta);
                             }
@@ -349,6 +373,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
         private String columnName;
         private String columnType;
+        private String columnComment;
 
         public String getColumnType() {
             return columnType;
@@ -364,6 +389,14 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
         public void setColumnName(String columnName) {
             this.columnName = columnName;
+        }
+
+        public String getColumnComment() {
+            return columnComment;
+        }
+
+        public void setColumnComment(String columnComment) {
+            this.columnComment = columnComment;
         }
     }
 }

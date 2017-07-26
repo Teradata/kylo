@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>kylo-install</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.8.3-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>kylo-install-debian</artifactId>
+  <properties>
+    <!-- override using property -Drpm.install.dir -->
+    <rpm.install.dir>/opt/kylo</rpm.install.dir>
+    <rpm.scripts.path>src/main/scripts</rpm.scripts.path>
+    <!-- override using property -Drpm.log.dir -->
+    <rpm.log.dir>/var/log</rpm.log.dir>
+    <!-- override using property -Drpm.user -->
+    <rpm.user>kylo</rpm.user>
+    <file.permissions>744</file.permissions>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>jdeb</artifactId>
+        <groupId>org.vafer</groupId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <deb>${project.build.directory}/deb/kylo-${project.version}.deb</deb>
+              <controlDir>${project.build.directory}/kylo-install-debian-${project.version}-dependencies/deb-control</controlDir>
+              <dataSet>
+                <data>
+                  <src>../install-tar/target/kylo-${project.version}-dependencies.tar.gz</src>
+                  <dst>${rpm.install.dir}/kylo-${project.version}-dependencies.tar.gz</dst>
+                  <type>file</type>
+                  <missingSrc>fail</missingSrc>
+                  <mapper>
+                    <type>perm</type>
+                    <filemode>${file.permissions}</filemode>
+                    <user>${rpm.user}</user>
+                    <group>${rpm.user}</group>
+                  </mapper>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <tarLongFileMode>posix</tarLongFileMode>
+          <descriptors>
+            <descriptor>src/main/assembly/descriptor.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+
+</project>

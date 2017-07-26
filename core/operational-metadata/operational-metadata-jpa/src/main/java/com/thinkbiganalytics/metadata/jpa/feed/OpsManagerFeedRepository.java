@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,27 +30,41 @@ import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring data repository for accessing {@link JpaOpsManagerFeed}
  */
+@RepositoryType(FeedSecuringRepository.class)
 public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
-
 
     JpaOpsManagerFeed findByName(String name);
 
-    @Query("select feed from JpaOpsManagerFeed as feed where feed.id in(:ids)")
+    @Query("select feed from JpaOpsManagerFeed as feed "
+                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+                    + " where feed.id in(:ids)"
+                    + " and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<JpaOpsManagerFeed> findByFeedIds(@Param("ids") List<OpsManagerFeed.ID> ids);
 
-
-    @Query("select feed.name from JpaOpsManagerFeed as feed")
+    @Query("SELECT distinct feed.name FROM JpaOpsManagerFeed AS feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + "where "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<String> getFeedNames();
 
-
     @Procedure(name = "OpsManagerFeed.deleteFeedJobs")
-    void deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
+    Integer deleteFeedJobs(@Param("category") String category, @Param("feed") String feed);
 
     @Procedure(name = "OpsManagerFeed.abandonFeedJobs")
-    void abandonFeedJobs(@Param("feed") String feed);
+    Integer abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage);
 
+
+    @Query("select feed from JpaOpsManagerFeed as feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where feed.name in(:feedNames)"
+           + " and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    List<JpaOpsManagerFeed> findByName(@Param("feedNames") Set<String> feedName);
+
+    @Query("select feed from JpaOpsManagerFeed as feed "
+           + " where feed.name in(:feedNames)")
+    List<JpaOpsManagerFeed> findByNameWithoutAcl(@Param("feedNames") Set<String> feedName);
 }

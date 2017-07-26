@@ -25,6 +25,7 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -36,9 +37,10 @@ public class FieldPolicyBuilder {
     public static final FieldPolicy SKIP_VALIDATION = FieldPolicyBuilder.newBuilder().skipSchemaValidation().build();
 
     private FieldPolicy policy = new FieldPolicy();
-    private List<ValidationPolicy> validators = new Vector<>();
-    private List<StandardizationPolicy> standardizationPolicies = new Vector<>();
+
+    private List<BaseFieldPolicy> fieldPolicies = new Vector<>();
     private boolean profile;
+    private boolean isPartitionColumn;
 
     private FieldPolicyBuilder() {
         super();
@@ -48,23 +50,14 @@ public class FieldPolicyBuilder {
         return new FieldPolicyBuilder();
     }
 
-    public FieldPolicyBuilder addValidator(ValidationPolicy validator) {
-        validators.add(validator);
+
+    public FieldPolicyBuilder addPolicies(List<BaseFieldPolicy> policies) {
+        fieldPolicies.addAll(policies);
         return this;
     }
 
-    public FieldPolicyBuilder addValidators(List<ValidationPolicy> validator) {
-        validators.addAll(validator);
-        return this;
-    }
-
-    public FieldPolicyBuilder addStandardizers(List<StandardizationPolicy> policyList) {
-        standardizationPolicies.addAll(policyList);
-        return this;
-    }
-
-    public FieldPolicyBuilder addStandardizer(StandardizationPolicy policy) {
-        standardizationPolicies.add(policy);
+    public FieldPolicyBuilder tableName(String tableName) {
+        policy.setTable(tableName);
         return this;
     }
 
@@ -84,15 +77,6 @@ public class FieldPolicyBuilder {
     }
 
 
-    /**
-     * Constrains value to one of the values provided in the list
-     *
-     * public FieldPolicyBuilder constrainValues(String... values) { validators.add(new LookupValidator(values)); return this; }
-     *
-     * public FieldPolicyBuilder constrainLength(int minlen, int maxlen) { validators.add(new LengthValidator(minlen, maxlen));
-     * return this; }
-     */
-
     public FieldPolicyBuilder skipSchemaValidation() {
         policy.setSkipSchemaValidation(true);
         return this;
@@ -103,14 +87,31 @@ public class FieldPolicyBuilder {
         return this;
     }
 
+    public FieldPolicyBuilder setPartitionColumn(boolean isPartitionColumn) {
+        this.isPartitionColumn = isPartitionColumn;
+        return this;
+    }
+
     public FieldPolicy build() {
         FieldPolicy newPolicy = this.policy;
         if (StringUtils.isEmpty(newPolicy.getFeedField())) {
             newPolicy.setFeedField(policy.getFeedField());
         }
-        newPolicy.setValidators(validators);
+        List<ValidationPolicy> validationPolicies = new ArrayList<>();
+        List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
+        for(BaseFieldPolicy policy : fieldPolicies){
+            if(policy instanceof ValidationPolicy) {
+                validationPolicies.add((ValidationPolicy)policy);
+            }
+            if(policy instanceof StandardizationPolicy) {
+                standardizationPolicies.add((StandardizationPolicy)policy);
+            }
+        }
+        newPolicy.setAllPolicies(fieldPolicies);
+        newPolicy.setValidators(validationPolicies);
         newPolicy.setStandardizationPolicies(standardizationPolicies);
         newPolicy.setProfile(profile);
+        newPolicy.setPartitionColumn(isPartitionColumn);
         return newPolicy;
     }
 
@@ -119,30 +120,4 @@ public class FieldPolicyBuilder {
         return this;
     }
 
-    /*
-    FieldPolicyBuilder constrainRange(Number min, Number max) {
-        policy.addValidator(new RangeValidator(min, max));
-        return this;
-    }
-
-    public static void main(String[] args) {
-        Map<String, FieldPolicy> policyMap = new HashMap<String, FieldPolicy>();
-
-        policyMap.put("registration_dttm", FieldPolicyBuilder.newBuilder().addValidator(TimestampValidator.instance()).build());
-        policyMap.put("id", FieldPolicyBuilder.newBuilder().disallowNullOrEmpty().build());
-        //policyMap.put("first_name", FieldPolicyBuilder.SKIP_VALIDATION);
-        //policyMap.put("last_name",  FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("email", FieldPolicyBuilder.newBuilder().addValidator(EmailValidator.instance()).build());
-        policyMap.put("gender", FieldPolicyBuilder.newBuilder().constrainValues("Male", "Female").build());
-        policyMap.put("ip_address", FieldPolicyBuilder.newBuilder().addValidator(IPAddressValidator.instance()).build());
-        policyMap.put("cc", FieldPolicyBuilder.newBuilder().addValidator(CreditCardValidator.instance()).build());
-        //policyMap.put("country", FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("birthdate", FieldPolicyBuilder.newBuilder().addStandardizer(new DateTimeStandardizer("MM/dd/YYYY", DateTimeStandardizer.OutputFormats.DATE_ONLY)).build());
-        //policyMap.put("salary", FieldPolicyBuilder.SKIP_VALIDATION);
-        //policyMap.put("title", FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("comments", FieldPolicyBuilder.newBuilder().addStandardizer(RemoveControlCharsStandardizer.instance()).constrainLength(0, 255).build());
-
-        policyMap.get("birthdate").getValidators();
-        policyMap.get("birthdate").getStandardizationPolicies();
-    }   */
 }

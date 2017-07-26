@@ -41,6 +41,7 @@ public class DefaultFeedHealth implements FeedHealth {
     private Long healthyCount;
     private Long unhealthyCount;
     private Date lastUnhealthyTime;
+    private boolean isStream;
 
 
     @Override
@@ -167,5 +168,11 @@ public class DefaultFeedHealth implements FeedHealth {
         return state;
     }
 
+    public boolean isStream() {
+        return isStream;
+    }
 
+    public void setStream(boolean stream) {
+        isStream = stream;
+    }
 }

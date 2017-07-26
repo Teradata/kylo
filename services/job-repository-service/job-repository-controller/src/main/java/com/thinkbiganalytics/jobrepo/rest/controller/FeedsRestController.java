@@ -1,25 +1,5 @@
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
-/*-
- * #%L
- * thinkbig-job-repository-controller
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
@@ -34,6 +14,7 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.joda.time.Period;
@@ -45,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -56,6 +38,26 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+/*-
+ * #%L
+ * thinkbig-job-repository-controller
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 @Api(tags = "Operations Manager - Feeds", produces = "application/json")
 @Path("/v1/feeds")
@@ -77,16 +79,20 @@ public class FeedsRestController {
     @Path("/{feedName}/latest")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the latest execution of the specified feed.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the latest execution.", response = ExecutedFeed.class)
-    )
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the latest execution.", response = ExecutedFeed.class),
+                      @ApiResponse(code = 400, message = "The feed does not exist or has no jobs.", response = RestResponseStatus.class)
+                  })
     public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
-        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-
-            BatchJobExecution latestJob = batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName);
-            OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
-            return FeedModelTransform.executedFeed(latestJob, feed);
+            final BatchJobExecution latestJob = batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName);
+            if (latestJob != null) {
+                final OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
+                return FeedModelTransform.executedFeed(latestJob, feed);
+            } else {
+                throw new NotFoundException();
+            }
         });
     }
 
@@ -127,17 +133,23 @@ public class FeedsRestController {
     @Path("/health-count/{feedName}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a health summary for the specified feed.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class)
-    )
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class),
+                      @ApiResponse(code = 404, message = "The feed does not exist.", response = RestResponseStatus.class)
+                  })
     public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-            com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth = opsFeedManagerFeedProvider.getFeedHealth(feedName);
+            final com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth = opsFeedManagerFeedProvider.getFeedHealth(feedName);
             if (feedHealth != null) {
                 return FeedModelTransform.feedHealth(feedHealth);
+            }
+
+            final OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
+            if (feed != null) {
+                return FeedModelTransform.feedHealth(feed);
             } else {
-                return null;
+                throw new NotFoundException();
             }
         });
     }
@@ -146,18 +158,24 @@ public class FeedsRestController {
     @Path("/health/{feedName}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the detailed health status of the specified feed.")
-    @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
-    )
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class),
+                      @ApiResponse(code = 404, message = "The feed does not exist.", response = RestResponseStatus.class)
+                  })
     public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-            FeedHealth feedHealth = getFeedHealthCounts(request, feedName);
+            final FeedHealth feedHealth = getFeedHealthCounts(request, feedName);
             if (feedHealth != null) {
                 return FeedModelTransform.feedStatus(Lists.newArrayList(feedHealth));
+            }
+
+            final OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
+            if (feed != null) {
+                return FeedModelTransform.feedStatus(feed);
             } else {
-                return null;
+                throw new NotFoundException();
             }
         });
     }

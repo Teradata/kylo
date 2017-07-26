@@ -27,6 +27,8 @@ package com.thinkbiganalytics.policy.standardization;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * test the {@link MaskLeavingLastFourDigitStandardizer}
@@ -44,5 +46,46 @@ public class MaskLeavingLastFourDigitStandardizerTest {
         assertEquals("20", cc.convertValue("20"));
         assertEquals("", cc.convertValue(""));
         assertEquals("XXXXXXXXXXX9966", cc.convertValue("373327123279966"));
+    }
+
+    @Test
+    public void testAcceptValidType() {
+        MaskLeavingLastFourDigitStandardizer cc = MaskLeavingLastFourDigitStandardizer.instance();
+        assertTrue(cc.accepts("XXXXXXXXXXX9966"));
+    }
+
+    @Test
+    public void testAcceptInvalidType() {
+        MaskLeavingLastFourDigitStandardizer cc = MaskLeavingLastFourDigitStandardizer.instance();
+        Double doubleValue = 1000.05d;
+        assertFalse(cc.accepts(doubleValue));
+    }
+
+    @Test
+    public void testConvertRawValueValidType() {
+        Object expectedValue = "XXXXXXXXXXXX8790";
+        Object rawValue = "5100145505218790";
+        MaskLeavingLastFourDigitStandardizer cc = MaskLeavingLastFourDigitStandardizer.instance();
+        assertEquals(expectedValue, cc.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testConvertRawValueInvalidType() {
+        Object expectedValue = Double.valueOf("100000.05");
+        Object rawValue = Double.valueOf("100000.05");
+        MaskLeavingLastFourDigitStandardizer cc = MaskLeavingLastFourDigitStandardizer.instance();
+        assertEquals(expectedValue, cc.convertRawValue(rawValue));
+    }
+
+    @Test
+    public void testIdenticalResults() {
+        MaskLeavingLastFourDigitStandardizer cc = MaskLeavingLastFourDigitStandardizer.instance();
+        Object rawValueObj = "5100145505218790";
+        Object expectedValueObj = "XXXXXXXXXXXX8790";
+        String rawValueStr = "5100145505218790";
+        String expectedValueStr = "XXXXXXXXXXXX8790";
+        assertEquals(cc.convertValue(rawValueStr), cc.convertRawValue(rawValueObj).toString());
+        assertEquals(cc.convertValue(rawValueStr), expectedValueStr);
+        assertEquals(cc.convertRawValue(rawValueObj), expectedValueObj);
     }
 }

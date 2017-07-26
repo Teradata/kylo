@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -44,12 +45,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
@@ -192,13 +195,21 @@ public class HiveService {
         return "SELECT kylo_.* FROM (" + query + ") kylo_ LIMIT 1000";
     }
 
+    private boolean validateQuery(String query) {
+        String[] validSql = new String[]{"show", "select","desc","describe"};
+        String testQuery = StringUtils.trimToEmpty(query).toLowerCase();
+        if (StringUtils.isNotEmpty(testQuery) && Arrays.stream(validSql).anyMatch(start -> testQuery.startsWith(start))) {
+          return true;
+        }
+        return false;
+    }
 
     public QueryResult query(String query) throws DataAccessException {
         final DefaultQueryResult queryResult = new DefaultQueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String, Integer> displayNameMap = new HashMap<>();
-        if (query != null && !query.toLowerCase().startsWith("show")) {
-            query = safeQuery(query);
+        if(!validateQuery(query)){
+            throw new DataRetrievalFailureException("Invalid Query: "+query);
         }
         try {
             //  Setting in order to query complex formats like parquet
@@ -215,7 +226,7 @@ public class HiveService {
                             String displayName = rsMetaData.getColumnLabel(i);
                             column.setHiveColumnLabel(displayName);
                             //remove the table name if it exists
-                            displayName = StringUtils.substringAfterLast(displayName, ".");
+                            displayName =StringUtils.contains(displayName,".") ? StringUtils.substringAfterLast(displayName, ".") : displayName;
                             Integer count = 0;
                             if (displayNameMap.containsKey(displayName)) {
                                 count = displayNameMap.get(displayName);
@@ -244,8 +255,16 @@ public class HiveService {
             throw dae;
         }
         return queryResult;
-
     }
 
-
+    /**
+     * Executes a single SQL update operation (such as insert, update, or delete).
+     *
+     * @param query the SQL to execute
+     * @return the number of rows affected
+     * @throws DataAccessException if there is any problem
+     */
+    public int update(@Nonnull final String query) {
+        return jdbcTemplate.update(query);
+    }
 }

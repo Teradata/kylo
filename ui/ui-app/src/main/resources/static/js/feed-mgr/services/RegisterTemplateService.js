@@ -18,7 +18,7 @@
  * #L%
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -32,7 +32,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             customPropertyRendering: ["metadata.table.targetFormat", "metadata.table.feedFormat"],
 
             codemirrorTypes: null,
-            propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'number', 'label': 'Number', codemirror: false},
+            propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'password', 'label': 'Password'},{type: 'number', 'label': 'Number', codemirror: false},
                 {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
                 {type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false}],
             trueFalseRenderTypes: [{type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false},
@@ -68,7 +68,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 feedsCount: 0,
                 registeredDatasources: [],
                 isStream: false,
-                validTemplateProcessorNames: true
+                validTemplateProcessorNames: true,
+                roleMemberships:[],
+                owner:null,
+                roleMembershipsUpdated:false
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
@@ -99,7 +102,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     needsReusableTemplate: this.model.needsReusableTemplate,
                     reusableTemplateConnections: this.model.reusableTemplateConnections,
                     state: this.model.state,
-                    isStream: this.model.isStream
+                    isStream: this.model.isStream,
+                    roleMemberships:this.model.roleMemberships,
+                    owner: this.model.owner,
+                    roleMembershipsUpdated: this.model.roleMembershipsUpdated,
+                    templateTableOption: this.model.templateTableOption,
+                    timeBetweenStartingBatchJobs: this.model.timeBetweenStartingBatchJobs
+
                 }
             },
             newReusableConnectionInfo: function () {
@@ -125,6 +134,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         if (property.processorOrigName != undefined && property.processorOrigName != null) {
                             property.processorName = property.processorOrigName;
                         }
+
+                        FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
 
@@ -137,6 +148,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         if (property.processorOrigName != undefined && property.processorOrigName != null) {
                             property.processorName = property.processorOrigName;
                         }
+                        FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
 
@@ -341,10 +353,12 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 //temp placeholder until Register Templates allows for user defined input processor selection
 
                 _.each(processorArray, function (processor, i) {
+                    processor.allProperties = processor.properties;
+
                     var validProperties = _.reject(processor.properties, function (property) {
                         return !property.userEditable;
                     });
-                    processor.allProperties = processor.properties;
+
 
                     processor.properties = validProperties;
                     if (validProperties != null && validProperties.length > 0) {
@@ -369,6 +383,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return _.sortBy(arr, 'sortIndex');
 
             },
+
             /**
              * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
              * used in Feed creation and feed details to render the nifi input fields
@@ -391,8 +406,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         processor.feedPropertiesUrl = null;
                     }
                     if (processor.feedPropertiesUrl == null) {
-                        processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, mode);
-
+                        FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
                     }
                 }
 
@@ -418,15 +432,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         } else if (property.userEditable == true) {
                             processor.userEditable = true;
                         }
-                        property.displayValue = property.value;
-                        if (property.key == "Source Database Connection" && property.propertyDescriptor != undefined && property.propertyDescriptor.allowableValues) {
-                            var descriptorOption = _.find(property.propertyDescriptor.allowableValues, function (option) {
-                                return option.value == property.value;
-                            });
-                            if (descriptorOption != undefined && descriptorOption != null) {
-                                property.displayValue = descriptorOption.displayName;
-                            }
-                        }
+
+                        //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
+                        FeedPropertyService.initSensitivePropertyForEditing(property);
+
+                        FeedPropertyService.updateDisplayValue(property);
 
                     })
 
@@ -509,9 +519,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
              * @param nifiTemplateId
              * @param reusableTemplateConnections
              * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
-     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
-     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
-     *            request:{connectionInfo:reusableTemplateConnections}}
+             *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+             *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+             *            request:{connectionInfo:reusableTemplateConnections}}
              */
             getNiFiTemplateFlowInformation: function (nifiTemplateId, reusableTemplateConnections) {
                 var deferred = $q.defer();
@@ -548,6 +558,60 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                             .parent(document.body)
                             .title("Template processor name warning"));
                 }
+            },
+
+            accessDeniedDialog:function() {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Access Denied")
+                        .textContent("You do not have access to edit templates.")
+                        .ariaLabel("Access denied to edit templates")
+                        .ok("OK")
+                );
+            },
+
+            /**
+             * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
+             */
+            checkTemplateAccess:function(model){
+                var self = data;
+                if(model == undefined){
+                    model = self.model;
+                }
+                model.errorMessage = '';
+
+                var entityAccessControlled = model.id != null && AccessControlService.isEntityAccessControlled();
+                var deferred = $q.defer();
+                var requests = {
+                    entityEditAccess: entityAccessControlled == true ? self.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE,model) : true,
+                    entityAdminAccess: entityAccessControlled == true ? self.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE,model) : true,
+                    functionalAccess: AccessControlService.getUserAllowedActions()
+                }
+
+                $q.all(requests).then(function (response) {
+
+                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
+                    var allowAdminAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+
+                    var allowEdit = response.entityEditAccess && allowEditAccess
+                    var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
+                    var allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
+                    var accessAllowed = allowEdit || allowAdmin;
+                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed,allowAccessControl:allowAccessControl};
+                    if(!result.isValid){
+                        if(!accessAllowed) {
+                            model.errorMessage = "Access Denied.  You are unable to edit the template. ";
+                            self.accessDeniedDialog();
+                        }
+                        else {
+                            model.errorMessage = "Unable to proceed";
+                        }
+                    }
+                    deferred.resolve(result);
+
+                });
+                return deferred.promise;
             },
 
             /**
@@ -624,6 +688,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         }
 
                         assignPropertyRenderType(property)
+
+                        FeedPropertyService.initSensitivePropertyForEditing(property);
 
                         property.templateValue = property.value;
                         property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;
@@ -770,6 +836,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length > 0;
                         self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
                         self.model.isStream = templateData.isStream;
+                        self.model.owner = templateData.owner;
+                        self.model.allowedActions = templateData.allowedActions;
+                        self.model.roleMemberships = templateData.roleMemberships;
+                        self.model.templateTableOption = templateData.templateTableOption;
+                        self.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
                         if (templateData.state == 'ENABLED') {
                             self.model.stateIcon = 'check_circle'
                         }
@@ -794,6 +865,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     return deferred.promise;
                 }
 
+            },
+            /**
+             * check if the user has access on an entity
+             * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
+             * @param entity the entity to check. if its undefined it will use the current template in the model
+             * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
+             */
+            hasEntityAccess:function(permissionsToCheck,entity) {
+                if(entity == undefined){
+                    entity = data.model;
+                }
+                return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.TEMPLATE);
             }
 
         };

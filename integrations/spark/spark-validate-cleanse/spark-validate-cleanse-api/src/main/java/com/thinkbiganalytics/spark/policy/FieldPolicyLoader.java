@@ -80,7 +80,10 @@ public class FieldPolicyLoader implements Serializable {
         } catch (Exception e) {
             log.error("Error parsing field policy file. Please verify valid JSON at path {}", e.getMessage(), e);
         }
-        Map<String, FieldPolicy> map = new FieldPoliciesJsonTransformer(policyJson).buildPolicies();
+        FieldPoliciesJsonTransformer fieldPoliciesJsonTransformer = new FieldPoliciesJsonTransformer(policyJson);
+        fieldPoliciesJsonTransformer.augmentPartitionColumnValidation();
+        Map<String, FieldPolicy> map = fieldPoliciesJsonTransformer.buildPolicies();
+
         log.info("Finished building field policies for file: {} with entity that has {} fields ", path, map.size());
         return map;
     }

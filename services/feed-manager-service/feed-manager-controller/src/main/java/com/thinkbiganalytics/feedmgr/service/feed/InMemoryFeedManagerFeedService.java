@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.security.action.Action;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,7 +58,7 @@ import javax.inject.Inject;
 /**
  * In memory implementation
  */
-public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
+public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private LegacyNifiRestClient nifiRestClient;
@@ -87,6 +89,12 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
             loadSavedFeedsToMetaClientStore();
         }
+    }
+
+    @Override
+    public boolean checkFeedPermission(String id, Action action, Action... more) {
+        // Permission checking not currently implemented for the in-memory implementation
+        return true;
     }
 
     public Collection<FeedMetadata> getFeeds() {
@@ -156,9 +164,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
                 //set the template to the feed
 
                 RegisteredTemplate registeredTemplate = templateProvider.getRegisteredTemplate(feed.getTemplateId());
-                if (registeredTemplate == null) {
-                    registeredTemplate = templateProvider.getRegisteredTemplateByName(feed.getTemplateName());
-                }
+
                 if (registeredTemplate != null) {
                     RegisteredTemplate copy = new RegisteredTemplate(registeredTemplate);
                     copy.getProperties().clear();
@@ -204,12 +210,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }
     }
 
-    @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId, null);
-    }
 
-    @Override
     public void saveFeed(FeedMetadata feed) {
         if (feed.getId() == null || !feeds.containsKey(feed.getId())) {
             feed.setId(UUID.randomUUID().toString());
@@ -296,5 +297,14 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Override
     public Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId) {
         return Optional.of(Collections.emptySet());
+    }
+
+    @Override
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
+        saveFeed(feedMetadata);
+        NifiFeed nifiFeed = new NifiFeed();
+        nifiFeed.setFeedMetadata(feedMetadata);
+        nifiFeed.setSuccess(true);
+        return nifiFeed;
     }
 }

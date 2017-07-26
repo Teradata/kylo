@@ -1,0 +1,253 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <html>
+  <head>
+    <title>${project.name}</title>
+    <style>
+      body table, td, th, p, h1, h2 {
+        margin:0;
+        font:normal normal 100% Georgia, Serif;
+        background-color: #ffffff;
+      }
+      h1, h2 {
+        border-bottom:dotted 1px #999999;
+        padding:5px;
+        margin-top:10px;
+        margin-bottom:10px;
+        color: #000000;
+        font: normal bold 130% Georgia,Serif;
+        background-color:#f0f0f0;
+      }
+      tr.gray {
+        background-color:#f0f0f0;
+      }
+      h2 {
+        padding:5px;
+        margin-top:5px;
+        margin-bottom:5px;
+        font: italic bold 110% Georgia,Serif;
+      }
+      .bg2 {
+        color:black;
+        background-color:#E0E0E0;
+        font-size:110%
+      }
+      th {
+        font-weight: bold;
+      }
+      tr, td, th {
+        padding:2px;
+      }
+      td.test_passed {
+        color:blue;
+      }
+      td.test_failed {
+        color:red;
+      }
+      td.test_skipped {
+        color:grey;
+      }
+      .console {
+        font: normal normal 90% Courier New, monotype;
+        padding:0px;
+        margin:0px;
+      }
+      div.content, div.header {
+        background: #ffffff;
+        border: dotted
+        1px #666;
+        margin: 2px;
+        content: 2px;
+        padding: 2px;
+      }
+      table.border, th.border, td.border {
+        border: 1px solid black;
+        border-collapse:collapse;
+        padding: 5px;
+      }
+      td.right {
+        text-align:right;
+      }
+    </style>
+  </head>
+  <body>
+  <div class="header">
+    <j:set var="spc" value="&amp;nbsp;&amp;nbsp;" />
+    <!-- GENERAL INFO -->
+    <table>
+      <tr class="gray">
+        <td align="right">
+          <j:choose>
+            <j:when test="${build.result=='SUCCESS'}">
+              <img src="${rooturl}static/e59dfe28/images/32x32/blue.gif" />
+            </j:when>
+            <j:when test="${build.result=='FAILURE'}">
+              <img src="${rooturl}static/e59dfe28/images/32x32/red.gif" />
+            </j:when>
+            <j:otherwise>
+              <img src="${rooturl}static/e59dfe28/images/32x32/yellow.gif" />
+            </j:otherwise>
+          </j:choose>
+        </td>
+        <td valign="center">
+          <b style="font-size: 200%;">BUILD ${build.result}</b>
+        </td>
+      </tr>
+      <tr>
+        <td>Build URL</td>
+        <td>
+          <a href="${rooturl}${build.url}">${rooturl}${build.url}</a>
+        </td>
+      </tr>
+      <tr>
+        <td>Project:</td>
+        <td>${project.name}</td>
+      </tr>
+      <tr>
+        <td>Date of build:</td>
+        <td>${it.timestampString}</td>
+      </tr>
+      <tr>
+        <td>Build duration:</td>
+        <td>${build.durationString}</td>
+      </tr>
+      <tr>
+        <td>Build cause:</td>
+        <td>
+          <j:forEach var="cause" items="${build.causes}">${cause.shortDescription} </j:forEach>
+        </td>
+      </tr>
+      <tr>
+        <td>Build description:</td>
+        <td>${build.description}</td>
+      </tr>
+      <tr>
+        <td>Built on:</td>
+        <td>
+          <j:choose>
+            <j:when test="${build.builtOnStr!=''}">${build.builtOnStr}</j:when>
+            <j:otherwise>master</j:otherwise>
+          </j:choose>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- HEALTH TEMPLATE -->
+  <div class="content">
+    <j:set var="healthIconSize" value="16x16" />
+    <j:set var="healthReports" value="${project.buildHealthReports}" />
+    <j:if test="${healthReports!=null}">
+      <h1>Health Report</h1>
+      <table>
+        <tr>
+          <th>W</th>
+          <th>Description</th>
+          <th>Score</th>
+        </tr>
+        <j:forEach var="healthReport" items="${healthReports}">
+          <tr>
+            <td>
+              <img src="${rooturl}${healthReport.getIconUrl(healthIconSize)}" />
+            </td>
+            <td>${healthReport.description}</td>
+            <td>${healthReport.score}</td>
+          </tr>
+        </j:forEach>
+      </table>
+      <br />
+    </j:if>
+  </div>
+
+  <!-- CHANGE SET -->
+  <div class="content">
+    <j:set var="changeSet" value="${build.changeSet}" />
+    <j:if test="${changeSet!=null}">
+      <j:set var="hadChanges" value="false" />
+      <a href="${rooturl}${build.url}/changes">
+        <h1>Changes</h1>
+      </a>
+      <j:forEach var="cs" items="${changeSet.logs}" varStatus="loop">
+        <j:set var="hadChanges" value="true" />
+        <h2>${cs.msgAnnotated}</h2>
+        <p>by <em>${cs.author}</em></p>
+        <table>
+          <j:forEach var="p" items="${cs.affectedFiles}">
+            <tr>
+              <td width="10%">${spc}${p.editType.name}</td>
+              <td>
+                <tt>${p.path}</tt>
+              </td>
+            </tr>
+          </j:forEach>
+        </table>
+      </j:forEach>
+      <j:if test="${!hadChanges}">
+        <p>No Changes</p>
+      </j:if>
+      <br />
+    </j:if>
+  </div>
+
+  <!-- JUnit TEMPLATE -->
+  <j:set var="junitResultList" value="${it.JUnitTestResult}" />
+  <j:if test="${junitResultList.isEmpty()!=true}">
+    <div class="content">
+      <a href="${rooturl}${build.url}/testReport">
+        <h1>JUnit Tests</h1>
+      </a>
+      <table class="border">
+        <tr>
+          <th class="border">Package</th>
+          <th class="border">Failed</th>
+          <th class="border">Passed</th>
+          <th class="border">Skipped</th>
+          <th class="border">Total</th>
+        </tr>
+        <j:forEach var="junitResult" items="${it.JUnitTestResult}">
+          <j:forEach var="packageResult" items="${junitResult.getChildren()}">
+            <tr>
+              <td class="border">
+                <tt>${packageResult.getName()}</tt>
+              </td>
+              <td class="border test_failed">${packageResult.getFailCount()}</td>
+              <td class="border test_passed">${packageResult.getPassCount()}</td>
+              <td class="border test_skipped">${packageResult.getSkipCount()}</td>
+              <td class="border">
+                <b>${packageResult.getPassCount()+packageResult.getFailCount()+packageResult.getSkipCount()}</b>
+              </td>
+            </tr>
+            <j:forEach var="failed_test" items="${packageResult.getFailedTests()}">
+              <tr>
+                <td class="test_failed" colspan="5">
+                  <a href="${rooturl}${build.url}/testReport">
+                    <tt>${failed_test.getFullName()}</tt>
+                  </a>
+                </td>
+              </tr>
+            </j:forEach>
+          </j:forEach>
+        </j:forEach>
+      </table>
+      <br />
+    </div>
+  </j:if>
+
+
+  <div class="content">
+    <!-- CONSOLE OUTPUT -->
+    <a href="${rooturl}${build.url}/console">
+      <h1>Console Output</h1>
+    </a>
+    <table class="console">
+      <j:forEach var="line" items="${build.getLog(200)}">
+        <tr>
+          <td><tt>${line}</tt></td>
+        </tr>
+      </j:forEach>
+    </table>
+    <br />
+  </div>
+  </body>
+  </html>
+</j:jelly>

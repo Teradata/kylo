@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape;
 
 /*-
@@ -24,14 +21,17 @@ package com.thinkbiganalytics.metadata.modeshape;
  */
 
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
+import com.thinkbiganalytics.search.api.RepositoryIndexConfiguration;
 
 import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.modeshape.schematic.document.EditableDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -39,10 +39,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.jcr.Repository;
 
@@ -55,7 +52,7 @@ public class ModeShapeEngineConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
 
-    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+    public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password"
@@ -64,18 +61,8 @@ public class ModeShapeEngineConfig {
     @Inject
     private Environment environment;
 
-
-    @PreDestroy
-    public void stopEngine() throws InterruptedException, ExecutionException {
-        log.info("Stopping ModeShape engine...");
-        Future<Boolean> future = modeShapeEngine().shutdown();
-
-        if (future.get()) {
-            log.info("ModeShape engine stopped");
-        } else {
-            log.info("ModeShape engine not reported as stopped");
-        }
-    }
+    @Autowired (required = false)
+    RepositoryIndexConfiguration repositoryIndexConfiguration;
 
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
@@ -95,6 +82,19 @@ public class ModeShapeEngineConfig {
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
         RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
 
+        if (repositoryIndexConfiguration != null) {
+            RepositoryConfiguration updatedConfigWithIndexes = repositoryIndexConfiguration.build();
+            EditableDocument original = config.edit();
+            EditableDocument added = updatedConfigWithIndexes.edit();
+            original.merge(added);
+            RepositoryConfiguration updatedConfig = new RepositoryConfiguration(original, config.getName());
+            log.debug("Original ModeShape configuration: {}", config.toString());
+            log.debug("ModeShape indexing configuration: {}", updatedConfigWithIndexes.toString());
+            log.debug("Updated ModeShape configuration: {}", updatedConfig.toString());
+            config = updatedConfig;
+            log.info("ModeShape indexing configured");
+        }
+
         Problems problems = config.validate();
         if (problems.hasErrors()) {
             log.error("Problems with the ModeShape repository configuration: \n{}", problems);
@@ -106,7 +106,7 @@ public class ModeShapeEngineConfig {
         return config;
     }
 
-    @Bean
+    @Bean(destroyMethod="shutdown")
     public ModeShapeEngine modeShapeEngine() {
         ModeShapeEngine engine = new ModeShapeEngine();
         log.info("Starting ModeShape engine...");

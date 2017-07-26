@@ -44,6 +44,7 @@ public class GenericBaseUiPolicyRuleBuilder<T extends BaseUiPolicyRule> extends 
             rule.setDisplayName(this.displayName);
             rule.setProperties(this.properties);
             rule.setObjectClassType(this.objectClassType);
+            rule.setSequence(this.sequence);
             return rule;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Unable to build Rule Class " + policyClass + ", " + e.getMessage(), e);

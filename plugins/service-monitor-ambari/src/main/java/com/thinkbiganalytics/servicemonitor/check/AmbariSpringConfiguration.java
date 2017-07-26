@@ -20,6 +20,7 @@ package com.thinkbiganalytics.servicemonitor.check;
  * #L%
  */
 
+import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariClient;
 import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyClient;
 import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyRestClientConfig;
@@ -27,23 +28,30 @@ import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyRestC
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+
+import javax.inject.Inject;
 
 /**
  * Spring configuration
  */
 @Configuration
+@PropertySource("classpath:ambari.properties")
 public class AmbariSpringConfiguration {
+
+    @Inject
+    private EncryptionService encryptionService;
 
     @Bean(name = "ambariServicesStatus")
     public AmbariServicesStatusCheck ambariServicesStatus() {
         return new AmbariServicesStatusCheck();
     }
 
-
     @Bean(name = "ambariJerseyClientConfig")
     @ConfigurationProperties(prefix = "ambariRestClientConfig")
     public AmbariJerseyRestClientConfig ambariJerseyRestClientConfig() {
-        return new AmbariJerseyRestClientConfig();
+        return new AmbariJerseyRestClientConfig(encryptionService);
     }
 
     @Bean(name = "ambariClient")

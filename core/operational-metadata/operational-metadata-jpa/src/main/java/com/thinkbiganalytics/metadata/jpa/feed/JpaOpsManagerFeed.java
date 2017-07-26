@@ -53,9 +53,14 @@ import javax.persistence.Table;
 @NamedStoredProcedureQueries({
                                  @NamedStoredProcedureQuery(name = "OpsManagerFeed.deleteFeedJobs", procedureName = "delete_feed_jobs", parameters = {
                                      @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
-                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)}),
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.OUT, name = "result", type = Integer.class)
+                                 }),
                                  @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
-                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)})
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "exitMessage", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.OUT, name = "res", type = Integer.class)
+                                 })
                              })
 public class JpaOpsManagerFeed implements OpsManagerFeed {
 
@@ -68,6 +73,13 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     @Enumerated(EnumType.STRING)
     @Column(name = "FEED_TYPE")
     private FeedType feedType = FeedType.FEED;
+
+    @Column(name = "IS_STREAM", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStream;
+
+    @Column(name =" TIME_BTWN_BATCH_JOBS")
+    private Long timeBetweenBatchJobs;
 
     @OneToMany(targetEntity = JpaBatchJobInstance.class, mappedBy = "feed", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
@@ -148,5 +160,20 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
         this.feedsToCheck = feedsToCheck;
     }
 
+    @Override
+    public boolean isStream() {
+        return isStream;
+    }
 
+    public void setStream(boolean stream) {
+        isStream = stream;
+    }
+
+    public Long getTimeBetweenBatchJobs() {
+        return timeBetweenBatchJobs;
+    }
+
+    public void setTimeBetweenBatchJobs(Long timeBetweenBatchJobs) {
+        this.timeBetweenBatchJobs = timeBetweenBatchJobs;
+    }
 }

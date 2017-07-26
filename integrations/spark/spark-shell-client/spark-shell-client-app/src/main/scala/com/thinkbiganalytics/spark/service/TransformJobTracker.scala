@@ -1,11 +1,12 @@
 package com.thinkbiganalytics.spark.service
 
+import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory, TimeUnit}
+import javax.annotation.Nonnull
+
+import com.google.common.cache.{Cache, CacheBuilder, RemovalListener, RemovalNotification}
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.thinkbiganalytics.spark.metadata.TransformJob
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine
-
-import java.util.concurrent.{ExecutorService, Executors}
-import javax.annotation.Nonnull
 
 import scala.collection.mutable
 
@@ -16,13 +17,26 @@ object TransformJobTracker {
     val SPARK_JOB_GROUP_ID = "spark.jobGroup.id"
 }
 
-abstract class TransformJobTracker {
+abstract class TransformJobTracker(contextClassLoader: ClassLoader) {
 
     /** Executes jobs in separate threads */
-    private val executor: ExecutorService = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("transform-job-%d").build())
+    private val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(2, threadFactory)
 
     /** Map of group id to job */
-    protected val groups = new mutable.HashMap[String, TransformJob]() with mutable.SynchronizedMap[String, TransformJob]
+    protected val groups: Cache[String, TransformJob] = CacheBuilder.newBuilder()
+        .expireAfterWrite(1, TimeUnit.HOURS)
+        .removalListener(new RemovalListener[String, TransformJob] {
+            override def onRemoval(notification: RemovalNotification[String, TransformJob]): Unit = {
+                notification.getValue.jobId.foreach(jobs.remove)
+                notification.getValue.stages.map(_.stageId).foreach(stages.remove)
+            }
+        })
+        .build[String, TransformJob]()
+
+    // Schedule clean-up of groups
+    executor.scheduleAtFixedRate(new Runnable {
+        override def run(): Unit = groups.cleanUp()
+    }, 1, 1, TimeUnit.HOURS)
 
     /** Map of job id to job */
     protected val jobs = new mutable.HashMap[Int, TransformJob]() with mutable.SynchronizedMap[Int, TransformJob]
@@ -30,7 +44,10 @@ abstract class TransformJobTracker {
     /** Map of stage id to job */
     protected val stages = new mutable.HashMap[Int, TransformJob]() with mutable.SynchronizedMap[Int, TransformJob]
 
-
+    /** Adds a listener to the Spark context of the specified script engine.
+      *
+      * @param engine the Spark script engine
+      */
     def addSparkListener(@Nonnull engine: SparkScriptEngine): Unit
 
     /** Gets the job with the specified group id.
@@ -41,7 +58,7 @@ abstract class TransformJobTracker {
       */
     @Nonnull
     def getJob(@Nonnull groupId: String): Option[TransformJob] = {
-        groups.get(groupId)
+        Option(groups.getIfPresent(groupId))
     }
 
     /** Removes the specified job from this tracker.
@@ -49,10 +66,7 @@ abstract class TransformJobTracker {
       * @param groupId the group id
       */
     def removeJob(@Nonnull groupId: String): Unit = {
-        groups.remove(groupId).foreach((job) => {
-            job.jobId.foreach(jobs.remove)
-            job.stages.map(_.stageId).foreach(stages.remove)
-        })
+        groups.invalidate(groupId)
     }
 
     /** Submits a job to be executed.
@@ -60,8 +74,27 @@ abstract class TransformJobTracker {
       * @param job the transform job
       */
     def submitJob(@Nonnull job: TransformJob): Unit = {
-        groups(job.groupId) = job
+        groups.put(job.groupId, job)
         executor.execute(job)
     }
 
+    /** Creates a thread factory for running transform jobs.
+      *
+      * @return the thread factory
+      */
+    private def threadFactory = {
+        val parentThreadFactory = new ThreadFactory {
+            override def newThread(r: Runnable): Thread = {
+                val thread = Executors.defaultThreadFactory().newThread(r)
+                thread.setContextClassLoader(contextClassLoader)
+                thread
+            }
+        }
+
+        new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("transform-job-%d")
+            .setThreadFactory(parentThreadFactory)
+            .build()
+    }
 }

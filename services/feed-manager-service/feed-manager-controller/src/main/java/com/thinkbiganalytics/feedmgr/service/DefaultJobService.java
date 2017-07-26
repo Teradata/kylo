@@ -25,10 +25,13 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -48,8 +51,6 @@ import javax.inject.Inject;
 public class DefaultJobService implements JobService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultJobService.class);
-
-    private static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -91,7 +92,7 @@ public class DefaultJobService implements JobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job manually abandoned @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += "Job manually abandoned @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 //also stop any running steps??
                 this.jobExecutionProvider.save(execution);
@@ -114,7 +115,7 @@ public class DefaultJobService implements JobService {
                             step.setStatus(BatchStepExecution.StepStatus.FAILED);
                             step.setExitCode(ExecutionConstants.ExitCode.FAILED);
                             String msg = step.getExitMessage() != null ? step.getExitMessage() + "\n" : "";
-                            msg += " Step manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                            msg += "Step manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                             step.setExitMessage(msg);
                             execution.setExitMessage(msg);
                         }
@@ -128,9 +129,11 @@ public class DefaultJobService implements JobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 this.jobExecutionProvider.save(execution);
+                this.jobExecutionProvider.notifyFailure(execution,null,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+
             }
             return execution;
         });

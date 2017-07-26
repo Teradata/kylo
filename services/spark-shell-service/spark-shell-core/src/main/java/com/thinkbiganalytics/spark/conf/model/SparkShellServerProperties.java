@@ -33,17 +33,7 @@ public class SparkShellServerProperties {
     /**
      * Port where Spark Shell is listening
      */
-    private int port = 8450;
-
-    /**
-     * Username for basic authentication
-     */
-    private String username;
-
-    /**
-     * Password for basic authentication
-     */
-    private String password;
+    private Integer port = 8450;
 
     public String getHost() {
         return host;
@@ -53,27 +43,11 @@ public class SparkShellServerProperties {
         this.host = host;
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

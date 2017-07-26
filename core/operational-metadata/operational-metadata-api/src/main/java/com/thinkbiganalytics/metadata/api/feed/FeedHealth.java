@@ -133,4 +133,10 @@ public interface FeedHealth {
      * @return the number of batch job executions that are running
      */
     Long getRunningCount();
+
+    /**
+     *
+     * @return true if streaming feed
+     */
+    boolean isStream();
 }

@@ -1,6 +1,6 @@
-define(['angular',"feed-mgr/visual-query/module-name"], function (angular,moduleName) {
+define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/VisualQueryTable"], function (angular, moduleName) {
 
-    var directive = function() {
+    var directive = function () {
         return {
             restrict: "EA",
             bindToController: {
@@ -11,18 +11,17 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             controllerAs: 'vm',
             templateUrl: 'js/feed-mgr/visual-query/visual-query-transform.html',
             controller: "VisualQueryTransformController",
-            link: function($scope, element, attrs, controllers) {
+            link: function ($scope, element, attrs, controllers) {
                 var thisController = controllers[0];
-                var stepperController = controllers[1];
                 //store a reference to the stepper if needed
-                thisController.stepperController = stepperController;
+                thisController.stepperController = controllers[1];
             }
 
         };
     };
 
-    var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService, TableDataFunctions, SideNavService, SparkShellService,
-                              VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+    var controller = function ($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService, SideNavService, SparkShellService, VisualQueryColumnDelegate,
+                               uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -35,8 +34,6 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         //The array of columns with their respective Table, schema and alias passed over from the previous step
         //{column:'name', alias:'alias',tableName:'table name',tableColumn:'alias_name',dataType:'dataType'}
         this.selectedColumnsAndTables = this.model.selectedColumnsAndTables;
-        //The query result transformed to the ag-grid model  (@see HiveService.transformToAgGrid
-        this.tableData = {columns: [], rows: []};
         //Function History
         this.functionHistory = [];
 
@@ -52,37 +49,75 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         //the tern server reference
         this.ternServer = null;
 
-        //Function Command Holder
-        //@see TableDataFunctions.js
-        this.functionCommandHolder = null;
-
         //Flag to show/hide function history panel
         this.isShowFunctionHistory = false;
 
         // Flag to show/hide sample menu
         this.isShowSampleMenu = false;
 
-        //Setup initial grid options
-        this.gridOptions = {
-            columnDefs: [],
-            data: null,
-            rowTemplate: "visual-query/grid-row",
-            enableColumnResizing: true,
-            enableFiltering: true,
-            flatEntityAccess: true,
-            onRegisterApi: function(grid) {
-                self.gridApi = grid;
-                grid.colMovable.on.columnPositionChanged($scope, angular.bind(self, self.onColumnMove));
-            }
+        //noinspection JSUnusedGlobalSymbols
+        /**
+         * Columns for the results table.
+         * @type {Array.<Object>}
+         */
+        this.tableColumns = [];
+
+        //noinspection JSUnusedGlobalSymbols
+        /**
+         * Configuration for the results table.
+         * @type {Object}
+         */
+        this.tableOptions = {
+            headerFont: "700 12px Roboto, 'Helvetica Neue', sans-serif",
+            rowFont: "400 14px Roboto, 'Helvetica Neue', sans-serif"
         };
 
-        // Translates expressions into Spark code
-        if (angular.isArray(FeedService.createFeedModel.dataTransformation.states) && FeedService.createFeedModel.dataTransformation.states.length > 0) {
-            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states);
-            this.functionHistory = this.sparkShellService.getHistory();
-        } else {
-            this.sparkShellService = new SparkShellService(this.sql);
-        }
+        //noinspection JSUnusedGlobalSymbols
+        /**
+         * Rows for the results table.
+         * @type {Array.<Object>}
+         */
+        this.tableRows = [];
+
+        /**
+         * Translates expressions into Spark code.
+         * @type {SparkShellService}
+         */
+        this.sparkShellService = function () {
+            var model = FeedService.createFeedModel.dataTransformation;
+
+            // Select source model
+            var useSqlModel = false;
+            if (angular.isObject(self.sqlModel)) {
+                // Check for non-Hive datasource
+                if (angular.isArray(model.datasourceIds) && model.datasourceIds.length > 0) {
+                    useSqlModel = (model.datasourceIds.length > 1 || (angular.isDefined(model.datasourceIds[0]) && model.datasourceIds[0].id !== VisualQueryService.HIVE_DATASOURCE));
+                }
+                if (!useSqlModel) {
+                    useSqlModel = _.chain(self.sqlModel.nodes)
+                        .map(_.property("nodeAttributes"))
+                        .map(_.property("attributes"))
+                        .flatten(true)
+                        .filter(function (attr) {
+                            return (attr.selected && attr.description !== null);
+                        });
+                }
+            }
+
+            var source = useSqlModel ? self.sqlModel : self.sql;
+
+            // if we dont have any datasources, default it to Hive data source
+            if(model.datasources == null || model.datasources.length == 0){
+                model.datasources = [{id:VisualQueryService.HIVE_DATASOURCE,name:"Hive"}];
+            }
+            if (angular.isArray(model.states) && model.states.length > 0) {
+                var service = new SparkShellService(source, model.states, model.datasources);
+                self.functionHistory = service.getHistory();
+                return service;
+            } else {
+                return new SparkShellService(source, null, model.datasources);
+            }
+        }();
 
         this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode
@@ -100,9 +135,9 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         this.queryProgress = 0;
 
         /**
-         * Show and hide the Funciton History
+         * Show and hide the Function History
          */
-        this.toggleFunctionHistory = function() {
+        this.toggleFunctionHistory = function () {
             self.isShowFunctionHistory = !self.isShowFunctionHistory;
             self.isShowSampleMenu = false;
         };
@@ -110,28 +145,44 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         /**
          * Toggle the visibility of the sample menu.
          */
-        this.toggleSampleMenu = function() {
+        this.toggleSampleMenu = function () {
             self.isShowSampleMenu = !self.isShowSampleMenu;
             self.isShowFunctionHistory = false;
         };
 
+        /**
+         * Displays the column statistics dialog.
+         */
+        this.showProfileDialog = function () {
+            $mdDialog.show({
+                clickOutsideToClose: false,
+                controller: "VisualQueryProfileStatsController",
+                fullscreen: true,
+                locals: {
+                    profile: self.sparkShellService.getProfile()
+                },
+                parent: angular.element(document.body),
+                templateUrl: "js/feed-mgr/visual-query/profile-stats-dialog.html"
+            });
+        };
+
         //Callback when Codemirror has been loaded (reference is in the html page at:
         // ui-codemirror="{ onLoad : vm.codemirrorLoaded }"
-        this.codemirrorLoaded = function(_editor) {
+        this.codemirrorLoaded = function (_editor) {
             //assign the editor to a variable on this object for future reference
             self.codemirrorEditor = _editor;
             //Set the width,height of the editor. Code mirror needs an explicit width/height
             _editor.setSize(700, 25);
 
             //disable users ability to add new lines.  The Formula bar is only 1 line
-            _editor.on("beforeChange", function(instance, change) {
+            _editor.on("beforeChange", function (instance, change) {
                 var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
                 change.update(change.from, change.to, [newtext]);
                 return true;
             });
 
             //hide the scrollbar
-            _editor.on("change", function(instance, change) {
+            _editor.on("change", function (instance, change) {
                 //$(".CodeMirror-hscrollbar").css('display', 'none');
             });
             //set the flag to be loaded and then call out to update Autocomplete options
@@ -143,7 +194,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * Creates a Tern server.
          */
         function createTernServer() {
-            $http.get('js/vendor/tern/defs/tableFunctions.json').then(function(response) {
+            $http.get(RestUrlService.UI_BASE_URL + "/spark-functions").then(function (response) {
                 self.sparkShellService.setFunctionDefs(response.data);
 
                 self.ternServer = new CodeMirror.TernServer({defs: [response.data]});
@@ -151,32 +202,32 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
 
                 var _editor = self.codemirrorEditor;
                 _editor.setOption("extraKeys", {
-                    "Ctrl-Space": function(cm) {
+                    "Ctrl-Space": function (cm) {
                         self.ternServer.complete(cm);
                     },
-                    "Ctrl-I": function(cm) {
+                    "Ctrl-I": function (cm) {
                         self.ternServer.showType(cm);
                     },
-                    "Ctrl-O": function(cm) {
+                    "Ctrl-O": function (cm) {
                         self.ternServer.showDocs(cm);
                     },
-                    "Alt-.": function(cm) {
+                    "Alt-.": function (cm) {
                         self.ternServer.jumpToDef(cm);
                     },
-                    "Alt-,": function(cm) {
+                    "Alt-,": function (cm) {
                         self.ternServer.jumpBack(cm);
                     },
-                    "Ctrl-Q": function(cm) {
+                    "Ctrl-Q": function (cm) {
                         self.ternServer.rename(cm);
                     },
-                    "Ctrl-.": function(cm) {
+                    "Ctrl-.": function (cm) {
                         self.ternServer.selectName(cm);
                     },
-                    "Tab": function() {
+                    "Tab": function () {
                         self.selectNextTabStop();
                     }
                 });
-                _editor.on("blur", function() {
+                _editor.on("blur", function () {
                     self.ternServer.hideDoc();
                 });
                 _editor.on("cursorActivity", self.showHint);
@@ -189,7 +240,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * Setup the CodeMirror and Tern Server autocomplete. This will only execute when both Hive and Code Mirror are fully
          * initialized.
          */
-        this.updateCodeMirrorAutoComplete = function() {
+        this.updateCodeMirrorAutoComplete = function () {
             if (self.codemirroLoaded && self.hiveDataLoaded) {
                 if (self.ternServer === null) {
                     createTernServer();
@@ -207,10 +258,10 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * @param {CodeMirror|CodeMirror.Doc} cm the code mirror instance
          * @param {Function} callback the callback function
          */
-        this.getHint = function(cm, callback) {
-            self.ternServer.getHint(cm, function(data) {
+        this.getHint = function (cm, callback) {
+            self.ternServer.getHint(cm, function (data) {
                 // Complete function calls so arg hints can be displayed
-                CodeMirror.on(data, "pick", function(completion) {
+                CodeMirror.on(data, "pick", function (completion) {
                     if (completion.data.type.substr(0, 3) === "fn(") {
                         var cursor = cm.getCursor();
                         cm.replaceRange("(", cursor, cursor, "complete");
@@ -233,7 +284,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          *
          * @param {CodeMirror|CodeMirror.Doc} cm the code mirror instance
          */
-        this.showHint = function(cm) {
+        this.showHint = function (cm) {
             // Show args if in a function
             var cursor = cm.getCursor();
             var token = cm.getTokenAt(cursor);
@@ -259,13 +310,13 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          *
          * @return {Promise} a promise for when the query completes
          */
-        this.query = function() {
+        this.query = function () {
             //flag to indicate query is running
             this.executingQuery = true;
             this.queryProgress = 0;
 
             // Query Spark shell service
-            var successCallback = function() {
+            var successCallback = function () {
                 //mark the query as finished
                 self.executingQuery = false;
 
@@ -279,21 +330,17 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 self.isValid = true;
 
                 //store the result for use in the commands
-                self.tableData = {rows: self.sparkShellService.getRows(), columns: self.sparkShellService.getColumns()};
-                updateGrid(self.tableData);
-
-                //Initialize the Command function holder
-                self.functionCommandHolder = TableDataFunctions.newCommandHolder(self.tableData);
+                updateGrid();
             };
-            var errorCallback = function(message) {
+            var errorCallback = function (message) {
                 // Display error message
                 var alert = $mdDialog.alert()
-                        .parent($('body'))
-                        .clickOutsideToClose(true)
-                        .title("Error executing the query")
-                        .textContent(message)
-                        .ariaLabel("error executing the query")
-                        .ok("Got it!");
+                    .parent($('body'))
+                    .clickOutsideToClose(true)
+                    .title("Error executing the query")
+                    .textContent(message)
+                    .ariaLabel("error executing the query")
+                    .ok("Got it!");
                 $mdDialog.show(alert);
 
                 // Reset state
@@ -302,35 +349,37 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 self.functionHistory.pop();
                 self.refreshGrid();
             };
-            var notifyCallback = function(progress) {
+            var notifyCallback = function (progress) {
                 self.queryProgress = progress * 100;
             };
 
             return self.sparkShellService.transform().then(successCallback, errorCallback, notifyCallback);
         };
 
-        function updateGrid(tableData) {
+        function updateGrid() {
             //transform the result to the agGrid model
             var columns = [];
+            var profile = self.sparkShellService.getProfile();
 
-            angular.forEach(tableData.columns, function(col) {
+            angular.forEach(self.sparkShellService.getColumns(), function (col) {
                 var delegate = new VisualQueryColumnDelegate(col.dataType, self);
+                var longestValue = _.find(profile, function (row) {
+                    return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
+                });
+
                 columns.push({
                     delegate: delegate,
                     displayName: col.displayName,
                     filters: delegate.filters,
-                    headerCellTemplate: "visual-query/grid-header-cell",
                     headerTooltip: col.hiveColumnLabel,
-                    minWidth: 150,
-                    name: col.displayName,
-                    queryResultColumn: col
+                    longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
+                    name: col.displayName
                 });
             });
 
             //update the ag-grid
-            self.gridApi.grid.moveColumns.orderCache = [];
-            self.gridOptions.columnDefs = columns;
-            self.gridOptions.data = tableData.rows;
+            self.tableColumns = columns;
+            self.tableRows = self.sparkShellService.getRows();
 
             self.updateCodeMirrorAutoComplete();
         }
@@ -338,9 +387,9 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         /**
          * Adds formulas for column filters.
          */
-        this.addFilters = function() {
-            angular.forEach(self.gridApi.grid.columns, function(column) {
-                angular.forEach(column.filters, function(filter) {
+        this.addFilters = function () {
+            angular.forEach(self.tableColumns, function (column) {
+                angular.forEach(column.filters, function (filter) {
                     if (filter.term) {
                         self.addColumnFilter(filter, column);
                     }
@@ -354,7 +403,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * @param {Object} filter the filter
          * @param {ui.grid.GridColumn} column the column
          */
-        this.addColumnFilter = function(filter, column) {
+        this.addColumnFilter = function (filter, column) {
             // Generate formula for filter
             var formula;
             var verb;
@@ -396,15 +445,10 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * @param {string} formula the formula
          * @param {TransformContext} context the UI context for the transformation
          */
-        this.addFunction = function(formula, context) {
-            var tableData = self.functionCommandHolder.executeStr(formula);
-            if (tableData != null && tableData != undefined) {
-                updateGrid(tableData);
-
-                self.addFilters();
-                self.pushFormula(formula, context);
-                self.query();
-            }
+        this.addFunction = function (formula, context) {
+            self.addFilters();
+            self.pushFormula(formula, context);
+            self.query();
         };
 
         /**
@@ -413,7 +457,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * @param {string} formula the formula
          * @param {TransformContext} context the UI context for the transformation
          */
-        this.pushFormula = function(formula, context) {
+        this.pushFormula = function (formula, context) {
             // Covert to a syntax tree
             self.ternServer.server.addFile("[doc]", formula);
             var file = self.ternServer.server.findFile("[doc]");
@@ -423,12 +467,12 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 self.sparkShellService.push(file.ast, context);
             } catch (e) {
                 var alert = $mdDialog.alert()
-                        .parent($('body'))
-                        .clickOutsideToClose(true)
-                        .title("Error executing the query")
-                        .textContent(e.message)
-                        .ariaLabel("error executing the query")
-                        .ok("Got it!");
+                    .parent($('body'))
+                    .clickOutsideToClose(true)
+                    .title("Error executing the query")
+                    .textContent(e.message)
+                    .ariaLabel("error executing the query")
+                    .ok("Got it!");
                 $mdDialog.show(alert);
                 console.log(e);
                 return;
@@ -443,7 +487,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          *
          * @param {string} formula the formula
          */
-        this.setFormula = function(formula) {
+        this.setFormula = function (formula) {
             self.currentFormula = formula;
             self.codemirrorEditor.setValue(formula);
             self.codemirrorEditor.focus();
@@ -453,7 +497,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         /**
          * Selects the next uppercase word in the formula bar.
          */
-        this.selectNextTabStop = function() {
+        this.selectNextTabStop = function () {
             var match = /\b[A-Z]{2,}\b/.exec(self.currentFormula);
             if (match !== null) {
                 self.codemirrorEditor.setSelection(new CodeMirror.Pos(0, match.index), new CodeMirror.Pos(0, match.index + match[0].length));
@@ -465,67 +509,43 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
         /**
          * Called when the user clicks Add on the function bar
          */
-        this.onAddFunction = function() {
+        this.onAddFunction = function () {
             self.addFunction(self.currentFormula, {formula: self.currentFormula, icon: "code", name: self.currentFormula});
-        };
-
-        /**
-         * Called when the column ordering changes.
-         */
-        this.onColumnMove = function() {
-            var formula = "";
-
-            angular.forEach(self.gridApi.grid.columns, function(column) {
-                formula += (formula.length === 0) ? "select(" : ", ";
-                formula += column.field;
-            });
-
-            formula += ")";
-            self.pushFormula(formula, {formula: formula, icon: "reorder", name: "Reorder columns"});
         };
 
         /**
          * Refreshes the grid. Used after undo and redo.
          */
-        this.refreshGrid = function() {
+        this.refreshGrid = function () {
             var columns = self.sparkShellService.getColumns();
             var rows = self.sparkShellService.getRows();
 
             if (columns === null || rows === null) {
                 self.query();
-            }
-            else {
-                updateGrid({columns: self.sparkShellService.getColumns(), rows: self.sparkShellService.getRows()});
+            } else {
+                updateGrid();
             }
         };
 
-        this.onUndo = function() {
+        //noinspection JSUnusedGlobalSymbols
+        this.onUndo = function () {
             self.sparkShellService.undo();
             self.functionHistory.pop();
             this.refreshGrid();
         };
-        this.onRedo = function() {
+
+        //noinspection JSUnusedGlobalSymbols
+        this.onRedo = function () {
             var func = this.sparkShellService.redo();
             self.functionHistory.push(func);
             this.refreshGrid();
         };
 
-        this.canUndo = function() {
+        this.canUndo = function () {
             return this.sparkShellService.canUndo();
         };
-        this.canRedo = function() {
+        this.canRedo = function () {
             return this.sparkShellService.canRedo();
-        };
-
-        /**
-         * Drops the function in the history at the specified index.
-         *
-         * @param {number} index the index of the function to drop
-         */
-        this.dropHistory = function(index) {
-            self.sparkShellService.splice(index + 1, 1);
-            self.functionHistory.splice(index, 1);
-            this.refreshGrid();
         };
 
         //Listen for when the next step is active
@@ -538,16 +558,16 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          */
         function updateModel(event, changedSteps) {
             var thisIndex = parseInt(self.stepIndex);
-            if (changedSteps.oldStep == thisIndex) {
+            if (changedSteps.oldStep === thisIndex) {
                 saveToFeedModel().then(function () {
                     // notify those that the data is loaded/updated
                     BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
                 });
-            } else if (changedSteps.newStep == thisIndex && self.sql == null) {
+            } else if (changedSteps.newStep === thisIndex && self.sql == null) {
                 var functionDefs = self.sparkShellService.getFunctionDefs();
 
                 self.sql = self.model.visualQuerySql;
-                self.sparkShellService = new SparkShellService(self.sql);
+                self.sparkShellService = new SparkShellService(self.sql, null, FeedService.createFeedModel.dataTransformation.datasources);
                 self.sparkShellService.setFunctionDefs(functionDefs);
                 self.query();
             }
@@ -566,7 +586,9 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             var feedModel = FeedService.createFeedModel;
             var newScript = self.sparkShellService.getFeedScript();
             if (newScript === feedModel.dataTransformation.dataTransformScript) {
-                return $q.defer().reject(true).promise;
+                var result = $q.defer();
+                result.reject(true);
+                return result.promise;
             }
 
             // Populate Feed Model from the Visual Query Model
@@ -577,7 +599,6 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             feedModel.table.method = "EXISTING_TABLE";
             feedModel.table.sourceTableSchema.name = "";
 
-
             // Get list of fields
             var deferred = $q.defer();
             var fields = self.sparkShellService.getFields();
@@ -587,7 +608,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
                 self.sparkShellService.save();
                 deferred.resolve(true);
             } else {
-                self.query().then(function() {
+                self.query().then(function () {
                     FeedService.setTableFields(self.sparkShellService.getFields());
                     self.sparkShellService.save();
                     deferred.resolve(true);
@@ -608,21 +629,20 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
 
         // Invalidate when SQL changes
         $scope.$watch(
-                function() { return self.model.visualQuerySql; },
-                function() {
-                    if (self.sql != self.model.visualQuerySql) {
-                        self.isValid = false;
-                        self.sql = null;
-                    }
+            function () {
+                return self.model.visualQuerySql;
+            },
+            function () {
+                if (self.sql !== self.model.visualQuerySql) {
+                    self.isValid = false;
+                    self.sql = null;
                 }
+            }
         );
-
-        $scope.$on('$destroy', function() {
-            //clean up code here
-        });
     };
 
-    angular.module(moduleName).controller('VisualQueryTransformController', ["$scope","$log","$http","$q","$mdDialog","$mdToast","RestUrlService","VisualQueryService","HiveService","TableDataFunctions","SideNavService","SparkShellService","VisualQueryColumnDelegate","uiGridConstants","FeedService","BroadcastService","StepperService","WindowUnloadService",controller]);
-    angular.module(moduleName)
-            .directive('thinkbigVisualQueryTransform', directive);
+    angular.module(moduleName).controller('VisualQueryTransformController', ["$scope", "$log", "$http", "$q", "$mdDialog", "$mdToast", "RestUrlService", "VisualQueryService", "HiveService",
+                                                                             "SideNavService", "SparkShellService", "VisualQueryColumnDelegate", "uiGridConstants", "FeedService", "BroadcastService",
+                                                                             "StepperService", "WindowUnloadService", controller]);
+    angular.module(moduleName).directive('thinkbigVisualQueryTransform', directive);
 });

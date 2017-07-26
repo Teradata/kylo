@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','angular-ui-router','kylo-common', 'kylo-services','kylo-feedmgr','ment-io','jquery','angular-drag-and-drop-lists'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','angular-ui-router','kylo-common', 'kylo-services','kylo-feedmgr','ment-io','jquery','angular-drag-and-drop-lists'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, ['mentio','dndLists']);
 
     module.config(["$compileProvider",function($compileProvider) {
@@ -26,7 +26,9 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:true,
                 displayName:'Templates',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.TEMPLATES_ACCESS
+
             }
         })
 
@@ -46,9 +48,11 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:false,
                 displayName:'Register Template',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.TEMPLATES_EDIT
             }
         });
+
         $stateProvider.state('register-template',{
             url:'/register-template',
             params:{
@@ -68,7 +72,8 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:false,
                 displayName:'Register Template',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.TEMPLATES_EDIT
             }
         }).state('register-template-complete', {
             url: '/register-template-complete',
@@ -86,7 +91,8 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Register Template',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.TEMPLATES_EDIT
             }
         }).state('import-template',{
             url:'/import-template',
@@ -105,7 +111,8 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             data:{
                 breadcrumbRoot:false,
                 displayName:'Template Manager',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.TEMPLATES_IMPORT
             }
         })
 

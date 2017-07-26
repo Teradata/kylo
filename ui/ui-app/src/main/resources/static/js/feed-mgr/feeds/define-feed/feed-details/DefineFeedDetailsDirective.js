@@ -59,6 +59,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.isValid = false;
 
         this.stepperController = null;
+
+        /**
+         * flag to indicate if the data is still loading
+         * @type {boolean}
+         */
+        this.loading = false;
+
         var watchers = [];
 
         this.codemirrorRenderTypes = RegisterTemplateService.codemirrorRenderTypes;
@@ -79,21 +86,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} property the property to be updated
          */
         function findControllerServicesForProperty(property) {
-            // Show progress indicator
-            property.isLoading = true;
 
-            // Fetch the list of controller services
-            FeedService.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
-                    .then(function(services) {
-                        // Update the allowable values
-                        property.isLoading = false;
-                        property.propertyDescriptor.allowableValues = _.map(services, function(service) {
-                            return {displayName: service.name, value: service.id}
-                        });
-                    }, function() {
-                        // Hide progress indicator
-                        property.isLoading = false;
-                    });
+            FeedService.findControllerServicesForProperty(property);
         }
 
         /**
@@ -104,6 +98,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function initializeProperties(template) {
             RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
             self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+            self.model.allowPreconditions = template.allowPreconditions;
             //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
             //    return self.model.inputProcessorType == processor.type;
             // });
@@ -116,7 +111,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
                         return processor.userEditable
                     })) {
-                StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex)).skip = true;
+             var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+             if(step != null) {
+                 step.skip = true;
+             }
             }
 
             // Find controller services
@@ -127,6 +125,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
+            self.loading = false;
+            validate();
         }
 
         /**
@@ -142,7 +142,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 var errorFn = function(err) {
 
                 };
-                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId));
+                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId),{params:{feedEdit:true,allProperties:true}});
                 promise.then(successFn, errorFn);
                 return promise;
             }
@@ -152,7 +152,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * Validates the step for enable/disable of the step and continue button
          */
         function validate() {
-            self.isValid = self.model.systemFeedName != '' && self.model.systemFeedName != null && self.model.templateId != null
+            self.isValid = self.loading == false && self.model.systemFeedName != '' && self.model.systemFeedName != null && self.model.templateId != null
                            && (self.inputProcessors.length == 0 || (self.inputProcessors.length > 0 && self.inputProcessorId != null));
         }
 
@@ -172,18 +172,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         var templateIdWatch = $scope.$watch(function() {
             return self.model.templateId;
         }, function(newVal) {
+            self.loading = true;
             getRegisteredTemplate();
         });
 
-        function setRenderTemplateForProcessor(processor) {
-            if (processor.feedPropertiesUrl == undefined) {
-                processor.feedPropertiesUrl = null;
-            }
-            if (processor.feedPropertiesUrl == null) {
-                processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, 'create');
 
-            }
-        }
 
         /**
          * Updates the details when the processor is changed.
@@ -201,12 +194,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
-            // var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.model.nonInputProcessors);
-
+          
             if (renderGetTableData) {
                 self.model.table.method = 'EXISTING_TABLE';
                 self.model.options.skipHeader = true;
-                self.model.allowSkipHeaderOption = false;
+                self.model.allowSkipHeaderOption = true;
+
             } else {
                 self.model.table.method = 'SAMPLE_FILE';
                 self.model.table.tableSchema.fields = [];

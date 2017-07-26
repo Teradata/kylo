@@ -1,0 +1,43 @@
+<vertical-section-layout section-title="Data Transformation" allow-edit="vm.allowEdit" editable="vm.editableSection" is-valid="false">
+  <readonly-section>
+    <div layout="column">
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Query</span>
+
+        <div flex>
+          {{vm.model.dataTransformation.sql}}
+        </div>
+      </div>
+
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Data Transformations</span>
+      </div>
+
+      <md-list class="layout-padding-top-bottom">
+        <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
+          <md-icon>{{state.context.icon}}</md-icon>
+          <p title="{{state.context.name}}">{{state.context.name}}</p>
+        </md-list-item>
+        <md-divider ng-repeat-end></md-divider>
+      </md-list>
+    </div>
+  </readonly-section>
+
+  <editable-section>
+    <div layout="column">
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Query</span>
+      </div>
+      <div layout="row">
+        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">Edit Query...</md-button>
+      </div>
+
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Data Transformations</span>
+      </div>
+      <div layout="row">
+        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">Edit Transformations...</md-button>
+      </div>
+    </div>
+  </editable-section>
+</vertical-section-layout>

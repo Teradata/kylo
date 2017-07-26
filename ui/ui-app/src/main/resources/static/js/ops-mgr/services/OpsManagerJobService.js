@@ -26,8 +26,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
             data.LOAD_JOB_URL = OpsManagerRestUrlService.LOAD_JOB_URL;
 
-            data.JOB_PROGRESS_URL = OpsManagerRestUrlService.JOB_PROGRESS_URL;
-
             data.RELATED_JOBS_URL = OpsManagerRestUrlService.RELATED_JOBS_URL;
 
             data.restartJob = function (executionId, params, callback, errorCallback) {
@@ -102,15 +100,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             };
             data.loadJob = function (instanceId) {
                 return $http.get(data.LOAD_JOB_URL(instanceId));
-            };
-
-            /**
-             * Get the progress of a Job
-             * @param executionId
-             * @returns {HttpPromise}
-             */
-            data.getProgress = function (executionId) {
-                return $http.get(data.JOB_PROGRESS_URL(executionId));
             };
 
             data.lastSelectedTab = 'ALL';

@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark.rest;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.springframework.stereotype.Component;
@@ -63,6 +64,12 @@ public class SparkShellTransformController {
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
 
     /**
+     * Service for detecting when this app is idle
+     */
+    @Context
+    public IdleMonitorService idleMonitorService;
+
+    /**
      * Service for evaluating transform scripts
      */
     @Context
@@ -87,6 +94,8 @@ public class SparkShellTransformController {
     public Response create(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or source"
                                              + " must be specified.", required = true)
                            @Nullable final TransformRequest request) {
+        idleMonitorService.reset();
+
         // Validate request
         if (request == null || request.getScript() == null) {
             return error(Response.Status.BAD_REQUEST, "transform.missingScript");
@@ -106,6 +115,8 @@ public class SparkShellTransformController {
             return Response.ok(response).build();
         } catch (ScriptException e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            idleMonitorService.reset();
         }
     }
 
@@ -127,6 +138,8 @@ public class SparkShellTransformController {
                   })
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
+        idleMonitorService.reset();
+
         try {
             TransformJob job = transformService.getJob(id);
 
@@ -143,6 +156,8 @@ public class SparkShellTransformController {
             return error(Response.Status.NOT_FOUND, "transform.unknownTable");
         } catch (Exception e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            idleMonitorService.reset();
         }
     }
 

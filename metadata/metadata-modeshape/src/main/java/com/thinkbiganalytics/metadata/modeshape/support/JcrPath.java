@@ -121,7 +121,7 @@ public class JcrPath implements Path {
     @Override
     public Path getParent() {
         if (this.elements.size() > 1) {
-            return new JcrPath(this.absolute, this.elements.subList(0, this.elements.size() - 2));
+            return new JcrPath(this.absolute, this.elements.subList(0, this.elements.size() - 1));
         } else {
             return null;
         }

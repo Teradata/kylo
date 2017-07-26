@@ -31,11 +31,17 @@ import java.util.List;
  */
 public class CommandLineParams implements Serializable {
 
+    private static final String DEFAULT_STORAGE_LEVEL = "MEMORY_AND_DISK";
+    private static final Integer DEFAULT_NUM_PARTITIONS = -1;
+
     @Parameter(names = {"-h", "--hiveConf"}, description = "Hive configuration parameters", converter = ParameterConverter.class)
     private List<Param> hiveParams;
 
     @Parameter(names = "--storageLevel", description = "Storage for RDD persistance")
-    private String storageLevel = "MEMORY_AND_DISK";
+    private String storageLevel = DEFAULT_STORAGE_LEVEL;
+
+    @Parameter(names = "--numPartitions", description = "Number of RDD partitions")
+    private Integer numPartitions = DEFAULT_NUM_PARTITIONS;
 
     public List<Param> getHiveParams() {
         return hiveParams == null ? new ArrayList<Param>(0) : hiveParams;
@@ -43,5 +49,9 @@ public class CommandLineParams implements Serializable {
 
     public String getStorageLevel() {
         return storageLevel;
+    }
+
+    public Integer getNumPartitions() {
+        return numPartitions;
     }
 }

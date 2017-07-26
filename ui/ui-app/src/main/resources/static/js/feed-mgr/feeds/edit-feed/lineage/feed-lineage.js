@@ -376,13 +376,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * @returns {string}
          */
         var datasourceNodeLabel = function(ds){
-            var label = ds.datasourceType;
-            if (ds.datasourceType && Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource")) {
-                label = label.substring(0, label.toLowerCase().lastIndexOf("datasource"));
+            var label = "";
+            if (angular.isString(ds.datasourceType)) {
+                label = Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource") ? ds.datasourceType.substring(0, ds.datasourceType.toLowerCase().lastIndexOf("datasource")) : ds.datasourceType;
+            } else if (angular.isString(ds.type)) {
+                label = ds.type;
+            } else {
+                label = Utils.endsWith(ds["@type"].toLowerCase(), "datasource") ? ds["@type"].substring(0, ds["@type"].toLowerCase().lastIndexOf("datasource")) : ds["@type"];
             }
+
             label += "\n" + ds.name;
             return label;
-        }
+        };
 
         /**
          * Get the label for the Feed Node

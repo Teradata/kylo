@@ -32,6 +32,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -50,6 +53,9 @@ import javax.jcr.Session;
  * Provides access to {@link User} objects stored in a JCR repository.
  */
 public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> implements UserProvider {
+    
+    @Inject
+    private AllowedEntityActionsProvider actionsProvider;
 
     @Nonnull
     @Override
@@ -281,6 +287,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
 
     @Override
     public void deleteGroup(@Nonnull final UserGroup group) {
+        actionsProvider.getAllowedActions(AllowedActions.SERVICES) 
+            .ifPresent((allowed) -> allowed.disableAll(group.getPrincial()));
         delete(group);
     }
 

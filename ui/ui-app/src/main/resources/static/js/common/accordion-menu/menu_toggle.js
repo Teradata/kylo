@@ -73,8 +73,18 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                             var allPermissions = [];
                             _.each(scope.section.links,function(item){
                                 var permissionStr = item.permission;
-                                var arr = permissionStr.split(',');
-                                allPermissions = _.union(allPermissions,arr);
+                                if(permissionStr != undefined) {
+                                    var arr = [];
+                                    if(angular.isArray(permissionStr)) {
+                                        arr = permissionStr;
+                                        //the directive template uses the permission key to check.  it needs to be a string.
+                                        item.permission = arr.join(",")
+                                    }
+                                    else {
+                                        arr = permissionStr.split(',');
+                                    }
+                                    allPermissions = _.union(allPermissions, arr);
+                                }
                             });
                             return allPermissions;
                     }

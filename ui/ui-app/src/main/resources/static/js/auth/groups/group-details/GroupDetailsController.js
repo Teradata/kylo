@@ -96,6 +96,8 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
          */
         self.users = [];
 
+        self.groupId = $transition$.params().groupId;
+
         // Update isValid when $error is updated
         $scope.$watch(
                 function() {return self.$error},
@@ -188,7 +190,7 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
          */
         self.onLoad = function() {
             // Fetch allowed permissions
-            AccessControlService.getAllowedActions()
+            AccessControlService.getUserAllowedActions()
                     .then(function(actionSet) {
                         self.allowAdmin = AccessControlService.hasAction(AccessControlService.GROUP_ADMIN, actionSet.actions);
                         self.allowUsers = AccessControlService.hasAction(AccessControlService.USERS_ACCESS, actionSet.actions);
@@ -232,6 +234,7 @@ define(['angular', "auth/module-name"], function (angular, moduleName) {
             UserService.saveGroup(model)
                     .then(function() {
                         self.model = model;
+                        self.groupId = self.model.systemName;
                     });
         };
 

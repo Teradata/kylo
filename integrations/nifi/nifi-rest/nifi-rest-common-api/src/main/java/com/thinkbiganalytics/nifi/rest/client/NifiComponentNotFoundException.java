@@ -31,7 +31,7 @@ public class NifiComponentNotFoundException extends NifiClientRuntimeException {
     private NifiConstants.NIFI_COMPONENT_TYPE componentType;
 
     public NifiComponentNotFoundException(String componentId, NifiConstants.NIFI_COMPONENT_TYPE componentType, Throwable cause) {
-        this("Unable to find Nifi Compoent of type: " + componentType + " for: " + componentId, componentId, componentType, cause);
+        this("Unable to find NiFi component of type: " + componentType + " for: " + componentId, componentId, componentType, cause);
     }
 
     public NifiComponentNotFoundException(String message) {

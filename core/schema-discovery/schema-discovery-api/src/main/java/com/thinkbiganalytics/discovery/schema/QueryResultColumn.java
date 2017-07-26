@@ -124,4 +124,18 @@ public interface QueryResultColumn {
      * @param field field
      */
     void setField(String field);
+
+    /**
+     * Gets a human-readable description of this column.
+     *
+     * @return the comment
+     */
+    String getComment();
+
+    /**
+     * Sets a human-readable description for this column.
+     *
+     * @param comment the comment
+     */
+    void setComment(String comment);
 }

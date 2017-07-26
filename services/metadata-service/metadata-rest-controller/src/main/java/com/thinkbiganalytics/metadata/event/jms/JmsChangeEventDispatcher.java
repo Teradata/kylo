@@ -74,7 +74,6 @@ public class JmsChangeEventDispatcher {
      * Spring JMS messaging template
      */
     @Inject
-    @Named("metadataMessagingTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
     /**
      * Metadata transaction wrapper
@@ -116,7 +115,7 @@ public class JmsChangeEventDispatcher {
             FeedCleanupTriggerEvent jmsEvent = new FeedCleanupTriggerEvent(metadataEvent.getData().toString());
 
             metadata.read(() -> {
-                Feed<?> feed = feedProvider.getFeed(metadataEvent.getData());
+                Feed feed = feedProvider.getFeed(metadataEvent.getData());
                 jmsEvent.setFeedName(feed.getName());
                 jmsEvent.setCategoryName(feed.getCategory().getName());
                 return jmsEvent;
@@ -136,7 +135,7 @@ public class JmsChangeEventDispatcher {
             FeedPreconditionTriggerEvent triggerEv = new FeedPreconditionTriggerEvent(event.getData().toString());
 
             metadata.read(() -> {
-                Feed<?> feed = feedProvider.getFeed(event.getData());
+                Feed feed = feedProvider.getFeed(event.getData());
                 triggerEv.setFeedName(feed.getName());
                 triggerEv.setCategory(feed.getCategory().getName());
                 return triggerEv;

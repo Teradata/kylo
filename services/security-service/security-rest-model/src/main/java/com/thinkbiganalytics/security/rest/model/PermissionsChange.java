@@ -27,7 +27,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -36,6 +39,8 @@ import java.util.Set;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionsChange {
+
+    public enum ChangeType {ADD, REMOVE, REPLACE}
 
     private ChangeType change;
     private ActionGroup actionSet;
@@ -99,5 +104,22 @@ public class PermissionsChange {
         return this.actionSet.addAction(action);
     }
 
-    public enum ChangeType {ADD, REMOVE, REPLACE}
+    public void union(ActionGroup otherGroup) {
+        List<Action> existingActions = actionSet.getActions();
+        List<Action> otherActions = otherGroup.getActions();
+
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action otherAction : otherActions) {
+            Optional<Action> existingAction = actionSet.getAction(otherAction.getSystemName());
+            if (existingAction.isPresent()) {
+                existingAction.get().union(otherAction);
+            } else {
+                newActions.add(otherAction);
+            }
+        }
+
+        existingActions.addAll(newActions);
+    }
+
 }

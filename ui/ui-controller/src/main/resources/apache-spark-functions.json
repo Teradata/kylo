@@ -1,0 +1,3772 @@
+{
+  "!name": "apache-spark-functions",
+  "!define": {
+    "AFTSurvivalRegression": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCensorCol": {
+        "!type": "fn(value: string) -> AFTSurvivalRegression",
+        "!doc": "Param for censor column name.",
+        "!spark": ".setCensorCol(%s)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> AFTSurvivalRegression",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setFitIntercept": {
+        "!type": "fn(value: boolean) -> AFTSurvivalRegression",
+        "!doc": "Set if we should fit the intercept. Default is true.",
+        "!spark": ".setFitIntercept(%b)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> AFTSurvivalRegression",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> AFTSurvivalRegression",
+        "!doc": "Set the maximum number of iterations. Default is 100.",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> AFTSurvivalRegression",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setQuantileProbabilities": {
+        "!type": "fn(value: [number]) -> AFTSurvivalRegression",
+        "!doc": "Param for quantile probabilities array.",
+        "!spark": ".setQuantileProbabilities(%@f)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setQuantilesCol": {
+        "!type": "fn(value: string) -> AFTSurvivalRegression",
+        "!doc": "Param for quantiles column name.",
+        "!spark": ".setQuantilesCol(%s)",
+        "!sparkType": "AFTSurvivalRegression"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> AFTSurvivalRegression",
+        "!doc": "Set the convergence tolerance of iterations. Smaller value will lead to higher accuracy with the cost of more iterations. Default is 1E-6.",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "AFTSurvivalRegression"
+      }
+    },
+    "ALS": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setAlpha": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for the alpha parameter in the implicit preference formulation (nonnegative).",
+        "!spark": ".setAlpha(%f)",
+        "!sparkType": "ALS"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "ALS"
+      },
+      "setImplicitPrefs": {
+        "!type": "fn(value: boolean) -> ALS",
+        "!doc": "Param to decide whether to use implicit preference.",
+        "!spark": ".setImplicitPrefs(%b)",
+        "!sparkType": "ALS"
+      },
+      "setItemCol": {
+        "!type": "fn(value: string) -> ALS",
+        "!doc": "Param for the column name for item ids.",
+        "!spark": ".setItemCol(%s)",
+        "!sparkType": "ALS"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "ALS"
+      },
+      "setNonnegative": {
+        "!type": "fn(value: boolean) -> ALS",
+        "!doc": "Param for whether to apply nonnegativity constraints.",
+        "!spark": ".setNonnegative(%b)",
+        "!sparkType": "ALS"
+      },
+      "setNumBlocks": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Sets both numUserBlocks and numItemBlocks to the specific value.",
+        "!spark": ".setNumBlocks(%d)",
+        "!sparkType": "ALS"
+      },
+      "setNumItemBlocks": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for number of item blocks (positive).",
+        "!spark": ".setNumItemBlockes(%d)",
+        "!sparkType": "ALS"
+      },
+      "setNumUserBlockes": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for number of user blocks (positive).",
+        "!spark": ".setNumUserBlocks(%d)",
+        "!sparkType": "ALS"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> ALS",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "ALS"
+      },
+      "setRank": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for rank of the matrix factorization (positive).",
+        "!spark": ".setRank(%d)",
+        "!sparkType": "ALS"
+      },
+      "setRatingCol": {
+        "!type": "fn(value: string) -> ALS",
+        "!doc": "Param for the column name for ratings.",
+        "!spark": ".setRatingCol(%s)",
+        "!sparkType": "ALS"
+      },
+      "setRegParam": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for regularization parameter (>= 0).",
+        "!spark": ".setRegParam(%f)",
+        "!sparkType": "ALS"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> ALS",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "ALS"
+      },
+      "setUserCol": {
+        "!type": "fn(value: string) -> ALS",
+        "!doc": "Param for the column name for user ids.",
+        "!spark": ".setUserCol(%s)",
+        "!sparkType": "ALS"
+      }
+    },
+    "BisectingKMeans": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> BisectingKMeans",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "BisectingKMeans"
+      },
+      "setK": {
+        "!type": "fn(value: number) -> BisectingKMeans",
+        "!doc": "The desired number of leaf clusters.",
+        "!spark": ".setK(%d)",
+        "!sparkType": "BisectingKMeans"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> BisectingKMeans",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "BisectingKMeans"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> BisectingKMeans",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "BisectingKMeans"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> BisectingKMeans",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "BisectingKMeans"
+      }
+    },
+    "BucketedRandomProjectionLSH": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setBucketLength": {
+        "!type": "fn(value: number) -> BucketedRandomProjectionLSH",
+        "!doc": "The length of each hash bucket, a larger bucket lowers the false negative rate.",
+        "!spark": ".setBucketLength(%f)",
+        "!sparkType": "BucketedRandomProjectionLSH"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> BucketedRandomProjectionLSH",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputcol(%s)",
+        "!sparkType": "BucketedRandomProjectionLSH"
+      },
+      "setNumHashTables": {
+        "!type": "fn(value: number) -> BucketedRandomProjectionLSH",
+        "!doc": "Param for the number of hash tables used in LSH OR-amplification.",
+        "!spark": ".setNumHashTables(%d)",
+        "!sparkType": "BucketedRandomProjectionLSH"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> BucketedRandomProjectionLSH",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "BucketedRandomProjectionLSH"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> BucketedRandomProjectionLSH",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "BucketedRandomProjectionLSH"
+      }
+    },
+    "ChiSqSelector": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> ChiSqSelector",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setFpr": {
+        "!type": "fn(value: number) -> ChiSqSelector",
+        "!doc": "The highest p-value for features to be kept. (Spark 2.1)",
+        "!spark": ".setFpr(%f)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> ChiSqSelector",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setNumTopFeatures": {
+        "!type": "fn(value: number) -> ChiSqSelector",
+        "!doc": "Number of features that selector will select, ordered by ascending p-value.",
+        "!spark": ".setNumTopFeatures(%d)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> ChiSqSelector",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setPercentile": {
+        "!type": "fn(value: number) -> ChiSqSelector",
+        "!doc": "Percentile of features that selector will select, ordered by statistics value descending. (Spark 2.1)",
+        "!spark": ".setPercentile(%f)",
+        "!sparkType": "ChiSqSelector"
+      },
+      "setSelectorType": {
+        "!type": "fn(value: string) -> ChiSqSelector",
+        "!doc": "The selector type of the ChisqSelector. (Spark 2.1)",
+        "!spark": ".setSelectorType(%s)",
+        "!sparkType": "ChiSqSelector"
+      }
+    },
+    "Column": {
+      "as": {
+        "!type": "fn(alias: string, opt_metadata: Metadata) -> Column",
+        "!doc": "Gives the column an alias and optional metadata.",
+        "!spark": ".as(%s%,?o)",
+        "!sparkType": "column"
+      },
+      "cast": {
+        "!type": "fn(to: string) -> Column",
+        "!doc": "Casts the column to a different type.",
+        "!spark": ".cast(%s)",
+        "!sparkType": "column"
+      },
+      "over": {
+        "!type": "fn(window: WindowSpec) -> Column",
+        "!doc": "Define a windowing column.",
+        "!spark": ".over(%o)",
+        "!sparkType": "column"
+      }
+    },
+    "ConditionChain": {
+      "otherwise": {
+        "!type": "fn(value: Column) -> Column",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!spark": ".otherwise(%c)",
+        "!sparkType": "column"
+      },
+      "when": {
+        "!type": "fn(condition: Column, value: Column) -> ConditionChain",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!spark": ".when(%c, %c)",
+        "!sparkType": "ConditionChain"
+      }
+    },
+    "CountVectorizer": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setBinary": {
+        "!type": "fn(value: boolean) -> CountVectorizer",
+        "!doc": "Binary toggle to control the output vector values. (Spark 2.0)",
+        "!spark": ".setBinary(%b)",
+        "!sparkType": "CountVectorizer"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> CountVectorizer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "CountVectorizer"
+      },
+      "setMinDF": {
+        "!type": "fn(value: number) -> CountVectorizer",
+        "!doc": "Specifies the minimum number of different documents a term must appear in to be included in the vocabulary.",
+        "!spark": ".setMinDF(%f)",
+        "!sparkType": "CountVectorizer"
+      },
+      "setMinTF": {
+        "!type": "fn(value: number) -> CountVectorizer",
+        "!doc": "Filter to ignore rare words in a document.",
+        "!spark": ".setMinTF(%f)",
+        "!sparkType": "CountVectorizer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> CountVectorizer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "CountVectorizer"
+      },
+      "setVocabSize": {
+        "!type": "fn(value: number) -> CountVectorizer",
+        "!doc": "Max size of the vocabulary.",
+        "!spark": ".setVocabSize(%d)",
+        "!sparkType": "CountVectorizer"
+      }
+    },
+    "DataFrame": {
+    },
+    "DecisionTreeClassifier": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setRawPredictionCol": {
+        "!type": "fn(value: string) -> DecisionTreeClassifier",
+        "!doc": "Param for raw prediction (a.k.a. confidence) column name.",
+        "!spark": ".setRawPredictionCol(%s)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> DecisionTreeClassifier",
+        "!doc": "Param for random seed. (Spark 1.6)",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "DecisionTreeClassifier"
+      },
+      "setThresholds": {
+        "!type": "fn(value: [number]) -> DecisionTreeClassifier",
+        "!doc": "Param for Thresholds in multi-class classification to adjust the probability of predicting each class.",
+        "!spark": ".setThresholds(%%)",
+        "!sparkType": "DecisionTreeClassifier"
+      }
+    },
+    "DecisionTreeRegressor": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> DecisionTreeRegressor",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> DecisionTreeRegressor",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> DecisionTreeRegressor",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> DecisionTreeRegressor",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> DecisionTreeRegressor",
+        "!doc": "Param for random seed. (Spark 1.6)",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "DecisionTreeRegressor"
+      },
+      "setVarianceCol": {
+        "!type": "fn(value: string) -> DecisionTreeRegressor",
+        "!doc": "Param for Column name for the biased sample variance of prediction. (Spark 2.0)",
+        "!spark": ".setVarianceCol(%s)",
+        "!sparkType": "DecisionTreeRegressor"
+      }
+    },
+    "Evaluator": {
+    },
+    "GBTClassifier": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> GBTClassifier",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> GBTClassifier",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> GBTClassifier",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setLossType": {
+        "!type": "fn(value: string) -> GBTClassifier",
+        "!doc": "Loss function which GBT tries to minimize.",
+        "!spark": ".setLossType(%s)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> GBTClassifier",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredicitionCol(%s)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setStepSize": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Param for Step size (a.k.a. learning rate) in interval (0, 1] for shrinking the contribution of each estimator. (default = 0.1)",
+        "!spark": ".setStepSize(%f)",
+        "!sparkType": "GBTClassifier"
+      },
+      "setSubsamplingRate": {
+        "!type": "fn(value: number) -> GBTClassifier",
+        "!doc": "Fraction of the training data used for learning each decision tree, in range (0, 1].",
+        "!spark": ".setSubsamplingRate(%f)",
+        "!sparkType": "GBTClassifier"
+      }
+    },
+    "GBTRegressor": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> GBTRegressor",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> GBTRegressor",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> GBTRegressor",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setLossType": {
+        "!type": "fn(value: string) -> GBTRegressor",
+        "!doc": "Loss function which GBT tries to minimize.",
+        "!spark": ".setLossType(%s)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> GBTRegressor",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setStepSize": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Param for Step size (a.k.a. learning rate) in interval (0, 1] for shrinking the contribution of each estimator. (default = 0.1)",
+        "!spark": ".setStepSize(%f)",
+        "!sparkType": "GBTRegressor"
+      },
+      "setSubsamplingRate": {
+        "!type": "fn(value: number) -> GBTRegressor",
+        "!doc": "Fraction of the training data used for learning each decision tree, in range (0, 1].",
+        "!spark": ".setSubsamplingRate(%f)",
+        "!sparkType": "GBTRegressor"
+      }
+    },
+    "GeneralizedLinearRegression": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFamily": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for the name of family which is a description of the error distribution to be used in the model.",
+        "!spark": ".setFamily(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setFitIntercept": {
+        "!type": "fn(value: boolean) -> GeneralizedLinearRegression",
+        "!doc": "Param for whether to fit an intercept term.",
+        "!spark": ".setFitIntercept(%b)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setLink": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for the name of link function which provides the relationship between the linear predictor and the mean of the distribution function.",
+        "!spark": ".setLink(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setLinkPredictionCol": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for link prediction (linear predictor) column name.",
+        "!spark": ".setLinkPredictionCol(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> GeneralizedLinearRegression",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setRegParam": {
+        "!type": "fn(value: number) -> GeneralizedLinearRegression",
+        "!doc": "Param for regularization parameter (>= 0).",
+        "!spark": ".setRegParam(%f)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setSolver": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for the solver algorithm for optimization.",
+        "!spark": ".setSolver(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> GeneralizedLinearRegression",
+        "!doc": "Param for the convergence tolerance for iterative algorithms (>= 0).",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "GeneralizedLinearRegression"
+      },
+      "setWeightCol": {
+        "!type": "fn(value: string) -> GeneralizedLinearRegression",
+        "!doc": "Param for weight column name.",
+        "!spark": ".setWeightCol(%s)",
+        "!sparkType": "GeneralizedLinearRegression"
+      }
+    },
+    "GroupedData": {
+      "agg": {
+        "!type": "fn(expr1: Column, exprs_varargs: Column) -> DataFrame",
+        "!doc": "Compute aggregates by specifying a series of aggregate columns.",
+        "!spark": ".agg(%c%,*c)",
+        "!sparkType": "dataframe"
+      },
+      "avg": {
+        "!type": "fn(colNames_varargs: string) -> DataFrame",
+        "!doc": "Compute the mean value for each numeric columns for each group.",
+        "!spark": ".avg(%*s)",
+        "!sparkType": "dataframe"
+      },
+      "count": {
+        "!type": "fn() -> DataFrame",
+        "!doc": "Count the number of rows for each group.",
+        "!spark": ".count()",
+        "!sparkType": "dataframe"
+      },
+      "max": {
+        "!type": "fn(colNames_varargs: string) -> DataFrame",
+        "!doc": "Compute the max value for each numeric columns for each group.",
+        "!spark": ".max(%*s)",
+        "!sparkType": "dataframe"
+      },
+      "mean": {
+        "!type": "fn(colNames_varargs: string) -> DataFrame",
+        "!doc": "Compute the average value for each numeric columns for each group.",
+        "!spark": ".mean(%*s)",
+        "!sparkType": "dataframe"
+      },
+      "min": {
+        "!type": "fn(colNames_varargs: string) -> DataFrame",
+        "!doc": "Compute the min value for each numeric column for each group.",
+        "!spark": ".min(%*s)",
+        "!sparkType": "dataframe"
+      },
+      "pivot": {
+        "!type": "fn(pivotColumn: string) -> GroupedData",
+        "!doc": "Pivots a column of the current DataFrame and perform the specified aggregation. (Spark 1.6)",
+        "!spark": ".pivot(%s)",
+        "!sparkType": "GroupedData"
+      },
+      "sum": {
+        "!type": "fn(colNames_varargs: string) -> DataFrame",
+        "!doc": "Compute the sum for each numeric columns for each group.",
+        "!spark": ".sum(%*s)",
+        "!sparkType": "dataframe"
+      }
+    },
+    "GaussianMixture": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> GaussianMixture",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setK": {
+        "!type": "fn(value: number) -> GaussianMixture",
+        "!doc": "Number of independent Gaussians in the mixture model.",
+        "!spark": ".setK(%d)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> GaussianMixture",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> GaussianMixture",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> GaussianMixture",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> GaussianMixture",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "GaussianMixture"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> GaussianMixture",
+        "!doc": "Param for the convergence tolerance for iterative algorithms (>= 0).",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "GaussianMixture"
+      }
+    },
+    "IDF": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> IDF",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "IDF"
+      },
+      "setMinDocFreq": {
+        "!type": "fn(value: number) -> IDF",
+        "!doc": "The minimum number of documents in which a term should appear.",
+        "!spark": ".setMinDocFreq(%d)",
+        "!sparkType": "IDF"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> IDF",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "IDF"
+      }
+    },
+    "IsotonicRegression": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeatureIndex": {
+        "!type": "fn(value: number) -> IsotonicRegression",
+        "!doc": "Param for the index of the feature if featuresCol is a vector column (default: 0), no effect otherwise.",
+        "!spark": ".setFeatureIndex(%d)",
+        "!sparkType": "IsotonicRegression"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> IsotonicRegression",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "IsotonicRegression"
+      },
+      "setIsotonic": {
+        "!type": "fn(value: boolean) -> IsotonicRegression",
+        "!doc": "Param for whether the output sequence should be isotonic/increasing (true) or antitonic/decreasing (false).",
+        "!spark": ".setIsotonic(%b)",
+        "!sparkType": "IsotonicRegression"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> IsotonicRegression",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "IsotonicRegression"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> IsotonicRegression",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "IsotonicRegression"
+      },
+      "setWeightCol": {
+        "!type": "fn(value: string) -> IsotonicRegression",
+        "!doc": "Param for weight column name.",
+        "!spark": ".setWeightCol(%s)",
+        "!sparkType": "IsotonicRegression"
+      }
+    },
+    "KMeans": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> KMeans",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "KMeans"
+      },
+      "setK": {
+        "!type": "fn(value: number) -> KMeans",
+        "!doc": "The number of clusters to create (k).",
+        "!spark": ".setK(%d)",
+        "!sparkType": "KMeans"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> KMeans",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "KMeans"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> KMeans",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "KMeans"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> KMeans",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "KMeans"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> KMeans",
+        "!doc": "Param for the convergence tolerance for iterative algorithms (>= 0).",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "KMeans"
+      }
+    },
+    "LDA": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "LDA"
+      },
+      "setDocConcentration": {
+        "!type": "fn(value: [number]) -> LDA",
+        "!doc": "Concentration parameter (commonly named \"alpha\") for the prior placed on documents' distributions over topics (\"theta\").",
+        "!spark": ".setDocConcentration(%f)",
+        "!sparkType": "LDA"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> LDA",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "LDA"
+      },
+      "setK": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Param for the number of topics (clusters) to infer.",
+        "!spark": ".setK(value: number)",
+        "!sparkType": "LDA"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "LDA"
+      },
+      "setOptimizer": {
+        "!type": "fn(value: string) -> LDA",
+        "!doc": "Optimizer or inference algorithm used to estimate the LDA model.",
+        "!spark": ".setOptimizer(%s)",
+        "!sparkType": "LDA"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "LDA"
+      },
+      "setSubsamplingRate": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Fraction of the corpus to be sampled and used in each iteration of mini-batch gradient descent, in range (0, 1].",
+        "!spark": ".setSubsamplingRate(%f)",
+        "!sparkType": "LDA"
+      },
+      "setTopicConcentration": {
+        "!type": "fn(value: number) -> LDA",
+        "!doc": "Concentration parameter (commonly named \"beta\" or \"eta\") for the prior placed on topics' distributions over terms.",
+        "!spark": ".setTopicConcentration(%f)",
+        "!sparkType": "LDA"
+      },
+      "setTopicDistributionCol": {
+        "!type": "fn(value: string) -> LDA",
+        "!doc": "Output column with estimates of the topic mixture distribution for each document (often called \"theta\" in the literature).",
+        "!spark": ".setTopicDistributionCol(%s)",
+        "!sparkType": "LDA"
+      }
+    },
+    "LinearRegression": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setElasticNetParam": {
+        "!type": "fn(value: number) -> LinearRegression",
+        "!doc": "Param for the ElasticNet mixing parameter, in range [0, 1].",
+        "!spark": ".setElasticNetParam(%f)",
+        "!sparkType": "LinearRegression"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> LinearRegression",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "LinearRegression"
+      },
+      "setFitIntercept": {
+        "!type": "fn(value: boolean) -> LinearRegression",
+        "!doc": "Param for whether to fit an intercept term.",
+        "!spark": ".setFitIntercept(%b)",
+        "!sparkType": "LinearRegression"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> LinearRegression",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "LinearRegression"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> LinearRegression",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "LinearRegression"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> LinearRegression",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "LinearRegression"
+      },
+      "setRegParam": {
+        "!type": "fn(value: number) -> LinearRegression",
+        "!doc": "Param for regularization parameter (>= 0).",
+        "!spark": ".setRegParam(%f)",
+        "!sparkType": "LinearRegression"
+      },
+      "setSolver": {
+        "!type": "fn(value: string) -> LinearRegression",
+        "!doc": "Param for the solver algorithm for optimization. (Spark 1.6)",
+        "!spark": ".setSolver(%s)",
+        "!sparkType": "LinearRegression"
+      },
+      "setStandardization": {
+        "!type": "fn(value: boolean) -> LinearRegression",
+        "!doc": "Param for whether to standardize the training features before fitting the model.",
+        "!spark": ".setStandardization(%b)",
+        "!sparkType": "LinearRegression"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> LinearRegression",
+        "!doc": "Param for the convergence tolerance for iterative algorithms (>= 0).",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "LinearRegression"
+      },
+      "setWeightCol": {
+        "!type": "fn(value: string) -> LinearRegression",
+        "!doc": "Param for weight column name. (Spark 1.6)",
+        "!spark": ".setWeightCol(%s)",
+        "!sparkType": "LinearRegression"
+      }
+    },
+    "LogisticRegression": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setElasticNetParam": {
+        "!type": "fn(value: number) -> LogisticRegression",
+        "!doc": "Param for the ElasticNet mixing parameter, in range [0, 1].",
+        "!spark": ".setElasticNetParam(%f)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setFamily": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for the name of family which is a description of the label distribution to be used in the model. (Spark 2.1)",
+        "!spark": ".setFamily(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setFitIntercept": {
+        "!type": "fn(value: boolean) -> LogisticRegression",
+        "!doc": "Param for whether to fit an intercept term.",
+        "!spark": ".setFitIntercept(%b)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> LogisticRegression",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setRawPredictionCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Param for raw prediction (a.k.a. confidence) column name.",
+        "!spark": ".setRawPredictionCol(%s)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setRegParam": {
+        "!type": "fn(value: number) -> LogisticRegression",
+        "!doc": "Param for regularization parameter (>= 0).",
+        "!spark": ".setRegParam(%f)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setStandardization": {
+        "!type": "fn(value: boolean) -> LogisticRegression",
+        "!doc": "Whether to standardize the training features before fitting the model.",
+        "!spark": ".setStandardization(%b)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setThreshold": {
+        "!type": "fn(value: number) -> LogisticRegression",
+        "!doc": "Set the threshold in binary classification, in range [0, 1].",
+        "!spark": ".setThreshold(%f)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setThresholds": {
+        "!type": "fn(value: [number]) -> LogisticRegression",
+        "!doc": "Sets thresholds in multiclass (or binary) classification to adjust the probability of predicting each class.",
+        "!spark": ".setThresholds(%@f)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> LogisticRegression",
+        "!doc": "Set the convergence tolerance of iterations.",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "LogisticRegression"
+      },
+      "setWeightCol": {
+        "!type": "fn(value: string) -> LogisticRegression",
+        "!doc": "Whether to over-/under-sample training instances according to the given weights in weightCol. (Spark 1.6)",
+        "!spark": ".setWeightCol(%s)",
+        "!sparkType": "LogisticRegression"
+      }
+    },
+    "MaxAbsScaler": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> MaxAbsScaler",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "MaxAbsScaler"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> MaxAbsScaler",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "MaxAbsScaler"
+      }
+    },
+    "MinHashLSH": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> MinHashLSH",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "MinHashLSH"
+      },
+      "setNumHashTables": {
+        "!type": "fn(value: number) -> MinHashLSH",
+        "!doc": "Param for the number of hash tables used in LSH OR-amplification.",
+        "!spark": ".setNumHashTables(%d)",
+        "!sparkType": "MinHashLSH"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> MinHashLSH",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "MinHashLSH"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> MinHashLSH",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "MinHashLSH"
+      }
+    },
+    "MinMaxScaler": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> MinMaxScaler",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "MinMaxScaler"
+      },
+      "setMax": {
+        "!type": "fn(value: number) -> MinMaxScaler",
+        "!doc": "Upper bound after transformation, shared by all features Default: 1.0",
+        "!spark": ".setMax(%f)",
+        "!sparkType": "MinMaxScaler"
+      },
+      "setMin": {
+        "!type": "fn(value: number) -> MinMaxScaler",
+        "!doc": "Lower bound after transformation, shared by all features Default: 0.0",
+        "!spark": ".setMin(%f)",
+        "!sparkType": "MinMaxScaler"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> MinMaxScaler",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "MinMaxScaler"
+      }
+    },
+    "MultilayerPerceptronClassifier": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> MultilayerPerceptronClassifier",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> MultilayerPerceptronClassifier",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setLayers": {
+        "!type": "fn(value: [number]) -> MultilayerPerceptronClassifier",
+        "!doc": "Layer sizes including input size and output size.",
+        "!spark": ".setLayers(%@d)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> MultilayerPerceptronClassifier",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> MultilayerPerceptronClassifier",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> MultilayerPerceptronClassifier",
+        "!doc": "Set the seed for weights initialization if weights are not set.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setStepSize": {
+        "!type": "fn(value: number) -> MultilayerPerceptronClassifier",
+        "!doc": "Param for Step size to be used for each iteration of optimization (> 0). (Spark 2.0)",
+        "!spark": ".setStepSize(%f)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      },
+      "setTol": {
+        "!type": "fn(value: number) -> MultilayerPerceptronClassifier",
+        "!doc": "Set the convergence tolerance of iterations (>= 0).",
+        "!spark": ".setTol(%f)",
+        "!sparkType": "MultilayerPerceptronClassifier"
+      }
+    },
+    "NaiveBayes": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setModelType": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Set the model type using a string (case-sensitive).",
+        "!spark": ".setModelType(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setRawPredictionCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for raw prediction (a.k.a. confidence) column name.",
+        "!spark": ".setRawPredictionCol(%s)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setSmoothing": {
+        "!type": "fn(value: number) -> NaiveBayes",
+        "!doc": "Set the smoothing parameter.",
+        "!spark": ".setSmoothing(%f)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setThresholds": {
+        "!type": "fn(value: [number]) -> NaiveBayes",
+        "!doc": "Param for Thresholds in multi-class classification to adjust the probability of predicting each class.",
+        "!spark": ".setThresholds(%@f)",
+        "!sparkType": "NaiveBayes"
+      },
+      "setWeightCol": {
+        "!type": "fn(value: string) -> NaiveBayes",
+        "!doc": "Param for weight column name. If this is not set or empty, we treat all instance weights as 1.0. (Spark 2.1)",
+        "!spark": ".setWeightCol(%s)",
+        "!sparkType": "NaiveBayes"
+      }
+    },
+    "OneVsRest": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setClassifier": {
+        "!type": "fn(value: Classifier) -> OneVsRest",
+        "!doc": "Param for the base binary classifier that we reduce multiclass classification into.",
+        "!spark": ".setClassifier(%o)",
+        "!sparkType": "OneVsRest"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> OneVsRest",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "OneVsRest"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> OneVsRest",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "OneVsRest"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> OneVsRest",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "OneVsRest"
+      }
+    },
+    "PCA": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> PCA",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "PCA"
+      },
+      "setK": {
+        "!type": "fn(value: number) -> PCA",
+        "!doc": "The number of principal components.",
+        "!spark": ".setK(%d)",
+        "!sparkType": "PCA"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> PCA",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "PCA"
+      }
+    },
+    "ProbabilisticClassifier": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> ProbabilisticClassifier",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "ProbabilisticClassifier"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> ProbabilisticClassifier",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "ProbabilisticClassifier"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> ProbabilisticClassifier",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "ProbabilisticClassifier"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> ProbabilisticClassifier",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "ProbabilisticClassifier"
+      },
+      "setRawPredictionCol": {
+        "!type": "fn(value: string) -> ProbabilisticClassifier",
+        "!doc": "Param for raw prediction (a.k.a. confidence) column name.",
+        "!spark": ".setRawPredictionCol(%s)",
+        "!sparkType": "ProbabilisticClassifier"
+      },
+      "setThresholds": {
+        "!type": "fn(value: [number]) -> ProbabilisticClassifier",
+        "!doc": "Param for Thresholds in multi-class classification to adjust the probability of predicting each class.",
+        "!spark": ".setThresholds(%@f)",
+        "!sparkType": "ProbabilisticClassifier"
+      }
+    },
+    "QuantileDiscretizer": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setHandleInvalid": {
+        "!type": "fn(value: string) -> QuantileDiscretizer",
+        "!doc": "Param for how to handle invalid entries. (Spark 2.1)",
+        "!spark": ".setHandleInvalid(%s)",
+        "!sparkType": "QuantileDiscretizer"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> QuantileDiscretizer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "QuantileDiscretizer"
+      },
+      "setNumBuckets": {
+        "!type": "fn(value: number) -> QuantileDiscretizer",
+        "!doc": "Number of buckets (quantiles, or categories) into which data points are grouped.",
+        "!spark": ".setNumBuckets(%d)",
+        "!sparkType": "QuantileDiscretizer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> QuantileDiscretizer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "QuantileDiscretizer"
+      },
+      "setRelativeError": {
+        "!type": "fn(value: number) -> QuantileDiscretizer",
+        "!doc": "The relative target precision to achieve (greater or equal to 0). (Spark 2.0)",
+        "!spark": ".setRelativeError(%f)",
+        "!sparkType": "QuantileDiscretizer"
+      }
+    },
+    "RandomForestClassifier": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setFeatureSubsetStrategy": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "The number of features to consider for splits at each tree node.",
+        "!spark": ".setFeatureSubsetStrategy(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setNumTrees": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Number of trees to train (>= 1).",
+        "!spark": ".setNumTrees(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredicitionCol(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setProbabilityCol": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Param for Column name for predicted class conditional probabilities.",
+        "!spark": ".setProbabilityCol(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setRawPredictionCol": {
+        "!type": "fn(value: string) -> RandomForestClassifier",
+        "!doc": "Param for raw prediction (a.k.a. confidence) column name.",
+        "!spark": ".setRawPredictionCol(%s)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setSubsamplingRate": {
+        "!type": "fn(value: number) -> RandomForestClassifier",
+        "!doc": "Fraction of the training data used for learning each decision tree, in range (0, 1].",
+        "!spark": ".setSubsamplingRate(%f)",
+        "!sparkType": "RandomForestClassifier"
+      },
+      "setThresholds": {
+        "!type": "fn(value: [number]) -> RandomForestClassifier",
+        "!doc": "Param for Thresholds in multi-class classification to adjust the probability of predicting each class.",
+        "!spark": ".setThresholds(%@f)",
+        "!sparkType": "RandomForestClassifier"
+      }
+    },
+    "RandomForestRegressor": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setCheckpointInterval": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Param for set checkpoint interval (>= 1) or disable checkpoint (-1).",
+        "!spark": ".setCheckpointInterval(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setFeatureSubsetStrategy": {
+        "!type": "fn(value: string) -> RandomForestRegressor",
+        "!doc": "The number of features to consider for splits at each tree node.",
+        "!spark": ".setFeatureSubsetStrategy(%s)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> RandomForestRegressor",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setImpurity": {
+        "!type": "fn(value: string) -> RandomForestRegressor",
+        "!doc": "Criterion used for information gain calculation (case-insensitive).",
+        "!spark": ".setImpurity(%s)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> RandomForestRegressor",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setMaxBins": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Maximum number of bins used for discretizing continuous features and for choosing how to split on features at each node.",
+        "!spark": ".setMaxBins(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setMaxDepth": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Maximum depth of the tree (>= 0).",
+        "!spark": ".setMaxDepth(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setMinInfoGain": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Minimum information gain for a split to be considered at a tree node.",
+        "!spark": ".setMinInfoGain(%f)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setMinInstancesPerNode": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Minimum number of instances each child must have after split.",
+        "!spark": ".setMinInstancesPerNode(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setNumTrees": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Number of trees to train (>= 1).",
+        "!spark": ".setNumTrees(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setPredictionCol": {
+        "!type": "fn(value: string) -> RandomForestRegressor",
+        "!doc": "Param for prediction column name.",
+        "!spark": ".setPredictionCol(%s)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "RandomForestRegressor"
+      },
+      "setSubsamplingRate": {
+        "!type": "fn(value: number) -> RandomForestRegressor",
+        "!doc": "Fraction of the training data used for learning each decision tree, in range (0, 1].",
+        "!spark": ".setSubsamplingRate(%f)",
+        "!sparkType": "RandomForestRegressor"
+      }
+    },
+    "RegexTokenizer": {
+      "run": {
+        "!type": "fn() -> DataFrame",
+        "!doc": "Transforms this dataset.",
+        "!spark": ".transform",
+        "!sparkType": "transform"
+      },
+      "setGaps": {
+        "!type": "fn(value: boolean) -> RegexTokenizer",
+        "!doc": "Indicates whether regex splits on gaps (true) or matches tokens (false).",
+        "!spark": ".setGaps(%b)",
+        "!sparkType": "RegexTokenizer"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> RegexTokenizer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "RegexTokenizer"
+      },
+      "setMinTokenLength": {
+        "!type": "fn(value: number) -> RegexTokenizer",
+        "!doc": "Minimum token length, greater than or equal to 0.",
+        "!spark": ".setMinTokenLength(%d)",
+        "!sparkType": "RegexTokenizer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> RegexTokenizer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "RegexTokenizer"
+      },
+      "setPattern": {
+        "!type": "fn(value: string) -> RegexTokenizer",
+        "!doc": "Regex pattern used to match delimiters if gaps is true or tokens if gaps is false.",
+        "!spark": ".setPattern(%s)",
+        "!sparkType": "RegexTokenizer"
+      },
+      "setToLowercase": {
+        "!type": "fn(value: boolean) -> RegexTokenizer",
+        "!doc": "Indicates whether to convert all characters to lowercase before tokenizing. (Spark 1.6)",
+        "!spark": ".setToLowercase(%b)",
+        "!sparkType": "RegexTokenizer"
+      }
+    },
+    "RFormula": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setFeaturesCol": {
+        "!type": "fn(value: string) -> RFormula",
+        "!doc": "Param for features column name.",
+        "!spark": ".setFeaturesCol(%s)",
+        "!sparkType": "RFormula"
+      },
+      "setForceIndexLabel": {
+        "!type": "fn(value: boolean) -> RFormula",
+        "!doc": "Force to index label whether it is numeric or string type. (Spark 2.1)",
+        "!spark": ".setForceIndexLabel(%b)",
+        "!sparkType": "RFormula"
+      },
+      "setFormula": {
+        "!type": "fn(value: string) -> RFormula",
+        "!doc": "Sets the formula to use for this transformer. Must be called before use.",
+        "!spark": ".setFormula(%s)",
+        "!sparkType": "RFormula"
+      },
+      "setLabelCol": {
+        "!type": "fn(value: string) -> RFormula",
+        "!doc": "Param for label column name.",
+        "!spark": ".setLabelCol(%s)",
+        "!sparkType": "RFormula"
+      }
+    },
+    "StandardScaler": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> StandardScaler",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "StandardScaler"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> StandardScaler",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "StandardScaler"
+      },
+      "setWithMean": {
+        "!type": "fn(value: boolean) -> StandardScaler",
+        "!doc": "Whether to center the data with mean before scaling.",
+        "!spark": ".setWithMean(%b)",
+        "!sparkType": "StandardScaler"
+      },
+      "setWithStd": {
+        "!type": "fn(value: boolean) -> StandardScaler",
+        "!doc": "Whether to scale the data to unit standard deviation.",
+        "!spark": ".setWithStd(%b)",
+        "!sparkType": "StandardScaler"
+      }
+    },
+    "StringIndexer": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setHandleInvalid": {
+        "!type": "fn(value: string) -> StringIndexer",
+        "!doc": "Param for how to handle invalid entries. (Spark 1.6)",
+        "!spark": ".setHandleInvalid(%s)",
+        "!sparkType": "StringIndexer"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> StringIndexer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "StringIndexer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> StringIndexer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "StringIndexer"
+      }
+    },
+    "Vector": {
+    },
+    "VectorIndexer": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> VectorIndexer",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "VectorIndexer"
+      },
+      "setMaxCategories": {
+        "!type": "fn(value: number) -> VectorIndexer",
+        "!doc": "Threshold for the number of values a categorical feature can take.",
+        "!spark": ".setMaxCategories(%d)",
+        "!sparkType": "VectorIndexer"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> VectorIndexer",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "VectorIndexer"
+      }
+    },
+    "WindowSpec": {
+      "orderBy": {
+        "!type": "fn(cols_varargs: Column) -> WindowSpec",
+        "!doc": "Defines the ordering columns in a WindowSpec.",
+        "!spark": ".orderBy(%*c)",
+        "!sparkType": "WindowSpec"
+      },
+      "partitionBy": {
+        "!type": "fn(cols_varargs: Column) -> WindowSpec",
+        "!doc": "Defines the partitioning columns in a WindowSpec.",
+        "!spark": ".partitionBy(%*c)",
+        "!sparkType": "WindowSpec"
+      },
+      "rangeBetween": {
+        "!type": "fn(start: number, end: number) -> WindowSpec",
+        "!doc": "Defines the frame boundaries, from start (inclusive) to end (inclusive).",
+        "!spark": ".rangeBetween(%d, %d)",
+        "!sparkType": "WindowSpec"
+      },
+      "rowsBetween": {
+        "!type": "fn(start: number, end: number) -> WindowSpec",
+        "!doc": "Defines the frame boundaries, from start (inclusive) to end (inclusive).",
+        "!spark": ".rowsBetween(%d, %d)",
+        "!sparkType": "WindowSpec"
+      }
+    },
+    "Word2Vec": {
+      "run": {
+        "!type": "fn(dataset: DataFrame) -> DataFrame",
+        "!doc": "Fits a model to the input data then transforms this dataset.",
+        "!spark": ".fit(%r).transform",
+        "!sparkType": "transform"
+      },
+      "setInputCol": {
+        "!type": "fn(value: string) -> Word2Vec",
+        "!doc": "Param for input column name.",
+        "!spark": ".setInputCol(%s)",
+        "!sparkType": "Word2Vec"
+      },
+      "setMaxIter": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "Param for maximum number of iterations (>= 0).",
+        "!spark": ".setMaxIter(%d)",
+        "!sparkType": "Word2Vec"
+      },
+      "setMaxSentenceLength": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "Sets the maximum length (in words) of each sentence in the input data. (Spark 2.0)",
+        "!spark": ".setMaxSentenceLength(%d)",
+        "!sparkType": "Word2Vec"
+      },
+      "setMinCount": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "The minimum number of times a token must appear to be included in the word2vec model's vocabulary.",
+        "!spark": ".setMinCount(%d)",
+        "!sparkType": "Word2Vec"
+      },
+      "setNumPartitions": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "Number of partitions for sentences of words.",
+        "!spark": ".setNumPartitions(%d)",
+        "!sparkType": "Word2Vec"
+      },
+      "setOutputCol": {
+        "!type": "fn(value: string) -> Word2Vec",
+        "!doc": "Param for output column name.",
+        "!spark": ".setOutputCol(%s)",
+        "!sparkType": "Word2Vec"
+      },
+      "setSeed": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "Param for random seed.",
+        "!spark": ".setSeed(%d)",
+        "!sparkType": "Word2Vec"
+      },
+      "setStepSize": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "Param for Step size to be used for each iteration of optimization (> 0).",
+        "!spark": ".setStepSize(%f)",
+        "!sparkType": "Word2Vec"
+      },
+      "setVectorSize": {
+        "!type": "fn(value: number) -> Word2Vec",
+        "!doc": "The dimension of the code that you want to transform from words.",
+        "!spark": ".setVectorSize(%d)",
+        "!sparkType": "Word2Vec"
+      }
+    }
+  },
+
+  "!AGGREGATE_FUNCTIONS": "Grouping and aggregating functions.",
+
+  "approxCountDistinct": {
+    "!type": "fn(e: Column, opt_rsd: number) -> Column",
+    "!doc": "Aggregate function: returns the approximate number of distinct items in a group.",
+    "!spark": "functions.approxCountDistinct(%c%,?f)",
+    "!sparkType": "column"
+  },
+  "avg": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the average of the values in a group.",
+    "!spark": "functions.avg(%c)",
+    "!sparkType": "column"
+  },
+  "collect_list": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns a list of objects with duplicates. (Spark 1.6)",
+    "!spark": "functions.collect_list(%c)",
+    "!sparkType": "column"
+  },
+  "collect_set": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns a set of objects with duplicate elements eliminated. (Spark 1.6)",
+    "!spark": "functions.collect_set(%c)",
+    "!sparkType": "column"
+  },
+  "corr": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the Pearson Correlation Coefficient for two columns. (Spark 1.6)",
+    "!spark": "functions.corr(%c, %c)",
+    "!sparkType": "column"
+  },
+  "count": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of items in a group.",
+    "!spark": "functions.count(%c)",
+    "!sparkType": "column"
+  },
+  "countDistinct": {
+    "!type": "fn(expr: Column, exprs_varargs: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of distinct items in a group.",
+    "!spark": "functions.countDistinct(%c%,*c)",
+    "!sparkType": "column"
+  },
+  "covar_pop": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the population covariance for two columns. (Spark 2.0)",
+    "!spark": "functions.covar_pop(%c, %c)",
+    "!sparkType": "column"
+  },
+  "covar_samp": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the sample covariance for two columns. (Spark 2.0)",
+    "!spark": "functions.covar_samp(%c, %c)",
+    "!sparkType": "column"
+  },
+  "first": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the first value in a group.",
+    "!spark": "functions.first(%c)",
+    "!sparkType": "column"
+  },
+  "grouping": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: indicates whether a specified column in a GROUP BY list is aggregated or not, returns 1 for aggregated or 0 for not aggregated in the result set. (Spark 2.0)",
+    "!spark": "functions.grouping(%c)",
+    "!sparkType": "column"
+  },
+  "grouping_id": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Aggregate function: returns the level of grouping. (Spark 2.0)",
+    "!spark": "functions.grouping_id(%*c)",
+    "!sparkType": "column"
+  },
+  "kurtosis": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the kurtosis of the values in a group. (Spark 1.6)",
+    "!spark": "functions.kurtosis(%c)",
+    "!sparkType": "column"
+  },
+  "last": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the last value in a group.",
+    "!spark": "functions.last(%c)",
+    "!sparkType": "column"
+  },
+  "max": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the maximum value of the expression in the group.",
+    "!spark": "functions.max(%c)",
+    "!sparkType": "column"
+  },
+  "mean": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the average of the values in a group.",
+    "!spark": "functions.mean(%c)",
+    "!sparkType": "column"
+  },
+  "min": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the minimum value of the expression in a group.",
+    "!spark": "functions.min(%c)",
+    "!sparkType": "column"
+  },
+  "skewness": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the skewness of the values in a group. (Spark 1.6)",
+    "!spark": "functions.skewness(%c)",
+    "!sparkType": "column"
+  },
+  "stddev": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: alias for stddev_samp. (Spark 1.6)",
+    "!spark": "functions.stddev(%c)",
+    "!sparkType": "column"
+  },
+  "stddev_pop": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the population standard deviation of the expression in a group. (Spark 1.6)",
+    "!spark": "functions.stddev_pop(%c)",
+    "!sparkType": "column"
+  },
+  "stddev_samp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the sample standard deviation of the expression in a group. (Spark 1.6)",
+    "!spark": "functions.stddev_samp(%c)",
+    "!sparkType": "column"
+  },
+  "sum": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the sum of all values.",
+    "!spark": "functions.sum(%c)",
+    "!sparkType": "column"
+  },
+  "sumDistinct": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the sum of distinct values in the expression.",
+    "!spark": "functions.sumDistinct(%c)",
+    "!sparkType": "column"
+  },
+  "var_pop": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the population variance of the values in a group. (Spark 1.6)",
+    "!spark": "functions.var_pop(%c)",
+    "!sparkType": "column"
+  },
+  "var_samp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the unbiased variance of the values in a group. (Spark 1.6)",
+    "!spark": "functions.var_samp(%c)",
+    "!sparkType": "column"
+  },
+  "variance": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: alias for var_samp.",
+    "!spark": "functions.variance(%c)",
+    "!sparkType": "column"
+  },
+
+  "!COLLECTION_FUNCTIONS": "Functions for collections.",
+
+  "array_contains": {
+    "!type": "fn(column: Column, value: Column) -> Column",
+    "!doc": "Returns true if the array contain the value.",
+    "!spark": "functions.array_contains(%c, %c)",
+    "!sparkType": "column"
+  },
+  "explode": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a new row for each element in the given array or map column.",
+    "!spark": "functions.explode(%c)",
+    "!sparkType": "column"
+  },
+  "from_json": {
+    "!type": "fn(e: Column, schema: string) -> Column",
+    "!doc": "Parses a column containing a JSON string into a StructType with the specified schema. Returns null, in the case of an unparseable string. (Spark 2.1)",
+    "!spark": "functions.from_json(%c, %s, Map())",
+    "!sparkType": "column"
+  },
+  "get_json_object": {
+    "!type": "fn(e: Column, path: string) -> Column",
+    "!doc": "Extracts json object from a json string based on json path specified, and returns json string of the extracted json object.",
+    "!spark": "functions.get_json_object(%c, %s)",
+    "!sparkType": "column"
+  },
+  "json_tuple": {
+    "!type": "fn(json: Column, fields_varargs: string) -> Column",
+    "!doc": "Creates a new row for a json column according to the given field names.",
+    "!spark": "functions.json_tuple(%c%,*s)",
+    "!sparkType": "column"
+  },
+  "posexplode": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a new row for each element with position in the given array or map column. (Spark 2.1)",
+    "!spark": "functions.posexplode(%c)",
+    "!sparkType": "column"
+  },
+  "size": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Returns length of array or map.",
+    "!spark": "functions.size(%c)",
+    "!sparkType": "column"
+  },
+  "sort_array": {
+    "!type": "fn(e: Column, opt_asc: boolean) -> Column",
+    "!doc": "Sorts the input array for the given column in ascending / descending order, according to the natural ordering of the array elements.",
+    "!spark": "functions.sort_array(%c%,?b)",
+    "!sparkType": "column"
+  },
+  "to_json": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a column containing a StructType into a JSON string with the specified schema. (Spark 2.1)",
+    "!spark": "functions.to_json(%c)",
+    "!sparkType": "column"
+  },
+
+  "!DATE_TIME_FUNCTIONS": "Functions for date/time columns.",
+
+  "add_months": {
+    "!type": "fn(startDate: Column, numMonths: number) -> Column",
+    "!doc": "Returns the date that is numMonths after startDate.",
+    "!spark": "functions.add_months(%c, %d)",
+    "!sparkType": "column"
+  },
+  "current_date": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns the current date as a date column.",
+    "!spark": "functions.current_date()",
+    "!sparkType": "column"
+  },
+  "current_timestamp": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns the current timestamp as a timestamp column.",
+    "!spark": "functions.current_timestamp()",
+    "!sparkType": "column"
+  },
+  "date_add": {
+    "!type": "fn(start: Column, days: number) -> Column",
+    "!doc": "Returns the date that is days days after start.",
+    "!spark": "functions.date_add(%c, %d)",
+    "!sparkType": "column"
+  },
+  "date_format": {
+    "!type": "fn(dateExpr: Column, format: string) -> Column",
+    "!doc": "Converts a date/timestamp/string to a value of string in the format specified by the date format given by the second argument.",
+    "!spark": "functions.date_format(%c, %s)",
+    "!sparkType": "column"
+  },
+  "date_sub": {
+    "!type": "fn(start: Column, days: number) -> Column",
+    "!doc": "Returns the date that is days days before start.",
+    "!spark": "functions.date_sub(%c, %d)",
+    "!sparkType": "column"
+  },
+  "datediff": {
+    "!type": "fn(end: Column, start: Column) -> Column",
+    "!doc": "Returns the number of days from start to end.",
+    "!spark": "functions.datediff(%c, %c)",
+    "!sparkType": "column"
+  },
+  "dayofmonth": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the day of the month as an integer from a given date/timestamp/string.",
+    "!spark": "functions.dayofmonth(%c)",
+    "!sparkType": "column"
+  },
+  "dayofyear": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the day of the year as an integer from a given date/timestamp/string.",
+    "!spark": "functions.dayofyear(%c)",
+    "!sparkType": "column"
+  },
+  "from_unixtime": {
+    "!type": "fn(ut: Column, f: string) -> Column",
+    "!doc": "Converts the number of seconds from unix epoch (1970-01-01 00:00:00 UTC) to a string representing the timestamp of that moment in the current system time zone in the given format.",
+    "!spark": "functions.from_unixtime(%c, %s)",
+    "!sparkType": "column"
+  },
+  "from_utc_timestamp": {
+    "!type": "fn(ts: Column, tz: string) -> Column",
+    "!doc": "Assumes given timestamp is UTC and converts to given timezone.",
+    "!spark": "functions.from_utc_timestamp(%c, %s)",
+    "!sparkType": "column"
+  },
+  "hour": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the hours as an integer from a given date/timestamp/string.",
+    "!spark": "functions.hour(%c)",
+    "!sparkType": "column"
+  },
+  "last_day": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Given a date column, returns the last day of the month which the given date belongs to.",
+    "!spark": "functions.last_day(%c)",
+    "!sparkType": "column"
+  },
+  "minute": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the minutes as an integer from a given date/timestamp/string.",
+    "!spark": "functions.minute(%c)",
+    "!sparkType": "column"
+  },
+  "month": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the month as an integer from a given date/timestamp/string.",
+    "!spark": "functions.month(%c)",
+    "!sparkType": "column"
+  },
+  "months_between": {
+    "!type": "fn(date1: Column, date2: Column) -> Column",
+    "!doc": "Number of months between date1 and date2.",
+    "!spark": "functions.months_between(%c, %c)",
+    "!sparkType": "column"
+  },
+  "next_day": {
+    "!type": "fn(e: Column, dayOfWeek: string) -> Column",
+    "!doc": "Given a date column, returns the first date which is later than the value of the date column that is on the specified day of the week.",
+    "!spark": "functions.next_day(%c, %s)",
+    "!sparkType": "column"
+  },
+  "quarter": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the quarter as an integer from a given date/timestamp/string.",
+    "!spark": "functions.quarter(%c)",
+    "!sparkType": "column"
+  },
+  "second": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the seconds as an integer from a given date/timestamp/string.",
+    "!spark": "functions.second(%c)",
+    "!sparkType": "column"
+  },
+  "to_date": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts the column into DateType.",
+    "!spark": "functions.to_date(%c)",
+    "!sparkType": "column"
+  },
+  "to_utc_timestamp": {
+    "!type": "fn(ts: Column, tz: string) -> Column",
+    "!doc": "Assumes given timestamp is in given timezone and converts to UTC.",
+    "!spark": "functions.to_utc_timestamp(%c, %s)",
+    "!sparkType": "column"
+  },
+  "trunc": {
+    "!type": "fn(date: Column, format: string) -> Column",
+    "!doc": "Returns date truncated to the unit specified by the format.",
+    "!spark": "functions.trunc(%c, %s)",
+    "!sparkType": "column"
+  },
+  "unix_timestamp": {
+    "!type": "fn(opt_s: Column, opt_p: string) -> Column",
+    "!doc": "Convert time string with given pattern.",
+    "!spark": "functions.unix_timestamp(%?c%,?s)",
+    "!sparkType": "column"
+  },
+  "weekofyear": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the week number as an integer from a given date/timestamp/string.",
+    "!spark": "functions.weekofyear(%c)",
+    "!sparkType": "column"
+  },
+  "window": {
+    "!type": "fn(timeColumn: Column, windowDuration: string, opt_slideDuration: string, opt_startTime: string) -> Column",
+    "!doc": "Bucketize rows into one or more time windows given a timestamp specifying column. (Spark 2.0)",
+    "!spark": "functions.window(%c, %s%,?s%,?s)",
+    "!sparkType": "column"
+  },
+  "year": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Extracts the year as an integer from a given date/timestamp/string.",
+    "!spark": "functions.year(%c)",
+    "!sparkType": "column"
+  },
+
+  "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
+
+  "acos": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cosine inverse.",
+    "!spark": "functions.acos(%c)",
+    "!sparkType": "column"
+  },
+  "asin": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the sine inverse.",
+    "!spark": "functions.asin(%c)",
+    "!sparkType": "column"
+  },
+  "atan": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the tangent inverse.",
+    "!spark": "functions.atan(%c)",
+    "!sparkType": "column"
+  },
+  "atan2": {
+    "!type": "fn(l: Column, r: Column) -> Column",
+    "!doc": "Returns the angle theta from the conversion of rectangular coordinates to polar.",
+    "!spark": "functions.atan2(%c, %c)",
+    "!sparkType": "column"
+  },
+  "bin": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "An expression that returns the string representation of the binary value of the given long column.",
+    "!spark": "functions.bin(e)",
+    "!sparkType": "column"
+  },
+  "bround": {
+    "!type": "fn(e: Column, opt_scale: number) -> Column",
+    "!doc": "Round the value of e to scale (defaults to 0) decimal places with HALF_EVEN round mode. (Spark 2.0)",
+    "!spark": "functions.bround(%c%,?d)",
+    "!sparkType": "column"
+  },
+  "cbrt": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cube-root of the given value.",
+    "!spark": "functions.cbrt(%c)",
+    "!sparkType": "column"
+  },
+  "ceil": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the ceiling of the given value.",
+    "!spark": "functions.ceil(%c)",
+    "!sparkType": "column"
+  },
+  "conv": {
+    "!type": "fn(num: Column, fromBase: number, toBase: number) -> Column",
+    "!doc": "Convert a number in a string column from one base to another.",
+    "!spark": "functions.conv(%c, %n, %n)",
+    "!sparkType": "column"
+  },
+  "cos": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cosine of the given value.",
+    "!spark": "functions.cos(%c)",
+    "!sparkType": "column"
+  },
+  "cosh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyerbolic cosine of the given value.",
+    "!spark": "functions.cosh(%c)",
+    "!sparkType": "column"
+  },
+  "exp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the exponential of the given value.",
+    "!spark": "functions.exp(%c)",
+    "!sparkType": "column"
+  },
+  "expm1": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the exponential of the given value minus one.",
+    "!spark": "functions.expm1(%c)",
+    "!sparkType": "column"
+  },
+  "factorial": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the factorial of the given value.",
+    "!spark": "functions.factorial(%c)",
+    "!sparkType": "column"
+  },
+  "floor": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the floor of the given value.",
+    "!spark": "functions.floor(%c)",
+    "!sparkType": "column"
+  },
+  "hex": {
+    "!type": "fn(column: Column) -> Column",
+    "!doc": "Computes hex value of the given column.",
+    "!spark": "functions.hex(%c)",
+    "!sparkType": "column"
+  },
+  "hypot": {
+    "!type": "fn(l: Column, r: Column) -> Column",
+    "!doc": "Computes sqrt(a^2^ + b^2^) without intermediate overflow or underflow.",
+    "!spark": "functions.hypot(%c, %c)",
+    "!sparkType": "column"
+  },
+  "ln": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the natural logarithm of the given value.",
+    "!spark": "functions.log(%c)",
+    "!sparkType": "column"
+  },
+  "log": {
+    "!type": "fn(base: number, a: Column) -> Column",
+    "!doc": "Returns the first argument-base logarithm of the second argument.",
+    "!spark": "functions.log(%f, %c)",
+    "!sparkType": "column"
+  },
+  "log10": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the logarithm of the given value in Base 10.",
+    "!spark": "functions.log10(%c)",
+    "!sparkType": "column"
+  },
+  "log1p": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the natural logarithm of the given value plus one.",
+    "!spark": "functions.log1p(%c)",
+    "!sparkType": "column"
+  },
+  "log2": {
+    "!type": "fn(expr: Column) -> Column",
+    "!doc": "Computes the logarithm of the given column in base 2.",
+    "!spark": "functions.log2(%c)",
+    "!sparkType": "column"
+  },
+  "pmod": {
+    "!type": "fn(dividend: Column, divisor: Column) -> Column",
+    "!doc": "Returns the positive value of dividend mod divisor.",
+    "!spark": "functions.pmod(%c, %c)",
+    "!sparkType": "column"
+  },
+  "pow": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Returns the value of the first argument raised to the power of the second.",
+    "!spark": "functions.pow(%c, %c)",
+    "!sparkType": "column"
+  },
+  "rint": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Returns the double value that is closest in value to the argument and is equal to a mathematical integer.",
+    "!spark": "functions.rint(%c)",
+    "!sparkType": "column"
+  },
+  "round": {
+    "!type": "fn(e: Column, scale: number) -> Column",
+    "!doc": "Round the value of e to scale decimal places if scale >= 0 or at integral part when scale < 0.",
+    "!spark": "functions.round(%c, %d)",
+    "!sparkType": "column"
+  },
+  "shiftLeft": {
+    "!type": "fn(e: Column, numBits: number) -> Column",
+    "!doc": "Shift the the given value numBits left.",
+    "!spark": "functions.shiftLeft(%c, %d)",
+    "!sparkType": "column"
+  },
+  "shiftRight": {
+    "!type": "fn(e: Column, numBits: number) -> Column",
+    "!doc": "Shift the the given value numBits right.",
+    "!spark": "functions.shiftRight(%c, %d)",
+    "!sparkType": "column"
+  },
+  "shiftRightUnsigned": {
+    "!type": "fn(e: Column, numBits: number) -> Column",
+    "!doc": "Unsigned shift the the given value numBits right.",
+    "!spark": "functions.shiftRightUnsigned(%c, %d)",
+    "!sparkType": "column"
+  },
+  "signum": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the signum of the given value.",
+    "!spark": "functions.signum(%c)",
+    "!sparkType": "column"
+  },
+  "sin": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the sine of the given value.",
+    "!spark": "functions.sin(%c)",
+    "!sparkType": "column"
+  },
+  "sinh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyperbolic sine of the given value.",
+    "!spark": "functions.sinh(%c)",
+    "!sparkType": "column"
+  },
+  "sqrt": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the square root of the specified float value.",
+    "!spark": "functions.sqrt(%c)",
+    "!sparkType": "colum"
+  },
+  "tan": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the tangent of the given value.",
+    "!spark": "functions.tan(%c)",
+    "!sparkType": "column"
+  },
+  "tanh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyperbolic tangent of the given value.",
+    "!spark": "fn(e: Column) -> Column",
+    "!sparkType": "column"
+  },
+  "toDegrees": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts an angle measured in radians to an approximately equivalent angle measured in degrees.",
+    "!spark": "functions.toDegrees(%c)",
+    "!sparkType": "column"
+  },
+  "toRadians": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts an angle measured in degrees to an approximately equivalent angle measured in radians.",
+    "!spark": "functions.toRadians(%c)",
+    "!sparkType": "column"
+  },
+  "unhex": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Inverse of hex.",
+    "!spark": "functions.unhex(%c)",
+    "!sparkType": "column"
+  },
+
+  "!MISC_FUNCTIONS": "Miscellaneous functions.",
+
+  "crc32": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Calculates the cyclic redundancy check value (CRC32) of a binary column and returns the value as a bigint.",
+    "!spark": "functions.crc32(%c)",
+    "!sparkType": "column"
+  },
+  "hash": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Calculates the hash code of given columns, and returns the result as an int column. (Spark 2.0)",
+    "!spark": "functions.hash(%*c)",
+    "!sparkType": "column"
+  },
+  "md5": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Calculates the MD5 digest of a binary column and returns the value as a 32 character hex string.",
+    "!spark": "functions.md5(%c)",
+    "!sparkType": "column"
+  },
+  "sha1": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Calculates the SHA-1 digest of a binary column and returns the value as a 40 character hex string.",
+    "!spark": "functions.sha1(%c)",
+    "!sparkType": "column"
+  },
+  "sha2": {
+    "!type": "fn(e: Column, numBits: number) -> Column",
+    "!doc": "Calculates the SHA-2 family of hash functions of a binary column and returns the value as a hex string.",
+    "!spark": "functions.sha2(%c)",
+    "!sparkType": "column"
+  },
+
+  "!NON_AGGREGATE_FUNCTIONS": "Non-aggregate functions.",
+
+  "abs": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the absolute value.",
+    "!spark": "functions.abs(%c)",
+    "!sparkType": "column"
+  },
+  "array": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Creates a new array column.",
+    "!spark": "functions.array(%*c)",
+    "!sparkType": "column"
+  },
+  "bitwiseNot": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes bitwise NOT.",
+    "!spark": "functions.bitwiseNOT(%c)",
+    "!sparkType": "column"
+  },
+  "coalesce": {
+    "!type": "fn(e_varargs: Column) -> Column",
+    "!doc": "Returns the first column that is not null.",
+    "!spark": "functions.coalesce(%*c)",
+    "!sparkType": "column"
+  },
+  "expr": {
+    "!type": "fn(expr: string) -> Column",
+    "!doc": "Parses the expression string into the column that it represents, similar to DataFrame.",
+    "!spark": "functions.expr(%s)",
+    "!sparkType": "column"
+  },
+  "greatest": {
+    "!type": "fn(exprs_varargs: Column) -> Column",
+    "!doc": "Returns the greatest value of the list of values, skipping null values.",
+    "!spark": "functions.greatest(%*c)",
+    "!sparkType": "column"
+  },
+  "input_file_name": {
+    "!type": "fn() -> Column",
+    "!doc": "Creates a string column for the file name of the current Spark task. (Spark 1.6)",
+    "!spark": "functions.input_file_name()",
+    "!sparkType": "column"
+  },
+  "isnan": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Return true iff the column is NaN. (Spark 1.6)",
+    "!spark": "functions.isnan(%c)",
+    "!sparkType": "column"
+  },
+  "isnull": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Return true iff the column is null.",
+    "!spark": "functions.isnull(%c)",
+    "!sparkType": "column"
+  },
+  "least": {
+    "!type": "fn(exprs_varargs: Column) -> Column",
+    "!doc": "Returns the least value of the list of values, skipping null values.",
+    "!spark": "functions.least(%*c)",
+    "!sparkType": "column"
+  },
+  "map": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Creates a new map column. (Spark 2.0)",
+    "!spark": "functions.map(%*c)",
+    "!sparkType": "column"
+  },
+  "monotonically_increasing_id": {
+    "!type": "fn() -> Column",
+    "!doc": "Generates monotonically increasing 64-bit integers.",
+    "!spark": "functions.monotonically_increasing_id()",
+    "!sparkType": "column"
+  },
+  "nanv1": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Returns col1 if it is not NaN, or col2 if col1 is NaN.",
+    "!spark": "functions.nanv1(%c, %c)",
+    "!sparkType": "column"
+  },
+  "negate": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Unary minus.",
+    "!spark": "functions.negate(%c)",
+    "!sparkType": "column"
+  },
+  "not": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Inversion of boolean expression.",
+    "!spark": "functions.not(%c)",
+    "!sparkType": "column"
+  },
+  "rand": {
+    "!type": "fn(opt_seed: number) -> Column",
+    "!doc": "Generate a random column with i.i.d. samples from U[0.0, 1.0].",
+    "!spark": "functions.rand(%?d)",
+    "!sparkType": "column"
+  },
+  "randn": {
+    "!type": "fn(opt_seed: number) -> Column",
+    "!doc": "Generate a column with i.i.d. samples from the standard normal distribution.",
+    "!spark": "functions.randn(%?d)",
+    "!sparkType": "column"
+  },
+  "spark_partition_id": {
+    "!type": "fn() -> Column",
+    "!doc": "Partition ID of the Spark task. (Spark 1.6)",
+    "!spark": "functions.spark_partition_id()",
+    "!sparkType": "column"
+  },
+  "struct": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Creates a new struct column.",
+    "!spark": "functions.struct(%*c)",
+    "!sparkType": "column"
+  },
+  "when": {
+    "!type": "fn(condition: Column, value: Column) -> ConditionChain",
+    "!doc": "Evaluates a list of conditions and returns one of multiple values.",
+    "!spark": "functions.when(%c, %c)",
+    "!sparkType": "ConditionChain"
+  },
+
+  "!SORTING_FUNCTIONS": "Functions for sorting.",
+
+  "asc": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column.",
+    "!spark": "functions.asc(%s)",
+    "!sparkType": "column"
+  },
+  "asc_nulls_first": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column, and null values return before non-null values. (Spark 2.1)",
+    "!spark": "functions.asc_nulls_first(%s)",
+    "!sparkType": "column"
+  },
+  "asc_nulls_last": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column, and null values appear after non-null values. (Spark 2.1)",
+    "!spark": "functions.asc_nulls_last(%s)",
+    "!sparkType": "column"
+  },
+  "desc": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on descending order of the column.",
+    "!spark": "functions.desc(%s)",
+    "!sparkType": "column"
+  },
+  "desc_nulls_first": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on the descending order of the column, and null values appear before non-null values. (Spark 2.1)",
+    "!spark": "functions.desc_nulls_first(%s)",
+    "!sparkType": "column"
+  },
+  "desc_nulls_last": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on the descending order of the column, and null values appear after non-null values. (Spark 2.1)",
+    "!spark": "functions.desc_nulls_last(%s)",
+    "!sparkType": "column"
+  },
+
+  "!STRING_FUNCTIONS": "These functions define operations on string columns.",
+
+  "ascii": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the numeric value of the first character of the string column, and returns the result as a int column.",
+    "!spark": "functions.ascii(%c)",
+    "!sparkType": "column"
+  },
+  "base64": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the BASE64 encoding of a binary column and returns it as a string column.",
+    "!spark": "functions.base64(%c)",
+    "!sparkType": "column"
+  },
+  "concat": {
+    "!type": "fn(exprs_varargs: Column) -> Column",
+    "!doc": "Concatenates multiple input string columns together into a single string column.",
+    "!spark": "functions.concat(%*c)",
+    "!sparkType": "column"
+  },
+  "concat_ws": {
+    "!type": "fn(sep: string, exprs_varargs: Column) -> Column",
+    "!doc": "Concatenates multiple input string columns together into a single string column, using the given separator.",
+    "!spark": "functions.concat_ws(%s%,*c)",
+    "!sparkType": "column"
+  },
+  "decode": {
+    "!type": "fn(value: Column, charset: string) -> Column",
+    "!doc": "Computes the first argument into a string from a binary using the provided character set (one of 'US-ASCII', 'ISO-8859-1', 'UTF-8', 'UTF-16BE', 'UTF-16LE', 'UTF-16').",
+    "!spark": "functions.decode(%c, %s)",
+    "!sparkType": "column"
+  },
+  "encode": {
+    "!type": "fn(value: Column, charset: string) -> Column",
+    "!doc": "Computes the first argument into a binary from a string using the provided character set (one of 'US-ASCII', 'ISO-8859-1', 'UTF-8', 'UTF-16BE', 'UTF-16LE', 'UTF-16').",
+    "!spark": "functions.encode(%c, %s)",
+    "!sparkType": "column"
+  },
+  "format_number": {
+    "!type": "fn(x: Column, d: number) -> Column",
+    "!doc": "Formats numeric column x to a format like '#,###,###.##', rounded to d decimal places, and returns the result as a string column.",
+    "!spark": "functions.format_number(%c, %d)",
+    "!sparkType": "column"
+  },
+  "format_string": {
+    "!type": "fn(format: string, arguments_varargs: Column) -> Column",
+    "!doc": "Formats the arguments in printf-style and returns the result as a string column.",
+    "!spark": "functions.format_string(%c%,*c)",
+    "!sparkType": "column"
+  },
+  "initcap": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Returns a new string column by converting the first letter of each word to uppercase.",
+    "!spark": "functions.initcap(%c)",
+    "!sparkType": "column"
+  },
+  "instr": {
+    "!type": "fn(str: Column, substring: string) -> Column",
+    "!doc": "Locate the position of the first occurrence of substr column in the given string.",
+    "!spark": "functions.instr(%c)",
+    "!sparkType": "column"
+  },
+  "length": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the length of a given string or binary column.",
+    "!spark": "functions.length(%c)",
+    "!sparkType": "column"
+  },
+  "levenshtein": {
+    "!type": "fn(l: Column, r: Column) -> Column",
+    "!doc": "Computes the Levenshtein distance of the two given string columns.",
+    "!spark": "functions.levenshtein(%c)",
+    "!sparkType": "column"
+  },
+  "locate": {
+    "!type": "fn(substr: string, str: Column, opt_pos: number) -> Column",
+    "!doc": "Locate the position of the first occurrence of substr in a string column, after position pos.",
+    "!spark": "functions.locate(%s, %c%,?d)",
+    "!sparkType": "column"
+  },
+  "lower": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a string column to lower case.",
+    "!spark": "functions.lower(%c)",
+    "!sparkType": "column"
+  },
+  "lpad": {
+    "!type": "fn(str: Column, len: number, pad: string) -> Column",
+    "!doc": "Left-pad the string column with pad to a length of len.",
+    "!spark": "functions.lpad(%c, %d, %s)",
+    "!sparkType": "column"
+  },
+  "ltrim": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Trim the spaces from left end for the specified string value.",
+    "!spark": "functions.ltrim(%c)",
+    "!sparkType": "column"
+  },
+  "regexp_extract": {
+    "!type": "fn(e: Column, exp: string, groupIdx: number) -> Column",
+    "!doc": "Extract a specific(idx) group identified by a java regex, from the specified string column.",
+    "!spark": "functions.regexp_extract(%c, %s, %d)",
+    "!sparkType": "column"
+  },
+  "regexp_replace": {
+    "!type": "fn(e: Column, pattern: string, replacement: string) -> Column",
+    "!doc": "Replace all substrings of the specified string value that match regexp with rep.",
+    "!spark": "functions.regexp_replace(%c, %s, %s)",
+    "!sparkType": "column"
+  },
+  "repeat": {
+    "!type": "fn(str: Column, n: number) -> Column",
+    "!doc": "Repeats a string column n times, and returns it as a new string column.",
+    "!spark": "functions.repeat(%c, %d)",
+    "!sparkType": "column"
+  },
+  "reverse": {
+    "!type": "fn(str: Column) -> Column",
+    "!doc": "Reverses the string column and returns it as a new string column.",
+    "!spark": "functions.reverse(%c)",
+    "!sparkType": "column"
+  },
+  "rpad": {
+    "!type": "fn(str: Column, len: number, pad: string) -> Column",
+    "!doc": "Right-padded with pad to a length of len.",
+    "!spark": "functions.rpad(%c, %d, %s)",
+    "!sparkType": "column"
+  },
+  "rtrim": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Trim the spaces from right end for the specified string value.",
+    "!spark": "functions.rtrim(%c)",
+    "!sparkType": "column"
+  },
+  "soundex": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Return the soundex code for the specified expression.",
+    "!spark": "functions.soundex(%c)",
+    "!sparkType": "column"
+  },
+  "split": {
+    "!type": "fn(str: Column, pattern: string) -> Column",
+    "!doc": "Splits str around pattern (pattern is a regular expression).",
+    "!spark": "functions.split(%c, %s)",
+    "!sparkType": "column"
+  },
+  "substring": {
+    "!type": "fn(str: Column, pos: number, len: number) -> Column",
+    "!doc": "Substring starts at pos and is of length len when str is String type or returns the slice of byte array that starts at pos in byte and is of length len when str is Binary type.",
+    "!spark": "functions.substring(%c, %d, %d)",
+    "!sparkType": "column"
+  },
+  "substring_index": {
+    "!type": "fn(str: Column, delim: string, count: number) -> Column",
+    "!doc": "Returns the substring from string str before count occurrences of the delimiter delim.",
+    "!spark": "functions.substring_index(%c, %s, %d)",
+    "!sparkType": "column"
+  },
+  "translate": {
+    "!type": "fn(src: Column, matchingString: string, replaceString: string) -> Column",
+    "!doc": "Translate any character in the src by a character in replaceString.",
+    "!spark": "functions.translate(%c, %s, %s)",
+    "!sparkType": "column"
+  },
+  "trim": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Trim the spaces from both ends for the specified string column.",
+    "!spark": "functions.trim(%c)",
+    "!sparkType": "column"
+  },
+  "unbase64": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Decodes a BASE64 encoded string column and returns it as a binary column.",
+    "!spark": "functions.unbase64(%c)",
+    "!sparkType": "column"
+  },
+  "upper": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a string column to upper case.",
+    "!spark": "functions.upper(%c)",
+    "!sparkType": "column"
+  },
+
+  "!WINDOW_FUNCTIONS": "Functions over windows.",
+
+  "cume_dist": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the cumulative distribution of values within a window partition. (Spark 1.6)",
+    "!spark": "functions.cume_dist()",
+    "!sparkType": "column"
+  },
+  "dense_rank": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the rank of rows within a window partition, without any gaps. (Spark 1.6)",
+    "!spark": "functions.dense_rank()",
+    "!sparkType": "column"
+  },
+  "lag": {
+    "!type": "fn(e: Column, offset: number, opt_defaultValue: Column) -> Column",
+    "!doc": "Window function: returns the value that is offset rows before the current row, and defaultValue if there is less than offset rows before the current row.",
+    "!spark": "functions.lag(%c, %d%,?c)",
+    "!sparkType": "column"
+  },
+  "lead": {
+    "!type": "fn(e: Column, offset: number, opt_defaultValue: Column) -> Column",
+    "!doc": "Window function: returns the value that is offset rows after the current row, and defaultValue if there is less than offset rows after the current row.",
+    "!spark": "functions.lead(%c, %d%,?c)",
+    "!sparkType": "column"
+  },
+  "ntile": {
+    "!type": "fn(n: number) -> Column",
+    "!doc": "Window function: returns the ntile group id (from 1 to n inclusive) in an ordered window partition.",
+    "!spark": "functions.ntile(%d)",
+    "!sparkType": "column"
+  },
+  "percent_rank": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the relative rank (i.e. percentile) of rows within a window partition. (Spark 1.6)",
+    "!spark": "functions.percent_rank(%n)",
+    "!sparkType": "column"
+  },
+  "rank": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the rank of rows within a window partition.",
+    "!spark": "functions.rank()",
+    "!sparkType": "column"
+  },
+  "row_number": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns a sequential number starting at 1 within a window partition. (Spark 1.6)",
+    "!spark": "functions.row_number()",
+    "!sparkType": "column"
+  },
+
+  "!COLUMN_EXPRESSION_OPERATORS": "Functions for Column objects.",
+
+  "add": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Add two numbers together.",
+    "!spark": "%c.plus(%c)",
+    "!sparkType": "column"
+  },
+  "and": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Boolean AND.",
+    "!spark": "%c.and(%c)",
+    "!sparkType": "column"
+  },
+  "between": {
+    "!type": "fn(e: Column, lowerBound: Column, upperBound: Column) -> Column",
+    "!doc": "True if column is between the lower bound and upper bound, inclusive",
+    "!spark": "%c.between(%c, %c)",
+    "!sparkType": "column"
+  },
+  "bitwiseAnd": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise AND of two expressions.",
+    "!spark": "%c.bitwiseAND(%c)",
+    "!sparkType": "column"
+  },
+  "bitwiseOr": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise OR of two expressions.",
+    "!spark": "%c.bitwiseOR(%c)",
+    "!sparkType": "column"
+  },
+  "bitwiseXor": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise XOR of two expressions.",
+    "!spark": "%c.bitwiseXOR(%c)",
+    "!sparkType": "column"
+  },
+  "contains": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "Contains the other column.",
+    "!spark": "%c.contains(%c)",
+    "!sparkType": "column"
+  },
+  "divide": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Divides one number by another.",
+    "!spark": "%c.divide(%c)",
+    "!sparkType": "column"
+  },
+  "endsWith": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "String ends with.",
+    "!spark": "%c.endsWith(%s)",
+    "!sparkType": "column"
+  },
+  "equal": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Equality test.",
+    "!spark": "%c.equalTo(%c)",
+    "!sparkType": "column"
+  },
+  "equalNullSafe": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Equality test that is safe for null values.",
+    "!spark": "%c.eqNullSafe(%c)",
+    "!sparkType": "column"
+  },
+  "getField": {
+    "!type": "fn(e: Column, fieldName: string) -> Column",
+    "!doc": "Gets a field by name in a struct.",
+    "!spark": "%c.getField(%s)",
+    "!sparkType": "column"
+  },
+  "getItem": {
+    "!type": "fn(e: Column, key: Object) -> Column",
+    "!doc": "Gets at item out of an array or a map.",
+    "!spark": "%c.getItem(%o)",
+    "!sparkType": "column"
+  },
+  "greaterThan": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Greater than.",
+    "!spark": "%c.gt(%c)",
+    "!sparkType": "column"
+  },
+  "greaterThanOrEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Greater than or equal to.",
+    "!spark": "%c.geq(%c)",
+    "!sparkType": "column"
+  },
+  "isin": {
+    "!type": "fn(value: Column, list_varargs: Column) -> Column",
+    "!doc": "Determines if the value is contained in the list.",
+    "!spark": "%c.isin(%*c)",
+    "!sparkType": "column"
+  },
+  "isNotNull": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "True if the column is NOT null.",
+    "!spark": "%c.isNotNull()",
+    "!sparkType": "column"
+  },
+  "lessThan": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Less than.",
+    "!spark": "%c.lt(%c)",
+    "!sparkType": "column"
+  },
+  "lessThanOrEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Less than or equal to.",
+    "!spark": "%c.leq(%c)",
+    "!sparkType": "column"
+  },
+  "like": {
+    "!type": "fn(e: Column, literal: string) -> Column",
+    "!doc": "SQL like expression.",
+    "!spark": "%c.like(%s)",
+    "!sparkType": "column"
+  },
+  "mod": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Remainder.",
+    "!spark": "%c.mod(%c)",
+    "!sparkType": "column"
+  },
+  "multiply": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Multiplies one column by another.",
+    "!spark": "%c.multiply(%c)",
+    "!sparkType": "column"
+  },
+  "notEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Inequality test.",
+    "!spark": "%c.notEqual(%c)",
+    "!sparkType": "column"
+  },
+  "or": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Boolean OR.",
+    "!spark": "%c.or(%c)",
+    "!sparkType": "column"
+  },
+  "rlike": {
+    "!type": "fn(e: Column, literal: string) -> Column",
+    "!doc": "LIKE with Regex.",
+    "!spark": "%c.rlike(%s)",
+    "!sparkType": "column"
+  },
+  "startsWith": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "String starts with.",
+    "!spark": "%c.startsWith(%c)",
+    "!sparkType": "column"
+  },
+  "substr": {
+    "!type": "fn(e: Column, startPos: Column, len: Column) -> Column",
+    "!doc": "An expression that returns a substring.",
+    "!spark": "%c.substr(%c, %c)",
+    "!sparkType": "column"
+  },
+  "subtract": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Subtracts one number from another.",
+    "!spark": "%c.minus(%c)",
+    "!sparkType": "column"
+  },
+
+  "!DATA_FRAME_FUNCTIONS": "Functions on DataFrame objects.",
+
+  "agg": {
+    "!type": "fn(expr: Column, exprs_varargs: Column) -> DataFrame",
+    "!doc": "Aggregates on the entire DataFrame without groups.",
+    "!spark": ".agg(%c%,*c)",
+    "!sparkType": "dataframe"
+  },
+  "crossJoin": {
+    "!type": "fn(right: DataFrame) -> DataFrame",
+    "!doc": "Explicit cartesian join with another DataFrame. (Spark 2.1)",
+    "!spark": ".crossJoin(%r)",
+    "!sparkType": "dataframe"
+  },
+  "crosstab": {
+    "!type": "fn(col1: string, col2: string) -> DataFrame",
+    "!doc": "Computes a pair-wise frequency table of the given columns.",
+    "!spark": ".stat.crosstab(%s, %s)",
+    "!sparkType": "dataframe"
+  },
+  "cube": {
+    "!type": "fn(cols_varargs: Column) -> GroupedData",
+    "!doc": "Create a multi-dimensional cube for the current DataFrame using the specified columns, so we can run aggregation on them.",
+    "!spark": ".cube(%*c)",
+    "!sparkType": "GroupedData"
+  },
+  "describe": {
+    "!type": "fn(cols_varargs: string) -> DataFrame",
+    "!doc": "Computes statistics for numeric and string columns, including count, mean, stddev, min, and max. (Spark 1.6)",
+    "!spark": ".describe(%*s)",
+    "!sparkType": "dataframe"
+  },
+  "drop": {
+    "!type": "fn(colName: string) -> DataFrame",
+    "!doc": "Drops the specified column.",
+    "!spark": ".drop(%s)",
+    "!sparkType": "dataframe"
+  },
+  "dropDuplicates": {
+    "!type": "fn(cols_varargs: string) -> DataFrame",
+    "!doc": "Returns a new Dataset with duplicate rows removed, considering only the subset of columns.",
+    "!spark": ".dropDuplicates(%*s)",
+    "!sparkType": "dataframe"
+  },
+  "except": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new Dataset containing rows in this Dataset but not in another Dataset. (Spark 2.0)",
+    "!spark": ".except(%r)",
+    "!sparkType": "dataframe"
+  },
+  "filter": {
+    "!type": "fn(condition: Column) -> DataFrame",
+    "!doc": "Filters rows using the given condition.",
+    "!spark": ".filter(%c)",
+    "!sparkType": "dataframe"
+  },
+  "freqItems": {
+    "!type": "fn(cols: [string], support: number) -> DataFrame",
+    "!doc": "Finding frequent items for columns, possibly with false positives.",
+    "!spark": ".stat.freqItems(%@s%,?f)",
+    "!sparkType": "dataframe"
+  },
+  "groupBy": {
+    "!type": "fn(col1: Column, cols_varargs: Column) -> GroupedData",
+    "!doc": "Groups using the specified columns.",
+    "!spark": ".groupBy(%*c)",
+    "!sparkType": "GroupedData"
+  },
+  "intersect": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new Dataset containing rows only in both this Dataset and another Dataset. (Spark 2.0)",
+    "!spark": ".intersect(%r)",
+    "!sparkType": "dataframe"
+  },
+  "join": {
+    "!type": "fn(right: DataFrame, joinExprs: Column, opt_joinType: string) -> DataFrame",
+    "!doc": "Join with another DataFrame, using the given join expression.",
+    "!spark": ".join(%r, %c%,?s)",
+    "!sparkType": "dataframe"
+  },
+  "limit": {
+    "!type": "fn(n: number) -> DataFrame",
+    "!doc": "Returns a new DataFrame by taking the first n rows.",
+    "!spark": ".limit(%d)",
+    "!sparkType": "dataframe"
+  },
+  "repartition": {
+    "!type": "fn(partitionExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame partitioned by the given partitioning expressions preserving the existing number of partitions. (Spark 1.6)",
+    "!spark": ".repartition(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "rollup": {
+    "!type": "fn(cols_varargs: Column) -> GroupedData",
+    "!doc": "Create a multi-dimensional rollup for the current DataFrame using the specified columns, so we can run aggregation on them.",
+    "!spark": ".rollup(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sample": {
+    "!type": "fn(withReplacement: boolean, fraction: number, opt_seed: number) -> DataFrame",
+    "!doc": "Returns a new DataFrame by sampling a fraction of rows.",
+    "!spark": ".sample(%b, %f%,?d)",
+    "!sparkType": "dataframe"
+  },
+  "select": {
+    "!type": "fn(cols_varargs: Column) -> DataFrame",
+    "!doc": "Selects a set of column based expressions.",
+    "!spark": ".select(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sort": {
+    "!type": "fn(sortExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame sorted by the given expressions.",
+    "!spark": ".sort(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sortWithinPartitions": {
+    "!type": "fn(sortExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame with each partition sorted by the given expressions. (Spark 1.6)",
+    "!spark": ".sortWithinPartitions(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "unionAll": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new DataFrame containing union of rows in this frame and another frame.",
+    "!spark": ".unionAll(%r)",
+    "!sparkType": "dataframe"
+  },
+  "withColumn": {
+    "!type": "fn(colName: string, col: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame by adding a column or replacing the existing column that has the same name.",
+    "!spark": ".withColumn(%s, %c)",
+    "!sparkType": "dataframe"
+  },
+  "withColumnRenamed": {
+    "!type": "fn(existingName: string, newName: string) -> DataFrame",
+    "!doc": "Returns a new DataFrame with a column renamed.",
+    "!spark": ".withColumnRenamed(%s, %s)",
+    "!sparkType": "dataframe"
+  },
+
+  "!HIVE_FUNCTIONS": "Functions available from Hive.",
+
+  "xpath": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a string array of values within xml nodes that match the xpath expression",
+    "!spark": "functions.callUDF(\"xpath\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_double": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a double value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_double\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_float": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a float value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_float\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_int": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns an integer value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_int\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_long": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a long value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_long\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_number": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a double value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_number\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_short": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a short value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_short\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_string": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns the text contents of the first xml node that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_string\", %c, %c)",
+    "!sparkType": "column"
+  },
+
+  "!MACHINE_LEARNING_FUNCTIONS": "Functions for performing machine learning operations on DataFrame objects.",
+
+  "AFTSurvivalRegression": {
+    "!type": "fn() -> AFTSurvivalRegression",
+    "!doc": "Fit a parametric survival regression model named accelerated failure time (AFT) model based on the Weibull distribution of the survival time. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.regression.AFTSurvivalRegression()",
+    "!sparkType": "AFTSurvivalRegression"
+  },
+  "ALS": {
+    "!type": "fn() -> ALS",
+    "!doc": "Alternating Least Squares (ALS) matrix factorization.",
+    "!spark": "new org.apache.spark.ml.recommendation.ALS()",
+    "!sparkType": "ALS"
+  },
+  "binarizer": {
+    "!type": "fn(inputCol: string, outputCol: string, threshold: number) -> DataFrame",
+    "!doc": "Binarize a column of continuous features given a threshold.",
+    "!spark": "new org.apache.spark.ml.feature.Binarizer().setInputCol(%s).setOutputCol(%s).setThreshold(%f).transform",
+    "!sparkType": "transform"
+  },
+  "BinaryClassificationEvaluator": {
+    "!type": "fn(metricName: string, labelCol: string, rawPredictionCol: string) -> Evaluator",
+    "!doc": "Evaluator for binary classification, which expects two input columns: rawPrediction and label.",
+    "!spark": "new org.apache.spark.ml.evaluation.BinaryClassificationEvaluator().setMetricName(%s).setLabelCol(%s).setRawPredictionCol(%s)"
+  },
+  "BisectingKMeans": {
+    "!type": "fn() -> BisectingKMeans",
+    "!doc": "A bisecting k-means algorithm based on the paper \"A comparsion of document clustering techniques\" by Steinbach, Karypis, and Kumar, with modification to fit Spark. (Spark 2.0)",
+    "!spark": "new org.apache.spark.ml.clustering.BisectingKMeans()",
+    "!sparkType": "BisectingKMeans"
+  },
+  "BucketedRandomProjectionLSH": {
+    "!type": "fn() -> BucketedRandomProjectionLSH",
+    "!doc": "This BucketedRandomProjectionLSH implements Locality Sensitive Hashing functions for Euclidean distance metrics. (Spark 2.1)",
+    "!spark": "new org.apache.spark.ml.feature.BucketedRandomProjectionLSH()",
+    "!sparkType": "BucketedRandomProjectionLSH"
+  },
+  "ChiSqSelector": {
+    "!type": "fn() -> ChiSqSelector",
+    "!doc": "Chi-Squared feature selection, which selects categorical features to use for predicting a categorical label. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.feature.ChiSqSelector()",
+    "!sparkType": "ChiSqSelector"
+  },
+  "CountVectorizer": {
+    "!type": "fn() -> CountVectorizer",
+    "!doc": "Extracts a vocabulary from document collections.",
+    "!spark": "new org.apache.spark.ml.feature.CountVectorizer()",
+    "!sparkType": "CountVectorizer"
+  },
+  "dct": {
+    "!type": "fn(inputCol: string, outputCol: string, inverse: boolean) -> DataFrame",
+    "!doc": "A feature transformer that takes the 1D discrete cosine transform of a real vector.",
+    "!spark": "new org.apache.spark.ml.feature.DCT().setInputCol(%s).setOutputCol(%s).setInverse(%b).transform",
+    "!sparkType": "transform"
+  },
+  "DecisionTreeClassifier": {
+    "!type": "fn() -> DecisionTreeClassifier",
+    "!doc": "Decision tree learning algorithm or classification.",
+    "!spark": "new org.apache.spark.ml.classification.DecisionTreeClassifier()",
+    "!sparkType": "DecisionTreeClassifier"
+  },
+  "DecisionTreeRegressor": {
+    "!type": "fn() -> DecisionTreeRegressor",
+    "!doc": "Decision tree learning algorithm for regression.",
+    "!spark": "new org.apache.spark.ml.regression.DecisionTreeRegressor()",
+    "!sparkType": "DecisionTreeRegressor"
+  },
+  "elementwiseProduct": {
+    "!type": "fn(inputCol: string, outputCol: string, scalingVec: Vector) -> DataFrame",
+    "!doc": "Outputs the Hadamard product of each input vector with a provided \"weight\" vector.",
+    "!spark": "new org.apache.spark.ml.feature.ElementwiseProduct().setInputCol(%s).setOutputCol(%s).setScalingVec(%o).transform",
+    "!sparkType": "transform"
+  },
+  "GBTClassifier": {
+    "!type": "fn() -> GBTClassifier",
+    "!doc": "Gradient-Boosted Trees (GBTs) learning algorithm for classification.",
+    "!spark": "new org.apache.spark.ml.classification.GBTClassifer()",
+    "!sparkType": "GBTClassifier"
+  },
+  "GBTRegressor": {
+    "!type": "fn() -> GBTRegressor",
+    "!doc": "Gradient-Boosted Trees (GBTs) learning algorithm for regression.",
+    "!spark": "new org.apache.spark.ml.classification.GBTRegressor()",
+    "!sparkType": "GBTRegressor"
+  },
+  "GaussianMixture": {
+    "!type": "fn() -> GaussianMixture",
+    "!doc": "Gaussian Mixture clustering. (Spark 2.0)",
+    "!spark": "new org.apache.spark.ml.clustering.GaussianMixture()",
+    "!sparkType": "GaussianMixture"
+  },
+  "GeneralizedLinearRegression": {
+    "!type": "fn() -> GeneralizedLinearRegression",
+    "!doc": "Fit a Generalized Linear Model specified by giving a symbolic description of the linear predictor (link function) and a description of the error distribution (family). (Spark 2.0)",
+    "!spark": "new org.apache.spark.ml.regression.GeneralizedLinearRegression()",
+    "!sparkType": "GeneralizedLinearRegression"
+  },
+  "hashingTF": {
+    "!type": "fn(inputCol: string, outputCol: string, binary: boolean, numFeatures: number) -> DataFrame",
+    "!doc": "Maps a sequence of terms to their term frequencies using the hashing trick.",
+    "!spark": "new org.apache.spark.ml.feature.HashingTF().setInputCol(%s).setOutputCol(%s).setBinary(%b).setNumFeatures(%d).transform",
+    "!sparkType": "transform"
+  },
+  "IDF": {
+    "!type": "fn() -> IDF",
+    "!doc": "Compute the Inverse Document Frequency (IDF) given a collection of documents.",
+    "!spark": "new org.apache.spark.ml.feature.IDF()",
+    "!sparkType": "IDF"
+  },
+  "indexToString": {
+    "!type": "fn(inputCol: string, outputCol: string, labels: [string]) -> DataFrame",
+    "!doc": "A Transformer that maps a column of indices back to a new column of corresponding string values.",
+    "!spark": "new org.apache.spark.ml.feature.IndexToString().setInputCol(%s).setOutputCol(%s).setLabels(%@s).transform",
+    "!sparkType": "transform"
+  },
+  "interaction": {
+    "!type": "fn(inputCols: [string], outputCol: string) -> DataFrame",
+    "!doc": "Implements the feature interaction transform. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.feature.Interaction().setInputCols(%@s).setOutputCol(%s).transform",
+    "!sparkType": "transform"
+  },
+  "IsotonicRegression": {
+    "!type": "fn() -> IsotonicRegression",
+    "!doc": "Isotonic regression.",
+    "!spark": "new org.apache.spark.ml.regression.IsotonicRegression()",
+    "!sparkType": "IsotonicRegression"
+  },
+  "KMeans": {
+    "!type": "fn() -> KMeans",
+    "!doc": "K-means clustering with support for k-means.",
+    "!spark": "new org.apache.spark.ml.clustering.KMeans()",
+    "!sparkType": "KMeans"
+  },
+  "LDA": {
+    "!type": "fn() -> LDA",
+    "!doc": "Latent Dirichlet Allocation (LDA), a topic model designed for text documents. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.clustering.LDA()",
+    "!sparkType": "LDA"
+  },
+  "LinearRegression": {
+    "!type": "fn() -> LinearRegression",
+    "!doc": "Linear regression.",
+    "!spark": "new org.apache.spark.ml.regression.LinearRegression()",
+    "!sparkType": "LinearRegression"
+  },
+  "LogisticRegression": {
+    "!type": "fn() -> LogisticRegression",
+    "!doc": "Logistic regression.",
+    "!spark": "new org.apache.spark.ml.classification.LogisticRegression()",
+    "!sparkType": "LogisticRegression"
+  },
+  "MaxAbsScaler": {
+    "!type": "fn() -> MaxAbsScaler",
+    "!doc": "Rescale each feature individually to range [-1, 1] by dividing through the largest maximum absolute value in each feature. (Spark 2.0)",
+    "!spark": "new org.apache.spark.ml.feature.MaxAbsScaler()",
+    "!sparkType": "MaxAbsScaler"
+  },
+  "MinHashLSH": {
+    "!type": "fn() -> MinHashLSH",
+    "!doc": "LSH class for Jaccard distance. (Spark 2.1)",
+    "!spark": "new org.apache.spark.ml.feature.MinHashLSH()",
+    "!sparkType": "MinHashLSH"
+  },
+  "MinMaxScaler": {
+    "!type": "fn() -> MinMaxScaler",
+    "!doc": "Rescale each feature individually to a common range [min, max] linearly using column summary statistics, which is also known as min-max normalization or Rescaling.",
+    "!spark": "new org.apache.spark.ml.feature.MinMaxScaler()",
+    "!sparkType": "MinMaxScaler"
+  },
+  "MulticlassClassificationEvaluator": {
+    "!type": "fn(metricName: string, labelCol: string, predictionCol: string) -> Evaluator",
+    "!doc": "Evaluator for multiclass classification, which expects two input columns: prediction and label.",
+    "!spark": "new org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator().setMetricName(%s).setLabelCol(%s).setPredictionCol(%s)",
+    "!sparkType": "Evaluator"
+  },
+  "MultilayerPerceptronClassifier": {
+    "!type": "fn() -> MultilayerPerceptronClassifier",
+    "!doc": "Classifier trainer based on the Multilayer Perceptron.",
+    "!spark": "new org.apache.spark.ml.classification.MultilayerPerceptronClassifier()",
+    "!sparkType": "MultilayerPerceptronClassifier"
+  },
+  "nGram": {
+    "!type": "fn(inputCol: string, outputCol: string, n: number) -> DataFrame",
+    "!doc": "A feature transformer that converts the input array of strings into an array of n-grams.",
+    "!spark": "new org.apache.spark.ml.feature.NGram().setInputCol(%s).setOutputCol(%s).setN(%d).transform",
+    "!sparkType": "transform"
+  },
+  "NaiveBayes": {
+    "!type": "fn() -> NaiveBayes",
+    "!doc": "Naive Bayes Classifiers.",
+    "!spark": "new org.apache.spark.ml.classification.NaiveBayes()",
+    "!sparkType": "NaiveBayes"
+  },
+  "normalizer": {
+    "!type": "fn(inputCol: string, outputCol: string, p: number) -> DataFrame",
+    "!doc": "Normalize a vector to have unit norm using the given p-norm.",
+    "!spark": "new org.apache.spark.ml.feature.Normalizer().setInputCol(%s).setOutputCol(%s).setP(%f).transform",
+    "!sparkType": "transform"
+  },
+  "oneHotEncoder": {
+    "!type": "fn(inputCol: string, outputCol: string, dropLast: boolean) -> DataFrame",
+    "!doc": "A one-hot encoder that maps a column of category indices to a column of binary vectors, with at most a single one-value per row that indicates the input category index.",
+    "!spark": "new org.apache.spark.ml.feature.OneHotEncoder().setInputCol(%s).setOutputCol(%s).setDropLast(%b).transform",
+    "!sparkType": "transform"
+  },
+  "OneVsRest": {
+    "!type": "fn() -> OneVsRest",
+    "!doc": "Reduction of Multiclass Classification to Binary Classification.",
+    "!spark": "new org.apache.spark.ml.classification.OneVsRest()",
+    "!sparkType": "OneVsRest"
+  },
+  "PCA": {
+    "!type": "fn() -> PCA",
+    "!doc": "PCA trains a model to project vectors to a lower dimensional space of the top PCA!.k principal components.",
+    "!spark": "new org.apache.spark.ml.feature.PCA()",
+    "!sparkType": "PCA"
+  },
+  "polynomialExpansion": {
+    "!type": "fn(inputCol: string, outputCol: string, degree: number) -> DataFrame",
+    "!doc": "Perform feature expansion in a polynomial space.",
+    "!spark": "new org.apache.spark.ml.feature.PolynomialExpansion().setInputCol(%s).setOutputCol(%s).setDegree(%d).transform",
+    "!sparkType": "transform"
+  },
+  "ProbabilisticClassifier": {
+    "!type": "fn() -> ProbabilisticClassifier",
+    "!doc": "Single-label binary or multiclass classifier which can output class conditional probabilities.",
+    "!spark": "new org.apache.spark.ml.classification.ProbabilisticClassifier()",
+    "!sparkType": "ProbabilisticClassifier"
+  },
+  "QuantileDiscretizer": {
+    "!type": "fn() -> QuantileDiscretizer",
+    "!doc": "QuantileDiscretizer takes a column with continuous features and outputs a column with binned categorical features. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.feature.QuantileDiscretizer()",
+    "!sparkType": "QuantileDiscretizer"
+  },
+  "RFormula": {
+    "!type": "fn() -> RFormula",
+    "!doc": "Implements the transforms required for fitting a dataset against an R model formula.",
+    "!spark": "new org.apache.spark.ml.feature.RFormula()",
+    "!sparkType": "RFormula"
+  },
+  "RandomForestClassifier": {
+    "!type": "fn() -> RandomForestClassifier",
+    "!doc": "Random Forest learning algorithm for classification.",
+    "!spark": "new org.apache.spark.ml.classification.RandomForestClassifier()",
+    "!sparkType": "RandomForestClassifier"
+  },
+  "RandomForestRegressor": {
+    "!type": "fn() -> RandomForestRegressor",
+    "!doc": "Random Forest learning algorithm for regression.",
+    "!spark": "new org.apache.spark.ml.regression.RandomForestRegressor()",
+    "!sparkType": "RandomForestRegressor"
+  },
+  "RegexTokenizer": {
+    "!type": "fn() -> RegexTokenizer",
+    "!doc": "A regex based tokenizer that extracts tokens either by using the provided regex pattern to split the text (default) or repeatedly matching the regex (if gaps is false).",
+    "!spark": "new org.apache.spark.ml.feature.RegexTokenizer()",
+    "!sparkType": "RegexTokenizer"
+  },
+  "RegressionEvaluator": {
+    "!type": "fn(metricName: string, labelCol: string, predictionCol: string) -> Evaluator",
+    "!doc": "Evaluator for regression, which expects two input columns: prediction and label.",
+    "!spark": "new org.apache.spark.ml.evaluation.RegressionEvaluator().setMetricName(%s).setLabelCol(%s).setPredictionCol(%s)",
+    "!sparkType": "Evaluator"
+  },
+  "sqlTransformer": {
+    "!type": "fn(statement: string) -> DataFrame",
+    "!doc": "Implements the transformations which are defined by SQL statement. (Spark 1.6)",
+    "!spark": "new org.apache.spark.ml.feature.SQLTransformer().setStatement(%s).transform",
+    "!sparkType": "transform"
+  },
+  "StandardScaler": {
+    "!type": "fn() -> StandardScaler",
+    "!doc": "Standardizes features by removing the mean and scaling to unit variance using column summary statistics on the samples in the training set.",
+    "!spark": "new org.apache.spark.ml.feature.StandardScaler()",
+    "!sparkType": "StandardScaler"
+  },
+  "stopWordsRemover": {
+    "!type": "fn(inputCol: string, outputCol: string, caseSensitive: boolean, stopWords: [string]) -> DataFrame",
+    "!doc": "A feature transformer that filters out stop words from input.",
+    "!spark": "new org.apache.spark.ml.feature.StopWordsRemover().setInputCol(%s).setOutputCol(%s).setCaseSensitive(%b).setStopWords(%@s).transform",
+    "!sparkType": "transform"
+  },
+  "StringIndexer": {
+    "!type": "fn() -> StringIndexer",
+    "!doc": "A label indexer that maps a string column of labels to an ML column of label indices.",
+    "!spark": "new org.apache.spark.ml.feature.StringIndexer()",
+    "!sparkType": "StringIndexer"
+  },
+  "tokenizer": {
+    "!type": "fn(inputCol: string, outputCol: string) -> DataFrame",
+    "!doc": "A tokenizer that converts the input string to lowercase and then splits it by white spaces.",
+    "!spark": "new org.apache.spark.ml.feature.Tokenizer().setInputCol(%s).setOutputCol(%s).transform",
+    "!sparkType": "transform"
+  },
+  "transform": {
+    "!type": "fn(modelPath: string) -> DataFrame",
+    "!doc": "Transforms the dataset. (Spark 1.6)",
+    "!spark": "org.apache.spark.ml.PipelineModel.load(%s).transform",
+    "!sparkType": "transform"
+  },
+  "vector": {
+    "!type": "fn(values_varargs: number) -> Vector",
+    "!doc": "Creates a dense vector from its values.",
+    "!spark": "org.apache.spark.ml.linalg.Vectors.dense(%*f)",
+    "!sparkType": "Vector"
+  },
+  "vectorAssembler": {
+    "!type": "fn(inputCols: [string], outputCol: string) -> DataFrame",
+    "!doc": "A feature transformer that merges multiple columns into a vector column.",
+    "!spark": "new org.apache.spark.ml.feature.VectorAssembler().setInputCols(%@s).setOutputCol(%s).transform",
+    "!sparkType": "transform"
+  },
+  "VectorIndexer": {
+    "!type": "fn() -> VectorIndexer",
+    "!doc": "Class for indexing categorical feature columns in a dataset of Vector.",
+    "!spark": "new org.apache.spark.ml.feature.VectorIndexer()",
+    "!sparkType": "VectorIndexer"
+  },
+  "vectorSlicer": {
+    "!type": "fn(inputCol: string, outputCol: string, indices: [number], names: [string]) -> DataFrame",
+    "!doc": "This class takes a feature vector and outputs a new feature vector with a subarray of the original features.",
+    "!spark": "new org.apache.spark.ml.feature.VectorSlicer().setInputCol(%s).setOutputCol(%s).setIndices(%@d).setNames(%@s).transform",
+    "!sparkType": "transform"
+  },
+  "Word2Vec": {
+    "!type": "fn() -> Word2Vec",
+    "!doc": "Word2Vec trains a model of Map(String, Vector).",
+    "!spark": "new org.apache.spark.ml.feature.Word2Vec()",
+    "!sparkType": "Word2Vec"
+  },
+
+  "!WINDOW_SPEC_FUNCTIONS": "Functions for creating WindowSpec objects.",
+
+  "orderBy": {
+    "!type": "fn(cols_varargs: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the ordering defined.",
+    "!spark": "org.apache.spark.sql.expressions.Window.orderBy(%*c)",
+    "!sparkType": "WindowSpec"
+  },
+  "partitionBy": {
+    "!type": "fn(cols_varargs: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the partitioning defined.",
+    "!spark": "org.apache.spark.sql.expressions.Window.partitionBy(%*c)",
+    "!sparkType": "WindowSpec"
+  }
+}

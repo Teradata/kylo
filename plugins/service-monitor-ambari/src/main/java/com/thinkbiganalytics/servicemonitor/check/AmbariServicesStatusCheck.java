@@ -39,6 +39,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
@@ -60,6 +62,7 @@ import javax.inject.Inject;
  * application.properties ambari.services.status=HIVE/[HIVE_CLIENT],HDFS - this will track the HIVE Service and just the
  * HIVE_CLIENT ambari.services.status=HDFS,HIVE,MAPREDUCE2,SQOOP - this will track all services and all components
  */
+@PropertySource("classpath:/conf/ambari.properties")
 public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     private static final Logger LOG = LoggerFactory.getLogger(AmbariServicesStatusCheck.class);

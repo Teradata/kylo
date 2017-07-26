@@ -1,0 +1,40 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  #%L
+  kylo-service-app
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+  <!-- By default Liquibase generates an update script with updateSQL command which includes all
+    update types, i.e. tables, views, procedures etc and at the same time does not separate
+    procedure statements with delimiters. This works when updates are automatic on server start, but
+    does not work with manual updates via updateSQL command. If we are to include manual delimit statements
+    in procedures then the reverse is true, the server does not start with automatic updates but
+    the valid sql file is generated with updateSQL command.
+    So here we have a workaround, such that by default we include commented out delimit statements which are just
+    SQL comments and don't do anything, which works for automatic updates, and we 'uncomment' these statements
+    when generating manual update SQL with out utility script
+   -->
+  <property name="delimiter.start"  value="-- delimiter placeholder DELIMITER |" dbms="mysql"/>
+  <property name="delimiter.end"    value="-- delimiter placeholder |" dbms="mysql"/>
+  <property name="delimiter.reset"  value="-- delimiter placeholder DELIMITER ;" dbms="mysql"/>
+
+</databaseChangeLog>

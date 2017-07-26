@@ -1,0 +1,47 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 1
+      author: ru186002
+      changes:
+        - createTable:
+            tableName: FEED_ACL_INDEX
+            columns:
+              - column:
+                  name: FEED_ID
+                  type: ${uuid.type}
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: PRINCIPAL
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: PRINCIPAL_TYPE
+                  type: varchar(10)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: FEED_ACL_INDEX_FK1
+            baseColumnNames: FEED_ID
+            baseTableName: FEED_ACL_INDEX
+            referencedColumnNames: ID
+            referencedTableName: FEED
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+        - createIndex:
+            indexName: FEED_ACL_INDEX_IDX1
+            tableName: FEED_ACL_INDEX
+            columns:
+              - column:
+                  name: FEED_ID
+              - column:
+                  name: PRINCIPAL
+              - column:
+                  name: PRINCIPAL_TYPE

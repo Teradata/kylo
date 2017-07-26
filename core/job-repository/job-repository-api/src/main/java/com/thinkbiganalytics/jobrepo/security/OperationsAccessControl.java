@@ -33,9 +33,10 @@ public interface OperationsAccessControl {
 
     // TODO are there other levels of access besides the ability to view or administer operational functions?
     Action ACCESS_OPS = Action.create("accessOperations",
-                                      "Access Operational information",
-                                      "Allows access to operational information like active feeds and execution history, etc.");
+                                      "Access Operational Information",
+                                      "Allows access to operational information like active feeds, execution history, job and feed stats, health status, etc.");
+
     Action ADMIN_OPS = ACCESS_OPS.subAction("adminOperations",
                                             "Administer Operations",
-                                            "Allows administration of operations, such as stopping and abandoning them.");
+                                            "Allows administration of operations, such as creating/updating alerts, restart/stop/abandon/fail jobs, start/pause scheduler, etc.");
 }

@@ -21,8 +21,8 @@
  * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
  * See the corresponding name references in app.js
  */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).factory('StateService', ["$state",function ($state) {
+define(['angular', 'services/module-name'], function (angular, moduleName) {
+    return angular.module(moduleName).factory('StateService', ["$state", function ($state) {
 
         function AuthStates() {
             var data = {}
@@ -62,8 +62,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-
-        var TemplateStates = function() {
+        var TemplateStates = function () {
             var data = {};
             data.navigateToRegisterNewTemplate = function () {
                 $state.go('register-new-template');
@@ -94,7 +93,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-        var FeedStates = function() {
+        var FeedStates = function () {
             var data = {};
             data.navigateToFeedDetails = function (feedId, tabIndex) {
                 if (tabIndex == null || tabIndex == undefined) {
@@ -103,8 +102,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 $state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
             }
 
-            data.navigateToEditFeedInStepper = function(feedId){
-                $state.go('edit-feed',{feedId:feedId});
+            data.navigateToEditFeedInStepper = function (feedId) {
+                $state.go('edit-feed', {feedId: feedId});
             }
 
             data.navigateToDefineFeed = function (templateId) {
@@ -119,15 +118,13 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 $state.go('feeds');
             }
 
-
-
             data.navigatetoImportFeed = function () {
                 $state.go('import-feed');
             }
             return data;
         }
 
-        var ProfileStates = function() {
+        var ProfileStates = function () {
             var data = {};
             data.navigateToProfileSummary = function (feedId) {
                 $state.go('feed-details.profile-summary', {feedId: feedId})
@@ -143,10 +140,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             }
             return data;
 
-
         }
 
-        var TableStates = function(){
+        var TableStates = function () {
             var data = {};
             data.navigateToTable = function (schema, table) {
                 $state.go('table', {schema: schema, tableName: table});
@@ -157,8 +153,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-
-        var SlaStates = function(){
+        var SlaStates = function () {
             var data = {};
             data.navigateToServiceLevelAgreements = function () {
                 $state.go('service-level-agreements');
@@ -166,7 +161,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-        var CategoryStates = function(){
+        var CategoryStates = function () {
             var data = {};
             data.navigateToCategoryDetails = function (categoryId) {
                 $state.go('category-details', {categoryId: categoryId});
@@ -180,31 +175,54 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
         var self = this;
 
+        var SearchStates = function () {
+            var data = {};
+            data.navigateToSearch = function () {
+                $state.go('search');
+            }
+            return data;
+        }
 
-     var SearchStates = function(){
-         var data = {};
-         data.navigateToSearch = function () {
-             $state.go('search');
-         }
-         return data;
-     }
+        var DatasourceStates = function() {
+            return {
+                navigateToDatasourceDetails: function(opt_datasourceId) {
+                    var safeDatasourceId = angular.isString(opt_datasourceId) ? encodeURIComponent(opt_datasourceId) : null;
+                    $state.go("datasource-details", {datasourceId: safeDatasourceId});
+                },
 
-     var FeedManagerStates = function(){
-         var data = {};
-         data.Category = CategoryStates;
-         data.Feed = FeedStates;
-         data.Sla = SlaStates;
-         data.Template = TemplateStates;
-         data.Table = TableStates;
-         data.Profile = ProfileStates;
-         return data;
-     }
+                navigateToDatasources: function() {
+                    $state.go("datasources");
+                }
+            };
+        };
 
+        var DomainTypeStates = function () {
+            return {
+                navigateToDomainTypeDetails: function (opt_domainTypeId) {
+                    var safeDomainTypeId = angular.isString(opt_domainTypeId) ? encodeURIComponent(opt_domainTypeId) : null;
+                    $state.go("domain-type-details", {domainTypeId: safeDomainTypeId});
+                },
 
+                navigateToDomainTypes: function () {
+                    $state.go("domain-types");
+                }
+            }
+        };
 
+        var FeedManagerStates = function () {
+            var data = {};
+            data.Category = CategoryStates;
+            data.Feed = FeedStates;
+            data.Sla = SlaStates;
+            data.Template = TemplateStates;
+            data.Table = TableStates;
+            data.Profile = ProfileStates;
+            data.Datasource = DatasourceStates;
+            data.DomainType = DomainTypeStates;
+            return data;
+        }
 
-
-        var OpsManagerJobStates = function(){
+        var OpsManagerJobStates = function () {
             var data = {};
             data.navigateToJobDetails = function (executionId) {
                 $state.go('job-details', {executionId: executionId});
@@ -212,7 +230,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-        var OpsManagerFeedStates = function(){
+        var OpsManagerFeedStates = function () {
             var data = {};
             data.navigateToFeedDetails = function (feedName) {
                 $state.go('ops-feed-details', {feedName: feedName});
@@ -223,7 +241,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-        var OpsManagerServiceStates = function(){
+        var OpsManagerServiceStates = function () {
             var data = {};
             data.navigateToServiceDetails = function (serviceName) {
                 $state.go('service-details', {serviceName: serviceName});
@@ -235,7 +253,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-        var AlertStates = function(){
+        var AlertStates = function () {
             var data = {};
             /**
              * Navigates to the details page for the specified alert.
@@ -247,9 +265,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-
-
-        var OpsManagerStates = function(){
+        var OpsManagerStates = function () {
 
             var data = {};
             data.dashboard = function () {
@@ -262,33 +278,28 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
+        var States = function () {
+            var data = {};
+            data.Auth = AuthStates;
+            data.Search = SearchStates;
+            data.FeedManager = FeedManagerStates;
+            data.OpsManager = OpsManagerStates;
+            data.Tables = TableStates;
+            data.Categories = CategoryStates;
+            data.go = function (state, params) {
+                $state.go(state, params);
+            }
+            /**
+             * Navigates to the Home page.
+             */
+            data.navigateToHome = function () {
+                $state.go("home");
+            };
+            return data;
 
+        }
 
-
-     var States = function(){
-         var data = {};
-         data.Auth = AuthStates;
-         data.Search = SearchStates;
-         data.FeedManager = FeedManagerStates;
-         data.OpsManager = OpsManagerStates;
-         data.go = function(state,params){
-             $state.go(state,params);
-         }
-         /**
-          * Navigates to the Home page.
-          */
-         data.navigateToHome = function () {
-             $state.go("home");
-         };
-         return data;
-
-     }
-
-
-    return new States();
-
-
-
+        return new States();
 
     }]);
 });

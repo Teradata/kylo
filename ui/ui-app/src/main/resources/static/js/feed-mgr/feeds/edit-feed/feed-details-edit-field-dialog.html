@@ -1,0 +1,54 @@
+<md-dialog arial-label="Edit Field">
+  <form name="editFieldForm" ng-cloak>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Field Details for {{field.name}}</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon icon="close" size="20"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <div layout-gt-xs="row">
+          <md-input-container class="md-block" flex-gt-xs>
+            <label>Name</label>
+            <input ng-model="field.name" disabled>
+          </md-input-container>
+
+          <md-input-container>
+            <label>Data Type</label>
+            <input ng-model="field.derivedDataType" disabled>
+          </md-input-container>
+        </div>
+
+        <md-input-container class="md-block">
+          <label>Description</label>
+          <input ng-model="field.description">
+        </md-input-container>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-xs" flex-gt-xs>
+          <label class="label-small md-container-ignore">Tags</label>
+          <md-chips ng-model="field.tags" md-autocomplete-snap md-transform-chip="transformChip($chip)" md-require-match="false">
+            <md-autocomplete md-selected-item="tagChips.selectedItem" md-search-text="tagChips.searchText" md-items="item in feedTagService.querySearch(tagChips.searchText)"
+                             md-item-text="item.name" placeholder="Add a Tag">
+              <span md-highlight-text="tagChips.searchText">{{item.name}}</span>
+            </md-autocomplete>
+            <md-chip-template>
+              <span>
+                <strong>{{$chip.name}}</strong>
+              </span>
+            </md-chip-template>
+          </md-chips>
+        </md-input-container>
+      </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()">Cancel</md-button>
+      <md-button class="md-raised md-primary" ng-click="hide()" ng-disabled="editFieldForm.$invalid">Done</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

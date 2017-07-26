@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.3-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -31,16 +31,15 @@
       <artifactId>kylo-service-app-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-upgrade-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- Services monitoring code -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-service-monitor-nifi</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-service-monitor-ambari</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -87,7 +86,6 @@
       <version>${project.version}</version>
     </dependency>
 
-
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-integration-service</artifactId>
@@ -102,6 +100,11 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-security-auth-simple</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-cache</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -130,8 +133,11 @@
       <artifactId>kylo-hadoop-authorization-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-spark</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-job-repository-api</artifactId>
@@ -240,7 +246,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.8.0-SNAPSHOT</version>
+      <version>0.8.3-SNAPSHOT</version>
     </dependency>
 
     <!-- NiFi REST clients -->
@@ -250,10 +256,21 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- Kylo upgrade -->
+
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
+      <artifactId>kylo-nifi-rest-client-v1.2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-amazon-sqs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-jms-service-activemq</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -426,11 +443,12 @@
       <artifactId>mariadb-java-client</artifactId>
       <version>1.5.7</version>
     </dependency>
-    <dependency>
-      <groupId>postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>9.1-901-1.jdbc4</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>org.postgresql</groupId>-->
+      <!--<artifactId>postgresql</artifactId>-->
+      <!--<version>42.0.0</version>-->
+    <!--</dependency>-->
+
 
     <!-- mail -->
     <dependency>
@@ -448,14 +466,34 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-commons-test</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.jayway.restassured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>2.9.0</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant-jsch</artifactId>
+      <version>1.10.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>1.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.6.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+    </dependency>
 
   </dependencies>
 
@@ -477,6 +515,7 @@
           <descriptors>
             <descriptor>src/main/assembly/descriptor.xml</descriptor>
           </descriptors>
+          <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
           <execution>
@@ -488,6 +527,52 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <!-- Liquibase plugin for quick testing of database upgrades with following command
+             mvn package liquibase:updateSQL -->
+
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>${liquibase.version}</version>
+        <configuration>
+          <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
+          <driver>org.mariadb.jdbc.Driver</driver>
+          <url>jdbc:mysql://localhost:3306/kylo</url>
+          <username>root</username>
+          <password>hadoop</password>
+          <verbose>true</verbose>
+          <logging>debug</logging>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.0.0</version>
+          </dependency>
+          <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.18.2-GA</version>
+          </dependency>
+          <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-hibernate4</artifactId>
+            <version>${liquibase-hibernate4.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>1.4.2.RELEASE</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
     </plugins>
   </build>
 

@@ -18,13 +18,14 @@
  * #L%
  */
 
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    return  angular.module(moduleName).service('RestUrlService', function () {
+define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
+    return angular.module(moduleName).service('RestUrlService', function () {
 
         var self = this;
 
         this.ROOT = "";
         this.ADMIN_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/admin";
+        this.ADMIN_V2_BASE_URL = this.ROOT + "/proxy/v2/feedmgr/admin";
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
         this.TEMPLATES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/templates";
         this.FEEDS_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/feeds";
@@ -34,6 +35,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
         this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
         this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
+        this.UI_BASE_URL = this.ROOT + "/api/v1/ui";
+        this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
 
         this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
         this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
@@ -51,7 +54,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         this.CATEGORIES_URL = this.ROOT + "/proxy/v1/feedmgr/categories";
 
-        this.ELASTIC_SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
 
         this.HIVE_SERVICE_URL = this.ROOT + "/proxy/v1/hive";
 
@@ -184,6 +187,19 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         this.UPLOAD_FILE_FEED_URL = function (feedId) {
             return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
         }
+
+        this.FEED_DETAILS_BY_NAME_URL = function (feedName) {
+            return self.FEEDS_BASE_URL + "/by-name/" + feedName;
+        };
+
+        this.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = function (categoryName) {
+            return self.CATEGORIES_URL + "/by-name/" + categoryName;
+        };
+
+        this.CATEGORY_DETAILS_BY_ID_URL = function (categoryId) {
+            return self.CATEGORIES_URL + "/by-id/" + categoryId;
+        };
+
         /**
          * Gets the URL for retrieving the user fields for a new feed.
          *
@@ -208,13 +224,17 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/standardization";
         this.AVAILABLE_VALIDATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/validation";
 
-        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/import-template";
+        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_V2_BASE_URL + "/import-template";
 
         this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/export-template";
 
         this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL + "/export-feed";
 
-        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_BASE_URL + "/import-feed";
+        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_V2_BASE_URL + "/import-feed";
+
+        this.ADMIN_UPLOAD_STATUS_CHECK = function (key) {
+            return self.ADMIN_BASE_URL + "/upload-status/" + key;
+        };
 
         // Hadoop Security Authorization
         this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
@@ -236,7 +256,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @returns {string} the URL for listing controller services
          */
         this.LIST_SERVICES_URL = function (processGroupId) {
-            return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
         };
 
         /**
@@ -257,5 +277,62 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @type {string}
          */
         this.IS_NIFI_RUNNING_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/running";
+
+        /**
+         * The endpoint for retrieving data sources.
+         * @type {string}
+         */
+        this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+
+        /**
+         * Get/Post roles changes for a Feed entity
+         * @param feedId the feed id
+         * @returns {string} the url to get/post feed role changes
+         */
+        this.FEED_ROLES_URL = function (feedId) {
+            return self.FEEDS_BASE_URL + "/" + feedId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_ROLES_URL = function (categoryId) {
+            return self.CATEGORIES_URL + "/" + categoryId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Template entity
+         * @param templateId the Template id
+         * @returns {string} the url to get/post Template role changes
+         */
+        this.TEMPLATE_ROLES_URL = function (templateId) {
+            return self.TEMPLATES_BASE_URL + "/registered/" + templateId + "/roles"
+        };
+
+        /**
+         * Endpoint for roles changes to a Datasource entity.
+         * @param {string} datasourceId the datasource id
+         * @returns {string} the url for datasource role changes
+         */
+        this.DATASOURCE_ROLES_URL = function (datasourceId) {
+            return self.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
+        };
+
+        /**
+         * The URL for retrieving the list of template table option plugins.
+         * @type {string}
+         */
+        this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
+
+
+
+        /**
+         * The URL for retrieving the list of templates for custom rendering with nifi processors
+         * @type {string}
+         */
+        this.UI_PROCESSOR_TEMPLATES = this.UI_BASE_URL + "/processor-templates";
+
     });
 });

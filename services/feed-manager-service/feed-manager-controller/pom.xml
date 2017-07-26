@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -46,9 +46,21 @@
       <version>${project.version}</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-nifi-cache-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-feed-manager-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-security</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -77,6 +89,12 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-cluster-manager-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -84,13 +102,6 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-operational-metadata-integration-service</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -151,11 +162,16 @@
       <artifactId>kylo-hadoop-authorization-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    
     <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-context</artifactId>
-      <version>${spring.cloud.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-controller</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Upload support -->
@@ -180,6 +196,11 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-search-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
@@ -246,14 +267,6 @@
       <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
-    </dependency>
-
 
     <dependency>
       <groupId>org.springframework</groupId>
@@ -333,7 +346,6 @@
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>1.5.7</version>
       <scope>test</scope>
     </dependency>
 
@@ -358,8 +370,31 @@
     </dependency>
 
     <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-config-server</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+    <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-nifi-rest-client-v1</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-test</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

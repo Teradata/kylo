@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
@@ -54,8 +55,6 @@ import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-/**
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
@@ -91,21 +90,21 @@ public class JcrFeedSlaTest {
 
     public JcrFeed.FeedId createFeed(final String categorySystemName, final String feedSystemName) {
 
-        Category category = metadata.commit(new AdminCredentials(), () -> {
+        Category category = metadata.commit(() -> {
             JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
             cat.setDescription(categorySystemName + " desc");
             cat.setTitle(categorySystemName);
             categoryProvider.update(cat);
             return cat;
-        });
+        }, MetadataAccess.ADMIN);
 
-        return metadata.commit(new AdminCredentials(), () -> {
+        return metadata.commit(() -> {
             JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
             JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, feedSystemName + " desc");
 
             feed.setTitle(feedSystemName);
             return feed.getId();
-        });
+        }, MetadataAccess.ADMIN);
     }
 
 

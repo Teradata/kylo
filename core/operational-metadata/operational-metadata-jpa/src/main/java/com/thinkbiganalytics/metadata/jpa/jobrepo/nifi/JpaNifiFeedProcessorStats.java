@@ -20,17 +20,22 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  * #L%
  */
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * Aggregated statistics gathered from NiFi for a feed and processor over a given time interval
@@ -47,6 +52,25 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
+/*
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+    @Column(name = "MIN_EVENT_TIME_MILLIS")
+    @QueryType(PropertyType.COMPARABLE)
+    private DateTime minEventTimeMillis;
+
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+    @Column(name = "MAX_EVENT_TIME_MILLIS")
+    @QueryType(PropertyType.COMPARABLE)
+    private DateTime maxEventTimeMillis;
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "COLLECTION_TIME_MILLIS")
+    @QueryType(PropertyType.COMPARABLE)
+    private DateTime collectionTimeMillis;
+*/
+    @Column(name = "COLLECTION_INTERVAL_SEC")
+    protected Long collectionIntervalSeconds = null;
+
     @Column(name = "BYTES_IN")
     protected Long bytesIn = 0L;
     @Column(name = "BYTES_OUT")
@@ -75,6 +99,10 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     protected String clusterNodeId;
     @Column(name = "CLUSTER_NODE_ADDRESS")
     protected String clusterNodeAddress;
+
+    @Column(name = "FAILED_EVENTS")
+    protected Long failedCount = 0L;
+
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
@@ -94,6 +122,11 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Column(name = "COLLECTION_ID")
     private String collectionId;
 
+    @Transient
+    private BigDecimal jobsStartedPerSecond;
+
+    @Transient
+    private BigDecimal jobsFinishedPerSecond;
 
     public JpaNifiFeedProcessorStats(String feedName, String processorId) {
         this.feedName = feedName;
@@ -204,6 +237,16 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Override
     public void setTotalCount(Long totalCount) {
         this.totalCount = totalCount;
+    }
+
+    @Override
+    public Long getFailedCount() {
+        return failedCount;
+    }
+
+    @Override
+    public void setFailedCount(Long failedCount) {
+        this.failedCount = failedCount;
     }
 
     @Override
@@ -344,5 +387,31 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Override
     public void setClusterNodeAddress(String clusterNodeAddress) {
         this.clusterNodeAddress = clusterNodeAddress;
+    }
+
+    @Override
+    public Long getCollectionIntervalSeconds() {
+        return collectionIntervalSeconds;
+    }
+
+    @Override
+    public void setCollectionIntervalSeconds(Long collectionIntervalSeconds) {
+        this.collectionIntervalSeconds = collectionIntervalSeconds;
+    }
+
+    public BigDecimal getJobsStartedPerSecond() {
+        return jobsStartedPerSecond;
+    }
+
+    public void setJobsStartedPerSecond(BigDecimal jobsStartedPerSecond) {
+        this.jobsStartedPerSecond = jobsStartedPerSecond;
+    }
+
+    public BigDecimal getJobsFinishedPerSecond() {
+        return jobsFinishedPerSecond;
+    }
+
+    public void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond) {
+        this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 }

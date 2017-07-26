@@ -196,9 +196,11 @@ public class HCatDataType implements Cloneable, Serializable {
                 // Determine min max based on column precision
                 if (decSize != null) {
                     hcatType.digits = decDigits;
-                    hcatType.max =
-                        BigDecimal.valueOf(Long.parseLong(StringUtils.repeat("9", decSize)) + (1 - Math.pow(.1, hcatType.digits)));
+                    hcatType.max = new BigDecimal(generateRepeatingCharacters(decSize, '9')
+                                                  + "."
+                                                  + generateRepeatingCharacters(decDigits,'9'));
                     hcatType.min = ((BigDecimal) hcatType.max).negate();
+
                 } else if (strLen != null) {
                     hcatType.maxlength = strLen;
                 }
@@ -207,6 +209,19 @@ public class HCatDataType implements Cloneable, Serializable {
             }
         }
         return (hcatType == null ? UNCHECKED_TYPE : hcatType);
+    }
+
+    private static String generateRepeatingCharacters(int repeatTimes, char repeatChar) {
+        if ((repeatTimes <= 0)) {
+            return "";
+        }
+
+        StringBuffer retVal = new StringBuffer();
+
+        for (int i = 0; i < repeatTimes; i++) {
+            retVal.append(repeatChar);
+        }
+        return retVal.toString();
     }
 
     public static Map<String, HCatDataType> getDataTypes() {

@@ -22,40 +22,56 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Lists;
 import com.mifmif.common.regex.Generex;
+import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
+import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.thinkbiganalytics.metadata.FeedPropertySection;
+import com.thinkbiganalytics.metadata.FeedPropertyType;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
+import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
@@ -67,14 +83,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.AccessControlException;
+import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -90,8 +109,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -117,10 +138,6 @@ public class FeedRestController {
     private static final String NAMES = "/names";
 
     @Autowired
-    @Qualifier("nifiRestClient")
-    LegacyNifiRestClient nifiRestClient;
-
-    @Autowired
     MetadataService metadataService;
 
     //Profile needs hive service
@@ -134,10 +151,92 @@ public class FeedRestController {
     DatasourceService datasourceService;
 
     @Inject
+    private SecurityService securityService;
+
+    @Inject
+    private SecurityModelTransform actionsTransform;
+
+    @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
+
+    @Inject
+    RegisteredTemplateService registeredTemplateService;
+
+    @Inject
+    AccessControlledEntityTransform accessControlledEntityTransform;
+
+    @Inject
+    private AccessController accessController;
 
     private MetadataService getMetadataService() {
         return metadataService;
+    }
+
+
+    /**
+     * Creates a new Feed using the specified metadata.
+     *
+     * @param editFeedEntity the feed metadata
+     * @return the feed
+     */
+    @POST
+    @Path("/edit/{feedId}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates or updates a feed.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the feed including any error messages.", response = NifiFeed.class)
+    )
+    @Nonnull
+    public Response editFeed(@Nonnull final EditFeedEntity editFeedEntity) {
+
+        return createFeed(editFeedEntity.getFeedMetadata());
+    }
+
+    private void populateFeed(EditFeedEntity editFeedEntity) {
+        //fetch the feed
+        FeedMetadata feed = getMetadataService().getFeedById(editFeedEntity.getFeedMetadata().getFeedId());
+        FeedMetadata editFeed = editFeedEntity.getFeedMetadata();
+        switch (editFeedEntity.getAction()) {
+            case SUMMARY:
+                updateFeedMetadata(feed, editFeed, FeedPropertySection.SUMMARY);
+                break;
+            case NIFI_PROPERTIES:
+                updateFeedMetadata(feed, editFeed, FeedPropertySection.NIFI_PROPERTIES);
+                break;
+            case PROPERTIES:
+                updateFeedMetadata(feed, editFeed, FeedPropertySection.PROPERTIES);
+                break;
+            case TABLE_DATA:
+                updateFeedMetadata(feed, editFeed, FeedPropertySection.TABLE_DATA);
+                break;
+            case SCHEDULE:
+                updateFeedMetadata(feed, editFeed, FeedPropertySection.SCHEDULE);
+                break;
+            default:
+                break;
+        }
+
+        createFeed(feed);
+    }
+
+    private void updateFeedMetadata(FeedMetadata targetFeedMetadata, FeedMetadata modifiedFeedMetadata, FeedPropertySection feedPropertySection) {
+
+        AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(FeedPropertyType.class);
+        List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(FeedMetadata.class);
+        List<AnnotatedFieldProperty>
+            sectionList =
+            list.stream().filter(annotatedFieldProperty -> feedPropertySection.equals(((FeedPropertyType) annotatedFieldProperty.getAnnotation()).section())).collect(Collectors.toList());
+        sectionList.forEach(annotatedFieldProperty -> {
+            try {
+                Object value = FieldUtils.readField(annotatedFieldProperty.getField(), modifiedFeedMetadata);
+                FieldUtils.writeField(annotatedFieldProperty.getField(), targetFeedMetadata, value);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        });
+
+
     }
 
     /**
@@ -162,7 +261,7 @@ public class FeedRestController {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
 
             // Create an error message
-            String msg = "A feed already exists in the cantegory \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
+            String msg = "A feed already exists in the category \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
 
             // Add error message to feed
             feed = new NifiFeed(feedMetadata, null);
@@ -250,6 +349,49 @@ public class FeedRestController {
         return Response.ok(feed).build();
     }
 
+    @GET
+    @Path("/by-name/{feedName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the feed.", response = FeedMetadata.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getFeedByName(@PathParam("feedName") String feedName) {
+        String categorySystemName = FeedNameUtil.category(feedName);
+        String feedSystemName = FeedNameUtil.feed(feedName);
+        if (StringUtils.isNotBlank(categorySystemName) && StringUtils.isNotBlank(feedSystemName)) {
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            return Response.ok(feed).build();
+        } else {
+            throw new NotFoundException("Unable to find the feed for name: " + feedName);
+        }
+    }
+
+    @GET
+    @Path("/by-name/{feedName}/field-policies")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the feed field policies (List<FieldPolicy>) as json.", response = List.class),
+                      @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getFeedFieldPoliciesByName(@PathParam("feedName") String feedName) {
+        String categorySystemName = FeedNameUtil.category(feedName);
+        String feedSystemName = FeedNameUtil.feed(feedName);
+        if (StringUtils.isNotBlank(categorySystemName) && StringUtils.isNotBlank(feedSystemName)) {
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            if (feed != null && feed.getTable() != null) {
+                return Response.ok(feed.getTable().getFieldPoliciesJson()).build();
+            } else {
+                throw new NotFoundException("Unable to find the feed field policies for name: " + feedName);
+            }
+        } else {
+            throw new NotFoundException("Unable to find the feed field policies for name: " + feedName);
+        }
+    }
+
+
     /**
      * Deletes the specified feed.
      *
@@ -305,77 +447,10 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
                   })
     public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) {
-        //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
-        RegisteredTemplate registeredTemplate = null;
-        try {
-            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(feed.getTemplateId(), feed.getTemplateName());
-        } catch (Exception e) {
-            registeredTemplate = getMetadataService().getRegisteredTemplateByName(feed.getTemplateName());
-            if (registeredTemplate != null) {
-                feed.setTemplateId(registeredTemplate.getId());
-            }
-        }
-        if (registeredTemplate != null) {
-            NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-
-            //detect template properties that dont match the feed.properties from the registeredtemplate
-            ensureFeedPropertiesExistInTemplate(feed, registeredTemplate);
-            feed.setProperties(registeredTemplate.getProperties());
-
-        }
-        registeredTemplate.initializeProcessors();
-        feed.setRegisteredTemplate(registeredTemplate);
-
+        registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
         return Response.ok(feed).build();
     }
 
-
-    /**
-     * If a Template changes the Processor Names the Feed Properties will no longer be associated to the correct processors This will match any feed properties to a whose processor name has changed in
-     * the template to the template processor/property based upon the template processor type.
-     */
-    private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, RegisteredTemplate registeredTemplate) {
-        Set<String> templateProcessors = registeredTemplate.getProperties().stream().map(property -> property.getProcessorName()).collect(Collectors.toSet());
-
-        //Store the template Properties
-        Map<String, String> templateProcessorIdProcessorNameMap = new HashMap<>();
-        Map<String, String> templateProcessorTypeProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().filter(property -> !templateProcessorIdProcessorNameMap.containsKey(property.getProcessorId())).forEach(property1 -> {
-            templateProcessorIdProcessorNameMap.put(property1.getProcessorId(), property1.getProcessorName());
-            templateProcessorTypeProcessorIdMap.put(property1.getProcessorType(), property1.getProcessorId());
-        });
-
-        Map<String, Map<String, NifiProperty>> templatePropertiesByProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().forEach(property -> {
-            templatePropertiesByProcessorIdMap.computeIfAbsent(property.getProcessorId(), key -> new HashMap<String, NifiProperty>()).put(property.getKey(), property);
-        });
-
-        //store the Feed Properties
-        Map<String, String> processorIdProcessorTypeMap = new HashMap<>();
-        feed.getProperties().stream().filter(property -> !processorIdProcessorTypeMap.containsKey(property.getProcessorId())).forEach(property1 -> {
-            processorIdProcessorTypeMap.put(property1.getProcessorId(), property1.getProcessorType());
-        });
-
-        feed.getProperties().stream().filter(property -> !templateProcessors.contains(property.getProcessorName())).forEach(property -> {
-            //if the property doesn't match the template but the type matches try to merge in the feed properties overwriting the template ones
-            String processorType = processorIdProcessorTypeMap.get(property.getProcessorId());
-            if (processorType != null) {
-                String templateProcessorId = templateProcessorTypeProcessorIdMap.get(processorType);
-
-                if (templateProcessorId != null && templateProcessorIdProcessorNameMap.containsKey(templateProcessorId)) {
-                    NifiProperty templateProperty = templatePropertiesByProcessorIdMap.get(templateProcessorId).get(property.getKey());
-                    if (templateProperty != null) {
-                        templateProperty.setValue(property.getValue());
-                        templateProperty.setRenderType(property.getRenderType());
-                        templateProperty.setRenderOptions(property.getRenderOptions());
-                    }
-                }
-            }
-        });
-
-
-    }
 
     @GET
     @Path("/{feedId}/profile-summary")
@@ -478,6 +553,133 @@ public class FeedRestController {
         return getPage(processingdttm, limit, feedMetadata.getValidTableName());
     }
 
+    @GET
+    @Path("{feedId}/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the feed's roles")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr, @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        if (!verbose) {
+            return this.securityService.getFeedRoleMemberships(feedIdStr)
+                .map(m -> Response.ok(m).build())
+                .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+        } else {
+            Optional<Map<String, RoleMembership>> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
+            if (memberships.isPresent()) {
+                List<EntityAccessRoleMembership>
+                    entityAccessRoleMemberships =
+                    memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                return Response.ok(entityAccessRoleMemberships).build();
+            } else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND);
+            }
+        }
+    }
+
+
+    @POST
+    @Path("{feedId}/roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a feed's roles.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "No feed exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("feedId") String feedIdStr,
+                                          RoleMembershipChange changes) {
+        return this.securityService.changeFeedRoleMemberships(feedIdStr, changes)
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("Either a feed with the ID \"" + feedIdStr
+                                                           + "\" does not exist or it does not have a role the named \""
+                                                           + changes.getRoleName() + "\"", Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{feedId}/actions/available")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available actions that may be permitted or revoked on a feed.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAvailableActions(@PathParam("feedId") String feedIdStr) {
+        log.debug("Get available actions for feed: {}", feedIdStr);
+
+        return this.securityService.getAvailableFeedActions(feedIdStr)
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{feedId}/actions/allowed")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of actions permitted for the given username and/or groups.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
+                  })
+    public Response getAllowedActions(@PathParam("feedId") String feedIdStr,
+                                      @QueryParam("user") Set<String> userNames,
+                                      @QueryParam("group") Set<String> groupNames) {
+        log.debug("Get allowed actions for feed: {}", feedIdStr);
+
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+
+        return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    }
+
+    @POST
+    @Path("{feedId}/actions/allowed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the permissions for a feed using the supplied permission change request.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No feed exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public Response postPermissionsChange(@PathParam("feedId") String feedIdStr,
+                                          PermissionsChange changes) {
+
+        return this.securityService.changeFeedPermissions(feedIdStr, changes)
+            .map(g -> Response.ok(g).build())
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    }
+
+    @GET
+    @Path("{feedId}/actions/change")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Constructs and returns a permission change request for a set of users/groups containing the actions that the requester may permit or revoke.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the change request that may be modified by the client and re-posted.", response = PermissionsChange.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "No feed exists with the specified ID.", response = RestResponseStatus.class)
+                  })
+    public PermissionsChange getAllowedPermissionsChange(@PathParam("feedId") String feedIdStr,
+                                                         @QueryParam("type") String changeType,
+                                                         @QueryParam("user") Set<String> userNames,
+                                                         @QueryParam("group") Set<String> groupNames) {
+        if (StringUtils.isBlank(changeType)) {
+            throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
+        }
+
+        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+
+        return this.securityService.createFeedPermissionChange(feedIdStr,
+                                                               ChangeType.valueOf(changeType.toUpperCase()),
+                                                               Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+    }
+
+
     private Response getPage(String processingdttm, int limit, String table) {
         return getPage(processingdttm, limit, table, null);
     }
@@ -518,7 +720,11 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getSla(@PathParam("feedId") String feedId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
         List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
+        if (sla == null) {
+            throw new WebApplicationException("No SLAs for the feed were found", Response.Status.NOT_FOUND);
+        }
         return Response.ok(sla).build();
     }
 
@@ -531,6 +737,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "The styles were updated.", response = RestResponseStatus.class)
     )
     public Response updateFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         datasourceService.refreshFeedLineageStyles(styles);
         return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
     }
@@ -543,6 +751,8 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns the updated definitions..", response = DatasourceDefinitions.class)
     )
     public DatasourceDefinitions updateDatasourceDefinitions(DatasourceDefinitions definitions) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
         if (definitions != null) {
             Set<DatasourceDefinition> updatedDefinitions = datasourceService.updateDatasourceDefinitions(definitions.getDefinitions());
             if (updatedDefinitions != null) {

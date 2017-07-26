@@ -101,4 +101,40 @@ public class Action implements Serializable {
             .filter(a -> a.getSystemName().equals(name))
             .findFirst();
     }
+
+    /**
+     * Check to see if this action matches the supplied name, or if any of its children match
+     * @param name the action name to check
+     * @return true if it has the name in this action hierarchy, false if not
+     */
+    boolean hasAction(String name) {
+        boolean hasAction = this.getSystemName().equals(name) || getAction(name).isPresent();
+        if(!hasAction){
+            for(Action a: actions){
+                hasAction = a.hasAction(name);
+                if(hasAction){
+                    break;
+                }
+            }
+        }
+        return hasAction;
+    }
+
+    public void union(Action anotherAction) {
+        List<Action> existingActions = this.getActions();
+        List<Action> otherActions = anotherAction.getActions();
+
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action otherAction : otherActions) {
+            Optional<Action> existingAction = this.getAction(otherAction.getSystemName());
+            if (existingAction.isPresent()) {
+                existingAction.get().union(otherAction);
+            } else {
+                newActions.add(otherAction);
+            }
+        }
+
+        existingActions.addAll(newActions);
+    }
 }

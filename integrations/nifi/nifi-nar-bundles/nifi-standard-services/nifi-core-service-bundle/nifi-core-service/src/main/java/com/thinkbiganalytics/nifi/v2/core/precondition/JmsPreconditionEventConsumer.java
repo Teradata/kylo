@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.v2.core.precondition;
  * #L%
  */
 
+import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.metadata.event.jms.MetadataQueues;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
@@ -48,7 +49,7 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
         LOG.debug("New JmsPreconditionEventConsumer {}", this);
     }
 
-    @JmsListener(destination = MetadataQueues.PRECONDITION_TRIGGER, containerFactory = "metadataListenerContainerFactory")
+    @JmsListener(destination = MetadataQueues.PRECONDITION_TRIGGER, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
     public void receiveEvent(FeedPreconditionTriggerEvent event) {
         LOG.debug("{} Received JMS message - topic: {}, message: {}", this, MetadataQueues.PRECONDITION_TRIGGER, event);
         LOG.info("{} Received feed precondition trigger event: {}", this, event);

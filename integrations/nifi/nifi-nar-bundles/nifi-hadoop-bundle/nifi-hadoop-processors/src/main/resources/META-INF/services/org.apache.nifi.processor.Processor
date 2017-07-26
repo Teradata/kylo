@@ -19,7 +19,6 @@
 
 com.thinkbiganalytics.nifi.v2.hdfs.CreateHDFSFolder
 com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQL
-com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement
 com.thinkbiganalytics.nifi.v2.hdfs.RemoveHDFSFolder
 com.thinkbiganalytics.nifi.v2.hdfs.ComputeHDFSChecksums
 com.thinkbiganalytics.nifi.v2.hdfs.DistCopyHDFS

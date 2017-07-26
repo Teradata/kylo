@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','kylo-common', 'kylo-services','kylo-opsmgr','jquery','jquery-ui','pivottable'], function (angular,moduleName,lazyLoadUtil) {
+define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','jquery','jquery-ui','pivottable'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
    var module = angular.module(moduleName, []);
 
 
@@ -8,7 +8,7 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state('charts',{
+        $stateProvider.state(AccessConstants.UI_STATES.CHARTS.state,{
             url:'/charts',
             views: {
                 'content': {
@@ -23,7 +23,8 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
             data:{
                 breadcrumbRoot:true,
                 displayName:'Charts',
-                module:moduleName
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.CHARTS.permissions
             }
         });
 

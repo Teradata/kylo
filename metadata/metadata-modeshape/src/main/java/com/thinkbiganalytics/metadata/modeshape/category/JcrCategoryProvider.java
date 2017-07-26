@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -32,12 +33,19 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,7 +58,7 @@ import javax.jcr.RepositoryException;
 /**
  * A JCR provider for {@link Category} objects.
  */
-public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
+public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
 
     /**
      * JCR node type manager
@@ -58,11 +66,29 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
 
+    @Inject
+    private SecurityRoleProvider roleProvider;
+
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
+
+    @Inject
+    private AccessController accessController;
+
     /**
      * Transaction support
      */
     @Inject
     MetadataAccess metadataAccess;
+
+
+    @Override
+    public Category update(Category category) {
+        if (accessController.isEntityAccessControlled()) {
+            category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
+        }
+        return super.update(category);
+    }
 
     @Override
     public Category findBySystemName(String systemName) {
@@ -90,7 +116,21 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         String path = EntityUtil.pathForCategory();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrCategory.SYSTEM_NAME, systemName);
-        return findOrCreateEntity(path, systemName, props);
+        boolean isNew = !hasEntityNode(path, systemName);
+        JcrCategory category = (JcrCategory) findOrCreateEntity(path, systemName, props);
+
+        if (isNew) {
+            if (this.accessController.isEntityAccessControlled()) {
+                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
+                    .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+            }
+        }
+
+        return category;
     }
 
     @Override
@@ -105,23 +145,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void deleteById(final Category.ID id) {
-        // TODO service?
-        metadataAccess.commit(() -> {
-            // Get category
-            final Category category = findById(id);
+        // Get category
+        final Category category = findById(id);
 
-            if (category != null) {
-                // Delete user type
-                final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
-                if (type != null) {
-                    extensibleTypeProvider.deleteType(type.getId());
-                }
+        if (category != null) {
 
-                // Delete category
-                super.delete(category);
+            // Delete user type
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
             }
-            return true;
-        }, MetadataAccess.SERVICE);
+
+            // Delete category
+            super.delete(category);
+        }
     }
 
     @Nonnull
@@ -149,16 +186,31 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
         metadataAccess.commit(() -> {
             final Category category = findById(categoryId);
-            JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
-            return userFields;
+            setFeedUserFields(category.getName(), userFields);
         }, MetadataAccess.SERVICE);
     }
-
+    
     @Override
     public void rename(@Nonnull final Category.ID categoryId, @Nonnull final String newName) {
         // Move the node to the new path
-        final JcrCategory category = (JcrCategory) findById(categoryId);
+        JcrCategory category = (JcrCategory) findById(categoryId);
+        String currentName = category.getSystemName();
         final Node node = category.getNode();
+
+        // Update properties
+        category.setSystemName(newName);
+        
+        // Move user fields
+        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
+
+        if (feedUserFields.isPresent()) {
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(currentName));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
+            }
+
+            setFeedUserFields(newName, feedUserFields.get());
+        }
 
         try {
             final String newPath = JcrUtil.path(node.getParent().getPath(), newName).toString();
@@ -166,20 +218,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         } catch (final RepositoryException e) {
             throw new IllegalStateException("Unable to rename category: " + node, e);
         }
+    }
 
-        // Update properties
-        category.setProperty(JcrCategory.SYSTEM_NAME, newName);
-
-        // Move user fields
-        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
-
-        if (feedUserFields.isPresent()) {
-            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
-            if (type != null) {
-                extensibleTypeProvider.deleteType(type.getId());
-            }
-
-            setFeedUserFields(category.getId(), feedUserFields.get());
-        }
+    private void setFeedUserFields(@Nonnull final String categoryName, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(categoryName), userFields, extensibleTypeProvider);
     }
 }

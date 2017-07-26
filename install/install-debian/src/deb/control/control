@@ -1,0 +1,7 @@
+Package: Kylo
+Version: ${project.version}
+Section: misc
+Priority: low
+Architecture: all
+Description: Kylo
+Maintainer: Think Big

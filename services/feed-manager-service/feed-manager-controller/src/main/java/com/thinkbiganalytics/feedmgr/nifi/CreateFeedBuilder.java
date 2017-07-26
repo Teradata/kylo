@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
  */
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
@@ -116,6 +117,7 @@ public class CreateFeedBuilder {
         this.feedName = feedMetadata.getSystemFeedName();
         this.templateId = templateId;
         this.templateCreationHelper = new TemplateCreationHelper(this.restClient);
+        this.templateCreationHelper.setTemplateProperties(feedMetadata.getRegisteredTemplate().getProperties());
         this.propertyExpressionResolver = propertyExpressionResolver;
         this.propertyDescriptorTransform = propertyDescriptorTransform;
     }
@@ -213,6 +215,7 @@ public class CreateFeedBuilder {
                     ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity),
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
+
 
                     List<NifiProperty> updatedControllerServiceProperties = new ArrayList<>();
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
@@ -616,6 +619,10 @@ public class CreateFeedBuilder {
             input.getConfig().setSchedulingPeriod(schedule);
             input.getConfig().setSchedulingStrategy(strategy);
             input.getConfig().setConcurrentlySchedulableTaskCount(feedSchedule.getConcurrentTasks());
+            //clear the properties before updating the schedule
+            if(input.getConfig().getProperties() != null) {
+                input.getConfig().getProperties().clear();
+            }
             try {
                 restClient.updateProcessor(input);
             } catch (Exception e) {
