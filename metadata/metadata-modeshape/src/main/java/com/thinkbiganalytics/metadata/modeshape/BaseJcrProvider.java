@@ -258,13 +258,12 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return findCount(null);
     }
 
-    public int findCount(String whereClause) {
+    public int findCount(String filter) {
         StringBuilder bldr = startBaseQuery("[mode:id]");
         int count = 0;
         
-        if (whereClause != null) {
-            bldr.append(whereClause);
-        }
+        appendJoins(bldr, filter);
+        appendFilter(bldr, filter);
         
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), bldr.toString());
@@ -341,7 +340,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     
     @Override
     public Page<T> findPage(Pageable pageable, String filter) {
-        int count = findCount();
+        int count = findCount(filter);
         
         if (count > 0) {
             StringBuilder bldr = startBaseQuery();
@@ -439,8 +438,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return StringEscapeUtils.escapeJava(title);
     }
     
-    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
+    protected void appendJoins(StringBuilder bldr, String filter) {
         // No joins by default.  Subclasses should override to add any joins needed for sorting and/or filtering.
+    }
+    
+    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
+        // By default, only adds the joins for the filter.
+        // Subclasses should override to add any joins needed for sorting and/or filtering.
+        appendJoins(bldr, filter);
     }
 
     protected void appendFilter(StringBuilder bldr, String filter) {

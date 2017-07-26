@@ -730,16 +730,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
     
     @Override
-    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
-        List<String> sortProps = new ArrayList<>();
-        pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
-        
+    protected void appendJoins(StringBuilder bldr, String filter) {
         if (! Strings.isNullOrEmpty(filter)) {
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
             bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
             bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
             bldr.append("JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) ");
 //            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
+        }
+    }
+    
+    @Override
+    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
+        List<String> sortProps = new ArrayList<>();
+        pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
+        
+        if (! Strings.isNullOrEmpty(filter)) {
+            appendJoins(bldr, filter);
         } else if (sortProps.contains(SORT_FEED_NAME)) {
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
         } else if (sortProps.contains(SORT_CATEGORY_NAME)) {
