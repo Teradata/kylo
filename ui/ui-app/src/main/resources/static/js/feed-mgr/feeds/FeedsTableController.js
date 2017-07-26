@@ -111,7 +111,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             }
 
         	var limit = PaginationDataService.rowsPerPage(self.pageName);
-        	var start = (limit * self.currentPage) - limit;
+        	var start = limit == 'All' ? 0 : (limit * self.currentPage) - limit;
         	var sort = self.paginationData.sort;
         	var filter = self.paginationData.filter;
             var params = {start: start, limit: limit, sort: sort, filter: filter};

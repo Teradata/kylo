@@ -68,6 +68,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.directory.api.util.Strings;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
@@ -341,14 +342,18 @@ public class FeedRestController {
     public SearchResult getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
                                  @QueryParam("sort") @DefaultValue("feedName") String sort,
                                  @QueryParam("filter") String filter,
-                                 @QueryParam("limit") Integer limit,
+                                 @QueryParam("limit") String limit,
                                  @QueryParam("start") @DefaultValue("0") Integer start) {
 
-        int size = limit != null ? limit : MAX_LIMIT;
-        Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, 
-                                                              pageRequest(start, size, sort), 
-                                                              filter != null ? filter.trim() : null);
-        return this.feedModelTransform.toSearchResult(page);   
+        try {
+            int size = Strings.isEmpty(limit) || limit.equalsIgnoreCase("all") ? MAX_LIMIT : Integer.parseInt(limit);
+            Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, 
+                                                                  pageRequest(start, size, sort), 
+                                                                  filter != null ? filter.trim() : null);
+            return this.feedModelTransform.toSearchResult(page);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("The value of limit must be an integer or \"all\"");
+        }   
     }
 
     @GET

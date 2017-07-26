@@ -147,7 +147,7 @@ public class FeedModelTransform {
     /**
      * Convert a spring-data Page to a SearchResult UI object
      */
-    public static SearchResult toSearchResult(Page<UIFeed> page) {
+    public SearchResult toSearchResult(Page<UIFeed> page) {
         SearchResult searchResult = new SearchResultImpl();
         searchResult.setData(page.getContent());
         searchResult.setRecordsTotal(page.getTotalElements());
