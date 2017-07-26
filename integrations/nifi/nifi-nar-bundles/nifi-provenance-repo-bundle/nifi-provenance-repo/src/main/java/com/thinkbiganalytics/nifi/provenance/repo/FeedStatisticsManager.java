@@ -24,6 +24,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -136,7 +137,7 @@ public class FeedStatisticsManager {
                     AggregatedProcessorStatistics
                         processorStatistics =
                         feedProcessorStatistics.getProcessorStats()
-                            .computeIfAbsent(feedStatistics.getProcessorId(), processorId -> new AggregatedProcessorStatistics(feedStatistics.getProcessorId(), null, collectionId));
+                            .computeIfAbsent(feedStatistics.getProcessorId(), processorId -> new AggregatedProcessorStatisticsV2(feedStatistics.getProcessorId(), null, collectionId));
 
                     //accumulate the stats together into the processorStatistics object grouped by source connection id
                     feedStatistics.getStats().stream().forEach(stats -> {

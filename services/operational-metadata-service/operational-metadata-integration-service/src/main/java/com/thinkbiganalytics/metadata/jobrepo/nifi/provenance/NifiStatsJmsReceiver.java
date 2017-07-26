@@ -31,7 +31,9 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -86,7 +88,9 @@ public class NifiStatsJmsReceiver {
                 for (NifiFeedProcessorStats stat : summaryStats) {
                     nifiEventStatisticsProvider.create(stat);
                 }
-                saveFeedStats(stats);
+                if(stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
+                    saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2)stats);
+                }
                 return summaryStats;
             }, MetadataAccess.SERVICE);
         } else {
@@ -99,7 +103,7 @@ public class NifiStatsJmsReceiver {
     /**
      * Save the running totals for the feed
      */
-    private List<NifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolder holder) {
+    private List<NifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder) {
         List<NifiFeedStats> statsToSave = new ArrayList<>();
         if (holder.getProcessorIdRunningFlows() != null) {
             holder.getProcessorIdRunningFlows().entrySet().stream().forEach(e -> {
@@ -185,7 +189,9 @@ public class NifiStatsJmsReceiver {
         nifiFeedProcessorStats.setJobDuration(groupedStats.getJobDuration());
         nifiFeedProcessorStats.setMaxEventId(groupedStats.getMaxEventId());
         nifiFeedProcessorStats.setFailedCount(groupedStats.getProcessorsFailed());
-        nifiFeedProcessorStats.setLatestFlowFileId(groupedStats.getLatestFlowFileId());
+        if(groupedStats instanceof GroupedStatsV2) {
+            nifiFeedProcessorStats.setLatestFlowFileId(((GroupedStatsV2)groupedStats).getLatestFlowFileId());
+        }
         if (provenanceEventFeedUtil.isFailure(groupedStats.getSourceConnectionIdentifier())) {
             nifiFeedProcessorStats.setFailedCount(groupedStats.getTotalCount() + groupedStats.getProcessorsFailed());
         }

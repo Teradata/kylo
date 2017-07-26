@@ -43,7 +43,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
     DateTime maxTime;
     String collectionId;
     AtomicLong eventCount = new AtomicLong(0L);
-    Map<String,Long> processorIdRunningFlows = new HashMap<>();
     /**
      * Map of Starting processorId and stats related to it
      */
@@ -82,14 +81,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         if(stats != null){
             this.feedStatistics =    stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
         }
-    }
-
-    public Map<String, Long> getProcessorIdRunningFlows() {
-        return processorIdRunningFlows;
-    }
-
-    public void setProcessorIdRunningFlows(Map<String, Long> processorIdRunningFlows) {
-        this.processorIdRunningFlows = processorIdRunningFlows;
     }
 
     public String getCollectionId() {

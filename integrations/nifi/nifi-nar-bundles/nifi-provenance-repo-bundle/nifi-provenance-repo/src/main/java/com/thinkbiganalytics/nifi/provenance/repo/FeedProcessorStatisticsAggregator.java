@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -47,7 +48,9 @@ public class FeedProcessorStatisticsAggregator {
 
 
     public void add(GroupedStats stats, ProvenanceEventRecord event, Long eventId) {
-        stats.setLatestFlowFileId(event.getFlowFileUuid());
+        if(stats instanceof GroupedStatsV2) {
+            ((GroupedStatsV2)stats).setLatestFlowFileId(event.getFlowFileUuid());
+        }
         stats.addTotalCount(1L);
         stats.addBytesIn(event.getPreviousFileSize() != null ? event.getPreviousFileSize() : 0L);
         stats.addBytesOut(event.getFileSize());
@@ -110,8 +113,9 @@ public class FeedProcessorStatisticsAggregator {
         stats1.addJobDuration(stats2.getJobDuration());
         stats1.addJobsFailed(stats2.getJobsFailed());
         stats1.addSuccessfulJobDuration(stats2.getSuccessfulJobDuration());
-        if(stats1.getLatestFlowFileId() == null && stats2.getLatestFlowFileId() != null){
-            stats1.setLatestFlowFileId(stats2.getLatestFlowFileId());
+        if(stats1 instanceof GroupedStatsV2 && stats2 instanceof GroupedStatsV2)
+        if(((GroupedStatsV2) stats1).getLatestFlowFileId() == null && ((GroupedStatsV2) stats2).getLatestFlowFileId() != null){
+            ((GroupedStatsV2) stats1).setLatestFlowFileId(((GroupedStatsV2) stats2).getLatestFlowFileId());
         }
     }
 
