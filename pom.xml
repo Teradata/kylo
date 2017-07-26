@@ -26,7 +26,7 @@
     <plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
 
     <!-- dependencies -->
-    <activemq.version>5.13.1</activemq.version>
+    <activemq.version>5.15.0</activemq.version>
     <avro.version>1.7.7</avro.version>
     <spring.version>4.2.5.RELEASE</spring.version>
     <jersey.version>2.22.2</jersey.version>

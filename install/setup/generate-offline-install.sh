@@ -2,7 +2,7 @@
 
 cd /opt/kylo/setup
 
-wget https://archive.apache.org/dist/activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz -P ./activemq
+wget https://archive.apache.org/dist/activemq/5.15.0/apache-activemq-5.15.0-bin.tar.gz -P ./activemq
 
 # Modify to DEB file if necessary
 # wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.0/elasticsearch-2.3.0.deb -P ./elasticsearch/
