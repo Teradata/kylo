@@ -685,6 +685,13 @@ card-layout.card-full-width section:first-child {
   padding-bottom: 0;
 }
 
+/* IE 10+ */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .item-column-title {
+    padding-bottom: 20px;
+  }
+}
+
 .item-column:first-child {
   padding-left: 25px;
 }
@@ -720,6 +727,11 @@ card-layout.card-full-width section:first-child {
   min-height: 20px;
   vertical-align: bottom;
 }
+
+.overview .overview-row {
+  height: 80px;
+}
+
 
 /**
 Status styles

@@ -21,8 +21,8 @@ package com.thinkbiganalytics.jobrepo.query.model.transform;
  */
 
 import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResultImpl;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 
 import org.joda.time.DateTime;
 import org.springframework.data.domain.Page;

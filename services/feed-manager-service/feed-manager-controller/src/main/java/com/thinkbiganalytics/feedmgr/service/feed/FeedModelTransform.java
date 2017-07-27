@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
@@ -44,9 +45,14 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -136,6 +142,17 @@ public class FeedModelTransform {
             }
         });
         int i = 0;
+    }
+
+    /**
+     * Convert a spring-data Page to a SearchResult UI object
+     */
+    public SearchResult toSearchResult(Page<UIFeed> page) {
+        SearchResult searchResult = new SearchResultImpl();
+        searchResult.setData(page.getContent());
+        searchResult.setRecordsTotal(page.getTotalElements());
+        searchResult.setRecordsFiltered(page.getTotalElements());
+        return searchResult;
     }
 
     /**
@@ -387,6 +404,21 @@ public class FeedModelTransform {
     @Nonnull
     public List<FeedSummary> domainToFeedSummary(@Nonnull final Collection<? extends Feed> domain) {
         return domain.stream().map(this::domainToFeedSummary).filter(feedSummary -> feedSummary != null).collect(Collectors.toList());
+    }
+    
+    /**
+     * Transforms the specified Metadata feeds to Feed Manager feed summaries.
+     *
+     * @param domain the Metadata feed
+     * @return the Feed Manager feed summaries
+     */
+    @Nonnull
+    public Page<UIFeed> domainToFeedSummary(@Nonnull final Page<Feed> domain, @Nonnull final Pageable pageable) {
+        List<UIFeed> summaries = domain.getContent().stream()
+                        .map(this::domainToFeedSummary)
+                        .filter(feedSummary -> feedSummary != null)
+                        .collect(Collectors.toList());
+        return new PageImpl<>(summaries, pageable, domain.getTotalElements());
     }
 
     /**

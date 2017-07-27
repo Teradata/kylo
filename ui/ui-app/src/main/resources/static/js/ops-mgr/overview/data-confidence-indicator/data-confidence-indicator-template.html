@@ -20,7 +20,7 @@
 <md-card layout-align="center center">
     <span class="card-title kpi-header">Data Confidence</span>
     <span class="md-caption kpi-subtitle ">Validates Data Integrity</span>
-    <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+    <md-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%;">
         <div ng-if="vm.dataLoaded">
             <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
