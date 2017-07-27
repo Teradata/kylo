@@ -1,5 +1,7 @@
 #!/bin/bash
 #########
+#  ActiveMQ requires Java 8 in the latest versions
+
 #  Example 1: ./install-activemq.sh /opt/activemq
 #  Example 2: ./install-activemq.sh /opt/activemq /tmp/offline-install -o
 #########
@@ -10,21 +12,21 @@ KYLO_SETUP_FOLDER=/opt/kylo/setup
 ACTIVEMQ_INSTALL_HOME=/opt/activemq
 ACTIVEMQ_USER=activemq
 ACTIVEMQ_GROUP=users
+ACTIVEMQ_JAVA_HOME=""
+ACTIVEMQ_INSTALL_VERSION=5.15.0
 
-if [ $# -eq 3 ]
+if [ $# -eq 4 ] || [ $# -eq 6 ]
 then
     echo "The active home folder is $1 "
     ACTIVEMQ_INSTALL_HOME=$1
     ACTIVEMQ_USER=$2
     ACTIVEMQ_GROUP=$3
-elif [ $# -eq 5 ] && ([ "$5" = "-o" ] || [ "$5" = "-O" ])
+    ACTIVEMQ_JAVA_HOME=$4
+elif [ $# -eq 6 ] && ([ "$6" = "-o" ] || [ "$6" = "-O" ])
 then
     echo "Working in offline mode"
     offline=true
-    ACTIVEMQ_INSTALL_HOME=$1
-    ACTIVEMQ_USER=$2
-    ACTIVEMQ_GROUP=$3
-    KYLO_SETUP_FOLDER=$4
+    KYLO_SETUP_FOLDER=$5
 else
     echo "Unknown arguments. The first argument should be the path to the activemq home folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
     exit 1
@@ -49,27 +51,35 @@ cd $ACTIVEMQ_INSTALL_HOME
 
 if [ $offline = true ]
 then
-    cp $KYLO_SETUP_FOLDER/activemq/apache-activemq-5.13.3-bin.tar.gz .
+    cp $KYLO_SETUP_FOLDER/activemq/apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz .
 else
     echo "Download activemq and install"
-    curl -O https://archive.apache.org/dist/activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
+    curl -O https://archive.apache.org/dist/activemq/$ACTIVEMQ_INSTALL_VERSION/apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz
 fi
 
-if ! [ -f apache-activemq-5.13.3-bin.tar.gz ]
+if ! [ -f apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz ]
 then
     echo "Installation file not found.. exiting"
     exit 1
 fi
 
-tar -xvf apache-activemq-5.13.3-bin.tar.gz
-rm -f apache-activemq-5.13.3-bin.tar.gz
-ln -s apache-activemq-5.13.3 current
+tar -xvf apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz
+rm -f apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz
+ln -s apache-activemq-$ACTIVEMQ_INSTALL_VERSION current
 
 echo "Installing as a service"
 # http://activemq.apache.org/unix-shell-script.html
 
 chown -R $ACTIVEMQ_USER:$ACTIVEMQ_GROUP $ACTIVEMQ_INSTALL_HOME
 cp $ACTIVEMQ_INSTALL_HOME/current/bin/env /etc/default/activemq
+
+if [ -z "$ACTIVEMQ_JAVA_HOME" ]
+then
+ echo "No Java home has been specified for ActiveMQ. Using the system Java home"
+else
+  sed -i "/\#\!\/bin\/sh/a export JAVA_HOME=$ACTIVEMQ_JAVA_HOME" /etc/default/activemq
+fi
+
 sed -i "~s|^ACTIVEMQ_USER=\"\"|ACTIVEMQ_USER=\"$ACTIVEMQ_USER\"|" /etc/default/activemq
 chmod 644 /etc/default/activemq
 ln -snf  $ACTIVEMQ_INSTALL_HOME/current/bin/activemq /etc/init.d/activemq

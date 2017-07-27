@@ -1,8 +1,11 @@
-package com.thinkbiganalytics.metadata.api;
+/**
+ * 
+ */
+package com.thinkbiganalytics.server.upgrade;
 
 /*-
  * #%L
- * thinkbig-metadata-api
+ * kylo-upgrade-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,30 +23,17 @@ package com.thinkbiganalytics.metadata.api;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 /**
+ *
  */
-public interface BaseProvider<T, PK extends Serializable> {
+public class KyloUpgradeApp {
 
-    T create(T t);
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        // TODO Auto-generated method stub
 
-    T findById(PK id);
-
-    List<T> findAll();
-    
-    Page<T> findPage(Pageable page, String filter);
-
-    T update(T t);
-
-    void delete(T t);
-
-    void deleteById(PK id);
-
-    PK resolveId(Serializable fid);
+    }
 
 }

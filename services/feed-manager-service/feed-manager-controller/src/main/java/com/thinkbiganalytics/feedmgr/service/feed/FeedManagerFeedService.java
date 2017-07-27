@@ -39,6 +39,9 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * Common Feed Manager actions
  */
@@ -96,6 +99,20 @@ public interface FeedManagerFeedService {
      */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
+    /**
+     * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
+     * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * <p>
+     * The sized of the returned list will not be greater than the limit parameter, and the first element 
+     * of the list will be the n'th feed in the list of all feeds as specified by the start parameter.
+     *
+     * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @param pageable describes the page requested
+     * @param filter TODO
+     * @return a list of feed objects
+     */
+    Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter);
+    
     /**
      * @return a list of feeds
      */

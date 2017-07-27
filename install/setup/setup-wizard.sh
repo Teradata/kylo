@@ -66,7 +66,19 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
         fi
     done
 fi
+echo " ";
+while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
+    echo "Please choose an option to configure Java for Kylo, ActiveMQ, and NiFi"
+    echo "1) I already have Java 8 or higher installed as the system Java and want to use that"
+    echo "2) Install Java 8 in the /opt/java folder for me and use that one"
+    echo "3) I have Java 8 or higher installed in another location already. I will provide the location"
+    echo "4) Java is already setup. No changes necessary"
+    read -p "> " java_type;
+done
 
+if [ "$java_type" == "3" ] ; then
+    read -p "Please enter the location to the JAVA_HOME: " java_home
+fi
 echo " ";
 while [[ ! $install_es =~ $yes_no ]]; do
     read -p "Would you like me to install a local elasticsearch instance? Please enter y/n: " install_es
@@ -124,19 +136,6 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
 
 done
 
-while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
-    echo "Please choose an option to configure Java"
-    echo "1) I already have Java 8 or higher installed as the system Java and want to use that"
-    echo "2) Install Java 8 in the /opt/java folder for me and use that one"
-    echo "3) I have Java 8 or higher installed in another location already. I will provide the location"
-    echo "4) Java is already setup. No changes necessary"
-    read -p "> " java_type;
-done
-
-if [ "$java_type" == "3" ] ; then
-    read -p "Please enter the location to the JAVA_HOME: " java_home
-fi
-
 if [ $offline = true ]
 then
     cd $current_dir
@@ -172,11 +171,18 @@ fi
 
 if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     echo "installing ActiveMQ"
+    ACTIVEMQ_JAVA_HOME=""
+    if [ "$java_type" == "2" ] ; then
+        ACTIVEMQ_JAVA_HOME=/opt/java/current
+    elif [ "$java_type" == "3" ] ; then
+        ACTIVEMQ_JAVA_HOME=$java_home
+    fi
+
     if [ $offline = true ]
     then
-        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $current_dir -O
+        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $ACTIVEMQ_JAVA_HOME $current_dir -O
     else
-        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group
+        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $ACTIVEMQ_JAVA_HOME
     fi
 
 fi

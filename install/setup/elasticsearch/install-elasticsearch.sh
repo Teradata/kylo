@@ -47,7 +47,7 @@ then
         rpm -ivh elasticsearch-2.3.0.rpm
     elif [ "$linux_type" == "update-rc.d" ]; then
         echo "Executing DEB"
-        rpm -ivh elasticsearch-2.3.0.deb
+        dpkg -i elasticsearch-2.3.0.deb
     fi
     cp $SETUP_FOLDER/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 else

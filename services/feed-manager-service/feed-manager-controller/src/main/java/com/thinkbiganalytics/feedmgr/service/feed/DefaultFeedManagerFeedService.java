@@ -20,6 +20,40 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * #L%
  */
 
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
@@ -88,40 +122,12 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
-
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerFeedService.class);
+    
+    private static final Pageable PAGE_ALL = new PageRequest(1, Integer.MAX_VALUE);
+    
     /**
      * Event listener for precondition events
      */
@@ -270,18 +276,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         });
 
     }
-
+    
     @Override
     public Collection<FeedMetadata> getFeeds() {
+        return getFeeds(PAGE_ALL, null).getContent();
+    }
+
+    public Page<FeedMetadata> getFeeds(Pageable pageable, String filter) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            Collection<FeedMetadata> feeds = null;
-            List<Feed> domainFeeds = feedProvider.findAll();
-            if (domainFeeds != null) {
-                feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-            }
-            return feeds;
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable, filter);
+            return domainFeeds.map(d -> feedModelTransform.domainToFeedMetadata(d));
         });
 
     }
@@ -295,21 +301,31 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
 
     }
-
+    
+    @Override
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter) {
+        if (verbose) {
+            return getFeeds(pageable, filter).map(UIFeed.class::cast);
+        } else {
+            return getFeedSummaryData(pageable, filter).map(UIFeed.class::cast);
+        }
+        
+    }
+    
     @Override
     public List<FeedSummary> getFeedSummaryData() {
+        return getFeedSummaryData(PAGE_ALL, null).getContent().stream()
+                        .map(FeedSummary.class::cast)
+                        .collect(Collectors.toList());
+    }
 
+    public Page<FeedSummary> getFeedSummaryData(Pageable pageable, String filter) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
-            List<FeedSummary> feeds = null;
-            Collection<? extends Feed> domainFeeds = feedProvider.findAll();
-            if (domainFeeds != null) {
-                feeds = feedModelTransform.domainToFeedSummary(domainFeeds);
-            }
-            return feeds;
+            Page<Feed> domainFeeds = feedProvider.findPage(pageable, filter);
+            return domainFeeds.map(d -> feedModelTransform.domainToFeedSummary(d));
         });
-
     }
 
     @Override

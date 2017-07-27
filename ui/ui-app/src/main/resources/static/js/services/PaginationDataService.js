@@ -12,7 +12,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 if(defaultRowsPerPage == undefined) {
                     defaultRowsPerPage = 5;
                 }
-                self.data[pageName] = {rowsPerPage: ''+defaultRowsPerPage, tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName}
+                self.data[pageName] = {rowsPerPage: ''+defaultRowsPerPage, tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName, total: 0}
             }
             if (tabName == undefined) {
                 tabName = pageName;
@@ -25,6 +25,10 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 self.data[pageName].tabs[tabName].currentPage = 1;
             }
             return self.data[pageName];
+        }
+
+        this.setTotal = function (pageName, total) {
+            self.paginationData(pageName).total = total;
         }
 
         /**

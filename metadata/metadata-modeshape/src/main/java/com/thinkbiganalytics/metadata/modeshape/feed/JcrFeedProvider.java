@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  */
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
@@ -82,11 +83,13 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.joda.time.DateTime;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,6 +110,23 @@ import javax.jcr.query.QueryResult;
  * A JCR provider for {@link Feed} objects.
  */
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
+    
+    private static final String SORT_FEED_NAME = "feedName";
+    private static final String SORT_STATE = "state";
+    private static final String SORT_CATEGORY_NAME = "category.name";
+    private static final String SORT_TEMPLATE_NAME = "templateName";
+    private static final String SORT_UPDATE_DATE = "updateDate";
+    
+    private static final Map<String, String> JCR_PROP_MAP;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put(SORT_FEED_NAME, "fs.[tba:systemName]");
+        map.put(SORT_STATE, "fd.[tba:state]");
+        map.put(SORT_CATEGORY_NAME, "c.[tba:systemName]");
+        map.put(SORT_TEMPLATE_NAME, "t.[jcr:title]");
+        map.put(SORT_UPDATE_DATE, "e.[jcr:lastModified]");
+        JCR_PROP_MAP = Collections.unmodifiableMap(map);
+    }
 
     @Inject
     private CategoryProvider categoryProvider;
@@ -707,6 +727,66 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
                 .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
         });
+    }
+    
+    @Override
+    protected void appendJoins(StringBuilder bldr, String filter) {
+        if (! Strings.isNullOrEmpty(filter)) {
+            bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
+            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
+            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
+            bldr.append("JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) ");
+//            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
+        }
+    }
+    
+    @Override
+    protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
+        List<String> sortProps = new ArrayList<>();
+        pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
+        
+        if (! Strings.isNullOrEmpty(filter)) {
+            appendJoins(bldr, filter);
+        } else if (sortProps.contains(SORT_FEED_NAME)) {
+            bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
+        } else if (sortProps.contains(SORT_CATEGORY_NAME)) {
+            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
+            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
+        } else if (sortProps.contains(SORT_TEMPLATE_NAME)) {
+            // NOTE: This join is not working - results in an empty result set
+            bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
+            bldr.append("JOIN [tba:feedDetails] AS fd ON ISCHILDNODE(fd, fs) ");
+            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
+        } else if (sortProps.contains(SORT_STATE)) {
+            bldr.append("JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) ");
+        }
+    }
+    
+    @Override
+    protected void appendFilter(StringBuilder bldr, String filter) {
+        String filterPattern = Strings.isNullOrEmpty(filter) ? null : "'%" + filter + "%'";
+        if (filterPattern != null) {
+            bldr.append("WHERE LOWER(").append(JCR_PROP_MAP.get(SORT_FEED_NAME)).append(") LIKE ").append(filterPattern);
+            bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_CATEGORY_NAME)).append(") LIKE ").append(filterPattern);
+            bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_STATE)).append(") LIKE ").append(filterPattern);
+//            bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_TEMPLATE_NAME)).append(") LIKE ").append(filterPattern);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#deriveJcrPropertyName(java.lang.String)
+     */
+    @Override
+    protected String deriveJcrPropertyName(String property) {
+        String jcrProp = JCR_PROP_MAP.get(property);
+        
+        if (jcrProp == null) {
+            throw new IllegalArgumentException("Unknown sort property: " + property);
+        } else if (jcrProp.length() == 0) {
+            return JCR_PROP_MAP.get("feedName");
+        } else {
+            return jcrProp;
+        }
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {

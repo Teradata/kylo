@@ -50,10 +50,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * In memory implementation
@@ -107,7 +113,18 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         } else {
             return getFeedSummaryData();
         }
-
+    }
+    
+    @Override
+    public Page<UIFeed> getFeeds(boolean verbose, Pageable pageable, String filter) {
+        Collection<? extends UIFeed> allFeeds = getFeeds(verbose);
+        List<UIFeed> pagedFeeds = getFeeds(verbose).stream()
+                        .skip(Math.max(pageable.getOffset() - 1, 0))
+                        .limit(pageable.getPageSize())
+                        .collect(Collectors.toList());
+        return new PageImpl<>(pagedFeeds, 
+                             new PageRequest(pageable.getOffset() / pageable.getPageSize(), pageable.getPageSize()), 
+                             allFeeds.size());
     }
 
     public List<FeedSummary> getFeedSummaryData() {

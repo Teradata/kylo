@@ -39,6 +39,7 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
@@ -55,6 +56,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -66,6 +68,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.directory.api.util.Strings;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
@@ -73,6 +76,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -137,18 +143,21 @@ public class FeedRestController {
     private static final int MAX_LIMIT = 1000;
     private static final String NAMES = "/names";
 
-    @Autowired
-    MetadataService metadataService;
+    @Inject
+    private MetadataService metadataService;
 
     //Profile needs hive service
-    @Autowired
-    HiveService hiveService;
-
-    @Autowired
-    FeedManagerPreconditionService feedManagerPreconditionService;
+    @Inject
+    private HiveService hiveService;
 
     @Inject
-    DatasourceService datasourceService;
+    private FeedManagerPreconditionService feedManagerPreconditionService;
+    
+    @Inject
+    private FeedModelTransform feedModelTransform;
+
+    @Inject
+    private DatasourceService datasourceService;
 
     @Inject
     private SecurityService securityService;
@@ -157,13 +166,13 @@ public class FeedRestController {
     private SecurityModelTransform actionsTransform;
 
     @Inject
-    ServiceLevelAgreementService serviceLevelAgreementService;
+    private ServiceLevelAgreementService serviceLevelAgreementService;
 
     @Inject
-    RegisteredTemplateService registeredTemplateService;
+    private RegisteredTemplateService registeredTemplateService;
 
     @Inject
-    AccessControlledEntityTransform accessControlledEntityTransform;
+    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private AccessController accessController;
@@ -330,9 +339,21 @@ public class FeedRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
     )
-    public Response getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
-        Collection<? extends UIFeed> feeds = getMetadataService().getFeeds(verbose);
-        return Response.ok(feeds).build();
+    public SearchResult getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose,
+                                 @QueryParam("sort") @DefaultValue("feedName") String sort,
+                                 @QueryParam("filter") String filter,
+                                 @QueryParam("limit") String limit,
+                                 @QueryParam("start") @DefaultValue("0") Integer start) {
+
+        try {
+            int size = Strings.isEmpty(limit) || limit.equalsIgnoreCase("all") ? MAX_LIMIT : Integer.parseInt(limit);
+            Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, 
+                                                                  pageRequest(start, size, sort), 
+                                                                  filter != null ? filter.trim() : null);
+            return this.feedModelTransform.toSearchResult(page);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("The value of limit must be an integer or \"all\"");
+        }   
     }
 
     @GET
@@ -828,6 +849,19 @@ public class FeedRestController {
             throw new InternalServerErrorException(err);
         }
         return Response.ok("").build();
+    }
+
+    private PageRequest pageRequest(Integer start, Integer limit, String sort) {
+        if (StringUtils.isNotBlank(sort)) {
+            Sort.Direction dir = Sort.Direction.ASC;
+            if (sort.startsWith("-")) {
+                dir = Sort.Direction.DESC;
+                sort = sort.substring(1);
+            }
+            return new PageRequest((start / limit), limit, dir, sort);
+        } else {
+            return new PageRequest((start / limit), limit);
+        }
     }
 }
 
