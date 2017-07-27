@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 public class CategoryDetails extends JcrPropertiesEntity {
     
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
+    public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
 
     /**
      * @param node

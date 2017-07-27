@@ -236,6 +236,7 @@
 [tba:categoryDetails] > tba:extensibleEntity, tba:propertied
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
+	+ tba:feedRoleMemberships (tba:roleMembership) sns
 	+ * (tba:feed) sns
 
 
