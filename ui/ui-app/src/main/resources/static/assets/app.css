@@ -685,10 +685,21 @@ card-layout.card-full-width section:first-child {
   padding-bottom: 0;
 }
 
+.data-processing .data-processing-divider {
+  margin-top: -10px;
+}
+
 /* IE 10+ */
 @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
   .item-column-title {
     padding-bottom: 20px;
+  }
+  .data-processing .data-processing-divider {
+    padding-top: 20px;
+  }
+  .data-processing .data-processing-row {
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 }
 

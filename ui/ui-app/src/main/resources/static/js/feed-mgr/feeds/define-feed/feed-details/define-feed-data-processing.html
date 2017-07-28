@@ -33,7 +33,7 @@
         </div>
 
       </header-section>
-      <body-section md-content>
+      <body-section md-content class="data-processing">
 
         <md-expansion-panel-group>
           <md-expansion-panel md-component-id="panelFieldPolicies">
@@ -89,14 +89,16 @@
                     </div>
                   </md-list-item>
                   <div layout="row" layout-fill flex>
-                    <span style="margin-top:-10px;" layout-fill flex>
+                    <span class="data-processing-divider" style="margin-top:-10px;" layout-fill flex>
                       <md-divider style="border-top-color:grey"></md-divider>
                     </span>
                   </div>
                   <div id="define-feed-data-processing-container">
                     <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
-                         ng-click="vm.onSelectedColumn($index)">
+                         ng-click="vm.onSelectedColumn($index)"
+                         class="data-processing-row"
+                    >
 
                       <div flex="30" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
