@@ -57,6 +57,10 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             }
         };
 
+        self.getIconColorStyle = function(iconColor) {
+            return {'fill':iconColor};
+        };
+
         // Load the list of categories
         if (CategoriesService.categories.length === 0) {
             CategoriesService.reload().then(self.onLoad);
