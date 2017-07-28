@@ -41,14 +41,15 @@
                                       md-rowspan="1"
                                       md-colspan="1"
                                       ng-click="selectColor(tile)"
-                                      style="background-color:{{tile.background}}; outline: none;cursor:pointer;">
+                                      ng-style="getBackgroundStyle(tile)"
+                                      style="outline: none;cursor:pointer;">
                         </md-grid-tile>
                     </md-grid-list>
                     </div>
                 </div>
-                <div layout="column"  flex>
+                <div layout="column"  >
                     <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Your icon</span>
-                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" style="fill:{{selectedColorTile.background}};padding-bottom:120px;padding-right:40px;"></ng-md-icon>
+                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" ng-style="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
                 </div>
             </div>
         </md-dialog-content>

@@ -38,6 +38,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
     function IconPickerDialog($scope, $mdDialog, $http, iconModel, RestUrlService) {
 
+        $scope.fillStyle = {'fill':'#90A4AE'};
         $scope.selectedIconTile = null;
         $scope.iconTiles = [];
         $scope.iconModel = iconModel;
@@ -55,11 +56,11 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 angular.forEach(icons, function (icon) {
                     var tile = {title: icon};
                     $scope.iconTiles.push(tile);
-                    if (iconModel.icon != null && iconModel.icon == icon) {
+                    if (iconModel.icon !== null && iconModel.icon === icon) {
                         $scope.selectedIconTile = tile;
                     }
-                    $scope.loadingIcons = false;
                 });
+                $scope.loadingIcons = false;
             });
         }
 
@@ -71,17 +72,17 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
                     var tile = {title: color.name, background: color.color};
                     $scope.colorTiles.push(tile);
-                    if (iconModel.iconColor != null && iconModel.iconColor == color.color) {
+                    if (iconModel.iconColor !== null && iconModel.iconColor === color.color) {
                         $scope.selectedColorTile = tile;
                     }
-                    $scope.loadingColors = false;
                 });
 
-                if ($scope.selectedColorTile == null) {
+                if ($scope.selectedColorTile === null) {
                     $scope.selectedColorTile = _.find($scope.colorTiles, function (c) {
-                        return c.title == 'Teal';
+                        return c.title === 'Teal';
                     })
                 }
+                $scope.loadingColors = false;
             });
         }
 
@@ -93,14 +94,18 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
         $scope.selectIcon = function(tile){
             $scope.selectedIconTile = tile;
-        }
+        };
         $scope.selectColor = function(tile){
             $scope.selectedColorTile = tile;
-        }
+            $scope.fillStyle = {'fill': tile.background };
+        };
+        $scope.getBackgroundStyle = function(tile){
+            return {'background-color': tile.background };
+        };
         $scope.save = function(){
-            var data = {icon:$scope.selectedIconTile.title, color:$scope.selectedColorTile.background}
+            var data = {icon:$scope.selectedIconTile.title, color:$scope.selectedColorTile.background};
             $mdDialog.hide(data);
-        }
+        };
 
         $scope.hide = function() {
             $mdDialog.hide();
@@ -111,7 +116,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         };
 
 
-    };
+    }
 
     angular.module(moduleName).controller('IconPickerDialog',["$scope","$mdDialog","$http","iconModel","RestUrlService",IconPickerDialog]);
 
