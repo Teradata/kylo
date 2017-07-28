@@ -87,7 +87,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
-java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
+java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/std.out 2>/var/log/kylo-ui/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
@@ -96,7 +96,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/std.out 2>/var/log/kylo-ui/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
@@ -227,7 +227,7 @@ then
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
-java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
+java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/std.out 2>/var/log/kylo-services/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
@@ -243,7 +243,7 @@ then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
-java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
+java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/std.out 2>/var/log/kylo-services/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
@@ -425,8 +425,8 @@ EOF
 fi
 
 cat << EOF >> /etc/init.d/kylo-spark-shell
-stdout_log="/var/log/kylo-services/kylo-spark-shell.log"
-stderr_log="/var/log/kylo-services/kylo-spark-shell.err"
+stdout_log="/var/log/kylo-spark-shell/std.out"
+stderr_log="/var/log/kylo-spark-shell/std.err"
 RUN_AS_USER=$INSTALL_USER
 
 start() {
@@ -490,6 +490,9 @@ elif [ "$linux_type" == "update-rc.d" ]; then
 fi
 echo "   - Added service 'kylo-spark-shell'"
 
+mkdir -p $rpmLogDir/kylo-spark-shell/
+echo "   - Created Log folder $rpmLogDir/kylo-spark-shell/"
+
 
 echo "    - Completed kylo-spark-shell install"
 
@@ -508,7 +511,7 @@ chmod +x $INSTALL_HOME/remove-kylo.sh
 
 chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
-chmod 744 $rpmLogDir/kylo*
+chmod 755 $rpmLogDir/kylo*
 
 chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
