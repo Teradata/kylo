@@ -43,7 +43,7 @@
                     <span class="md-subhead category-subheader">{{category.relatedFeeds}} Related Feeds</span>
                 </md-card-title-text>
                 <md-card-title-media>
-                    <ng-md-icon icon="{{category.icon}}" size="40" style="fill:{{category.iconColor}};margin-right:-20px;" class="md-media-xs"></ng-md-icon>
+                    <ng-md-icon icon="{{category.icon}}" size="40" ng-style="getIconColorStyle(category.iconColor)" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
                 </md-card-title-media>
             </md-card-title>
             <md-card-content>
