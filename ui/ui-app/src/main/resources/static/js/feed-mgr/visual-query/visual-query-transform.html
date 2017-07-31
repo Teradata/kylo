@@ -19,7 +19,7 @@
   -->
 <div layout="row" style="top:250px;">
   <div layout="column" layout-padding style="background-color:#ffffff" layout-fill>
-    <div layout="row" layout-fill layout-align="center center">
+    <div layout="row" layout-align="center center">
       <md-button class="md-raised " ng-click="vm.toggleFunctionHistory()">History<span ng-if="vm.functionHistory.length>0" style="padding-left:10px;">({{vm.functionHistory.length}})</span></md-button>
       <md-button class="md-raised" ng-click="vm.toggleSampleMenu()">Sample</md-button>
       <md-button class="md-raised" ng-click="vm.showProfileDialog()" ng-disabled="vm.executingQuery">Profile</md-button>
