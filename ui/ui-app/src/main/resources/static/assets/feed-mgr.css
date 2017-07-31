@@ -296,8 +296,7 @@ card-layout.visual-query-canvas section:first-child {
 
 .visual-query-auto-complete-centered {
   min-height: 200px;
-  height: 200px;
-
+  height: auto;
 }
 
 .visual-query-auto-complete-top {
