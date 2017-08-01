@@ -33,14 +33,14 @@
     <ng-form name="vm.defineFeedScheduleForm">
       <div layout-gt-sm="row">
 
-        <md-input-container class="md-block" flex-gt-sm>
+        <md-input-container class="md-block" flex>
           <label>Strategy</label>
           <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
             <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
           </md-select>
         </md-input-container>
 
-        <md-input-container class="md-block" flex-gt-sm ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
+        <md-input-container class="md-block" flex ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
           <label>Expression</label>
           <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression"
                  cron-expression-validator
@@ -58,13 +58,13 @@
           <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"
                                    ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.defineFeedScheduleForm.cronExpression.$valid"></cron-expression-preview>
         </md-input-container>
-        <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.model.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row">
-          <md-input-container class="md-block" flex-gt-sm>
+        <div flex ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.model.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row">
+          <md-input-container class="md-block" flex>
             <label>Run Schedule</label>
             <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
           </md-input-container>
 
-          <md-input-container class="md-block" flex-gt-sm>
+          <md-input-container class="md-block" flex >
             <label>Units</label>
             <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()" >
               <md-option value="days">Days</md-option>
@@ -77,7 +77,7 @@
 
       </div>
       <!--
-          <md-input-container class="md-block" flex-gt-sm>
+          <md-input-container class="md-block" >
               <label>Concurrent Tasks</label>
               <input type="number" ng-model="vm.model.schedule.concurrentTasks">
               </input>
