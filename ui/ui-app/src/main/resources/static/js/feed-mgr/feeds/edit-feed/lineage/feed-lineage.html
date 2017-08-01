@@ -20,8 +20,8 @@
 <div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left" style="margin-left:-10px;">
   <span flex></span>
      <span class="md-button-group" layout-align="end center" layout="row">
-        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Show Feeds</md-button>
-        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Show Feeds and Sources</md-button>
+        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Show Feeds</md-button>
+        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Show Feeds and Sources</md-button>
      </span>
 </div>
 
