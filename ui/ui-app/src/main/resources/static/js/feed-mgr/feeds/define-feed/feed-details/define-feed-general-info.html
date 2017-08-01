@@ -60,7 +60,7 @@
                             md-menu-class="autocomplete-categories-template">
                         <md-item-template>
                   <span class="item-title" ng-class="item.createFeed ? '' : 'disabled'">
-                       <ng-md-icon icon="{{item.icon}}" style="fill:{{item.iconColor}}" ng-if="item.createFeed"></ng-md-icon>
+                       <ng-md-icon icon="{{item.icon}}" ng-style="{'fill':item.iconColor}" ng-if="item.createFeed"></ng-md-icon>
                     <ng-md-icon icon="block" class="disabled" ng-if="!item.createFeed"></ng-md-icon>
                     <span> {{item.name}} </span>
                   </span>

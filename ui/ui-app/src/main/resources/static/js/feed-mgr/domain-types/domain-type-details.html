@@ -5,7 +5,7 @@
       <div layout="row" layout-align="center start">
         <div class="card-title">Domain Type Details</div>
         <span flex></span>
-        <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};padding-right:16px;" size="30"></ng-md-icon>
+        <ng-md-icon icon="{{vm.model.icon}}" ng-style="{'fill':vm.model.iconColor}" style="padding-right:16px;" size="30"></ng-md-icon>
       </div>
     </header-section>
     <body-section>
@@ -51,7 +51,7 @@
               <span flex="25" class="property-name">Icon</span>
 
               <div layout="column" style="height:45px">
-                <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
+                <ng-md-icon icon="{{vm.model.icon}}" ng-style="{'fill':vm.model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
               </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">

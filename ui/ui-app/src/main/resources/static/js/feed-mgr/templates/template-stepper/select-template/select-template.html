@@ -62,7 +62,7 @@
             <div class="card-title">Template</div>
             <div layout="column" class="layout-padding-top-bottom">
             <span class="item-title" ng-if="!vm.model.loading">
-                 <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs style="fill:{{vm.model.icon.color}}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
+                 <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs ng-style="{'fill':vm.model.icon.color}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
                  </ng-md-icon>
                 {{vm.model.templateName}}</span>
             </div>

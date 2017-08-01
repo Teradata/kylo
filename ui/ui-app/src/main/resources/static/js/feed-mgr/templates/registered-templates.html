@@ -43,7 +43,7 @@
                                            </span>
 
                                 <div layout="row" class="column-title column-title-bottom">
-                                  <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
+                                  <ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
                                   </ng-md-icon>
                                   <span>Template Name</span>
                                   <span ng-if="template.state == 'DISABLED'">DISABLED</span>
@@ -107,7 +107,7 @@
                         <tbody md-body>
                         <tr md-row ng-repeat="template in vm.registeredTemplates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"  >
                             <td md-cell ng-click="vm.templateDetails($event,feed)">
-                                <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
+                                <ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
                                 </ng-md-icon>
                                 {{template.templateName}}</td>
 

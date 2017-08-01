@@ -230,7 +230,7 @@
       <div ng-if="vm.importResult != null" class="layout-padding-indent layout-padding-top-bottom">
         <div layout="row">
           <ng-md-icon icon="{{vm.importResultIcon}}"
-                      style="fill:{{vm.importResultIconColor}}"></ng-md-icon>
+                      ng-style="{'fill':vm.importResultIconColor}"></ng-md-icon>
           <span style="padding-left:15px;">{{vm.message}}</span>
           <span flex></span>
         </div>

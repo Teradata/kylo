@@ -1,7 +1,7 @@
 <md-tab ng-disabled="step.disabled">
   <md-tab-label>
     <div class="{{step.type}} step-label">
-      <ng-md-icon nomorph md-icon icon="{{step.icon}}" size="{{step.iconSize}}" style="fill-rule:evenodd; fill:{{step.iconStyle}}"></ng-md-icon>
+      <ng-md-icon nomorph md-icon icon="{{step.icon}}" size="{{step.iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':step.iconStyle}"></ng-md-icon>
       {{title}}
     </div>
   </md-tab-label>
