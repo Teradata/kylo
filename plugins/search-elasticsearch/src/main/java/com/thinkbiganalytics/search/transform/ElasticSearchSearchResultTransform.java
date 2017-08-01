@@ -20,6 +20,7 @@ package com.thinkbiganalytics.search.transform;
  * #L%
  */
 
+import com.thinkbiganalytics.search.api.SearchIndex;
 import com.thinkbiganalytics.search.rest.model.CategoryMetadataSearchResultData;
 import com.thinkbiganalytics.search.rest.model.FeedMetadataSearchResultData;
 import com.thinkbiganalytics.search.rest.model.HiveColumn;
@@ -37,6 +38,7 @@ import org.elasticsearch.search.highlight.HighlightField;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ import java.util.Map;
  * Transform Elasticsearch result to REST model
  */
 public class ElasticSearchSearchResultTransform {
+
     private Long tableDataTypeResultCount = 0L;
     private Long schemaTypeResultCount = 0L;
     private Long feedsMetadataTypeResultCount = 0L;
@@ -62,7 +65,7 @@ public class ElasticSearchSearchResultTransform {
         for (SearchHit searchHit : searchResponse.getHits().getHits()) {
             if (searchHit.getIndex().equals(KYLO_DATA)) {
                 searchResultData.add(getTableSearchResultData(searchHit));
-            } else if (searchHit.getIndex().equals(KYLO_SCHEMA_METADATA)) {
+            } else if (searchHit.getIndex().equals(SearchIndex.DATASOURCES)) {
                 searchResultData.add(getSchemaSearchResultData(searchHit));
             } else if (searchHit.getIndex().contains(KYLO_FEEDS)) {
                 // This is dependent upon ModeShape configuration. The prefix will remain the same.
@@ -153,17 +156,17 @@ public class ElasticSearchSearchResultTransform {
 
         Map<String, Object> searchHitSourceMap = searchHit.sourceAsMap();
         SchemaSearchResultData schemaSearchResultData = new SchemaSearchResultData();
-        schemaSearchResultData.setDatabaseName(searchHitSourceMap.get(DATABASE_NAME).toString());
-        schemaSearchResultData.setDatabaseOwner(searchHitSourceMap.get(DATABASE_OWNER).toString());
-        schemaSearchResultData.setTableCreateTime(searchHitSourceMap.get(TABLE_CREATE_TIME).toString());
-        schemaSearchResultData.setTableName(searchHitSourceMap.get(TABLE_NAME).toString());
-        schemaSearchResultData.setTableType(searchHitSourceMap.get(TABLE_TYPE).toString());
+        schemaSearchResultData.setDatabaseName(searchHitSourceMap.getOrDefault(DATABASE_NAME, "").toString());
+        schemaSearchResultData.setDatabaseOwner(searchHitSourceMap.getOrDefault(DATABASE_OWNER, "").toString());
+        schemaSearchResultData.setTableCreateTime(searchHitSourceMap.getOrDefault(TABLE_CREATE_TIME, "").toString());
+        schemaSearchResultData.setTableName(searchHitSourceMap.getOrDefault(TABLE_NAME, "").toString());
+        schemaSearchResultData.setTableType(searchHitSourceMap.getOrDefault(TABLE_TYPE, "").toString());
 
         List<HiveColumn> hiveColumns = new ArrayList<>();
         List<Pair> highlightsList = new ArrayList<>();
 
         @SuppressWarnings("unchecked")
-        List<Map<String, String>> hiveColumnsListOfMaps = (ArrayList<Map<String, String>>) searchHitSourceMap.get(HIVE_COLUMNS);
+        List<Map<String, String>> hiveColumnsListOfMaps = (List<Map<String, String>>) searchHitSourceMap.getOrDefault(HIVE_COLUMNS, Collections.emptyList());
         for (Map<String, String> hiveColumnsMap : hiveColumnsListOfMaps) {
             String columnName = "";
             String columnType = "";

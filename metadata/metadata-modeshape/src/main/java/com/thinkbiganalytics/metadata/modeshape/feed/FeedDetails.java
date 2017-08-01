@@ -23,18 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -54,6 +42,18 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 
 /**
  *
@@ -321,11 +321,16 @@ public class FeedDetails extends JcrPropertiesEntity {
                 JcrVersionUtil.checkout(getParentSummary().getNode());
                 destinations.stream().forEach(dest -> {
                     try {
+                        // Remove the connection nodes
                         Node destNode = ((JcrFeedDestination) dest).getNode();
-                        ((JcrDatasource) ((JcrFeedDestination) dest).getDatasource()).removeDestinationNode(destNode);
+                        JcrDatasource datasource = (JcrDatasource) dest.getDatasource();
+                        datasource.removeDestinationNode(destNode);
                         destNode.remove();
 
-                        ((JcrFeedDestination) dest).getNode().remove();
+                        // Remove the datasource if there are no referencing feeds
+                        if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
+                            datasource.remove();
+                        }
                     } catch (RepositoryException e) {
                         e.printStackTrace();
                     }

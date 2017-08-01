@@ -23,12 +23,43 @@ package com.thinkbiganalytics.search.api;
 import com.thinkbiganalytics.search.rest.model.SearchResult;
 
 import java.io.Serializable;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 
 /**
- * Run a global search (via a search engine) and return results.
+ * Provides access to a search engine for global search and updating indexes.
  */
 public interface Search extends Serializable {
+
+    /**
+     * Deletes the specified item if it exists.
+     *
+     * @param indexName the name of the index
+     * @param typeName  the type of object
+     * @param id        the unique identifier for the object
+     */
+    void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id);
+
+    /**
+     * Commits any changes made to the specified index.
+     *
+     * @param indexName the name of the index
+     */
+    void commit(@Nonnull String indexName);
+
+    /**
+     * Indexes the specified object.
+     *
+     * <p>The index will be created if it does not already exist. If the object already exists then it will be replaced.</p>
+     *
+     * @param indexName the name of the index
+     * @param typeName  the type of object
+     * @param id        the unique identifier for the object
+     * @param fields    the properties of the object
+     */
+    void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields);
 
     /**
      * Execute a search

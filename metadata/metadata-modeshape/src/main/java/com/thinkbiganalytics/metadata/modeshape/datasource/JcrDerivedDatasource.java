@@ -22,12 +22,19 @@ package com.thinkbiganalytics.metadata.modeshape.datasource;
 
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrGenericJsonProperties;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 
 /**
@@ -43,6 +50,8 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
 
     @SuppressWarnings("unused")
     private static final String PATH_NAME = "derivedDatasource";
+
+    private static final String GENERIC_JSON_PROPERTIES = "tba:genericJsonProperties";
 
 
     public JcrDerivedDatasource(Node node) {
@@ -80,4 +89,27 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
         JcrPropertyUtil.setProperty(this.node, TYPE_NAME, type);
     }
 
+    @Nonnull
+    @Override
+    public Map<String, Object> getGenericProperties() {
+        return getGenericJsonPropertiesObject()
+            .map(JcrGenericJsonProperties::getProperties)
+            .orElse(Collections.emptyMap());
+    }
+
+    @Override
+    public void setGenericProperties(@Nonnull final Map<String, ? extends Serializable> properties) {
+        getGenericJsonPropertiesObject().ifPresent(object -> properties.forEach(object::setProperty));
+    }
+
+    /**
+     * Gets the generic JSON properties object.
+     */
+    private Optional<JcrGenericJsonProperties> getGenericJsonPropertiesObject() {
+        try {
+            return Optional.ofNullable(JcrUtil.getOrCreateNode(this.node, GENERIC_JSON_PROPERTIES, JcrGenericJsonProperties.NODE_TYPE, JcrGenericJsonProperties.class));
+        } catch (AccessControlException e) {
+            return Optional.empty();
+        }
+    }
 }

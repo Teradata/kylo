@@ -20,7 +20,9 @@ package com.thinkbiganalytics.search;
  * #L%
  */
 
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.search.api.Search;
+import com.thinkbiganalytics.search.api.SearchIndex;
 import com.thinkbiganalytics.search.config.SolrSearchClientConfiguration;
 import com.thinkbiganalytics.search.rest.model.SearchResult;
 import com.thinkbiganalytics.search.transform.SolrSearchResultTransform;
@@ -29,24 +31,58 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
  * Service to search Solr
  */
 public class SolrSearchService implements Search {
 
-    static Logger logger = LoggerFactory.getLogger(SolrSearchService.class);
+    static Logger log = LoggerFactory.getLogger(SolrSearchService.class);
 
     private SolrSearchClientConfiguration clientConfig;
     private HttpSolrClient client;
 
     public SolrSearchService(SolrSearchClientConfiguration config) {
         this.clientConfig = config;
-        logger.info("Search engine: Solr");
+        log.info("Search engine: Solr");
+    }
+
+    @Override
+    public void delete(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id) {
+        buildRestClient();
+        try {
+            client.deleteById(indexName, id);
+        } catch (final IOException | SolrServerException e) {
+            log.warn("Failed to delete document in index:{} with id:{}", indexName, id, e);
+        }
+    }
+
+    @Override
+    public void commit(@Nonnull final String indexName) {
+        buildRestClient();
+        try {
+            client.commit(indexName);
+        } catch (final IOException | SolrServerException e) {
+            log.warn("Failed to commit changes to index: {}", indexName, e);
+        }
+    }
+
+    @Override
+    public void index(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final Map<String, Object> fields) {
+        buildRestClient();
+        try {
+            client.add(indexName, createDocument(id, fields));
+        } catch (final IOException | SolrServerException e) {
+            log.warn("Failed to index document in index:{} with id:{}", indexName, id, e);
+        }
     }
 
     @Override
@@ -58,13 +94,24 @@ public class SolrSearchService implements Search {
 
     private void buildRestClient() {
         if (this.client == null) {
-            String urlString = "http://" + clientConfig.getHost() + ":" + clientConfig.getPort() + "/solr/" + "kylo-data";
+            String urlString = "http://" + clientConfig.getHost() + ":" + clientConfig.getPort() + "/solr/";
             client = new HttpSolrClient.Builder(urlString).build();
         }
     }
 
+    /**
+     * Creates a new Solr document to be indexed.
+     */
+    @Nonnull
+    private SolrInputDocument createDocument(@Nonnull final String id, @Nonnull final Map<String, Object> fields) {
+        final SolrInputDocument document = new SolrInputDocument();
+        document.setField("id", id);
+        fields.forEach((key, value) -> document.setField(key, (value instanceof String) ? value : ObjectMapperSerializer.serialize(value)));
+        return document;
+    }
+
     private QueryResponse executeSearch(String query, int size, int start) {
-        final String COLLECTION_LIST = "kylo-data,kylo-schema-metadata";    //Solr admin to configure beforehand
+        final String COLLECTION_LIST = "kylo-data," + SearchIndex.DATASOURCES;    //Solr admin to configure beforehand
         final String ALL_FIELDS = "*";
         final String BOLD_HIGHLIGHT_START = "<font style='font-weight:bold'>";
         final String BOLD_HIGHLIGHT_END = "</font>";
@@ -73,7 +120,7 @@ public class SolrSearchService implements Search {
         solrQuery.set("q", query);
         solrQuery.setRows(size);
         solrQuery.setStart(start);
-        solrQuery.setParam("collection",COLLECTION_LIST);
+        solrQuery.setParam("collection", COLLECTION_LIST);
         solrQuery.setHighlight(true);
         solrQuery.set("hl.fl", ALL_FIELDS);
         solrQuery.setHighlightSimplePre(BOLD_HIGHLIGHT_START);
@@ -81,9 +128,8 @@ public class SolrSearchService implements Search {
         solrQuery.setHighlightRequireFieldMatch(false);
 
         try {
-            return client.query(solrQuery);
-        }
-        catch (SolrServerException | IOException e) {
+            return client.query("kylo-data", solrQuery);
+        } catch (SolrServerException | IOException e) {
             throw new RuntimeException("Error encountered during search.");
         }
     }

@@ -26,7 +26,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -110,14 +109,15 @@ import javax.jcr.query.QueryResult;
  * A JCR provider for {@link Feed} objects.
  */
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
-    
+
     private static final String SORT_FEED_NAME = "feedName";
     private static final String SORT_STATE = "state";
     private static final String SORT_CATEGORY_NAME = "category.name";
     private static final String SORT_TEMPLATE_NAME = "templateName";
     private static final String SORT_UPDATE_DATE = "updateDate";
-    
+
     private static final Map<String, String> JCR_PROP_MAP;
+
     static {
         Map<String, String> map = new HashMap<>();
         map.put(SORT_FEED_NAME, "fs.[tba:systemName]");
@@ -154,7 +154,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -213,7 +213,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed update(Feed feed) {
 
-     //   feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+        //   feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
         return super.update(feed);
     }
 
@@ -335,7 +335,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 this.actionsProvider.getAvailableActions(AllowedActions.FEED)
                     .ifPresent(actions -> feed.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
             }
-            
+
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 
@@ -584,7 +584,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean enableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        if(accessController.isEntityAccessControlled()) {
+        if (accessController.isEntityAccessControlled()) {
             feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
         }
 
@@ -606,7 +606,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        if(accessController.isEntityAccessControlled()) {
+        if (accessController.isEntityAccessControlled()) {
             feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
         }
 
@@ -635,7 +635,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void delete(Feed feed) {
-        if(accessController.isEntityAccessControlled()) {
+        if (accessController.isEntityAccessControlled()) {
             feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
         }
 
@@ -646,12 +646,16 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.getDependentFeeds().forEach(dep -> feed.removeDependentFeed((JcrFeed) dep));
         JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
 
+        // Remove destinations and sources
+        ((JcrFeed) feed).removeFeedDestinations();
+        ((JcrFeed) feed).removeFeedSources();
+
         // Delete feed
         FeedManagerTemplate template = feed.getTemplate();
         if (template != null) {
             template.removeFeed(feed);
         }
-        
+
         // Remove all Ops access control entries
         this.opsAccessProvider.revokeAllAccess(feed.getId());
 
@@ -728,10 +732,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
         });
     }
-    
+
     @Override
     protected void appendJoins(StringBuilder bldr, String filter) {
-        if (! Strings.isNullOrEmpty(filter)) {
+        if (!Strings.isNullOrEmpty(filter)) {
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
             bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
             bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
@@ -763,7 +767,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             bldr.append("JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) ");
         }
     }
-    
+
     @Override
     protected void appendFilter(StringBuilder bldr, String filter) {
         String filterPattern = Strings.isNullOrEmpty(filter) ? null : "'%" + filter + "%'";
@@ -774,14 +778,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 //            bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_TEMPLATE_NAME)).append(") LIKE ").append(filterPattern);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#deriveJcrPropertyName(java.lang.String)
      */
     @Override
     protected String deriveJcrPropertyName(String property) {
         String jcrProp = JCR_PROP_MAP.get(property);
-        
+
         if (jcrProp == null) {
             throw new IllegalArgumentException("Unknown sort property: " + property);
         } else if (jcrProp.length() == 0) {

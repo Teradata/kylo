@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
@@ -36,6 +37,7 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.domaintype.JcrDomainTypeProvider;
@@ -43,16 +45,24 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityPro
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
+import com.thinkbiganalytics.metadata.modeshape.service.JcrIndexService;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
+import com.thinkbiganalytics.search.api.Search;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+
+import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
+import javax.jcr.observation.Event;
+import javax.jcr.observation.ObservationManager;
 
 /**
  *
@@ -163,5 +173,24 @@ public class MetadataJcrConfig {
     @Bean
     public DomainTypeProvider domainTypeProvider() {
         return new JcrDomainTypeProvider();
+    }
+
+    @Bean
+    @ConditionalOnBean(Search.class)
+    public JcrIndexService indexService(final Search search, final DatasourceProvider datasourceProvider, final MetadataAccess metadataAccess, final Repository repository) {
+        final JcrIndexService indexService = new JcrIndexService(search, datasourceProvider, metadataAccess);
+        try {
+            final ObservationManager observationManager = repository.login().getWorkspace().getObservationManager();
+            observationManager.addEventListener(indexService,
+                                                Event.NODE_ADDED | Event.NODE_REMOVED | Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED,
+                                                EntityUtil.pathForDerivedDatasource(),
+                                                true,
+                                                null,
+                                                null,
+                                                false);
+        } catch (final RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to register index service: " + e, e);
+        }
+        return indexService;
     }
 }

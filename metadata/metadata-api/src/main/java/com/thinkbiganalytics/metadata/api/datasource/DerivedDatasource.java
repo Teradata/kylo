@@ -20,8 +20,11 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #L%
  */
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
  */
@@ -39,4 +42,14 @@ public interface DerivedDatasource extends Datasource {
 
     String getDatasourceType();
 
+    /**
+     * Deserializes and returns the generic properties.
+     */
+    @Nonnull
+    Map<String, Object> getGenericProperties();
+
+    /**
+     * Serializes and sets the generic properties.
+     */
+    void setGenericProperties(@Nonnull Map<String, ? extends Serializable> properties);
 }

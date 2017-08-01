@@ -20,11 +20,13 @@ package com.thinkbiganalytics.feedmgr.service.feed.datasource;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -36,6 +38,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -231,6 +234,10 @@ public class DerivedDatasourceFactory {
                         datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
                                                                    new HashMap<String, Object>(identityStringPropertyResolution.getResolvedVariables()));
                     if (derivedDatasource != null) {
+                        if ("HiveDatasource".equals(derivedDatasource.getDatasourceType())
+                            && Optional.ofNullable(feedMetadata.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent()) {
+                            derivedDatasource.setGenericProperties(Collections.singletonMap("columns", (Serializable) feedMetadata.getTable().getTableSchema().getFields()));
+                        }
                         return derivedDatasource.getId();
                     }
                 }
@@ -243,7 +250,6 @@ public class DerivedDatasourceFactory {
 
 
         }, MetadataAccess.SERVICE);
-
 
     }
 

@@ -22,6 +22,11 @@
       <artifactId>kylo-search-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -46,6 +51,11 @@
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-lucene-index-provider</artifactId>
       <version>${solrsearchindexprovider.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
     </dependency>
 
   </dependencies>

@@ -20,6 +20,8 @@ package com.thinkbiganalytics.search.transform;
  * #L%
  */
 
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.search.api.SearchIndex;
 import com.thinkbiganalytics.search.rest.model.HiveColumn;
 import com.thinkbiganalytics.search.rest.model.Pair;
 import com.thinkbiganalytics.search.rest.model.SchemaSearchResultData;
@@ -36,6 +38,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Transform Solr result to REST model
@@ -49,7 +55,6 @@ public class SolrSearchResultTransform {
     public SearchResult transformResult(String query, int size, int start, QueryResponse solrResponse) {
         final String KYLO_COLLECTION = "kylo_collection";
         final String KYLO_DATA = "kylo-data";
-        final String KYLO_SCHEMA_METADATA = "kylo-schema-metadata";
         final String SOLR = "Solr";
 
         List<SearchResultData> searchResultData = new ArrayList<>();
@@ -64,7 +69,7 @@ public class SolrSearchResultTransform {
                 searchResultData.add(getTableSearchResultData(solrDocumentFieldValueMap, solrResponse));
             }
             //collection creator needs to set up the collection to have an additional field called 'kylo_collection' that is set to the collection's name
-            else if ((solrDocumentFieldValueMap.containsKey(KYLO_COLLECTION)) && (solrDocumentFieldValueMap.get(KYLO_COLLECTION).toString().equals(KYLO_SCHEMA_METADATA))) {
+            else if (Objects.equals(solrDocumentFieldValueMap.get(KYLO_COLLECTION), SearchIndex.DATASOURCES)) {
                 searchResultData.add(getSchemaSearchResultData(solrDocumentFieldValueMap, solrResponse));
             } else {
                 searchResultData.add(getUnknownTypeSearchResultData(solrDocumentFieldValueMap));
@@ -74,8 +79,8 @@ public class SolrSearchResultTransform {
         SearchResult solrSearchResult = new SearchResult();
         solrSearchResult.setQuery(query);
         solrSearchResult.setTotalHits(solrResponse.getResults().getNumFound());
-        solrSearchResult.setFrom((long)(start + 1));
-        solrSearchResult.setTo((long)(start + size));
+        solrSearchResult.setFrom((long) (start + 1));
+        solrSearchResult.setTo((long) (start + size));
 
         if (solrResponse.getResults().getNumFound() == 0) {
             solrSearchResult.setFrom(0L);
@@ -125,31 +130,24 @@ public class SolrSearchResultTransform {
 
     private SchemaSearchResultData getSchemaSearchResultData(Map<String, Object> solrDocumentFieldValueMap, QueryResponse solrResponse) {
         SchemaSearchResultData schemaSearchResultData = new SchemaSearchResultData();
-        schemaSearchResultData.setDatabaseName(solrDocumentFieldValueMap.get("databaseName").toString());
-        schemaSearchResultData.setDatabaseOwner(solrDocumentFieldValueMap.get("databaseOwner").toString());
-        schemaSearchResultData.setTableCreateTime(solrDocumentFieldValueMap.get("tableCreateTime").toString());
-        schemaSearchResultData.setTableName(solrDocumentFieldValueMap.get("tableName").toString());
-        schemaSearchResultData.setTableType(solrDocumentFieldValueMap.get("tableType").toString());
+        schemaSearchResultData.setDatabaseName(toString(solrDocumentFieldValueMap.get("databaseName")));
+        schemaSearchResultData.setDatabaseOwner(toString(solrDocumentFieldValueMap.get("databaseOwner")));
+        schemaSearchResultData.setTableCreateTime(toString(solrDocumentFieldValueMap.get("tableCreateTime")));
+        schemaSearchResultData.setTableName(toString(solrDocumentFieldValueMap.get("tableName")));
+        schemaSearchResultData.setTableType(toString(solrDocumentFieldValueMap.get("tableType")));
 
         List<HiveColumn> hiveColumns = new ArrayList<>();
         List<Pair> highlightsList = new ArrayList<>();
 
-        String columnName = "";
-        String columnType = "";
-        String columnComment = "";
         if (solrDocumentFieldValueMap.containsKey("columnName")) {
-            columnName = solrDocumentFieldValueMap.get("columnName").toString();
+            hiveColumns.add(new HiveColumn(toString(solrDocumentFieldValueMap.get("columnName")), toString(solrDocumentFieldValueMap.get("columnType")),
+                                           toString(solrDocumentFieldValueMap.get("columnComment"))));
+        } else if (solrDocumentFieldValueMap.containsKey("hiveColumns")) {
+            @SuppressWarnings("unchecked") final List<Map<String, Object>> columns = ObjectMapperSerializer.deserialize(toString(solrDocumentFieldValueMap.get("hiveColumns")), List.class);
+            columns.forEach(column -> {
+                hiveColumns.add(new HiveColumn(toString(column.get("columnName")), toString(column.get("columnType")), toString(column.get("columnComment"))));
+            });
         }
-
-        if (solrDocumentFieldValueMap.containsKey("columnType")) {
-            columnType = solrDocumentFieldValueMap.get("columnType").toString();
-        }
-
-        if (solrDocumentFieldValueMap.containsKey("columnComment")) {
-            columnComment = solrDocumentFieldValueMap.get("columnComment").toString();
-        }
-
-        hiveColumns.add(new HiveColumn(columnName, columnType, columnComment));
 
         for (Map.Entry<String, List<String>> entry : solrResponse.getHighlighting().get(solrDocumentFieldValueMap.get("id")).entrySet()) {
             String key = entry.getKey();
@@ -192,5 +190,26 @@ public class SolrSearchResultTransform {
         }
 
         return searchResultSummary;
+    }
+
+    /**
+     * Converts the specified object to a string.
+     */
+    @Nonnull
+    private String toString(@Nullable final Object value) {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof List) {
+            final List<?> list = (List<?>) value;
+            if (list.isEmpty()) {
+                return "";
+            }
+            if (list.size() == 1) {
+                return toString(list.get(0));
+            }
+            return list.toString();
+        }
+        return value.toString();
     }
 }

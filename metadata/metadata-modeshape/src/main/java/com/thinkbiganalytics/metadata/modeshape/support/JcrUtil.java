@@ -59,11 +59,10 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some 
- * methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
+ * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
  */
 public class JcrUtil {
-    
+
     private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
 
     /**
@@ -76,11 +75,11 @@ public class JcrUtil {
     public static Path path(String first, String... more) {
         return JcrPath.get(first, more);
     }
-    
+
     /**
      * Creates a path out of the arguments appropriate for JCR.
      *
-     * @param parent the parent node on whose path will be appended the additional elements
+     * @param parent   the parent node on whose path will be appended the additional elements
      * @param elements the remaining elements to form the path
      * @return a path string
      */
@@ -191,7 +190,7 @@ public class JcrUtil {
             .stream(getIterableChildren(parent, name).spliterator(), false)
             .collect(Collectors.toList());
     }
-    
+
     public static Node getRootNode(Session session) {
         try {
             return session.getRootNode();
@@ -202,7 +201,7 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to retrieve the root node", e);
         }
     }
-    
+
     public static boolean hasNode(Session session, String absPath) {
         try {
             if (absPath.startsWith("/")) {
@@ -273,7 +272,7 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to create the Node named " + name, e);
         }
     }
-    
+
     public static void removeNode(Node node) {
         try {
             node.remove();
@@ -332,9 +331,9 @@ public class JcrUtil {
             try {
                 return name != null ? parent.getNodes(name) : parent.getNodes();
             } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
+                log.debug("Access denied", e);
+                throw new AccessControlException(e.getMessage());
+            } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to retrieve the child nodes from:  " + parent, e);
             }
         };
@@ -452,7 +451,7 @@ public class JcrUtil {
         }
         return list;
     }
-    
+
     /**
      * Get a creates a Wrapper object around the given node
      */
@@ -597,17 +596,9 @@ public class JcrUtil {
 
 
     public static <T extends Serializable> void addGenericJson(Node parent, String nodeName, T object) {
-        try {
-            Node jsonNode = parent.addNode(nodeName, "tba:genericJson");
-
-            JcrPropertyUtil.setProperty(jsonNode, "tba:type", object.getClass().getName());
-            JcrPropertyUtil.setJsonObject(jsonNode, "tba:json", object);
-        } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add a generic JSON node to the parent node: " + parent, e);
-        }
+        final Node jsonNode = getOrCreateNode(parent, nodeName, "tba:genericJson");
+        JcrPropertyUtil.setProperty(jsonNode, "tba:type", object.getClass().getName());
+        JcrPropertyUtil.setJsonObject(jsonNode, "tba:json", object);
     }
 
     /**

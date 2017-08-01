@@ -171,6 +171,9 @@
 [tba:upgradable] mixin
  - * (UNDEFINED) multiple
 
+[tba:genericJsonProperties] > nt:hierarchyNode
+	+ * (tba:genericJson) COPY
+
 [tba:genericJson] > nt:hierarchyNode
     - tba:type (STRING)
     - tba:json (STRING)
@@ -291,6 +294,7 @@
     - tba:systemName (STRING) mandatory
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedDestinations (WEAKREFERENCE) multiple
+	+ tba:genericJsonProperties (tba:genericJsonProperties) COPY
 
 [tba:derivedDatasource] > tba:datasource
     - tba:datasourceType (STRING)
