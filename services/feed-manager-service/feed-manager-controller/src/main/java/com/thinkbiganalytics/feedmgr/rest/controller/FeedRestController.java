@@ -64,6 +64,7 @@ import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -582,17 +583,19 @@ public class FeedRestController {
                       @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
                       @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
                   })
-    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr, @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr, 
+                                       @QueryParam("inherited") @DefaultValue("true") boolean inherited,
+                                       @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
         if (!verbose) {
             return this.securityService.getFeedRoleMemberships(feedIdStr)
                 .map(m -> Response.ok(m).build())
                 .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
         } else {
-            Optional<Map<String, RoleMembership>> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
+            Optional<RoleMemberships> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
             if (memberships.isPresent()) {
-                List<EntityAccessRoleMembership>
-                    entityAccessRoleMemberships =
-                    memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
+                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().getAssigned().values().stream()
+                                .map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership))
+                                .collect(Collectors.toList());
                 return Response.ok(entityAccessRoleMemberships).build();
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND);

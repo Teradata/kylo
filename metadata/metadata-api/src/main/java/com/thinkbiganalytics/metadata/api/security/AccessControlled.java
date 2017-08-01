@@ -38,6 +38,10 @@ public interface AccessControlled {
     Set<RoleMembership> getRoleMemberships();
     
     Optional<RoleMembership> getRoleMembership(String roleName);
+    
+    Set<RoleMembership> getInheritedRoleMemberships();
+    
+    Optional<RoleMembership> getInheritedRoleMembership(String roleName);
 
     AllowedActions getAllowedActions();
 

@@ -38,10 +38,10 @@ import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.NodeEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.security.role.JcrRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -54,7 +54,7 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
     default Set<RoleMembership> getRoleMemberships() {
         JcrAllowedActions allowed = getJcrAllowedActions();
         
-        return JcrUtil.getPropertyObjectSet(getNode(), JcrRoleMembership.NODE_NAME, JcrRoleMembership.class, allowed).stream()
+        return JcrUtil.getPropertyObjectSet(getNode(), JcrAbstractRoleMembership.NODE_NAME, JcrEntityRoleMembership.class, allowed).stream()
                       .map(RoleMembership.class::cast)
                       .collect(Collectors.toSet());
     }
@@ -63,7 +63,19 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
     default Optional<RoleMembership> getRoleMembership(String roleName) {
         JcrAllowedActions allowed = getJcrAllowedActions();
         
-        return JcrRoleMembership.find(getNode(), roleName, allowed).map(RoleMembership.class::cast);
+        return JcrEntityRoleMembership.find(getNode(), roleName, JcrEntityRoleMembership.class, allowed).map(RoleMembership.class::cast);
+    }
+    
+    @Override
+    default Set<RoleMembership> getInheritedRoleMemberships() {
+        // By default there are no inherited memberships.
+        return Collections.emptySet();
+    }
+    
+    @Override
+    default Optional<RoleMembership> getInheritedRoleMembership(String roleName) {
+        // By default there are no inherited memberships.
+        return Optional.empty();
     }
     
     @Override
@@ -86,9 +98,9 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
         allowed.removeAccessControl(owner);
         
         if (roles.isEmpty()) {
-            JcrRoleMembership.removeAll(getNode());
+            JcrEntityRoleMembership.removeAll(getNode());
         } else {
-            roles.forEach(role -> JcrRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode()));
+            roles.forEach(role -> JcrEntityRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode()));
         }
     }
 
@@ -97,7 +109,7 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
         prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);
         
-        roles.forEach(role -> JcrRoleMembership.create(getNode(), ((JcrSecurityRole) role).getNode(), allowed));
+        roles.forEach(role -> JcrAbstractRoleMembership.create(getNode(), ((JcrSecurityRole) role).getNode(), JcrEntityRoleMembership.class, allowed));
     }
 
     Class<? extends JcrAllowedActions> getJcrAllowedActionsType();

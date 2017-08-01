@@ -25,12 +25,14 @@ import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -100,7 +102,13 @@ public interface Category extends AccessControlled {
 
     void setIconColor(String iconColor);
 
+    Set<RoleMembership> getFeedRoleMemberships();
+
+    Optional<RoleMembership> getFeedRoleMembership(String roleName);
+    
+    
     interface ID extends Serializable {
 
     }
+
 }

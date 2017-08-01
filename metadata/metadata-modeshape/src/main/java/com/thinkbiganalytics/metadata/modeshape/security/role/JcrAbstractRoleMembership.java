@@ -41,86 +41,65 @@ import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**
  *
  */
-public class JcrRoleMembership extends JcrObject implements RoleMembership {
-    
+public abstract class JcrAbstractRoleMembership extends JcrObject implements RoleMembership {
+
     private static final UsernamePrincipal[] NO_USERS = new UsernamePrincipal[0];
     private static final GroupPrincipal[] NO_GROUPS = new GroupPrincipal[0];
-
     public static final String NODE_NAME = "tba:roleMemberships";
     public static final String NODE_TYPE = "tba:roleMembership";
     public static final String ROLE = "tba:role";
     public static final String GROUPS = "tba:groups";
     public static final String USERS = "tba:users";
-    
-    private transient JcrAllowedActions allowedActions;
 
-    public static JcrRoleMembership create(Node parentNode, Node roleNode, JcrAllowedActions allowed) {
+    public static <M extends JcrAbstractRoleMembership> M create(Node parentNode, Node roleNode, Class<M> memberClass, Object... args) {
         // This is a no-op if the membership already exists in the SNS nodes
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
-                        .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, allowed))
+                        .map(node -> JcrUtil.getJcrObject(node, memberClass, args))
                         .filter(memshp -> memshp.getRole().getSystemName().equals(JcrUtil.getName(roleNode)))
                         .findFirst()
                         .orElseGet(() -> {
-                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, JcrRoleMembership.class, roleNode, allowed);
+                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, memberClass, roleNode, args);
                         });
     }
-    
+
     public static void remove(Node parentNode, Node roleNode) {
         JcrUtil.getNodeList(parentNode, NODE_NAME).forEach(node -> {
-            JcrRoleMembership membership = JcrUtil.getJcrObject(node, JcrRoleMembership.class, (JcrAllowedActions) null);
+            JcrEntityRoleMembership membership = JcrUtil.getJcrObject(node, JcrEntityRoleMembership.class, (JcrAllowedActions) null);
             
             if (membership.getRole().getSystemName().equals(JcrUtil.getName(roleNode))) {
                 JcrUtil.removeNode(node);
             }
         });
     }
-    
+
     public static void removeAll(Node parentNode) {
         JcrUtil.getNodeList(parentNode, NODE_NAME).forEach(node -> JcrUtil.removeNode(node));
     }
-    
-    public static Optional<JcrRoleMembership> find(Node parentNode, String roleName, JcrAllowedActions allowed) {
+
+    public static <M extends JcrAbstractRoleMembership> Optional<M> find(Node parentNode, String roleName, Class<M> memberClass, Object... args) {
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
-                        .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, allowed))
+                        .map(node -> JcrUtil.getJcrObject(node, memberClass, args))
                         .filter(memshp -> memshp.getRole().getSystemName().equals(roleName))
                         .findFirst();
     }
 
-    /**
-     * Wraps a parent node containing the tba:accessControlled mixin.
-     * @param node the parent entity node
-     */
-    public JcrRoleMembership(Node node, JcrAllowedActions allowed) {
-        super(node);
-        this.allowedActions = allowed;
-    }
     
-    /**
-     * Wraps a parent node containing the tba:accessControlled mixin.
-     * @param node the parent entity node
-     */
-    public JcrRoleMembership(Node node, Node roleNode, JcrAllowedActions allowed) {
+    public JcrAbstractRoleMembership(Node node) {
         super(node);
-        JcrPropertyUtil.setProperty(node, ROLE, roleNode);
-        this.allowedActions = allowed;
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#getRole()
-     */
+    
     @Override
     public SecurityRole getRole() {
         return JcrUtil.getReferencedObject(getNode(), ROLE, JcrSecurityRole.class);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#getMembers()
-     */
     @Override
     public Set<Principal> getMembers() {
         Stream<? extends Principal> groups = streamGroups();
@@ -128,9 +107,6 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
         return Stream.concat(groups, users).collect(Collectors.toSet());
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#setMemebers(com.thinkbiganalytics.security.UsernamePrincipal[])
-     */
     @Override
     public void setMemebers(UsernamePrincipal... principals) {
         Set<UsernamePrincipal> newMembers = Arrays.stream(principals).collect(Collectors.toSet());
@@ -145,9 +121,6 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
             .forEach(this::removeMember);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#setMemebers(com.thinkbiganalytics.security.GroupPrincipal[])
-     */
     @Override
     public void setMemebers(GroupPrincipal... principals) {
         Set<GroupPrincipal> newMembers = Arrays.stream(principals).collect(Collectors.toSet());
@@ -162,36 +135,24 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
             .forEach(this::removeMember);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#addMember(java.security.Principal)
-     */
     @Override
     public void addMember(GroupPrincipal principal) {
         JcrPropertyUtil.addToSetProperty(getNode(), GROUPS, principal.getName());
         enable(principal);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#addMember(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
     @Override
     public void addMember(UsernamePrincipal principal) {
         JcrPropertyUtil.addToSetProperty(getNode(), USERS, principal.getName());
         enable(principal);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#removeMember(java.security.Principal)
-     */
     @Override
     public void removeMember(GroupPrincipal principal) {
         disable(principal);
         JcrPropertyUtil.removeFromSetProperty(getNode(), GROUPS, principal.getName());
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.RoleMembership#removeMember(com.thinkbiganalytics.security.UsernamePrincipal)
-     */
     @Override
     public void removeMember(UsernamePrincipal principal) {
         disable(principal);
@@ -199,48 +160,65 @@ public class JcrRoleMembership extends JcrObject implements RoleMembership {
     }
 
     @Override
-        public void removeAllMembers() {
-            setMemebers(NO_USERS);
-            setMemebers(NO_GROUPS);
-        }
-
-    protected void enable(Principal principal) {
-        JcrAllowedActions roleAllowed = (JcrAllowedActions) getRole().getAllowedActions();
-        Set<Action> actions = roleAllowed.getAvailableActions().stream()
-                .flatMap(avail -> avail.stream())
-                .collect(Collectors.toSet());
-        
-        this.allowedActions.enable(principal, actions);
+    public void removeAllMembers() {
+        setMemebers(NO_USERS);
+        setMemebers(NO_GROUPS);
     }
 
-    protected void disable(Principal principal) {
+    
+    /**
+     * Enable any permissions for this principal after it was added as a role member of this RoleMembership.
+     * @param principal the added principal
+     */
+    protected abstract void enable(Principal principal);
+
+    /**
+     * Disable any permissions for this principal after it was removed as a role member of this RoleMembership.
+     * @param principal the removed principal
+     */
+    protected abstract void disable(Principal principal);
+
+    /**
+     * A convenience method for enabling permissions on the given AllowedActions for the added principal.
+     */
+    protected void enable(Principal principal, AllowedActions allowed) {
+        JcrAllowedActions roleAllowed = (JcrAllowedActions) getRole().getAllowedActions();
+        Set<Action> actions = roleAllowed.getAvailableActions().stream()
+                        .flatMap(avail -> avail.stream())
+                        .collect(Collectors.toSet());
+        
+        allowed.enable(principal, actions);
+    }
+
+    /**
+     * A convenience method for disabling permissions on the given AllowedActions for the removed principal.
+     */
+    protected void disable(Principal principal, Stream<RoleMembership> allMemberships, AllowedActions allowed) {
         SecurityRole thisRole = getRole();
         
         // Get all actions allowed by all other memberships of this principal besides this one.
-        Node parentNode = JcrUtil.getParent(getNode());
-        Set<AllowableAction> otherAllowables = JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
-                        .map(node -> JcrUtil.getJcrObject(node, JcrRoleMembership.class, (JcrAllowedActions) null))
+        Set<AllowableAction> otherAllowables = allMemberships
                         .filter(membership -> membership.getMembers().contains(principal))
                         .map(membership -> membership.getRole())
                         .filter(role -> ! role.getSystemName().equals(thisRole.getSystemName()))
                         .flatMap(role -> role.getAllowedActions().getAvailableActions().stream())
                         .flatMap(avail -> avail.stream())
                         .collect(Collectors.toSet());
-            
+        
         // Disable only the actions not permitted by any other role memberships for this principal
         Set<Action> disabled = thisRole.getAllowedActions().getAvailableActions().stream()
                         .flatMap(avail -> avail.stream())
                         .filter(action -> ! otherAllowables.contains(action))
                         .collect(Collectors.toSet());
         
-        this.allowedActions.disable(principal, disabled);
+        allowed.disable(principal, disabled);
     }
 
-    private Stream<UsernamePrincipal> streamUsers() {
+    protected Stream<UsernamePrincipal> streamUsers() {
         return JcrPropertyUtil.<String>getSetProperty(getNode(), USERS).stream().map(UsernamePrincipal::new);
     }
 
-    private Stream<GroupPrincipal> streamGroups() {
+    protected Stream<GroupPrincipal> streamGroups() {
         return JcrPropertyUtil.<String>getSetProperty(getNode(), GROUPS).stream().map(GroupPrincipal::new);
     }
 }

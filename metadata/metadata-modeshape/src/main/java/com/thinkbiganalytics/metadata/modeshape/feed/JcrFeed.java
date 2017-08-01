@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
@@ -437,6 +438,10 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     @Override
     public void setNifiProcessGroupId(String id) {
         getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
+    }
+    
+    public Set<RoleMembership> getInheritedRoleMemberships() {
+        return getCategory().getFeedRoleMemberships();
     }
 
     /* (non-Javadoc)

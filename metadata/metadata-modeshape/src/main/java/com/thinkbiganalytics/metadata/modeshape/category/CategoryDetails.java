@@ -26,7 +26,9 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -34,9 +36,13 @@ import javax.jcr.Node;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
@@ -46,7 +52,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 public class CategoryDetails extends JcrPropertiesEntity {
     
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
-    public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
+    public static final String FEED_ROLE_DEFAULTS = "tba:CategoryFeedRoleDefaults";
 
     /**
      * @param node
@@ -89,4 +95,15 @@ public class CategoryDetails extends JcrPropertiesEntity {
         }
     }
 
+    public Set<RoleMembership> getFeedRoleMemberships() {
+        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_DEFAULTS);
+        return JcrUtil.getPropertyObjectSet(defaultsNode, JcrAbstractRoleMembership.NODE_NAME, JcrFeedDefaultRoleMembership.class, this).stream()
+                        .map(RoleMembership.class::cast)
+                        .collect(Collectors.toSet());
+    }
+    
+    public Optional<RoleMembership> getFeedRoleMembership(String roleName) {
+        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_DEFAULTS);
+        return JcrEntityRoleMembership.find(defaultsNode, roleName, JcrFeedDefaultRoleMembership.class, this).map(RoleMembership.class::cast);
+    }
 }

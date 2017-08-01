@@ -41,6 +41,7 @@ import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 
 import java.security.Principal;
 import java.security.acl.Group;
@@ -110,8 +111,16 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<Map<String, RoleMembership>> getFeedRoleMemberships(String id) {
-        return getRoleMemberships(supplyFeedRoleMemberships(id));
+    public Optional<RoleMemberships> getFeedRoleMemberships(String id) {
+        RoleMemberships all = new RoleMemberships();
+        getRoleMemberships(supplyFeedRoleMemberships(id)).ifPresent(map -> all.setAssigned(map));
+        getRoleMemberships(supplyCategoryFeedRoleMemberships(id)).ifPresent(map -> all.setAssigned(map));
+        
+        if (all.getAssigned() != null || all.getAssigned() != null) {
+            return Optional.of(all);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -144,6 +153,22 @@ public class DefaultSecurityService implements SecurityService {
     @Override
     public synchronized Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change) {
         return changeRoleMemberships(change, supplyCategoryRoleMembership(id, change.getRoleName()));
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.security.SecurityService#getCategoryFeedRoleMemberships(java.lang.String)
+     */
+    @Override
+    public Optional<Map<String, RoleMembership>> getCategoryFeedRoleMemberships(String id) {
+        return getRoleMemberships(supplyCategoryFeedRoleMemberships(id));
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.security.SecurityService#changeCategoryFeedRoleMemberships(java.lang.String, com.thinkbiganalytics.security.rest.model.RoleMembershipChange)
+     */
+    @Override
+    public Optional<RoleMembership> changeCategoryFeedRoleMemberships(String id, RoleMembershipChange change) {
+        return changeRoleMemberships(change, supplyCategoryFeedRoleMembership(id, change.getRoleName()));
     }
 
     @Override
@@ -274,7 +299,7 @@ public class DefaultSecurityService implements SecurityService {
 
     private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyFeedRoleMembership(String id, String roleName) {
         return () -> {
-            return accessFeed(id).flatMap(t -> t.getRoleMembership(roleName));
+            return accessFeed(id).flatMap(f -> f.getRoleMembership(roleName));
         };
     }
 
@@ -292,7 +317,19 @@ public class DefaultSecurityService implements SecurityService {
 
     private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyCategoryRoleMembership(String id, String roleName) {
         return () -> {
-            return accessCategory(id).flatMap(t -> t.getRoleMembership(roleName));
+            return accessCategory(id).flatMap(c -> c.getRoleMembership(roleName));
+        };
+    }
+    
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyCategoryFeedRoleMemberships(String id) {
+        return () -> {
+            return accessCategory(id).map(Category::getFeedRoleMemberships);
+        };
+    }
+    
+    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyCategoryFeedRoleMembership(String id, String roleName) {
+        return () -> {
+            return accessCategory(id).flatMap(c -> c.getFeedRoleMembership(roleName));
         };
     }
 

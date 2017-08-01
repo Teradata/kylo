@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -217,6 +218,16 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     public void setIcon(String icon) {
         super.setProperty(ICON, icon);
+    }
+    
+    @Override
+    public Set<RoleMembership> getFeedRoleMemberships() {
+        return getDetails().map(d -> d.getFeedRoleMemberships()).orElse(null);
+    }
+    
+    @Override
+    public Optional<RoleMembership> getFeedRoleMembership(String roleName) {
+        return getDetails().map(d -> d.getFeedRoleMembership(roleName)).orElse(null);
     }
 
     @Override
