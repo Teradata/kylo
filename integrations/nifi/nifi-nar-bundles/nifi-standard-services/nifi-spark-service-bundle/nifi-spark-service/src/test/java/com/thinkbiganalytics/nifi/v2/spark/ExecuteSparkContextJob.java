@@ -32,11 +32,7 @@ public class ExecuteSparkContextJob implements Runnable {
     private boolean success = false;
 
 
-    public void run() {
-        success = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
-    }
-
-    public ExecuteSparkContextJob(String appName, String classPath, String contextName, String args, boolean async, JobService jobService){
+    public ExecuteSparkContextJob(String appName, String classPath, String contextName, String args, boolean async, JobService jobService) {
         this.jobService = jobService;
         this.appName = appName;
         this.classPath = classPath;
@@ -45,5 +41,11 @@ public class ExecuteSparkContextJob implements Runnable {
         this.async = async;
     }
 
-    public boolean jobSuccessfull() { return success; }
+    public void run() {
+        success = jobService.executeSparkContextJob(appName, classPath, contextName, args, async).success;
+    }
+
+    public boolean jobSuccessfull() {
+        return success;
+    }
 }

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 /**
- * This class is not thread safe. Thread saftey is handled in the controller service
+ * This class is not thread safe. Thread safety is handled in the controller service
  */
 class SparkContextState {
 

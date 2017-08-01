@@ -37,7 +37,8 @@ public class CreateSparkContext implements Runnable {
         jobService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
     }
 
-    public CreateSparkContext(String contextName, String numExecutors, String memPerNode, String numCPUCores, SparkContextType sparkContextType, int contextTimeout, boolean async, JobService jobService){
+    public CreateSparkContext(String contextName, String numExecutors, String memPerNode, String numCPUCores, SparkContextType sparkContextType, int contextTimeout, boolean async,
+                              JobService jobService) {
         this.jobService = jobService;
         this.contextName = contextName;
         this.numExecutors = numExecutors;

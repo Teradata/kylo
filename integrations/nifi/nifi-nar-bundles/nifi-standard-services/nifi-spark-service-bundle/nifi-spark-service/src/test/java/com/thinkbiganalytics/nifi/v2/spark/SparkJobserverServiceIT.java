@@ -161,7 +161,7 @@ public class SparkJobserverServiceIT {
         String contextName = "testContextTimeout";
         int contextTimeout = 1;
 
-        boolean created = sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
+        sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
         Thread.sleep(15000);
 
         boolean contextExists = sparkJobserverService.checkIfContextExists(contextName);
@@ -208,10 +208,10 @@ public class SparkJobserverServiceIT {
         String contextName = "testExecuteSparkContextJob";
 
         sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
-        boolean executed = sparkJobserverService.executeSparkContextJob(appName, classPath, contextName, args, async);
+        SparkJobResult executed = sparkJobserverService.executeSparkContextJob(appName, classPath, contextName, args, async);
         sparkJobserverService.deleteContext(contextName);
 
-        Assert.assertTrue(executed);
+        Assert.assertTrue(executed.success);
     }
 
     /**

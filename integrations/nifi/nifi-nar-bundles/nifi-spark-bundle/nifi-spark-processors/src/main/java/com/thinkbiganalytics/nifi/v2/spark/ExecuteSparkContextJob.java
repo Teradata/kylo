@@ -36,11 +36,8 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,19 +53,19 @@ import javax.annotation.Nonnull;
 @CapabilityDescription("Executes a spark job against a context")
 public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
 
-    private static final String sparkContextValue = "SPARK_CONTEXT";
-    private static final String sqlContextValue = "SQL_CONTEXT";
-    private static final String hiveContextValue = "HIVE_CONTEXT";
+    private static final String SPARK_CONTEXT_VALUE = "SPARK_CONTEXT";
+    private static final String SQL_CONTEXT_VALUE = "SQL_CONTEXT";
+    private static final String HIVE_CONTEXT_VALUE = "HIVE_CONTEXT";
 
-    public static final AllowableValue SPARK_CONTEXT = new AllowableValue(sparkContextValue, "Spark Context", "Creates a Standard Spark Context");
-    public static final AllowableValue SQL_CONTEXT = new AllowableValue(sqlContextValue, "SQL Context","Creates a Spark SQL Context");
-    public static final AllowableValue HIVE_CONTEXT = new AllowableValue(hiveContextValue,"Hive Context","Creates a Hive Context");
+    public static final AllowableValue SPARK_CONTEXT = new AllowableValue(SPARK_CONTEXT_VALUE, "Spark Context", "Creates a Standard Spark Context");
+    public static final AllowableValue SQL_CONTEXT = new AllowableValue(SQL_CONTEXT_VALUE, "SQL Context", "Creates a Spark SQL Context");
+    public static final AllowableValue HIVE_CONTEXT = new AllowableValue(HIVE_CONTEXT_VALUE, "Hive Context", "Creates a Hive Context");
 
-    public static final String flowFileAttributeValue = "FLOW_FILE_ATTRIBUTE";
-    public static final String flowFileContentsValue = "FLOW_FILE_CONTENTS";
+    public static final String FLOW_FILE_ATTRIBUTE_VALUE = "FLOW_FILE_ATTRIBUTE";
+    public static final String FLOW_FILE_CONTENTS_VALUE = "FLOW_FILE_CONTENTS";
 
-    public static final AllowableValue FLOW_FILE_ATTRIBUTE = new AllowableValue(flowFileAttributeValue, "Flow File Attribute","Stores Spark job result in flow file attribute $APP_NAME.result");
-    public static final AllowableValue FLOW_FILE_CONTENTS = new AllowableValue(flowFileContentsValue,"Flow File Contents","Stores Spark job result in flow file content");
+    public static final AllowableValue FLOW_FILE_ATTRIBUTE = new AllowableValue(FLOW_FILE_ATTRIBUTE_VALUE, "Flow File Attribute", "Stores Spark job result in flow file attribute $APP_NAME.result");
+    public static final AllowableValue FLOW_FILE_CONTENTS = new AllowableValue(FLOW_FILE_CONTENTS_VALUE, "Flow File Contents", "Stores Spark job result in flow file content");
 
 
     // Relationships
@@ -268,15 +265,10 @@ public class ExecuteSparkContextJob extends AbstractNiFiProcessor {
             final SparkJobResult result = jobService.executeSparkContextJob(appName, classPath, contextName, args, async);
 
             if (result.success) {
-                if (Objects.equals(resultsOutputLocation, flowFileAttributeValue)) {
+                if (Objects.equals(resultsOutputLocation, FLOW_FILE_ATTRIBUTE_VALUE)) {
                     outgoing = session.putAttribute(outgoing, appName + ".result", result.result);
                 } else {
-                    outgoing = session.write(outgoing, new OutputStreamCallback(){
-                        @Override
-                        public void process(OutputStream outputStream) throws IOException {
-                            IOUtils.write(result.result, outputStream, "UTF-8");
-                        }
-                    });
+                    outgoing = session.write(outgoing, outputStream -> IOUtils.write(result.result, outputStream, "UTF-8"));
                 }
                 session.transfer(outgoing, REL_SUCCESS);
             } else {

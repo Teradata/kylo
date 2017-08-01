@@ -21,7 +21,6 @@ package com.thinkbiganalytics.nifi.v2.spark;
  */
 
 import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
-import com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -41,19 +40,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SparkJobserverServiceTest {
@@ -76,7 +73,6 @@ public class SparkJobserverServiceTest {
     /**
      * Spark Jobserver service for testing
      */
-
     @Mock
     private ISparkJobServerClient client;
 
@@ -138,7 +134,8 @@ public class SparkJobserverServiceTest {
         Collection<ValidationResult> results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(1, results.size());
 
-        String expected = "'Spark Jobserver Service' validated against 'sparkJobServerService' is invalid because Controller Service is not valid: 'Jobserver URL' is invalid because Jobserver URL is required";
+        String expected = "'Spark Jobserver Service' validated against 'sparkJobServerService' is invalid because Controller Service is not valid: 'Jobserver URL' is invalid because Jobserver URL is"
+                          + " required";
         Assert.assertEquals(expected, Iterables.getOnlyElement(results).toString());
 
         // Test with valid properties
@@ -160,7 +157,7 @@ public class SparkJobserverServiceTest {
         // Test creating context
         String contextName = "testContextCreationAndDeletion";
 
-        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        when(client.createContext(anyString(), any())).thenReturn(true);
         boolean created = sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
         Assert.assertTrue(created);
 
@@ -177,7 +174,7 @@ public class SparkJobserverServiceTest {
         // Test creating context
         String contextName = "testDuplicateContextCreation";
 
-        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        when(client.createContext(anyString(), any())).thenReturn(true);
         CreateSparkContext createSparkContext1 = new CreateSparkContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
         Thread thread1 = new Thread(createSparkContext1);
 
@@ -190,7 +187,7 @@ public class SparkJobserverServiceTest {
         thread1.join();
         thread2.join();
 
-        when(client.getContexts()).thenReturn(Arrays.asList(contextName));
+        when(client.getContexts()).thenReturn(Collections.singletonList(contextName + "@" + sparkJobserverService.getUuid()));
         boolean contextExists = sparkJobserverService.checkIfContextExists(contextName);
 
         Assert.assertTrue(contextExists);
@@ -205,14 +202,12 @@ public class SparkJobserverServiceTest {
         String contextName = "testContextTimeout";
         int contextTimeout = 1;
 
-        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        when(client.createContext(anyString(), any())).thenReturn(true);
         sparkJobserverService.createContext(contextName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async);
-        when(client.getContexts()).thenReturn(Arrays.asList(contextName));
+        when(client.getContexts()).thenReturn(Collections.singletonList(contextName));
         when(client.deleteContext(contextName)).thenReturn(true);
 
-        Thread.sleep(15000);
-
-        when(client.getContexts()).thenReturn(new ArrayList<String>());
+        when(client.getContexts()).thenReturn(new ArrayList<>());
         boolean contextExists = sparkJobserverService.checkIfContextExists(contextName);
         Assert.assertFalse(contextExists);
     }
@@ -226,7 +221,7 @@ public class SparkJobserverServiceTest {
         String contextOneName = "testMultipleContextCreationOne";
         String contextTwoName = "testMultipleContextCreationTwo";
 
-        when(client.createContext(anyString(), anyMap())).thenReturn(true);
+        when(client.createContext(anyString(), any())).thenReturn(true);
 
         CreateSparkContext createSparkContext1 = new CreateSparkContext(contextOneName, numExecutors, memPerNode, numCPUCores, sparkContextType, contextTimeout, async, sparkJobserverService);
         Thread thread1 = new Thread(createSparkContext1);
@@ -240,7 +235,7 @@ public class SparkJobserverServiceTest {
         thread1.join();
         thread2.join();
 
-        when(client.getContexts()).thenReturn(Arrays.asList(contextOneName, contextTwoName));
+        when(client.getContexts()).thenReturn(Arrays.asList(contextOneName + "@" + sparkJobserverService.getUuid(), contextTwoName + "@" + sparkJobserverService.getUuid()));
 
         boolean contextOneExists = sparkJobserverService.checkIfContextExists(contextOneName);
         boolean contextTwoExists = sparkJobserverService.checkIfContextExists(contextTwoName);

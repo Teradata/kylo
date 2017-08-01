@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.nifi.v2.spark;
 
+import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
+import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
+import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
+
 import org.apache.nifi.annotation.behavior.Stateful;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
@@ -15,16 +19,13 @@ import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClient;
-import com.bluebreezecf.tools.sparkjobserver.api.ISparkJobServerClientConstants;
-import com.bluebreezecf.tools.sparkjobserver.api.SparkJobServerClientFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -105,19 +106,12 @@ public class SparkJobserverService extends AbstractControllerService implements 
     }
 
     /**
-     * Configures Spark Jobserver client by creating an instance of the
-     * {@link ISparkJobServerClient} based on configuration provided with
-     * {@link ConfigurationContext}.
-     * <p>
-     * This operation makes no guarantees that the actual connection could be
-     * made since the underlying system may still go off-line during normal
-     * operation of the service.
+     * Configures Spark Jobserver client by creating an instance of the {@link ISparkJobServerClient} based on configuration provided with {@link ConfigurationContext}. <p> This operation makes no
+     * guarantees that the actual connection could be made since the underlying system may still go off-line during normal operation of the service.
      *
-     * A Context Timeout task is also created to delete any contexts which have
-     * been inactive for some time.
+     * A Context Timeout task is also created to delete any contexts which have been inactive for some time.
      *
      * @param context the configuration context
-     * @throws InitializationException if unable to create a Spark Jobserver connection
      */
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) {
@@ -151,7 +145,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
 
         try {
             List<String> contexts = client.getContexts();
-            contextExists = client.getContexts().contains(getServerContextName(contextName));
+            contextExists = contexts.contains(getServerContextName(contextName));
 
             if (!contextExists) {
                 getLogger().info("Context {} not found on Spark Jobserver {}", new Object[]{getServerContextName(contextName), jobServerUrl});
@@ -231,6 +225,13 @@ public class SparkJobserverService extends AbstractControllerService implements 
         return contextDeleted;
     }
 
+    /**
+     * Gets the UUID for this controller service.
+     */
+    public UUID getUuid() {
+        return uuid;
+    }
+
     @Override
     public SparkJobResult executeSparkContextJob(String appName, String classPath, String contextName, String args, boolean async) {
 
@@ -243,7 +244,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
         }
 
         com.bluebreezecf.tools.sparkjobserver.api.SparkJobResult jobResult = null;
-        SparkJobResult result = null;
+        SparkJobResult result;
 
         try {
             getLogger().info("Executing Spark App {} {} on context {} with args {} on Spark Jobserver {}", new Object[]{appName, classPath, contextName, args, jobServerUrl});
@@ -276,7 +277,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
             }
         }
 
-        if (jobResult != null && jobResult.getStatus() != "ERROR") {
+        if (jobResult != null && !Objects.equals(jobResult.getStatus(), "ERROR")) {
             result = new SparkJobResult(true, jobResult.getResult());
         } else {
             result = new SparkJobResult(false, null);
@@ -299,7 +300,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
                         Map<String, SparkContextState> tempSparkContextsStates = new HashMap<>();
                         tempSparkContextsStates.putAll(sparkContextsStates);
                         if (!sparkContextsStates.isEmpty()) {
-                            for (SparkContextState sparkContextState: tempSparkContextsStates.values()) {
+                            for (SparkContextState sparkContextState : tempSparkContextsStates.values()) {
                                 if (!sparkContextState.isLocked() && sparkContextState.hasTimedOut()) {
                                     getLogger().info("Found context {} which timed out", new Object[]{sparkContextState.contextName});
                                     deleteContext(sparkContextState.contextName);
@@ -359,7 +360,8 @@ public class SparkJobserverService extends AbstractControllerService implements 
             } catch (Exception ex) {
                 getLogger().trace(ex.getMessage(), ex);
             }
-        };
+        }
+
         return newContext;
     }
 
@@ -409,5 +411,7 @@ public class SparkJobserverService extends AbstractControllerService implements 
      * @param contextName the name of the Spark Context
      * @return contextName@uuid
      */
-    private String getServerContextName(String contextName) { return String.format("%s@%s", contextName, uuid.toString()); }
+    private String getServerContextName(String contextName) {
+        return String.format("%s@%s", contextName, uuid.toString());
+    }
 }

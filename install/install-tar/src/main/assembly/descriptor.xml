@@ -459,6 +459,12 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-spark-service-bundle/nifi-spark-service-v1-nar/target/kylo-nifi-spark-service-v1-nar-${project.version}.nar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-standard-services-nar/target/kylo-nifi-standard-services-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
