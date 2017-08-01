@@ -739,13 +739,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 //            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
         }
     }
-    
+
     @Override
     protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
         List<String> sortProps = new ArrayList<>();
-        pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
-        
-        if (! Strings.isNullOrEmpty(filter)) {
+        if (pageable.getSort() != null) {
+            pageable.getSort().forEach(o -> sortProps.add(o.getProperty()));
+        }
+
+        if (!Strings.isNullOrEmpty(filter)) {
             appendJoins(bldr, filter);
         } else if (sortProps.contains(SORT_FEED_NAME)) {
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
