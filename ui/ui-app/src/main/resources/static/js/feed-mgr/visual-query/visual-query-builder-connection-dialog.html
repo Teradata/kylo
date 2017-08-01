@@ -28,8 +28,8 @@
                 </md-button>
             </div>
         </md-toolbar>
-        <md-dialog-content layout="column" layout-padding flex style="min-width:500px;" layout="column">
-                <div>
+        <md-dialog-content layout="column" layout-padding style="min-width:500px;">
+            <div>
                 <md-input-container class="md-block condensed">
                     <label>Connection Name</label>
                     <input name="connectionName"
@@ -38,8 +38,8 @@
                            ng-change="validate()"
                            ng-model="connectionDataModel.name" size="100"/>
                 </md-input-container>
-                </div>
-                 <div>
+            </div>
+            <div>
                     <md-input-container flex="30" class="md-block condensed">
                         <label>Join Type</label>
                         <md-select required ng-model="connectionDataModel.joinType" ng-change="validate()"  >
@@ -48,8 +48,8 @@
                             </md-option>
                         </md-select>
                     </md-input-container>
-                    <span flex></span>
-                </div>
+
+            </div>
             <div layout="row" class="layout-padding-top-bottom">
                 <md-input-container flex="30" class="md-block condensed">
                     <label>Source Key</label>

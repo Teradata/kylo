@@ -24,7 +24,7 @@
             <div layout="row" layout-align="center start">
                 <div class="card-title">Category Details</div>
                 <span flex></span>
-                <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}}; padding-right:16px;" size="30"></ng-md-icon>
+                <ng-md-icon icon="{{vm.model.icon}}" ng-style="vm.getIconColorStyle(vm.model.iconColor)" style="padding-right:16px;" size="30"></ng-md-icon>
             </div>
         </header-section>
         <body-section>

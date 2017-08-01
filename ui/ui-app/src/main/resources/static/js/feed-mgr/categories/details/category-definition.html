@@ -47,7 +47,7 @@
       <span flex="25" class="property-name">Icon</span>
 
       <div layout="column">
-        <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
+        <ng-md-icon icon="{{vm.model.icon}}" ng-style="vm.getIconColorStyle(vm.model.iconColor)" style="margin:inherit" size="45"></ng-md-icon>
       </div>
     </div>
   </readonly-section>
@@ -105,7 +105,7 @@
       <div layout="column">
         <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
           <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
-          <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit; fill:{{vm.editModel.iconColor}}"></ng-md-icon>
+          <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit;" ng-style="vm.getIconColorStyle(vm.editModel.iconColor)"></ng-md-icon>
           <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
         </div>
       </div>

@@ -23,6 +23,10 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                 function(newVal) {self.categories = newVal}
         );
 
+        $scope.getIconColorStyle = function(color) {
+            return {'fill':color};
+        };
+
         /**
          * Indicates that the category data is being loaded.
          * @type {boolean}

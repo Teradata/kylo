@@ -13,7 +13,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
                 var side = angular.element('md-sidenav');
                 side.css('z-index', 61);
-                tabsWrapper.css('position','fixed');
+                tabsWrapper.css('position','absolute');
                 //tabsWrapper.css('width','100%');
                 var width = angular.element('#content').width();
                 if(width == 0){

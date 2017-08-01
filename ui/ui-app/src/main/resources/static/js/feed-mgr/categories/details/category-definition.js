@@ -208,6 +208,9 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
                 });
         };
 
+        self.getIconColorStyle = function(iconColor) {
+            return  {'fill': iconColor};
+        };
 
         function checkAccessPermissions() {
             //Apply the entity access permissions

@@ -303,12 +303,8 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             var self = this;
 
             if ($scope.header !== header) {
-                this.$timeout_(function () {
-                    $scope.$apply(function () {
-                        $scope.header = header;
-                        $scope.table = self;
-                    });
-                }, 0);
+                $scope.header = header;
+                $scope.table = self;
             }
         },
 

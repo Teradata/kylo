@@ -114,7 +114,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.parent.parent.basedir}/services/service-app/src/main/config/rpm-build</directory>
+      <directory>${project.parent.parent.basedir}/services/service-app/src/main/config/deployment</directory>
       <outputDirectory>kylo-services/conf</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
@@ -381,7 +381,7 @@
       <fileMode>755</fileMode>
     </file>
     <file>
-      <source>${project.parent.parent.basedir}/ui/ui-app/src/main/config/rpm-build/log4j.properties</source>
+      <source>${project.parent.parent.basedir}/ui/ui-app/src/main/config/deployment/log4j.properties</source>
       <outputDirectory>kylo-ui/conf</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>
