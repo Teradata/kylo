@@ -42,9 +42,11 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -137,7 +139,6 @@ public class FeedEventStatistics implements Serializable {
      * Count of how many flow files are still processing for a given feedFlowFile execution
      */
     protected Map<String, AtomicInteger> feedFlowProcessing = new ConcurrentHashMap<>();
-
 
     /// Skipped detail tracking and failure counts
 
@@ -535,7 +536,10 @@ public class FeedEventStatistics implements Serializable {
     private void decrementRunningProcessorFeedFlows(String feedFlowFile){
         String feedProcessor = feedFlowFileIdToFeedProcessorId.get(feedFlowFile);
         if(feedProcessor != null){
-            feedProcessorRunningFeedFlows.get(feedProcessor).decrementAndGet();
+            AtomicLong runningCount = feedProcessorRunningFeedFlows.get(feedProcessor);
+            if( runningCount != null && runningCount.get() >=1) {
+                runningCount.decrementAndGet();
+            }
         }
     }
 
@@ -615,8 +619,6 @@ public class FeedEventStatistics implements Serializable {
                     eventsThatCompleteFeedFlow.add(eventId);
                     feedFlowFileEndTime.put(feedFlowFileId, event.getEventTime());
                     decrementRunningProcessorFeedFlows(feedFlowFileId);
-
-
                 }
 
             }

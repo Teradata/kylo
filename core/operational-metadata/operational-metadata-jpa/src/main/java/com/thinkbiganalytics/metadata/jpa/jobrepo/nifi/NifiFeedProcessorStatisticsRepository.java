@@ -35,7 +35,7 @@ import java.util.List;
  */
 public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats> {
 
-    @Query(value = "select stats from JpaNifiFeedProcessorStats as stats "
+    @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
                    + "where stats.minEventTime between :startTime and :endTime "
@@ -47,5 +47,27 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
 
     @Query(value = "select max(stats.maxEventId) from JpaNifiFeedProcessorStats as stats where stats.clusterNodeId = :clusterNodeId")
     Long findMaxEventId(@Param("clusterNodeId") String clusterNodeId);
+
+
+
+    @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + " and feed.name = :feedName "
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+                   + "where stats.minEventTime between :startTime and :endTime "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH
+                   + " and stats.errorMessages is not null ")
+    List<JpaNifiFeedProcessorStats> findWithErrorsWithinTime(@Param("feedName") String feedName, @Param("startTime") DateTime start, @Param("endTime") DateTime end);
+
+
+    @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + " and feed.name = :feedName"
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+                   + "where stats.minEventTime > :afterTimestamp "
+                   + "and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH
+                   + " and stats.errorMessages is not null ")
+    List<JpaNifiFeedProcessorStats> findWithErrorsAfterTime(@Param("feedName") String feedName,@Param("afterTimestamp")DateTime afterTimestamp);
+
 
 }

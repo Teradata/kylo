@@ -20,6 +20,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  * #L%
  */
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -40,7 +43,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(name = "NIFI_FEED_PROCESSOR_STATS")
-public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
+public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFeedProcessorErrors {
 
     @Column(name = "DURATION_MILLIS")
     protected Long duration = 0L;
@@ -122,6 +125,14 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
 
     @Column(name = "LATEST_FLOW_FILE_ID")
     private String latestFlowFileId;
+
+    @Column(name = "ERROR_MESSAGES")
+    private String errorMessages;
+
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+    @Column(name = "ERROR_MESSAGES_TIMESTAMP")
+    @QueryType(PropertyType.COMPARABLE)
+    private DateTime errorMessageTimestamp;
 
     @Transient
     private BigDecimal jobsStartedPerSecond;
@@ -408,6 +419,24 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
         this.latestFlowFileId = latestFlowFileId;
     }
 
+    @Override
+    public String getErrorMessages() {
+        return errorMessages;
+    }
+
+    public void setErrorMessages(String errorMessages) {
+        this.errorMessages = errorMessages;
+    }
+
+    @Override
+    public DateTime getErrorMessageTimestamp() {
+        return errorMessageTimestamp;
+    }
+
+    public void setErrorMessageTimestamp(DateTime errorMessageTimestamp) {
+        this.errorMessageTimestamp = errorMessageTimestamp;
+    }
+
     public BigDecimal getJobsStartedPerSecond() {
         return jobsStartedPerSecond;
     }
@@ -423,4 +452,6 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     public void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond) {
         this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
+
+
 }

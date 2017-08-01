@@ -89,12 +89,27 @@ public class NifiBulletinExceptionExtractor {
      * @return a list of bulletin objects that were posted by the component to the flow file
      * @throws NifiConnectionException if cannot query Nifi
      */
-    public List<BulletinDTO> getErrorBulletinsForFlowFiles(Collection<String> flowFileIds) throws NifiConnectionException {
+    public List<BulletinDTO> getErrorBulletinsForFlowFiles(Collection<String> flowFileIds)throws NifiConnectionException {
+        return getErrorBulletinsForFlowFiles(flowFileIds,-1L);
+    }
+
+    /**
+     * queries for bulletins from component, in the flow file
+     *
+     * @param flowFileIds The collection UUID of the flow file to extract the error message from
+     * @return a list of bulletin objects that were posted by the component to the flow file
+     * @throws NifiConnectionException if cannot query Nifi
+     */
+    public List<BulletinDTO> getErrorBulletinsForFlowFiles(Collection<String> flowFileIds, Long afterId) throws NifiConnectionException {
         List<BulletinDTO> bulletins;
         try {
             String regexPattern = flowFileIds.stream().collect(Collectors.joining("|"));
-
-            bulletins = nifiRestClient.getBulletinsMatchingMessage(regexPattern);
+            if(afterId != null && afterId !=-1L) {
+                bulletins = nifiRestClient.getBulletinsMatchingMessage(regexPattern, afterId);
+            }
+            else {
+                bulletins = nifiRestClient.getBulletinsMatchingMessage(regexPattern);
+            }
             log.info("Query for {} bulletins returned {} results ", regexPattern, bulletins.size());
             if (bulletins != null && !bulletins.isEmpty()) {
                 bulletins = bulletins.stream().filter(bulletinDTO -> bulletinErrorLevels.contains(bulletinDTO.getLevel().toUpperCase())).collect(Collectors.toList());
@@ -105,7 +120,53 @@ public class NifiBulletinExceptionExtractor {
             if (e instanceof NifiConnectionException) {
                 throw e;
             } else {
-                log.error("Error getProcessorBulletinsForFlowFiles ", flowFileIds);
+                log.error("Error getProcessorBulletinsForFlowFiles {}, {}",flowFileIds,e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * queries for bulletins from component, in the flow file
+     *
+     * @param processorIds The collection UUID of the flow file to extract the error message from
+     * @return a list of bulletin objects that were posted by the component to the flow file
+     * @throws NifiConnectionException if cannot query Nifi
+     */
+    public List<BulletinDTO> getErrorBulletinsForProcessorId(Collection<String> processorIds) throws NifiConnectionException {
+        return getErrorBulletinsForProcessorId(processorIds,null);
+    }
+
+    /**
+     * queries for bulletins from component, in the flow file
+     *
+     * @param processorIds The collection UUID of the flow file to extract the error message from
+     * @return a list of bulletin objects that were posted by the component to the flow file
+     * @throws NifiConnectionException if cannot query Nifi
+     */
+    public List<BulletinDTO> getErrorBulletinsForProcessorId(Collection<String> processorIds, Long afterId) throws NifiConnectionException {
+        List<BulletinDTO> bulletins;
+        try {
+            String regexPattern = processorIds.stream().collect(Collectors.joining("|"));
+            if(afterId != null && afterId !=-1L) {
+                bulletins = nifiRestClient.getBulletinsMatchingSource(regexPattern, afterId);
+            }
+            else {
+                bulletins = nifiRestClient.getBulletinsMatchingSource(regexPattern,null);
+            }
+
+            bulletins = nifiRestClient.getProcessorBulletins(regexPattern);
+            log.info("Query for {} bulletins returned {} results ", regexPattern, bulletins.size());
+            if (bulletins != null && !bulletins.isEmpty()) {
+                bulletins = bulletins.stream().filter(bulletinDTO -> bulletinErrorLevels.contains(bulletinDTO.getLevel().toUpperCase())).collect(Collectors.toList());
+            }
+
+            return bulletins;
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                log.error("Error getErrorBulletinsForProcessorId {} ,{}  ", processorIds,e.getMessage());
             }
         }
         return null;

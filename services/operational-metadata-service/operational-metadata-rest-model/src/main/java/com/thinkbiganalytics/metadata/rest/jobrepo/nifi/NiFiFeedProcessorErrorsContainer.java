@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 6/14/17.
  */
-public class NiFiFeedProcessorStatsContainer {
+public class NiFiFeedProcessorErrorsContainer {
 
     DateTime startTime;
 
@@ -37,16 +37,13 @@ public class NiFiFeedProcessorStatsContainer {
 
     NifiFeedProcessorStatisticsProvider.TimeFrame timeframe;
 
-    List<NifiFeedProcessorStats> stats;
+    List<NifiFeedProcessorStatsErrors> errors;
 
-
-    Long runningFlows = 0L;
-
-    public NiFiFeedProcessorStatsContainer() {
+    public NiFiFeedProcessorErrorsContainer() {
 
     }
 
-    public NiFiFeedProcessorStatsContainer( NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
+    public NiFiFeedProcessorErrorsContainer(NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.timeframe = timeframe;
         DateTime now = DateTime.now();
         startTime = timeframe.startTimeRelativeTo(now);;
@@ -78,19 +75,11 @@ public class NiFiFeedProcessorStatsContainer {
         this.endTime = endTime;
     }
 
-    public List<NifiFeedProcessorStats> getStats() {
-        return stats;
+    public List<NifiFeedProcessorStatsErrors> getErrors() {
+        return errors;
     }
 
-    public void setStats(List<NifiFeedProcessorStats> stats) {
-        this.stats = stats;
-    }
-
-    public Long getRunningFlows() {
-        return runningFlows;
-    }
-
-    public void setRunningFlows(Long runningFlows) {
-        this.runningFlows = runningFlows;
+    public void setErrors(List<NifiFeedProcessorStatsErrors> errors) {
+        this.errors = errors;
     }
 }

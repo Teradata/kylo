@@ -52,6 +52,7 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -168,6 +169,23 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
 
     @Nonnull
     @Override
+    public List<BulletinDTO> getBulletinsMatchingSource(@Nonnull final String sourceIdRegexPattern,Long after) {
+        Map<String,Object> params = null;
+        if(after != null){
+            params = ImmutableMap.of("sourceId", sourceIdRegexPattern,"after",after);
+        }
+        else {
+            params = ImmutableMap.of("sourceId", sourceIdRegexPattern);
+        }
+        return Optional.ofNullable(get("/flow/bulletin-board", params, BulletinBoardEntity.class))
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
+            .orElse(Collections.emptyList());
+    }
+
+    @Nonnull
+    @Override
     public List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern) {
         return Optional.ofNullable(get("/flow/bulletin-board", ImmutableMap.of("message", regexPattern), BulletinBoardEntity.class))
             .map(BulletinBoardEntity::getBulletinBoard)
@@ -175,6 +193,17 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
             .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
             .orElse(Collections.emptyList());
     }
+
+    @Nonnull
+    @Override
+    public List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern,Long afterId) {
+        return Optional.ofNullable(get("/flow/bulletin-board", ImmutableMap.of("message", regexPattern,"after",afterId), BulletinBoardEntity.class))
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
+            .orElse(Collections.emptyList());
+    }
+
 
     @Nonnull
     @Override

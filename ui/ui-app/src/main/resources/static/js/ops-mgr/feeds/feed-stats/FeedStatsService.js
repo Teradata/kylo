@@ -129,67 +129,85 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         var keepLastSummary = 20;
 
         var data = {
-            feedName:'',
-            timeFrame:'FIVE_MIN',
-            loadingProcessorStatistics:false,
-            processorStatistics:{
-                topN:3,
-                lastRefreshTime:'',
-                raw:{},
-                chartData:{
-                    chartFunction:'',
-                    total:0,
-                    totalFormatted:'',
-                    data:[]
+            feedName: '',
+            timeFrame: 'FIVE_MIN',
+            loadingProcessorStatistics: false,
+            processorStatistics: {
+                topN: 3,
+                lastRefreshTime: '',
+                raw: {},
+                chartData: {
+                    chartFunction: '',
+                    total: 0,
+                    totalFormatted: '',
+                    data: []
                 },
-                selectedChartFunction:'',
+                selectedChartFunction: '',
                 topNProcessorDurationData: []
             },
             summaryStatistics: {
-                lastRefreshTime:'',
-                time: {startTime:0,endTime:0,timeFrame:''},
-                flowsStartedPerSecond : 0,
-                flowsStarted :0,
-                flowsFinished : 0,
-                flowDuration : 0,
+                lastRefreshTime: '',
+                time: {startTime: 0, endTime: 0, timeFrame: ''},
+                flowsStartedPerSecond: 0,
+                flowsStarted: 0,
+                flowsFinished: 0,
+                flowDuration: 0,
                 flowsFailed: 0,
                 totalEvents: 0,
                 failedEvents: 0,
                 flowsSuccess: 0,
                 flowsRunning: 0,
-                avgFlowDuration:0
+                avgFlowDuration: 0
             },
-            loadingFeedTimeSeriesData:false,
+            loadingFeedTimeSeriesData: false,
             feedTimeSeries: {
-                lastRefreshTime:'',
-                time: {startTime:0,endTime:0,timeFrame:''},
+                lastRefreshTime: '',
+                time: {startTime: 0, endTime: 0, timeFrame: ''},
                 minTime: 0,
                 maxTime: 0,
-                raw:[],
-                chartData:[]
-
+                raw: [],
+                chartData: []
             },
-            lastSummaryStats:[],
-            setTimeFrame:function(timeFrame){
+            feedProcessorErrors: {
+                time: {startTime: 0, endTime: 0},
+                autoRefresh:true,
+                autoRefreshMessage:"enabled",
+                allData: [],
+                visibleData: [],
+                newErrorCount:0,
+                viewAllData:function(){
+                    var self = this;
+                    var index = this.visibleData.length;
+                    if(this.allData.length > index) {
+                        var rest = _.rest(this.allData,index);
+                        _.each(rest, function (item) {
+                            self.visibleData.push(item);
+                        });
+                        this.newErrorCount = 0;
+                    }
+                }
+            },
+            lastSummaryStats: [],
+            setTimeFrame: function (timeFrame) {
                 this.timeFrame = timeFrame;
             },
-            setFeedName:function (feedName) {
+            setFeedName: function (feedName) {
                 this.feedName = feedName;
             },
-            setSelectedChartFunction:function(selectedChartFunction) {
-                this.processorStatistics.selectedChartFunction  = selectedChartFunction
+            setSelectedChartFunction: function (selectedChartFunction) {
+                this.processorStatistics.selectedChartFunction = selectedChartFunction
             },
-            formatBytesToString:bytesToString,
+            formatBytesToString: bytesToString,
             processorStatsFunctionMap: processorStatsFunctionMap,
 
-            processorStatsFunctions:function() {
+            processorStatsFunctions: function () {
                 return Object.keys(processorStatsFunctionMap);
             },
-            averageDurationFunction:processorStatsFunctionMap[DEFAULT_CHART_FUNCTION],
-            isLoading: function(){
+            averageDurationFunction: processorStatsFunctionMap[DEFAULT_CHART_FUNCTION],
+            isLoading: function () {
                 return this.loadingProcessorStatistics || this.loadingFeedTimeSeriesData;
             },
-            fetchProcessorStatistics: function() {
+            fetchProcessorStatistics: function () {
                 var self = this;
                 this.loadingProcessorStatistics = true;
                 var deferred = $q.defer();
@@ -209,11 +227,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     var totalEvents = 0;
                     var failedEvents = 0;
                     var flowsSuccess = 0;
-                    var flowsRunning = 0;
                     var chartData = [];
                     var processorDuration = [];
 
-                    var chartDataCallbackFunction = function (key,p) {
+                    var chartDataCallbackFunction = function (key, p) {
                         flowsStarted += p.jobsStarted;
                         flowsFinished += p.jobsFinished;
                         flowDuration += p.jobDuration;
@@ -221,20 +238,18 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                         totalEvents += p.totalCount;
                         failedEvents += p.failedCount;
                         flowsSuccess = (flowsFinished - flowsFailed);
-                        flowsRunning = (flowsStarted - flowsFinished) < 0 ? 0 : (flowsStarted - flowsFinished);
                         var duration = processorStatsFunctionMap['Average Duration'].fn(p);
                         processorDuration.push({label: key, value: duration});
                     }
 
                     chartData = getChartData(processorStatsContainer, selectedChartFunction, chartDataCallbackFunction);
 
-                    var topNProcessorDurationData = _.sortBy(processorDuration,'value').reverse();
-                    topNProcessorDurationData = _.first(topNProcessorDurationData,self.processorStatistics.topN);
+                    var topNProcessorDurationData = _.sortBy(processorDuration, 'value').reverse();
+                    topNProcessorDurationData = _.first(topNProcessorDurationData, self.processorStatistics.topN);
 
                     var timeDiffMillis = processorStatsContainer.endTime - processorStatsContainer.startTime;
                     var secondsDiff = timeDiffMillis / 1000;
                     flowsStartedPerSecond = secondsDiff > 0 ? ((flowsStarted / secondsDiff)).toFixed(2) : 0;
-
 
                     self.processorStatistics.raw = processorStatsContainer;
                     var summary = self.summaryStatistics;
@@ -247,13 +262,12 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     summary.flowsFailed = flowsFailed;
                     summary.totalEvents = totalEvents;
                     summary.failedEvents = failedEvents;
-                    summary.flowsRunning = flowsRunning;
                     summary.flowsSuccess = flowsSuccess;
                     summary.flowsStartedPerSecond = flowsStartedPerSecond != 0 ? parseFloat(flowsStartedPerSecond) : flowsStartedPerSecond;
                     summary.avgFlowDurationMilis = parseInt(flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
                     summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
 
-                    summary.avgFlowDuration = summary.avgFlowDuration  != 0 ? parseFloat(summary.avgFlowDuration) : 0;
+                    summary.avgFlowDuration = summary.avgFlowDuration != 0 ? parseFloat(summary.avgFlowDuration) : 0;
 
                     self.processorStatistics.chartData = chartData;
 
@@ -263,14 +277,12 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     self.processorStatistics.lastRefreshTime = refreshTime;
                     summary.lastRefreshTime = refreshTime;
 
-
-
-                    var lastSummaryStats =angular.copy(self.summaryStatistics);
-                    if(self.lastSummaryStats.length >= keepLastSummary){
+                    var lastSummaryStats = angular.copy(self.summaryStatistics);
+                    if (self.lastSummaryStats.length >= keepLastSummary) {
                         self.lastSummaryStats.shift();
                     }
 
-                    self.lastSummaryStats.push({date:refreshTime, data:lastSummaryStats});
+                    self.lastSummaryStats.push({date: refreshTime, data: lastSummaryStats});
 
                     self.loadingProcessorStatistics = false;
                     deferred.resolve(self.processorStatistics);
@@ -284,12 +296,12 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 });
                 return deferred.promise;
             },
-            changeProcessorChartDataFunction:function(selectedChartFunction){
+            changeProcessorChartDataFunction: function (selectedChartFunction) {
                 var chartData = getChartData(this.processorStatistics.raw, selectedChartFunction);
                 this.processorStatistics.chartData = chartData;
                 return chartData;
             },
-            updateBarChartHeight:function(chartOptions,chartApi,rows,chartFunction){
+            updateBarChartHeight: function (chartOptions, chartApi, rows, chartFunction) {
                 var configMap = processorStatsFunctionMap[chartFunction];
 
                 chartOptions.chart.yAxis.axisLabel = configMap.axisLabel
@@ -308,18 +320,18 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                         return d3.format(',.2f')(d);
                     }
                 }
-                if(chartApi && chartApi.update) {
+                if (chartApi && chartApi.update) {
                     chartApi.update();
                 }
             },
-            buildProcessorDurationChartData:function(){
+            buildProcessorDurationChartData: function () {
                 var chartData = this.processorStatistics.chartData;
                 var values = chartData.data;
                 var data = [{key: "Processor", "color": "#F08C38", values: values}];
-                 return data;
+                return data;
 
             },
-            buildStatusPieChart:function(){
+            buildStatusPieChart: function () {
                 var self = this;
                 var statusPieChartData = [];
                 statusPieChartData.push({key: "Successful Flows", value: self.summaryStatistics.flowsSuccess})
@@ -328,7 +340,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 return statusPieChartData;
             },
 
-            buildEventsPieChart:function(){
+            buildEventsPieChart: function () {
                 var self = this;
                 var eventsPieChartData = [];
                 var success = self.summaryStatistics.totalEvents - self.summaryStatistics.failedEvents;
@@ -336,7 +348,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 eventsPieChartData.push({key: "Failed", value: self.summaryStatistics.failedEvents})
                 return eventsPieChartData;
             },
-            emptyFeedTimeSeriesObject:function(eventTime,feedName) {
+            emptyFeedTimeSeriesObject: function (eventTime, feedName) {
                 return {
                     "duration": 0,
                     "minEventTime": null,
@@ -368,20 +380,24 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 }
             },
 
-            fetchFeedTimeSeriesData:function() {
+            fetchFeedTimeSeriesData: function () {
                 var deferred = $q.defer();
                 var self = this;
-                this.loadingFeedTimeSeriesData =true;
+                this.loadingFeedTimeSeriesData = true;
                 $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.timeFrame)).then(function (response) {
 
                     var statsContainer = response.data;
-                    if(statsContainer.stats == null) {
+                    if (statsContainer.stats == null) {
                         statsContainer.stats = [];
                     }
 
                     var timeArr = _.map(statsContainer.stats, function (item) {
                         return item.maxEventTime
                     });
+
+
+                    self.summaryStatistics.flowsRunning = statsContainer.runningFlows;
+
                     self.feedTimeSeries.minTime = ArrayUtils.min(timeArr);
                     self.feedTimeSeries.maxTime = ArrayUtils.max(timeArr);
 
@@ -399,20 +415,47 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     deferred.reject(err)
                 });
                 return deferred.promise;
+            },
+            fetchFeedProcessorErrors: function (resetWindow) {
+                var deferred = $q.defer();
+                var self = this;
+                //reset the collection if we are looking for a new window
+                if(resetWindow){
+                    self.feedProcessorErrors.allData = [];
+                    self.feedProcessorErrors.visibleData = [];
+                    self.feedProcessorErrors.time.startTime = null;
+                    self.feedProcessorErrors.newErrorCount = 0;
+
+                }
+                $q.when(ProvenanceEventStatsService.getFeedProcessorErrors(self.feedName, self.timeFrame, self.feedProcessorErrors.time.endTime)).then(function (response) {
+
+
+                    var container = response.data;
+                    var addToVisible = self.feedProcessorErrors.autoRefresh || self.feedProcessorErrors.visibleData.length ==0;
+                    if (container != null && container.errors != null) {
+                        _.each(container.errors, function (error) {
+                            //append to errors list
+                            self.feedProcessorErrors.allData.push(error);
+                            if(addToVisible) {
+                                self.feedProcessorErrors.visibleData.push(error);
+                            }
+                        });
+                    }
+                    self.feedProcessorErrors.newErrorCount = self.feedProcessorErrors.allData.length - self.feedProcessorErrors.visibleData.length;
+
+                   /// if(self.feedProcessorErrors.time.startTime == null || self.feedProcessorErrors.time.startTime  == 0){
+                        self.feedProcessorErrors.time.startTime = container.startTime;
+                   // }
+                    self.feedProcessorErrors.time.endTime = container.endTime;
+                    deferred.resolve(container);
+                }, function (err) {
+
+                    deferred.reject(err)
+                });
+                return deferred.promise;
+
             }
-
-
-
-
-
-
-
-
-
-
-
-
-            }
+        }
             
 
         

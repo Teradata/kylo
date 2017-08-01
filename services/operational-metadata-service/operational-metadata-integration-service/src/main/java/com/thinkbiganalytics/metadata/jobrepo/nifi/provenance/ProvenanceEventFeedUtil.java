@@ -223,8 +223,10 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
             }
         }
         return KyloProcessorFlowType.NORMAL_FLOW;
+    }
 
-
+    public boolean isReusableFlowProcessor(String processorId){
+        return getFlowCache().getReusableTemplateProcessorIds().contains(processorId);
     }
 
     /**

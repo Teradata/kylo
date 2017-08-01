@@ -24,6 +24,7 @@ import com.google.common.collect.EvictingQueue;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -159,7 +160,7 @@ public class FeedStatistics {
         if (key == null) {
             key = GroupedStats.DEFAULT_SOURCE_CONNECTION_ID;
         }
-        return stats.computeIfAbsent(key, sourceConnectionIdentifier -> new GroupedStats(sourceConnectionIdentifier));
+        return stats.computeIfAbsent(key, sourceConnectionIdentifier -> new GroupedStatsV2(sourceConnectionIdentifier));
     }
 
 

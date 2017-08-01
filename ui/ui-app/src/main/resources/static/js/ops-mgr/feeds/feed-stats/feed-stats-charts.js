@@ -45,8 +45,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         this.showProcessorChartLoading = true;
 
-
-
         this.statusPieChartApi = {};
 
         self.timeframeOptions = [];
@@ -60,7 +58,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
          * @type {*}
          */
         self.summaryStatistics = FeedStatsService.summaryStatistics;
-
 
 
         var feedChartLegendState = []
@@ -105,6 +102,14 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             color: '#1f77b4'
         }
 
+        self.feedProcessorErrorsTable = {
+            sortOrder:'-errorMessageTimestamp',
+            filter:'',
+            rowLimit:5,
+            page:1
+        };
+
+        self.feedProcessorErrors = FeedStatsService.feedProcessorErrors;
 
         self.onTimeFrameClick = onTimeFrameClick;
 
@@ -114,6 +119,20 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.gotoFeedDetails = function(ev){
             if(self.feed.feedId != undefined) {
                 StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
+            }
+        }
+
+        self.viewNewFeedProcessorErrors = function() {
+            self.feedProcessorErrors.viewAllData();
+        }
+
+        self.toggleFeedProcessorErrorsRefresh = function(autoRefresh){
+            if(autoRefresh){
+                self.feedProcessorErrors.viewAllData();
+                self.feedProcessorErrors.autoRefreshMessage ='enabled';
+            }
+            else {
+                self.feedProcessorErrors.autoRefreshMessage ='disabled';
             }
         }
 
@@ -246,7 +265,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             clearRefreshInterval();
             //abort
             FeedStatsService.setTimeFrame(self.timeFrame);
-            buildChartData();
+            buildChartData(true);
             setRefreshInterval();
         }
 
@@ -259,12 +278,14 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,chartData.data.length,self.selectedProcessorStatisticFunction);
         }
 
-        function buildChartData() {
+        function buildChartData(timeIntervalChange) {
             if (!isLoading()) {
+                timeIntervalChange = angular.isUndefined(timeIntervalChange) ? false : timeIntervalChange;
                 self.feedTimeChartLoading = true;
                 self.processChartLoading = true;
                 buildProcessorChartData();
                 buildFeedCharts();
+                fetchFeedProcessorErrors(timeIntervalChange);
             }
             getFeedHealth();
         }
@@ -396,6 +417,21 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         }
 
+        /**
+         * fetch and append the errors to the FeedStatsService.feedProcessorErrors.data object
+         * @param resetWindow optionally reset the feed errors to start a new array of errors in the feedProcessorErrors.data
+         */
+        function fetchFeedProcessorErrors(resetWindow) {
+            self.feedProcessorErrorsLoading = true;
+            $q.when(FeedStatsService.fetchFeedProcessorErrors(resetWindow)).then(function (feedProcessorErrors) {
+                self.feedProcessorErrorsLoading = false;
+            },function(err) {
+                self.feedProcessorErrorsLoading = false;
+            });
+
+
+        }
+
 
          function getFeedHealth(){
                 var successFn = function (response) {
@@ -470,7 +506,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         function setRefreshInterval() {
             clearRefreshInterval();
             if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(buildChartData, self.refreshIntervalTime);
+                self.refreshInterval = $interval(function() {
+                    buildChartData()}, self.refreshIntervalTime
+                );
 
                 self.showProgressInterval = $interval(checkAndShowLoadingProgress, 1000);
             }

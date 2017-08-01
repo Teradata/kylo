@@ -36,13 +36,20 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -63,6 +70,11 @@ public class NifiStatsJmsReceiver {
 
     @Inject
     private NifiFeedStatisticsProvider nifiFeedStatisticsProvider;
+
+    @Inject
+    private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
+
+    private Long lastBulletinId = -1L;
 
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
@@ -85,11 +97,20 @@ public class NifiStatsJmsReceiver {
 
             metadataAccess.commit(() -> {
                 List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
+
+                List<JpaNifiFeedProcessorStats> failedStatsWithFlowFiles = new ArrayList<>();
                 for (NifiFeedProcessorStats stat : summaryStats) {
-                    nifiEventStatisticsProvider.create(stat);
+                   NifiFeedProcessorStats savedStats = nifiEventStatisticsProvider.create(stat);
+                   if(savedStats.getFailedCount() >0L && savedStats.getLatestFlowFileId() != null){
+                       //offload the query to nifi and merge back in
+                       failedStatsWithFlowFiles.add((JpaNifiFeedProcessorStats)savedStats);
+                   }
                 }
                 if(stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
                     saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2)stats);
+                }
+                if(!failedStatsWithFlowFiles.isEmpty()){
+                    assignNiFiBulletinErrors(failedStatsWithFlowFiles);
                 }
                 return summaryStats;
             }, MetadataAccess.SERVICE);
@@ -100,33 +121,79 @@ public class NifiStatsJmsReceiver {
 
     }
 
+
+
+
+
+    private void assignNiFiBulletinErrors(List<JpaNifiFeedProcessorStats> stats) {
+
+        //might need to query with the 'after' parameter
+
+        //group the FeedStats by processorId_flowfileId
+
+        Map<String, Map<String, List<JpaNifiFeedProcessorStats>>> processorFlowFilesStats = stats.stream().filter(s->s.getProcessorId() != null).collect(Collectors.groupingBy(NifiFeedProcessorStats::getProcessorId,Collectors.groupingBy(NifiFeedProcessorStats::getLatestFlowFileId)));
+
+
+       Set<String> processorIds = processorFlowFilesStats.keySet();
+       //strip out those processorIds that are part of a reusable flow
+        Set<String> nonReusableFlowProcessorIds = processorIds.stream().filter(processorId -> !provenanceEventFeedUtil.isReusableFlowProcessor(processorId)).collect(Collectors.toSet());
+
+        //find all errors for the processors
+        List<BulletinDTO> errors = nifiBulletinExceptionExtractor.getErrorBulletinsForProcessorId(processorIds, lastBulletinId);
+
+        if(errors != null){
+            Set<JpaNifiFeedProcessorStats> statsToUpdate = new HashSet<>();
+            // first look for matching feed flow and processor ids.  otherwise look for processor id matches that are not part of reusable flows
+            errors.stream().forEach(b -> {
+                stats.stream().forEach(stat -> {
+                    if(stat.getLatestFlowFileId() != null && b.getSourceId().equalsIgnoreCase(stat.getProcessorId()) && b.getMessage().contains(stat.getLatestFlowFileId())){
+                        stat.setErrorMessageTimestamp(new DateTime(b.getTimestamp()));
+                        stat.setErrorMessages(b.getMessage());
+                        statsToUpdate.add(stat);
+                    }
+                    else if(nonReusableFlowProcessorIds.contains(b.getSourceId()) && b.getSourceId().equalsIgnoreCase(stat.getProcessorId())){
+                        stat.setErrorMessageTimestamp(new DateTime(b.getTimestamp()));
+                        stat.setErrorMessages(b.getMessage());
+                        statsToUpdate.add(stat);
+                    }
+                });
+            });
+            lastBulletinId = errors.stream().mapToLong(b -> b.getId()).max().getAsLong();
+            if(!statsToUpdate.isEmpty()) {
+                nifiEventStatisticsProvider.save(new ArrayList<>(statsToUpdate));
+            }
+        }
+    }
+
+
+
+
     /**
      * Save the running totals for the feed
      */
-    private List<NifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder) {
-        List<NifiFeedStats> statsToSave = new ArrayList<>();
+    private Map<String,JpaNifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder) {
+       Map<String,JpaNifiFeedStats> feedStatsMap = new HashMap<>();
         if (holder.getProcessorIdRunningFlows() != null) {
             holder.getProcessorIdRunningFlows().entrySet().stream().forEach(e -> {
                 String feedProcessorId = e.getKey();
                 Long runningCount = e.getValue();
                 String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);  //ensure not null
                 if (StringUtils.isNotBlank(feedName)) {
-                    JpaNifiFeedStats stats = new JpaNifiFeedStats();
-                    stats.setFeedName(feedName);
+                    JpaNifiFeedStats stats = feedStatsMap.computeIfAbsent(feedName, name -> new JpaNifiFeedStats(feedName));
                     OpsManagerFeed opsManagerFeed = provenanceEventFeedUtil.getFeed(feedName);
                     if (opsManagerFeed != null) {
                         stats.setFeedId(new JpaNifiFeedStats.OpsManagerFeedId(opsManagerFeed.getId().toString()));
                     }
-                    stats.setRunningFeedFlows(runningCount);
+                    stats.addRunningFeedFlows(runningCount);
                     stats.setTime(DateTime.now().getMillis());
-                    statsToSave.add(stats);
                 }
             });
         }
-        if (!statsToSave.isEmpty()) {
-            nifiFeedStatisticsProvider.saveLatestFeedStats(statsToSave);
+        //group stats to save together by feed name
+        if (!feedStatsMap.isEmpty()) {
+            nifiFeedStatisticsProvider.saveLatestFeedStats(new ArrayList<>(feedStatsMap.values()));
         }
-        return statsToSave;
+        return feedStatsMap;
     }
 
     private List<NifiFeedProcessorStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
@@ -150,7 +217,10 @@ public class NifiStatsJmsReceiver {
                                                                                                                                          .setProcessorId(processorStats.getProcessorId());
                                                                                                                                      nifiFeedProcessorStats.setCollectionIntervalSeconds(
                                                                                                                                          (collectionIntervalMillis / 1000));
-                                                                                                                                     nifiFeedProcessorStats.setCollectionId(holder.getCollectionId());
+                                                                                                                                     if(holder instanceof AggregatedFeedProcessorStatisticsHolderV2) {
+                                                                                                                                         nifiFeedProcessorStats
+                                                                                                                                             .setCollectionId(((AggregatedFeedProcessorStatisticsHolderV2)holder).getCollectionId());
+                                                                                                                                     }
                                                                                                                                      String
                                                                                                                                          processorName =
                                                                                                                                          provenanceEventFeedUtil

@@ -25,7 +25,6 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -81,10 +80,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         if(stats != null){
             this.feedStatistics =    stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
         }
-    }
-
-    public String getCollectionId() {
-        return collectionId;
     }
 
     public void clear() {

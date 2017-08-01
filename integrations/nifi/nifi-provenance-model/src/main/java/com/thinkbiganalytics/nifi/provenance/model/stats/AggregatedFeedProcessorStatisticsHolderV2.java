@@ -51,4 +51,8 @@ public class AggregatedFeedProcessorStatisticsHolderV2 extends AggregatedFeedPro
         this.processorIdRunningFlows = processorIdRunningFlows;
     }
 
+    public String getCollectionId(){
+        return super.collectionId;
+    }
+
 }

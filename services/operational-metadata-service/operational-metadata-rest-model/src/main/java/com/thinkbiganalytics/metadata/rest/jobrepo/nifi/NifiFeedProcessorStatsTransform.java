@@ -21,6 +21,8 @@ package com.thinkbiganalytics.metadata.rest.jobrepo.nifi;
  */
 
 
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
+
 import org.apache.commons.beanutils.BeanUtils;
 
 import java.util.List;
@@ -56,5 +58,43 @@ public class NifiFeedProcessorStatsTransform {
         }
         return stats;
     }
+
+
+
+
+    /**
+     * Converts the domain model objects to the rest model equivalent
+     *
+     * @param domains A list of domain objects
+     * @return a list of converted objects, or null if the provided list was empty
+     */
+    public static List<NifiFeedProcessorStatsErrors> toErrorsModel(List<? extends com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors> domains) {
+        if (domains != null && !domains.isEmpty()) {
+            return domains.stream().map(domain -> toErrorsModel(domain)).collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    /**
+     * Converts a domain model object to the rest model equivalent
+     *
+     * @param domain The domain object
+     * @return the rest model object
+     */
+    public static NifiFeedProcessorStatsErrors toErrorsModel(com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors domain) {
+        NifiFeedProcessorStatsErrors errors = new NifiFeedProcessorStatsErrors();
+        try {
+            BeanUtils.copyProperties(errors, domain);
+        } catch (Exception e) {
+            //TODO LOG IT
+        }
+        return errors;
+    }
+
+
+
+
+
+
 
 }

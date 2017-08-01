@@ -55,6 +55,18 @@ public class JpaNifiFeedStats implements NifiFeedStats {
     @org.hibernate.annotations.Type(type = "yes_no")
     private boolean isLatest;
 
+    public JpaNifiFeedStats() {
+
+    }
+    public JpaNifiFeedStats(String feedName){
+        this.feedName = feedName;
+    }
+
+    public JpaNifiFeedStats(String feedName, OpsManagerFeedId feedId){
+        this(feedName);
+        this.feedId =feedId;
+    }
+
     @Override
     public String getFeedName() {
         return feedName;
@@ -76,6 +88,15 @@ public class JpaNifiFeedStats implements NifiFeedStats {
 
     public void setRunningFeedFlows(Long runningFeedFlows) {
         this.runningFeedFlows = runningFeedFlows;
+    }
+
+    public void addRunningFeedFlows(Long runningFeedFlows){
+        if(runningFeedFlows != null) {
+            if (this.runningFeedFlows == null) {
+                this.runningFeedFlows = 0L;
+            }
+            this.runningFeedFlows +=runningFeedFlows;
+        }
     }
 
     @Override

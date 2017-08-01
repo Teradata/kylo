@@ -354,5 +354,9 @@ public interface NifiFeedProcessorStats {
      */
     void setLatestFlowFileId(String flowFileId);
 
+    String getErrorMessages();
+
+    DateTime getErrorMessageTimestamp();
+
 
 }

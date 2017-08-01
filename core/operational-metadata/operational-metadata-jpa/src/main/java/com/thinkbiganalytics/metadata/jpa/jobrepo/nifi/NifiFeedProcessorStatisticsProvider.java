@@ -28,6 +28,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
@@ -40,6 +41,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -230,5 +234,21 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
 
+    public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrors(String feedName, DateTime start, DateTime end) {
+     return statisticsRepository.findWithErrorsWithinTime(feedName,start,end);
+    }
 
+
+    public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after){
+        return statisticsRepository.findWithErrorsAfterTime(feedName,after);
+    }
+
+
+                                                                                        @Override
+    public List<? extends NifiFeedProcessorStats> save(List<? extends NifiFeedProcessorStats> stats) {
+       if(stats != null && !stats.isEmpty()){
+          return statisticsRepository.save((List<JpaNifiFeedProcessorStats>)stats);
+       }
+       return stats;
+    }
 }

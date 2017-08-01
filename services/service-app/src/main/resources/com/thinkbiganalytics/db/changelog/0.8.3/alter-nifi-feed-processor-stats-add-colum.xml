@@ -26,6 +26,16 @@
     <addColumn tableName="NIFI_FEED_PROCESSOR_STATS">
         <column name="LATEST_FLOW_FILE_ID" type="varchar(45)"/>
     </addColumn>
+
+    <addColumn tableName="NIFI_FEED_PROCESSOR_STATS">
+        <column name="ERROR_MESSAGES" type="varchar(255)"/>
+    </addColumn>
+
+    <addColumn tableName="NIFI_FEED_PROCESSOR_STATS">
+        <column name="ERROR_MESSAGES_TIMESTAMP" type="BIGINT(11)"/>
+    </addColumn>
 </changeSet>
+
+
 
 </databaseChangeLog>

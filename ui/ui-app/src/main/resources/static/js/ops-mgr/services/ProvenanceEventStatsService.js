@@ -36,6 +36,21 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                 var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, timeFrame));
                 promise.then(successFn, errorFn);
                 return promise;
+            },
+
+            getFeedProcessorErrors: function (feedName, timeFrame, after) {
+                var self = this;
+
+                var successFn = function (response) {
+
+                }
+                var errorFn = function (err) {
+                    self.loading = false;
+
+                }
+                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, timeFrame),{params:{after:after}});
+                promise.then(successFn, errorFn);
+                return promise;
             }
 
         }
