@@ -70,7 +70,7 @@
                 </body-section>
             </card-layout>
 
-            <card-layout flex="100" flex-gt-sm="20" flex-order="2" flex-order-xs="1" flex-order-sm="1" >
+            <card-layout flex-gt-sm="20" flex-order="2" flex-order-xs="1" flex-order-sm="1" >
                 <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Scheduler Details</header-section>
                 <body-section transclude-to="body" flex layout="column">
                     <div layout-align="center center" style="width:100%" ng-if="vm.allowAdmin">
@@ -83,7 +83,7 @@
                     </div>
 
 
-                    <md-list flex  class="list-item-table" layout="column">
+                    <md-list class="list-item-table" layout="column">
                         <md-list-item >
                             <div class="item-column md-list-item-text " layout-align="space-between start" layout="column">
                                     <span ng-class="{'healthy': vm.schedulerDetails.status == 'RUNNING', 'warn':vm.schedulerDetails.status == 'PAUSED'}">
