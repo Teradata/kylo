@@ -57,7 +57,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     }
                 },
                 yAxis: {
-                    axisLabel:'Running',
+                    axisLabel:'',
                     "axisLabelDistance": -10,
                     showMaxMin:false,
                     tickSubdivide:0,
