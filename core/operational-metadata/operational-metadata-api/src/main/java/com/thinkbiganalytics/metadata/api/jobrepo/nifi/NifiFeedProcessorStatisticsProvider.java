@@ -98,6 +98,15 @@ public interface NifiFeedProcessorStatisticsProvider {
     List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
 
 
+    List<? extends NifiFeedProcessorStats> save(List<? extends NifiFeedProcessorStats> stats);
+
+
+
+    List<? extends NifiFeedProcessorErrors> findFeedProcessorErrors(String feedName, DateTime start, DateTime end);
+
+
+    List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after);
+
     /**
      * allow for specifying a time to look back from when querying for statistical information
      */

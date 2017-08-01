@@ -992,8 +992,16 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         return client.getBulletins(processorId);
     }
 
+    public List<BulletinDTO> getBulletinsMatchingSource(String regexPattern,Long after) {
+        return client.getBulletinsMatchingSource(regexPattern,after);
+    }
+
     public List<BulletinDTO> getBulletinsMatchingMessage(String regexPattern) {
         return client.getBulletinsMatchingMessage(regexPattern);
+    }
+
+    public List<BulletinDTO> getBulletinsMatchingMessage(String regexPattern, Long afterId) {
+        return client.getBulletinsMatchingMessage(regexPattern, afterId);
     }
 
 

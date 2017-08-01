@@ -76,6 +76,15 @@ public interface NiFiRestClient {
     @Nonnull
     List<BulletinDTO> getBulletins(@Nonnull String sourceId);
 
+
+    /**
+     * find bulletins matching a sourceId regex pattern optionally after a given bulletin dto id
+     * @param sourceIdRegexPattern the regext pattern of the source ids
+     * @param after optional id to query after
+     * @return the bulletins
+     */
+    List<BulletinDTO> getBulletinsMatchingSource(@Nonnull final String sourceIdRegexPattern,Long after);
+
     /**
      * Gets the current bulletins with the message matching the supplied regex pattern
      *
@@ -84,6 +93,18 @@ public interface NiFiRestClient {
      */
     @Nonnull
     List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern);
+
+
+    /**
+     * Gets the current bulletins with the message matching the supplied regex pattern
+     * Looking for all messages after the passed in id
+     *
+     * @param regexPattern the regex pattern to matching against the Bulletin message
+     * @param afterId the id to query after
+     * @return the bulletins
+     */
+    @Nonnull
+    List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern, Long afterId);
 
     /**
      * Gets the client for managing ports.

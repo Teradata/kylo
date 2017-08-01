@@ -68,6 +68,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -119,6 +120,10 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedProcessorIdProcessorMap = new ConcurrentHashMap<>();
 
     private Map<String, NifiFlowProcessor> processorIdMap = new ConcurrentHashMap<>();
+
+    private Set<String> reuseableTemplateProcessorIds = new HashSet<>();
+
+    private String reusableTemplateProcessGroupId = null;
 
     private NifiFlowCacheSnapshot latest;
 
@@ -332,7 +337,13 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         //populate the template mappings and feeds to determine if the feed uses a streaming or batch template
         templates.stream().forEach(template -> populateTemplateMappingCache(template, feedTemplatesMap));
 
+        List<NifiFlowProcessGroup> reusableTemplateProcessGroups = new ArrayList<>();
+
         allFlows.stream().forEach(nifiFlowProcessGroup -> {
+            if(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(nifiFlowProcessGroup.getParentGroupName())) {
+                reuseableTemplateProcessorIds.addAll(nifiFlowProcessGroup.getProcessorMap().keySet());
+                reusableTemplateProcessGroupId =  nifiFlowProcessGroup.getId();
+            }
             RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
             if (template != null) {
                 updateFlow(nifiFlowProcessGroup.getFeedName(), template.isStream(), nifiFlowProcessGroup);
@@ -497,6 +508,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
             new NifiFlowCacheSnapshot(processorIdToFeedNameMap, processorIdToFeedProcessGroupId, processorIdToProcessorName, streamingFeeds, allFeeds);
         latest.setConnectionIdToConnection(connectionIdToConnectionMap);
         latest.setConnectionIdToConnectionName(connectionIdCacheNameMap);
+        latest.setReusableTemplateProcessorIds(reuseableTemplateProcessorIds);
 
     }
 
@@ -545,6 +557,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
                 .withStreamingFeeds(latest.getAllStreamingFeeds())
                 .withConnections(sync.getConnectionIdToConnectionUpdatedSinceLastSync(latest.getConnectionIdToConnectionName(), latest.getConnectionIdToConnection()))
                 .withFeeds(sync.getFeedsUpdatedSinceLastSync(latest.getAllFeeds()))
+                .withReusableTemplateProcessorIds(latest.getReusableTemplateProcessorIds())
                 .build();
             //reset the pointers on this sync to be the latest
             if (!preview) {
@@ -577,6 +590,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         streamingFeeds.clear();
         allFeeds.clear();
         feedNameToTemplateNameMap.clear();
+        reuseableTemplateProcessorIds.clear();
     }
 
     private void populateTemplateMappingCache(RegisteredTemplate template, Map<String, RegisteredTemplate> feedTemplatesMap) {
@@ -633,6 +647,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         updateProcessorIdNames(templateName, processors);
         Set<ConnectionDTO> connections = NifiConnectionUtil.getAllConnections(processGroupDTO);
         updateConnectionMap(templateName, connections);
+        processGroupDTO.getContents().getProcessors().stream().forEach(processorDTO -> reuseableTemplateProcessorIds.add(processorDTO.getId()));
         lastUpdated = DateTime.now();
     }
 
@@ -745,6 +760,12 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         processors.stream().forEach(flowProcessor -> {
             processorIdToProcessGroupId.put(flowProcessor.getId(), feedProcessGroupId);
             processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
+            if(flowProcessor.getProcessGroup() != null && flowProcessor.getProcessGroup().getParentGroupName() != null && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(flowProcessor.getProcessGroup().getParentGroupName())){
+                reuseableTemplateProcessorIds.add(flowProcessor.getId());
+                if(reusableTemplateProcessGroupId == null){
+                    reusableTemplateProcessGroupId = flowProcessor.getProcessGroup().getId();
+                }
+            }
         });
         this.processorIdToFeedProcessGroupId.putAll(processorIdToProcessGroupId);
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);

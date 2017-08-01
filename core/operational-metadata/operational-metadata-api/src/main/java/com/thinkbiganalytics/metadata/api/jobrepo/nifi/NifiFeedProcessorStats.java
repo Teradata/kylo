@@ -149,14 +149,12 @@ public interface NifiFeedProcessorStats {
 
 
     /**
-     *
      * @return the number of events that failed
      */
     Long getFailedCount();
 
     /**
      * set the total events that are failure events
-     * @param totalFailureCount
      */
     void setFailedCount(Long failedCount);
 
@@ -328,7 +326,6 @@ public interface NifiFeedProcessorStats {
     void setClusterNodeAddress(String clusterNodeAddress);
 
 
-
     Long getCollectionIntervalSeconds();
 
     void setCollectionIntervalSeconds(Long collectionIntervalSeconds);
@@ -343,6 +340,23 @@ public interface NifiFeedProcessorStats {
     void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond);
 
 
+    /**
+     * Get the latest flow file id for this group and collection interval
+     *
+     * @return the latest flow file id for this group and collection interval
+     */
+    String getLatestFlowFileId();
+
+    /**
+     * Set the latest flowfile id for this group and collection interval
+     *
+     * @param flowFileId the flow file id
+     */
+    void setLatestFlowFileId(String flowFileId);
+
+    String getErrorMessages();
+
+    DateTime getErrorMessageTimestamp();
 
 
 }

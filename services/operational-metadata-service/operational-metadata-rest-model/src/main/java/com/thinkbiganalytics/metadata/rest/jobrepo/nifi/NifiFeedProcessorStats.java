@@ -57,6 +57,12 @@ public class NifiFeedProcessorStats {
     private String collectionId;
     private Long resultSetCount;
 
+    private String latestFlowFileId;
+
+    private String errorMessages;
+
+    private DateTime errorMessageTimestamp;
+
     private BigDecimal jobsStartedPerSecond;
 
     private BigDecimal jobsFinishedPerSecond;
@@ -276,5 +282,29 @@ public class NifiFeedProcessorStats {
 
     public void setJobsFinishedPerSecond(BigDecimal jobsFinishedPerSecond) {
         this.jobsFinishedPerSecond = jobsFinishedPerSecond;
+    }
+
+    public String getLatestFlowFileId() {
+        return latestFlowFileId;
+    }
+
+    public void setLatestFlowFileId(String latestFlowFileId) {
+        this.latestFlowFileId = latestFlowFileId;
+    }
+
+    public String getErrorMessages() {
+        return errorMessages;
+    }
+
+    public void setErrorMessages(String errorMessages) {
+        this.errorMessages = errorMessages;
+    }
+
+    public DateTime getErrorMessageTimestamp() {
+        return errorMessageTimestamp;
+    }
+
+    public void setErrorMessageTimestamp(DateTime errorMessageTimestamp) {
+        this.errorMessageTimestamp = errorMessageTimestamp;
     }
 }

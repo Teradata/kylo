@@ -439,7 +439,7 @@ md-toolbar .md-button.md-default-theme {
 }
 
 /* White text for inputs in header */
-md-toolbar label {
+md-toolbar .global-search-container label {
   color: white !important;
 }
 

@@ -136,6 +136,7 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
     /**
      * Ensure the event has all the necessary information needed to be processed from the NiFi Flow Cache
+     *
      * @param event the provenance event
      * @return true if the data exists in the cache, false if not
      */
@@ -168,19 +169,22 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         return event;
     }
 
-    public OpsManagerFeed getFeed(ProvenanceEventRecordDTO event) {
-        String feedName = event.getFeedName();
-        if (StringUtils.isBlank(feedName)) {
-            feedName = getFeedName(event.getFirstEventProcessorId());
-        }
+    public OpsManagerFeed getFeed(String feedName) {
         if (StringUtils.isNotBlank(feedName)) {
             OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
             if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
                 return feed;
             }
-
         }
         return null;
+    }
+
+    public OpsManagerFeed getFeed(ProvenanceEventRecordDTO event) {
+        String feedName = event.getFeedName();
+        if (StringUtils.isBlank(feedName)) {
+            feedName = getFeedName(event.getFirstEventProcessorId());
+        }
+        return getFeed(feedName);
     }
 
 
@@ -219,8 +223,10 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
             }
         }
         return KyloProcessorFlowType.NORMAL_FLOW;
+    }
 
-
+    public boolean isReusableFlowProcessor(String processorId){
+        return getFlowCache().getReusableTemplateProcessorIds().contains(processorId);
     }
 
     /**

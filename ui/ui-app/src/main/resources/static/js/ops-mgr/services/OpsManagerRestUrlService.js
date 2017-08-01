@@ -81,6 +81,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.STATS_BASE_V2 + "/" + feedName + "/" + timeInterval;
         }
 
+        this.FEED_PROCESSOR_ERRORS = function (feedName, timeInterval) {
+            return self.STATS_BASE_V2 + "/" + feedName + "/processor-errors/" + timeInterval;
+        }
+
         this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";
 
         /**

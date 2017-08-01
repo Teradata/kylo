@@ -53,6 +53,59 @@
       </md-card>
     </div>
 
+    <div ng-if="vm.feedProcessorErrors.visibleData.length >0">
+      <md-card>
+      <md-toolbar class="md-table-toolbar md-default" layout="column">
+        <div class="md-toolbar-tools">
+          <span>Error Messages</span>
+          <span flex="5"></span>
+          <div flex style="margin-top:25px">
+          <md-input-container flex layout-fill>
+            <label>Filter</label>
+            <input ng-model="vm.feedProcessorErrorsTable.filter" ng-model-options="{debounce:1000}"/>
+          </md-input-container>
+          </div>
+          <span flex="5"></span>
+          <div layout="column" layout-align="end end">
+             <div layout="row">
+          <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.feedProcessorErrors.autoRefresh" ng-change="vm.toggleFeedProcessorErrorsRefresh(vm.feedProcessorErrors.autoRefresh)">
+            Auto Refresh: {{vm.feedProcessorErrors.autoRefreshMessage}}
+          </md-switch>
+          <md-button class="md-icon-button" ng-if="vm.feedProcessorErrors.autoRefresh == false" ng-click="vm.viewNewFeedProcessorErrors()">
+            <ng-md-icon icon="refresh"></ng-md-icon>
+          </md-button>
+             </div>
+            <span ng-if="vm.feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{vm.feedProcessorErrors.newErrorCount}} new errors exist.</span>
+          </div>
+        </div>
+      </md-toolbar>
+
+      <md-table-container ng-if="vm.feedProcessorErrors.visibleData.length >0">
+        <table md-table >
+          <thead md-head md-order="vm.feedProcessorErrorsTable.sortOrder">
+          <tr md-row>
+            <th md-column name="Processor" md-order-by="processorName"><span>Processor</span></th>
+            <th md-column name="Errors" md-order-by="errorMessages"><span>Errors</span></th>
+            <th md-column name="Time" md-order-by="errorMessageTimestamp" md-desc><span>Time</span></th>
+          </tr>
+          </thead>
+          <tbody md-body>
+          <tr md-row
+              ng-repeat="item in vm.feedProcessorErrors.visibleData | filter: vm.feedProcessorErrorsTable.filter | orderBy:  vm.feedProcessorErrorsTable.sortOrder | limitTo: vm.feedProcessorErrorsTable.rowLimit : (vm.feedProcessorErrorsTable.page -1) * vm.feedProcessorErrorsTable.rowLimit"  >
+            <td md-cell>{{item.processorName}}</td>
+            <td md-cell>{{item.errorMessages}}</td>
+            <td md-cell>{{item.errorMessageTimestamp | date:'HH:mm:ss'}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+        <md-table-pagination md-limit="vm.feedProcessorErrorsTable.rowLimit" md-limit-options="[5,10,15,20,50,100]" md-page="vm.feedProcessorErrorsTable.page" md-total="{{vm.feedProcessorErrors.visibleData.length}}" md-page-select="true" md-boundary-links="false"></md-table-pagination>
+    </md-card>
+
+    </div>
+
+
+
     <div layout="row" layout-sm="column" layout-xs="column">
       <div flex layout="column" flex-gt-sm="70" flex="100" flex-order="1" flex-order-xs="2" flex-order-sm="2">
         <!-- THE KPIs -->
