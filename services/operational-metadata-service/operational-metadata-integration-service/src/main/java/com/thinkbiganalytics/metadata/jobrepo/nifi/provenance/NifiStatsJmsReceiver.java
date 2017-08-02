@@ -51,6 +51,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
@@ -91,8 +92,10 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
     @Inject
     private ClusterService clusterService;
 
+    @Value("${kylo.ops.mgr.stats.nifi.bulletins.mem.size:30}")
     private Integer errorsToStorePerFeed = 30;
 
+    @Value("${kylo.ops.mgr.stats.nifi.bulletins.persist:false}")
     private boolean persistErrors = false;
 
     private LoadingCache<String,Queue<NifiFeedProcessorErrors>> feedProcessorErrors = CacheBuilder.newBuilder().build(new CacheLoader<String, Queue<NifiFeedProcessorErrors>>() {
