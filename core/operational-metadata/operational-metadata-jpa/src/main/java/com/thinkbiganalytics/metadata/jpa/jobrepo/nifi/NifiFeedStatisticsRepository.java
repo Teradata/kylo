@@ -27,17 +27,28 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 /**
  * Spring data repository for {@link JpaNifiFeedProcessorStats}
  */
 public interface NifiFeedStatisticsRepository extends JpaRepository<JpaNifiFeedStats, String>, QueryDslPredicateExecutor<JpaNifiFeedStats> {
 
-    @Query(value = "select stats from JpaNifiFeedStats as stats "
+    @Query(value = "select distinct stats from JpaNifiFeedStats as stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
-                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
-                   + "where stats.isLatest = true "
-                   + "and stats.feedName = :feedName "
-                   + "and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") "
+                   + "where stats.feedName = :feedName ")
     JpaNifiFeedStats findLatestForFeed(@Param("feedName") String feedName);
+
+    @Query(value = "select distinct stats from JpaNifiFeedStats stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") "
+                   + "where feed.isStream = true ")
+    List<JpaNifiFeedStats> findStreamingFeedStats();
+
+    @Query(value = "select distinct stats from JpaNifiFeedStats stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") ")
+    List<JpaNifiFeedStats> findFeedStats();
 
 }

@@ -35,4 +35,7 @@ public interface NifiFeedStats {
     Long getRunningFeedFlows();
 
     Long getTime();
+
+    Long getLastActivityTimestamp();
+
 }

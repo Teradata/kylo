@@ -203,6 +203,8 @@ public interface BatchJobExecution {
 
     boolean isStream();
 
+    static String RUNNING_DISPLAY_STATUS = "RUNNING";
+
     /**
      * Various statuses for a Job
      */

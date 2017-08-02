@@ -42,6 +42,7 @@ public class DefaultFeedHealth implements FeedHealth {
     private Long unhealthyCount;
     private Date lastUnhealthyTime;
     private boolean isStream;
+    private Long runningCount;
 
 
     @Override
@@ -166,6 +167,16 @@ public class DefaultFeedHealth implements FeedHealth {
     public String getLastOpFeedState() {
         String state = getFeedState(lastOpFeed);
         return state;
+    }
+
+    @Override
+    public Long getRunningCount() {
+        return runningCount;
+    }
+
+    @Override
+    public void setRunningCount(Long runningCount) {
+        this.runningCount = runningCount;
     }
 
     public boolean isStream() {

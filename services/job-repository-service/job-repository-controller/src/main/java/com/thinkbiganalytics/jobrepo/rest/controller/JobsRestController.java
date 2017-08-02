@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -94,6 +95,9 @@ public class JobsRestController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private NifiFeedStatisticsProvider nifiFeedStatisticsProvider;
 
     @GET
     @Path("/{executionId}")
@@ -463,7 +467,7 @@ public class JobsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the daily statistics.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the daily stats.", response = JobStatusCount.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the stats.", response = JobStatusCount.class, responseContainer = "List")
     )
     public List<JobStatusCount> getRunningOrFailedJobCounts() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -474,6 +478,44 @@ public class JobsRestController {
                 return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
             }
             return Collections.emptyList();
+/*
+            //get the streaming stats and merge back into the stats
+            //streaming feeds will mark the Running count as 1 for the entire feed
+            List<? extends NifiFeedStats> streamingStats = nifiFeedStatisticsProvider.findFeedStats(true);
+            if(streamingStats != null){
+                //Map of the feed name to Map of status and job status counts
+             Map<String,Map<String,List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount>>>
+                 feedStats = counts.stream().collect(Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getFeedName, Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getStatus)));
+
+                 streamingStats.stream().forEach(stats ->
+                                                 {
+                                                     Long runningCount = 0L;
+                                                     if(stats.getRunningFeedFlows() >0){
+                                                         runningCount = 1L;
+                                                     }
+                                                     if(feedStats.containsKey(stats.getFeedName()) && feedStats.get(stats.getFeedName()).containsKey(BatchJobExecution.RUNNING_DISPLAY_STATUS)){
+                                                         //set the total
+                                                             feedStats.get(stats.getFeedName()).get(BatchJobExecution.RUNNING_DISPLAY_STATUS).get(0).setCount(runningCount);
+                                                     }
+                                                     else {
+                                                         //it doesnt exist so create it
+                                                         JpaBatchJobExecutionStatusCounts runningStreamingFeedCounts = new JpaBatchJobExecutionStatusCounts();
+                                                         runningStreamingFeedCounts.setCount(runningCount);
+                                                         runningStreamingFeedCounts.setFeedName(stats.getFeedName());
+                                                         runningStreamingFeedCounts.setJobName(stats.getFeedName());
+                                                         runningStreamingFeedCounts.setStatus(BatchJobExecution.RUNNING_DISPLAY_STATUS);
+                                                         runningStreamingFeedCounts.setDate(DateTime.now());
+                                                         counts.add(runningStreamingFeedCounts);
+                                                     }
+                                                 });
+
+            }
+
+            if (counts != null) {
+                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+            */
         });
 
     }

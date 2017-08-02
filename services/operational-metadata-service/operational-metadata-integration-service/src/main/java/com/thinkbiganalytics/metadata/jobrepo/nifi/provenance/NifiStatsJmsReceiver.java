@@ -20,16 +20,26 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.EvictingQueue;
+import com.thinkbiganalytics.cluster.ClusterMessage;
+import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
+import com.thinkbiganalytics.metadata.sla.ScheduledServiceLevelAgreementClusterMessage;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
@@ -38,6 +48,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
@@ -48,6 +59,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,7 +67,7 @@ import javax.inject.Inject;
 
 /**
  */
-public class NifiStatsJmsReceiver {
+public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
 
     private static final Logger log = LoggerFactory.getLogger(NifiStatsJmsReceiver.class);
 
@@ -74,7 +86,61 @@ public class NifiStatsJmsReceiver {
     @Inject
     private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
+    public static String NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE = "NIFI_FEED_PROCESSOR_ERROR";
+
+    @Inject
+    private ClusterService clusterService;
+
+    private Integer errorsToStorePerFeed = 30;
+
+    private boolean persistErrors = false;
+
+    private LoadingCache<String,Queue<NifiFeedProcessorErrors>> feedProcessorErrors = CacheBuilder.newBuilder().build(new CacheLoader<String, Queue<NifiFeedProcessorErrors>>() {
+        @Override
+        public Queue<NifiFeedProcessorErrors> load(String feedName) throws Exception {
+           return EvictingQueue.create(errorsToStorePerFeed);
+        }
+
+    });
+
     private Long lastBulletinId = -1L;
+
+    /**
+     * get Errors in memory for a feed
+     * @param feedName the feed name
+     * @param afterTimestamp and optional timestamp to look after
+     * @return
+     */
+    public List<NifiFeedProcessorErrors> getErrorsForFeed(String feedName,Long afterTimestamp){
+      return getErrorsForFeed(feedName,afterTimestamp,null);
+    }
+
+    public List<NifiFeedProcessorErrors> getErrorsForFeed(String feedName,Long startTime, Long endTime) {
+        List<NifiFeedProcessorErrors> errors = null;
+        Queue<NifiFeedProcessorErrors> queue = feedProcessorErrors.getUnchecked(feedName);
+        if (queue != null) {
+            if (startTime != null && endTime != null) {
+
+                if (queue != null) {
+                    errors =
+                        queue.stream().filter(error -> error.getErrorMessageTimestamp().getMillis() >= startTime && error.getErrorMessageTimestamp().getMillis() <= endTime)
+                            .collect(Collectors.toList());
+                }
+            } else if (startTime == null && endTime != null) {
+                errors = queue.stream().filter(error -> error.getErrorMessageTimestamp().getMillis() <= endTime).collect(Collectors.toList());
+            } else if (startTime != null && endTime == null) {
+                errors = queue.stream().filter(error -> error.getErrorMessageTimestamp().getMillis() >= startTime).collect(Collectors.toList());
+            } else {
+                errors = new ArrayList<>();
+                errors.addAll(queue);
+            }
+        }
+        else {
+            errors = Collections.emptyList();
+        }
+
+        return errors;
+    }
 
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
@@ -98,6 +164,7 @@ public class NifiStatsJmsReceiver {
             metadataAccess.commit(() -> {
                 List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
 
+
                 List<JpaNifiFeedProcessorStats> failedStatsWithFlowFiles = new ArrayList<>();
                 for (NifiFeedProcessorStats stat : summaryStats) {
                    NifiFeedProcessorStats savedStats = nifiEventStatisticsProvider.create(stat);
@@ -107,7 +174,7 @@ public class NifiStatsJmsReceiver {
                    }
                 }
                 if(stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
-                    saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2)stats);
+                    saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2)stats, summaryStats);
                 }
                 if(!failedStatsWithFlowFiles.isEmpty()){
                     assignNiFiBulletinErrors(failedStatsWithFlowFiles);
@@ -141,27 +208,66 @@ public class NifiStatsJmsReceiver {
         //find all errors for the processors
         List<BulletinDTO> errors = nifiBulletinExceptionExtractor.getErrorBulletinsForProcessorId(processorIds, lastBulletinId);
 
-        if(errors != null){
+        if(errors != null && !errors.isEmpty()){
             Set<JpaNifiFeedProcessorStats> statsToUpdate = new HashSet<>();
             // first look for matching feed flow and processor ids.  otherwise look for processor id matches that are not part of reusable flows
             errors.stream().forEach(b -> {
                 stats.stream().forEach(stat -> {
                     if(stat.getLatestFlowFileId() != null && b.getSourceId().equalsIgnoreCase(stat.getProcessorId()) && b.getMessage().contains(stat.getLatestFlowFileId())){
-                        stat.setErrorMessageTimestamp(new DateTime(b.getTimestamp()));
+                        stat.setErrorMessageTimestamp(getAdjustBulletinDateTime(b));
                         stat.setErrorMessages(b.getMessage());
+                        addFeedProcessorError(stat);
                         statsToUpdate.add(stat);
                     }
                     else if(nonReusableFlowProcessorIds.contains(b.getSourceId()) && b.getSourceId().equalsIgnoreCase(stat.getProcessorId())){
-                        stat.setErrorMessageTimestamp(new DateTime(b.getTimestamp()));
+                        stat.setErrorMessageTimestamp(getAdjustBulletinDateTime(b));
                         stat.setErrorMessages(b.getMessage());
+                        addFeedProcessorError(stat);
                         statsToUpdate.add(stat);
                     }
                 });
             });
             lastBulletinId = errors.stream().mapToLong(b -> b.getId()).max().getAsLong();
+
+
             if(!statsToUpdate.isEmpty()) {
-                nifiEventStatisticsProvider.save(new ArrayList<>(statsToUpdate));
+                notifyClusterOfFeedProcessorErrors(statsToUpdate);
+                if(persistErrors) {
+                    nifiEventStatisticsProvider.save(new ArrayList<>(statsToUpdate));
+                }
             }
+        }
+    }
+
+    /**
+     * the BulletinDTO comes back from nifi as a Date object in the year 1970
+     * We need to convert this to the current date and account for DST
+     * @param b the bulletin
+     * @return
+     */
+    private DateTime getAdjustBulletinDateTime(BulletinDTO b){
+        DateTimeZone defaultZone = DateTimeZone.getDefault();
+
+        int currentOffsetMillis = defaultZone.getOffset(DateTime.now().getMillis());
+        double currentOffsetHours = (double)currentOffsetMillis / 1000d / 60d / 60d;
+
+        long bulletinOffsetMillis = DateTimeZone.getDefault().getOffset(b.getTimestamp().getTime());
+
+        double bulletinOffsetHours = (double)bulletinOffsetMillis / 1000d / 60d / 60d;
+
+        DateTime adjustedTime = new DateTime(b.getTimestamp()).withDayOfYear(DateTime.now().getDayOfYear()).withYear(DateTime.now().getYear());
+        int adjustedHours = 0;
+        if(currentOffsetHours != bulletinOffsetHours){
+            adjustedHours = new Double(bulletinOffsetHours - currentOffsetHours).intValue();
+            adjustedTime =  adjustedTime.plusHours(-adjustedHours);
+        }
+        return adjustedTime;
+    }
+
+    private void addFeedProcessorError(NifiFeedProcessorErrors error){
+        Queue<NifiFeedProcessorErrors> q = feedProcessorErrors.getUnchecked(error.getFeedName());
+        if(q != null) {
+            q.add(error);
         }
     }
 
@@ -171,8 +277,18 @@ public class NifiStatsJmsReceiver {
     /**
      * Save the running totals for the feed
      */
-    private Map<String,JpaNifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder) {
-       Map<String,JpaNifiFeedStats> feedStatsMap = new HashMap<>();
+    private Map<String,JpaNifiFeedStats> saveFeedStats(AggregatedFeedProcessorStatisticsHolderV2 holder,List<NifiFeedProcessorStats> summaryStats) {
+        Map<String,JpaNifiFeedStats> feedStatsMap = new HashMap<>();
+
+      if(summaryStats != null) {
+        Map<String,Long> feedLatestTimestamp = summaryStats.stream().collect(Collectors.toMap(NifiFeedProcessorStats::getFeedName,stats -> stats.getMinEventTime().getMillis(),Long::max));
+         feedLatestTimestamp.entrySet().stream().forEach(e -> {
+             String feedName = e.getKey();
+             Long timestamp = e.getValue();
+             JpaNifiFeedStats stats = feedStatsMap.computeIfAbsent(feedName, name -> new JpaNifiFeedStats(feedName));
+             stats.setLastActivityTimestamp(timestamp);
+         });
+      }
         if (holder.getProcessorIdRunningFlows() != null) {
             holder.getProcessorIdRunningFlows().entrySet().stream().forEach(e -> {
                 String feedProcessorId = e.getKey();
@@ -267,5 +383,27 @@ public class NifiStatsJmsReceiver {
         }
 
         return nifiFeedProcessorStats;
+    }
+
+
+    public boolean isPersistErrors() {
+        return persistErrors;
+    }
+
+    @Override
+    public void onMessageReceived(String from, ClusterMessage message) {
+
+        if(message != null && NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE.equalsIgnoreCase(message.getType())){
+            NifiFeedProcessorStatsErrorClusterMessage content = (NifiFeedProcessorStatsErrorClusterMessage) message.getMessage();
+            if(content != null && content.getErrors() != null){
+                content.getErrors().stream().forEach(error -> addFeedProcessorError(error));
+            }
+        }
+    }
+
+    private void notifyClusterOfFeedProcessorErrors(Set<? extends NifiFeedProcessorErrors> errors){
+        if(clusterService.isClustered()) {
+            clusterService.sendMessageToOthers(NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE,new NifiFeedProcessorStatsErrorClusterMessage(errors));
+        }
     }
 }

@@ -50,14 +50,6 @@ public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider
     public void saveLatestFeedStats(List<NifiFeedStats> feedStatsList) {
         if (feedStatsList != null) {
             feedStatsList.stream().forEach(nifiFeedStats -> {
-                JpaNifiFeedStats latestStats = feedStatisticsRepository.findLatestForFeed(nifiFeedStats.getFeedName());
-                if (latestStats != null) {
-                    latestStats.setLatest(false);
-                }
-                ((JpaNifiFeedStats) nifiFeedStats).setLatest(true);
-                if(latestStats != null){
-                    feedStatisticsRepository.save(latestStats);
-                }
                 feedStatisticsRepository.save(((JpaNifiFeedStats) nifiFeedStats));
             });
         }
@@ -66,5 +58,13 @@ public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider
     @Override
     public NifiFeedStats findLatestStatsForFeed(String feedName) {
         return feedStatisticsRepository.findLatestForFeed(feedName);
+    }
+
+    public List<? extends NifiFeedStats> findFeedStats(boolean streamingOnly) {
+        if (streamingOnly) {
+            return feedStatisticsRepository.findStreamingFeedStats();
+        } else {
+            return feedStatisticsRepository.findFeedStats();
+        }
     }
 }

@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisti
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
+import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NiFiFeedProcessorErrorsContainer;
 import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NiFiFeedProcessorStatsContainer;
 import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsTransform;
@@ -72,6 +73,10 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     @Inject
     NifiFeedStatisticsProvider nifiFeedStatisticsProvider;
 
+
+    @Inject
+    NifiStatsJmsReceiver nifiStatsJmsReceiver;
+
     @GET
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
@@ -89,21 +94,20 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     }
 
 
-
-
     @GET
     @Path("/{feedName}/processor-duration/{timeframe}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the list of stats for each processor within the given timeframe relative to now")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now",
+                     response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
             NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
-            List<? extends NifiFeedProcessorErrors> errors = statsProvider.findFeedProcessorErrors(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
+            List<? extends NifiFeedProcessorErrors> errors = statsProvider.findFeedProcessorErrors(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
             statsContainer.setStats(model);
             return Response.ok(statsContainer).build();
@@ -111,31 +115,41 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     }
 
 
-
     @GET
     @Path("/{feedName}/processor-errors/{timeframe}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the list of stats for each processor within the given timeframe relative to now")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now",
+                     response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findFeedProcessorErrors(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe, @QueryParam("after") Long timestamp) {
+    public Response findFeedProcessorErrors(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe,
+                                            @QueryParam("after") Long timestamp) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-        return metadataAccess.read(() -> {
-            NiFiFeedProcessorErrorsContainer container = new NiFiFeedProcessorErrorsContainer(timeframe);
-            List<? extends NifiFeedProcessorErrors> errors = null;
-            if(timestamp != null && timestamp != 0L) {
-                errors = statsProvider.findFeedProcessorErrorsAfter(feedName,new DateTime(timestamp));
+        NiFiFeedProcessorErrorsContainer container = new NiFiFeedProcessorErrorsContainer(timeframe);
+        DateTime now = DateTime.now();
+        DateTime startTime = timeframe.startTimeRelativeTo(now);
+        List<? extends NifiFeedProcessorErrors> errors = null;
+        if (nifiStatsJmsReceiver.isPersistErrors()) {
+            errors = metadataAccess.read(() -> {
+                if (timestamp != null && timestamp != 0L) {
+                    return statsProvider.findFeedProcessorErrorsAfter(feedName, new DateTime(timestamp));
+                } else {
+                    return statsProvider.findFeedProcessorErrors(feedName, startTime, now);
+                }
+            });
+        } else {
+            if (timestamp != null && timestamp != 0L) {
+                errors = nifiStatsJmsReceiver.getErrorsForFeed(feedName, timestamp);
+            } else {
+                errors = nifiStatsJmsReceiver.getErrorsForFeed(feedName, startTime.getMillis(), now.getMillis());
             }
-            else {
-                DateTime now = DateTime.now();
-                DateTime startTime = timeframe.startTimeRelativeTo(now);
-                errors =statsProvider.findFeedProcessorErrors(feedName, startTime,now);
-            }
-            List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsErrors> errorsModel = NifiFeedProcessorStatsTransform.toErrorsModel(errors);
-            container.setErrors(errorsModel);
-            return Response.ok(container).build();
-        });
+        }
+        List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsErrors> errorsModel = NifiFeedProcessorStatsTransform.toErrorsModel(errors);
+        container.setErrors(errorsModel);
+        return Response.ok(container).build();
+
+
     }
 
     @GET
@@ -151,26 +165,26 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
             NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
             NifiFeedStats feedStats = nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName);
 
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(),statsContainer.getEndTime());
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
             Integer timeInterval = 5000;
             Long diff = statsContainer.getEndTime().getMillis() - statsContainer.getStartTime().getMillis();
             DateTime start = statsContainer.getStartTime();
-            if(model != null && !model.isEmpty()){
+            if (model != null && !model.isEmpty()) {
                 //add in times based
                 Long maxTime = model.stream().map(item -> item.getMaxEventTime().getMillis()).max(Long::compare).get();
                 Long endTime = statsContainer.getEndTime().getMillis();
                 diff = endTime - maxTime;
                 start = new DateTime(maxTime);
             }
-            Long extraBlankItems = diff/timeInterval;
+            Long extraBlankItems = diff / timeInterval;
             Integer extras = extraBlankItems.intValue();
-            if(model == null){
+            if (model == null) {
                 model = new ArrayList<>();
             }
-            for(int i=0; i< extras; i++){
+            for (int i = 0; i < extras; i++) {
                 start = start.plus(timeInterval);
-                if(start.isBefore(statsContainer.getEndTime())) {
+                if (start.isBefore(statsContainer.getEndTime())) {
                     com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats stats = new com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats();
                     stats.setFeedName(feedName);
                     stats.setMinEventTime(start);
@@ -180,15 +194,14 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
             }
 
             statsContainer.setStats(model);
-            if(feedStats != null){
+            if (feedStats != null) {
                 statsContainer.setRunningFlows(feedStats.getRunningFeedFlows());
-            }
-            else {
+            } else {
                 //calc diff from finished - started
-                Long started= model.stream().mapToLong(s -> s.getJobsStarted()).sum();
-                Long finished= model.stream().mapToLong(s -> s.getJobsFinished()).sum();
+                Long started = model.stream().mapToLong(s -> s.getJobsStarted()).sum();
+                Long finished = model.stream().mapToLong(s -> s.getJobsFinished()).sum();
                 Long running = started - finished;
-                if(running <0){
+                if (running < 0) {
                     running = 0L;
                 }
                 statsContainer.setRunningFlows(running);

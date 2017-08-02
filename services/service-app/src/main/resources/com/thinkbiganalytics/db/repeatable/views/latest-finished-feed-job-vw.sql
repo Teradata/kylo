@@ -28,7 +28,12 @@ SELECT f.ID as FEED_ID,f.NAME as FEED_NAME,
        i.JOB_INSTANCE_ID as JOB_INSTANCE_ID,
        e.START_TIME,
        e.END_TIME,
-       e.STATUS,
+      CASE WHEN f.IS_STREAM = 'Y' AND feedStats.RUNNING_FEED_FLOWS IS NOT NULL
+           THEN CASE WHEN feedStats.RUNNING_FEED_FLOWS > 0 THEN 'STARTING'
+                     ELSE 'STOPPED'
+                END
+           ELSE e.STATUS
+        END AS STATUS,
        e.EXIT_CODE,
        e.EXIT_MESSAGE,
        e.IS_STREAM as IS_STREAM
@@ -37,4 +42,5 @@ INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
 INNER JOIN FEED f on f.ID = i.FEED_ID
 inner JOIN LATEST_FEED_JOB_END_TIME_VW maxJobs
                              on maxJobs.FEED_ID = f.ID
-                             and maxJobs.END_TIME =e.END_TIME;
+                             and maxJobs.END_TIME =e.END_TIME
+LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = f.id;

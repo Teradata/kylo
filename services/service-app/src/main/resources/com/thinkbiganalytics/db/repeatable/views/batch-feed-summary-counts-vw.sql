@@ -26,8 +26,13 @@ CREATE OR REPLACE VIEW BATCH_FEED_SUMMARY_COUNTS_VW AS
   count(case when e2.status <>'ABANDONED' AND (e2.status = 'FAILED' or e2.EXIT_CODE = 'FAILED') then 1 else null end) as FAILED_COUNT,
   count(case when e2.status <>'ABANDONED' AND (e2.EXIT_CODE = 'COMPLETED') then 1 else null end) as COMPLETED_COUNT,
   count(case when e2.status = 'ABANDONED'then 1 else null end) as ABANDONED_COUNT,
-  count(case when e2.status IN('STARTING','STARTED')then 1 else null end) as RUNNING_COUNT
+    case when feed.IS_STREAM = 'Y' AND feedStats.RUNNING_FEED_FLOWS IS NOT NULL
+         then feedStats.RUNNING_FEED_FLOWS
+       else count(case when e2.STATUS IN ('STARTING' , 'STARTED') then 1 else null end)
+        end as RUNNING_COUNT
   FROM   BATCH_JOB_EXECUTION e2
   INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID
   INNER JOIN CHECK_DATA_TO_FEED_VW f on f.KYLO_FEED_ID = i.FEED_ID
-  group by f.feed_id, f.feed_name;
+  INNER JOIN FEED feed ON feed.id = f.FEED_ID
+   LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = feed.id
+  group by f.feed_id, feed.IS_STREAM,f.feed_name,feedStats.RUNNING_FEED_FLOWS;

@@ -170,6 +170,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
                 //add the feedStatus field
                 OpsManagerFeedService.decorateFeedSummary(feed);
+                if(feed.stream == true && feed.feedHealth){
+                    feed.runningCount = feed.feedHealth.runningCount;
+                    if(feed.runningCount == null){
+                        feed.runningCount =0;
+                    }
+                }
 
                 if(tabState == 'Running'){
                     runningTab.addContent(feed);

@@ -22,7 +22,9 @@ package com.thinkbiganalytics.metadata.rest.jobrepo.nifi;
 
 import org.joda.time.DateTime;
 
-public class NifiFeedProcessorStatsErrors {
+import java.io.Serializable;
+
+public class NifiFeedProcessorStatsErrors implements Serializable{
 
     private String id;
     private String feedName;

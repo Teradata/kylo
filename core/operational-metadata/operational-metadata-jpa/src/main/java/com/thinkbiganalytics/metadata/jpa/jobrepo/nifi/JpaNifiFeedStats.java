@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
-import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedId;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -51,20 +50,20 @@ public class JpaNifiFeedStats implements NifiFeedStats {
     @Column(name = "TIME")
     private Long time;
 
-    @Column(name = "IS_LATEST", length = 1)
-    @org.hibernate.annotations.Type(type = "yes_no")
-    private boolean isLatest;
+    @Column(name = "LAST_ACTIVITY_TIMESTAMP")
+    private Long lastActivityTimestamp;
 
     public JpaNifiFeedStats() {
 
     }
-    public JpaNifiFeedStats(String feedName){
+
+    public JpaNifiFeedStats(String feedName) {
         this.feedName = feedName;
     }
 
-    public JpaNifiFeedStats(String feedName, OpsManagerFeedId feedId){
+    public JpaNifiFeedStats(String feedName, OpsManagerFeedId feedId) {
         this(feedName);
-        this.feedId =feedId;
+        this.feedId = feedId;
     }
 
     @Override
@@ -90,12 +89,12 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         this.runningFeedFlows = runningFeedFlows;
     }
 
-    public void addRunningFeedFlows(Long runningFeedFlows){
-        if(runningFeedFlows != null) {
+    public void addRunningFeedFlows(Long runningFeedFlows) {
+        if (runningFeedFlows != null) {
             if (this.runningFeedFlows == null) {
                 this.runningFeedFlows = 0L;
             }
-            this.runningFeedFlows +=runningFeedFlows;
+            this.runningFeedFlows += runningFeedFlows;
         }
     }
 
@@ -112,12 +111,12 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         this.feedName = feedName;
     }
 
-    public boolean isLatest() {
-        return isLatest;
+    public Long getLastActivityTimestamp() {
+        return lastActivityTimestamp;
     }
 
-    public void setLatest(boolean latest) {
-        isLatest = latest;
+    public void setLastActivityTimestamp(Long lastActivityTimestamp) {
+        this.lastActivityTimestamp = lastActivityTimestamp;
     }
 
     @Embeddable

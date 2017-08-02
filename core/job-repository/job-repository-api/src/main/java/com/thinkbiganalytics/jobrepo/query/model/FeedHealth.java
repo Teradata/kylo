@@ -146,6 +146,19 @@ public interface FeedHealth {
      */
     void setStream(boolean stream);
 
+
+    /**
+     *
+     * @return the number of jobs running for the feed
+     */
+    Long getRunningCount();
+
+    /**
+     * set the running count for this feed
+     * @param runningCount the number of jobs running for this feed
+     */
+    void setRunningCount(Long runningCount);
+
     /**
      * State indicating if the Feed has jobs Waiting (idle) or Running
      */

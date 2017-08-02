@@ -146,6 +146,7 @@ public class FeedModelTransform {
         feedHealth.setFeedId(domain.getFeedId() != null ? domain.getFeedId().toString() : null);
         feedHealth.setLastOpFeed(executedFeed(domain));
         feedHealth.setStream(domain.isStream());
+        feedHealth.setRunningCount(domain.getRunningCount());
         return feedHealth;
     }
 

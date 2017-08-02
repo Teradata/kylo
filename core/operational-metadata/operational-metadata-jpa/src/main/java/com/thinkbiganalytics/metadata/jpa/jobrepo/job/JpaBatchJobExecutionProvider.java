@@ -44,6 +44,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchRelatedFlowFile;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
@@ -53,7 +55,9 @@ import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.QJpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
@@ -80,6 +84,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,6 +133,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private MetadataEventService eventService;
+
+    @Inject
+    private NifiFeedStatisticsProvider feedStatisticsProvider;
 
 
     @Autowired
@@ -687,6 +695,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * Get count of Jobs grouped by Status
+     * Streaming Feeds are given a count of 1 if they are running, regardless of the number of active running flows
      */
     @Override
     public List<JobStatusCount> getJobStatusCount(String filter) {
@@ -699,8 +708,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
+            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
             .otherwise(jobExecution.status.stringValue());
 
         BooleanBuilder whereBuilder = new BooleanBuilder();
@@ -717,11 +726,37 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .from(jobExecution)
             .innerJoin(jobInstance).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
             .innerJoin(feed).on(jobInstance.feed.id.eq(feed.id))
-            .where(whereBuilder
+            .where(whereBuilder.and(feed.isStream.eq(false))
                        .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled())))
             .groupBy(jobExecution.status);
+        List<JobStatusCount> stats = (List<JobStatusCount>) query.fetch();
 
-        return (List<JobStatusCount>) query.fetch();
+
+        //merge in streaming feed stats
+        List<? extends NifiFeedStats> streamingFeedStats = feedStatisticsProvider.findFeedStats(true);
+        if(streamingFeedStats != null) {
+            if (stats == null) {
+                stats = new ArrayList<>();
+            }
+            Long runningCount = streamingFeedStats.stream().filter(s -> s.getRunningFeedFlows() >0L).count();
+            if(runningCount >0) {
+                JobStatusCount runningStatusCount = stats.stream().filter(s -> s.getStatus().equalsIgnoreCase(BatchJobExecution.RUNNING_DISPLAY_STATUS)).findFirst().orElse(null);
+                if (runningStatusCount != null) {
+                    runningCount = runningStatusCount.getCount()+runningCount;
+                    runningStatusCount.setCount(runningCount);
+                }
+                else {
+                    JpaBatchJobExecutionStatusCounts runningStreamingFeedCounts = new JpaBatchJobExecutionStatusCounts();
+                    runningStreamingFeedCounts.setCount(runningCount);
+                    runningStreamingFeedCounts.setStatus(BatchJobExecution.RUNNING_DISPLAY_STATUS);
+                    stats.add(runningStreamingFeedCounts);
+                }
+            }
+        }
+        return stats;
+
+
+
     }
 
     @Override
@@ -735,8 +770,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
+            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
             .otherwise(jobExecution.status.stringValue());
 
         JPAQuery
@@ -773,8 +808,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
 
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
+            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
             .otherwise(jobExecution.status.stringValue());
 
         BooleanBuilder whereBuilder = new BooleanBuilder();

@@ -29,4 +29,6 @@ public interface NifiFeedStatisticsProvider {
     void saveLatestFeedStats(List<NifiFeedStats> feedStatsList);
 
     NifiFeedStats findLatestStatsForFeed(String feedName);
+
+    List<? extends NifiFeedStats> findFeedStats(boolean streamingOnly);
 }
