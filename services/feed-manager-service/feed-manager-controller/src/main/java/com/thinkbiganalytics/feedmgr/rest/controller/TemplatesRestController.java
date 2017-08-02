@@ -24,7 +24,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
-import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowResponse;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -32,7 +31,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
@@ -116,16 +114,13 @@ public class TemplatesRestController {
     private SecurityService securityService;
 
     @Inject
-    private SecurityModelTransform actionsTransform;
+    private SecurityModelTransform securityTransform;
 
     @Inject
     RegisteredTemplateService registeredTemplateService;
 
     @Inject
     NifiFlowCache nifiFlowCache;
-
-    @Inject
-    AccessControlledEntityTransform accessControlledEntityTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -514,8 +509,8 @@ public class TemplatesRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for template: {}", templateIdStr);
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedTemplateActions(templateIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -557,8 +552,8 @@ public class TemplatesRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createTemplatePermissionChange(templateIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),
@@ -584,8 +579,7 @@ public class TemplatesRestController {
         else {
             Optional<Map<String,RoleMembership>> memberships = this.securityService.getTemplateRoleMemberships(templateIdStr);
             if(memberships.isPresent()){
-                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
-                return Response.ok(entityAccessRoleMemberships).build();
+                return Response.ok(memberships.get()).build();
             }
             else {
                 throw new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND);

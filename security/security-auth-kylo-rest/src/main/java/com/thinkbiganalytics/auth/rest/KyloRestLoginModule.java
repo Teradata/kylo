@@ -22,7 +22,7 @@ package com.thinkbiganalytics.auth.rest;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +118,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         userConfig.setUsername(username);
         userConfig.setPassword(password);
 
-        final UserPrincipal user;
+        final User user;
         try {
             user = retrieveUser(nameCallback.getName(), userConfig);
         } catch (final NotAuthorizedException e) {
@@ -146,9 +146,9 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         return true;
     }
 
-    private UserPrincipal retrieveUser(String user, final LoginJerseyClientConfig userConfig) {
+    private User retrieveUser(String user, final LoginJerseyClientConfig userConfig) {
         String endpoint = loginUser == null ? "/v1/about/me" : "/v1/security/users/" + user;
-        return getClient(userConfig).get(endpoint, null, UserPrincipal.class);
+        return getClient(userConfig).get(endpoint, null, User.class);
     }
 
     @Override

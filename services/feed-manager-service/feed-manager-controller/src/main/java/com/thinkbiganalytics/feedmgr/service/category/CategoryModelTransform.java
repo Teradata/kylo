@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -32,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
 import org.joda.time.DateTime;
 
@@ -52,7 +52,7 @@ import javax.inject.Inject;
 public class CategoryModelTransform {
 
     @Inject
-    private AccessControlledEntityTransform accessControlledEntityTransform;
+    private SecurityModelTransform securityTransform;
 
 
     /**
@@ -136,7 +136,7 @@ public class CategoryModelTransform {
             }
             category.setSecurityGroups(restSecurityGroups);
 
-            accessControlledEntityTransform.applyAccessControlToRestModel(domainCategory,category);
+            securityTransform.applyAccessControl(domainCategory,category);
 
             return category;
         } else {

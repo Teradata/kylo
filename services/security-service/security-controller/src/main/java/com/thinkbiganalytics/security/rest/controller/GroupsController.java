@@ -21,8 +21,8 @@ package com.thinkbiganalytics.security.rest.controller;
  */
 
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
+import com.thinkbiganalytics.security.rest.model.User;
 import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.springframework.stereotype.Component;
@@ -82,7 +82,7 @@ public class GroupsController {
                       @ApiResponse(code = 500, message = "There was a problem adding or updating the group.", response = RestResponseStatus.class)
                   })
     @Nonnull
-    public Response addGroup(@Nonnull final GroupPrincipal group) {
+    public Response addGroup(@Nonnull final UserGroup group) {
         userService.updateGroup(group);
         return Response.noContent().build();
     }
@@ -123,13 +123,13 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the specified group.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The requested group.", response = GroupPrincipal.class),
+                      @ApiResponse(code = 200, message = "The requested group.", response = UserGroup.class),
                       @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
                   })
     @Nonnull
     public Response getGroup(@Nonnull @PathParam("groupId") final String groupId) {
-        final GroupPrincipal group = userService.getGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
+        final UserGroup group = userService.getGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
         return Response.ok(group).build();
     }
 
@@ -142,12 +142,12 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all groups.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The list of groups.", response = GroupPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 200, message = "The list of groups.", response = UserGroup.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "There was a problem accessing the groups.", response = RestResponseStatus.class)
                   })
     @Nonnull
     public Response getGroups() {
-        final List<GroupPrincipal> groups = userService.getGroups();
+        final List<UserGroup> groups = userService.getGroups();
         return Response.ok(groups).build();
     }
 
@@ -163,13 +163,13 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all users in the specified group.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 200, message = "The list of users.", response = User.class, responseContainer = "List"),
                       @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
                   })
     @Nonnull
     public Response getUsers(@Nonnull @PathParam("groupId") final String groupId) {
-        final List<UserPrincipal> users = userService.getUsersByGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
+        final List<User> users = userService.getUsersByGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
         return Response.ok(users).build();
     }
 

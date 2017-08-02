@@ -26,13 +26,11 @@ import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
-import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -62,7 +60,6 @@ import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
-import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -164,16 +161,13 @@ public class FeedRestController {
     private SecurityService securityService;
 
     @Inject
-    private SecurityModelTransform actionsTransform;
+    private SecurityModelTransform securityTransform;
 
     @Inject
     private ServiceLevelAgreementService serviceLevelAgreementService;
 
     @Inject
     private RegisteredTemplateService registeredTemplateService;
-
-    @Inject
-    private AccessControlledEntityTransform accessControlledEntityTransform;
 
     @Inject
     private AccessController accessController;
@@ -593,10 +587,7 @@ public class FeedRestController {
         } else {
             Optional<RoleMemberships> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
             if (memberships.isPresent()) {
-                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().getAssigned().values().stream()
-                                .map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership))
-                                .collect(Collectors.toList());
-                return Response.ok(entityAccessRoleMemberships).build();
+                return Response.ok(memberships.get()).build();
             } else {
                 throw new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND);
             }
@@ -651,8 +642,8 @@ public class FeedRestController {
                                       @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for feed: {}", feedIdStr);
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedFeedActions(feedIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
             .map(g -> Response.ok(g).build())
@@ -694,8 +685,8 @@ public class FeedRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createFeedPermissionChange(feedIdStr,
                                                                ChangeType.valueOf(changeType.toUpperCase()),

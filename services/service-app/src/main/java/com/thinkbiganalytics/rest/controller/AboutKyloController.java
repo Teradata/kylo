@@ -23,7 +23,7 @@ package com.thinkbiganalytics.rest.controller;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.springframework.security.core.Authentication;
@@ -65,12 +65,12 @@ public class AboutKyloController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets information about the current user.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the user.", response = UserPrincipal.class)
+        @ApiResponse(code = 200, message = "Returns the user.", response = User.class)
     )
     public Response getCurrentUser() {
         // Create principal from current user
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        final UserPrincipal user = new UserPrincipal();
+        final User user = new User();
         user.setEnabled(true);
 
         if (auth.getPrincipal() instanceof UserDetails) {

@@ -65,7 +65,7 @@ import com.thinkbiganalytics.security.rest.controller.AccessControlController;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -842,7 +842,7 @@ public class IntegrationTestBase {
         tags.add(new DefaultTag("registrations"));
         feed.setTags(tags);
 
-        UserPrincipal owner = new UserPrincipal();
+        User owner = new User();
         owner.setSystemName("dladmin");
         owner.setDisplayName("Data Lake Admin");
         Set<String> groups = new HashSet<>();

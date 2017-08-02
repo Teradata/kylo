@@ -30,7 +30,6 @@ import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -53,10 +52,11 @@ public class JcrEntityRoleMembership extends JcrAbstractRoleMembership {
     /**
      * Wraps a parent node containing the tba:accessControlled mixin.
      * @param node the parent entity node
+     * @param roleNode the node for the role entity
+     * @param 
      */
     public JcrEntityRoleMembership(Node node, Node roleNode, JcrAllowedActions allowed) {
-        super(node);
-        JcrPropertyUtil.setProperty(node, ROLE, roleNode);
+        super(node, roleNode);
         this.allowedActions = allowed;
     }
     

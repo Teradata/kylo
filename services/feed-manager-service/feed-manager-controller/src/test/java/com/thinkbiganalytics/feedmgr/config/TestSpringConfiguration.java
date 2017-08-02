@@ -28,7 +28,6 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
@@ -440,11 +439,6 @@ public class TestSpringConfiguration {
     @Bean
     ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform() {
         return new ServiceLevelAgreementModelTransform(Mockito.mock(Model.class));
-    }
-
-    @Bean
-    AccessControlledEntityTransform accessControlledEntityTransform() {
-        return Mockito.mock(AccessControlledEntityTransform.class);
     }
 
     @Bean

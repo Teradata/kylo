@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 
 import javax.jcr.Node;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -58,19 +60,20 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
     public static final String USERS = "tba:users";
 
     public static <M extends JcrAbstractRoleMembership> M create(Node parentNode, Node roleNode, Class<M> memberClass, Object... args) {
+        Object[] constArgs = ArrayUtils.add(args, 0, roleNode);
         // This is a no-op if the membership already exists in the SNS nodes
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
-                        .map(node -> JcrUtil.getJcrObject(node, memberClass, args))
+                        .map(node -> JcrUtil.getJcrObject(node, memberClass, constArgs))
                         .filter(memshp -> memshp.getRole().getSystemName().equals(JcrUtil.getName(roleNode)))
                         .findFirst()
                         .orElseGet(() -> {
-                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, memberClass, roleNode, args);
+                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, memberClass, constArgs);
                         });
     }
 
-    public static void remove(Node parentNode, Node roleNode) {
+    public static void remove(Node parentNode, Node roleNode, Class<? extends JcrAbstractRoleMembership> memberClass) {
         JcrUtil.getNodeList(parentNode, NODE_NAME).forEach(node -> {
-            JcrEntityRoleMembership membership = JcrUtil.getJcrObject(node, JcrEntityRoleMembership.class, (JcrAllowedActions) null);
+            JcrAbstractRoleMembership membership = JcrUtil.getJcrObject(node, memberClass, roleNode, (JcrAllowedActions) null);
             
             if (membership.getRole().getSystemName().equals(JcrUtil.getName(roleNode))) {
                 JcrUtil.removeNode(node);
@@ -92,6 +95,11 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
     
     public JcrAbstractRoleMembership(Node node) {
         super(node);
+    }
+    
+    public JcrAbstractRoleMembership(Node node, Node roleNode) {
+        super(node);
+        JcrPropertyUtil.setProperty(node, ROLE, roleNode);
     }
 
     

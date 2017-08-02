@@ -100,7 +100,7 @@ public interface AccessControlledMixin extends AccessControlled, NodeEntityMixin
         if (roles.isEmpty()) {
             JcrEntityRoleMembership.removeAll(getNode());
         } else {
-            roles.forEach(role -> JcrEntityRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode()));
+            roles.forEach(role -> JcrEntityRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode(), JcrEntityRoleMembership.class));
         }
     }
 

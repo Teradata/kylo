@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import org.joda.time.DateTime;
 
@@ -115,7 +115,7 @@ public class Datasource extends EntityAccessControl implements com.thinkbiganaly
 
     @JsonIgnore
     public void setOwner(final String owner) {
-        final UserPrincipal user = new UserPrincipal();
+        final User user = new User();
         user.setSystemName(owner);
         setOwner(user);
     }

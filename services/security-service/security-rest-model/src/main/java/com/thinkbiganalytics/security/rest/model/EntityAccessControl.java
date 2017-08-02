@@ -28,7 +28,7 @@ import java.util.List;
 
 public class EntityAccessControl {
 
-    private UserPrincipal owner;
+    private User owner;
 
     private ActionGroup allowedActions;
 
@@ -63,19 +63,19 @@ public class EntityAccessControl {
             RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
             roleMembershipChange.setRoleName(membership.getRole().getSystemName());
             roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);
-            membership.getGroups().stream().forEach(group -> roleMembershipChange.getGroups().add(group));
-            membership.getUsers().stream().forEach(user -> roleMembershipChange.getUsers().add(user));
+            membership.getGroups().stream().forEach(group -> roleMembershipChange.getGroups().add(group.getSystemName()));
+            membership.getUsers().stream().forEach(user -> roleMembershipChange.getUsers().add(user.getSystemName()));
             membershipChanges.add(roleMembershipChange);
         }
         return membershipChanges;
     }
 
-    public UserPrincipal getOwner() {
+    public User getOwner() {
         return owner;
     }
 
     @JsonProperty  // allows overloaded method in Datasource to be ignored
-    public void setOwner(UserPrincipal owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
 

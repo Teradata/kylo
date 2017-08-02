@@ -416,6 +416,24 @@ public class BaseFeed implements Feed {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getInheritedRoleMemberships()
+     */
+    @Override
+    public Set<RoleMembership> getInheritedRoleMemberships() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getInheritedRoleMembership(java.lang.String)
+     */
+    @Override
+    public Optional<RoleMembership> getInheritedRoleMembership(String roleName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     @Override
     public String getJson() {
         return json;

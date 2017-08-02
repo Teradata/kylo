@@ -21,12 +21,10 @@ package com.thinkbiganalytics.security.service.user;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,7 +82,7 @@ public class UserMetadataService implements UserService {
 
     @Nonnull
     @Override
-    public Optional<GroupPrincipal> getGroup(@Nonnull final String groupId) {
+    public Optional<UserGroup> getGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
          //   accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
 
@@ -95,7 +93,7 @@ public class UserMetadataService implements UserService {
 
     @Nonnull
     @Override
-    public List<GroupPrincipal> getGroups() {
+    public List<UserGroup> getGroups() {
         return metadataAccess.read(() -> {
           //  accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
 
@@ -107,7 +105,7 @@ public class UserMetadataService implements UserService {
 
     @Nonnull
     @Override
-    public Optional<UserPrincipal> getUser(@Nonnull final String userId) {
+    public Optional<User> getUser(@Nonnull final String userId) {
         return metadataAccess.read(() -> {
           //  accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
 
@@ -118,7 +116,7 @@ public class UserMetadataService implements UserService {
 
     @Nonnull
     @Override
-    public List<UserPrincipal> getUsers() {
+    public List<User> getUsers() {
         return metadataAccess.read(() -> {
          //   accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
 
@@ -130,7 +128,7 @@ public class UserMetadataService implements UserService {
 
     @Nonnull
     @Override
-    public Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull final String groupId) {
+    public Optional<List<User>> getUsersByGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
         //    accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS, UsersGroupsAccessContol.ACCESS_USERS);
 
@@ -142,35 +140,35 @@ public class UserMetadataService implements UserService {
     }
 
     @Override
-    public void updateGroup(@Nonnull final GroupPrincipal principal) {
+    public void updateGroup(@Nonnull final UserGroup group) {
         metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
 
-            final UserGroup group = userProvider.findGroupByName(principal.getSystemName())
-                .orElseGet(() -> userProvider.createGroup(principal.getSystemName()));
-            group.setDescription(principal.getDescription());
-            group.setTitle(principal.getTitle());
-            return userProvider.updateGroup(group);
+            final com.thinkbiganalytics.metadata.api.user.UserGroup domain = userProvider.findGroupByName(group.getSystemName())
+                .orElseGet(() -> userProvider.createGroup(group.getSystemName()));
+            domain.setDescription(group.getDescription());
+            domain.setTitle(group.getTitle());
+            return userProvider.updateGroup(domain);
         });
     }
 
     @Override
-    public void updateUser(@Nonnull final UserPrincipal principal) {
+    public void updateUser(@Nonnull final User user) {
         metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_USERS);
 
-            final User user = userProvider.findUserBySystemName(principal.getSystemName())
-                .orElseGet(() -> userProvider.createUser(principal.getSystemName()));
-            user.setDisplayName(principal.getDisplayName());
-            user.setEmail(principal.getEmail());
-            user.setEnabled(principal.isEnabled());
+            final com.thinkbiganalytics.metadata.api.user.User domain = userProvider.findUserBySystemName(user.getSystemName())
+                .orElseGet(() -> userProvider.createUser(user.getSystemName()));
+            domain.setDisplayName(user.getDisplayName());
+            domain.setEmail(user.getEmail());
+            domain.setEnabled(user.isEnabled());
 
-            final Set<UserGroup> groups = principal.getGroups().stream()
+            final Set<com.thinkbiganalytics.metadata.api.user.UserGroup> groups = user.getGroups().stream()
                 .map(groupName -> userProvider.findGroupByName(groupName).get())
                 .collect(Collectors.toSet());
-            user.setGroups(groups);
+            domain.setGroups(groups);
 
-            return userProvider.updateUser(user);
+            return userProvider.updateUser(domain);
         });
     }
 }

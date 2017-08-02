@@ -52,7 +52,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 public class CategoryDetails extends JcrPropertiesEntity {
     
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
-    public static final String FEED_ROLE_DEFAULTS = "tba:CategoryFeedRoleDefaults";
+    public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
 
     /**
      * @param node
@@ -96,14 +96,14 @@ public class CategoryDetails extends JcrPropertiesEntity {
     }
 
     public Set<RoleMembership> getFeedRoleMemberships() {
-        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_DEFAULTS);
+        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_MEMBERSHIPS);
         return JcrUtil.getPropertyObjectSet(defaultsNode, JcrAbstractRoleMembership.NODE_NAME, JcrFeedDefaultRoleMembership.class, this).stream()
                         .map(RoleMembership.class::cast)
                         .collect(Collectors.toSet());
     }
     
     public Optional<RoleMembership> getFeedRoleMembership(String roleName) {
-        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_DEFAULTS);
+        Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_MEMBERSHIPS);
         return JcrEntityRoleMembership.find(defaultsNode, roleName, JcrFeedDefaultRoleMembership.class, this).map(RoleMembership.class::cast);
     }
 }

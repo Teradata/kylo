@@ -28,7 +28,7 @@ import java.util.Set;
  * Metadata for a user with access to Kylo.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserPrincipal {
+public class User {
 
     /**
      * Display name for this user
@@ -54,6 +54,13 @@ public class UserPrincipal {
      * Username for this user
      */
     private String systemName;
+    
+    public User() {
+    }
+    
+    public User(String sysName) {
+        this.systemName = sysName;
+    }
 
     /**
      * Gets the display name for this user.

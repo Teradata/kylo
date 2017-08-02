@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
 import com.thinkbiganalytics.security.rest.model.Role;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -72,7 +72,7 @@ public class RolesController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns all the roles defined for each kind of entity.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The list of entity/roles mappings.", response = GroupPrincipal.class),
+                      @ApiResponse(code = 200, message = "The list of entity/roles mappings.", response = UserGroup.class),
                       @ApiResponse(code = 500, message = "There was a problem accessing the roles.", response = RestResponseStatus.class)
                   })
     public Map<String, List<Role>> getRoles() {
@@ -89,7 +89,7 @@ public class RolesController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns all the roles defined for the a particular kind of entity.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The list of roles defined for the entity.", response = GroupPrincipal.class),
+                      @ApiResponse(code = 200, message = "The list of roles defined for the entity.", response = UserGroup.class),
                       @ApiResponse(code = 500, message = "There was a problem accessing the roles.", response = RestResponseStatus.class)
                   })
     public List<Role> getEntityRoles(@PathParam("entity") String entityName) {

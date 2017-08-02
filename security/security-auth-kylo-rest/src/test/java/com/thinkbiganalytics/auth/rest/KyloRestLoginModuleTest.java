@@ -22,7 +22,7 @@ package com.thinkbiganalytics.auth.rest;
 
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,13 +49,13 @@ public class KyloRestLoginModuleTest {
     @Test
     public void test() throws Exception {
         // Mock REST client
-        final UserPrincipal user = new UserPrincipal();
+        final User user = new User();
         user.setEnabled(true);
         user.setGroups(ImmutableSet.of("designers", "operators"));
         user.setSystemName("dladmin");
 
         final JerseyRestClient client = Mockito.mock(JerseyRestClient.class);
-        Mockito.when(client.get("/v1/about/me", null, UserPrincipal.class)).thenReturn(user);
+        Mockito.when(client.get("/v1/about/me", null, User.class)).thenReturn(user);
 
         // Mock callback handler
         final CallbackHandler callbackHandler = callbacks -> Arrays.stream(callbacks).forEach(callback -> {

@@ -29,7 +29,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -48,6 +47,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -79,8 +79,9 @@ public class FeedModelTransform {
 
     @Inject
     private FeedProvider feedProvider;
+    
     @Inject
-    private AccessControlledEntityTransform accessControlledEntityTransform;
+    private SecurityModelTransform securityTransform;
 
     @Inject
     private TemplateModelTransform templateModelTransform;
@@ -345,7 +346,7 @@ public class FeedModelTransform {
         }
 
         //add in access control items
-        accessControlledEntityTransform.applyAccessControlToRestModel(domain, feed);
+        securityTransform.applyAccessControl(domain, feed);
 
         return feed;
     }
@@ -389,7 +390,7 @@ public class FeedModelTransform {
             }
         }
         //add in access control items
-        accessControlledEntityTransform.applyAccessControlToRestModel(feedManagerFeed, feedSummary);
+        securityTransform.applyAccessControl(feedManagerFeed, feedSummary);
 
         return feedSummary;
 

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.security.rest.controller;
  */
 
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.User;
 import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.springframework.stereotype.Component;
@@ -81,7 +81,7 @@ public class UsersController {
                       @ApiResponse(code = 500, message = "There was a problem adding or updating the user.", response = RestResponseStatus.class)
                   })
     @Nonnull
-    public Response addUser(@Nonnull final UserPrincipal user) {
+    public Response addUser(@Nonnull final User user) {
         userService.updateUser(user);
         return Response.noContent().build();
     }
@@ -122,13 +122,13 @@ public class UsersController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the specified user.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The requested user.", response = UserPrincipal.class),
+                      @ApiResponse(code = 200, message = "The requested user.", response = User.class),
                       @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem accessing the user.", response = RestResponseStatus.class)
                   })
     @Nonnull
     public Response getUser(@Nonnull @PathParam("userId") final String userId) {
-        final UserPrincipal user = userService.getUser(decodeUserId(userId)).orElseThrow(NotFoundException::new);
+        final User user = userService.getUser(decodeUserId(userId)).orElseThrow(NotFoundException::new);
         return Response.ok(user).build();
     }
 
@@ -141,12 +141,12 @@ public class UsersController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all users.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 200, message = "The list of users.", response = User.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "There was a problem accessing the users.", response = RestResponseStatus.class)
                   })
     @Nonnull
     public Response getUsers() {
-        final List<UserPrincipal> users = userService.getUsers();
+        final List<User> users = userService.getUsers();
         return Response.ok(users).build();
     }
 

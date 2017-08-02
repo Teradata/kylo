@@ -39,9 +39,14 @@ public class JcrFeedDefaultRoleMembership extends JcrAbstractRoleMembership {
     
     private CategoryDetails category;
     
-
+    
     public JcrFeedDefaultRoleMembership(Node node, CategoryDetails cat) {
         super(node);
+        this.category = cat;
+    }
+
+    public JcrFeedDefaultRoleMembership(Node node, Node roleNode, CategoryDetails cat) {
+        super(node, roleNode);
         this.category = cat;
     }
 

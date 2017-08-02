@@ -20,8 +20,8 @@ package com.thinkbiganalytics.security.service.user;
  * #L%
  */
 
-import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
+import com.thinkbiganalytics.security.rest.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +56,7 @@ public interface UserService {
      * @return the group, if found
      */
     @Nonnull
-    Optional<GroupPrincipal> getGroup(@Nonnull String groupId);
+    Optional<UserGroup> getGroup(@Nonnull String groupId);
 
     /**
      * Gets a list of all groups in Kylo.
@@ -64,7 +64,7 @@ public interface UserService {
      * @return all groups
      */
     @Nonnull
-    List<GroupPrincipal> getGroups();
+    List<UserGroup> getGroups();
 
     /**
      * Gets the user with the specified system name.
@@ -73,7 +73,7 @@ public interface UserService {
      * @return the user, if found
      */
     @Nonnull
-    Optional<UserPrincipal> getUser(@Nonnull String userId);
+    Optional<User> getUser(@Nonnull String userId);
 
     /**
      * Gets a list of all users in Kylo.
@@ -81,7 +81,7 @@ public interface UserService {
      * @return all users
      */
     @Nonnull
-    List<UserPrincipal> getUsers();
+    List<User> getUsers();
 
     /**
      * Gets the list of users belonging to the specified group.
@@ -90,19 +90,19 @@ public interface UserService {
      * @return the users
      */
     @Nonnull
-    Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull String groupId);
+    Optional<List<User>> getUsersByGroup(@Nonnull String groupId);
 
     /**
      * Adds or updates the specified group.
      *
      * @param group the group
      */
-    void updateGroup(@Nonnull GroupPrincipal group);
+    void updateGroup(@Nonnull UserGroup group);
 
     /**
      * Adds or updates the specified user.
      *
      * @param user the user
      */
-    void updateUser(@Nonnull UserPrincipal user);
+    void updateUser(@Nonnull User user);
 }

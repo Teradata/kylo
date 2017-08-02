@@ -22,11 +22,9 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.beanvalidation.NewFeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -98,10 +96,7 @@ public class FeedCategoryRestController {
     private SecurityService securityService;
 
     @Inject
-    private SecurityModelTransform actionsTransform;
-
-    @Inject
-    AccessControlledEntityTransform accessControlledEntityTransform;
+    private SecurityModelTransform securityTransform;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -273,8 +268,8 @@ public class FeedCategoryRestController {
                                          @QueryParam("group") Set<String> groupNames) {
         log.debug("Get allowed actions for category: {}", categoryIdStr);
         
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedCategoryActions(categoryIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
                         .map(g -> Response.ok(g).build())
@@ -316,8 +311,8 @@ public class FeedCategoryRestController {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createCategoryPermissionChange(categoryIdStr, 
                                                                ChangeType.valueOf(changeType.toUpperCase()), 
@@ -343,8 +338,7 @@ public class FeedCategoryRestController {
         else {
             Optional<Map<String,RoleMembership>> memberships = this.securityService.getCategoryRoleMemberships(categoryIdStr);
             if(memberships.isPresent()){
-                List<EntityAccessRoleMembership> entityAccessRoleMemberships = memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
-                return Response.ok(entityAccessRoleMemberships).build();
+                return Response.ok(memberships.get()).build();
             }
             else {
                 throw new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND);

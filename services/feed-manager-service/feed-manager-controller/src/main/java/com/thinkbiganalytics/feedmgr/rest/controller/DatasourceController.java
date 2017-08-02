@@ -25,9 +25,7 @@ import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.rest.Model;
-import com.thinkbiganalytics.feedmgr.rest.model.EntityAccessRoleMembership;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -133,10 +131,7 @@ public class DatasourceController {
     private SecurityService securityService;
 
     @Inject
-    private SecurityModelTransform actionsTransform;
-
-    @Inject
-    private AccessControlledEntityTransform accessControlledEntityTransform;
+    private SecurityModelTransform securityTransform;
 
     /**
      * Gets a list of datasource that match the criteria provided.
@@ -229,7 +224,7 @@ public class DatasourceController {
             if (ds != null) {
                 final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
                 if (ds instanceof AccessControlled) {
-                    accessControlledEntityTransform.applyAccessControlToRestModel((AccessControlled) ds, restModel);
+                    securityTransform.applyAccessControl((AccessControlled) ds, restModel);
                 }
                 return restModel;
             } else {
@@ -403,8 +398,8 @@ public class DatasourceController {
     public Response getAllowedActions(@PathParam("id") final String datasourceIdStr, @QueryParam("user") final Set<String> userNames, @QueryParam("group") final Set<String> groupNames) {
         log.debug("Get allowed actions for data source: {}", datasourceIdStr);
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.getAllowedDatasourceActions(datasourceIdStr, Stream.concat(users.stream(), groups.stream()).collect(Collectors.toSet()))
             .map(g -> Response.ok(g).build())
@@ -445,8 +440,8 @@ public class DatasourceController {
             throw new WebApplicationException("The query parameter \"type\" is required", Response.Status.BAD_REQUEST);
         }
 
-        Set<? extends Principal> users = Arrays.stream(this.actionsTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
-        Set<? extends Principal> groups = Arrays.stream(this.actionsTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
+        Set<? extends Principal> users = Arrays.stream(this.securityTransform.asUserPrincipals(userNames)).collect(Collectors.toSet());
+        Set<? extends Principal> groups = Arrays.stream(this.securityTransform.asGroupPrincipals(groupNames)).collect(Collectors.toSet());
 
         return this.securityService.createDatasourcePermissionChange(datasourceIdStr,
                                                                      PermissionsChange.ChangeType.valueOf(changeType.toUpperCase()),
@@ -471,10 +466,7 @@ public class DatasourceController {
         } else {
             Optional<Map<String, RoleMembership>> memberships = this.securityService.getDatasourceRoleMemberships(datasourceIdStr);
             if (memberships.isPresent()) {
-                List<EntityAccessRoleMembership>
-                    entityAccessRoleMemberships =
-                    memberships.get().values().stream().map(roleMembership -> accessControlledEntityTransform.toEntityAccessRoleMembership(roleMembership)).collect(Collectors.toList());
-                return Response.ok(entityAccessRoleMemberships).build();
+                return Response.ok(memberships.get()).build();
             } else {
                 throw new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND);
             }

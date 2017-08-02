@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
@@ -45,7 +44,7 @@ import javax.inject.Inject;
 public class TemplateModelTransform {
 
     @Inject
-    private AccessControlledEntityTransform accessControlledEntityTransform;
+    private SecurityModelTransform securityTransform;
 
     @Inject
     private EncryptionService encryptionService;
@@ -196,7 +195,7 @@ public class TemplateModelTransform {
                 template.setOrder(domain.getOrder());
                 template.setTemplateTableOption(domain.getTemplateTableOption());
 
-                accessControlledEntityTransform.applyAccessControlToRestModel(domain, template);
+                securityTransform.applyAccessControl(domain, template);
 
                 return template;
             }

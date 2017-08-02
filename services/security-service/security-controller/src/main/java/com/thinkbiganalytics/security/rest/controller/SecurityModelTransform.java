@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.security.rest.controller;
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+
 /*-
  * #%L
  * thinkbig-security-controller
@@ -29,27 +32,39 @@ import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.rest.model.Action;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.Role;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
+import com.thinkbiganalytics.security.rest.model.User;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.service.user.UserService;
 
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 /**
  * Contains transformation functions and methods for converting objects between
  * the REST and domain access control models.
  */
 public class SecurityModelTransform {
+
+    @Inject
+    private UserService userService;
 
     public Function<AllowedActions, PermissionsChange> toPermissionsChange(ChangeType changeType,
                                                                            String name,
@@ -116,15 +131,98 @@ public class SecurityModelTransform {
             membership.setRole(toRole().apply(domain.getRole()));
             domain.getMembers().forEach(p -> {
                 if (p instanceof Group) {
-                    membership.getGroups().add(p.getName());
+                    UserGroup userGroup = this.userService.getGroup(p.getName())
+                                    .map(ug -> ug)
+                                    .orElse(new UserGroup(p.getName()));
+                    membership.getGroups().add(userGroup);
                 } else {
-                    membership.getUsers().add(p.getName());
+                    User user = this.userService.getUser(p.getName())
+                                    .map(u -> u)
+                                    .orElse(new User(p.getName()));
+                    membership.getUsers().add(user);
                 }
             });
             return membership;        
         };
     }
     
+    public Function<AccessControlled, EntityAccessControl> toEntityAccessControl() {
+        return (domain) -> {
+            EntityAccessControl restModel = new EntityAccessControl();
+            
+            if (domain.getAllowedActions() != null && domain.getAllowedActions().getAvailableActions() != null) {
+                ActionGroup allowed = toActionGroup(null).apply(domain.getAllowedActions());
+                restModel.setAllowedActions(allowed);
+            }
+
+            if (domain.getRoleMemberships() != null) {
+                Map<String, RoleMembership> roleAssignmentMap = new HashMap<>();
+                domain.getRoleMemberships().stream().forEach(membership -> {
+
+                    String systemRoleName = membership.getRole().getSystemName();
+                    String name = membership.getRole().getTitle();
+                    String desc = membership.getRole().getDescription();
+
+                    membership.getMembers().stream().forEach(member -> {
+                        roleAssignmentMap.putIfAbsent(systemRoleName, new RoleMembership(systemRoleName, name, desc));
+
+                        RoleMembership accessRoleAssignment = roleAssignmentMap.get(systemRoleName);
+                        if (member instanceof UsernamePrincipal) {
+                            accessRoleAssignment.addUser(member.getName());
+                        } else {
+                            accessRoleAssignment.addGroup(member.getName());
+                        }
+                    });
+
+                });
+                restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
+            }
+            
+            Principal owner = domain.getOwner();
+            Optional<User> userPrincipal = userService.getUser(owner.getName());
+            if (userPrincipal.isPresent()) {
+                restModel.setOwner(userPrincipal.get());
+            }
+            
+            return restModel;
+        };
+    }
+    
+    public void applyAccessControl(AccessControlled domain, EntityAccessControl restModel) {
+        if (domain.getAllowedActions() != null && domain.getAllowedActions().getAvailableActions() != null) {
+            ActionGroup allowed = toActionGroup(null).apply(domain.getAllowedActions());
+            restModel.setAllowedActions(allowed);
+        }
+
+        if (domain.getRoleMemberships() != null) {
+            Map<String, RoleMembership> roleAssignmentMap = new HashMap<>();
+            domain.getRoleMemberships().stream().forEach(membership -> {
+
+                String systemRoleName = membership.getRole().getSystemName();
+                String name = membership.getRole().getTitle();
+                String desc = membership.getRole().getDescription();
+
+                membership.getMembers().stream().forEach(member -> {
+                    roleAssignmentMap.putIfAbsent(systemRoleName, new RoleMembership(systemRoleName, name, desc));
+
+                    RoleMembership accessRoleAssignment = roleAssignmentMap.get(systemRoleName);
+                    if (member instanceof UsernamePrincipal) {
+                        accessRoleAssignment.addUser(member.getName());
+                    } else {
+                        accessRoleAssignment.addGroup(member.getName());
+                    }
+                });
+
+            });
+            restModel.setRoleMemberships(Lists.newArrayList(roleAssignmentMap.values()));
+        }
+        Principal owner = domain.getOwner();
+        Optional<User> userPrincipal = userService.getUser(owner.getName());
+        if (userPrincipal.isPresent()) {
+            restModel.setOwner(userPrincipal.get());
+        }
+    }
+
     public void addAction(PermissionsChange change, List<? extends com.thinkbiganalytics.security.action.Action> hierarchy) {
         ActionGroup actionSet = change.getActionSet();
         for (com.thinkbiganalytics.security.action.Action action : hierarchy) {

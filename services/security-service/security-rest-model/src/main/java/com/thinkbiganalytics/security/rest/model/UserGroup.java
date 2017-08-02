@@ -20,7 +20,7 @@ package com.thinkbiganalytics.security.rest.model;
  * #L%
  */
 
-public class GroupPrincipal {
+public class UserGroup {
 
     /**
      * A human-readable summary
@@ -41,6 +41,13 @@ public class GroupPrincipal {
      * Human-readable name
      */
     private String title;
+    
+    public UserGroup() {
+    }
+
+    public UserGroup(String systemName) {
+        this.systemName = systemName;
+    }
 
     /**
      * Gets a human-readable description of this group.

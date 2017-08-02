@@ -27,7 +27,6 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
-import com.thinkbiganalytics.feedmgr.service.AccessControlledEntityTransform;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -258,11 +257,6 @@ public class FeedManagerConfiguration {
     @Nonnull
     public ServiceLevelAgreementModelTransform serviceLevelAgreementModelTransform(@Nonnull final Model model) {
         return new ServiceLevelAgreementModelTransform(model);
-    }
-
-    @Bean
-    AccessControlledEntityTransform accessControlledEntityTransform() {
-        return new AccessControlledEntityTransform();
     }
 
 
