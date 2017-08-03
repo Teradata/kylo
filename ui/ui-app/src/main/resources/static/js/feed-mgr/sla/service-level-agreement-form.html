@@ -46,7 +46,7 @@
     <span class="md-body-2">SLA Conditions</span>
 
     <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding-left-right">
-      <div layout="row" flex>
+      <div layout="row">
         <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
         <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
           <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
