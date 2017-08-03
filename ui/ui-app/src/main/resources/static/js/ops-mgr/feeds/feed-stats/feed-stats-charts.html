@@ -22,7 +22,6 @@
   <div layout="column" ng-if="vm.dataLoaded" layout-padding>
 
 
-    <div flex>
       <md-card layout-align="center center">
         <md-card-content layout="column" style="width:100%;">
           <div layout="row" class="layout-padding-left">
@@ -38,7 +37,6 @@
               </div>
               <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
                 <div layout="column">
-                  <span style="padding-top:30px;">&nbsp;</span>
                   <md-progress-linear md-mode="indeterminate"></md-progress-linear>
                 </div>
 
@@ -51,7 +49,6 @@
 
         </md-card-content>
       </md-card>
-    </div>
 
     <div ng-if="vm.feedProcessorErrors.visibleData.length >0">
       <md-card>
@@ -107,7 +104,7 @@
 
 
     <div layout="row" layout-sm="column" layout-xs="column">
-      <div flex layout="column" flex-gt-sm="70" flex="100" flex-order="1" flex-order-xs="2" flex-order-sm="2">
+      <div layout-fill layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
         <!-- THE KPIs -->
         <div layout="row" layout-xs="column" layout-wrap layout-align="space-between center" class="kpi-row">
 
@@ -164,7 +161,7 @@
         </div>
         <!-- END KPIs -->
 
-        <div flex>
+        <div>
           <md-card layout-align="start start" style="margin-left: 0px;margin-right: 0px;">
             <span class="card-title kpi-header layout-padding-left">Flow Rate</span>
             <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Monitor the rate of the feed flows</span>
@@ -201,7 +198,7 @@
 
       </div>
 
-      <div flex="100" flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left">
+      <div flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left">
         <card-layout class="right-card">
           <header-section>
             <div layout="column">
