@@ -77,9 +77,9 @@ public class SearchRestController {
             return Response.ok(result)
                 .build();
         } else {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity("Search functionality is not available since no search engine is configured.")
-                .build();
+            RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
+            builder.message("Search functionality is not available since no search engine is configured.");
+            return Response.accepted(builder.buildError()).status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
