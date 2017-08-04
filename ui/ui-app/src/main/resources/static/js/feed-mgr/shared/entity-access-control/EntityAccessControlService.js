@@ -31,19 +31,21 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
             }
         }
 
-        function queryForRoleAssignments(entity, entityType) {
+        function queryForRoleAssignments(entity, membersType) {
             if (entity && entity.id && entity.id != null) {
                 var url = '';
-                if (entityType === 'feed') {
+                if (membersType === 'feed') {
                     url = RestUrlService.FEED_ROLES_URL(entity.id);
-                } else if (entityType === 'category') {
+                } else if (membersType === 'category-roles') {
                     url = RestUrlService.CATEGORY_ROLES_URL(entity.id);
-                } else if (entityType === 'template') {
+                } else if (membersType === 'category-feed-roles') {
+                	url = RestUrlService.CATEGORY_FEED_ROLES_URL(entity.id);
+                } else if (membersType === 'template') {
                     url = RestUrlService.TEMPLATE_ROLES_URL(entity.id);
-                } else if (entityType === "datasource") {
+                } else if (membersType === "datasource") {
                     url = RestUrlService.DATASOURCE_ROLES_URL(entity.id);
                 }
-                return $http.get(url, {params: {verbose: true}});
+                return $http.get(url);
             }
             else {
                 var deferred = $q.defer();
@@ -57,18 +59,18 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
 
         var svc = angular.extend(EntityAccessControlService.prototype, AccessConstants);
 
-        var data= angular.extend(svc, {
+        var data = angular.extend(svc, {
             entityTypes: {CATEGORY: "category", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource"},
 
 
             /**
-             * ensure the entity.roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
+             * Ensure the entity's roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
              * @param entity the entity to save
              */
-            updateEntityForSave: function (entity) {
+            updateRoleMembershipsForSave: function (roleMemberships) {
 
-               if(entity.roleMemberships){
-                   _.each(entity.roleMemberships,function(roleMembership){
+               if(roleMemberships){
+                   _.each(roleMemberships, function(roleMembership){
                        var users = [];
                        var groups = [];
                        var update = false;
@@ -76,7 +78,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                            //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
                            var update = roleMembership.members.length == 0;
                            _.each(roleMembership.members, function (member) {
-                               if (angular.isDefined(member.type)) {
+                               if (angular.isDefined(member.type) && angular.isDefined(member.editable) && member.editable) {
                                    if (member.type == 'user') {
                                        users.push(member.systemName);
                                    }
@@ -95,43 +97,60 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
 
                 }
             },
+
             /**
              * Merges all possible roles for this entity, with the assigned roles/memberships
              */
-            mergeRoleAssignments: function (entity, entityType) {
+            mergeRoleAssignments: function (entity, membershipType, entityRoleMemberships) {
                 var deferred = $q.defer();
                 var existingModelRoleAssignments = {};
-                queryForRoleAssignments(entity, entityType).then(function (response) {
-                    entity.roleMemberships = [];
-                    _.each(response.data, function (roleMembership, roleName) {
-                        entity.roleMemberships.push(roleMembership);
+                queryForRoleAssignments(entity, membershipType).then(function (response) {
+                	entityRoleMemberships.splice(0, entityRoleMemberships.length);
+                	
+                    // TODO: Consolidate the common behavior in the 2 loops below into a single function
+                    _.each(response.data.inherited, function (roleMembership, roleName) {
+                    	entityRoleMemberships.push(roleMembership);
+                    	existingModelRoleAssignments[roleMembership.role.systemName] = roleMembership;
+                    	roleMembership.members = [];
+                    	
+                    	augmentRoleWithUiModel(roleMembership);
+                    	_.each(roleMembership.groups, function (group) {
+                    		group.editable = false;
+                    		group.type = 'group';
+                    		group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
+                    		roleMembership.members.push(group)
+                    	});
+                    	_.each(roleMembership.users, function (user) {
+                    		group.editable = false;
+                    		user.type = 'user';
+                    		user.title = user.displayName;
+                    		roleMembership.members.push(user)
+                    	})
+                    });
+                    _.each(response.data.assigned, function (roleMembership, roleName) {
+                    	if (angular.isUndefined(existingModelRoleAssignments[roleMembership.role.systemName])) {
+                    		existingModelRoleAssignments[roleMembership.role.systemName] = roleMembership;
+                        	entityRoleMemberships.push(roleMembership);
+                    	}
 
-                        existingModelRoleAssignments[roleMembership.role.systemName] = roleMembership;
-                        augmentRoleWithUiModel(roleMembership);
-                        roleMembership.members = [];
+                    	var existingMembership = existingModelRoleAssignments[roleMembership.role.systemName];
+
+                        augmentRoleWithUiModel(existingMembership);
                         _.each(roleMembership.groups, function (group) {
+                        	group.editable = true;
                             group.type = 'group';
                             group.title = (group.title == null || angular.isUndefined(group.title)) ? group.systemName : group.title;
-                            roleMembership.members.push(group)
+                            existingMembership.members.push(group)
                         });
                         _.each(roleMembership.users, function (user) {
+                        	group.editable = true;
                             user.type = 'user';
                             user.title = user.displayName;
-                            roleMembership.members.push(user)
+                            existingMembership.members.push(user)
                         })
                     });
 
-                    //get the available roles for this entity (might need to add a method to AccessControlService to getRolesForEntityType()
-                    AccessControlService.getEntityRoles(entityType).then(function (roles) {
-                        _.each(roles, function (role) {
-                            if (angular.isUndefined(existingModelRoleAssignments[role.systemName])) {
-                                var membership = {role: role};
-                                augmentRoleWithUiModel(membership);
-                                entity.roleMemberships.push(membership);
-                            }
-                        });
-                        deferred.resolve(entity.roleMemberships);
-                    });
+                    deferred.resolve(entityRoleMemberships);
 
                 });
 
@@ -139,6 +158,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
             }
 
         });
+        
         return data;
     }]);
 

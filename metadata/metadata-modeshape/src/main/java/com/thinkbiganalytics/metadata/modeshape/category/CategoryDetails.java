@@ -43,8 +43,10 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**
  *
@@ -105,5 +107,10 @@ public class CategoryDetails extends JcrPropertiesEntity {
     public Optional<RoleMembership> getFeedRoleMembership(String roleName) {
         Node defaultsNode = JcrUtil.getNode(getNode(), FEED_ROLE_MEMBERSHIPS);
         return JcrEntityRoleMembership.find(defaultsNode, roleName, JcrFeedDefaultRoleMembership.class, this).map(RoleMembership.class::cast);
+    }
+    
+    protected void enableFeedRoles(List<SecurityRole> feedRoles) {
+        Node feedRolesNode = JcrUtil.getNode(getNode(), FEED_ROLE_MEMBERSHIPS);
+        feedRoles.forEach(role -> JcrAbstractRoleMembership.create(feedRolesNode, ((JcrSecurityRole) role).getNode(), JcrFeedDefaultRoleMembership.class, this));
     }
 }

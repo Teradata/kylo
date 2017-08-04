@@ -46,6 +46,7 @@ import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -459,18 +460,9 @@ public class DatasourceController {
                       @ApiResponse(code = 404, message = "A data source with the given ID does not exist.", response = RestResponseStatus.class)
                   })
     public Response getRoleMemberships(@PathParam("id") final String datasourceIdStr, @QueryParam("verbose") @DefaultValue("false") final boolean verbose) {
-        if (!verbose) {
-            return this.securityService.getDatasourceRoleMemberships(datasourceIdStr)
-                .map(m -> Response.ok(m).build())
-                .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
-        } else {
-            Optional<Map<String, RoleMembership>> memberships = this.securityService.getDatasourceRoleMemberships(datasourceIdStr);
-            if (memberships.isPresent()) {
-                return Response.ok(memberships.get()).build();
-            } else {
-                throw new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND);
-            }
-        }
+        return this.securityService.getDatasourceRoleMemberships(datasourceIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
     }
 
     @POST

@@ -154,6 +154,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             //TODO only do this when modifying the access control
             if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
                 categoryUpdate.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
+                categoryUpdate.toFeedRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryFeedRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
             }
 
             return domainCategory.getId();

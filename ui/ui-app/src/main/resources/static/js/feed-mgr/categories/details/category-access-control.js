@@ -30,6 +30,10 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
         if (CategoriesService.model.roleMemberships == undefined) {
             CategoriesService.model.roleMemberships = this.model.roleMemberships = [];
         }
+        
+        if (CategoriesService.model.feedRoleMemberships == undefined) {
+        	CategoriesService.model.feedRoleMemberships = this.model.feedRoleMemberships = [];
+        }
 
         /**
          * Indicates if the properties may be edited.
@@ -82,12 +86,15 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
         self.onSave = function () {
             var model = angular.copy(CategoriesService.model);
             model.roleMemberships = self.editModel.roleMemberships;
+            model.feedRoleMemberships = self.editModel.feedRoleMemberships;
             model.owner = self.editModel.owner;
-            EntityAccessControlService.updateEntityForSave(model);
+            EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+            EntityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
 
             CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
-                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.CATEGORY)
+                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.CATEGORY, self.model.roleMemberships)
+                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.CATEGORY, self.model.feedRoleMemberships)
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()

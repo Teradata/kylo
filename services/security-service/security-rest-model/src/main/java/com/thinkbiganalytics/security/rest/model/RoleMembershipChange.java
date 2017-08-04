@@ -51,6 +51,14 @@ public class RoleMembershipChange {
         this.change = change;
         this.roleName = roleName;
     }
+    
+    public RoleMembershipChange(ChangeType change, RoleMembership membership) {
+        super();
+        this.change = change;
+        this.roleName = membership.getRole().getSystemName();
+        membership.getUsers().forEach(u -> this.users.add(u.getSystemName()));
+        membership.getGroups().forEach(g -> this.groups.add(g.getSystemName()));
+    }
 
     public ChangeType getChange() {
         return change;

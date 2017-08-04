@@ -571,20 +571,9 @@ public class TemplatesRestController {
         @ApiResponse(code = 404, message = "A template with the given ID does not exist.", response = RestResponseStatus.class)
     })
     public Response getRoleMemberships(@PathParam("templateId") String templateIdStr,@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
-        if(!verbose) {
-            return this.securityService.getTemplateRoleMemberships(templateIdStr)
-                .map(m -> Response.ok(m).build())
-                .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
-        }
-        else {
-            Optional<Map<String,RoleMembership>> memberships = this.securityService.getTemplateRoleMemberships(templateIdStr);
-            if(memberships.isPresent()){
-                return Response.ok(memberships.get()).build();
-            }
-            else {
-                throw new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND);
-            }
-        }
+        return this.securityService.getTemplateRoleMemberships(templateIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
     }
     
 

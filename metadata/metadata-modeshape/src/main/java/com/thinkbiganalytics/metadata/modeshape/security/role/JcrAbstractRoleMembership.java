@@ -60,14 +60,14 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
     public static final String USERS = "tba:users";
 
     public static <M extends JcrAbstractRoleMembership> M create(Node parentNode, Node roleNode, Class<M> memberClass, Object... args) {
-        Object[] constArgs = ArrayUtils.add(args, 0, roleNode);
-        // This is a no-op if the membership already exists in the SNS nodes
+        Object[] argsWithRole = ArrayUtils.add(args, 0, roleNode);
+        // Returns the membership if it already exists in the SNS nodes; otherwise it creates it.
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
-                        .map(node -> JcrUtil.getJcrObject(node, memberClass, constArgs))
+                        .map(node -> JcrUtil.getJcrObject(node, memberClass, args))
                         .filter(memshp -> memshp.getRole().getSystemName().equals(JcrUtil.getName(roleNode)))
                         .findFirst()
                         .orElseGet(() -> {
-                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, memberClass, constArgs);
+                            return JcrUtil.addJcrObject(parentNode, NODE_NAME, NODE_TYPE, memberClass, argsWithRole);
                         });
     }
 

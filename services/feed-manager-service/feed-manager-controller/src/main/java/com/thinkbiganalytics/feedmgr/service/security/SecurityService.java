@@ -28,7 +28,6 @@ import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 
 import java.security.Principal;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -53,11 +52,11 @@ public interface SecurityService {
 
     Optional<ActionGroup> changeCategoryPermissions(String id, PermissionsChange change);
 
-    Optional<Map<String, RoleMembership>> getCategoryRoleMemberships(String id);
+    Optional<RoleMemberships> getCategoryRoleMemberships(String id);
 
     Optional<RoleMembership> changeCategoryRoleMemberships(String id, RoleMembershipChange change);
     
-    Optional<Map<String, RoleMembership>> getCategoryFeedRoleMemberships(String id);
+    Optional<RoleMemberships> getCategoryFeedRoleMemberships(String id);
     
     Optional<RoleMembership> changeCategoryFeedRoleMemberships(String id, RoleMembershipChange change);
 
@@ -67,7 +66,7 @@ public interface SecurityService {
 
     Optional<ActionGroup> changeTemplatePermissions(String id, PermissionsChange change);
 
-    Optional<Map<String, RoleMembership>> getTemplateRoleMemberships(String id);
+    Optional<RoleMemberships> getTemplateRoleMemberships(String id);
 
     Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change);
 
@@ -77,7 +76,7 @@ public interface SecurityService {
 
     Optional<ActionGroup> changeDatasourcePermissions(String id, PermissionsChange change);
 
-    Optional<Map<String, RoleMembership>> getDatasourceRoleMemberships(String id);
+    Optional<RoleMemberships> getDatasourceRoleMemberships(String id);
 
     Optional<RoleMembership> changeDatasourceRoleMemberships(String id, RoleMembershipChange change);
 

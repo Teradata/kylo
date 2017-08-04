@@ -329,21 +329,12 @@ public class FeedCategoryRestController {
         @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
         @ApiResponse(code = 404, message = "A category with the given ID does not exist.", response = RestResponseStatus.class)
     })
-    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr,@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
-        if(!verbose) {
-            return this.securityService.getCategoryRoleMemberships(categoryIdStr)
-                .map(m -> Response.ok(m).build())
-                .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
-        }
-        else {
-            Optional<Map<String,RoleMembership>> memberships = this.securityService.getCategoryRoleMemberships(categoryIdStr);
-            if(memberships.isPresent()){
-                return Response.ok(memberships.get()).build();
-            }
-            else {
-                throw new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND);
-            }
-        }
+    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr,
+                                       @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        
+        return this.securityService.getCategoryRoleMemberships(categoryIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
     }
     
 
@@ -356,9 +347,58 @@ public class FeedCategoryRestController {
                       @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
                       @ApiResponse(code = 404, message = "No category exists with the specified ID.", response = RestResponseStatus.class)
                   })
-    public Response postPermissionsChange(@PathParam("categoryId") String categoryIdStr,
-                                          RoleMembershipChange changes) {
-        return this.securityService.changeCategoryRoleMemberships(categoryIdStr, changes)
+    public Response postRoleMembershipChange(@PathParam("categoryId") String categoryIdStr,
+                                             RoleMembershipChange changes) {
+        return this.securityService.changeCategoryFeedRoleMemberships(categoryIdStr, changes)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("Either a category with the ID \"" + categoryIdStr
+                                                                       + "\" does not exist or it does not have a role the named \"" 
+                                                                       + changes.getRoleName() + "\"", Status.NOT_FOUND));
+    }
+    
+    
+    @GET
+    @Path("{categoryId}/roles/change")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRoleMemberships(@PathParam("categoryId") String categoryIdStr) {
+        RoleMembershipChange change = this.securityService.getCategoryRoleMemberships(categoryIdStr)
+                        .map(membships -> membships.getAssigned().values().stream().findAny()
+                                        .map(membership -> new RoleMembershipChange(RoleMembershipChange.ChangeType.REPLACE, membership))
+                                        .orElse(new RoleMembershipChange(RoleMembershipChange.ChangeType.REPLACE, "read-only")))
+                        .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+        
+        return Response.ok(change).build();
+    }
+
+    @GET
+    @Path("{categoryId}/feed-roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of assigned members the category's roles")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
+        @ApiResponse(code = 404, message = "A category with the given ID does not exist.", response = RestResponseStatus.class)
+    })
+    public Response getFeedRoleMemberships(@PathParam("categoryId") String categoryIdStr,
+                                           @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+
+        return this.securityService.getCategoryFeedRoleMemberships(categoryIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A category with the given ID does not exist: " + categoryIdStr, Status.NOT_FOUND));
+    }
+    
+    
+    @POST
+    @Path("{categoryId}/feed-roles")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the members of one of a category's roles.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The permissions were changed successfully.", response = ActionGroup.class),
+        @ApiResponse(code = 404, message = "No category exists with the specified ID.", response = RestResponseStatus.class)
+    })
+    public Response postFeedRoleMembershipChange(@PathParam("categoryId") String categoryIdStr,
+                                                 RoleMembershipChange changes) {
+        return this.securityService.changeCategoryFeedRoleMemberships(categoryIdStr, changes)
                         .map(m -> Response.ok(m).build())
                         .orElseThrow(() -> new WebApplicationException("Either a category with the ID \"" + categoryIdStr
                                                                        + "\" does not exist or it does not have a role the named \"" 

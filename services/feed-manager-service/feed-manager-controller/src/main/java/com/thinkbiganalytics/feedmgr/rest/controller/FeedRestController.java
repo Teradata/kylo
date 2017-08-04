@@ -578,20 +578,11 @@ public class FeedRestController {
                       @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
                   })
     public Response getRoleMemberships(@PathParam("feedId") String feedIdStr, 
-                                       @QueryParam("inherited") @DefaultValue("true") boolean inherited,
                                        @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
-        if (!verbose) {
-            return this.securityService.getFeedRoleMemberships(feedIdStr)
-                .map(m -> Response.ok(m).build())
-                .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
-        } else {
-            Optional<RoleMemberships> memberships = this.securityService.getFeedRoleMemberships(feedIdStr);
-            if (memberships.isPresent()) {
-                return Response.ok(memberships.get()).build();
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND);
-            }
-        }
+        // TODO: No longer using verbose; all results are verbose now.
+        return this.securityService.getFeedRoleMemberships(feedIdStr)
+                        .map(m -> Response.ok(m).build())
+                        .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
     }
 
 

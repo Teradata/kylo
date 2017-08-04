@@ -121,9 +121,11 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
         if (isNew) {
             if (this.accessController.isEntityAccessControlled()) {
-                List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+                List<SecurityRole> catRoles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+                List<SecurityRole> feedRoles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
+
                 this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
-                    .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                    .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), catRoles, feedRoles));
             } else {
                 this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
                     .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));

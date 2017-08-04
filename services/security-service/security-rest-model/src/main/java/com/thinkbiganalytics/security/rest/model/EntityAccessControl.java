@@ -33,6 +33,7 @@ public class EntityAccessControl {
     private ActionGroup allowedActions;
 
     private List<RoleMembership> roleMemberships;
+    private List<RoleMembership> feedRoleMemberships;
 
     public ActionGroup getAllowedActions() {
         return allowedActions;
@@ -52,6 +53,17 @@ public class EntityAccessControl {
     public void setRoleMemberships(List<RoleMembership> roleMemberships) {
         this.roleMemberships = roleMemberships;
     }
+    
+    public List<RoleMembership> getFeedRoleMemberships() {
+        if (feedRoleMemberships == null) {
+            feedRoleMemberships = new ArrayList<>();
+        }
+        return feedRoleMemberships;
+    }
+    
+    public void setFeedRoleMemberships(List<RoleMembership> roleMemberships) {
+        this.feedRoleMemberships = roleMemberships;
+    }
 
     public void addRoleMembership(RoleMembership roleMembership) {
         getRoleMemberships().add(roleMembership);
@@ -60,6 +72,19 @@ public class EntityAccessControl {
     public List<RoleMembershipChange> toRoleMembershipChangeList() {
         List<RoleMembershipChange> membershipChanges = new ArrayList<>();
         for (RoleMembership membership : getRoleMemberships()) {
+            RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
+            roleMembershipChange.setRoleName(membership.getRole().getSystemName());
+            roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);
+            membership.getGroups().stream().forEach(group -> roleMembershipChange.getGroups().add(group.getSystemName()));
+            membership.getUsers().stream().forEach(user -> roleMembershipChange.getUsers().add(user.getSystemName()));
+            membershipChanges.add(roleMembershipChange);
+        }
+        return membershipChanges;
+    }
+    
+    public List<RoleMembershipChange> toFeedRoleMembershipChangeList() {
+        List<RoleMembershipChange> membershipChanges = new ArrayList<>();
+        for (RoleMembership membership : getFeedRoleMemberships()) {
             RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
             roleMembershipChange.setRoleName(membership.getRole().getSystemName());
             roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);

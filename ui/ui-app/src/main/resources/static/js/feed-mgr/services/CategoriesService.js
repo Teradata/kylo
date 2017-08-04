@@ -143,7 +143,8 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                 },
                 save: function (category) {
                     //prepare access control changes if any
-                    EntityAccessControlService.updateEntityForSave(category);
+                    EntityAccessControlService.updateRoleMembershipsForSave(category.roleMemberships);
+                    EntityAccessControlService.updateRoleMembershipsForSave(category.FeedRoleMemberships);
 
                     var promise = $http({
                         url: RestUrlService.CATEGORIES_URL,
@@ -257,6 +258,7 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                         relatedFeedSummaries: [],
                         securityGroups: [],
                         roleMemberships: [],
+                        feedRoleMemberships: [],
                         owner: null
                     };
                 },

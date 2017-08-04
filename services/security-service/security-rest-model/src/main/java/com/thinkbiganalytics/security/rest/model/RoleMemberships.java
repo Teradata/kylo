@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.security.rest.model;
 
+import java.util.HashMap;
+
 /*-
  * #%L
  * kylo-security-rest-model
@@ -43,6 +45,10 @@ public class RoleMemberships {
     public RoleMemberships() {
     }
     
+    public RoleMemberships(Map<String, RoleMembership> assigned) {
+        this(null, assigned);
+    }
+    
     public RoleMemberships(Map<String, RoleMembership> inherited, Map<String, RoleMembership> assigned) {
         super();
         this.inherited = inherited;
@@ -58,11 +64,11 @@ public class RoleMemberships {
     }
 
     public void setInherited(Map<String, RoleMembership> inherited) {
-        this.inherited = inherited;
+        this.inherited = new HashMap<>(inherited);
     }
 
     public void setAssigned(Map<String, RoleMembership> assigned) {
-        this.assigned = assigned;
+        this.assigned = new HashMap<>(assigned);;
     }
     
 }

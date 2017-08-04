@@ -1,10 +1,16 @@
 <ng-form name="vm.categoryAccessControlForm">
 <vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew" section-title="Access Control" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" editable="vm.isEditable" is-valid="vm.isValid">
   <readonly-section>
-    <entity-access-control entity="vm.model" entity-type="category" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
+    <div>Category Roles</div>
+    <entity-access-control entity="vm.model" entity-type="category-roles" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
+    <div>Feed Inherited Roles</div>
+    <entity-access-control entity="vm.model" entity-type="category-feed-roles" role-memberships-property="feedRoleMemberships" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
   </readonly-section>
   <editable-section>
-    <entity-access-control entity="vm.editModel" entity-type="category" the-form="vm.categoryAccessControlForm"></entity-access-control>
+    <div>Category Roles</div>
+    <entity-access-control entity="vm.editModel" entity-type="category-roles" the-form="vm.categoryAccessControlForm"></entity-access-control>
+    <div>Feed Inherited Roles</div>
+    <entity-access-control entity="vm.editModel" entity-type="category-feed-roles" role-memberships-property="feedRoleMemberships" the-form="vm.categoryAccessControlForm"></entity-access-control>
   </editable-section>
 </vertical-section-layout>
 </ng-form>

@@ -68,6 +68,8 @@ import javax.ws.rs.core.Response.Status;
 // in a more appropriate way.
 //=====================
 public class DefaultSecurityService implements SecurityService {
+    
+    private static final Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> EMPTY_SUPPLIER = () -> Optional.empty();
 
     @Inject
     CategoryProvider categoryProvider;
@@ -112,15 +114,8 @@ public class DefaultSecurityService implements SecurityService {
 
     @Override
     public Optional<RoleMemberships> getFeedRoleMemberships(String id) {
-        RoleMemberships all = new RoleMemberships();
-        getRoleMemberships(supplyFeedRoleMemberships(id)).ifPresent(map -> all.setAssigned(map));
-        getRoleMemberships(supplyCategoryFeedRoleMemberships(id)).ifPresent(map -> all.setAssigned(map));
-        
-        if (all.getAssigned() != null || all.getAssigned() != null) {
-            return Optional.of(all);
-        } else {
-            return Optional.empty();
-        }
+        return getRoleMemberships(supplyInheritedFeedRoleMemberships(id),
+                                  supplyFeedRoleMemberships(id));
     }
 
     @Override
@@ -146,7 +141,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<Map<String, RoleMembership>> getCategoryRoleMemberships(String id) {
+    public Optional<RoleMemberships> getCategoryRoleMemberships(String id) {
         return getRoleMemberships(supplyCategoryRoleMemberships(id));
     }
 
@@ -159,7 +154,7 @@ public class DefaultSecurityService implements SecurityService {
      * @see com.thinkbiganalytics.feedmgr.service.security.SecurityService#getCategoryFeedRoleMemberships(java.lang.String)
      */
     @Override
-    public Optional<Map<String, RoleMembership>> getCategoryFeedRoleMemberships(String id) {
+    public Optional<RoleMemberships> getCategoryFeedRoleMemberships(String id) {
         return getRoleMemberships(supplyCategoryFeedRoleMemberships(id));
     }
 
@@ -189,7 +184,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<Map<String, RoleMembership>> getTemplateRoleMemberships(String id) {
+    public Optional<RoleMemberships> getTemplateRoleMemberships(String id) {
         return getRoleMemberships(supplyTemplateRoleMemberships(id));
     }
 
@@ -214,7 +209,7 @@ public class DefaultSecurityService implements SecurityService {
     }
 
     @Override
-    public Optional<Map<String, RoleMembership>> getDatasourceRoleMemberships(String id) {
+    public Optional<RoleMemberships> getDatasourceRoleMemberships(String id) {
         return getRoleMemberships(supplyDatasourceRoleMemberships(id));
     }
 
@@ -294,6 +289,12 @@ public class DefaultSecurityService implements SecurityService {
     private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyFeedRoleMemberships(String id) {
         return () -> {
             return accessFeed(id).map(Feed::getRoleMemberships);
+        };
+    }
+    
+    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyInheritedFeedRoleMemberships(String id) {
+        return () -> {
+            return accessFeed(id).map(Feed::getInheritedRoleMemberships);
         };
     }
 
@@ -403,12 +404,27 @@ public class DefaultSecurityService implements SecurityService {
                                                                                   Status.NOT_FOUND)));
         });
     }
+    
+    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> assignedSupplier) {
+        return getRoleMemberships(EMPTY_SUPPLIER, assignedSupplier);
+    }
 
-    private Optional<Map<String, RoleMembership>> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> membershipSupplier) {
+    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> inheritedSupplier,
+                                                         Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> assignedSupplier) {
         return this.metadata.read(() -> {
-            return membershipSupplier.get().map(members -> members.stream()
-                .collect(Collectors.toMap(m -> m.getRole().getSystemName(),
-                                          securityTransform.toRoleMembership())));
+            Optional<Map<String, RoleMembership>> inheritedMap = inheritedSupplier.get()
+                            .map(members -> members.stream()
+                                .collect(Collectors.toMap(m -> m.getRole().getSystemName(),
+                                                          securityTransform.toRoleMembership())));
+            Optional<Map<String, RoleMembership>> assignedMap = assignedSupplier.get()
+                            .map(members -> members.stream()
+                                 .collect(Collectors.toMap(m -> m.getRole().getSystemName(),
+                                                           securityTransform.toRoleMembership())));
+            if (assignedMap.isPresent()) {
+                return Optional.of(new RoleMemberships(inheritedMap.orElse(null), assignedMap.get()));
+            } else {
+                return Optional.empty();
+            }
         });
     }
 

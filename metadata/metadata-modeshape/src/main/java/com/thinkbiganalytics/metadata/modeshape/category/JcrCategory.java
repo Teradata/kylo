@@ -32,10 +32,15 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +67,14 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     public JcrCategory(Node node) {
         super(node);
+    }
+    
+    public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> catRoles, List<SecurityRole> feedRoles) {
+        // Setup default access control for this entity
+        AccessControlledMixin.super.enableAccessControl(prototype, owner, catRoles);
+        
+        // Setup the feed roles relationships.
+        getDetails().ifPresent(d -> d.enableFeedRoles(feedRoles));
     }
     
     // -=-=--=-=- Delegate Propertied methods to details -=-=-=-=-=-
@@ -135,12 +148,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
         getDetails().ifPresent(d -> d.setSecurityGroups(hadoopSecurityGroups));
     }
-    
-//    @Override
-//    public void setupAccessControl(JcrAllowedActions prototype, UsernamePrincipal owner) {
-//        JcrAccessControlUtil.
-//        AccessControlledMixin.super.setupAccessControl(prototype, owner);
-//    }
 
     @Override
     public CategoryId getId() {

@@ -488,7 +488,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     model.properties = properties;
 
                     //prepare access control changes if any
-                    EntityAccessControlService.updateEntityForSave(model);
+                    EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
                     if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                         // Set feed

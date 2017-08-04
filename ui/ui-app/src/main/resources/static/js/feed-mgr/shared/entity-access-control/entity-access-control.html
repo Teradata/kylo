@@ -43,7 +43,7 @@
       <span class="item-title" style="color:grey">Members</span>
     </div>
   </div>
-  <div layout="column" ng-repeat="roleMembership in vm.entity.roleMemberships">
+  <div layout="column" ng-repeat="roleMembership in vm.entityRoleMemberships">
     <div layout="row">
       <div flex="40" style="align-self:center;" layout="column">
         <span>{{roleMembership.role.title}}</span>
@@ -74,12 +74,21 @@
                   </span>
             </md-item-template>
           </md-autocomplete>
+          <button 
+                  ng-if="$chip.editable"
+                  class="md-chip-remove ng-scope"
+                  md-chip-remove type="button" 
+                  aria-hidden="true" 
+                  tabindex="-1">
+              <ng-md-icon icon="close"></ng-md-icon>
+              <span class="md-visually-hidden ng-binding">Remove</span>
+          </button>
           <md-chip-template>
-                            <span>
-                               <ng-md-icon icon="group" style="fill:orange;" ng-if="$chip.type=='group'"></ng-md-icon>
-                               <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="$chip.type=='user'"></ng-md-icon>
-                               <strong>{{$chip.title}}</strong>
-                            </span>
+            <span>
+               <ng-md-icon icon="group" style="fill:orange;" ng-if="$chip.type=='group'"></ng-md-icon>
+               <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="$chip.type=='user'"></ng-md-icon>
+               <strong>{{$chip.title}}</strong>
+            </span>
           </md-chip-template>
         </md-chips>
       </md-input-container>

@@ -262,7 +262,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             var savedTemplate = RegisterTemplateService.getModelForSave();
 
             //prepare access control changes if any
-            EntityAccessControlService.updateEntityForSave(savedTemplate);
+            EntityAccessControlService.updateRoleMembershipsForSave(savedTemplate.roleMemberships);
 
             //get template order
             var order = [];

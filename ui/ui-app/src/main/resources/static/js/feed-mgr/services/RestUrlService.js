@@ -301,6 +301,15 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.CATEGORY_ROLES_URL = function (categoryId) {
             return self.CATEGORIES_URL + "/" + categoryId + "/roles"
         };
+        
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_FEED_ROLES_URL = function (categoryId) {
+        	return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
+        };
 
         /**
          * Get/Post roles changes for a Template entity

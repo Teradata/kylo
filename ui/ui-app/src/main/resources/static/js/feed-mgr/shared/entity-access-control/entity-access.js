@@ -5,6 +5,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             restrict: "E",
             bindToController: {
                 entity:'=',
+                roleMembershipsProperty:'@?',
                 entityType:'@',
                 theForm:'=?',
                 readOnly:'=?',
@@ -42,11 +43,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
        if(angular.isUndefined(this.theForm)){
            this.theForm = {};
        }
+       
+       if(angular.isUndefined(this.roleMembershipsProperty)){
+    	   this.roleMembershipsProperty = "roleMemberships";
+       }
 
 
-        if(angular.isUndefined(this.entity.roleMemberships)){
-            this.entity.roleMemberships = [];
+        if(angular.isUndefined(this.entity[this.roleMembershipsProperty])){
+        	this.entity[this.roleMembershipsProperty] = [];
         }
+
+        this.entityRoleMemberships = this.entity[this.roleMembershipsProperty];
+
 
         if(angular.isUndefined(this.queryForEntityAccess)){
             this.queryForEntityAccess = false;
@@ -136,7 +144,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * @param query
          */
         this.queryUsersAndGroups = function(query){
-            self.entity.roleMembershipsUpdated = true;
+        	self.entity.roleMembershipsUpdated = true;
             var df = $q.defer();
             var request = {groups:getAllGroups(),users:getAllUsers()};
             $q.all(request).then(function(results){
@@ -214,8 +222,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         function init(){
             if(self.rolesInitialized == false) {
-                $q.when(EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType)).then(function(){
+                $q.when(EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType, self.entity[self.roleMembershipsProperty])).then(function(){
                     self.rolesInitialized == true
+                    self.entityRoleMemberships = self.entity[self.roleMembershipsProperty];
                 });
             }
         }
