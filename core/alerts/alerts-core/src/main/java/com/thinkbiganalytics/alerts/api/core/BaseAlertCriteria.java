@@ -76,7 +76,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return updated.get();
     }
 
-
     /* (non-Javadoc)
      * @see java.util.function.Predicate#test(java.lang.Object)
      */

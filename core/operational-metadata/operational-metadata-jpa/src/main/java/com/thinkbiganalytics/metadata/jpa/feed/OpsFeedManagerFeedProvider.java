@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -31,6 +33,8 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.metadata.api.alerts.KyloEntityAwareAlertSummary;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.feed.*;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
@@ -319,6 +323,18 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     }
 
+
+    public List<OpsManagerFeed> findFeedsWithFilter(String filter){
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+       BooleanBuilder where = GenericQueryDslFilter.buildFilter(feed,filter);
+
+
+        JPAQuery
+            query = factory.select(feed)
+            .from(feed)
+            .where(where);
+        return query.fetch();
+    }
 
     /**
      *

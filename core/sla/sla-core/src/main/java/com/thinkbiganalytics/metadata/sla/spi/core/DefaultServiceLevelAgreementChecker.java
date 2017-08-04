@@ -104,8 +104,7 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
                     ServiceLevelAssessment assessment = assessor.assess(agreement);
 
                     if (shouldAlert(agreement, assessment)) {
-                        newAlert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
-                                                       agreement.getName(),
+                        newAlert = alertManager.createEntityAlert(AssessmentAlerts.VIOLATION_ALERT_TYPE,
                                                        Alert.Level.FATAL,
                                                        "Violation of SLA: " + agreement.getName(), alertManager.createEntityIdentificationAlertContent(agreement.getId().toString(),
                                                                                                                                                        SecurityRole.ENTITY_TYPE.SLA,assessment.getId()));

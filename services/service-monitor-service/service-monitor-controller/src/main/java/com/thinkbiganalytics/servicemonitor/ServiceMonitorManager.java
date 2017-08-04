@@ -46,6 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Application Bean that looks for all beans implementing either ServiceStatusCheck or ServicesStatusCheck
@@ -62,6 +63,7 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
     AlertProvider alertProvider;
 
     @Inject
+    @Named("kyloAlertManager")
     AlertManager alertManager;
 
 

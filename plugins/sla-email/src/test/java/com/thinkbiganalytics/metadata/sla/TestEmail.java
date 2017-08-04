@@ -68,7 +68,7 @@ public class TestEmail {
             }
 
             @Override
-            public String getServiceLevelAgreementId() {
+            public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
                 return null;
             }
 

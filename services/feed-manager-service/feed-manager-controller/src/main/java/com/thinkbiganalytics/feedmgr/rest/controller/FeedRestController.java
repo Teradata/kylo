@@ -22,10 +22,6 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Lists;
 import com.mifmif.common.regex.Generex;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
-import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.api.AlertSummary;
-import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;

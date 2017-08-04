@@ -242,6 +242,11 @@ public class InMemoryAlertManager implements AlertManager {
         return alert;
     }
 
+    @Override
+    public <C extends Serializable> Alert createEntityAlert(URI type, Alert.Level level, String description, EntityIdentificationAlertContent<C> content) {
+        return create(type,null,level,description,content);
+    }
+
     private void updated(GenericAlert alert) {
         this.alertsById.computeIfPresent(alert.getId(),
                                          (id, ref) -> {

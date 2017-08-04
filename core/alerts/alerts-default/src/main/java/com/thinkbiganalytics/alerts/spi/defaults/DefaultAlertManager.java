@@ -23,23 +23,14 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.ConstantImpl;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Path;
+import com.querydsl.core.support.QueryBase;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.Visitor;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.PathBuilder;
-import com.querydsl.core.types.dsl.StringExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
@@ -54,24 +45,15 @@ import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.sla.QServiceLevelAgreementDescription;
-import com.thinkbiganalytics.metadata.jpa.alerts.DefaultAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
-import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
-import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAgreementDescription;
-import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
-import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
-import com.thinkbiganalytics.metadata.jpa.support.QueryDslPathInspector;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Criteria;
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -84,13 +66,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -108,11 +87,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     private JpaAlertRepository repository;
 
 
-    static final ImmutableMap<String, String> alertSlaFilters =
-        new ImmutableMap.Builder<String, String>()
-            .put("sla", "name")
-            .put("slaDescription", "description").build();
-
     private AlertSource.ID id = new AlertManagerId();
 
     @Override
@@ -126,7 +100,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     public DefaultAlertManager(JpaAlertRepository repo) {
         super(JpaAlert.class);
         this.repository = repo;
-        CommonFilterTranslations.addFilterTranslations(QJpaServiceLevelAgreementDescription.class,alertSlaFilters);
     }
 
     /* (non-Javadoc)
@@ -171,7 +144,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      */
     @Override
     public AlertCriteria criteria() {
-        return new Criteria();
+        return new DefaultAlertCriteria(queryFactory);
     }
 
     /* (non-Javadoc)
@@ -184,13 +157,28 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }, MetadataAccess.SERVICE);
     }
 
+    protected DefaultAlertCriteria ensureAlertCriteriaType(AlertCriteria criteria){
+      return (DefaultAlertCriteria) (criteria == null ? criteria() : criteria);
+    }
+
+    public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        return this.metadataAccess.read(() -> {
+            DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
+            return critImpl.createSummaryQuery().fetch().stream()
+                .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+                .iterator();
+        }, MetadataAccess.SERVICE);
+    }
+
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts()
      */
     @Override
     public Iterator<Alert> getAlerts(AlertCriteria criteria) {
         return this.metadataAccess.read(() -> {
-            Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
+            DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createQuery().fetch().stream()
                 .map(a -> asValue(a))
                 .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
@@ -198,14 +186,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }, MetadataAccess.SERVICE);
     }
 
-    public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
-        return this.metadataAccess.read(() -> {
-            Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
-            return critImpl.createSummaryQuery().fetch().stream()
-                .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
-                .iterator();
-        }, MetadataAccess.SERVICE);
-    }
 //
 //    /* (non-Javadoc)
 //     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(org.joda.time.DateTime)
@@ -249,9 +229,17 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
                                ? SecurityContextHolder.getContext().getAuthentication()
                                : null;
+        //reset the subtype if the content is an Entity
+        if(subtype == null) {
+            subtype = "Other";
+        }
+        if(content != null && content instanceof EntityIdentificationAlertContent){
+            subtype = "Entity";
+        }
+        final String finalSubType = subtype;
 
         Alert created = this.metadataAccess.commit(() -> {
-            JpaAlert alert = new JpaAlert(type, subtype,level, user, description, content);
+            JpaAlert alert = new JpaAlert(type, finalSubType,level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -260,9 +248,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         return created;
     }
 
+    @Override
+    public <C extends Serializable> Alert createEntityAlert(URI type, Level level, String description, EntityIdentificationAlertContent<C> content) {
+        return create(type,null,level,description,content);
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.spi.AlertManager#getResponse(com.thinkbiganalytics.alerts.api.Alert)
-     */
+         * @see com.thinkbiganalytics.alerts.spi.AlertManager#getResponse(com.thinkbiganalytics.alerts.api.Alert)
+         */
     @Override
     public AlertResponse getResponse(Alert alert) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(alert.getId());
@@ -519,168 +512,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }
     }
 
-    private class Criteria extends BaseAlertCriteria {
-
-
-        public JPAQuery<JpaAlert> createQuery() {
-            QJpaAlert alert = QJpaAlert.jpaAlert;
-            QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-            QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
-
-            JPAQuery<JpaAlert> query = queryFactory
-                .select(alert)
-                .from(alert)
-                .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
-                .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
-                .limit(getLimit());
-
-            List<Predicate> preds = filter(alert);
-            BooleanBuilder orFilter = orFilter(alert,feed,sla);
-
-            // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
-            // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
-            if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
-                query.orderBy(alert.createdTime.asc());
-            } else {
-                query.orderBy(alert.createdTime.desc());
-            }
-
-            if (preds.isEmpty() && !orFilter.hasValue()) {
-                return query;
-            } else {
-                BooleanBuilder booleanBuilder = new BooleanBuilder();
-                preds.forEach(p -> booleanBuilder.and(p));
-                if(orFilter.hasValue()) {
-                    booleanBuilder.and(orFilter);
-                }
-                return query.where(booleanBuilder);
-            }
-
-        }
-
-        public JPAQuery<AlertSummary> createSummaryQuery() {
-            QJpaAlert alert = QJpaAlert.jpaAlert;
-            QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-            QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
-
-            JPAQuery
-                query = queryFactory.select(
-                Projections.bean(DefaultAlertSummary.class,
-                                 alert.typeString.as("type"),
-                                 alert.subtype.as("subtype"),
-                                 alert.level.as("level"),
-                                 feed.id.as("feedId"),
-                                 feed.name.as("feedName"),
-                                 sla.slaId.as("slaId"),
-                                 sla.name.as("slaName"),
-                                 alert.count().as("count"),
-                                 alert.createdTimeMillis.max().as("lastAlertTimestamp"))
-            )
-                .from(alert)
-                .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.endsWithIgnoreCase(Expressions.stringPath("'FEED'"))))
-                .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.endsWithIgnoreCase(Expressions.stringPath("'SLA'"))))
-                .groupBy(alert.typeString, alert.subtype);
-            List<Predicate> preds = filter(alert);
-
-            BooleanBuilder orFilter = orFilter(alert,feed,sla);
-
-            if (preds.isEmpty() && !orFilter.hasValue()) {
-                return query;
-            } else {
-                BooleanBuilder booleanBuilder = new BooleanBuilder();
-                preds.forEach(p -> booleanBuilder.and(p));
-                if(orFilter.hasValue()) {
-                    booleanBuilder.and(orFilter);
-                }
-                return (JPAQuery<AlertSummary>) query.where(booleanBuilder);
-            }
-        }
-        private String filterStringForFeedAlertEntities(String keyword){
-            return CommonFilterTranslations.feedFilters.keySet().stream().map(key -> key+"=~"+keyword).collect(Collectors.joining(","));
-        }
-
-        private String filterStringForSlaAlertEntities(String keyword){
-            return alertSlaFilters.keySet().stream().map(key -> key+"=~"+keyword).collect(Collectors.joining(","));
-        }
-
-        private BooleanBuilder orFilter(QJpaAlert alert, QJpaOpsManagerFeed feed,QJpaServiceLevelAgreementDescription sla){
-            BooleanBuilder globalFilter = new BooleanBuilder();
-            if(StringUtils.isNotBlank(getOrFilter())) {
-                Lists.newArrayList(StringUtils.split(getOrFilter(), ",")).stream().forEach(filter -> {
-                    filter = StringUtils.trim(filter);
-                    if(filter != null) {
-                    BooleanBuilder booleanBuilder = new BooleanBuilder();
-                    List<Predicate> preds = new ArrayList<>();
-                    try {
-                        Alert.State state = Alert.State.valueOf(filter.toUpperCase());
-                        preds.add(alert.state.eq(state));
-                    }catch (IllegalArgumentException e){
-
-                    }
-                    preds.add( alert.description.likeIgnoreCase(filter.concat("%")));
-                    preds.add( alert.entityType.likeIgnoreCase(filter.concat("%")));
-                    preds.add( alert.typeString.likeIgnoreCase(filter.concat("%")));
-                    preds.add(alert.subtype.like(filter.concat("%")));
-                    //add in joins on the feed or sla name
-                    preds.add(GenericQueryDslFilter.buildOrFilter(feed,filterStringForFeedAlertEntities(filter)));
-                        preds.add(GenericQueryDslFilter.buildOrFilter(sla,filterStringForSlaAlertEntities(filter)));
-
-                    booleanBuilder.andAnyOf(preds.toArray(new Predicate[preds.size()]));
-                    globalFilter.and(booleanBuilder);
-                    }
-                });
-
-
-            }
-            return globalFilter;
-        }
-
-        private List<Predicate> filter(QJpaAlert alert){
-            List<Predicate> preds = new ArrayList<>();
-            // The "state" criteria now means filter by an alert's current state.
-            // To support filtering by any state the alert has transitioned through
-            // we can add the commented out code below (the old state behavior)
-//            if (getTransitions().size() > 0) {
-//                QAlertChangeEvent event = QAlertChangeEvent.alertChangeEvent;
-//                query.join(alert.events, event);
-//                preds.add(event.state.in(getTransitions()));
-//            }
-
-            if (getStates().size() > 0) {
-                preds.add(alert.state.in(getStates()));
-            }
-            if (getLevels().size() > 0) {
-                preds.add(alert.level.in(getLevels()));
-            }
-            if (getAfterTime() != null) {
-                preds.add(alert.createdTime.gt(getAfterTime()));
-            }
-            if (getBeforeTime() != null) {
-                preds.add(alert.createdTime.lt(getBeforeTime()));
-            }
-            if (!isIncludeCleared()) {
-                preds.add(alert.cleared.isFalse());
-            }
-
-            if (getTypes().size() > 0) {
-                BooleanBuilder likes = new BooleanBuilder();
-                getTypes().stream()
-                    .map(uri -> alert.typeString.like(uri.toASCIIString().concat("%")))
-                    .forEach(pred -> likes.or(pred));
-                preds.add(likes);
-            }
-
-            if (getSubtypes().size() > 0) {
-                preds.add(alert.subtype.in(getSubtypes()));
-            }
-            return preds;
-        }
-
-
-
-
-
-    }
 
 
 
@@ -706,12 +537,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }
 
     }
-
-    public <C extends Serializable>  EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
+    public <C extends Serializable> EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
         if(content instanceof EntityIdentificationAlertContent){
-           ((EntityIdentificationAlertContent) content).setEntityId(entityId);
-           ((EntityIdentificationAlertContent) content).setEntityType(entityType);
-           return (EntityIdentificationAlertContent) content;
+            ((EntityIdentificationAlertContent) content).setEntityId(entityId);
+            ((EntityIdentificationAlertContent) content).setEntityType(entityType);
+            return (EntityIdentificationAlertContent) content;
         }
         else {
             EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();

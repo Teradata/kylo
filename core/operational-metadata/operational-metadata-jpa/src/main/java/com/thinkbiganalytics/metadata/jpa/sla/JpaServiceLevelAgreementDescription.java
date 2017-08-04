@@ -20,19 +20,14 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
-import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -66,9 +61,9 @@ public class JpaServiceLevelAgreementDescription implements ServiceLevelAgreemen
 
     @ManyToMany(fetch = FetchType.LAZY, targetEntity = JpaOpsManagerFeed.class)
     @JoinTable(name = "SLA_FEED", joinColumns = {
-        @JoinColumn(name = "SLA_ID", nullable = false, updatable = false) },
-               inverseJoinColumns = { @JoinColumn(name = "FEED_ID",
-                                                  nullable = false, updatable = false) })
+        @JoinColumn(name = "SLA_ID", nullable = false, updatable = false)},
+               inverseJoinColumns = {@JoinColumn(name = "FEED_ID",
+                                                 nullable = false, updatable = false)})
     private Set<OpsManagerFeed> feeds = new HashSet<>(0);
 
     public JpaServiceLevelAgreementDescription() {

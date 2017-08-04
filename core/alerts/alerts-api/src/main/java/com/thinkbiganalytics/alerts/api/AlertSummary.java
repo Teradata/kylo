@@ -57,4 +57,5 @@ public interface AlertSummary {
      */
     Long getLastAlertTimestamp();
 
+
 }

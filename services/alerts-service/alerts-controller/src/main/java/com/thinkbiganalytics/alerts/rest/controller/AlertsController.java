@@ -59,6 +59,7 @@ import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+import com.thinkbiganalytics.metadata.alerts.KyloEntityAwareAlertManager;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -78,6 +79,9 @@ public class AlertsController {
     @Inject
     @Named("kyloAlertManager")
     private AlertManager alertManager;
+
+    @Inject
+    private KyloEntityAwareAlertManager kyloEntityAwareAlertService;
 
     @Inject
     private AccessController accessController;

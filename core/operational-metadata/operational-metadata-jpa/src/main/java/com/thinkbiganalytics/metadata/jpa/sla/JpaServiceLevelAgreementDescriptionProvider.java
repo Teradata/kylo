@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -104,6 +105,10 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
         } else {
             return new ServiceLevelAgreementDescriptionId(ser);
         }
+    }
+
+    public List< ? extends  ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId){
+        return serviceLevelAgreementDescriptionRepository.findForFeed(feedId);
     }
 
 

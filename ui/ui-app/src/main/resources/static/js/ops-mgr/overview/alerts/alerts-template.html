@@ -30,7 +30,7 @@
             <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)">
                 <div style="width:100%" class="item-column" >
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>
-                        <span class="item-title" >{{alert.subtype}}</span>
+                        <span class="item-title" >{{alert.groupDisplayName}}</span>
                         <span class="item-title" style="float:right;">{{alert.typeDisplayName}}</span>
                     </div>
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>

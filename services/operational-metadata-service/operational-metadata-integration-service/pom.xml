@@ -30,8 +30,11 @@
       <artifactId>kylo-feed-manager-nifi-cache-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>kylo-metadata-rest-model</artifactId>

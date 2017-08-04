@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.sla.model;
+package com.thinkbiganalytics.metadata.api.alerts;
+
 /*-
  * #%L
- * thinkbig-job-repository-core
+ * thinkbig-operational-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,26 +20,23 @@ package com.thinkbiganalytics.sla.model;
  * #L%
  */
 
-public class DefaultAssessment {
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
+/**
+ * Created by sr186054 on 8/3/17.
+ */
+public interface EntityAwareAlertSummary extends AlertSummary {
 
-    private String message;
-    private String result;
+    OpsManagerFeed.ID getFeedId();
 
+    String getFeedName();
 
-    public String getMessage() {
-        return message;
-    }
+    ServiceLevelAgreement.ID getSlaId();
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    String getSlaName();
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
+    String getGroupByKey();
 }

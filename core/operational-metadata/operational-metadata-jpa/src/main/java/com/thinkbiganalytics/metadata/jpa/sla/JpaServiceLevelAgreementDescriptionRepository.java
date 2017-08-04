@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,5 +33,7 @@ import java.util.List;
  */
 public interface JpaServiceLevelAgreementDescriptionRepository extends JpaRepository<JpaServiceLevelAgreementDescription, ServiceLevelAgreementDescriptionId> {
 
+    @Query("select distinct sla from JpaServiceLevelAgreementDescription sla join sla.feeds f where f.id = :id ")
+    List<JpaServiceLevelAgreementDescription> findForFeed(@Param("id") OpsManagerFeed.ID feedId);
 
 }

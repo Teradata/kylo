@@ -47,11 +47,22 @@ public interface AlertManager extends AlertSource {
      * Creates a new alert and adds
      *
      * @param type        the type
+     * @param subtype     the subtype - a high level summary string describing the object for this alert (i.e. Service name that failed).  Used in grouping alerts together
      * @param level       the level
      * @param description a description of the alert
      * @param content     optional content, the type of which is specific to the kind of alert
      */
     <C extends Serializable> Alert create(URI type, String subtype,Alert.Level level, String description, C content);
+
+    /**
+     * Creates a new alert and adds
+     *
+     * @param type        the type
+     * @param level       the level
+     * @param description a description of the alert
+     * @param content     optional content, the type of which is specific to the kind of alert
+     */
+    <C extends Serializable> Alert createEntityAlert(URI type, Alert.Level level, String description, EntityIdentificationAlertContent<C> content);
 
     /**
      * Creates/wraps the content with Entity Identifiction Information

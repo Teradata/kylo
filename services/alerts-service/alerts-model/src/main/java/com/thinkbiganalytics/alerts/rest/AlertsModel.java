@@ -1,10 +1,30 @@
 package com.thinkbiganalytics.alerts.rest;
 
+/*-
+ * #%L
+ * thinkbig-alerts-model
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.rest.model.Alert;
-import com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -23,13 +43,12 @@ import java.util.stream.Collectors;
 public class AlertsModel {
 
 
-    public  String alertSummaryDisplayName(AlertSummary alertSummary){
+    public String alertSummaryDisplayName(AlertSummary alertSummary) {
         String type = alertSummary.getType();
         String part = type;
-        if(part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
+        if (part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
             part = StringUtils.substringAfter(part, AlertConstants.KYLO_ALERT_TYPE_PREFIX);
-        }
-        else {
+        } else {
             int idx = StringUtils.lastOrdinalIndexOf(part, "/", 2);
             part = StringUtils.substring(part, idx);
         }
@@ -39,11 +58,28 @@ public class AlertsModel {
     }
 
     public Collection<AlertSummaryGrouped> groupAlertSummaries(List<AlertSummary> alertSummaries) {
-        Map<String,AlertSummaryGrouped> group = new HashMap<>();
+        Map<String, AlertSummaryGrouped> group = new HashMap<>();
         alertSummaries.forEach(alertSummary -> {
-            String key = alertSummary.getType()+":"+alertSummary.getSubtype();
+
+            String key = alertSummary.getType() + ":" + alertSummary.getSubtype();
+
             String displayName = alertSummaryDisplayName(alertSummary);
-            group.computeIfAbsent(key,key1->new AlertSummaryGrouped(alertSummary.getType(),alertSummary.getSubtype(),displayName)).add(toModel(alertSummary.getLevel()),alertSummary.getCount(),alertSummary.getLastAlertTimestamp());
+            if (alertSummary instanceof EntityAwareAlertSummary) {
+                EntityAwareAlertSummary entityAwareAlertSummary = (EntityAwareAlertSummary) alertSummary;
+                key = entityAwareAlertSummary.getGroupByKey();
+                group.computeIfAbsent(key, key1 -> new AlertSummaryGrouped.Builder().typeString(alertSummary.getType())
+                    .typeDisplayName(displayName)
+                    .subType(entityAwareAlertSummary.getSubtype())
+                    .feedId(entityAwareAlertSummary.getFeedId() != null ? entityAwareAlertSummary.getFeedId().toString() : null)
+                    .feedName(entityAwareAlertSummary.getFeedName())
+                    .slaId(entityAwareAlertSummary.getSlaId() != null ? entityAwareAlertSummary.getSlaId().toString() : null)
+                    .slaName(entityAwareAlertSummary.getSlaName()).build()).add(toModel(alertSummary.getLevel()), alertSummary.getCount(), alertSummary.getLastAlertTimestamp());
+            } else {
+                group.computeIfAbsent(key, key1 -> new AlertSummaryGrouped.Builder().typeString(alertSummary.getType())
+                    .typeDisplayName(displayName)
+                    .subType(alertSummary.getSubtype())
+                    .build()).add(toModel(alertSummary.getLevel()), alertSummary.getCount(), alertSummary.getLastAlertTimestamp());
+            }
         });
         return group.values();
     }
@@ -59,7 +95,7 @@ public class AlertsModel {
         result.setType(alert.getType());
         result.setDescription(alert.getDescription());
         result.setCleared(alert.isCleared());
-        result.setContent(alert.getContent()!= null ? alert.getContent().toString():null);
+        result.setContent(alert.getContent() != null ? alert.getContent().toString() : null);
         result.setSubtype(alert.getSubtype());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
         return result;

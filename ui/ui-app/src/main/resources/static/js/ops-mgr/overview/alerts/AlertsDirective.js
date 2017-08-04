@@ -70,8 +70,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
             //generate Query
             var query = "UNHANDLED,"+ alertsSummary.type;
-            if(alertsSummary.subtype != null && alertsSummary.subtype != null) {
+            if(alertsSummary.subtype != null && alertsSummary.subtype != '') {
                 query += ","+alertsSummary.subtype;
+            }
+            else if(alertsSummary.groupDisplayName != null && alertsSummary.groupDisplayName != null) {
+                query += ","+alertsSummary.groupDisplayName;
             }
             StateService.OpsManager().Alert().navigateToAlerts(query);
 

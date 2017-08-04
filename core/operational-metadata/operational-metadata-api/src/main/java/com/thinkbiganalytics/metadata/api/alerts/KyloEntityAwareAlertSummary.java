@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.jpa.alerts;
+package com.thinkbiganalytics.metadata.api.alerts;
 
 /*-
  * #%L
@@ -22,22 +22,27 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
 
 import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 8/3/17.
+ * Created by sr186054 on 7/21/17.
  */
-public class DefaultAlertSummary implements AlertSummary{
+public class KyloEntityAwareAlertSummary implements EntityAwareAlertSummary {
 
     private String type;
 
     private String subtype;
 
     private Alert.Level level;
+
+    private OpsManagerFeed.ID feedId;
+    private String feedName;
+    private ServiceLevelAgreement.ID slaId;
+    private String slaName;
+
     private Long count;
 
     private Long lastAlertTimestamp;
@@ -87,9 +92,48 @@ public class DefaultAlertSummary implements AlertSummary{
         this.lastAlertTimestamp = lastAlertTimestamp;
     }
 
+    @Override
+    public OpsManagerFeed.ID getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(OpsManagerFeed.ID feedId) {
+        this.feedId = feedId;
+    }
+
+    @Override
+    public String getFeedName() {
+        return feedName;
+    }
+
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
+    }
+
+    @Override
+    public ServiceLevelAgreement.ID getSlaId() {
+        return slaId;
+    }
+
+    public void setSlaId(ServiceLevelAgreement.ID slaId) {
+        this.slaId = slaId;
+    }
+
+    @Override
+    public String getSlaName() {
+        return slaName;
+    }
+
+    public void setSlaName(String slaName) {
+        this.slaName = slaName;
+    }
+
+    @Override
     public String getGroupByKey(){
-        return new ImmutableList.Builder<String>()
-            .add(getType())
-            .add(getSubtype()).build().stream().collect(Collectors.joining(":"));
+       return new ImmutableList.Builder<String>()
+           .add(getFeedId() != null ? getFeedId().toString() : "")
+           .add(getSlaId() != null ? getSlaId().toString() : "")
+           .add(getType())
+           .add(getSubtype() != null ? getSubtype() : "").build().stream().collect(Collectors.joining(":"));
     }
 }

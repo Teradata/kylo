@@ -18,6 +18,12 @@
       <artifactId>kylo-alerts-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.support;
  * #L%
  */
 
+import com.querydsl.core.types.dsl.BeanPath;
 import com.querydsl.core.types.dsl.EntityPathBase;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +51,7 @@ public class QueryDslPathInspector {
      * @param fullPath a string representing the path you wish to inspect.  example:  jobInstance.jobName
      * @return return the Object for the path.  example: will return the StringPath jobName on the QJpaBatchJobInstance class
      */
-    public static Object getFieldObject(EntityPathBase basePath, String fullPath) throws IllegalAccessException {
+    public static Object getFieldObject(BeanPath basePath, String fullPath) throws IllegalAccessException {
 
         LinkedList<String> paths = new LinkedList<>();
         paths.addAll(Arrays.asList(StringUtils.split(fullPath, ".")));
@@ -58,19 +59,21 @@ public class QueryDslPathInspector {
     }
 
 
-    private static Object getFieldObject(EntityPathBase basePath, LinkedList<String> paths) throws IllegalAccessException {
+    private static Object getFieldObject(BeanPath basePath, LinkedList<String> paths) throws IllegalAccessException {
         if (!paths.isEmpty()) {
             String currPath = paths.pop();
             Object o = getObjectForField(basePath, currPath);
-            if (o != null && o instanceof EntityPathBase && !paths.isEmpty()) {
-                return getFieldObject((EntityPathBase) o, paths);
+            if (o != null && o instanceof BeanPath && !paths.isEmpty()) {
+                return getFieldObject((BeanPath) o, paths);
             }
             return o;
         }
         return null;
     }
 
-    private static Object getObjectForField(EntityPathBase basePath, String field) throws IllegalAccessException {
+
+
+    private static Object getObjectForField(BeanPath basePath, String field) throws IllegalAccessException {
         Map<String, Field> fieldSet = getFields(basePath.getClass());
         if (StringUtils.isNotBlank(field)) {
             Field f = fieldSet.get(field);

@@ -24,11 +24,21 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.OperationImpl;
 import com.querydsl.core.types.Operator;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.PathImpl;
+import com.querydsl.core.types.TemplateExpressionImpl;
+import com.querydsl.core.types.Visitor;
 import com.querydsl.core.types.dsl.ComparablePath;
 import com.querydsl.core.types.dsl.EntityPathBase;
+import com.querydsl.core.types.dsl.EnumExpression;
+import com.querydsl.core.types.dsl.EnumOperation;
+import com.querydsl.core.types.dsl.EnumPath;
+import com.querydsl.core.types.dsl.EnumTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
@@ -46,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -91,6 +102,7 @@ public class GenericQueryDslFilter {
             .put(Ops.LOE, NumberPath.class)
             .put(Ops.LOE, ComparablePath.class)
             .put(Ops.LIKE_IC, StringPath.class)
+            .put(Ops.LIKE_IC, ComparablePath.class)
             .build();
     private static final Logger log = LoggerFactory.getLogger(GenericQueryDslFilter.class);
     public static String NULL_FILTER = "NULL";
@@ -149,11 +161,24 @@ public class GenericQueryDslFilter {
                                 op = Ops.IN;
                             }
                             if (convertedValue != null) {
-                                if(filter.isOrFilter()) {
-                                    booleanBuilder.or(Expressions.predicate(op, p, Expressions.constant(convertedValue)));
+                                Expression e = null;
+                                if(convertedValue instanceof Comparable) {
+                                    e = Expressions.asComparable((Comparable) convertedValue);
                                 }
                                 else {
-                                    booleanBuilder.and(Expressions.predicate(op, p, Expressions.constant(convertedValue)));
+                                    e = Expressions.constant(convertedValue);
+                                }
+
+                                //reset the operator if looking for UUID
+                                if(convertedValue instanceof UUID){
+                                    op = Ops.EQ;
+                                }
+
+                                if(filter.isOrFilter()) {
+                                     booleanBuilder.or(Expressions.predicate(op, p, e));
+                                    }
+                                    else {
+                                    booleanBuilder.and(Expressions.predicate(op, p, e));
                                 }
                             }
 
@@ -172,6 +197,7 @@ public class GenericQueryDslFilter {
         }
         return booleanBuilder;
     }
+
 
     /**
      * Build the QueryDSL where filter from the filter string
@@ -266,6 +292,25 @@ public class GenericQueryDslFilter {
         return millis;
     }
 
+    private static UUID convertToUUID(Object value){
+        if(value instanceof UUID){
+            return (UUID)value;
+        }
+        else if(value instanceof  String) {
+            String stringValue = (String)value;
+            if (((String) value).endsWith("%")) {
+                stringValue = StringUtils.substringBeforeLast(stringValue, "%");
+            }
+            try {
+                UUID uuid = UUID.fromString(stringValue);
+                return uuid;
+            } catch (IllegalArgumentException e) {
+                //unable to convert to uuid
+            }
+        }
+      return  null;
+    }
+
     /**
      * converts the String filter value to the proper QueryDSL Type based upon the Path provided
      *
@@ -296,9 +341,16 @@ public class GenericQueryDslFilter {
                             convertedListItem = convertDateTimeStringToMillis(filterKey, item);
                         }
                         if (convertedListItem == null) {
-                            convertedListItem = beanUtilsBean.getConvertUtils().convert(item, type);
+                            if(type.isAssignableFrom(UUID.class)){
+                                convertedListItem = convertToUUID(item);
+                            }
+                            else {
+                                convertedListItem = beanUtilsBean.getConvertUtils().convert(item, type);
+                            }
                         }
-                        convertedItems.add(convertedListItem);
+                        if(convertedListItem != null) {
+                            convertedItems.add(convertedListItem);
+                        }
                     } catch (Exception e) {
                         //handle conversion error
                     }
@@ -311,7 +363,11 @@ public class GenericQueryDslFilter {
                 o = convertDateTimeStringToMillis(filterKey, value);
             }
             if (o == null) {
-                o = beanUtilsBean.getConvertUtils().convert(value, type);
+                if(value instanceof  String && type.isAssignableFrom(UUID.class)){
+                    o = convertToUUID(value);
+                } else {
+                    o = beanUtilsBean.getConvertUtils().convert(value, type);
+                }
             }
         }
         return o;

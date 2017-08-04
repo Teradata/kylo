@@ -877,8 +877,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
           alert =  provider.getAlert(provider.resolve(alertId)).orElse(null);
         }
         if(alert == null) {
-            alert = alertManager.create(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
-                                        feedName,
+            alert = alertManager.createEntityAlert(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
                                         Alert.Level.FATAL,
                                         message, alertManager.createEntityIdentificationAlertContent(feedId,
                                                                                                      SecurityRole.ENTITY_TYPE.FEED, jobExecution.getJobExecutionId()));

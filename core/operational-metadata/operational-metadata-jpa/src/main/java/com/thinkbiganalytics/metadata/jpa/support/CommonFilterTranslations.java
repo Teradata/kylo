@@ -46,7 +46,10 @@ public class CommonFilterTranslations {
 
    public static final ImmutableMap<String, String> feedFilters =
         new ImmutableMap.Builder<String, String>()
-            .put("feed", "name").build();
+            .put("feed", "name")
+            .put("feedId","id.uuid").build()
+
+       ;
 
     public static final ImmutableMap<String, String> jobExecutionFilters =
         new ImmutableMap.Builder<String, String>()
