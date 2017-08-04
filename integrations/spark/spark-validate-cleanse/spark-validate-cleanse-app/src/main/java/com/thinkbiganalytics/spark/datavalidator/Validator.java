@@ -676,19 +676,19 @@ public class Validator implements Serializable {
         for (BaseFieldPolicy p : fieldPolicies) {
             if (p instanceof StandardizationPolicy) {
                 StandardizationPolicy standardizationPolicy = (StandardizationPolicy) p;
-                boolean isEmpty = ((value == null) || (StringUtils.isEmpty(value.toString())));
+                boolean isEmpty = ((result.getFieldValue() == null) || (StringUtils.isEmpty(result.getFieldValue().toString())));
                 boolean shouldStandardize = true;
                 if (isEmpty && !(standardizationPolicy instanceof AcceptsEmptyValues)) {
                     shouldStandardize = false;
                 }
 
-                if (!standardizationPolicy.accepts(value)) {
+                if (!standardizationPolicy.accepts(result.getFieldValue())) {
                     shouldStandardize = false;
                 }
 
                 if (shouldStandardize) {
                     Object newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
-                    result.setFieldValue(newValue != null ? newValue.toString() : newValue);
+                    result.setFieldValue(newValue);
                 }
             }
 
