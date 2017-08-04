@@ -151,7 +151,7 @@
                 <div layout="column" class="layout-padding-top-bottom">
                     <div layout="row" layout-align="start center" ng-click="vm.onCategoryClick()" class="primary-color-1" style="cursor: pointer;">
                         <span>{{vm.model.category.name}}</span>
-                        <ng-md-icon icon="{{vm.model.category.icon}}" style="padding-left:10px;fill:{{vm.model.category.iconColor}}" ng-if="vm.model.category.icon != null"></ng-md-icon>
+                        <ng-md-icon icon="{{vm.model.category.icon}}" style="padding-left:10px;" ng-style="{'fill':vm.model.category.iconColor}" ng-if="vm.model.category.icon != null"></ng-md-icon>
                         <span flex></span>
                     </div>
                     <span class="hint">Category</span>

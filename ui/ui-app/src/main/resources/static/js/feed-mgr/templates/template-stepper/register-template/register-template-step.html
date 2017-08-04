@@ -102,7 +102,7 @@
                     <div layout="column" class="layout-padding-top-bottom">
                         <span class="md-input-label" style="font-size: 11px;">Icon </span>
                         <div layout="row">
-                            <ng-md-icon icon="{{vm.model.icon.title}}" size="45" style="margin:inherit;fill:{{vm.model.icon.color}}"></ng-md-icon>
+                            <ng-md-icon icon="{{vm.model.icon.title}}" size="45" style="margin:inherit" ng-style="{'fill':vm.model.icon.color}"></ng-md-icon>
                             <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
                         </div>
                     </div>
