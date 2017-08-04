@@ -25,16 +25,13 @@ import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.standardization.LowercaseStandardizer;
-import com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
 import com.thinkbiganalytics.policy.validation.CharacterValidator;
-import com.thinkbiganalytics.policy.validation.EmailValidator;
 import com.thinkbiganalytics.policy.validation.LookupValidator;
 import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.RangeValidator;
-import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
@@ -55,9 +52,25 @@ import static org.junit.Assert.assertTrue;
 
 public class ValidatorTest {
 
+    private static final StandardizationPolicy ADD_ONE_STANDARDISATION_POLICY = new StandardizationPolicy() {
+
+        @Override
+        public String convertValue(String value) {
+            throw new IllegalStateException("Method not implemented");
+        }
+
+        @Override
+        public Boolean accepts(Object value) {
+            return value instanceof Integer;
+        }
+
+        @Override
+        public Object convertRawValue(Object value) {
+            return ((Integer) value) + 1;
+        }
+    };
+
     private Validator validator;
-
-
 
     @Before
     public void setUp() throws Exception {
@@ -272,4 +285,20 @@ public class ValidatorTest {
         assertEquals(policyMap.size(), 10);
 
     }
+
+    @Test
+    public void standardizeShouldNotChangeType() {
+        String fieldName = "field1";
+
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(ADD_ONE_STANDARDISATION_POLICY);
+        policies.add(ADD_ONE_STANDARDISATION_POLICY);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("temp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "int");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, 0, fieldDataType);
+        assertEquals(2, result.getFieldValue());
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+    }
+
 }
