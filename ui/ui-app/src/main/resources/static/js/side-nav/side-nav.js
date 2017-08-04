@@ -1,4 +1,4 @@
-define(['angular','side-nav/module-name', 'constants/AccessConstants'], function (angular,moduleName,AccessConstants) {
+define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav/module'], function (angular,moduleName,AccessConstants) {
 
     var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService) {
         return {

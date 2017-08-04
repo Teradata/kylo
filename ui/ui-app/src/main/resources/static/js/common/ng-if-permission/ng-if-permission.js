@@ -15,7 +15,7 @@
  * <div ng-if-permission="a_permission, b_permission", entity="vm.feedModel">
  *
  */
-define(['angular','common/module-name','kylo-services'], function (angular,moduleName) {
+define(['angular','common/module-name','kylo-common-module','kylo-services'], function (angular,moduleName) {
 
     var getBlockNodes = function (nodes) {
         if (!nodes || !nodes.length) {

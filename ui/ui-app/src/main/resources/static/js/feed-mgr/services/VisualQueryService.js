@@ -107,7 +107,7 @@
  * @param {ColumnRef} val the value expression to compute or assign
  */
 
-define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
+define(["angular", "feed-mgr/module-name", "feed-mgr/module"], function (angular, moduleName) {
     return angular.module(moduleName).factory("VisualQueryService", function () {
         /**
          * A map of node IDs to the node model and connections.

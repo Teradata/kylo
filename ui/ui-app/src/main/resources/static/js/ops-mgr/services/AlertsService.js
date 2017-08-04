@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/module-name','ops-mgr/module'], function (angular,moduleName) {
     angular.module(moduleName).service('AlertsService', function () {
 
         var self = this;

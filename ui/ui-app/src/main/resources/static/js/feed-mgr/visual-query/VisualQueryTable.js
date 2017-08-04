@@ -299,7 +299,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             }
 
             // Update scope in a separate thread
-            var $scope = $(headerDiv).scope();
+            var $scope = angular.element(headerDiv).scope();
             var self = this;
 
             if ($scope.header !== header) {

@@ -50,13 +50,3 @@ define(['angular','services/module-name','jquery'], function (angular,moduleName
         return data;
     }]);
 });
-
-var BroadcastConstants = (function () {
-    function BroadcastConstants() {
-    }
-
-    BroadcastConstants.CONTENT_WINDOW_RESIZED = 'CONTENT_WINDOW_RESIZED';
-
-    return BroadcastConstants;
-})();
-

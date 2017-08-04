@@ -1,7 +1,7 @@
 /**
  * Controller for the Main App index.html
  */
-define(['angular'], function (angular) {
+define(['angular','app'], function (angular) {
 
     var controller = function ($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions, $mdDialog, StateService,
                                SearchService, SideNavService, AccessControlService) {

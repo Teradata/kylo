@@ -615,8 +615,6 @@ define(['angular', 'kylo-common', 'kylo-services',
         ]
     );
 
-    return angular.bootstrap(document, ['kylo']);
-
 });
 
 

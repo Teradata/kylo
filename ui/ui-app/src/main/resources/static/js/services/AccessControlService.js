@@ -49,7 +49,7 @@
  * @property {Array.<string>} groups the groups that should have their permissions changed
  * @property {Array.<string>} users the users that should have their permissions changed
  */
-define(['angular', 'services/module-name', 'constants/AccessConstants'], function (angular, moduleName,AccessConstants) {
+define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-services-module'], function (angular, moduleName,AccessConstants) {
 
 
 
