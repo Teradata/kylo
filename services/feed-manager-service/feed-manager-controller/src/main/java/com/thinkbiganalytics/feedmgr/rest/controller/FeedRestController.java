@@ -147,6 +147,12 @@ public class FeedRestController {
     private MetadataService metadataService;
 
     //Profile needs hive service
+    @Autowired
+    HiveService hiveService;
+
+    @Autowired
+    FeedManagerPreconditionService feedManagerPreconditionService;
+
     @Inject
     private HiveService hiveService;
 

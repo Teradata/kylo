@@ -24,6 +24,7 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
+import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
@@ -478,47 +479,9 @@ public class JobsRestController {
                 return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
             }
             return Collections.emptyList();
-/*
-            //get the streaming stats and merge back into the stats
-            //streaming feeds will mark the Running count as 1 for the entire feed
-            List<? extends NifiFeedStats> streamingStats = nifiFeedStatisticsProvider.findFeedStats(true);
-            if(streamingStats != null){
-                //Map of the feed name to Map of status and job status counts
-             Map<String,Map<String,List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount>>>
-                 feedStats = counts.stream().collect(Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getFeedName, Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getStatus)));
-
-                 streamingStats.stream().forEach(stats ->
-                                                 {
-                                                     Long runningCount = 0L;
-                                                     if(stats.getRunningFeedFlows() >0){
-                                                         runningCount = 1L;
-                                                     }
-                                                     if(feedStats.containsKey(stats.getFeedName()) && feedStats.get(stats.getFeedName()).containsKey(BatchJobExecution.RUNNING_DISPLAY_STATUS)){
-                                                         //set the total
-                                                             feedStats.get(stats.getFeedName()).get(BatchJobExecution.RUNNING_DISPLAY_STATUS).get(0).setCount(runningCount);
-                                                     }
-                                                     else {
-                                                         //it doesnt exist so create it
-                                                         JpaBatchJobExecutionStatusCounts runningStreamingFeedCounts = new JpaBatchJobExecutionStatusCounts();
-                                                         runningStreamingFeedCounts.setCount(runningCount);
-                                                         runningStreamingFeedCounts.setFeedName(stats.getFeedName());
-                                                         runningStreamingFeedCounts.setJobName(stats.getFeedName());
-                                                         runningStreamingFeedCounts.setStatus(BatchJobExecution.RUNNING_DISPLAY_STATUS);
-                                                         runningStreamingFeedCounts.setDate(DateTime.now());
-                                                         counts.add(runningStreamingFeedCounts);
-                                                     }
-                                                 });
-
-            }
-
-            if (counts != null) {
-                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
-            }
-            return Collections.emptyList();
-            */
         });
 
     }
 
-  
+
 }

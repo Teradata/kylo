@@ -160,6 +160,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
 
+    @Inject
+    @Named("kyloAlertManager")
+    protected AlertManager alertManager;
+
+    @Inject
+    private AlertProvider provider;
+
+
+
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
