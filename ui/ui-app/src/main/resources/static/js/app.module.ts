@@ -1,6 +1,7 @@
 import {NgModule} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
 import {UpgradeModule} from "@angular/upgrade/static";
+import "routes";
 
 @NgModule({
     imports: [
@@ -11,9 +12,6 @@ import {UpgradeModule} from "@angular/upgrade/static";
 export class KyloModule {
     constructor(private upgrade: UpgradeModule) {}
     ngDoBootstrap() {
-        let upgrade = this.upgrade;
-        System.amdRequire(["routes"], function () {
-            upgrade.bootstrap(document.documentElement, ["kylo"]);
-        });
+        this.upgrade.bootstrap(document.documentElement, ["kylo"]);
     }
 }

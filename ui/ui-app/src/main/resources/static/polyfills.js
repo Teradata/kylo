@@ -1,4 +1,3 @@
-"use strict";
 /*tslint:disable*/
 /**
  * This file includes polyfills needed by Angular and is loaded before the app.
@@ -15,37 +14,10 @@
  *
  * Learn more in https://angular.io/docs/ts/latest/guide/browser-support.html
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-/***************************************************************************************************
- * BROWSER POLYFILLS
- */
-/** IE9, IE10 and IE11 requires all of the following polyfills. **/
-require("core-js/es6/symbol");
-require("core-js/es6/object");
-require("core-js/es6/function");
-require("core-js/es6/parse-int");
-require("core-js/es6/parse-float");
-require("core-js/es6/number");
-require("core-js/es6/math");
-require("core-js/es6/string");
-require("core-js/es6/date");
-require("core-js/es6/array");
-require("core-js/es6/regexp");
-require("core-js/es6/map");
-require("core-js/es6/set");
-/** IE10 and IE11 requires the following for NgClass support on SVG elements */
-// import 'classlist.js';  // Run `npm install --save classlist.js`.
-/** IE10 and IE11 requires the following to support `@angular/animation`. */
-// import 'web-animations-js';  // Run `npm install --save web-animations-js`.
-/** Evergreen browsers require these. **/
-require("core-js/es6/reflect");
-require("core-js/es7/reflect");
-/** ALL Firefox browsers require the following to support `@angular/animation`. **/
-// import 'web-animations-js';  // Run `npm install --save web-animations-js`.
-/***************************************************************************************************
- * Zone JS is required by Angular itself.
- */
-require("zone.js/dist/zone"); // Included with Angular-CLI.
+define(["require", "exports", "core-js/es6/symbol", "core-js/es6/object", "core-js/es6/function", "core-js/es6/parse-int", "core-js/es6/parse-float", "core-js/es6/number", "core-js/es6/math", "core-js/es6/string", "core-js/es6/date", "core-js/es6/array", "core-js/es6/regexp", "core-js/es6/map", "core-js/es6/set", "core-js/es6/reflect", "core-js/es7/reflect", "zone.js/dist/zone"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
