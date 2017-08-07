@@ -6,6 +6,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             bindToController: {
                 entity:'=',
                 roleMembershipsProperty:'@?',
+                allowOwnerChange:'=?',
                 entityType:'@',
                 theForm:'=?',
                 readOnly:'=?',
@@ -40,13 +41,17 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             this.readOnly = false;
         }
 
-       if(angular.isUndefined(this.theForm)){
+        if(angular.isUndefined(this.theForm)){
            this.theForm = {};
-       }
+        }
        
-       if(angular.isUndefined(this.roleMembershipsProperty)){
+        if(angular.isUndefined(this.roleMembershipsProperty)){
     	   this.roleMembershipsProperty = "roleMemberships";
-       }
+        }
+        
+        if(angular.isUndefined(this.allowOwnerChange)){
+        	this.allowOwnerChange = true;
+        }
 
 
         if(angular.isUndefined(this.entity[this.roleMembershipsProperty])){
@@ -157,6 +162,17 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             });
             return df.promise;
         }
+        
+        /**
+         * If an attempt is made to remove a non-editable member of a role membership then
+         * re-add that member to the membership set.
+         */
+        this.onRemovedMember = function(member, members) {
+        	// Editable is assumed true if the flag is undefined
+            if (angular.isDefined(member.editable) && ! member.editable) {
+            	members.unshift(member);
+            }
+        };
 
         /**
          * Query users

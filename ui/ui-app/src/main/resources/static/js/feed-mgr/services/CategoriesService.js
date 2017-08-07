@@ -144,7 +144,7 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                 save: function (category) {
                     //prepare access control changes if any
                     EntityAccessControlService.updateRoleMembershipsForSave(category.roleMemberships);
-                    EntityAccessControlService.updateRoleMembershipsForSave(category.FeedRoleMemberships);
+                    EntityAccessControlService.updateRoleMembershipsForSave(category.feedRoleMemberships);
 
                     var promise = $http({
                         url: RestUrlService.CATEGORIES_URL,

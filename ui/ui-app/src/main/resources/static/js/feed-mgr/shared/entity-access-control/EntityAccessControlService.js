@@ -78,7 +78,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                            //if the members is empty for the  entity we should update as the user cleared out memberships, otherwise we should update only if the member has a 'type' attr
                            var update = roleMembership.members.length == 0;
                            _.each(roleMembership.members, function (member) {
-                               if (angular.isDefined(member.type) && angular.isDefined(member.editable) && member.editable) {
+                               if (angular.isDefined(member.type) && member.editable != false) {
                                    if (member.type == 'user') {
                                        users.push(member.systemName);
                                    }
@@ -121,7 +121,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                     		roleMembership.members.push(group)
                     	});
                     	_.each(roleMembership.users, function (user) {
-                    		group.editable = false;
+                    		user.editable = false;
                     		user.type = 'user';
                     		user.title = user.displayName;
                     		roleMembership.members.push(user)
@@ -143,7 +143,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                             existingMembership.members.push(group)
                         });
                         _.each(roleMembership.users, function (user) {
-                        	group.editable = true;
+                        	user.editable = true;
                             user.type = 'user';
                             user.title = user.displayName;
                             existingMembership.members.push(user)
@@ -187,13 +187,13 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
             var roleMembershipChanges = [];
             _.each($scope.entity.roleMemberships, function (roleMembership) {
                 var users = _.chain(roleMembership.members).filter(function (member) {
-                    return member.type == 'user'
+                    return member.type == 'user' && member.editable != false;
                 }).map(function (user) {
                     return user.systemName;
                 }).value();
 
                 var groups = _.chain(roleMembership.members).filter(function (member) {
-                    return member.type == 'group'
+                    return member.type == 'group' && member.editable != false;
                 }).map(function (group) {
                     return group.systemName;
                 }).value();

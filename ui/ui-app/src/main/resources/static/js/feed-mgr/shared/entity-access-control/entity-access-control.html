@@ -2,7 +2,7 @@
   <span>Entity access control is not enabled for Kylo.</span>
 </div>
 <div layout-padding ng-if="vm.enabled">
-    <div layout="row">
+  <div layout="row" ng-if="vm.allowOwnerChange">
     <div flex>
       <!-- for 0.8.1 disable access to change the owner -->
       <md-autocomplete flex="45" required
@@ -54,9 +54,12 @@
       </div>
 
       <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
-        <md-chips ng-model="roleMembership.members" md-autocomplete-snap
+        <md-chips ng-model="roleMembership.members" 
+                  md-autocomplete-snap
                   readonly="vm.readOnly"
-                  md-require-match="true" class="layout-padding-top-bottom">
+                  md-require-match="true" 
+                  md-on-remove="vm.onRemovedMember($chip, roleMembership.members)"
+                  class="layout-padding-top-bottom">
           <md-autocomplete
               md-min-length="0"
               md-selected-item="roleMembership.ui.members.selectedItem"
@@ -77,7 +80,8 @@
           <button 
                   ng-if="$chip.editable"
                   class="md-chip-remove ng-scope"
-                  md-chip-remove type="button" 
+                  md-chip-remove 
+                  type="button" 
                   aria-hidden="true" 
                   tabindex="-1">
               <ng-md-icon icon="close"></ng-md-icon>
@@ -85,9 +89,9 @@
           </button>
           <md-chip-template>
             <span>
-               <ng-md-icon icon="group" style="fill:orange;" ng-if="$chip.type=='group'"></ng-md-icon>
-               <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="$chip.type=='user'"></ng-md-icon>
-               <strong>{{$chip.title}}</strong>
+               <ng-md-icon icon="group" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:orange" ng-if="$chip.type=='group'"></ng-md-icon>
+               <ng-md-icon icon="account_circle" ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="fill:blue" ng-if="$chip.type=='user'"></ng-md-icon>
+               <span ng-style="$chip.editable == false ? { 'opacity':'0.6' } : { 'opacity':'1.0' }" style="font-weight:bold">{{$chip.title}}</span>
             </span>
           </md-chip-template>
         </md-chips>
