@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.v2.thrift;
  */
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -32,14 +33,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -119,45 +118,72 @@ public class RefreshableDataSource extends BasicDataSource {
      * @return true if the connection is alive
      */
     public synchronized boolean testConnection(String username, String password) {
-        boolean timedOut = false;
-        Connection connection = null;
-        Statement statement = null;
+        // Get a connection to test
+        final Connection connection;
         try {
-            if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
-                connection = getConnectionForValidation(username, password);
-            } else {
-                connection = getConnectionForValidation();
-            }
+            connection = (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) ? getConnectionForValidation(username, password) : getConnectionForValidation();
             log.info("connection obtained by RefreshableDatasource");
+        } catch (final SQLException e) {
+            log.warn("A database access error occurred when getting a connection for JDBC URL: ", url, e);
+            return false;
+        }
 
+        // Test the connection using different methods
+        boolean asyncCleanup = false;
+        Statement statement = null;
+
+        try {
+            // Method 1: Test using driver method
             try {
                 // can throw "java.sql.SQLException: Method not supported"; ignore and try other methods if so
-                if (!connection.isValid(validationQueryTimeout.intValue())) {
-                    log.info("connection obtained by RefreshableDatasource was not valid");
+                final boolean isValid = connection.isValid(validationQueryTimeout.intValue());
+                if (!isValid) {
+                    log.info("Connection obtained for JDBC URL was not valid: {}", url);
                     return false;
                 }
-            } catch (SQLException se) {
-                // swallow exception to try other methods
-                log.warn("The current driver '{}' does not support isValid() method as a means of testing connection.", connection.getMetaData().getDriverName());
+            } catch (final SQLException e) {
+                log.debug("The isValid() method is not supported for the JDBC URL: {}", url);
             }
 
-            statement = connection.createStatement();
+            // Method 2: Test with a statement and query timeout
             try {
-                statement.setQueryTimeout(validationQueryTimeout.intValue());    // throws method not supported if Hive driver
-                statement.execute(validationQuery);  // executes if no exception from setQueryTimeout
-                return true;
-            } catch (SQLException se) {
-                // swallow exception to try other methods
-                log.warn("The current driver '{}' does not support statement.setQueryTimeout() method.", connection.getMetaData().getDriverName());
-                timedOut = validateQueryWithTimeout(statement, validationQuery, validationQueryTimeout.intValue());
-                return timedOut == false;
+                statement = connection.createStatement();
+            } catch (final SQLException e) {
+                log.warn("A database access error occurred when getting a statement for JDBC URL: {}", url, e);
+                return false;
             }
-        } catch (SQLException e) {
-            log.warn("Unknown SQLException in RefreshableDataSource.testConnection().", e);
-            return false;
+
+            try {
+                statement.setQueryTimeout(validationQueryTimeout.intValue());  // throws method not supported if Hive driver
+                try {
+                    statement.execute(validationQuery);  // executes if no exception from setQueryTimeout
+                    return true;
+                } catch (final SQLException e) {
+                    log.debug("Failed to execute validation query for JDBC URL: {}", url, e);
+                    log.info("Connection obtained for JDBC URL was not valid: {}", url);
+                    return false;
+                }
+            } catch (final SQLException e) {
+                log.warn("The Statement.setQueryTimeout() method is not supported for the JDBC URL: {}", url);
+            }
+
+            // Method 3: Test with a statement and a timer
+            asyncCleanup = true;
+            boolean isValid;
+
+            try {
+                isValid = validateQueryWithTimeout(statement, validationQuery, validationQueryTimeout.intValue());
+            } catch (final SQLException e) {
+                log.debug("Failed to execute validation query for JDBC URL: {}", url, e);
+                isValid = false;
+            }
+
+            if (!isValid) {
+                log.info("Connection obtained for JDBC URL was not valid: {}", url);
+            }
+            return isValid;
         } finally {
-            // if timedOut then cleanup with a background thread.
-            connectionCleanup(connection, statement, timedOut);
+            connectionCleanup(connection, statement, asyncCleanup);
         }
     }
 
@@ -189,7 +215,7 @@ public class RefreshableDataSource extends BasicDataSource {
             if (log.isDebugEnabled()) {
                 // since we submit and forget, it could be possible that some other connections are waiting clean up going
                 // in.  Seems highly unlikely in observed scenarios.
-                log.debug("Cleanup Executor at '{}' active threads prior to initiating clean up", ((ThreadPoolExecutor) executorForCleanup).getActiveCount() );
+                log.debug("Cleanup Executor at '{}' active threads prior to initiating clean up", ((ThreadPoolExecutor) executorForCleanup).getActiveCount());
             }
 
             executorForCleanup.submit(callable);
@@ -218,28 +244,22 @@ public class RefreshableDataSource extends BasicDataSource {
      * @return true if query had to be timed out, false otherwise.
      */
     private synchronized boolean validateQueryWithTimeout(final Statement statement, final String validationQuery, int timeout) throws SQLException {
-        boolean cancelled = false;
         log.info("perform validation query in RefreshableDatasource.executeWithTimeout()");
-        Callable<Boolean> vQueryCallable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return statement.execute(validationQuery);
-            }
-        };
-
-        Stopwatch timer = Stopwatch.createStarted();
-
+        final Stopwatch timer = Stopwatch.createStarted();
         try {
-            List<Future<Boolean>> futures = executor.invokeAll(Arrays.asList(vQueryCallable),
-                                                               timeout, TimeUnit.SECONDS);
-            cancelled = futures.get(0).isCancelled();
-        } catch (InterruptedException ie) {
-            log.warn("Unlikely scenario that query thread was interrupted.  Application going down?", ie);
-            throw new SQLException(ie);
+            executor.submit(() -> statement.execute(validationQuery)).get(timeout, TimeUnit.SECONDS);
+            log.info("validation query returned from RefreshableDatasource.executeWithTimeout() in {}", timer.stop());
+            return true;
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Unlikely scenario that query thread was interrupted. Application going down?", e);
+            throw new SQLException(e);
+        } catch (final TimeoutException e) {
+            return false;
+        } catch (final Exception e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), SQLException.class);
+            throw Throwables.propagate(e.getCause());
         }
-
-        log.info("validation query returned from RefreshableDatasource.executeWithTimeout() in {}", timer.stop());
-        return cancelled;
     }
 
     private Connection getConnectionForValidation() throws SQLException {
