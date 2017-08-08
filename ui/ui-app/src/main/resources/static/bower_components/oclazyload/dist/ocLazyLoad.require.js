@@ -1224,7 +1224,10 @@
              * because the user can overwrite jsLoader and it will probably not use promises :(
              */
             $delegate.jsLoader = function (paths, callback, params) {
-                System.amdRequire(paths, callback.bind(null, undefined), callback, params);
+                var compatPaths = paths.map(function (path) {
+                    return path.match(/^[^\/.].*\.js$/) ? "/" + path : path;
+                });
+                System.amdRequire(compatPaths, callback.bind(null, undefined), callback, params);
             };
             $delegate.jsLoader.requirejs = true;
 
