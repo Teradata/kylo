@@ -284,7 +284,7 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                     if (entity == undefined) {
                         entity = data.model;
                     }
-                    return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityTypes.CATEGORY);
+                    return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.CATEGORY);
                 }
             };
 

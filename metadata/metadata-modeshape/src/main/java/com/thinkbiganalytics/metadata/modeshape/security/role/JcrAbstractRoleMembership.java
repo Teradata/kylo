@@ -157,14 +157,14 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
 
     @Override
     public void removeMember(GroupPrincipal principal) {
-        disable(principal);
         JcrPropertyUtil.removeFromSetProperty(getNode(), GROUPS, principal.getName());
+        disable(principal);
     }
 
     @Override
     public void removeMember(UsernamePrincipal principal) {
-        disable(principal);
         JcrPropertyUtil.removeFromSetProperty(getNode(), USERS, principal.getName());
+        disable(principal);
     }
 
     @Override
@@ -187,39 +187,24 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
     protected abstract void disable(Principal principal);
 
     /**
-     * A convenience method for enabling permissions on the given AllowedActions for the added principal.
+     * A convenience method for enabling only the permissions granted by the role memberships among the passed in set
+     * of which the given principal is a member.
+     * @param principal the principal involved
+     * @param allMemberships a stream of all potential role memberships that may be involved in enabling permissions for this principal
+     * @param allowed the allowed actions that should be updated to permit with the new permissions
      */
-    protected void enable(Principal principal, AllowedActions allowed) {
-        JcrAllowedActions roleAllowed = (JcrAllowedActions) getRole().getAllowedActions();
-        Set<Action> actions = roleAllowed.getAvailableActions().stream()
-                        .flatMap(avail -> avail.stream())
-                        .collect(Collectors.toSet());
-        
-        allowed.enable(principal, actions);
-    }
-
-    /**
-     * A convenience method for disabling permissions on the given AllowedActions for the removed principal.
-     */
-    protected void disable(Principal principal, Stream<RoleMembership> allMemberships, AllowedActions allowed) {
-        SecurityRole thisRole = getRole();
-        
-        // Get all actions allowed by all other memberships of this principal besides this one.
-        Set<AllowableAction> otherAllowables = allMemberships
+    protected void enableOnly(Principal principal, Stream<RoleMembership> allMemberships, AllowedActions allowed) {
+        // Get a union of all actions allowed by all role memberships containing the principal as a member.
+        Set<Action> actions = allMemberships
                         .filter(membership -> membership.getMembers().contains(principal))
                         .map(membership -> membership.getRole())
-                        .filter(role -> ! role.getSystemName().equals(thisRole.getSystemName()))
                         .flatMap(role -> role.getAllowedActions().getAvailableActions().stream())
                         .flatMap(avail -> avail.stream())
                         .collect(Collectors.toSet());
         
-        // Disable only the actions not permitted by any other role memberships for this principal
-        Set<Action> disabled = thisRole.getAllowedActions().getAvailableActions().stream()
-                        .flatMap(avail -> avail.stream())
-                        .filter(action -> ! otherAllowables.contains(action))
-                        .collect(Collectors.toSet());
-        
-        allowed.disable(principal, disabled);
+        // Update the given allowed actions to enable only the derived set of permitted actions based
+        // on the current set of role memberships of the principal.
+        allowed.enableOnly(principal, actions);
     }
 
     protected Stream<UsernamePrincipal> streamUsers() {

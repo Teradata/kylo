@@ -169,7 +169,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             // Save the changes
             self.saveModel(model)
                 .then(function () {
-                    EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.DATASOURCE, self.model.roleMemberships);
+                    EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityRoleTypes.DATASOURCE, self.model.roleMemberships);
                 })
                 .catch(function () {
                     self.isAccessControlEditable = true;

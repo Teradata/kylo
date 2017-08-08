@@ -791,7 +791,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     if(entity == undefined){
                         entity = data.model;
                     }
-                    return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityTypes.FEED);
+                    return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityRoleTypes.FEED);
                 },
 
                 /**

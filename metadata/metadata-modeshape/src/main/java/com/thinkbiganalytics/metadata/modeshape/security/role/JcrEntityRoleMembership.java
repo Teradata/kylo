@@ -60,18 +60,20 @@ public class JcrEntityRoleMembership extends JcrAbstractRoleMembership {
         this.allowedActions = allowed;
     }
     
+    @Override
+    protected void enable(Principal principal) {
+        enableOnly(principal, streamAllRoleMemberships(), getAllowedActions());
+    }
+
+    @Override
+    protected void disable(Principal principal) {
+        enableOnly(principal, streamAllRoleMemberships(), getAllowedActions());
+    }
+
     protected Stream<RoleMembership> streamAllRoleMemberships() {
         Node parentNode = JcrUtil.getParent(getNode());
         return JcrUtil.getNodeList(parentNode, NODE_NAME).stream()
                         .map(node -> JcrUtil.getJcrObject(node, JcrEntityRoleMembership.class, this.allowedActions));
-    }
-    
-    protected void enable(Principal principal) {
-        enable(principal, getAllowedActions());
-    }
-
-    protected void disable(Principal principal) {
-        disable(principal, streamAllRoleMemberships(), getAllowedActions());
     }
 
     protected AllowedActions getAllowedActions() {

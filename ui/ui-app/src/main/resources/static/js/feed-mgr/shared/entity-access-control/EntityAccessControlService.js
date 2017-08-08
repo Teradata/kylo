@@ -36,9 +36,9 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                 var url = '';
                 if (membersType === 'feed') {
                     url = RestUrlService.FEED_ROLES_URL(entity.id);
-                } else if (membersType === 'category-roles') {
+                } else if (membersType === 'category') {
                     url = RestUrlService.CATEGORY_ROLES_URL(entity.id);
-                } else if (membersType === 'category-feed-roles') {
+                } else if (membersType === 'category-feed') {
                 	url = RestUrlService.CATEGORY_FEED_ROLES_URL(entity.id);
                 } else if (membersType === 'template') {
                     url = RestUrlService.TEMPLATE_ROLES_URL(entity.id);
@@ -60,7 +60,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
         var svc = angular.extend(EntityAccessControlService.prototype, AccessConstants);
 
         var data = angular.extend(svc, {
-            entityTypes: {CATEGORY: "category", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource"},
+            entityRoleTypes: {CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource"},
 
 
             /**

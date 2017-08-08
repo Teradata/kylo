@@ -66,14 +66,15 @@
               md-search-text="roleMembership.ui.members.searchText"
               md-items="item in vm.queryUsersAndGroups(roleMembership.ui.members.searchText)"
               md-item-text="item.title"
-              md-no-cache="true"ap
+              md-no-cache="true"
+              md-clear-button="true"
               placeholder="Add User/Group access">
             <span md-highlight-text="roleMembership.ui.members.searchText">{{item.title}}</span>
             <md-item-template>
                   <span class="item-title">
                      <ng-md-icon icon="group" style="fill:orange;" ng-if="item.type=='group'"></ng-md-icon>
                      <ng-md-icon icon="account_circle" style="fill:blue;" ng-if="item.type=='user'"></ng-md-icon>
-                    <span> {{item.title}} </span>
+                     <span> {{item.title}} </span>
                   </span>
             </md-item-template>
           </md-autocomplete>

@@ -168,8 +168,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          * re-add that member to the membership set.
          */
         this.onRemovedMember = function(member, members) {
-        	// Editable is assumed true if the flag is undefined
-            if (angular.isDefined(member.editable) && ! member.editable) {
+            if (member.editable == false) {
             	members.unshift(member);
             }
         };
@@ -180,8 +179,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
          */
         this.queryUsers = function(query){
             var df = $q.defer();
-            getAllUsers().then(function(users){
-
+            getAllUsers().then(function(users) {
                 var matchingUsers = filterCollection(users,query,['_lowerDisplayName','_lowerSystemName']);
                 df.resolve(matchingUsers);
             });
@@ -235,7 +233,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             }
             return df.promise;
         }
-
+        
         function init(){
             if(self.rolesInitialized == false) {
                 $q.when(EntityAccessControlService.mergeRoleAssignments(self.entity, self.entityType, self.entity[self.roleMembershipsProperty])).then(function(){

@@ -55,7 +55,7 @@ public class JcrFeedDefaultRoleMembership extends JcrAbstractRoleMembership {
      */
     @Override
     protected void enable(Principal principal) {
-        this.category.getFeeds().forEach(feed -> enable(principal, feed.getAllowedActions()));
+        this.category.getFeeds().forEach(feed -> enableOnly(principal, streamAllRoleMemberships(feed), feed.getAllowedActions()));
     }
 
 
@@ -64,7 +64,7 @@ public class JcrFeedDefaultRoleMembership extends JcrAbstractRoleMembership {
      */
     @Override
     protected void disable(Principal principal) {
-        this.category.getFeeds().forEach(feed -> disable(principal, streamAllRoleMemberships(feed), feed.getAllowedActions()));
+        this.category.getFeeds().forEach(feed -> enableOnly(principal, streamAllRoleMemberships(feed), feed.getAllowedActions()));
     }
 
     protected Stream<RoleMembership> streamAllRoleMemberships(Feed feed) {
