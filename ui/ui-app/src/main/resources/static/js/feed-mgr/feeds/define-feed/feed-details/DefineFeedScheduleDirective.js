@@ -123,6 +123,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.savingFeed = false;
 
         /**
+         * Indicates that NiFi supports the execution node property.
+         * @type {boolean}
+         */
+        this.supportsExecutionNode = true;
+
+        /**
          * All possible schedule strategies
          * @type {*[]}
          */
@@ -141,7 +147,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 if (allowPreconditions) {
                     return (strategy.value === "TRIGGER_DRIVEN");
                 } else if (strategy.value === "PRIMARY_NODE_ONLY") {
-                    return self.isClustered;
+                    return self.isClustered && !self.supportsExecutionNode;
                 } else {
                     return (strategy.value !== "TRIGGER_DRIVEN");
                 }
@@ -278,7 +284,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             } else if (self.model.schedule.schedulingStrategy == "TIMER_DRIVEN") {
                 setTimerDriven();
             } else if (self.model.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
-                setPrimaryNodeOnly();
+                if (self.supportsExecutionNode) {
+                    setTimerDriven();
+                    self.model.schedule.schedulingStrategy = "PRIMARY";
+                } else {
+                    setPrimaryNodeOnly();
+                }
             }
             validate();
         };
@@ -398,8 +409,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
         // Detect if NiFi is clustered
-        $http.get(RestUrlService.NIFI_CLUSTER_SUMMARY_URL).then(function(response) {
+        $http.get(RestUrlService.NIFI_STATUS).then(function(response) {
             self.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+            self.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
             updateScheduleStrategies();
         });
     }

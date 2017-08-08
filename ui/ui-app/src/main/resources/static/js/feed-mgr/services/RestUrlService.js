@@ -267,10 +267,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
 
         /**
-         * The endpoint for retrieving the NiFi cluster status.
+         * The endpoint for retrieving the NiFi status.
          * @type {string}
          */
-        this.NIFI_CLUSTER_SUMMARY_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/cluster/summary";
+        this.NIFI_STATUS = this.ROOT + "/proxy/v1/feedmgr/nifi/status";
 
         /**
          * the endpoint for determining if NiFi is up or not

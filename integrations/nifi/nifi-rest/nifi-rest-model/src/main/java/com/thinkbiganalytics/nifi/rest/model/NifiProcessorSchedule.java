@@ -34,6 +34,8 @@ public class NifiProcessorSchedule {
     private String schedulingStrategy;
     @MetadataField
     private Integer concurrentTasks;
+    @MetadataField
+    private String executionNode;
 
     /**
      * Return the NiFi schedule period.
@@ -79,5 +81,18 @@ public class NifiProcessorSchedule {
 
     public void setConcurrentTasks(Integer concurrentTasks) {
         this.concurrentTasks = concurrentTasks;
+    }
+
+    /**
+     * The node(s) that this processor will be scheduled to run on.
+     *
+     * @return one of: ALL, PRIMARY
+     */
+    public String getExecutionNode() {
+        return executionNode;
+    }
+
+    public void setExecutionNode(String executionNode) {
+        this.executionNode = executionNode;
     }
 }

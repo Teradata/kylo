@@ -71,6 +71,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.isClustered = true;
 
         /**
+         * Indicates that NiFi supports the execution node property.
+         * @type {boolean}
+         */
+        this.supportsExecutionNode = true;
+
+        /**
          * Watch the model and update it if not set.
          */
         $scope.$watch(function(){
@@ -99,7 +105,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 if (self.model.registeredTemplate.allowPreconditions) {
                     return (strategy.value === "TRIGGER_DRIVEN");
                 } else if (strategy.value === "PRIMARY_NODE_ONLY") {
-                    return (self.isClustered);
+                    return (self.isClustered && !self.supportsExecutionNode);
                 } else {
                     return (strategy.value !== "TRIGGER_DRIVEN");
                 }
@@ -241,11 +247,17 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             self.editModel.systemFeedName = FeedService.editFeedModelsystemFeedName;
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
             self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
-            if (self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && !self.isClustered) {
+            if (self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && (!self.isClustered || self.supportsExecutionNode)) {
                 self.editModel.schedule.schedulingStrategy = "TIMER_DRIVEN";
+                if (self.supportsExecutionNode) {
+                    self.editModel.schedule.executionNode = "PRIMARY";
+                }
             }
             if (self.editModel.schedule.schedulingStrategy == "TIMER_DRIVEN" || self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
                 parseTimer();
+            }
+            if (self.isClustered && (!angular.isString(self.editModel.schedule.executionNode) || self.editModel.schedule.executionNode.length === 0)) {
+                self.editModel.schedule.executionNode = "ALL";
             }
             validate();
         };
@@ -318,8 +330,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         });
 
         // Detect if NiFi is clustered
-        $http.get(RestUrlService.NIFI_CLUSTER_SUMMARY_URL).then(function(response) {
+        $http.get(RestUrlService.NIFI_STATUS).then(function(response) {
             self.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+            self.supportsExecutionNode = (self.isClustered && angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
             updateScheduleStrategies();
         });
     };

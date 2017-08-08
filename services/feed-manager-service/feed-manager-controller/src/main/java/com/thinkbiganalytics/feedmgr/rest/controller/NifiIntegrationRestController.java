@@ -41,6 +41,7 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -381,22 +382,18 @@ public class NifiIntegrationRestController {
         }
     }
 
-    /**
-     * Gets the NiFi cluster status.
-     *
-     * @return the cluster summary
-     */
     @GET
-    @Path("/cluster/summary")
+    @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the status of the NiFi cluster.")
+    @ApiOperation("Retrieves details about NiFi.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the cluster status.", response = NiFiClusterSummary.class),
+                      @ApiResponse(code = 200, message = "Returns details about NiFi.", response = AboutDTO.class),
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
-    public Response getClusterSummary() {
+    public Response getAbout() {
+        final AboutDTO about = nifiRestClient.about();
         final NiFiClusterSummary clusterSummary = nifiRestClient.clusterSummary();
-        return Response.ok(clusterSummary).build();
+        return Response.ok(ImmutableMap.of("version", about.getVersion(), "clustered", clusterSummary.getClustered())).build();
     }
 
 
@@ -417,6 +414,4 @@ public class NifiIntegrationRestController {
         boolean isRunning = nifiConnectionService.isNiFiRunning();
         return Response.ok(isRunning).build();
     }
-
-
 }

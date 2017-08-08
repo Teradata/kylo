@@ -37,6 +37,13 @@
                 {{vm.model.schedule.schedulingPeriod}}
             </div>
         </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.isClustered && vm.supportsExecutionNode">
+                <span flex="25" class="property-name">Execution Node</span>
+
+                <div flex>
+                    {{vm.model.schedule.executionNode}}
+                </div>
+            </div>
             <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
                 <div layout="column">
                     <div class="md-subhead">Run Preconditions</div>
@@ -61,7 +68,7 @@
     <editable-section>
 
         <ng-form name="vm.scheduleFeedForm">
-            <div layout-gt-sm="row">
+            <div layout-gt-sm="row" style="margin-bottom:18px">
 
                 <md-input-container class="md-block" flex-gt-sm>
                     <label>Strategy</label>
@@ -90,7 +97,7 @@
                                              ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.scheduleFeedForm.cronExpression.$valid"></cron-expression-preview>
                 </md-input-container>
 
-                <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.editModel.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row">
+                <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.editModel.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" style="margin-bottom:-18px">
                     <md-input-container class="md-block" flex-gt-sm>
                         <label>Run Schedule</label>
                         <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"
@@ -114,7 +121,17 @@
                 </input>
             </md-input-container>
 
-            --></div>
+            -->
+            </div>
+            <div ng-if="vm.isClustered && vm.supportsExecutionNode" style="margin:18px 0">
+                <md-input-container class="md-block">
+                    <label>Execution Node</label>
+                    <md-select ng-model="vm.editModel.schedule.executionNode" required>
+                        <md-option value="ALL">All nodes</md-option>
+                        <md-option value="PRIMARY">Primary node</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
             <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
                 <div layout="column">
                     <div class="md-subhead">Run Preconditions</div>
