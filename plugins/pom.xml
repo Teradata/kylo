@@ -30,5 +30,6 @@
     <module>search-solr</module>
     <module>jms-service-activemq</module>
     <module>jms-service-amazon-sqs</module>
+    <module>search-elasticsearch-rest</module>
   </modules>
 </project>

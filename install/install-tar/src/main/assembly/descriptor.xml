@@ -81,7 +81,6 @@
     </fileSet>
 
 
-
     <!-- kylo services files -->
     <fileSet>
       <outputDirectory>/kylo-services/bin</outputDirectory>
@@ -181,6 +180,24 @@
     </fileSet>
 
     <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/src/main/resources</directory>
+      <outputDirectory>kylo-services/conf</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>elasticsearch-rest.properties</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-search-elasticsearch-rest-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-solr/src/main/resources</directory>
       <outputDirectory>kylo-services/conf</outputDirectory>
       <fileMode>755</fileMode>
@@ -206,12 +223,16 @@
 
     <fileSet>
       <outputDirectory>kylo-services/lib/nifi-v1</outputDirectory>
-      <directory>${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/kylo-nifi-rest-client-v1-${project.version}-distribution/kylo-nifi-rest-client-v1-${project.version}/lib/nifi-v1</directory>
+      <directory>
+        ${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/kylo-nifi-rest-client-v1-${project.version}-distribution/kylo-nifi-rest-client-v1-${project.version}/lib/nifi-v1
+      </directory>
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
       <outputDirectory>kylo-services/lib/nifi-v1.2</outputDirectory>
-      <directory>${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1.2/target/kylo-nifi-rest-client-v1.2-${project.version}-distribution/kylo-nifi-rest-client-v1.2-${project.version}/lib/nifi-v1</directory>
+      <directory>
+        ${project.parent.parent.basedir}/integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1.2/target/kylo-nifi-rest-client-v1.2-${project.version}-distribution/kylo-nifi-rest-client-v1.2-${project.version}/lib/nifi-v1
+      </directory>
       <fileMode>755</fileMode>
     </fileSet>
 
@@ -459,7 +480,8 @@
       <fileMode>755</fileMode>
     </file>
     <file>
-      <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-spark-service-bundle/nifi-spark-service-v1-nar/target/kylo-nifi-spark-service-v1-nar-${project.version}.nar
+      <source>
+        ${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-spark-service-bundle/nifi-spark-service-v1-nar/target/kylo-nifi-spark-service-v1-nar-${project.version}.nar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
       <fileMode>755</fileMode>

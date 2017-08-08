@@ -10,6 +10,7 @@
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+    <elasticsearch.restclient.version>5.5.1</elasticsearch.restclient.version>
   </properties>
   <artifactId>kylo-search-rest-model</artifactId>
 
@@ -17,6 +18,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>rest</artifactId>
+      <version>${elasticsearch.restclient.version}</version>
     </dependency>
   </dependencies>
 </project>
