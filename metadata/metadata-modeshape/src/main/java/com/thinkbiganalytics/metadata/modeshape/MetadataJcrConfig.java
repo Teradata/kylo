@@ -176,6 +176,7 @@ public class MetadataJcrConfig {
     }
 
     @Bean
+    @ConditionalOnBean(Search.class)
     public JcrIndexService indexService(final Search search, final DatasourceProvider datasourceProvider, final MetadataAccess metadataAccess, final Repository repository) {
         final JcrIndexService indexService = new JcrIndexService(search, datasourceProvider, metadataAccess);
         try {
