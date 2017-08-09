@@ -47,6 +47,18 @@ public class RemoteClientRunner implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(RemoteClientRunner.class);
 
     /**
+     * Password for keystore
+     */
+    @Nullable
+    private final String keystorePassword;
+
+    /**
+     * Path to keystore
+     */
+    @Nullable
+    private final String keystorePath;
+
+    /**
      * Spark Shell client port number
      */
     private final int localPort;
@@ -55,7 +67,7 @@ public class RemoteClientRunner implements ApplicationRunner {
      * Registration URL
      */
     @Nullable
-    private final String server;
+    private final String serverUrl;
 
     /**
      * Constructs a {@code RemoteClientRunner} with the specified command-line options and port number.
@@ -64,7 +76,9 @@ public class RemoteClientRunner implements ApplicationRunner {
      * @param serverPort the Spark Shell client port number
      */
     public RemoteClientRunner(@Nonnull final SparkShellOptions parameters, final int serverPort) {
-        server = parameters.getServer();
+        keystorePassword = parameters.getServerKeystorePassword();
+        keystorePath = parameters.getServerKeystorePath();
+        serverUrl = parameters.getServerUrl();
         localPort = serverPort;
     }
 
@@ -72,14 +86,14 @@ public class RemoteClientRunner implements ApplicationRunner {
      * Registers this Spark Shell client with the remote Kylo services server.
      */
     public void register() {
-        Preconditions.checkState(server != null, "Registration server is not available.");
+        Preconditions.checkState(serverUrl != null, "Registration server is not available.");
 
         // Parse server address
         final URL url;
         try {
-            url = new URL(server);
+            url = new URL(serverUrl);
         } catch (MalformedURLException e) {
-            throw new IllegalStateException("Not a valid registration URL: " + server);
+            throw new IllegalStateException("Not a valid registration URL: " + serverUrl);
         }
 
         // Find client id and secret
@@ -90,13 +104,13 @@ public class RemoteClientRunner implements ApplicationRunner {
         Preconditions.checkNotNull(clientSecret, "Environment variable is not defined: KYLO_CLIENT_SECRET");
 
         // Register with server
-        final JerseyClientConfig config = new JerseyClientConfig(url.getHost(), clientId, clientSecret);
+        final JerseyClientConfig config = new JerseyClientConfig(url.getHost(), clientId, clientSecret, url.getProtocol().equalsIgnoreCase("https"), false, keystorePath, keystorePassword);
         config.setPort(url.getPort() > 0 ? url.getPort() : url.getDefaultPort());
 
         final JerseyRestClient client = getRestClient(config);
         final String hostName = getHostName();
 
-        log.info("Registering client {} at {}:{} with server {}.", clientId, hostName, localPort, server);
+        log.info("Registering client {} at {}:{} with server {}.", clientId, hostName, localPort, serverUrl);
         final Response response = client.post(url.getPath(), ImmutableMap.of("host", hostName, "port", localPort));
 
         if (response != null && response.getStatus() >= 200 && response.getStatus() < 300) {
@@ -111,7 +125,7 @@ public class RemoteClientRunner implements ApplicationRunner {
     public void run(@Nonnull final ApplicationArguments args) throws Exception {
         log.trace("run - entry with ({})", args);
 
-        if (server != null) {
+        if (serverUrl != null) {
             try {
                 register();
             } catch (final Exception e) {

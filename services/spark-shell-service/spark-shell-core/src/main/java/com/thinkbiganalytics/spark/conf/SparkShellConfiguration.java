@@ -35,6 +35,7 @@ import com.thinkbiganalytics.spark.shell.cluster.SparkShellClusterListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.context.embedded.Ssl;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -123,6 +124,9 @@ public class SparkShellConfiguration {
 
         // Automatically determine registration url
         if (properties.getRegistrationUrl() == null) {
+            // Get protocol
+            final String protocol = Optional.ofNullable(server.getSsl()).map(Ssl::isEnabled).orElse(false) ? "https" : "http";
+
             // Get hostname
             String address = null;
             try {
@@ -133,7 +137,7 @@ public class SparkShellConfiguration {
 
             // Set registration url
             if (address != null) {
-                properties.setRegistrationUrl("http://" + address + ":8400/proxy/v1/spark/shell/register");
+                properties.setRegistrationUrl(protocol + "://" + address + ":8400/proxy/v1/spark/shell/register");
             }
         }
 
