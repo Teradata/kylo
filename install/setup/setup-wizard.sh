@@ -1,17 +1,17 @@
 #!/bin/bash
 
-offline=false
+OFFLINE=false
 if [ $# -ge 1 ]
 then
     if [ "$1" = "-o" ] || [ "$1" = "-O" ]
     then
-        echo "Working in offline mode"
-        offline=true
+        echo "Working in OFFLINE mode"
+        OFFLINE=true
     fi
 fi
 
-current_dir=$(dirname $0)
-echo "The working directory is $current_dir"
+CURRENT_DIR=$(dirname $0)
+echo "The working directory is $CURRENT_DIR"
 
 echo "Welcome to the Kylo setup wizard. Lets get started !!!"
 echo " "
@@ -33,6 +33,21 @@ while [[ ! $install_db =~ $yes_no ]]; do
 done
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
+
+    while [[ ! $install_db_liquibase =~ $yes_no ]]; do
+        read -p "Would you like Kylo to manage installing and upgrading the database automatically? Please enter y/n: " install_db_liquibase
+    done
+
+    if [ "$install_db_liquibase" == "n"  ] || [ "$install_db_liquibase" == "N" ] ; then
+        echo " ";
+        echo "OK. Disabling Liquibase in application.properties. Please see the Kylo documentation to see how to generate the database scripts"
+        sed -i "s|liquibase.enabled=true|liquibase.enabled=false|" $kylo_home_folder/kylo-services/conf/application.properties
+
+        echo " ";
+        read -n 1 -s -r -p "Press any key to continue: " continue_from_liquibase
+
+
+    fi
 
     # Only supporting MySql at this time
     database_type=0
@@ -136,9 +151,9 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
 
 done
 
-if [ $offline = true ]
+if [ $OFFLINE = true ]
 then
-    cd $current_dir
+    cd $CURRENT_DIR
 else
     cd $kylo_home_folder/setup
 fi
@@ -147,9 +162,9 @@ if [ "$java_type" == "1" ] ; then
     echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
     ./java/remove-default-kylo-java-home.sh $kylo_home_folder
 elif [ "$java_type" == "2" ] ; then
-    if [ $offline = true ]
+    if [ $OFFLINE = true ]
     then
-        ./java/install-java8.sh $kylo_home_folder $current_dir -O
+        ./java/install-java8.sh $kylo_home_folder $CURRENT_DIR -O
     else
         ./java/install-java8.sh $kylo_home_folder
     fi
@@ -161,9 +176,9 @@ fi
 
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
-    if [ $offline = true ]
+    if [ $OFFLINE = true ]
     then
-        ./elasticsearch/install-elasticsearch.sh $current_dir -O
+        ./elasticsearch/install-elasticsearch.sh $CURRENT_DIR -O
     else
         ./elasticsearch/install-elasticsearch.sh $kylo_home_folder/setup
     fi
@@ -178,9 +193,9 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
         ACTIVEMQ_JAVA_HOME=$java_home
     fi
 
-    if [ $offline = true ]
+    if [ $OFFLINE = true ]
     then
-        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $ACTIVEMQ_JAVA_HOME $current_dir -O
+        ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $ACTIVEMQ_JAVA_HOME $CURRENT_DIR -O
     else
         ./activemq/install-activemq.sh $activemq_home $activemq_user $activemq_group $ACTIVEMQ_JAVA_HOME
     fi
@@ -188,9 +203,9 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
 fi
 
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
-    if [ $offline = true ]
+    if [ $OFFLINE = true ]
     then
-        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group $current_dir -O
+        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group $CURRENT_DIR -O
     else
         ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group
     fi
@@ -202,9 +217,9 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
         ./java/change-nifi-java-home.sh $java_home $nifi_home/current
     fi
 
-    if [ $offline = true ]
+    if [ $OFFLINE = true ]
     then
-        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group $current_dir -O
+        ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group $CURRENT_DIR -O
     else
         ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group
     fi
