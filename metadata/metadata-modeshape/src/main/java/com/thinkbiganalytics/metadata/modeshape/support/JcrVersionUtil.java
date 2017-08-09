@@ -22,12 +22,18 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -39,9 +45,19 @@ import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  */
 public class JcrVersionUtil {
+    
+    private static final Logger log = LoggerFactory.getLogger(JcrVersionUtil.class);
+    
+    public static Node createAutoCheckoutProxy(Node node) {
+        InvocationHandler handler = new VersionableNodeInvocationHandler(node);
+        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), new Class<?>[] { Node.class }, handler);
+    }
 
     /**
      * Returns the LockManager object from the given session.
@@ -64,6 +80,64 @@ public class JcrVersionUtil {
         VersionManager versionMgr = session.getWorkspace().getVersionManager();
         return versionMgr;
     }
+    
+    /**
+     * Ensures that the given node, or a versionable ancestor, is checked out.
+     * Passing a node that is not in a versionable hierarch has no effect.
+     * @param n the node to whose hierarchy is to be checked out
+     */
+    public static void ensureCheckoutNode(Node node) {
+        getVersionableAncestor(node).ifPresent(a -> JcrMetadataAccess.ensureCheckoutNode(a));
+    }
+    
+    /**
+     * Finds the first node in the argument node's parentage that is versionable, if any.  If the argument 
+     * node itself is versionable then an Optional containing it is returned. If there is no versionable
+     * node in this node's hierarchy then an empty Optional is returned.
+     * @param node the node who's parentage is to be searched
+     * @return An Optional containing the closest versionable parent of the node if it exists, otherwise an empty Optional
+     */
+    public static Optional<Node> getVersionableAncestor(Node node) {
+        try {
+            if (node.getSession().getRootNode().getIdentifier().equals(node.getParent().getIdentifier())) {
+                return Optional.empty();
+            } else if (isVersionable(node)) {
+                return Optional.of(node);
+            } else {
+                return getVersionableAncestor(node.getParent());
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check if node is in versionable hierarchy", e);
+        }
+    }
+    
+    /**
+     * Checks if the given node is within a versionable hierarchy.
+     * @param node he node who's parentage is to be searched
+     * @return true if this node or one of its parents is versionable, otherwise false
+     */
+    public static boolean inVersionableHierarchy(Node node) {
+        return getVersionableAncestor(node).map(n -> true).orElse(false);
+    }
+
+    /**
+     * @param node the node to test
+     * @return true if this node is versionable
+     */
+    public static boolean isVersionable(Node node) {
+        String name = "";
+        boolean versionable = false;
+        try {
+            name = node.getName();
+            versionable = JcrUtil.hasMixinType(node, "mix:versionable");
+            return versionable;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
+        }
+    }
 
     /**
      * Sets the given node to checked-out status.
@@ -71,7 +145,7 @@ public class JcrVersionUtil {
      * @param node node to check-out
      */
     public static void checkout(Node node) throws RepositoryException {
-        //getVersionManager(node.getSession()).checkout(node.getPath());
+        getVersionManager(node.getSession()).checkout(node.getPath());
     }
 
 
@@ -83,8 +157,7 @@ public class JcrVersionUtil {
      */
     public static Version checkin(Node node) throws RepositoryException {
         if (node.getSession().isLive()) {
-            //return getVersionManager(node.getSession()).checkin(node.getPath());
-            return null;
+            return getVersionManager(node.getSession()).checkin(node.getPath());
         } else {
             return null;
         }
@@ -97,7 +170,6 @@ public class JcrVersionUtil {
                 checkinRecursively(it.nextNode());
             }
             if (node.isCheckedOut() && node.isNodeType(NodeType.MIX_VERSIONABLE)) {
-                //node.checkin();
                 checkin(node);
             }
 
@@ -113,7 +185,6 @@ public class JcrVersionUtil {
                 checkoutRecursively(it.nextNode());
             }
             if (!node.isCheckedOut() && node.isNodeType(NodeType.MIX_VERSIONABLE)) {
-                //node.checkout();
                 checkout(node);
             }
 
@@ -157,7 +228,7 @@ public class JcrVersionUtil {
 
     public static Version getBaseVersion(Node node) {
         String nodeName = null;
-        if (!JcrUtil.isVersionable(node)) {
+        if (! isVersionable(node)) {
             return null;
         }
         try {
@@ -171,7 +242,7 @@ public class JcrVersionUtil {
 
     public static List<Version> getVersions(Node node) {
         String nodeName = null;
-        if (!JcrUtil.isVersionable(node)) {
+        if (! isVersionable(node)) {
             return null;
         }
         try {
@@ -211,7 +282,7 @@ public class JcrVersionUtil {
     }
 
     public static Version findVersion(Node node, final String versionName) {
-        if (!JcrUtil.isVersionable(node)) {
+        if (! isVersionable(node)) {
             return null;
         }
         Version version = Iterables.tryFind(getVersions(node), new Predicate<Version>() {

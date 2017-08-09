@@ -152,14 +152,15 @@ public class JcrMetadataAccess implements MetadataAccess {
     /**
      * Check out the node and add it to the Set of checked out nodes
      */
-    public static void ensureCheckoutNode(Node n) throws RepositoryException {
-        if (n.getSession().getRootNode().equals(n.getParent())) {
-            return;
-        } else if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
-            JcrVersionUtil.checkout(n);
-            checkedOutNodes.get().add(n);
-        } else {
-            ensureCheckoutNode(n.getParent());
+    public static void ensureCheckoutNode(Node n) {
+        try {
+            if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
+                log.debug("***** checking out node: {}", n);
+                JcrVersionUtil.checkout(n);
+                checkedOutNodes.get().add(n);
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to checkout node: " + n, e);
         }
     }
 

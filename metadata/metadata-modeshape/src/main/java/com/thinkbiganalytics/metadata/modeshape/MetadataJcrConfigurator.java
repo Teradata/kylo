@@ -123,7 +123,7 @@ public class MetadataJcrConfigurator {
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
                 for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
                     log.debug("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
-                    if (JcrUtil.isVersionable(feedNode)) {
+                    if (JcrVersionUtil.isVersionable(feedNode)) {
                         VersionManager versionManager = session.getWorkspace().getVersionManager();
                         VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath());
                         VersionIterator vIt = versionHistory.getAllVersions();

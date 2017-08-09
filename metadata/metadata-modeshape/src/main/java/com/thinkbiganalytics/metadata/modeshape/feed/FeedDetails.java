@@ -346,7 +346,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     protected Node createNewPrecondition() {
         try {
             Node feedNode = getNode();
-            Node precondNode = JcrUtil.getOrCreateNode(feedNode, FeedDetails.PRECONDITION, JcrFeed.PRECONDITION_TYPE, true);
+            Node precondNode = JcrUtil.getOrCreateNode(feedNode, FeedDetails.PRECONDITION, JcrFeed.PRECONDITION_TYPE);
 
             if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
                 precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();

@@ -57,6 +57,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -66,6 +67,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProv
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -108,7 +110,7 @@ import javax.jcr.query.QueryResult;
 /**
  * A JCR provider for {@link Feed} objects.
  */
-public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
+public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider, VersionProviderMixin<Feed, Feed.ID> {
 
     private static final String SORT_FEED_NAME = "feedName";
     private static final String SORT_STATE = "state";
@@ -321,7 +323,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         String feedParentPath = category.getFeedParentPath();
         boolean newFeed = !hasEntityNode(feedParentPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
-        boolean versionable = JcrUtil.isVersionable(feedNode);
+        boolean versionable = JcrVersionUtil.isVersionable(feedNode);
 
         JcrFeed feed = new JcrFeed(feedNode, category, this.opsAccessProvider);
 

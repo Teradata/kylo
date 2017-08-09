@@ -93,6 +93,14 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Unable to get the path of the node: " + parent, e);
         }
     }
+    
+    public static boolean isRoot(Node node) {
+        try {
+            return node.getSession().getRootNode().getIdentifier().equals(node.getIdentifier());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check if root node: " + node, e);
+        }
+    }
 
     /**
      * Checks whether the given mixin node type is in effect for the given node.
@@ -120,22 +128,7 @@ public class JcrUtil {
     }
 
     public static boolean isVersionable(JcrObject jcrObject) {
-        return isVersionable(jcrObject.getNode());
-    }
-
-    public static boolean isVersionable(Node node) {
-        String name = "";
-        boolean versionable = false;
-        try {
-            name = node.getName();
-            versionable = hasMixinType(node, "mix:versionable");
-            return versionable;
-        } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
-        }
+        return JcrVersionUtil.isVersionable(jcrObject.getNode());
     }
 
     public static String getName(Node node) {
@@ -477,15 +470,11 @@ public class JcrUtil {
     }
 
     /**
-     * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
+     * Get or Create a node relative to the Parent Node.
      */
-    public static Node getOrCreateNode(Node parentNode, String name, String nodeType, boolean forUpdate) {
+    public static Node getOrCreateNode(Node parentNode, String name, String nodeType) {
         try {
             if (parentNode.hasNode(name)) {
-                if (forUpdate) {
-                    JcrMetadataAccess.ensureCheckoutNode(parentNode);
-                }
-
                 return parentNode.getNode(name);
             } else {
                 return addNode(parentNode, name, nodeType);
@@ -501,7 +490,6 @@ public class JcrUtil {
 
     public static Node addNode(Node parentNode, String name, String nodeType) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(parentNode);
             return parentNode.addNode(name, nodeType);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
@@ -509,14 +497,6 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
-    }
-
-
-    /**
-     * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
-     */
-    public static Node getOrCreateNode(Node parentNode, String name, String nodeType) {
-        return getOrCreateNode(parentNode, name, nodeType, false);
     }
 
     /**

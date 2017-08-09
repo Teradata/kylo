@@ -291,7 +291,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         Datasource ds = getDatasource(id);
         if (ds != null) {
             try {
-                JcrMetadataAccess.ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
                 ((JcrDatasource) ds).getNode().remove();
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Unable to remove Datasource: " + id);

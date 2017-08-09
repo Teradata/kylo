@@ -337,7 +337,7 @@ public class JcrPropertyUtil {
             factory = session.getValueFactory();
 
             if (props != null) {
-                JcrMetadataAccess.ensureCheckoutNode(entNode);
+//                JcrVersionUtil.ensureCheckoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     if (entry.getValue() instanceof JcrExtensiblePropertyCollection) {
                         JcrExtensiblePropertyCollection propertyCollection = ((JcrExtensiblePropertyCollection) entry.getValue());
@@ -519,7 +519,7 @@ public class JcrPropertyUtil {
     public static void setWeakReferenceProperty(Node node, String name, Node ref) {
         try {
             //ensure checked out
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -543,7 +543,7 @@ public class JcrPropertyUtil {
     public static void setProperty(Node node, String name, Object value) {
         try {
             //ensure checked out
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -616,7 +616,7 @@ public class JcrPropertyUtil {
             }
 
             final Session session = node.getSession();
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node.hasProperty(propName)) {
                 return Arrays.stream(node.getProperty(propName).getValues())
@@ -647,7 +647,7 @@ public class JcrPropertyUtil {
 
     public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -698,7 +698,7 @@ public class JcrPropertyUtil {
 
     public static boolean removeAllFromSetProperty(Node node, String name) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
@@ -725,7 +725,7 @@ public class JcrPropertyUtil {
 
     public static boolean removeFromSetProperty(Node node, String name, Object value, boolean weakRef) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
