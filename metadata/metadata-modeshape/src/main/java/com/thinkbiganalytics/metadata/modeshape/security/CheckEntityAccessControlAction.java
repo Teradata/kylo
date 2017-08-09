@@ -239,11 +239,13 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
     private void ensureCategoryAccessControl() {
         List<Category> categories = categoryProvider.findAll();
         if (categories != null) {
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+            List<SecurityRole> catRoles = this.roleProvider.getEntityRoles(SecurityRole.CATEGORY);
+            List<SecurityRole> feedRoles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
+
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY);
             categories.stream().forEach(category -> {
                 Principal owner = category.getOwner() != null ? category.getOwner() : JcrMetadataAccess.getActiveUser();
-                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, owner, roles));
+                allowedActions.ifPresent(actions -> ((JcrCategory) category).enableAccessControl((JcrAllowedActions) actions, owner, catRoles, feedRoles));
             });
         }
     }

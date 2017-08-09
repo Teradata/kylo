@@ -49,7 +49,7 @@ import javax.inject.Inject;
  * <p>The Index Schema Service only indexed Hive tables that matched the category system name and feed system name. Likewise, this action only updates Hive derived datasources that match the category
  * system name and feed system name.</p>
  */
-@Component("upgradeAction083")
+@Component("hiveColumnsUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class HiveColumnsUpgradeAction implements UpgradeState {
 

@@ -55,6 +55,7 @@ public class CategoryDetails extends JcrPropertiesEntity {
     
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
     public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
+    public static final String FEED_ROLE_MEMBERSHIPS_TYPE = "tba:CategoryFeedRoleMemberships";
 
     /**
      * @param node
@@ -109,8 +110,8 @@ public class CategoryDetails extends JcrPropertiesEntity {
         return JcrEntityRoleMembership.find(defaultsNode, roleName, JcrFeedDefaultRoleMembership.class, this).map(RoleMembership.class::cast);
     }
     
-    protected void enableFeedRoles(List<SecurityRole> feedRoles) {
-        Node feedRolesNode = JcrUtil.getNode(getNode(), FEED_ROLE_MEMBERSHIPS);
+    public void enableFeedRoles(List<SecurityRole> feedRoles) {
+        Node feedRolesNode = JcrUtil.getOrCreateNode(getNode(), FEED_ROLE_MEMBERSHIPS, FEED_ROLE_MEMBERSHIPS_TYPE);
         feedRoles.forEach(role -> JcrAbstractRoleMembership.create(feedRolesNode, ((JcrSecurityRole) role).getNode(), JcrFeedDefaultRoleMembership.class, this));
     }
 }
