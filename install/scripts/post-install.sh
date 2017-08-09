@@ -29,6 +29,7 @@ INSTALL_HOME=/opt/kylo
 INSTALL_USER=kylo
 INSTALL_GROUP=users
 INSTALL_TYPE="RPM"
+LOG_DIRECTORY_LOCATION=/var/log
 
 echo "Installing to $INSTALL_HOME as the user $INSTALL_USER"
 
@@ -37,6 +38,13 @@ then
     INSTALL_HOME=$1
     INSTALL_USER=$2
     INSTALL_GROUP=$3
+    INSTALL_TYPE="COMMAND_LINE"
+elif [ $# -eq 4 ]
+then
+    INSTALL_HOME=$1
+    INSTALL_USER=$2
+    INSTALL_GROUP=$3
+    LOG_DIRECTORY_LOCATION=$4
     INSTALL_TYPE="COMMAND_LINE"
 fi
 
@@ -66,7 +74,7 @@ chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 pgrepMarkerKyloUi=kylo-ui-pgrep-marker
 pgrepMarkerKyloServices=kylo-services-pgrep-marker
 pgrepMarkerKyloSparkShell=kylo-spark-shell-pgrep-marker
-rpmLogDir=/var/log
+rpmLogDir=$LOG_DIRECTORY_LOCATION
 
 echo "    - Install kylo-ui application"
 
@@ -87,7 +95,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
-java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/std.out 2>/var/log/kylo-ui/std.err &
+java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
@@ -96,7 +104,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/std.out 2>/var/log/kylo-ui/std.err &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
@@ -227,7 +235,7 @@ then
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
-java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/std.out 2>/var/log/kylo-services/std.err &
+java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
@@ -243,7 +251,7 @@ then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
-java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/std.out 2>/var/log/kylo-services/std.err &
+java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
@@ -425,8 +433,8 @@ EOF
 fi
 
 cat << EOF >> /etc/init.d/kylo-spark-shell
-stdout_log="/var/log/kylo-spark-shell/std.out"
-stderr_log="/var/log/kylo-spark-shell/std.err"
+stdout_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.out"
+stderr_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.err"
 RUN_AS_USER=$INSTALL_USER
 
 start() {
