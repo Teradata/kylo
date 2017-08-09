@@ -32,13 +32,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.api.AlertResponder;
-import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
@@ -64,9 +59,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.QJpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
@@ -98,14 +91,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.OptimisticLockException;
@@ -157,7 +147,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private AlertProvider provider;
-
 
 
     @Autowired
@@ -605,9 +594,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     @Override
-    public List<? extends BatchJobExecution>  findRunningJobsForFeed(String feedName) {
-     List<? extends BatchJobExecution> jobs = jobExecutionRepository.findJobsForFeedMatchingStatus(feedName,BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-     return jobs != null ? jobs : Collections.emptyList();
+    public List<? extends BatchJobExecution> findRunningJobsForFeed(String feedName) {
+        List<? extends BatchJobExecution> jobs = jobExecutionRepository.findJobsForFeedMatchingStatus(feedName, BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+        return jobs != null ? jobs : Collections.emptyList();
     }
 
     /**
@@ -753,21 +742,19 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .groupBy(jobExecution.status);
         List<JobStatusCount> stats = (List<JobStatusCount>) query.fetch();
 
-
         //merge in streaming feed stats
         List<? extends NifiFeedStats> streamingFeedStats = feedStatisticsProvider.findFeedStats(true);
-        if(streamingFeedStats != null) {
+        if (streamingFeedStats != null) {
             if (stats == null) {
                 stats = new ArrayList<>();
             }
-            Long runningCount = streamingFeedStats.stream().filter(s -> s.getRunningFeedFlows() >0L).count();
-            if(runningCount >0) {
+            Long runningCount = streamingFeedStats.stream().filter(s -> s.getRunningFeedFlows() > 0L).count();
+            if (runningCount > 0) {
                 JobStatusCount runningStatusCount = stats.stream().filter(s -> s.getStatus().equalsIgnoreCase(BatchJobExecution.RUNNING_DISPLAY_STATUS)).findFirst().orElse(null);
                 if (runningStatusCount != null) {
-                    runningCount = runningStatusCount.getCount()+runningCount;
+                    runningCount = runningStatusCount.getCount() + runningCount;
                     runningStatusCount.setCount(runningCount);
-                }
-                else {
+                } else {
                     JpaBatchJobExecutionStatusCounts runningStreamingFeedCounts = new JpaBatchJobExecutionStatusCounts();
                     runningStreamingFeedCounts.setCount(runningCount);
                     runningStreamingFeedCounts.setStatus(BatchJobExecution.RUNNING_DISPLAY_STATUS);
@@ -776,7 +763,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
         }
         return stats;
-
 
 
     }
@@ -886,12 +872,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             //clear the associated alert
             String alertId = execution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
             if (StringUtils.isNotBlank(alertId)) {
-                    provider.respondTo(provider.resolve(alertId), (alert1, response) -> response.handle(abandonMessage));
-             }
+                provider.respondTo(provider.resolve(alertId), (alert1, response) -> response.handle(abandonMessage));
+            }
 
         }
         return execution;
     }
+
     public void notifyFailure(BatchJobExecution jobExecution, String feedName, String status) {
         if (feedName == null) {
             feedName = jobExecution.getJobInstance().getFeed().getName();
@@ -909,23 +896,22 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
         String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feedName;
         if (StringUtils.isNotBlank(alertId)) {
-          alert =  provider.getAlert(provider.resolve(alertId)).orElse(null);
+            alert = provider.getAlert(provider.resolve(alertId)).orElse(null);
         }
-        if(alert == null) {
+        if (alert == null) {
             alert = alertManager.createEntityAlert(OperationalAlerts.JOB_FALURE_ALERT_TYPE,
-                                        Alert.Level.FATAL,
-                                        message, alertManager.createEntityIdentificationAlertContent(feedId,
-                                                                                                     SecurityRole.ENTITY_TYPE.FEED, jobExecution.getJobExecutionId()));
-            Alert.ID providerAlertId = provider.resolve(alert.getId(),alert.getSource());
+                                                   Alert.Level.FATAL,
+                                                   message, alertManager.createEntityIdentificationAlertContent(feedId,
+                                                                                                                SecurityRole.ENTITY_TYPE.FEED, jobExecution.getJobExecutionId()));
+            Alert.ID providerAlertId = provider.resolve(alert.getId(), alert.getSource());
 
             JpaBatchJobExecutionContextValue executionContext = new JpaBatchJobExecutionContextValue(jobExecution, KYLO_ALERT_ID_PROPERTY);
             executionContext.setStringVal(providerAlertId.toString());
-            ((JpaBatchJobExecution)jobExecution).addJobExecutionContext(executionContext);
+            ((JpaBatchJobExecution) jobExecution).addJobExecutionContext(executionContext);
             save(jobExecution);
-        }
-        else {
-                //rest the alert
-                provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message,null));
+        } else {
+            //rest the alert
+            provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message, null));
         }
     }
 
@@ -986,7 +972,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             return this.idValue;
         }
     }
-
 
 
 }
