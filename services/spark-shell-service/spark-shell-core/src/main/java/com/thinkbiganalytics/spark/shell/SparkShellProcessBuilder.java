@@ -101,6 +101,9 @@ public class SparkShellProcessBuilder {
         if (clientProperties.getPropertiesFile() != null) {
             builder.propertiesFile(clientProperties.getPropertiesFile());
         }
+        if (clientProperties.getRegistrationKeystorePath() != null) {
+            builder.registrationKeystore(clientProperties.getRegistrationKeystorePath(), clientProperties.getRegistrationKeystorePassword());
+        }
         if (clientProperties.getRegistrationUrl() != null) {
             builder.registrationUrl(clientProperties.getRegistrationUrl());
         }
@@ -138,6 +141,12 @@ public class SparkShellProcessBuilder {
     private long clientTimeout = 120;
 
     /**
+     * Spark deploy mode
+     */
+    @Nullable
+    private String deployMode;
+
+    /**
      * Time in seconds to wait for a user request
      */
     private long idleTimeout = 900;
@@ -147,6 +156,12 @@ public class SparkShellProcessBuilder {
      */
     @Nonnull
     private final SparkLauncher launcher;
+
+    /**
+     * Spark master
+     */
+    @Nullable
+    private String master;
 
     /**
      * Custom Spark installation location
@@ -163,6 +178,18 @@ public class SparkShellProcessBuilder {
      * Minimum port that Spark Shell may listen on
      */
     private int portMin = 45000;
+
+    /**
+     * Password for keystore
+     */
+    @Nullable
+    private String registrationKeystorePassword;
+
+    /**
+     * Path to keystore
+     */
+    @Nullable
+    private String registrationKeystorePath;
 
     /**
      * Registration URL
@@ -315,6 +342,7 @@ public class SparkShellProcessBuilder {
      */
     @Nonnull
     public SparkShellProcessBuilder deployMode(@Nonnull final String mode) {
+        deployMode = mode;
         launcher.setDeployMode(mode);
         return this;
     }
@@ -349,6 +377,7 @@ public class SparkShellProcessBuilder {
      */
     @Nonnull
     public SparkShellProcessBuilder master(@Nonnull final String master) {
+        this.master = master;
         launcher.setMaster(master);
         return this;
     }
@@ -383,6 +412,16 @@ public class SparkShellProcessBuilder {
     @Nonnull
     public SparkShellProcessBuilder propertiesFile(@Nonnull final String file) {
         launcher.setPropertiesFile(file);
+        return this;
+    }
+
+    /**
+     * Sets the keystore path and password to use to access the registration URL.
+     */
+    @Nonnull
+    public SparkShellProcessBuilder registrationKeystore(@Nonnull final String path, @Nullable final String password) {
+        registrationKeystorePath = Objects.requireNonNull(path);
+        registrationKeystorePassword = password;
         return this;
     }
 
@@ -422,9 +461,20 @@ public class SparkShellProcessBuilder {
      */
     @Nonnull
     public SparkLauncherSparkShellProcess build() throws IOException {
-        launcher.addAppArgs("--idle-timeout", Long.toString(idleTimeout), "--port-max", Integer.toString(portMax), "--port-min", Integer.toString(portMin), "--server", getRegistrationUrl());
+        launcher.addAppArgs("--idle-timeout", Long.toString(idleTimeout), "--port-max", Integer.toString(portMax), "--port-min", Integer.toString(portMin), "--server-url", getRegistrationUrl());
         launcher.setAppResource(getAppResource());
 
+        if (registrationKeystorePath != null) {
+            if (Objects.equals(master, "yarn") && Objects.equals(deployMode, "cluster")) {
+                launcher.addAppArgs("--server-keystore-path", new File(registrationKeystorePath).getName());
+                launcher.addFile(registrationKeystorePath);
+            } else {
+                launcher.addAppArgs("--server-keystore-path", registrationKeystorePath);
+            }
+            if (registrationKeystorePassword != null) {
+                launcher.addAppArgs("--server-keystore-password", registrationKeystorePassword);
+            }
+        }
         if (sparkHome == null) {
             launcher.setSparkHome(getSparkHome());
         }

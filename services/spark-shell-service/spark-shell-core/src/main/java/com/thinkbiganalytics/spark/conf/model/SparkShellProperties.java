@@ -83,6 +83,16 @@ public class SparkShellProperties {
     private boolean proxyUser = false;
 
     /**
+     * Password for keystore
+     */
+    private String registrationKeystorePassword;
+
+    /**
+     * Path to keystore
+     */
+    private String registrationKeystorePath;
+
+    /**
      * Registration URL
      */
     private String registrationUrl;
@@ -201,6 +211,22 @@ public class SparkShellProperties {
 
     public void setProxyUser(boolean proxyUser) {
         this.proxyUser = proxyUser;
+    }
+
+    public String getRegistrationKeystorePassword() {
+        return registrationKeystorePassword;
+    }
+
+    public void setRegistrationKeystorePassword(String registrationKeystorePassword) {
+        this.registrationKeystorePassword = registrationKeystorePassword;
+    }
+
+    public String getRegistrationKeystorePath() {
+        return registrationKeystorePath;
+    }
+
+    public void setRegistrationKeystorePath(String registrationKeystorePath) {
+        this.registrationKeystorePath = registrationKeystorePath;
     }
 
     public String getRegistrationUrl() {

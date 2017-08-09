@@ -64,10 +64,22 @@ public class SparkShellOptions {
     private int portMin = NO_PORT;
 
     /**
+     * Path to keystore
+     */
+    @Parameter(names = "--server-keystore-path", description = "Path to keystore for registration server")
+    private String serverKeystorePath;
+
+    /**
+     * Password for keystore
+     */
+    @Parameter(names = "--server-keystore-password", description = "Password for keystore")
+    private String serverKeystorePassword;
+
+    /**
      * Registration URL
      */
-    @Parameter(names = "--server", description = "Registration URL")
-    private String server;
+    @Parameter(names = "--server-url", description = "Registration URL")
+    private String serverUrl;
 
     /**
      * Indicates the amount of time in seconds to wait for a user request before terminating a Spark Shell process. A value of {@link #INDEFINITE_TIMEOUT} should disable the timeout.
@@ -97,9 +109,23 @@ public class SparkShellOptions {
     }
 
     /**
+     * Gets the password for the keystore.
+     */
+    public String getServerKeystorePassword() {
+        return serverKeystorePassword;
+    }
+
+    /**
+     * Gets the path to the keystore for the registration server.
+     */
+    public String getServerKeystorePath() {
+        return serverKeystorePath;
+    }
+
+    /**
      * Gets the registration URL.
      */
-    public String getServer() {
-        return server;
+    public String getServerUrl() {
+        return serverUrl;
     }
 }
