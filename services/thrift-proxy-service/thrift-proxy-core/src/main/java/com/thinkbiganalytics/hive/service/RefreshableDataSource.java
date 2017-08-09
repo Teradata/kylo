@@ -70,7 +70,7 @@ public class RefreshableDataSource implements DataSource {
             log.info("REFRESHING DATASOURCE for {} ", propertyPrefix);
             boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
             if (userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
-                String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
                 DataSource dataSource = create(true, currentUser);
                 datasources.put(currentUser, dataSource);
             } else {
