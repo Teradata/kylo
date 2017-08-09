@@ -46,7 +46,7 @@ public class KerberosConfiguration {
         String keytabLocation = env.getProperty("kerberos.hive.keytabLocation");
 
         KerberosTicketConfiguration config = new KerberosTicketConfiguration();
-        config.setKerberosEnabled("true".equals(kerberosEnabled) ? true : false);
+        config.setKerberosEnabled("true".equalsIgnoreCase(kerberosEnabled) ? true : false);
         config.setHadoopConfigurationResources(hadoopConfigurationResources);
         config.setKerberosPrincipal(kerberosPrincipal);
         config.setKeytabLocation(keytabLocation);
