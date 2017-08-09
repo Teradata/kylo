@@ -22,7 +22,6 @@
   <TCPPING timeout="3000" async_discovery="true" num_initial_members="2"
            initial_hosts="127.0.0.1[7900],127.0.0.1[7901]"
            port_range="4"/>
-  <MPING mcast_port="45700"/>
   <MERGE3 min_interval="10000"
           max_interval="30000"/>
   <FD_SOCK/>
