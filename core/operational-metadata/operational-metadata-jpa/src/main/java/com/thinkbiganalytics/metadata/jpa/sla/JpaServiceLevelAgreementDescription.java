@@ -24,6 +24,9 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,10 +56,12 @@ public class JpaServiceLevelAgreementDescription implements ServiceLevelAgreemen
     private ServiceLevelAgreementDescriptionId slaId;
 
     @Column(name = "NAME")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "2000")})
     private String name;
 
 
     @Column(name = "DESCRIPTION")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "2000")})
     private String description;
 
     @ManyToMany(fetch = FetchType.LAZY, targetEntity = JpaOpsManagerFeed.class)

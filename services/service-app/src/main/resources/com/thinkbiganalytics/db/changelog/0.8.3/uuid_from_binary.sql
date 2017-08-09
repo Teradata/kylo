@@ -17,7 +17,9 @@
 -- limitations under the License.
 -- #L%
 -- -
-CREATE FUNCTION uuid_to_bin(s CHAR(36)) RETURNS binary(16)
+CREATE FUNCTION `uuid_from_bin`(b BINARY(16)) RETURNS char(36) CHARSET utf8
 BEGIN
-RETURN UNHEX(CONCAT(LEFT(s, 8), MID(s, 10, 4), MID(s, 15, 4), MID(s, 20, 4), RIGHT(s, 12)));
+  DECLARE hex CHAR(32);
+  SET hex = HEX(b);
+  RETURN CONCAT(LEFT(hex, 8), '-', MID(hex, 9,4), '-', MID(hex, 13,4), '-', MID(hex, 17,4), '-', RIGHT(hex, 12));
 END;

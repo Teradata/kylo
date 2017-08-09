@@ -24,20 +24,44 @@
 
 <changeSet author="sr186054" id="add-SLA_ID_CHANGE-column">
 
-    <renameColumn tableName="SERVICE_LEVEL_ASSESSMENT"
+    <renameColumn tableName="SLA_ASSESSMENT"
                   oldColumnName="SLA_ID"
                   newColumnName="SLA_ID_OLD"
                   columnDataType="VARCHAR(55)"/>
 
     <addColumn
-        tableName="SERVICE_LEVEL_ASSESSMENT">
-        <column name="SLA_ID" type="binary(16)"/>
+        tableName="SLA_ASSESSMENT">
+        <column name="SLA_ID" type="${uuid.type}"/>
     </addColumn>
+</changeSet>
+    <changeSet author="sr186054" id="msql_update_SLA_ID_values" dbms="mysql">
         <update
-                tableName="SERVICE_LEVEL_ASSESSMENT">
-            <column name="SLA_ID" type="binary(16)" value="uuid_to_bin(SLA_ID_OLD)" />
+                tableName="SLA_ASSESSMENT" >
+            <column name="SLA_ID" type="${uuid.type}" valueComputed="uuid_to_bin(SLA_ID_OLD)"  />
         </update>
 
 </changeSet>
+
+    <changeSet author="sr186054" id="postgres_update_SLA_ID_values" dbms="postgres">
+        <update
+            tableName="SLA_ASSESSMENT" >
+            <column name="SLA_ID" type="${uuid.type}" valueComputed="uuid(SLA_ID_OLD)" />
+        </update>
+
+    </changeSet>
+
+    <changeSet id="mysql_insert_job_failure_alerts" author="sr186054" dbms="mysql">
+        <sql endDelimiter="\n">${delimiter.start}</sql>
+        <sqlFile path="mysql_insert_job_failures.sql" relativeToChangelogFile="true"/>
+        <sql endDelimiter="\n">${delimiter.end}</sql>
+        <sql endDelimiter="\n">${delimiter.reset}</sql>
+    </changeSet>
+
+    <changeSet id="postgres_insert_job_failure_alerts" author="sr186054" dbms="postgres">
+        <sql endDelimiter="\n">${delimiter.start}</sql>
+        <sqlFile path="postgresl_insert_job_failures.sql" relativeToChangelogFile="true"/>
+        <sql endDelimiter="\n">${delimiter.end}</sql>
+        <sql endDelimiter="\n">${delimiter.reset}</sql>
+    </changeSet>
 
 </databaseChangeLog>

@@ -22,20 +22,19 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
 
-
-
-
-<changeSet author="sr186054" id="function_uuid_to_bin" dbms="mysql">
-  <sql endDelimiter="\n">${delimiter.start}</sql>
-  <createProcedure path="uuid_to_binary.sql" relativeToChangelogFile="true"/>
-  <sql endDelimiter="\n">${delimiter.end}</sql>
-  <sql endDelimiter="\n">${delimiter.reset}</sql>
+<changeSet author="sr186054" id="sla_feed">
+  <createTable tableName="SLA_FEED">
+    <column name="SLA_ID" type="${uuid.type}"/>
+    <column name="FEED_ID" type="${uuid.type}"/>
+  </createTable>
 </changeSet>
 
-  <changeSet author="sr186054" id="function_uuid_from_bin" dbms="mysql">
-    <sql endDelimiter="\n">${delimiter.start}</sql>
-    <createProcedure path="uuid_from_binary.sql" relativeToChangelogFile="true"/>
-    <sql endDelimiter="\n">${delimiter.end}</sql>
-    <sql endDelimiter="\n">${delimiter.reset}</sql>
+  <changeSet author="sr186054" id="sla_description">
+    <createTable tableName="SLA_DESCRIPTION">
+      <column name="SLA_ID" type="${uuid.type}"/>
+      <column name="NAME" type="varchar(2000)"/>
+      <column name="DESCRIPTION" type="varchar(2000)"/>
+    </createTable>
   </changeSet>
+
 </databaseChangeLog>

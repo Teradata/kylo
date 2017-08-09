@@ -19,9 +19,7 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
