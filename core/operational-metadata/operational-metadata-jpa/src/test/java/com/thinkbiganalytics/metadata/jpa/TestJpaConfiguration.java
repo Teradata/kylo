@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.security.AccessController;
@@ -52,6 +53,10 @@ public class TestJpaConfiguration {
     }
 
 
+    @Bean(name="kyloAlertManager")
+    AlertManager alertManager(){
+        return Mockito.mock(AlertManager.class);
+    }
     /**
      * This is the datasource used by JPA
      */
