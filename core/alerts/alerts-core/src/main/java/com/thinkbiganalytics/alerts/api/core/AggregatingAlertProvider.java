@@ -479,7 +479,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    private Alert unwrapAlert(Alert proxy) {
+    public Alert unwrapAlert(Alert proxy) {
         if (Proxy.isProxyClass(proxy.getClass())) {
             AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(proxy);
             return handler.wrapped;

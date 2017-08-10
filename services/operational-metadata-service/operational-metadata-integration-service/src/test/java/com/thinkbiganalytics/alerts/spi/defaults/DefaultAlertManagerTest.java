@@ -31,7 +31,9 @@ import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
 import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
+import org.assertj.core.api.Assertions;
 import org.joda.time.DateTime;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -50,16 +52,13 @@ import java.util.Optional;
 import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
  *
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, DefaultAlertManagerConfig.class})
+@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class, SpringOperationalMetadataTestConfiguration.class})
 public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     private static final String LONG_DESCR;
@@ -103,20 +102,20 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
         Alert alert2 = this.manager.create(URI.create("http://example.com/test/alert/2"), "subtype",Level.CRITICAL, "2nd description", "2nd content");
         Thread.sleep(100);
 
-        assertThat(alert1)
+        Assertions.assertThat(alert1)
             .isNotNull()
             .extracting("type", "level", "description", "content")
             .contains(URI.create("http://example.com/test/alert/1"), Level.MINOR, TRUNK_DESCR, "1st content");
-        assertThat(alert2)
+        Assertions.assertThat(alert2)
             .isNotNull()
             .extracting("type", "level", "description", "content")
             .contains(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
-        assertThat(alert2.getEvents())
+        Assertions.assertThat(alert2.getEvents())
             .hasSize(1)
             .extracting("state", "content")
-            .contains(tuple(State.UNHANDLED, null));
+            .contains(Assertions.tuple(State.UNHANDLED, null));
 
-        verify(this.alertReceiver, times(2)).alertsAvailable(anyInt());
+        Mockito.verify(this.alertReceiver, Mockito.times(2)).alertsAvailable(Matchers.anyInt());
 
         this.middleTime = alert2.getCreatedTime().minusMillis(50);
         this.afterTime = DateTime.now();
@@ -128,56 +127,56 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     public void testGetAlerts() {
         Iterator<Alert> itr = this.manager.getAlerts(null);
 
-        assertThat(itr)
+        Assertions.assertThat(itr)
             .isNotNull()
             .hasSize(2)
             .extracting("type", "level", "description", "content")
-            .contains(tuple(URI.create("http://example.com/test/alert/1"), Level.MINOR, TRUNK_DESCR, "1st content"),
-                      tuple(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
+            .contains(Assertions.tuple(URI.create("http://example.com/test/alert/1"), Level.MINOR, TRUNK_DESCR, "1st content"),
+                      Assertions.tuple(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertById() {
         Optional<Alert> optional = this.manager.getAlert(id2);
 
-        assertThat(optional.isPresent()).isTrue();
-        assertThat(optional.get())
+        Assertions.assertThat(optional.isPresent()).isTrue();
+        Assertions.assertThat(optional.get())
             .isNotNull()
             .extracting("id", "type", "level", "description", "content")
             .contains(this.id2, URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
-        assertThat(optional.get().getEvents())
+        Assertions.assertThat(optional.get().getEvents())
             .hasSize(1)
             .extracting("state", "content")
-            .contains(tuple(State.UNHANDLED, null));
+            .contains(Assertions.tuple(State.UNHANDLED, null));
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsSinceTime() {
         Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(this.beforeTime));
 
-        assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
+        Assertions.assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
 
         itr = this.manager.getAlerts(this.manager.criteria().after(this.middleTime));
 
-        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
+        Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
 
         itr = this.manager.getAlerts(this.manager.criteria().after(this.afterTime));
 
-        assertThat(itr).isNotNull().hasSize(0);
+        Assertions.assertThat(itr).isNotNull().hasSize(0);
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsByType() {
         Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert/1")));
 
-        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id1);
+        Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id1);
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsBySuperType() {
         Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert")));
 
-        assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
+        Assertions.assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
     }
 
     @Test(dependsOnGroups = "create", groups = "update1")
@@ -187,34 +186,34 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
         alert = resp.inProgress(LONG_DESCR);
 
-        assertThat(alert.getEvents())
+        Assertions.assertThat(alert.getEvents())
             .hasSize(2)
             .extracting("state", "description", "content")
-            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, TRUNK_DESCR, null));
+            .contains(Assertions.tuple(State.UNHANDLED, null, null), Assertions.tuple(State.IN_PROGRESS, TRUNK_DESCR, null));
 
         alert = resp.handle("Change handled", new Integer(42));
 
-        assertThat(alert.getEvents())
+        Assertions.assertThat(alert.getEvents())
             .hasSize(3)
             .extracting("state", "description", "content")
-            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, TRUNK_DESCR, null), tuple(State.HANDLED, "Change handled", 42));
+            .contains(Assertions.tuple(State.UNHANDLED, null, null), Assertions.tuple(State.IN_PROGRESS, TRUNK_DESCR, null), Assertions.tuple(State.HANDLED, "Change handled", 42));
 
-        verify(this.alertReceiver, times(2)).alertsAvailable(anyInt());
+        Mockito.verify(this.alertReceiver, Mockito.times(2)).alertsAvailable(Matchers.anyInt());
     }
 
     @Test(dependsOnGroups = "update1", groups = "read2")
     public void testGetAlertsByState() {
         Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.UNHANDLED));
 
-        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
+        Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
 
         itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.HANDLED));
 
-        assertThat(itr).isNotNull().hasSize(1);
+        Assertions.assertThat(itr).isNotNull().hasSize(1);
 
         itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.CREATED));
 
-        assertThat(itr).isNotNull().hasSize(0);
+        Assertions.assertThat(itr).isNotNull().hasSize(0);
     }
 
     @Test(dependsOnGroups = "read2", groups = "update2")
@@ -226,19 +225,19 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
         alert = this.manager.getAlert(id1).get();
 
-        assertThat(alert).isNotNull();
-        assertThat(alert.isCleared()).isTrue();
-        verify(this.alertReceiver, times(0)).alertsAvailable(anyInt());
+        Assertions.assertThat(alert).isNotNull();
+        Assertions.assertThat(alert.isCleared()).isTrue();
+        Mockito.verify(this.alertReceiver, Mockito.times(0)).alertsAvailable(Matchers.anyInt());
     }
 
     @Test(dependsOnGroups = "update2", groups = "read3")
     public void testGetAlertsAfterClear() {
         Iterator<Alert> itr = this.manager.getAlerts(null);
 
-        assertThat(itr)
+        Assertions.assertThat(itr)
             .isNotNull()
             .hasSize(1)
             .extracting("id", "type", "level", "description", "content")
-            .contains(tuple(this.id2, URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
+            .contains(Assertions.tuple(this.id2, URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
     }
 }

@@ -317,7 +317,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         receivers.forEach(a -> a.alertsAvailable(count));
     }
 
-    private static class ImmutableAlert implements Alert {
+    protected static class ImmutableAlert implements Alert {
 
         private final AlertManager source;
         private final Alert.ID id;

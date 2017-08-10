@@ -14,6 +14,5 @@
   <modules>
     <module>alerts-api</module>
     <module>alerts-core</module>
-    <module>alerts-default</module>
   </modules>
 </project>

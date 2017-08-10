@@ -246,12 +246,12 @@ public class FeedsRestController {
 
     @GET
     @Path("/query/{feedId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the name of every feed.")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Gets the name of the feed matching the feedId.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the feed names.", response = String.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the feed name.", response = String.class)
     )
-    public String getFeed(@PathParam("feedId") String feedId) {
+    public String getFeedName(@PathParam("feedId") String feedId) {
         return metadataAccess.read(() -> {
             String filter="id.uuid=="+feedId;
             List<OpsManagerFeed> feeds = ((OpsFeedManagerFeedProvider)opsFeedManagerFeedProvider).findFeedsWithFilter(filter);

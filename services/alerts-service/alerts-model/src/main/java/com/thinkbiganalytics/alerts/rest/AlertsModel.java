@@ -22,6 +22,7 @@ package com.thinkbiganalytics.alerts.rest;
 
 import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.api.EntityAlert;
 import com.thinkbiganalytics.alerts.rest.model.Alert;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
@@ -98,6 +99,10 @@ public class AlertsModel {
         result.setContent(alert.getContent() != null ? alert.getContent().toString() : null);
         result.setSubtype(alert.getSubtype());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
+        if(alert instanceof EntityAlert){
+            result.setEntityId(((EntityAlert)alert).getEntityId() != null ? ((EntityAlert)alert).getEntityId().toString(): null);
+            result.setEntityType(((EntityAlert)alert).getEntityType());
+        }
         return result;
     }
 

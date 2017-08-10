@@ -27,6 +27,7 @@ import com.querydsl.core.annotations.PropertyType;
 import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.EntityAlert;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.jpa.BaseJpaId;
@@ -62,7 +63,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(name = "KYLO_ALERT")
-public class JpaAlert implements Alert {
+public class JpaAlert implements EntityAlert {
 
     @EmbeddedId
     private AlertId id;

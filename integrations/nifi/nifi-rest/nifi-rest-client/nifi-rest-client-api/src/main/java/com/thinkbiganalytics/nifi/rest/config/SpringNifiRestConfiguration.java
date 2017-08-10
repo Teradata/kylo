@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.rest.config;
 
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,11 @@ public class SpringNifiRestConfiguration {
     @Bean
     public NifiRestClientAroundAspect nifiRestClientAroundAspect() {
         return new NifiRestClientAroundAspect();
+    }
+
+    @Bean
+    public AlignNiFiComponents alignNiFiComponents(){
+        return new AlignNiFiComponents();
     }
 
 

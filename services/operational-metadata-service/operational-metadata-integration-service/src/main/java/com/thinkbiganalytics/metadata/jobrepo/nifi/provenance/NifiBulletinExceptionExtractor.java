@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 /**
  * process NiFi Bulletins
  */
-@Component
+
 public class NifiBulletinExceptionExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(NifiBulletinExceptionExtractor.class);

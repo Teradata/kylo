@@ -52,6 +52,7 @@ import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider;
 import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
@@ -160,6 +161,7 @@ public class AlertsController {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
+            .map(alert -> provider instanceof AggregatingAlertProvider ? ((AggregatingAlertProvider)provider).unwrapAlert(alert) : alert)
             .map(alertsModel::toModel)
             .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }

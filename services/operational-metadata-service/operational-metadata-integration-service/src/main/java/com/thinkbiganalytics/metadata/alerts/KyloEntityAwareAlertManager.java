@@ -25,15 +25,22 @@ package com.thinkbiganalytics.metadata.alerts;
 
 import com.google.common.collect.ImmutableMap;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.EntityAlert;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertManager;
 import com.thinkbiganalytics.alerts.spi.defaults.KyloEntityAwareAlertCriteria;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
+
+import java.io.Serializable;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -87,12 +94,22 @@ public class KyloEntityAwareAlertManager extends DefaultAlertManager {
 
     }
 
+    @Override
+    public Optional<Alert> getAlert(Alert.ID id) {
+        return super.getAlert(id);
+    }
+
+    @Override
+    protected Alert asValue(Alert alert) {
+           return new ImmutableEntityAlert(alert,this);
+    }
+
     public static class KyloEntityAwareAlertManagerAlertManagerId implements ID {
 
 
         private static final long serialVersionUID = 7691516770322504702L;
 
-        private String idValue = KyloEntityAwareAlertManager.class.getSimpleName();
+        private String idValue = KyloEntityAwareAlertManager.class.getSimpleName().hashCode()+"";
 
 
         public KyloEntityAwareAlertManagerAlertManagerId() {
@@ -108,6 +125,30 @@ public class KyloEntityAwareAlertManager extends DefaultAlertManager {
             return idValue;
         }
 
+    }
+
+    protected static class ImmutableEntityAlert extends ImmutableAlert implements EntityAlert {
+
+        private String entityId;
+        private String entityType;
+        public ImmutableEntityAlert(Alert alert, AlertManager mgr) {
+            super(alert, mgr);
+            if(alert instanceof JpaAlert){
+                entityId = ((JpaAlert)alert).getEntityId() != null ? ((JpaAlert)alert).getEntityId().toString() : null;
+                entityType = ((JpaAlert)alert).getEntityType();
+            }
+
+        }
+
+        @Override
+        public Serializable getEntityId() {
+            return entityId;
+        }
+
+        @Override
+        public String getEntityType() {
+            return entityType;
+        }
     }
 
 
