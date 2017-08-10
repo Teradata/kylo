@@ -80,7 +80,7 @@ public class SlaDescriptionUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion startingVersion) {
-        log.info("Upgrading from version: {}", startingVersion);
+        log.info("Adding SLA Descriptions.  Starting version: {}", startingVersion);
        serviceLevelAgreementService.getServiceLevelAgreements().stream().filter(sla -> !sla.getFeeds().isEmpty())
            .forEach(feedSla -> {
                Set<Feed.ID> feedIds = feedSla.getFeeds().stream().map(feed -> feedProvider.resolveId(feed.getId())).collect(Collectors.toSet());
