@@ -31,6 +31,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -63,9 +65,9 @@ import javax.inject.Inject;
 /**
  * Service for interacting with SLA's
  */
-public class ServiceLevelAgreementService implements ServicesApplicationStartupListener {
+public class DefaultServiceLevelAgreementService implements ServicesApplicationStartupListener, ServiceLevelAgreementService {
 
-    private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementService.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementService.class);
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -85,6 +87,9 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider;
+
 
     private List<ServiceLevelAgreementRule> serviceLevelAgreementRules;
 
@@ -99,6 +104,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         return serviceLevelAgreementRules;
     }
 
+    @Override
     public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
         List<ServiceLevelAgreementRule> rules = serviceLevelAgreementRules;
         if (rules == null) {
@@ -114,6 +120,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         return rules;
     }
 
+    @Override
     public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getServiceLevelAgreements() {
 
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS);
@@ -152,6 +159,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     }
 
+    @Override
     public void enableServiceLevelAgreementSchedule(Feed.ID feedId) {
         metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
@@ -163,6 +171,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         }, MetadataAccess.SERVICE);
     }
 
+    @Override
     public void unscheduleServiceLevelAgreement(Feed.ID feedId) {
         metadataAccess.read(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
@@ -175,6 +184,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     }
 
 
+    @Override
     public void disableServiceLevelAgreementSchedule(Feed.ID feedId) {
         metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
@@ -187,6 +197,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     }
 
 
+    @Override
     public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getFeedServiceLevelAgreements(String feedId) {
         return metadataAccess.read(() -> {
 
@@ -226,6 +237,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
      * @param slaId an sla to check
      * @return true if user can edit the SLA, false if not
      */
+    @Override
     public boolean canEditServiceLevelAgreement(String slaId) {
         com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
 
@@ -246,6 +258,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
      * @param slaId an sla to check
      * @return true if user can read the SLA, false if not
      */
+    @Override
     public boolean canAccessServiceLevelAgreement(String slaId) {
         com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
 
@@ -261,6 +274,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     }
 
+    @Override
     public ServiceLevelAgreement getServiceLevelAgreement(String slaId) {
 
         com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, false);
@@ -287,6 +301,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     /**
      * get a SLA and convert it to the editable SLA form object
      */
+    @Override
     public ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId) {
 
         com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement systemSla = findFeedServiceLevelAgreementAsAdmin(slaId, true);
@@ -321,6 +336,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         }
     }
 
+    @Override
     public boolean removeAndUnscheduleAgreement(String id) {
         boolean canEdit = canEditServiceLevelAgreement(id);
 
@@ -338,6 +354,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     }
 
+    @Override
     public boolean removeAllAgreements() {
         return metadataAccess.commit(() -> {
             List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> agreements = slaProvider.getAgreements();
@@ -351,17 +368,20 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     }
 
+    @Override
     public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
 
         return ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
     }
 
 
+    @Override
     public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName) {
         return ServiceLevelAgreementActionConfigTransformer.instance().validateAction(actionConfigurationClassName);
     }
 
 
+    @Override
     public ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement) {
         return saveAndScheduleSla(serviceLevelAgreement, null);
     }
@@ -459,7 +479,15 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
                         }
                     }
                     //relate them
-                    feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    Set<Feed.ID> feedIds = new HashSet<>();
+                    FeedServiceLevelAgreementRelationship feedServiceLevelAgreementRelationship = feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    if(feedServiceLevelAgreementRelationship != null && feedServiceLevelAgreementRelationship.getFeeds() != null){
+                        feedIds  = feedServiceLevelAgreementRelationship.getFeeds().stream().map(f -> f.getId()).collect(Collectors.toSet());
+                    }
+
+                    //Update the JPA mapping in Ops Manager for this SLA and its related Feeds
+                    serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(savedSla.getId(),savedSla.getName(),savedSla.getDescription(),feedIds);
+
                     com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = serviceLevelAgreementTransform.toModel(savedSla, slaFeeds, true);
                     //schedule it
                     serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
@@ -471,6 +499,7 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         return null;
     }
 
+    @Override
     public ServiceLevelAgreement saveAndScheduleFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId) {
 
         FeedMetadata feed = null;

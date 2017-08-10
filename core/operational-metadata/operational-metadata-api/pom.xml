@@ -23,13 +23,13 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-sla-api</artifactId>
+      <artifactId>kylo-sla-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-sla-rest-model</artifactId>
+      <artifactId>kylo-alerts-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

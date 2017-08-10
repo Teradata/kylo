@@ -52,6 +52,12 @@ public interface Alert {
     URI getType();
 
     /**
+     * A separate descriptor further defining the type of this alert
+     * @return the descriptor defining the type of the alert
+     */
+    String getSubtype();
+
+    /**
      * @return a description of this alert
      */
     String getDescription();

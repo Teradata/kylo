@@ -144,13 +144,12 @@ public class FeedRestController {
     @Inject
     private MetadataService metadataService;
 
-    //Profile needs hive service
     @Inject
     private HiveService hiveService;
 
     @Inject
     private FeedManagerPreconditionService feedManagerPreconditionService;
-    
+
     @Inject
     private FeedModelTransform feedModelTransform;
 
@@ -342,13 +341,13 @@ public class FeedRestController {
 
         try {
             int size = Strings.isEmpty(limit) || limit.equalsIgnoreCase("all") ? MAX_LIMIT : Integer.parseInt(limit);
-            Page<UIFeed> page = getMetadataService().getFeedsPage(verbose, 
-                                                                  pageRequest(start, size, sort), 
+            Page<UIFeed> page = getMetadataService().getFeedsPage(verbose,
+                                                                  pageRequest(start, size, sort),
                                                                   filter != null ? filter.trim() : null);
             return this.feedModelTransform.toSearchResult(page);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("The value of limit must be an integer or \"all\"");
-        }   
+        }
     }
 
     @GET

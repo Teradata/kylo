@@ -23,6 +23,7 @@ package com.thinkbiganalytics.alerts.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 
 import java.net.URI;
@@ -32,7 +33,7 @@ import java.net.URI;
  */
 public interface AssessmentAlerts {
 
-    static final URI SLA_ALERT_TYPE = URI.create("http://kylo.io/alert/sla");
+    static final URI SLA_ALERT_TYPE = URI.create(AlertConstants.KYLO_ALERT_TYPE_PREFIX + "/alert/sla");
     static final URI VIOLATION_ALERT_TYPE = URI.create(SLA_ALERT_TYPE + "/violation");
 
 

@@ -13,6 +13,22 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
     <!-- Jackson -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -22,5 +38,10 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-joda</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
   </dependencies>
 </project>

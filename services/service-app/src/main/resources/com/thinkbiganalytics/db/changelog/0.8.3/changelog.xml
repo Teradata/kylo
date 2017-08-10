@@ -27,5 +27,9 @@
   <include file="alter-nifi-feed-processor-stats-add-colum.xml" relativeToChangelogFile="true"/>
   <include file="nifi_feed_stats.xml" relativeToChangelogFile="true"/>
   <include file="nifi-feed-stats-last-activity-timestamp-col.xml" relativeToChangelogFile="true"/>
+  <include file="alter_feed_stats_error_messages_column.xml" relativeToChangelogFile="true"/>
+  <include file="uuid_functions.xml" relativeToChangelogFile="true" />
+  <include file="alter_sla_assessment.xml" relativeToChangelogFile="true" />
+  <include file="sla_feed_description_tables.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>

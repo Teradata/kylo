@@ -27,6 +27,7 @@ import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Set<ObligationAssessment> obligationAssessments;
     private ServiceLevelAssessment.ID id;
+
 
     /**
      *
@@ -98,8 +100,8 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     }
 
     @Override
-    public String getServiceLevelAgreementId() {
-        return this.sla != null ? this.sla.getId().toString() : null;
+    public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
+        return this.sla != null ? this.sla.getId() : null;
     }
 
     /* (non-Javadoc)

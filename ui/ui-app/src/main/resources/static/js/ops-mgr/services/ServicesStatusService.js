@@ -66,10 +66,10 @@ angular.module(moduleName).factory('ServicesStatusData',
                             ServicesStatusData.services[service.serviceName] = service;
                         }
                         if (service.state == 'DOWN' || service.state == 'WARNING') {
-                            AlertsService.addServiceAlert(service);
+                   //         AlertsService.addServiceAlert(service);
                         }
                         if (service.state == 'UP') {
-                            AlertsService.removeServiceAlert(service);
+                 //           AlertsService.removeServiceAlert(service);
                         }
                     });
                     if (successCallback) {

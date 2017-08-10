@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -127,6 +128,7 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
     private String latestFlowFileId;
 
     @Column(name = "ERROR_MESSAGES")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "4000")})
     private String errorMessages;
 
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")

@@ -23,29 +23,37 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.support.QueryBase;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertNotfoundException;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Criteria;
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -79,6 +87,13 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     private JpaAlertRepository repository;
 
 
+    private AlertSource.ID id = new AlertManagerId();
+
+    @Override
+    public AlertSource.ID getId() {
+       return id;
+    }
+
     /**
      * @param repo
      */
@@ -91,7 +106,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#resolve(java.io.Serializable)
      */
     @Override
-    public ID resolve(Serializable id) {
+    public Alert.ID resolve(Serializable id) {
         if (id instanceof JpaAlert.AlertId) {
             return (JpaAlert.AlertId) id;
         } else {
@@ -129,18 +144,33 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      */
     @Override
     public AlertCriteria criteria() {
-        return new Criteria();
+        return new DefaultAlertCriteria(queryFactory);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Optional<Alert> getAlert(ID id) {
+    public Optional<Alert> getAlert(Alert.ID id) {
         return this.metadataAccess.read(() -> {
             return Optional.of(findAlert(id).map(a -> asValue(a)).orElseThrow(() -> new AlertNotfoundException(id)));
         }, MetadataAccess.SERVICE);
     }
+
+    protected DefaultAlertCriteria ensureAlertCriteriaType(AlertCriteria criteria){
+      return (DefaultAlertCriteria) (criteria == null ? criteria() : criteria);
+    }
+
+    public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        return this.metadataAccess.read(() -> {
+            DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
+            return critImpl.createSummaryQuery().fetch().stream()
+                .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+                .iterator();
+        }, MetadataAccess.SERVICE);
+    }
+
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts()
@@ -148,13 +178,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     @Override
     public Iterator<Alert> getAlerts(AlertCriteria criteria) {
         return this.metadataAccess.read(() -> {
-            Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
+            DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createQuery().fetch().stream()
                 .map(a -> asValue(a))
                 .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
                 .iterator();
         }, MetadataAccess.SERVICE);
     }
+
 //
 //    /* (non-Javadoc)
 //     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(org.joda.time.DateTime)
@@ -194,13 +225,21 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#create(java.net.URI, com.thinkbiganalytics.alerts.api.Alert.Level, java.lang.String, java.io.Serializable)
      */
     @Override
-    public <C extends Serializable> Alert create(URI type, Level level, String description, C content) {
+    public <C extends Serializable> Alert create(URI type, String subtype,Level level, String description, C content) {
         final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
                                ? SecurityContextHolder.getContext().getAuthentication()
                                : null;
+        //reset the subtype if the content is an Entity
+        if(subtype == null) {
+            subtype = "Other";
+        }
+        if(content != null && content instanceof EntityIdentificationAlertContent){
+            subtype = "Entity";
+        }
+        final String finalSubType = subtype;
 
         Alert created = this.metadataAccess.commit(() -> {
-            JpaAlert alert = new JpaAlert(type, level, user, description, content);
+            JpaAlert alert = new JpaAlert(type, finalSubType,level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -209,9 +248,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         return created;
     }
 
+    @Override
+    public <C extends Serializable> Alert createEntityAlert(URI type, Level level, String description, EntityIdentificationAlertContent<C> content) {
+        return create(type,null,level,description,content);
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.spi.AlertManager#getResponse(com.thinkbiganalytics.alerts.api.Alert)
-     */
+         * @see com.thinkbiganalytics.alerts.spi.AlertManager#getResponse(com.thinkbiganalytics.alerts.api.Alert)
+         */
     @Override
     public AlertResponse getResponse(Alert alert) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(alert.getId());
@@ -222,7 +266,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#remove(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Alert remove(ID id) {
+    public Alert remove(Alert.ID id) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(id);
 
         return this.metadataAccess.commit(() -> {
@@ -280,6 +324,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         private final String description;
         private final Level level;
         private final URI type;
+        private final String subtype;
         private final DateTime createdTime;
         private final Serializable content;
         private final boolean cleared;
@@ -292,6 +337,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             this.description = alert.getDescription();
             this.level = alert.getLevel();
             this.type = alert.getType();
+            this.subtype = alert.getSubtype();
             this.cleared = alert.isCleared();
             this.createdTime = alert.getCreatedTime();
             this.events = Collections.unmodifiableList(alert.getEvents().stream()
@@ -322,6 +368,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         @Override
         public URI getType() {
             return type;
+        }
+
+        @Override
+        public String getSubtype() {
+            return subtype;
         }
 
         @Override
@@ -461,63 +512,43 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }
     }
 
-    private class Criteria extends BaseAlertCriteria {
 
-        public JPAQuery<JpaAlert> createQuery() {
-            List<Predicate> preds = new ArrayList<>();
-            QJpaAlert alert = QJpaAlert.jpaAlert;
 
-            JPAQuery<JpaAlert> query = queryFactory
-                .select(alert)
-                .from(alert)
-                .limit(getLimit());
 
-            // The "state" criteria now means filter by an alert's current state.
-            // To support filtering by any state the alert has transitioned through
-            // we can add the commented out code below (the old state behavior)
-//            if (getTransitions().size() > 0) {
-//                QAlertChangeEvent event = QAlertChangeEvent.alertChangeEvent;
-//                query.join(alert.events, event);
-//                preds.add(event.state.in(getTransitions()));
-//            }
+    public static class AlertManagerId implements ID {
 
-            if (getStates().size() > 0) {
-                preds.add(alert.state.in(getStates()));
-            }
-            if (getLevels().size() > 0) {
-                preds.add(alert.level.in(getLevels()));
-            }
-            if (getAfterTime() != null) {
-                preds.add(alert.createdTime.gt(getAfterTime()));
-            }
-            if (getBeforeTime() != null) {
-                preds.add(alert.createdTime.lt(getBeforeTime()));
-            }
-            if (!isIncludeCleared()) {
-                preds.add(alert.cleared.isFalse());
-            }
 
-            if (getTypes().size() > 0) {
-                BooleanBuilder likes = new BooleanBuilder();
-                getTypes().stream()
-                    .map(uri -> alert.typeString.like(uri.toASCIIString().concat("%")))
-                    .forEach(pred -> likes.or(pred));
-                preds.add(likes);
-            }
+        private static final long serialVersionUID = 7691516770322504702L;
 
-            // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
-            // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
-            if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
-                query.orderBy(alert.createdTime.asc());
-            } else {
-                query.orderBy(alert.createdTime.desc());
-            }
+        private String idValue = DefaultAlertManager.class.getSimpleName();
 
-            if (preds.isEmpty()) {
-                return query;
-            } else {
-                return query.where(preds.toArray(new Predicate[preds.size()]));
-            }
+
+        public AlertManagerId() {
+        }
+
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
+    }
+    public <C extends Serializable> EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
+        if(content instanceof EntityIdentificationAlertContent){
+            ((EntityIdentificationAlertContent) content).setEntityId(entityId);
+            ((EntityIdentificationAlertContent) content).setEntityType(entityType);
+            return (EntityIdentificationAlertContent) content;
+        }
+        else {
+            EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();
+            c.setEntityId(entityId);
+            c.setEntityType(entityType);
+            c.setContent(content);
+            return c;
         }
     }
 

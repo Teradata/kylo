@@ -81,7 +81,7 @@ public class InMemoryAlertManagerTest {
     @Test
     public void testCreate() {
         URI type = URI.create("urn:alert:test");
-        Alert alert = this.manager.create(type, Alert.Level.INFO, "test", "content");
+        Alert alert = this.manager.create(type, "subtype", Alert.Level.INFO, "test", "content");
 
         assertThat(alert.getType()).isEqualTo(type);
         assertThat(alert.getLevel()).isEqualTo(Alert.Level.INFO);
@@ -92,7 +92,7 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testResolve() {
-        Alert.ID id = this.manager.create(URI.create("urn:alert:test"), Alert.Level.INFO, "test", "content").getId();
+        Alert.ID id = this.manager.create(URI.create("urn:alert:test"), "subtype", Alert.Level.INFO, "test", "content").getId();
 
         Alert.ID resolved = this.manager.resolve(id.toString());
 
@@ -101,7 +101,7 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testGetAlertById() {
-        Alert alert = this.manager.create(URI.create("urn:alert:test"), Alert.Level.INFO, "test", "content");
+        Alert alert = this.manager.create(URI.create("urn:alert:test"), "subtype",Alert.Level.INFO, "test", "content");
 
         Optional<Alert> returned = this.manager.getAlert(alert.getId());
 
@@ -113,9 +113,9 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testGetAlerts() throws InterruptedException {
-        this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "content");
+        this.manager.create(URI.create("urn:alert:test1"), "subtype",Alert.Level.INFO, "test1", "content");
         Thread.sleep(25);
-        this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content");
+        this.manager.create(URI.create("urn:alert:test2"), "subtype",Alert.Level.CRITICAL, "test2", "content");
 
         Iterator<? extends Alert> itr = this.manager.getAlerts(null);
 
@@ -128,11 +128,11 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testGetAlertsSinceDateTime() throws InterruptedException {
-        this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "content");
+        this.manager.create(URI.create("urn:alert:test1"), "subtype",Alert.Level.INFO, "test1", "content");
         Thread.sleep(25);
         DateTime since = DateTime.now();
         Thread.sleep(25);
-        this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content");
+        this.manager.create(URI.create("urn:alert:test2"), "subtype",Alert.Level.CRITICAL, "test2", "content");
         Thread.sleep(25);
 
         Iterator<? extends Alert> itr = this.manager.getAlerts(this.manager.criteria().after(since));
@@ -158,8 +158,8 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testRemove() {
-        Alert.ID id1 = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "content").getId();
-        Alert.ID id2 = this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content").getId();
+        Alert.ID id1 = this.manager.create(URI.create("urn:alert:test1"), "subtype",Alert.Level.INFO, "test1", "content").getId();
+        Alert.ID id2 = this.manager.create(URI.create("urn:alert:test2"),"subtype", Alert.Level.CRITICAL, "test2", "content").getId();
 
         Alert alert2 = this.manager.remove(id2);
         Alert alert1 = this.manager.remove(id1);
@@ -172,7 +172,7 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testChangeState() {
-        Alert alert = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created");
+        Alert alert = this.manager.create(URI.create("urn:alert:test1"), "subtype",Alert.Level.INFO, "test1", "created");
 
         Alert changed = this.manager.getResponse(alert).inProgress("in progress");
 
@@ -185,7 +185,7 @@ public class InMemoryAlertManagerTest {
 
     @Test
     public void testNotifyRecieverCreate() {
-        this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created");
+        this.manager.create(URI.create("urn:alert:test1"), "subtype",Alert.Level.INFO, "test1", "created");
 
         verify(this.receiver, times(1)).alertsAvailable(any(Integer.class));
     }

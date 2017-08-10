@@ -21,12 +21,13 @@
 
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-   <changeSet author="sr186054" id="kylo_0.8.3-nifi-feed-stats">
-    <createTable tableName="NIFI_FEED_STATS">
+   <changeSet author="sr186054" id="kylo_0.8.3-nifi-feed-stats" failOnError="false">
+     <validCheckSum>ANY</validCheckSum>
+    <createTable tableName="NIFI_FEED_STATS" >
       <column name="FEED_NAME" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="FEED_ID" type="BINARY(16)"/>
+      <column name="FEED_ID" type="${uuid.type}"/>
       <column name="RUNNING_FEED_FLOWS" type="BIGINT"/>
       <column name="TIME" type="BIGINT(11)"/>
       <column name="IS_LATEST" type="varchar(1)"/>

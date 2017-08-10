@@ -32,17 +32,17 @@ import java.util.List;
  */
 public interface JpaServiceLevelAssessmentRepository extends JpaRepository<JpaServiceLevelAssessment, JpaServiceLevelAssessment.ID> {
 
-    @Query(" select assessment from JpaServiceLevelAssessment assessment where assessment.slaId = :id "
+    @Query(" select assessment from JpaServiceLevelAssessment assessment where assessment.slaId = :slaId "
            + "and assessment.createdTime = (select max(assessment2.createdTime) "
            + "                              from JpaServiceLevelAssessment as assessment2 "
-           + "                              where assessment2.slaId = :id)")
-    List<JpaServiceLevelAssessment> findLatestAssessments(@Param("id") String id);
+           + "                              where assessment2.slaId = :slaId)")
+    List<JpaServiceLevelAssessment> findLatestAssessments(@Param("slaId") ServiceLevelAgreementDescriptionId slaId);
 
-    @Query(" select assessment from JpaServiceLevelAssessment assessment where assessment.slaId = :id "
+    @Query(" select assessment from JpaServiceLevelAssessment assessment where assessment.slaId = :slaId "
            + "and assessment.createdTime = (select max(assessment2.createdTime) "
            + "                              from JpaServiceLevelAssessment as assessment2 "
-           + "                              where assessment2.slaId = :id"
+           + "                              where assessment2.slaId = :slaId"
            + "                              and assessment2.id != :assessmentId)")
-    List<JpaServiceLevelAssessment> findLatestAssessmentsNotEqualTo(@Param("id") String id, @Param("assessmentId") ServiceLevelAssessment.ID assessmentId);
+    List<JpaServiceLevelAssessment> findLatestAssessmentsNotEqualTo(@Param("slaId") ServiceLevelAgreementDescriptionId slaId, @Param("assessmentId") ServiceLevelAssessment.ID assessmentId);
 
 }
