@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, AuditLogProviderConfig.class})
+@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, AuditLogProviderConfig.class,TestSpringConfiguration.class})
 public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
 
     private static final Principal ADMIN = new UsernamePrincipal("admin");
