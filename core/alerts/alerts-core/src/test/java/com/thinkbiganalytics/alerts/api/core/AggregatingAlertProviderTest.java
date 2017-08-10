@@ -108,6 +108,9 @@ public class AggregatingAlertProviderTest {
 
         when(this.source.criteria()).thenReturn(new BaseAlertCriteria());
         when(this.manager.criteria()).thenReturn(new BaseAlertCriteria());
+        when(this.source.getId()).thenReturn(new TestAlertSourceID());
+        when(this.manager.getId()).thenReturn(new TestAlertManagerID());
+
     }
 
     @Test
@@ -326,6 +329,22 @@ public class AggregatingAlertProviderTest {
         };
     }
 
+
+    private static class TestAlertManagerID implements AlertManager.ID {
+
+        @Override
+        public String toString() {
+            return "TestAlertManagerId";
+        }
+    }
+
+    private static class TestAlertSourceID implements AlertSource.ID {
+
+        @Override
+        public String toString() {
+            return "TestID";
+        }
+    }
 
     private static class TestID implements Alert.ID {
 
