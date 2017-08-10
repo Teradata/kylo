@@ -23,6 +23,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.FEEDS_BASE + "/" + feedName + "/daily-status-count";
         }
 
+        this.FEED_NAME_FOR_ID = function(feedId){
+            return self.FEEDS_BASE +"/query/"+feedId
+        }
+
 
 
 

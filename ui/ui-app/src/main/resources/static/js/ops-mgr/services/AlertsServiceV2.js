@@ -17,7 +17,8 @@ define(['angular','ops-mgr/module-name','ops-mgr/module'], function (angular,mod
 
         var transformAlertSummaryResponse = function(alertSummaries){
             _.each(alertSummaries,function(summary){
-                summary.since =  new moment(summary.lastAlertTimestamp).fromNow()
+                summary.since =  new moment(summary.lastAlertTimestamp).fromNow();
+
             });
         }
 

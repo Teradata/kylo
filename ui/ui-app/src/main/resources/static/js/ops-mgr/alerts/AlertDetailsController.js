@@ -137,7 +137,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                                 var jobExecutionId = self.alertData.content;
                                 self.alertData.links.push({label: "Job Execution", value: "job-details({executionId:'" + jobExecutionId + "'})"});
                             }
-                            self.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+self.alertData.subtype+"'})"});
+                            self.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+self.alertData.entityId+"'})"});
 
                         }
 
