@@ -236,7 +236,7 @@
 [tba:categoryDetails] > tba:extensibleEntity, tba:propertied
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
-	+ tba:feedRoleMemberships (tba:CategoryFeedRoleMemberships) = tba:CategoryFeedRoleMemberships autocreated mandatory
+	+ tba:feedRoleMemberships (tba:CategoryFeedRoleMemberships) = tba:CategoryFeedRoleMemberships autocreated 
 	+ * (tba:feed) sns
 
 [tba:CategoryFeedRoleMemberships] > nt:hierarchyNode
