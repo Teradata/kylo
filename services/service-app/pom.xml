@@ -80,11 +80,6 @@
       <artifactId>kylo-alerts-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-alerts-default</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>

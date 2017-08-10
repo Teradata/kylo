@@ -17,6 +17,37 @@
 -- limitations under the License.
 -- #L%
 -- -
+CREATE PROCEDURE kylo_job_execution_alerts()
+BEGIN
+
+ DECLARE exit_loop BOOLEAN;
+ DECLARE lastUpdated   BIGINT;
+ DECLARE alertDescription VARCHAR(255);
+ DECLARE alertContent TEXT;
+ DECLARE feedId BINARY(16);
+ DECLARE jobExecutionId BIGINT(19);
+ DECLARE alertId BINARY(16);
+ DECLARE jobExecutionAlertIdCount INTEGER;
+ DECLARE alertManagerId varchar(50) DEFAULT '885917627';
+
+DECLARE job_cursor CURSOR FOR
+select e.LAST_UPDATED,CONCAT('Failed Job ',e.JOB_EXECUTION_ID,' for feed ',f.name) as alert_description,CONCAT('{"type":"java.lang.Long","value":"',e.JOB_EXECUTION_ID,'"}') as alert_content,
+f.ID as FEED_ID, e.JOB_EXECUTION_ID as JOB_EXECUTION_ID
+FROM BATCH_JOB_EXECUTION e
+inner join BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
+inner join FEED f on f.id = i.FEED_ID
+WHERE e.STATUS = 'FAILED';
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET exit_loop = TRUE;
+ OPEN job_cursor;
+   -- start looping
+   job_loop: LOOP
+   FETCH job_cursor into lastUpdated,alertDescription,alertContent,feedId,jobExecutionId;
+     IF exit_loop THEN
+         CLOSE job_cursor;
+         LEAVE job_loop;
+     END IF;
+     SET alertId = uuid_to_bin(uuid());
 
 INSERT INTO KYLO_ALERT
 (id,
@@ -30,17 +61,19 @@ content,
 sub_type,
 entity_type,
 entity_id)
-SELECT uuid_to_bin(uuid()), 'http://kylo.io/alert/job/failure','FATAL','UNHANDLED',e.LAST_UPDATED,CONCAT('Failed Job ',e.JOB_EXECUTION_ID,' for feed ',f.name),
-'N',CONCAT('{"type":"java.lang.Long","value":"',e.JOB_EXECUTION_ID,'"}'),
-'Entity','FEED',e.JOB_EXECUTION_ID
-FROM BATCH_JOB_EXECUTION e
-inner join BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
-inner join FEED f on f.id = i.FEED_ID
-WHERE e.STATUS = 'FAILED';
+values(alertId, 'http://kylo.io/alert/job/failure','FATAL','UNHANDLED',lastUpdated,alertDescription,'N',alertContent,'Entity','FEED',feedId);
 
 INSERT INTO KYLO_ALERT_CHANGE(alert_id,state,change_time,user_name,description)
-SELECT ID,state,create_time,'dladmin',description
-FROM KYLO_ALERT a
-where type = 'http://kylo.io/alert/job/failure'
-and state = 'UNHANDLED'
-and not exists (select alert_id from KYLO_ALERT_CHANGE where alert_id = a.ID );
+values(alertId,'UNHANDLED',lastUpdated,'dladmin',alertDescription);
+
+SELECT COUNT(*) into jobExecutionAlertIdCount FROM BATCH_JOB_EXECUTION_CTX_VALS
+WHERE KEY_NAME = 'Kylo Alert Id'
+and JOB_EXECUTION_ID = jobExecutionId;
+
+IF(jobExecutionAlertIdCount = 0) then
+INSERT INTO BATCH_JOB_EXECUTION_CTX_VALS(JOB_EXECUTION_ID,TYPE_CD,KEY_NAME,STRING_VAL,CREATE_DATE,ID)
+values(jobExecutionId,'STRING','Kylo Alert Id',concat(uuid_from_bin(alertId),':',alertManagerId),now(),uuid());
+END IF;
+
+ END LOOP job_loop;
+END;

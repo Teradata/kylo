@@ -52,9 +52,16 @@
 
     <changeSet id="mysql_insert_job_failure_alerts" author="sr186054" dbms="mysql">
         <sql endDelimiter="\n">${delimiter.start}</sql>
-        <sqlFile path="mysql_insert_job_failures.sql" relativeToChangelogFile="true"/>
+        <createProcedure path="mysql_insert_job_failures.sql" relativeToChangelogFile="true"/>
         <sql endDelimiter="\n">${delimiter.end}</sql>
         <sql endDelimiter="\n">${delimiter.reset}</sql>
+    </changeSet>
+
+    <changeSet id="call_mysql_kylo_job_execution_alerts_proc" author="sr186054" dbms="mysql">
+        <sql dbms="mysql" >
+            CALL kylo_job_execution_alerts();
+            DROP PROCEDURE kylo_job_execution_alerts;
+        </sql>
     </changeSet>
 
     <changeSet id="postgres_insert_job_failure_alerts" author="sr186054" dbms="postgres">
@@ -62,6 +69,13 @@
         <sqlFile path="postgresl_insert_job_failures.sql" relativeToChangelogFile="true"/>
         <sql endDelimiter="\n">${delimiter.end}</sql>
         <sql endDelimiter="\n">${delimiter.reset}</sql>
+    </changeSet>
+
+    <changeSet id="call_postgres_kylo_job_execution_alerts_proc" author="sr186054" dbms="postgres">
+        <sql dbms="postgres" >
+            select kylo_job_execution_alerts();
+            DROP FUNCTION IF EXISTS kylo_job_execution_alerts();
+        </sql>
     </changeSet>
 
 </databaseChangeLog>
