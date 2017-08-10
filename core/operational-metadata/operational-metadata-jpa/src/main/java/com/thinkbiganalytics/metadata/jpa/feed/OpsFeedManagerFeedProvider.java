@@ -52,6 +52,7 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -276,8 +277,8 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     public void abandonFeedJobs(String feed) {
 
         String exitMessage = String.format("Job manually abandoned @ %s", DateTimeUtil.getNowFormattedWithTimeZone());
-
-        repository.abandonFeedJobs(feed, exitMessage);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        repository.abandonFeedJobs(feed, exitMessage,username);
 
         //all the alerts manager to handle all job failures
         AlertCriteria criteria = alertProvider.criteria().type(OperationalAlerts.JOB_FALURE_ALERT_TYPE).subtype(feed);
