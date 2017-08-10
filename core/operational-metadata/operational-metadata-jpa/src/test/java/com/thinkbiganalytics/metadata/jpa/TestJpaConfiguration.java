@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
@@ -37,7 +38,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import reactor.bus.EventBus;
@@ -48,15 +48,21 @@ import reactor.bus.EventBus;
 public class TestJpaConfiguration {
 
     @Bean
-    AccessController accessController(){
+    AccessController accessController() {
         return Mockito.mock(AccessController.class);
     }
 
 
-    @Bean(name="kyloAlertManager")
-    AlertManager alertManager(){
+    @Bean(name = "kyloAlertManager")
+    AlertManager alertManager() {
         return Mockito.mock(AlertManager.class);
     }
+
+    @Bean
+    AlertProvider alertProvider() {
+        return Mockito.mock(AlertProvider.class);
+    }
+
     /**
      * This is the datasource used by JPA
      */

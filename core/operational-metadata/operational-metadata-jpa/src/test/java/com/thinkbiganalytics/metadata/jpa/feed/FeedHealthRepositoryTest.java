@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlConfig;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.security.AccessController;
@@ -33,9 +34,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +41,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
@@ -55,7 +52,8 @@ import javax.inject.Inject;
 @SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class,
                                            OperationalMetadataConfig.class,
                                            TestJpaConfiguration.class,
-                                           FeedHealthRepositoryTest.class})
+                                           FeedHealthRepositoryTest.class,
+                                           FeedOpsAccessControlConfig.class})
 @Transactional
 @Configuration
 public class FeedHealthRepositoryTest {
@@ -114,7 +112,7 @@ public class FeedHealthRepositoryTest {
 
         Iterable<JpaOpsManagerFeedHealth> all = repo.findAll();
         Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
-                               .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
+                              .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
     }
 
     @WithMockJaasUser(username = "dladmin",
@@ -136,7 +134,7 @@ public class FeedHealthRepositoryTest {
 
         Iterable<JpaOpsManagerFeedHealth> all = repo.findAll();
         Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
-                               .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
+                              .anyMatch(it -> it.getFeedId().getUuid().equals(uuid)));
     }
 
 }
