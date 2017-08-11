@@ -39,8 +39,8 @@ public class NifiProcessorSchedule {
 
     /**
      * Return the NiFi schedule period.
-     * If the {@link this#schedulingStrategy} is set to "TIMER_DRIVEN" this will either be a timer string (i.e. 1 hr, 5 sec)
-     * If the {@link this#schedulingStrategy} is set to "CRON_DRIVEN" this will be the cron expression
+     * If the {@link #schedulingStrategy} is set to "TIMER_DRIVEN" this will either be a timer string (i.e. 1 hr, 5 sec)
+     * If the {@link #schedulingStrategy} is set to "CRON_DRIVEN" this will be the cron expression
      *
      * @return the schedule period or cron expression
      */
@@ -58,7 +58,7 @@ public class NifiProcessorSchedule {
     }
 
     /**
-     * Return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN".  This strategy is used with the {@link this#schedulingPeriod}
+     * Return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN".  This strategy is used with the {@link #schedulingPeriod}
      *
      * @return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN"
      */

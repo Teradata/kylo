@@ -38,7 +38,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
 
     /**
      * Execution Context key that determines the type of job {@link com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed.FeedType}
-     * This is is deprecated and the {@link this#NIFI_KYLO_JOB_TYPE_PROPERTY} should be used instead
+     * This is is deprecated and the {@link #NIFI_KYLO_JOB_TYPE_PROPERTY} should be used instead
      */
     @Deprecated
     String NIFI_JOB_TYPE_PROPERTY = "tb.jobType";

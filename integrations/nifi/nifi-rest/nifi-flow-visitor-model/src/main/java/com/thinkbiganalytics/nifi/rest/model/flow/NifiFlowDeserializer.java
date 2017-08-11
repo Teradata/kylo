@@ -68,7 +68,7 @@ public class NifiFlowDeserializer {
 
     /**
      * Remove any circular graph dependencies and replace it with id references
-     * These can be reconstructed later via the {@link this#constructGraph(NifiFlowProcessGroup)}
+     * These can be reconstructed later via the {@link #constructGraph(NifiFlowProcessGroup)}
      *
      * @param group the graph of the flow to serialize
      */

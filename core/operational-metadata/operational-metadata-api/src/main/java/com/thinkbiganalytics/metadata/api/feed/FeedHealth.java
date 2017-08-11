@@ -51,7 +51,7 @@ public interface FeedHealth {
     Long getJobExecutionId();
 
     /**
-     * Return the latest job instance id with respect to the {@link this#getJobInstanceId()}
+     * Return the latest job instance id with respect to the {@link #getJobInstanceId()}
      *
      * @return the latest job instance id
      * @see BatchJobInstance#getJobInstanceId()
@@ -60,7 +60,7 @@ public interface FeedHealth {
 
     /**
      * Return the latest batch job execution start time.
-     * The job is referenced via the {@link this#getJobExecutionId()}
+     * The job is referenced via the {@link #getJobExecutionId()}
      *
      * @return the latest batch job execution start time
      */
@@ -68,7 +68,7 @@ public interface FeedHealth {
 
     /**
      * Return the latest batch job execution end time.
-     * The job is referenced via the {@link this#getJobExecutionId()}
+     * The job is referenced via the {@link #getJobExecutionId()}
      *
      * @return the latest batch job execution end time.
      */
@@ -76,7 +76,7 @@ public interface FeedHealth {
 
     /**
      * Return the status for the latest job execution.
-     * The job is referenced via the {@link this#getJobExecutionId()}
+     * The job is referenced via the {@link #getJobExecutionId()}
      *
      * @return the status for the latest job execution.
      */
@@ -84,7 +84,7 @@ public interface FeedHealth {
 
     /**
      * Return the exit code for the latest job execution.
-     * The job is referenced via the {@link this#getJobExecutionId()}
+     * The job is referenced via the {@link #getJobExecutionId()}
      *
      * @return the exit code for the latest job execution
      */
@@ -92,7 +92,7 @@ public interface FeedHealth {
 
     /**
      * Return a message indicating information about what happened during the latest job execution.
-     * The job is referenced via the {@link this#getJobExecutionId()}
+     * The job is referenced via the {@link #getJobExecutionId()}
      *
      * @return a message indicating information about what happened during the latest job execution
      */

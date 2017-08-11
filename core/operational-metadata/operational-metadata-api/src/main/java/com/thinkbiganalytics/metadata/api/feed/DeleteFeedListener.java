@@ -26,6 +26,7 @@ public interface DeleteFeedListener {
 
     /**
      * Called when a feed is deleted
+     * @param feed
      */
     void onFeedDelete(OpsManagerFeed feed);
 

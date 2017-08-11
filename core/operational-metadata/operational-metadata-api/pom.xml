@@ -52,6 +52,12 @@
       <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
 </project>

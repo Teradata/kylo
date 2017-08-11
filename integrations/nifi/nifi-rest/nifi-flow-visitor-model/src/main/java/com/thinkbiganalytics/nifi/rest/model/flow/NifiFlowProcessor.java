@@ -446,7 +446,7 @@ public class NifiFlowProcessor implements Serializable {
     }
 
     /**
-     * check to see if its a leaf processor.  same check as the {@link this#isLeaf()}, but supplied when building the object in the {@link
+     * check to see if its a leaf processor.  same check as the {@link #isLeaf()}, but supplied when building the object in the {@link
      * com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder}
      */
     public boolean isEnd() {

@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 /**
  * Apply a Filter to a given QueryDSL object Filter based upon supplying a list of {@code SearchCriteria} classes or a Filter String: <column><operator><value> where <column> is the jpaColumn name,
- * <operator> is a valid {@code this#operators} Operator, and <value> is some string value
+ * <operator> is a valid {@code #operators} Operator, and <value> is some string value
  *
  * Example usage in a Provider:
  *

@@ -204,7 +204,7 @@ public class NifiVisitableProcessor implements NifiVisitable {
     /**
      * Check to see if this processor contains an incoming processor
      *
-     * @param parent the processor to check for in this processors {@link this#getDestinations()}
+     * @param parent the processor to check for in this processors {@link #getDestinations()}
      * @return {@code true} if this processor already contains the incoming processor as its destination, {@code false} if not
      */
     public boolean containsDestination(NifiVisitableProcessor parent) {
