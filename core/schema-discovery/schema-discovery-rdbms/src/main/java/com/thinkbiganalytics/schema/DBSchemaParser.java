@@ -33,6 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.UncategorizedDataAccessException;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
@@ -71,7 +73,7 @@ public class DBSchemaParser {
             return schemas;
         }
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to list schemas", e);
+            throw new SchemaParserException("Unable to list schemas", e);
         }
     }
 
@@ -86,7 +88,7 @@ public class DBSchemaParser {
             return catalogs;
         }
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to list catalogs", e);
+            throw new SchemaParserException("Unable to list catalogs", e);
         }
     }
 
@@ -176,7 +178,7 @@ public class DBSchemaParser {
 
 
             } catch (final SQLException e) {
-                throw new RuntimeException("Unable to obtain table list", e);
+                throw new SchemaParserException("Unable to obtain table list", e);
             }
 
         } else {
@@ -206,7 +208,7 @@ public class DBSchemaParser {
                     }
                 }
             } catch (final SQLException e) {
-                throw new RuntimeException("Unable to obtain table list", e);
+                throw new SchemaParserException("Unable to obtain table list", e);
             }
         }
 
@@ -245,7 +247,7 @@ public class DBSchemaParser {
                 }
             }
         } catch (final SQLException e) {
-            throw new RuntimeException("Unable to describe schema [" + schema + "] table [" + table + "]", e);
+            throw new SchemaParserException("Unable to describe schema [" + schema + "] table [" + table + "]", e);
         }
 
         return null;
