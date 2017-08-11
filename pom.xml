@@ -26,6 +26,7 @@
     <plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
 
     <!-- dependencies -->
+    <automatic-release-repo-promotion>false</automatic-release-repo-promotion>
     <activemq.version>5.15.0</activemq.version>
     <avro.version>1.7.7</avro.version>
     <spring.version>4.2.5.RELEASE</spring.version>
@@ -60,6 +61,11 @@
     <joda.time.version>2.9.2</joda.time.version>
     <junit.version>4.11</junit.version>
     <lucene.version>4.10.4</lucene.version>
+    <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+    <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
+    <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+    <nexus-staging-maven-plugin.version>1.6.3</nexus-staging-maven-plugin.version>
     <mockito.version>1.10.19</mockito.version>
     <!-- The maria db driver version is references in the post-install.sh file. Manually update it there if you change it here.  -->
     <mariadb.version>1.5.7</mariadb.version>
@@ -133,6 +139,40 @@
       </snapshots>
     </repository>
   </repositories>
+
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://opensource.org/licenses/Apache-2.0</url>
+      <distribution>repo</distribution>
+      <comments>Apache License, Version 2.0</comments>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>Kylo JIRA at atlassian.net</system>
+    <url>https://kylo-io.atlassian.net</url>
+  </issueManagement>
+
+
+  <scm>
+    <connection>
+      scm:git:https://github.com/Teradata/kylo.git
+    </connection>
+    <developerConnection>
+      scm:git:https://github.com/Teradata/kylo.git
+    </developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/Teradata/kylo</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>thinkbiganalytics</id>
+      <name>Think Big Analytics, A Teradata Company</name>
+      <url></url>
+    </developer>
+  </developers>
 
   <dependencyManagement>
     <dependencies>
