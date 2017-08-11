@@ -23,6 +23,8 @@
 
 
 <changeSet author="sr186054" id="add-FEED-TIME_BTWN_BATCH_JOBS-column">
+    <validCheckSum>7:a73e5e78cf91d0c354c15d66138bc8f1</validCheckSum>
+    <validCheckSum>7:ab5cdf176b6711ea6583bea5dc38fff2</validCheckSum>
     <addColumn
             tableName="FEED">
         <column name="TIME_BTWN_BATCH_JOBS" type="int(11)" defaultValue="1000"/>

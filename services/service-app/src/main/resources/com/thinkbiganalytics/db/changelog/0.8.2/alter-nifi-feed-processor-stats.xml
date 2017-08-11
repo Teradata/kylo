@@ -23,6 +23,8 @@
 
 
 <changeSet author="sr186054" id="add-STATS-FAILED_EVENTS-column">
+    <validCheckSum>7:cdd7d328c00007c2c368be48d6da9824</validCheckSum>
+    <validCheckSum>7:aa784981473e0adbde6b4b13a47b80bc</validCheckSum>
     <addColumn
                tableName="NIFI_FEED_PROCESSOR_STATS">
         <column name="FAILED_EVENTS" type="bigint(20)"/>

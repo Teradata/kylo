@@ -23,10 +23,14 @@
 
 
 <changeSet author="sr186054" id="add-IS_STREAM-column">
+    <validCheckSum>7:5fc680cfd0a3d02534186cdb7e99460c</validCheckSum>
+    <validCheckSum>7:c19df976038f3f162a9db91f3ded270e</validCheckSum>
     <addColumn
             tableName="FEED">
         <column name="IS_STREAM" type="varchar(1)" defaultValue="N"/>
     </addColumn>
+
+
 </changeSet>
 
 </databaseChangeLog>
