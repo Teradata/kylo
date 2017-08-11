@@ -23,6 +23,7 @@ package com.thinkbiganalytics.security.rest.controller;
  * #L%
  */
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.security.RoleNotFoundException;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.UserGroup;
 import com.thinkbiganalytics.security.rest.model.Role;
@@ -94,9 +96,13 @@ public class RolesController {
                   })
     public List<Role> getEntityRoles(@PathParam("entity") String entityName) {
         return metadata.read(() -> {
-            return this.roleProvider.getEntityRoles(entityName).stream()
-                            .map(securityTransform.toRole())
-                            .collect(Collectors.toList());
+            try {
+                return this.roleProvider.getEntityRoles(entityName).stream()
+                    .map(securityTransform.toRole())
+                    .collect(Collectors.toList());
+            }catch (RoleNotFoundException e){
+                return Collections.emptyList();
+            }
         });     
     }
 }

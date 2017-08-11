@@ -150,7 +150,19 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                         })
                     });
 
-                    deferred.resolve(entityRoleMemberships);
+                    //get the available roles for this entity (might need to add a method to AccessControlService to getRolesForEntityType()
+                    AccessControlService.getEntityRoles(membershipType).then(function (roles) {
+                        _.each(roles, function (role) {
+                            if (angular.isUndefined(existingModelRoleAssignments[role.systemName])) {
+                                var membership = {role: role};
+                                augmentRoleWithUiModel(membership);
+                                entityRoleMemberships.push(membership);
+                            }
+                        });
+                        deferred.resolve(entityRoleMemberships);
+                    });
+
+
 
                 });
 
