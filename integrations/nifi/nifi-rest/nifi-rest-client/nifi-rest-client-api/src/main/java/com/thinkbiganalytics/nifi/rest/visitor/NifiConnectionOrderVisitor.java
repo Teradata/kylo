@@ -33,7 +33,9 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,7 +186,13 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 }
 
 
-            } else if ("OUTPUT_PORT".equals(dest.getType())) {
+            }if ("REMOTE_INPUT_PORT".equalsIgnoreCase(dest.getType())) {
+                boolean isNew = false;
+                //treat this like a Processor for the connection graph
+                NifiVisitableProcessor processorDto = getRemoteProcessGroupAsVisitableProcessor(dest.getGroupId(),connection.getParentGroupId());
+                destinationProcessors.add(processorDto);
+
+            }  else if ("OUTPUT_PORT".equals(dest.getType())) {
                 boolean isNew = false;
                 //get parent processgroup connection to input port
                 NifiVisitableProcessGroup group = visitedProcessGroups.get(dest.getGroupId());
@@ -516,6 +524,42 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         return group;
     }
 
+    private RemoteProcessGroupDTO getRemoteGroup(String processGroupId) {
+        RemoteProcessGroupDTO group = null;
+        if (cache.getRemoteProcessGroup(processGroupId).isPresent()) {
+            group = cache.getRemoteProcessGroup(processGroupId).get();
+        } else {
+            group = getRestClient().remoteProcessGroups().findById(processGroupId).orElse(null);
+            if (group != null) {
+                cache.add(group);
+            }
+        }
+        return group;
+    }
+
+    private NifiVisitableProcessor getRemoteProcessGroupAsVisitableProcessor(String processGroupId, String parentGroupId) {
+
+        NifiVisitableProcessor processor = visitedProcessors.get(processGroupId);
+        if(processor == null) {
+            ProcessorDTO processorDTO = processorsMap.get(processGroupId);
+            if (processorDTO == null) {
+                RemoteProcessGroupDTO remoteProcessGroupDTO = getRemoteGroup(processGroupId);
+                if (remoteProcessGroupDTO != null) {
+                    processorDTO = new ProcessorDTO();
+                    processorDTO.setType("NiFi.RemoteProcessGroup");
+                    processorDTO.setId(processGroupId);
+                    processorDTO.setParentGroupId(parentGroupId);
+                    processorDTO.setName(remoteProcessGroupDTO.getName());
+                    processorDTO.setConfig(new ProcessorConfigDTO());
+                    processorsMap.put(processGroupId, processorDTO);
+                }
+            }
+            if(processorDTO != null){
+                processor = new NifiVisitableProcessor(processorDTO);
+            }
+        }
+       return processor;
+    }
 
     private NiFiRestClient getRestClient() {
         return restClient;

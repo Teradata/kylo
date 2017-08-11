@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.rest.visitor;
 
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 
 import java.util.Map;
 import java.util.Optional;
@@ -36,16 +37,30 @@ public class NifiConnectionOrderVisitorCache {
 
     private Map<String, ProcessGroupDTO> processGroupCache = new ConcurrentHashMap<>();
 
+    private Map<String, RemoteProcessGroupDTO> remoteProcessGroupCache = new ConcurrentHashMap<>();
+
     public void add(ProcessGroupDTO processGroupDTO) {
         processGroupCache.computeIfAbsent(processGroupDTO.getId(), groupId -> processGroupDTO);
+    }
+
+    public void add(RemoteProcessGroupDTO processGroupDTO) {
+        remoteProcessGroupCache.computeIfAbsent(processGroupDTO.getId(), groupId -> processGroupDTO);
     }
 
     public Map<String,ProcessGroupDTO> getProcessGroupCache() {
         return processGroupCache;
     }
 
+    public Map<String,RemoteProcessGroupDTO> getRemoteProcessGroupCache() {
+        return remoteProcessGroupCache;
+    }
+
     public Optional<ProcessGroupDTO> getProcessGroup(String processGroupId) {
         return Optional.ofNullable(processGroupCache.get(processGroupId));
+    }
+
+    public Optional<RemoteProcessGroupDTO> getRemoteProcessGroup(String processGroupId) {
+        return Optional.ofNullable(remoteProcessGroupCache.get(processGroupId));
     }
 
 

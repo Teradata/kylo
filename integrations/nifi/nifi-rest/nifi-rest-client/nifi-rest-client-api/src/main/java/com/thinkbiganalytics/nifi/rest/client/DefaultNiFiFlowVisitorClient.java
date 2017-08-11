@@ -222,6 +222,10 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
         if (groups != null) {
             groups.stream().forEach(group -> cache.add(group));
         }
+        //add any remote ProcessGroups
+        if(template.getSnippet().getRemoteProcessGroups() != null) {
+            template.getSnippet().getRemoteProcessGroups().stream().forEach(remoteProcessGroupDTO -> cache.add(remoteProcessGroupDTO));
+        }
         NifiVisitableProcessGroup visitableGroup = getFlowOrder(parentProcessGroup, cache, false);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
         return flow;

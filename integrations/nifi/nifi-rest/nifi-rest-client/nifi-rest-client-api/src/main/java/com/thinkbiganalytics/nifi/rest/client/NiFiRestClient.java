@@ -122,6 +122,13 @@ public interface NiFiRestClient {
     @Nonnull
     NiFiProcessGroupsRestClient processGroups();
 
+
+    /**
+     * Gets the client for accessing the remote process groups
+     * @return
+     */
+    NiFiRemoteProcessGroupsRestClient remoteProcessGroups();
+
     /**
      * Gets the client for creating a processor, setting properties, and scheduling.
      *
