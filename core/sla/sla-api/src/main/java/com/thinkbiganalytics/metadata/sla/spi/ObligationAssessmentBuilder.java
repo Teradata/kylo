@@ -76,7 +76,7 @@ public interface ObligationAssessmentBuilder {
      * be looked up to perform the assessment.
      *
      * @param metric the metric to assess
-     * @return the metric's assessment
+     * @return M the metric's assessment
      */
     <M extends Metric> MetricAssessment assess(M metric);
 }

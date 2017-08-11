@@ -26,14 +26,14 @@ package com.thinkbiganalytics;
 public interface KyloVersion extends Comparable<KyloVersion> {
 
     /**
-     * Return the full Kylo Version string as {@link this#getMajorVersion()}.{@link this#getMinorVersion()}
+     * Return the full Kylo Version string as {@link #getMajorVersion()}.{@link #getMinorVersion()}
      *
      * @return the full kylo version string
      */
     String getVersion();
 
     /**
-     * Return the {@link this#getMajorVersion()} as a numeric value
+     * Return the {@link #getMajorVersion()} as a numeric value
      *
      * @return the numeric value of the major version
      */

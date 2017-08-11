@@ -482,7 +482,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     /**
-     * Check to see if the {@link this#status} indicates a failed job completion
+     * Check to see if the {@link #status} indicates a failed job completion
      *
      * @return {@code true} if this is a failed job, {@code false} if it has not failed
      */
@@ -492,7 +492,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     /**
-     * Check to see if the {@link this#status} indicates a successful job completion
+     * Check to see if the {@link #status} indicates a successful job completion
      *
      * @return {@code true} if this is a successful job, {@code false} if it's not successful
      */
@@ -573,7 +573,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     /**
-     * A job execution equals another job execution based upon its primary key of the {@link this#jobExecutionId}
+     * A job execution equals another job execution based upon its primary key of the {@link #jobExecutionId}
      *
      * @param o a job execution to check equality
      * @return {@code true} if this job equals the incoming object, {@code false} if its not equal

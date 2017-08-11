@@ -105,7 +105,7 @@ public interface BatchJobExecution {
 
     /**
      * return the exit code for a job.
-     * A job may complete (as indicated by its {@link this#getStatus()}), but it may result in an overall failure as indicated in this exit code
+     * A job may complete (as indicated by its {@link #getStatus()}), but it may result in an overall failure as indicated in this exit code
      *
      * @return the exit code for a job.
      */

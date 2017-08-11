@@ -41,7 +41,6 @@ public interface FeedHealth {
 
     /**
      * Return a count of the jobs that are unhealthy (Failed, for this feed)
-     *
      * @return the count of unhealthy jobs for this feed
      */
     Long getUnhealthyCount();

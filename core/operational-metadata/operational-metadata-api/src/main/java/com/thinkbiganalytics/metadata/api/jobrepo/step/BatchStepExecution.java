@@ -96,7 +96,7 @@ public interface BatchStepExecution {
     Set<BatchStepExecutionContextValue> getStepExecutionContext();
 
     /**
-     * Return the {@link this#getStepExecutionContext()} as a key,value map
+     * Return the {@link #getStepExecutionContext()} as a key,value map
      *
      * @return the execution context values as a key,value map
      */

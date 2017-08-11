@@ -17,6 +17,6 @@
 -- limitations under the License.
 -- #L%
 -- -
-CREATE ALIAS abandon_feed_jobs FOR "com.thinkbiganalytics.metadata.jpa.feed.AbandonFeedJobsStoredProcedureMock.call"
+CREATE ALIAS IF NOT EXISTS abandon_feed_jobs FOR "com.thinkbiganalytics.metadata.jpa.feed.AbandonFeedJobsStoredProcedureMock.call"
 
 SET foreign_key_checks = 0

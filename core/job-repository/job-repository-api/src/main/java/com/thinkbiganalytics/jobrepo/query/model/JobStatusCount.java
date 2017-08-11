@@ -31,7 +31,7 @@ public interface JobStatusCount {
     /**
      * Return the total count
      *
-     * @return the count of jobs that match the {@link this#getStatus()}
+     * @return the count of jobs that match the {@link #getStatus()}
      */
     Long getCount();
 

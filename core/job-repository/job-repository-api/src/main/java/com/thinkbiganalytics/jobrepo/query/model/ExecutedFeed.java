@@ -141,12 +141,12 @@ public interface ExecutedFeed {
     /**
      * Return the time in millis since the last time this job ran
      *
-     * @return return the time, in millis, since the last time this job ran (i.e Now() - {@link this#getEndTime()})
+     * @return return the time, in millis, since the last time this job ran (i.e Now() - {@link #getEndTime()})
      */
     Long getTimeSinceEndTime();
 
     /**
-     * set the time in millis of the time since this job last ran.  (i.e Now() - {@link this#getEndTime()})
+     * set the time in millis of the time since this job last ran.  (i.e Now() - {@link #getEndTime()})
      */
     void setTimeSinceEndTime(Long timeSinceEndTime);
 

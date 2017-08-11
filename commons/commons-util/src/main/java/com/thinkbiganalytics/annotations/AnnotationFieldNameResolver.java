@@ -76,9 +76,9 @@ public class AnnotationFieldNameResolver {
      *
      * @param clazz the class to inspect
      * @param names the list of names already parsed.  this will be the list the newly parsed field is added to
-     * @param field the field to parse for the annotation matching the {@link this#annotation} supplied
+     * @param field the field to parse for the annotation matching the {@link #annotation} supplied
      * @return the object describing the annotation
-     * @see this#stackAsString() for the naming strategy on hierachy names
+     * @see #stackAsString() for the naming strategy on hierachy names
      */
     public AnnotatedFieldProperty addFieldProperty(Class clazz, List<AnnotatedFieldProperty> names, Field field) {
         AnnotatedFieldProperty annotatedFieldProperty = new AnnotatedFieldProperty();
@@ -94,7 +94,7 @@ public class AnnotationFieldNameResolver {
 
 
     /**
-     * Walk a class and obtain {@link AnnotatedFieldProperty} objects matching any fields with the {@link this#annotation} supplied
+     * Walk a class and obtain {@link AnnotatedFieldProperty} objects matching any fields with the {@link #annotation} supplied
      *
      * @param clazz the class to inspect and parse annotations
      * @return a list of objects describing the annotated fields

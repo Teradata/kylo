@@ -30,13 +30,13 @@ public interface NifiEvent {
 
     /**
      * Return the NiFi event ID
-     * the {@link this#getFlowFileId()}  + this eventId determine uniqueness of this record
+     * the {@link #getFlowFileId()}  + this eventId determine uniqueness of this record
      */
     Long getEventId();
 
     /**
      * Return the flowfile id for this event
-     * the {@link this#getEventId()} + this flowFileId determine uniqueness of this record
+     * the {@link #getEventId()} + this flowFileId determine uniqueness of this record
      */
     String getFlowFileId();
 

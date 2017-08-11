@@ -72,7 +72,7 @@ public class CleanupStaleFeedRevisions {
 
     /**
      * Cleanup all versioned feed process groups
-     * if the {@link this#processGroupId} == 'all' then it will clean up everything, otherwise it will cleanup just the children under the {@link this#processGroupId}
+     * if the {@link #processGroupId} == 'all' then it will clean up everything, otherwise it will cleanup just the children under the {@link #processGroupId}
      */
     public void cleanup() {
         deletedProcessGroups.clear();
@@ -94,9 +94,9 @@ public class CleanupStaleFeedRevisions {
 
 
     /**
-     * Return the list of groups that were deleted as part of the {@link this#cleanup()} activity
+     * Return the list of groups that were deleted as part of the {@link #cleanup()} activity
      *
-     * @return the list of groups that were deleted as part of the {@link this#cleanup()} activity
+     * @return the list of groups that were deleted as part of the {@link #cleanup()} activity
      */
     public Set<ProcessGroupDTO> getDeletedProcessGroups() {
         return deletedProcessGroups;

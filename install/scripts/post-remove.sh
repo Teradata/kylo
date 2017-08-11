@@ -69,6 +69,7 @@ echo "         - Removed kylo-services"
 echo "     5. Deleting log folders "
 rm -rf /var/log/kylo-ui
 rm -rf /var/log/kylo-services
+rm -rf /var/log/kylo-spark-shell
 
 echo "     6. Deleting kylo-service "
 rm -rf /usr/bin/kylo-service

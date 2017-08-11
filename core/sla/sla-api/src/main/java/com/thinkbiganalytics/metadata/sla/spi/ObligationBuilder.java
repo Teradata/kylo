@@ -36,7 +36,7 @@ public interface ObligationBuilder<B> {
      * @param description sets the description
      * @return this builder
      */
-    ObligationBuilder<B> description(String descr);
+    ObligationBuilder<B> description(String description);
 
     /**
      * @param metric a metric to add to this obligation

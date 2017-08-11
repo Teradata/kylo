@@ -153,10 +153,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
     /**
-     * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link #lockAcquisitionRetryAmount}
      *
      * @param event        a provenance event
-     * @param retryAttempt the retry number.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     * @param retryAttempt the retry number.  If there is a lock error it will retry until it hits the {@link #lockAcquisitionRetryAmount}
      */
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {

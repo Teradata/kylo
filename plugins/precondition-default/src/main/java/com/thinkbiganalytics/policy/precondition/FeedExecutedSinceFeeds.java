@@ -44,7 +44,7 @@ import java.util.Set;
 public class FeedExecutedSinceFeeds implements Precondition, DependentFeedPrecondition {
 
     /**
-     * the name of the current "trigger" feed that should get executed when the {@link this#categoryAndFeedList} signal they are complete
+     * the name of the current "trigger" feed that should get executed when the {@link #categoryAndFeedList} signal they are complete
      */
     @PolicyProperty(name = "Since Feed", type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed, hidden = true)
     private String sinceCategoryAndFeedName;
@@ -57,7 +57,7 @@ public class FeedExecutedSinceFeeds implements Precondition, DependentFeedPrecon
     private String categoryAndFeeds;
 
     /**
-     * a derived list created from the {@link this#categoryAndFeeds} string
+     * a derived list created from the {@link #categoryAndFeeds} string
      **/
     private List<String> categoryAndFeedList;
 

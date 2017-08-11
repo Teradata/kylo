@@ -5,74 +5,13 @@
   <!-- NOTE: Maven Repository promotion is activated by the property 'maven-repo-promotion'. See below. -->
 
   <artifactId>kylo-field-policy-api</artifactId>
-
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-field-policy</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
-
-  <licenses>
-    <license>
-      <name>Apache-2.0</name>
-      <url>https://opensource.org/licenses/Apache-2.0</url>
-      <distribution>repo</distribution>
-      <comments>Apache License, Version 2.0</comments>
-    </license>
-  </licenses>
-
-  <issueManagement>
-    <system>Kylo JIRA at atlassian.net</system>
-    <url>https://kylo-io.atlassian.net</url>
-  </issueManagement>
-
-
-  <scm>
-    <connection>
-      scm:git:https://github.com/Teradata/kylo.git
-    </connection>
-    <developerConnection>
-      scm:git:https://github.com/Teradata/kylo.git
-    </developerConnection>
-    <tag>HEAD</tag>
-    <url>https://github.com/Teradata/kylo</url>
-  </scm>
-
-  <developers>
-    <developer>
-      <id>thinkbiganalytics</id>
-      <name>Think Big Analytics, A Teradata Company</name>
-      <url></url>
-    </developer>
-  </developers>
-
-
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-
-    <!--
-      property name: automatic-release-repo-promotion
-      Purpose: specify if promotion of Maven Central artifacts are to be AUTOMATICALLY promoted during the build
-
-      If set to true, the build will push artifacts to SonaType Nexus staging first, and then, immediately,
-      during the SAME build, perform automatic release of the snapshot, causing the artifact to appear in
-      Maven Central without any further action.
-
-      If set to false, the build will push artifacts to SonaType Nexus staging, but will not perform automatic
-      release of the snapshot. As a result, the artifact will have to be released manually.
-
-      See:
-      http://central.sonatype.org/pages/apache-maven.html#manually-releasing-the-deployment-to-the-central-repository
-      http://central.sonatype.org/pages/releasing-the-deployment.html
-      -->
-    <automatic-release-repo-promotion>false</automatic-release-repo-promotion>
-
-    <!-- Maven plugin versions -->
-    <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
-    <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
-    <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
-    <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
-    <nexus-staging-maven-plugin.version>1.6.3</nexus-staging-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -82,119 +21,6 @@
       <version>${project.version}</version>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>maven-repo-promotion</id>
-      <activation>
-        <property>
-          <name>maven-repo-promotion</name>
-          <value>true</value>
-        </property>
-      </activation>
-
-      <build>
-        <plugins>
-          <plugin>
-            <!-- Customize JAR manifest settings -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>${maven-jar-plugin.version}</version>
-            <configuration>
-              <archive>
-                <manifest>
-                  <!-- Write Implementation-* entries to manifest -->
-                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                  <!-- Write Specification-* entries to manifest -->
-                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                </manifest>
-              </archive>
-            </configuration>
-          </plugin>
-
-
-          <plugin>
-            <!-- Build Source JAR -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>${maven-source-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <!-- Build JavaDoc JAR -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>${maven-javadoc-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-
-          <plugin>
-            <!--
-            Sign all the artifacts with GPG.
-            Important: GPG key must be present on the system, otherwise fails.
-            -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>${maven-gpg-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${nexus-staging-maven-plugin.version}</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>${automatic-release-repo-promotion}e</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-
-      <distributionManagement>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-      </distributionManagement>
-    </profile>
-  </profiles>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven-javadoc-plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
 
 
 </project>

@@ -32,16 +32,10 @@ public class AgreementNotFoundException extends ServiceLevelAgreementException {
 
     private final ServiceLevelAgreement.ID id;
 
-    /**
-     * @param message
-     */
     public AgreementNotFoundException(ServiceLevelAgreement.ID id) {
         this("No service level agreement was found with the specified ID", id);
     }
 
-    /**
-     * @param message
-     */
     public AgreementNotFoundException(String message, ServiceLevelAgreement.ID id) {
         super(message);
         this.id = id;

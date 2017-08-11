@@ -48,6 +48,7 @@ public interface ObligationAssessment extends Comparable<ObligationAssessment>, 
 
     /**
      * @return the assessments of all metrics of this obligation
+     * @param <D> the assessments of all metrics of this obligation
      */
     <D extends Serializable> Set<MetricAssessment<D>> getMetricAssessments();
 

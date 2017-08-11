@@ -57,7 +57,7 @@ public interface MetricAssessmentBuilder<D extends Serializable> {
      * Generates a comparator for this assessment that uses each comparable in its comparison.
      *
      * @param value       a comparable value to use in comparisons
-     * @param otherValeus any additional comparables
+     * @param otherValues any additional comparables
      * @return this builder
      */
     @SuppressWarnings("unchecked")
@@ -68,6 +68,7 @@ public interface MetricAssessmentBuilder<D extends Serializable> {
      * know what kind of data is expected.
      *
      * @param data arbitrary data associated with this assessment.
+     * @return D
      */
     MetricAssessmentBuilder<D> data(D data);
 

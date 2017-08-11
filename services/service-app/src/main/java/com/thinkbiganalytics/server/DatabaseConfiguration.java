@@ -59,7 +59,7 @@ public class DatabaseConfiguration {
     /**
      * Access to the jdbc template for querying operational Data     *
      *
-     * @param dataSource The datasource  from the {@see this#jdbcDataSource()}
+     * @param dataSource The datasource  from the {@see #jdbcDataSource()}
      * @return The jdbc template
      */
     @Bean
@@ -77,7 +77,7 @@ public class DatabaseConfiguration {
     }
 
     /**
-     * This the datasource used by the jdbcTemplate NOTE:  This datasource will be removed along with the {@see this#jdbcTemplate(Datasource)}
+     * This the datasource used by the jdbcTemplate NOTE:  This datasource will be removed along with the {@see #jdbcTemplate(Datasource)}
      *
      * @return the JDBC Datasource
      * @Bean(name = "jdbcDataSource")
