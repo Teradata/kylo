@@ -383,7 +383,15 @@ if [[ -n \$SPARK_CONF_DIR ]]; then
 		fi
 	fi
 fi
-spark-submit --master local --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker
+
+KERBEROS_ENABLED=`grep "kerberos.spark.kerberosEnabled" ${INSTALL_HOME}/kylo-services/conf/spark.properties | cut -d' ' -f3`
+if [ ${KERBEROS_ENABLED} = "true" ]; then
+	KERBEROS_PRINCIPAL=`grep "kerberos.spark.kerberosPrincipal" ${INSTALL_HOME}/kylo-services/conf/spark.properties | cut -d' ' -f3`
+	KERBEROS_KEYTAB=`grep "kerberos.spark.keytabLocation" ${INSTALL_HOME}/kylo-services/conf/spark.properties | cut -d' ' -f3`
+	KERBEROS_FLAG="–-principal '${KERBEROS_PRINCIPAL}' –-keytab ${KERBEROS_KEYTAB}"
+fi
+
+spark-submit --master local --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path \$KYLO_DRIVER_CLASS_PATH --driver-java-options -Dlog4j.configuration=log4j-spark.properties $INSTALL_HOME/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=kylo-spark-shell-pgrep-marker ${KERBEROS_FLAG}
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
 #!/bin/bash
