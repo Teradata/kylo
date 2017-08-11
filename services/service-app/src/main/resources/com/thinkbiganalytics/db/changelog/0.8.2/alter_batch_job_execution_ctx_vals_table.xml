@@ -23,6 +23,8 @@
 
 
   <changeSet author="sr186054" id="alter_batch_job_execution_ctx_vals_key_name-column" dbms="mysql">
+    <validCheckSum>7:94d7ee106743519a6eceb6673cf8d2eb</validCheckSum>
+    <validCheckSum>7:c364c09e39467f6746c4ed426c654d7e</validCheckSum>
     <modifyDataType columnName="KEY_NAME" newDataType="varchar(100) CHARACTER SET utf8 COLLATE utf8_bin"
                tableName="BATCH_JOB_EXECUTION_CTX_VALS" />
 

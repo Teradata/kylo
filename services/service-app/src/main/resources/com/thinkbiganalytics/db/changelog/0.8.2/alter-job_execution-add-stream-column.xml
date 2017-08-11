@@ -23,6 +23,8 @@
 
 
 <changeSet author="sr186054" id="add-JOB_EXECUTION-IS_STREAM-column">
+    <validCheckSum>7:b86095836a96e2f4e556b305662f7bca</validCheckSum>
+    <validCheckSum>7:7d8b9d92dd39cde6a432afd4908ac569</validCheckSum>
     <addColumn
             tableName="BATCH_JOB_EXECUTION">
         <column name="IS_STREAM" type="varchar(1)" defaultValue="N"/>
