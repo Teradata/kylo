@@ -91,17 +91,22 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
             EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
             EntityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
 
+            //TODO Open a Dialog showing Category is Saving progress
             CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
-                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityRoleTypes.CATEGORY, self.model.roleMemberships)
-                EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityRoleTypes.CATEGORY_FEED, self.model.feedRoleMemberships)
+                //set the editable flag to false after the save is complete.
+                //this will flip the directive to read only mode and call the entity-access#init() method to requery the accesss control for this entity
+                self.isEditable = false;
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
                         .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
+
             }, function (err) {
+                //keep editable active if an error occurred
+                self.isEditable = true;
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
