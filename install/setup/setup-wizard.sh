@@ -51,14 +51,16 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
 
     # Only supporting MySql at this time
     database_type=0
-    while [[ ! ${database_type} =~ ^[1-2]{1}$ ]]; do
+    while [[ ! ${database_type} =~ ^[1-3]{1}$ ]]; do
         echo "Which database (Enter the number)?"
         echo "1) MySQL"
         echo "2) PostgresSQL"
+        echo "3) SQL Server"
         read -p "> " database_type;
     done
 
     while : ; do
+
         echo
         echo "Please enter the database hostname or IP, hit Enter for 'localhost'";
         read -p "> " hostname;
@@ -78,6 +80,13 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
         if [ "$database_type" == "2"  ] ; then
             echo "Creating PostgreSQL database 'kylo'"
             ! PGPASSWORD=${password} createdb -U kylo -h ${hostname} -E UTF8 -e kylo || break;
+        fi
+        if [ "$database_type" == "3"  ] ; then
+            echo "Creating SQL Server database 'kylo'"
+            hash sqlcmd 2>/dev/null || { echo >&2 "The required tool sqlcmd is not present in PATH. Aborting."; exit 1; }
+            echo "If applicable, enter the Azure edition options in brackets, eg. (EDITION='basic'), otherwise leave blank"
+            read -p "> " azure_options;
+            ! sqlcmd -S ${hostname} -U ${username} -P ${password} -Q "CREATE DATABASE kylo ${azure_options}" || break;
         fi
     done
 fi

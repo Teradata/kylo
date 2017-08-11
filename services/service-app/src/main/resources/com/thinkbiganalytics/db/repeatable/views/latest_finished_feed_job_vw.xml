@@ -1,0 +1,57 @@
+<!--
+  #%L
+  kylo-service-app
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+  <changeSet id="5" author="ru186002" runOnChange="true">
+    <createView replaceIfExists="true" viewName="LATEST_FINISHED_FEED_JOB_VW">
+      <![CDATA[
+
+      SELECT f.ID as FEED_ID,f.NAME as FEED_NAME,
+             f.FEED_TYPE as FEED_TYPE,
+             e.JOB_EXECUTION_ID as JOB_EXECUTION_ID,
+             i.JOB_INSTANCE_ID as JOB_INSTANCE_ID,
+             e.START_TIME,
+             e.END_TIME,
+            CASE WHEN f.IS_STREAM = 'Y' AND feedStats.RUNNING_FEED_FLOWS IS NOT NULL
+                 THEN CASE WHEN feedStats.RUNNING_FEED_FLOWS > 0 THEN 'STARTING'
+                           ELSE 'STOPPED'
+                      END
+                 ELSE e.STATUS
+              END AS STATUS,
+             e.EXIT_CODE,
+             e.EXIT_MESSAGE,
+             e.IS_STREAM as IS_STREAM
+      FROM   BATCH_JOB_EXECUTION e
+      INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
+      INNER JOIN FEED f on f.ID = i.FEED_ID
+      inner JOIN LATEST_FEED_JOB_END_TIME_VW maxJobs
+                                   on maxJobs.FEED_ID = f.ID
+                                   and maxJobs.END_TIME =e.END_TIME
+      LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = f.id
+
+
+      ]]>
+    </createView>
+  </changeSet>
+
+</databaseChangeLog>

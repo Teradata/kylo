@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
   #%L
   kylo-service-app
@@ -18,17 +17,22 @@
   limitations under the License.
   #L%
   -->
-
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <include file="check_data_to_feed_vw.xml" relativeToChangelogFile="true"/>
-  <include file="batch_feed_summary_counts_vw.xml" relativeToChangelogFile="true"/>
-  <include file="latest_feed_job_end_time_vw.xml" relativeToChangelogFile="true"/>
-  <include file="latest_feed_job_vw.xml" relativeToChangelogFile="true"/>
-  <include file="latest_finished_feed_job_vw.xml" relativeToChangelogFile="true"/>
-  <include file="feed_health_vw.xml" relativeToChangelogFile="true"/>
+  <changeSet id="3" author="ru186002" runOnChange="true">
+    <createView replaceIfExists="true" viewName="LATEST_FEED_JOB_END_TIME_VW">
+      <![CDATA[
+        SELECT f.id as FEED_ID, MAX(e.END_TIME) END_TIME
+        FROM
+           BATCH_JOB_EXECUTION e
+           INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
+           INNER JOIN FEED f on f.id = i.FEED_ID
+           GROUP by f.id
+        ]]>
+    </createView>
+  </changeSet>
 
 </databaseChangeLog>

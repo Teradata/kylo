@@ -20,12 +20,10 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -45,6 +43,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatus
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 import org.joda.time.DateTime;
@@ -234,16 +233,10 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
-            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
-            .otherwise(jobExecution.status.stringValue());
-
         JPAQuery
             query = factory.select(
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
-                                    jobState.as("status"),
+                                    JobStatusDslQueryExpressionBuilder.jobState().as("status"),
                                     Expressions.constant(feedName),
                                     jobExecution.startYear,
                                     jobExecution.startMonth,

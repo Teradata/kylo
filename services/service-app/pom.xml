@@ -443,6 +443,11 @@
       <!--<artifactId>postgresql</artifactId>-->
       <!--<version>42.0.0</version>-->
     <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>com.microsoft.sqlserver</groupId>-->
+      <!--<artifactId>mssql-jdbc</artifactId>-->
+      <!--<version>6.2.1.jre7</version>-->
+    <!--</dependency>-->
 
 
     <!-- mail -->
@@ -532,12 +537,12 @@
         <version>${liquibase.version}</version>
         <configuration>
           <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
-          <driver>org.mariadb.jdbc.Driver</driver>
-          <url>jdbc:mysql://localhost:3306/kylo</url>
-          <username>root</username>
-          <password>hadoop</password>
-          <verbose>true</verbose>
-          <logging>debug</logging>
+          <!--<driver>org.mariadb.jdbc.Driver</driver>-->
+          <!--<url>jdbc:mysql://localhost:3306/kylo</url>-->
+          <!--<username>root</username>-->
+          <!--<password>hadoop</password>-->
+          <verbose>false</verbose>
+          <logging>info</logging>
         </configuration>
         <dependencies>
           <dependency>
@@ -545,6 +550,11 @@
             <artifactId>postgresql</artifactId>
             <version>42.0.0</version>
           </dependency>
+          <!--<dependency>-->
+            <!--<groupId>com.microsoft.sqlserver</groupId>-->
+            <!--<artifactId>mssql-jdbc</artifactId>-->
+            <!--<version>6.2.1.jre7</version>-->
+          <!--</dependency>-->
           <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>

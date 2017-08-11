@@ -23,7 +23,7 @@
 
 
 <changeSet author="sr186054" id="add-JOB_EXECUTION-IS_STREAM-column">
-    <addColumn schemaName="kylo"
+    <addColumn
             tableName="BATCH_JOB_EXECUTION">
         <column name="IS_STREAM" type="varchar(1)" defaultValue="N"/>
     </addColumn>

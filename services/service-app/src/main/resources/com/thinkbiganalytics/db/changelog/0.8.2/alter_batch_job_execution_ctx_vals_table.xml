@@ -23,7 +23,7 @@
 
 
   <changeSet author="sr186054" id="alter_batch_job_execution_ctx_vals_key_name-column" dbms="mysql">
-    <modifyDataType columnName="KEY_NAME" newDataType="varchar(100) CHARACTER SET utf8 COLLATE utf8_bin" schemaName="kylo"
+    <modifyDataType columnName="KEY_NAME" newDataType="varchar(100) CHARACTER SET utf8 COLLATE utf8_bin"
                tableName="BATCH_JOB_EXECUTION_CTX_VALS" />
 
   </changeSet>

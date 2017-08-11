@@ -65,10 +65,7 @@
     </changeSet>
 
     <changeSet id="postgres_insert_job_failure_alerts" author="sr186054" dbms="postgres">
-        <sql endDelimiter="\n">${delimiter.start}</sql>
         <sqlFile path="postgresl_insert_job_failures.sql" relativeToChangelogFile="true"/>
-        <sql endDelimiter="\n">${delimiter.end}</sql>
-        <sql endDelimiter="\n">${delimiter.reset}</sql>
     </changeSet>
 
     <changeSet id="call_postgres_kylo_job_execution_alerts_proc" author="sr186054" dbms="postgres">

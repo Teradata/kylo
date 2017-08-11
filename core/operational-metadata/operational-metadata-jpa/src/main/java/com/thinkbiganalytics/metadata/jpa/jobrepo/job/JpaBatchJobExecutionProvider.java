@@ -20,12 +20,10 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -54,6 +52,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvide
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
+import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
@@ -717,12 +716,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
-            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
-            .otherwise(jobExecution.status.stringValue());
-
         BooleanBuilder whereBuilder = new BooleanBuilder();
         if (StringUtils.isNotBlank(filter)) {
             whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
@@ -730,7 +723,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         ConstructorExpression<JpaBatchJobExecutionStatusCounts> expr =
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
-                                    jobState.as("status"),
+                                    JobStatusDslQueryExpressionBuilder.jobState().as("status"),
                                     jobExecution.jobExecutionId.count().as("count"));
 
         JPAQuery<?> query = factory.select(expr)
@@ -776,16 +769,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
-            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
-            .otherwise(jobExecution.status.stringValue());
-
         JPAQuery
             query = factory.select(
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
-                                    jobState.as("status"),
+                                    JobStatusDslQueryExpressionBuilder.jobState().as("status"),
                                     jobExecution.startYear,
                                     jobExecution.startMonth,
                                     jobExecution.startDay,
@@ -814,12 +801,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
 
-        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
-
-        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then(BatchJobExecution.JobStatus.FAILED.name())
-            .when(jobExecution.status.in(runningStatus)).then(BatchJobExecution.RUNNING_DISPLAY_STATUS)
-            .otherwise(jobExecution.status.stringValue());
-
         BooleanBuilder whereBuilder = new BooleanBuilder();
         whereBuilder.and(jobExecution.startTime.goe(DateTimeUtil.getNowUTCTime().minus(period)));
         if (StringUtils.isNotBlank(filter)) {
@@ -829,7 +810,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         JPAQuery
             query = factory.select(
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
-                                    jobState.as("status"),
+                                    JobStatusDslQueryExpressionBuilder.jobState().as("status"),
                                     jobExecution.startYear,
                                     jobExecution.startMonth,
                                     jobExecution.startDay,
