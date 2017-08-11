@@ -460,7 +460,7 @@ public class QuartzScheduler implements JobScheduler {
 
     /**
      * Pause all jobs and triggers.
-     * {@link this#resumeAll()} will be needed to resume. Misfires on Triggers will be applied depending upon the Trigger misfire instructions
+     * {@link #resumeAll()} will be needed to resume. Misfires on Triggers will be applied depending upon the Trigger misfire instructions
      */
     @Override
     public void pauseAll() throws JobSchedulerException {
