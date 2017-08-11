@@ -184,7 +184,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
                 var params = {start: start, limit: limit, sort: sort, filter:filter};
 
 
-                $http.get(OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
+                $http.get(OpsManagerRestUrlService.LIST_SLA_ASSESSMENTS_URL, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             self.showProgress = true;
 

@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.api.sla;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 
 import java.io.Serializable;
 import java.util.List;
@@ -44,5 +45,5 @@ public interface ServiceLevelAgreementDescriptionProvider {
 
     ServiceLevelAgreement.ID resolveId(Serializable ser);
 
-    List< ? extends  ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId);
+    List< ? extends ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId);
 }

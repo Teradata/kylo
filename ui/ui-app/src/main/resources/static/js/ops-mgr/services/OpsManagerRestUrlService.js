@@ -109,5 +109,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.FEEDS_BASE +"/"+feedName+"/alerts";
         }
 
+        //assessments
+        this.LIST_SLA_ASSESSMENTS_URL = "/v1/sla/assessments/"
+
     });
 });

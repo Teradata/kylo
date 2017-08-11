@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.sla.model;
+package com.thinkbiganalytics.metadata.sla.api;
+
 /*-
  * #%L
- * thinkbig-job-repository-core
+ * thinkbig-operational-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,26 +20,18 @@ package com.thinkbiganalytics.sla.model;
  * #L%
  */
 
-public class DefaultAssessment {
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
+/**
+ * Description information about the SLA
+ *
+ */
+public interface ServiceLevelAgreementDescription {
 
-    private String message;
-    private String result;
+    ServiceLevelAgreement.ID getSlaId();
 
+    String getName();
 
-    public String getMessage() {
-        return message;
-    }
+    String getDescription();
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
 }

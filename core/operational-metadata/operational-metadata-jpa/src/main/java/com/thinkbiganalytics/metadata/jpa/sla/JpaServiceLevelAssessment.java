@@ -26,7 +26,7 @@ import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;

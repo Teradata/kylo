@@ -19,13 +19,13 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessmentTransform;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.sla.model.DefaultServiceLevelAssessment;
-import com.thinkbiganalytics.sla.model.ServiceLevelAssessmentTransform;
 
 import org.springframework.data.domain.Page;
 
@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * Created by sr186054 on 7/23/17.
+ *TODO move to separate module
  */
 @Api(tags = "Operations Manager - Service Level Assessments", produces = "application/json")
 @Path(ServiceLevelAssessmentsController.BASE)
@@ -64,7 +64,7 @@ public class ServiceLevelAssessmentsController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all jobs.")
+    @ApiOperation("Lists all slas.")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
                       @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
@@ -77,7 +77,8 @@ public class ServiceLevelAssessmentsController {
                                  @QueryParam("filter") String filter,
                                  @Context HttpServletRequest request) {
         return metadataAccess.read(() -> {
-            Page<DefaultServiceLevelAssessment> page = serviceLevelAssessmentProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(serviceLevelAssessment -> ServiceLevelAssessmentTransform.toModel(serviceLevelAssessment));
+            Page<ServiceLevelAssessment> page = serviceLevelAssessmentProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(serviceLevelAssessment -> ServiceLevelAssessmentTransform
+                .toModel(serviceLevelAssessment));
             return ModelUtils.toSearchResult(page);
         });
 

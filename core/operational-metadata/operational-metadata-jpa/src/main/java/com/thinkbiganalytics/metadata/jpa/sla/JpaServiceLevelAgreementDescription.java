@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
 import org.hibernate.annotations.Parameter;

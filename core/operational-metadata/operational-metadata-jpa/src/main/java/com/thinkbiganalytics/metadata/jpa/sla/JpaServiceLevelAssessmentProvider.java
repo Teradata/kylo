@@ -22,15 +22,16 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ import javax.inject.Inject;
  * Provider accessing the {@link JpaServiceLevelAssessment}
  */
 @Service
-public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<JpaServiceLevelAssessment>  implements ServiceLevelAssessmentProvider {
+public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<JpaServiceLevelAssessment> implements ServiceLevelAssessmentProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaServiceLevelAssessmentProvider.class);
 
@@ -59,7 +60,8 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     private ServiceLevelAgreementProvider slaProvider;
 
     @Autowired
-    public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository,JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
+    public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository,
+                                             JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
         super(JpaServiceLevelAssessment.class);
         this.serviceLevelAssessmentRepository = serviceLevelAssessmentRepository;
         this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
@@ -104,11 +106,10 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId) {
 
         ServiceLevelAgreementDescriptionId jpaId = null;
-        if(slaId instanceof ServiceLevelAgreementDescriptionId){
-        jpaId = (ServiceLevelAgreementDescriptionId)slaId;
-        }
-        else {
-jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
+        if (slaId instanceof ServiceLevelAgreementDescriptionId) {
+            jpaId = (ServiceLevelAgreementDescriptionId) slaId;
+        } else {
+            jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
         }
 
         List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(jpaId);
@@ -132,11 +133,10 @@ jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
     public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
         if (assessmentId != null) {
             ServiceLevelAgreementDescriptionId jpaId = null;
-            if(!(slaId instanceof ServiceLevelAgreementDescriptionId)) {
+            if (!(slaId instanceof ServiceLevelAgreementDescriptionId)) {
                 jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
-            }
-            else {
-                jpaId= (ServiceLevelAgreementDescriptionId)slaId;
+            } else {
+                jpaId = (ServiceLevelAgreementDescriptionId) slaId;
             }
             List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessmentsNotEqualTo(jpaId, assessmentId);
             if (latestAssessments != null && !latestAssessments.isEmpty()) {
@@ -180,23 +180,24 @@ jpaId = new ServiceLevelAgreementDescriptionId(slaId.toString());
     }
 
 
-
-
     @Override
     public Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable) {
         QJpaServiceLevelAssessment serviceLevelAssessment = QJpaServiceLevelAssessment.jpaServiceLevelAssessment;
 
-            pageable = CommonFilterTranslations.resolveSortFilters(serviceLevelAssessment, pageable);
+        pageable = CommonFilterTranslations.resolveSortFilters(serviceLevelAssessment, pageable);
 
-            return findAllWithFetch(serviceLevelAssessment,
-                                    GenericQueryDslFilter.buildFilter(serviceLevelAssessment, filter),//.and(augment(feedPath.id)),
-                                    pageable);
+        QJpaObligationAssessment obligationAssessment = new QJpaObligationAssessment("obligationAssessment");
+        QJpaMetricAssessment metricAssessment = new QJpaMetricAssessment("metricAssessment");
 
+        return findAllWithFetch(serviceLevelAssessment,
+                                GenericQueryDslFilter.buildFilter(serviceLevelAssessment, filter),//.and(augment(feedPath.id)),
+                                pageable,
+                                QueryDslFetchJoin.leftJoin(serviceLevelAssessment.serviceLevelAgreementDescription),
+                                QueryDslFetchJoin.leftJoin(serviceLevelAssessment.obligationAssessments, obligationAssessment),
+                                QueryDslFetchJoin.leftJoin(obligationAssessment.metricAssessments, metricAssessment));
 
 
     }
-
-
 
 
 }

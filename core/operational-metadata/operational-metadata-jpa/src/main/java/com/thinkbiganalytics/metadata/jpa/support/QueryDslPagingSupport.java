@@ -85,28 +85,68 @@ public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
     private JPQLQuery join(QueryDslFetchJoin join, JPQLQuery query) {
         switch (join.type) {
             case INNER:
-                query.innerJoin(join.joinPath).fetchJoin();
+                if(join.joinPath != null){
+                    query.innerJoin(join.joinPath).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.innerJoin(join.collectionExpression).fetch();
+                }
                 break;
             case JOIN:
-                query.join(join.joinPath).fetchJoin();
+                if(join.joinPath != null){
+                    query.join(join.joinPath).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.join(join.collectionExpression).fetchJoin();
+                }
                 break;
             case LEFT:
-                query.leftJoin(join.joinPath).fetchJoin();
+                if(join.joinPath != null){
+                    query.leftJoin(join.joinPath).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.leftJoin(join.collectionExpression).fetchJoin();
+                }
                 break;
             case RIGHT:
-                query.rightJoin(join.joinPath).fetchJoin();
+                if(join.joinPath != null){
+                    query.rightJoin(join.joinPath).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.rightJoin(join.collectionExpression).fetchJoin();
+                }
                 break;
             case INNER_ALIAS:
-                query.innerJoin(join.joinPath, join.alias).fetchJoin();
+                if(join.joinPath != null){
+                    query.innerJoin(join.joinPath, join.alias).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.innerJoin(join.collectionExpression, join.alias).fetchJoin();
+                }
                 break;
             case JOIN_ALIAS:
-                query.join(join.joinPath, join.alias).fetchJoin();
+                if(join.joinPath != null){
+                    query.join(join.joinPath, join.alias).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.join(join.collectionExpression, join.alias).fetchJoin();
+                }
                 break;
             case LEFT_ALIAS:
-                query.leftJoin(join.joinPath, join.alias).fetchJoin();
+                if(join.joinPath != null){
+                    query.leftJoin(join.joinPath, join.alias).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.leftJoin(join.collectionExpression, join.alias).fetchJoin();
+                }
                 break;
             case RIGHT_ALIAS:
-                query.rightJoin(join.joinPath, join.alias).fetchJoin();
+                if(join.joinPath != null){
+                    query.rightJoin(join.joinPath, join.alias).fetchJoin();
+                }
+                else if(join.collectionExpression != null) {
+                    query.rightJoin(join.collectionExpression, join.alias).fetchJoin();
+                }
                 break;
         }
         return query;

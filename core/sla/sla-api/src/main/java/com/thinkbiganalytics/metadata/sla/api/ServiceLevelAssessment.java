@@ -48,6 +48,8 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      */
     ServiceLevelAgreement getAgreement();
 
+    ServiceLevelAgreementDescription getServiceLevelAgreementDescription();
+
     ServiceLevelAgreement.ID getServiceLevelAgreementId();
 
     /**
