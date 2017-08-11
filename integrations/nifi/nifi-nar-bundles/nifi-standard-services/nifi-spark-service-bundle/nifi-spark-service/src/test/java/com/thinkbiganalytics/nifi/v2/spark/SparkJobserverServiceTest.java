@@ -77,7 +77,7 @@ public class SparkJobserverServiceTest {
     private ISparkJobServerClient client;
 
     @InjectMocks
-    private static final SparkJobserverService sparkJobserverService = new SparkJobserverService();
+    private final SparkJobserverService sparkJobserverService = new SparkJobserverService();
     private static final String sparkJobserverUrl = "http://localhost:8089";
     private static final String syncTimeout = "600";
 
