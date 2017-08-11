@@ -34,7 +34,7 @@ import java.util.Properties;
 /**
  * Spring configuration to test the email notifications
  * This is used in the {@link TestEmail} class
- * Override the settings in the {@link this#emailConfiguration} method to setup this test to work with your email server
+ * Override the settings in the {@link #emailConfiguration} method to setup this test to work with your email server
  */
 @Configuration
 public class TestConfiguration {
