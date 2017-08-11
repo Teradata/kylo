@@ -116,9 +116,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         function populateExistingFeedNames() {
             return $http.get(RestUrlService.GET_FEEDS_URL).then(function (response) {
                 self.existingFeedNames = {};
-                angular.forEach(response.data, function (feed) {
-                    self.existingFeedNames[existingFeedNameKey(feed.categoryId, feed.systemFeedName)] = feed.systemFeedName;
-                });
+                if(response.data != null && response.data.data != null) {
+                    angular.forEach(response.data.data, function (feed) {
+                        self.existingFeedNames[existingFeedNameKey(feed.categoryId, feed.systemFeedName)] = feed.systemFeedName;
+                    });
+                }
             });
         }
 
