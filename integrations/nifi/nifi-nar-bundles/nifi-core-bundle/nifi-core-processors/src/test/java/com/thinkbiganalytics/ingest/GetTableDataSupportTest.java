@@ -26,12 +26,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static com.thinkbiganalytics.nifi.v2.ingest.GetTableData.DATE_TIME_FORMAT;
+import static com.thinkbiganalytics.nifi.v2.ingest.GetTableData.toDate;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -48,6 +53,53 @@ public class GetTableDataSupportTest {
         tableDataSupport = new GetTableDataSupport(conn, 0);
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Los_Angeles")));
     }
+
+//    @Test //uncomment to run this integration test
+    public void testFullLoad() throws ClassNotFoundException, SQLException {
+
+        Class.forName("org.mariadb.jdbc.Driver");
+        Connection con = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/hive","root","hadoop");
+        GetTableDataSupport support = new GetTableDataSupport(con, 0);
+        support.selectFullLoad("DBS", new String[]{"DESC", "DB_LOCATION_URI"});
+
+    }
+
+
+    //    @Test //uncomment to run this integration test
+    public void testIncrementalHive() throws ClassNotFoundException, SQLException {
+
+        Class.forName("org.mariadb.jdbc.Driver");
+        Connection con = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/hive","root","hadoop");
+        GetTableDataSupport support = new GetTableDataSupport(con, 0);
+        String dateField = "CREATE_TIME";
+        String watermarkValue = "2011-12-03T10:15:30";
+        LocalDateTime waterMarkTime = LocalDateTime.parse(watermarkValue, DATE_TIME_FORMAT);
+        Date lastLoadDate = toDate(waterMarkTime);
+        int overlapTime = 0;
+        int backoffTime = 0;
+        GetTableDataSupport.UnitSizes unit = GetTableDataSupport.UnitSizes.DAY;
+        support.selectIncremental("TBLS", new String[]{"TBL_ID", "DB_ID"}, dateField, overlapTime, lastLoadDate, backoffTime, unit);
+    }
+
+    //    @Test //uncomment to run this integration test
+    public void testIncrementalKylo() throws ClassNotFoundException, SQLException {
+
+        Class.forName("org.mariadb.jdbc.Driver");
+        Connection con = DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/kylo","root","hadoop");
+        GetTableDataSupport support = new GetTableDataSupport(con, 0);
+        String dateField = "DATEEXECUTED";
+        String watermarkValue = "2011-12-03T10:15:30";
+        LocalDateTime waterMarkTime = LocalDateTime.parse(watermarkValue, DATE_TIME_FORMAT);
+        Date lastLoadDate = toDate(waterMarkTime);
+        int overlapTime = 0;
+        int backoffTime = 0;
+        GetTableDataSupport.UnitSizes unit = GetTableDataSupport.UnitSizes.DAY;
+        support.selectIncremental("DATABASECHANGELOG", new String[]{"ID", "FILENAME"}, dateField, overlapTime, lastLoadDate, backoffTime, unit);
+    }
+
 
     @Test
     public void testMaxAllowableDateFromUnit() throws Exception {

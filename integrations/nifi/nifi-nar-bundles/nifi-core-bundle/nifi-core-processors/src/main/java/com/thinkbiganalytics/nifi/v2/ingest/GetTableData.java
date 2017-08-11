@@ -229,7 +229,7 @@ public class GetTableData extends AbstractNiFiProcessor {
         return date == null ? LocalDateTime.MIN : LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC.normalized());
     }
 
-    private static Date toDate(LocalDateTime dateTime) {
+    public static Date toDate(LocalDateTime dateTime) {
         return dateTime == null ? new Date(0L) : Date.from(dateTime.toInstant(ZoneOffset.UTC));
     }
 

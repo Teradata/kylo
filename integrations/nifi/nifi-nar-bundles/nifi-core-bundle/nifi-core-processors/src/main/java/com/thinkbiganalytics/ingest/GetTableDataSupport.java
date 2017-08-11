@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -68,8 +69,8 @@ public class GetTableDataSupport {
         return fromDate;
     }
 
-    private String selectStatement(String[] selectFields) {
-        return StringUtils.join(selectFields, ",");
+    private String selectStatement(String[] selectFields, String tableAlias) {
+        return StringUtils.join(Arrays.stream(selectFields).map(field -> tableAlias + "." + field).toArray(), ",");
     }
 
     /**
@@ -78,14 +79,17 @@ public class GetTableDataSupport {
     public ResultSet selectFullLoad(String tableName, String[] selectFields) throws SQLException {
         final Statement st = conn.createStatement();
         st.setQueryTimeout(timeout);
-        String select = selectStatement(selectFields);
-        StringBuffer sb = new StringBuffer();
-        sb.append("SELECT ").append(select).append(" FROM ").append(tableName);
+        String query = getSelectQuery(tableName, selectFields);
 
-        logger.info("Executing full GetTableData query {}", sb.toString());
+        logger.info("Executing full GetTableData query {}", query);
         st.setQueryTimeout(timeout);
 
-        return st.executeQuery(sb.toString());
+        return st.executeQuery(query);
+    }
+
+    private String getSelectQuery(String tableName, String[] selectFields) {
+        String select = selectStatement(selectFields, "tbl");
+        return "SELECT " + select + " FROM " + tableName + " " + "tbl";
     }
 
     /**
@@ -108,9 +112,9 @@ public class GetTableDataSupport {
 
         logger.info("Load range with min {} max {}", range.getMinDate(), range.getMaxDate());
 
-        StringBuffer sb = new StringBuffer();
-        String select = selectStatement(selectFields);
-        sb.append("select ").append(select).append(" from ").append(tableName).append(" WHERE " + dateField + " > ? and " + dateField + " < ?");
+        StringBuilder sb = new StringBuilder();
+        String select = selectStatement(selectFields, "tbl");
+        sb.append("select ").append(select).append(" from ").append(tableName).append(" tbl WHERE tbl.").append(dateField).append(" > ? and tbl.").append(dateField).append(" < ?");
 
         if (range.getMinDate().before(range.getMaxDate())) {
             PreparedStatement ps = conn.prepareStatement(sb.toString());
