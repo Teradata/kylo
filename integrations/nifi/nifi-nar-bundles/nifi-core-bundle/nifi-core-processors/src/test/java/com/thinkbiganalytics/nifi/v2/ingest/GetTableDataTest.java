@@ -310,11 +310,11 @@ public class GetTableDataTest {
          */
         MockDBCPService() throws Exception {
             Mockito.when(connection.createStatement()).thenReturn(statement);
-            Mockito.when(connection.prepareStatement("select id,first_name,last_name,email,last_updated from mytable WHERE last_updated > ? and last_updated < ?"))
+            Mockito.when(connection.prepareStatement("select tbl.id,tbl.first_name,tbl.last_name,tbl.email,tbl.last_updated from mytable tbl WHERE tbl.last_updated > ? and tbl.last_updated < ?"))
                 .then(invocation -> getIncrementalResults());
 
-            Mockito.when(statement.executeQuery("SELECT id,email FROM empty")).then(invocation -> getEmptyResults());
-            Mockito.when(statement.executeQuery("SELECT id,first_name,last_name,email,last_updated FROM mytable")).then(invocation -> getSimpleResults());
+            Mockito.when(statement.executeQuery("SELECT tbl.id,tbl.email FROM empty tbl")).then(invocation -> getEmptyResults());
+            Mockito.when(statement.executeQuery("SELECT tbl.id,tbl.first_name,tbl.last_name,tbl.email,tbl.last_updated FROM mytable tbl")).then(invocation -> getSimpleResults());
         }
 
         @Override
