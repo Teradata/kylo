@@ -23,13 +23,17 @@ package com.thinkbiganalytics.alerts.rest;
 import com.thinkbiganalytics.alerts.AlertConstants;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.EntityAlert;
+import com.thinkbiganalytics.alerts.api.SourceAlert;
 import com.thinkbiganalytics.alerts.rest.model.Alert;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +47,7 @@ import java.util.stream.Collectors;
 @Component
 public class AlertsModel {
 
+    private static final Logger log = LoggerFactory.getLogger(AlertsModel.class);
 
     public String alertSummaryDisplayName(AlertSummary alertSummary) {
         String type = alertSummary.getType();
@@ -87,6 +92,19 @@ public class AlertsModel {
 
 
     public com.thinkbiganalytics.alerts.rest.model.Alert toModel(com.thinkbiganalytics.alerts.api.Alert alert) {
+        com.thinkbiganalytics.alerts.api.Alert baseAlert = alert;
+        try {
+            if (Proxy.isProxyClass(alert.getClass())) {
+                SourceAlert sourceAlert = (SourceAlert) Proxy.getInvocationHandler(alert);
+                if (sourceAlert != null) {
+                    baseAlert = sourceAlert.getWrappedAlert();
+                }
+            }
+        }catch (Exception e){
+            //unable to get base alert from proxy.  log the exception but continue
+            log.error("Unable to get base alert from wrapped proxy for : {}, {} ",alert,e.getMessage(),e);
+
+        }
         com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
         result.setId(alert.getId().toString());
         result.setActionable(alert.isActionable());
@@ -99,9 +117,9 @@ public class AlertsModel {
         result.setContent(alert.getContent() != null ? alert.getContent().toString() : null);
         result.setSubtype(alert.getSubtype());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
-        if(alert instanceof EntityAlert){
-            result.setEntityId(((EntityAlert)alert).getEntityId() != null ? ((EntityAlert)alert).getEntityId().toString(): null);
-            result.setEntityType(((EntityAlert)alert).getEntityType());
+        if(baseAlert instanceof EntityAlert){
+            result.setEntityId(((EntityAlert)baseAlert).getEntityId() != null ? ((EntityAlert)baseAlert).getEntityId().toString(): null);
+            result.setEntityType(((EntityAlert)baseAlert).getEntityType());
         }
         return result;
     }

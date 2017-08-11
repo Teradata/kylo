@@ -161,7 +161,7 @@ public class AlertsController {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
-            .map(alert -> provider instanceof AggregatingAlertProvider ? ((AggregatingAlertProvider)provider).unwrapAlert(alert) : alert)
+         //   .map(alert -> provider instanceof AggregatingAlertProvider ? ((AggregatingAlertProvider)provider).unwrapAlert(alert) : alert)
             .map(alertsModel::toModel)
             .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }

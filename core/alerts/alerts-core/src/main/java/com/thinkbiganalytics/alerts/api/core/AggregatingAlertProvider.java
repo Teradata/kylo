@@ -32,6 +32,7 @@ import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.api.SourceAlert;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
@@ -488,7 +489,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    protected static class AlertInvocationHandler implements InvocationHandler {
+    protected static class AlertInvocationHandler implements InvocationHandler, SourceAlert {
 
         private final Alert wrapped;
         private final SourceAlertID proxyId;
@@ -510,6 +511,11 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
 
         public Alert getWrappedAlert() {
             return this.wrapped;
+        }
+
+        @Override
+        public ID getSourceAlertId() {
+            return proxyId;
         }
     }
 
