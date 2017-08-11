@@ -36,6 +36,11 @@ public class AlertCreateRequest {
     private URI type;
 
     /**
+     * a subtype
+     */
+    private String subtype;
+
+    /**
      * A description of this alert
      */
     private String description;
@@ -48,13 +53,14 @@ public class AlertCreateRequest {
     public AlertCreateRequest() {
     }
 
-    public AlertCreateRequest(URI type, String description, Level level) {
-        this(type, description, level, null);
+    public AlertCreateRequest(URI type, String subtype,String description, Level level) {
+        this(type, subtype,description, level, null);
     }
 
-    public AlertCreateRequest(URI type, String description, Level level, Serializable content) {
+    public AlertCreateRequest(URI type, String subtype,String description, Level level, Serializable content) {
         super();
         this.type = type;
+        this.subtype =subtype;
         this.description = description;
         this.level = level;
     }
@@ -65,6 +71,14 @@ public class AlertCreateRequest {
 
     public void setType(URI type) {
         this.type = type;
+    }
+
+    public String getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
     }
 
     public String getDescription() {

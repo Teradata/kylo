@@ -46,6 +46,10 @@ public class Alert {
      */
     private URI type;
     /**
+     * A more detailed descriptor of this type of alert
+     */
+    private String subtype;
+    /**
      * The level of this alert
      */
     private Level level;
@@ -69,6 +73,22 @@ public class Alert {
      * Indicates that this alert will appear in search results
      */
     private boolean cleared;
+
+    /**
+     * The content of the alert serialized to a string
+     */
+    private String content;
+
+    /**
+     * the id of the entity, or null if not an entity based alert
+     */
+    private String entityId;
+
+    /**
+     * the type of the entity relating to the entityId, of null of not an entity alert
+     */
+    private String entityType;
+
     /**
      * The ordered list of state change events
      */
@@ -88,6 +108,14 @@ public class Alert {
 
     public void setType(URI type) {
         this.type = type;
+    }
+
+    public String getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
     }
 
     public Level getLevel() {
@@ -140,6 +168,30 @@ public class Alert {
 
     public List<AlertChangeEvent> getEvents() {
         return events;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
     }
 
     /**

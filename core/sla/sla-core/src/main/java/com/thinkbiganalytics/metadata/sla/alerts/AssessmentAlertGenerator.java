@@ -53,7 +53,7 @@ public class AssessmentAlertGenerator {
     public Alert generateViolationAlert(Alert.Level level, ServiceLevelAssessment assessment) {
         String description = "";
 
-        return this.alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE, level, description, assessment);
+        return this.alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE, "SLA",level, description, assessment);
     }
 
 }

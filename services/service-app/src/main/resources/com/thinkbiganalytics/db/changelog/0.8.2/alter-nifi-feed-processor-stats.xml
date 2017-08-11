@@ -23,7 +23,7 @@
 
 
 <changeSet author="sr186054" id="add-STATS-FAILED_EVENTS-column">
-    <addColumn schemaName="kylo"
+    <addColumn
                tableName="NIFI_FEED_PROCESSOR_STATS">
         <column name="FAILED_EVENTS" type="bigint(20)"/>
     </addColumn>

@@ -56,7 +56,6 @@ import javax.inject.Inject;
 /**
  * JMS Listener for NiFi Provenance Events.
  */
-@Component
 public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);

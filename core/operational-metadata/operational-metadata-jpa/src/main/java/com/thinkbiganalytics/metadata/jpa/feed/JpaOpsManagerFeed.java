@@ -59,6 +59,7 @@ import javax.persistence.Table;
                                  @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
                                      @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class),
                                      @StoredProcedureParameter(mode = ParameterMode.IN, name = "exitMessage", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "username", type = String.class),
                                      @StoredProcedureParameter(mode = ParameterMode.OUT, name = "res", type = Integer.class)
                                  })
                              })

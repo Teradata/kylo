@@ -26,6 +26,7 @@ import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;
@@ -46,6 +47,8 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -69,8 +72,13 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
     @Transient
     private ServiceLevelAgreement agreement;
 
+
+    @ManyToOne(targetEntity = JpaServiceLevelAgreementDescription.class, optional = true)
+    @JoinColumn(name = "SLA_ID", insertable = false,updatable = false)
+    private ServiceLevelAgreementDescription serviceLevelAgreementDescription;
+
     @Column(name = "SLA_ID")
-    private String slaId;
+    private ServiceLevelAgreementDescriptionId slaId;
 
     @Column(name = "MESSAGE")
     private String message;
@@ -96,7 +104,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
 
     @Override
-    public String getServiceLevelAgreementId() {
+    public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
         return slaId;
     }
 
@@ -106,14 +114,14 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
     public void setAgreement(ServiceLevelAgreement agreement) {
         this.agreement = agreement;
-        this.setSlaId(agreement.getId().toString());
+        this.setSlaId(new ServiceLevelAgreementDescriptionId(agreement.getId().toString()));
     }
 
-    public String getSlaId() {
+    public ServiceLevelAgreement.ID getSlaId() {
         return slaId;
     }
 
-    public void setSlaId(String slaId) {
+    public void setSlaId(ServiceLevelAgreementDescriptionId slaId) {
         this.slaId = slaId;
     }
 
@@ -145,6 +153,14 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
 
     public void setObligationAssessments(Set<ObligationAssessment> obligationAssessments) {
         this.obligationAssessments = obligationAssessments;
+    }
+
+    public ServiceLevelAgreementDescription getServiceLevelAgreementDescription() {
+        return serviceLevelAgreementDescription;
+    }
+
+    public void setServiceLevelAgreementDescription(ServiceLevelAgreementDescription serviceLevelAgreementDescription) {
+        this.serviceLevelAgreementDescription = serviceLevelAgreementDescription;
     }
 
     @Override

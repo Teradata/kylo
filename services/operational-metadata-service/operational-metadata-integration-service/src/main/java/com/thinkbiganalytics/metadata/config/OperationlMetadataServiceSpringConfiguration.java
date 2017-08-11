@@ -22,8 +22,10 @@ package com.thinkbiganalytics.metadata.config;
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.metadata.jobrepo.StreamingFeedService;
+import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiBulletinExceptionExtractor;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventFeedUtil;
+import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventReceiver;
 import com.thinkbiganalytics.metadata.sla.DefaultServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.JpaJcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.ServiceLevelAgreementActionAlertResponderFactory;
@@ -71,6 +73,16 @@ public class OperationlMetadataServiceSpringConfiguration {
     @Bean
     public StreamingFeedService streamingFeedService() {
         return new StreamingFeedService();
+    }
+
+    @Bean
+    public NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor(){
+        return new NifiBulletinExceptionExtractor();
+    }
+
+    @Bean
+    public ProvenanceEventReceiver provenanceEventReceiver(){
+        return new ProvenanceEventReceiver();
     }
 
 }

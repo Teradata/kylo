@@ -24,16 +24,18 @@ package com.thinkbiganalytics.alerts.spi.mem;
  */
 
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -45,6 +47,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -63,6 +66,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -82,6 +86,12 @@ public class InMemoryAlertManager implements AlertManager {
     private volatile Executor receiversExecutor;
     private AtomicInteger changeCount = new AtomicInteger(0);
 
+    private AlertManagerId id = new AlertManagerId();
+
+    @Override
+    public ID getId() {
+        return id;
+    }
 
     /**
      *
@@ -140,7 +150,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Optional<Alert> getAlert(ID id) {
+    public Optional<Alert> getAlert(Alert.ID id) {
         return Optional.ofNullable(this.alertsById.getOrDefault(id, NULL_REF).get());
     }
 
@@ -150,7 +160,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public ID resolve(Serializable ser) {
+    public Alert.ID resolve(Serializable ser) {
         if (ser instanceof String) {
             return new AlertID((String) ser);
         } else if (ser instanceof UUID) {
@@ -170,6 +180,25 @@ public class InMemoryAlertManager implements AlertManager {
             .map(ref -> (Alert) ref.get())
             .filter(predicate)
             .iterator();
+    }
+
+    @Override
+    public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        BaseAlertCriteria predicate = (BaseAlertCriteria) (criteria == null ? criteria() : criteria);
+        // TODO Grab a partition of the map first based on before/after times of criteria
+        List<Alert> alerts = this.alertsByTime.values().stream()
+            .map(ref -> (Alert) ref.get())
+            .filter(predicate).collect(Collectors.toList());
+        List<AlertSummary> summaryList = new ArrayList<>();
+        Map<String,AlertSummary> groupedAlerts = new HashMap<>();
+
+        alerts.stream().forEach(alert -> {
+            String key = alert.getType()+":"+alert.getSubtype()+":"+alert.getLevel();
+            groupedAlerts.computeIfAbsent(key, groupKey -> new GenericAlertSummary(alert.getType().toString(),alert.getSubtype(),alert.getLevel()));
+            ((GenericAlertSummary)groupedAlerts.get(key)).incrementCount();
+        });
+        return groupedAlerts.values().iterator();
+
     }
 //
 //    @Override
@@ -205,12 +234,17 @@ public class InMemoryAlertManager implements AlertManager {
 //    }
 
     @Override
-    public <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content) {
-        GenericAlert alert = new GenericAlert(type, level, description, content);
+    public <C extends Serializable> Alert create(URI type,String subtype, Alert.Level level, String description, C content) {
+        GenericAlert alert = new GenericAlert(type, subtype,level, description, content);
         DateTime createdTime = alert.getEvents().get(0).getChangeTime();
 
         addAlert(alert, createdTime);
         return alert;
+    }
+
+    @Override
+    public <C extends Serializable> Alert createEntityAlert(URI type, Alert.Level level, String description, EntityIdentificationAlertContent<C> content) {
+        return create(type,null,level,description,content);
     }
 
     private void updated(GenericAlert alert) {
@@ -230,7 +264,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Alert remove(ID id) {
+    public Alert remove(Alert.ID id) {
         this.alertsLock.writeLock().lock();
         try {
             AtomicReference<GenericAlert> ref = this.alertsById.remove(id);
@@ -467,10 +501,17 @@ public class InMemoryAlertManager implements AlertManager {
         }
     }
 
+    @Override
+    public <C extends Serializable> EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
+        EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();
+        c.setContent(content);
+        return c;
+    }
+
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
 
         @Override
-        protected boolean removeEldestEntry(java.util.Map.Entry<ID, AtomicReference<Alert>> eldest) {
+        protected boolean removeEldestEntry(java.util.Map.Entry<Alert.ID, AtomicReference<Alert>> eldest) {
             if (this.size() > MAX_ALERTS) {
                 InMemoryAlertManager.this.alertsByTime.values().remove(eldest.getValue());
                 return true;
@@ -487,6 +528,7 @@ public class InMemoryAlertManager implements AlertManager {
 
         private final AlertID id;
         private final URI type;
+        private String subtype;
         private final Level level;
         private final String description;
         private final boolean cleared;
@@ -494,9 +536,10 @@ public class InMemoryAlertManager implements AlertManager {
         private final Object content;
         private final List<AlertChangeEvent> events;
 
-        public GenericAlert(URI type, Level level, String description, Object content) {
+        public GenericAlert(URI type, String subtype, Level level, String description, Object content) {
             this.id = new AlertID();
             this.type = type;
+            this.subtype = subtype;
             this.level = level;
             this.cleared = false;
             this.description = description;
@@ -511,12 +554,13 @@ public class InMemoryAlertManager implements AlertManager {
         }
 
         public GenericAlert(URI type, Level level, Object content) {
-            this(type, level, "", content);
+            this(type, null,level, "", content);
         }
 
         public GenericAlert(GenericAlert alert, State newState, Object eventContent) {
             this.id = alert.id;
             this.type = alert.type;
+            this.subtype = alert.subtype;
             this.level = alert.level;
             this.description = alert.description;
             this.source = alert.source;
@@ -531,6 +575,7 @@ public class InMemoryAlertManager implements AlertManager {
         public GenericAlert(GenericAlert alert, boolean cleared) {
             this.id = alert.id;
             this.type = alert.type;
+            this.subtype = alert.subtype;
             this.level = alert.level;
             this.description = alert.description;
             this.source = alert.source;
@@ -547,6 +592,15 @@ public class InMemoryAlertManager implements AlertManager {
         @Override
         public URI getType() {
             return this.type;
+        }
+
+        @Override
+        public String getSubtype() {
+            return subtype;
+        }
+
+        public void setSubtype(String subtype) {
+            this.subtype = subtype;
         }
 
         @Override
@@ -593,6 +647,98 @@ public class InMemoryAlertManager implements AlertManager {
         @SuppressWarnings("unchecked")
         public <C extends Serializable> C getContent() {
             return (C) this.content;
+        }
+    }
+
+    public static class AlertManagerId implements ID {
+
+
+        private static final long serialVersionUID = 7691516770322504702L;
+
+        private String idValue = InMemoryAlertManager.class.getSimpleName();
+
+
+        public AlertManagerId() {
+        }
+
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
+    }
+
+    private class GenericAlertSummary implements AlertSummary {
+
+        private String type;
+
+        private String subtype;
+
+        private Alert.Level level;
+
+        private Long count;
+
+        private Long lastAlertTimestamp;
+
+        public GenericAlertSummary(){
+
+        }
+
+        public GenericAlertSummary(String type, String subtype, Alert.Level level){
+            this.type = type;
+            this.subtype = subtype;
+            this.level = level;
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String getSubtype() {
+            return subtype;
+        }
+
+        public void setSubtype(String subtype) {
+            this.subtype = subtype;
+        }
+
+        @Override
+        public Alert.Level getLevel() {
+            return level;
+        }
+
+        public void setLevel(Alert.Level level) {
+            this.level = level;
+        }
+
+
+        @Override
+        public Long getCount() {
+            return count;
+        }
+
+        public void setCount(Long count) {
+            this.count = count;
+        }
+
+        public void incrementCount(){
+            count +=1;
+        }
+
+        @Override
+        public Long getLastAlertTimestamp() {
+            return DateTime.now().getMillis();
         }
     }
 

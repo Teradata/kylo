@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -103,9 +104,10 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
                     ServiceLevelAssessment assessment = assessor.assess(agreement);
 
                     if (shouldAlert(agreement, assessment)) {
-                        newAlert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
+                        newAlert = alertManager.createEntityAlert(AssessmentAlerts.VIOLATION_ALERT_TYPE,
                                                        Alert.Level.FATAL,
-                                                       "Violation of SLA: " + agreement.getName(), assessment.getId());
+                                                       "Violation of SLA: " + agreement.getName(), alertManager.createEntityIdentificationAlertContent(agreement.getId().toString(),
+                                                                                                                                                       SecurityRole.ENTITY_TYPE.SLA,assessment.getId()));
 
 
                     }
@@ -143,8 +145,8 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
 
             if (previous != null) {
 
-                if (previous.getAgreement() == null && StringUtils.isNotBlank(assessment.getServiceLevelAgreementId())) {
-                    ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId()));
+                if (previous.getAgreement() == null && assessment.getServiceLevelAgreementId() != null ) {
+                    ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId().toString()));
 
                 }
 

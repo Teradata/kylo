@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlConfig;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
@@ -52,7 +53,8 @@ import java.util.stream.StreamSupport;
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class, OpsManagerFeedRepositoryTest.class})
+@SpringApplicationConfiguration(
+    classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class, OpsManagerFeedRepositoryTest.class, FeedOpsAccessControlConfig.class})
 @Transactional
 @Configuration
 public class OpsManagerFeedRepositoryTest {
@@ -113,20 +115,20 @@ public class OpsManagerFeedRepositoryTest {
         Assert.assertEquals(1, feedNames.size());
         Assert.assertEquals("feed-name", feedNames.get(0));
     }
-    
+
     @WithMockJaasUser(username = "dladmin",
-                    password = "secret",
-                    authorities = {"admin", "user"})
+                      password = "secret",
+                      authorities = {"admin", "user"})
     @Test
     public void findFeedNames_NoMatchingGroupMatchingUserAclEntry() throws Exception {
         JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
         repo.save(feed);
-        
+
         BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
-        
+
         JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
         aclRepo.save(dladminUserAcl);
-        
+
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
         List<String> feedNames = repo.getFeedNames();
@@ -205,25 +207,25 @@ public class OpsManagerFeedRepositoryTest {
         Assert.assertTrue(feedNames.contains("feed2-name"));
     }
 
-    
+
     @WithMockJaasUser(username = "dladmin",
-                    password = "secret",
-                    authorities = {"admin", "user"})
+                      password = "secret",
+                      authorities = {"admin", "user"})
     @Test
     public void findAll_NoMatchingGroupMatchingUserAclEntry() throws Exception {
         JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
         repo.save(feed);
-        
+
         BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
-        
+
         JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
         aclRepo.save(dladminUserAcl);
-        
+
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
         Iterable<JpaOpsManagerFeed> all = repo.findAll();
         Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
-                           .allMatch(it -> it.getName().equals("feed-name")));
+                              .allMatch(it -> it.getName().equals("feed-name")));
     }
 
     @WithMockJaasUser(username = "dladmin",
@@ -243,27 +245,27 @@ public class OpsManagerFeedRepositoryTest {
                                .anyMatch(it -> it.getName().equals("feed-name")));
     }
 
-    
+
     @WithMockJaasUser(username = "dladmin",
-                    password = "secret",
-                    authorities = {"admin", "user"})
+                      password = "secret",
+                      authorities = {"admin", "user"})
     @Test
     public void findAllFilter_NoMatchingGroupMatchingUserAclEntry() throws Exception {
         JpaOpsManagerFeed feed = new JpaOpsManagerFeed(OpsManagerFeedId.create(), "feed-name");
         repo.save(feed);
-        
+
         BaseFeed.FeedId feedId = new BaseFeed.FeedId(feed.getId().getUuid());
-        
+
         JpaFeedOpsAclEntry dladminUserAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
         aclRepo.save(dladminUserAcl);
-        
+
         JpaFeedOpsAclEntry nonMatching = new JpaFeedOpsAclEntry(feedId, "NON_MATCHING", JpaFeedOpsAclEntry.PrincipalType.GROUP);
         aclRepo.save(nonMatching);
-        
+
         QJpaOpsManagerFeed qFeed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
         Iterable<JpaOpsManagerFeed> all = repo.findAll(GenericQueryDslFilter.buildFilter(qFeed, "name: feed-name"));
         Assert.assertTrue(StreamSupport.stream(all.spliterator(), false)
-                           .allMatch(it -> it.getName().equals("feed-name")));
+                              .allMatch(it -> it.getName().equals("feed-name")));
     }
 
     @WithMockJaasUser(username = "dladmin",
@@ -504,7 +506,6 @@ public class OpsManagerFeedRepositoryTest {
         Assert.assertEquals(1, feeds2.size());
         Assert.assertEquals("feed2-name", feeds2.get(0).getName());
     }
-
 
 
 }

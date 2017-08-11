@@ -41,6 +41,7 @@ import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.DefaultServiceLevelAgreementService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
@@ -57,6 +58,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
@@ -123,7 +125,7 @@ public class TestSpringConfiguration {
 
     @Bean
     public ServiceLevelAgreementService serviceLevelAgreementService() {
-        return new ServiceLevelAgreementService();
+        return new DefaultServiceLevelAgreementService();
     }
 
     @Bean
@@ -468,5 +470,10 @@ public class TestSpringConfiguration {
     @Bean
     NiFiFlowCacheClusterUpdateProvider niFiFlowCacheClusterUpdateProvider(){
         return Mockito.mock(NiFiFlowCacheClusterUpdateProvider.class);
+    }
+
+    @Bean
+    ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider(){
+        return Mockito.mock(ServiceLevelAgreementDescriptionProvider.class);
     }
 }

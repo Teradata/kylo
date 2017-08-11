@@ -281,7 +281,8 @@ define([], function () {
             SCHEDULER: {state: "scheduler", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             SERVICE_HEALTH: {state: "service-health", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             SERVICE_DETAILS: {state: "service-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
-            SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]}
+            SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
+            SERVICE_LEVEL_ASSESSMENTS: {state: "service-level-assessments", permissions: [this.OPERATIONS_MANAGER_ACCESS]}
         }
     };
     return new AccessConstants();

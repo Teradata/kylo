@@ -6,12 +6,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope: true,
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime: "@",
                 feedName:'@'
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/alerts/alerts-template.html',
-            controller: "AlertsController",
+            controller: "AlertsOverviewController",
             link: function ($scope, element, attrs) {
                 $scope.$on('$destroy', function () {
 
@@ -23,91 +22,72 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     var controller = function ($scope, $element, $interval, AlertsService, StateService) {
         var self = this;
-        this.dataLoaded = false;
-        this.refreshIntervalTime = 1000;
         this.alertsService = AlertsService;
         this.alerts = [];
+
+        /**
+         * Handle on the feed alerts refresh interval
+         * @type {null}
+         */
+        this.feedRefresh = null;
 
 
 
         if(this.feedName == undefined || this.feedName == ''){
-            this.alerts = AlertsService.alerts;
+            this.alerts = AlertsService.alertsSummary.data;
             $scope.$watchCollection(
                 function () {
-                    return AlertsService.alerts;
+                    return AlertsService.alertsSummary.data;
                 },
                 function (newVal) {
                     self.alerts = newVal;
                 }
             );
+            AlertsService.startRefreshingAlerts();
         }
         else {
-            this.alerts = [AlertsService.feedFailureAlerts[self.feedName]];
-            $scope.$watch(
-                function () {
-                    return AlertsService.feedFailureAlerts;
-                },
-                function (newVal) {
-                    if(newVal && newVal[self.feedName]){
-                        self.alerts = [newVal[self.feedName]]
-                    }
-                    else {
-                        self.alerts = [];
-                    }
-                },true
-            );
+            self.alerts = [];
+            stopFeedRefresh();
+            fetchFeedAlerts();
+           self.feedRefresh = $interval(fetchFeedAlerts,5000);
         }
 
+        function fetchFeedAlerts(){
+            AlertsService.fetchFeedAlerts(self.feedName).then(function(alerts) {
+                self.alerts =alerts;
+            });
+        }
 
-/*
- function refresh(){
- if(self.feedName == undefined || self.feedName == ''){
- self.alerts = AlertsService.alerts;
- }
- else {
- self.alerts = [AlertsService.feedFailureAlerts[self.feedName]];
- }
- }
-
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
+        function stopFeedRefresh(){
+            if(self.feedRefresh != null){
+                $interval.cancel(self.feedRefresh);
+                self.feedRefresh = null;
             }
         }
 
-        this.setRefreshInterval = function () {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(refresh, self.refreshIntervalTime);
 
+        this.navigateToAlerts = function(alertsSummary) {
+
+            //generate Query
+            var query = "UNHANDLED,"+ alertsSummary.type;
+            if(alertsSummary.groupDisplayName != null && alertsSummary.groupDisplayName != null) {
+                query += ","+alertsSummary.groupDisplayName;
             }
-        }
-
-        this.init = function () {
-            self.setRefreshInterval();
-        }
-
-        this.init();
-*/
-
-
-        this.navigateToAlert = function(alert) {
-            if(alert.type == 'Feed' && self.feedName == undefined){
-                StateService.OpsManager().Feed().navigateToFeedDetails(alert.name);
+            else if(alertsSummary.subtype != null && alertsSummary.subtype != '') {
+                query += ","+alertsSummary.subtype;
             }
-            else if(alert.type == 'Service' ) {
-                StateService.OpsManager().ServiceStatus().navigateToServiceDetails(alert.name);
-            }
+            StateService.OpsManager().Alert().navigateToAlerts(query);
 
         }
 
         $scope.$on('$destroy', function () {
-       //     self.clearRefreshInterval();
+            stopFeedRefresh();
+            AlertsService.stopRefreshingAlerts();
         });
+
     };
 
-    angular.module(moduleName).controller('AlertsController', ["$scope","$element","$interval","AlertsService","StateService",controller]);
+    angular.module(moduleName).controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService",controller]);
 
 
     angular.module(moduleName)

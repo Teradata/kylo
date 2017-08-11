@@ -30,11 +30,13 @@ import java.util.List;
 public class AbandonFeedJobsStoredProcedureMock implements AutoCloseable {
 
     static class InvocationParameters {
-        final String feed, exitMessage;
 
-        InvocationParameters(String feed, String exitMessage) {
+        final String feed, exitMessage, user;
+
+        InvocationParameters(String feed, String exitMessage, String user) {
             this.feed = feed;
             this.exitMessage = exitMessage;
+            this.user = user;
         }
     }
 
@@ -49,10 +51,10 @@ public class AbandonFeedJobsStoredProcedureMock implements AutoCloseable {
         return Collections.unmodifiableList(REGISTERED_CALLS);
     }
 
-    public static boolean call(String feed, String exitMessage) {
+    public static boolean call(String feed, String exitMessage, String user) {
         // method has to be boolean, so that Hibernate can map the type
 
-        REGISTERED_CALLS.add(new InvocationParameters(feed, exitMessage));
+        REGISTERED_CALLS.add(new InvocationParameters(feed, exitMessage, user));
 
         return false;
     }

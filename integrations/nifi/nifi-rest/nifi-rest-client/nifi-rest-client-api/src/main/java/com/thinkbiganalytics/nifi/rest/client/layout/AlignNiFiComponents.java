@@ -30,7 +30,6 @@ import javax.inject.Inject;
 /**
  * Align components in the Nifi Root Flow and then any components in its immediate child ProcessGroups (aka Categories)
  */
-@Component
 public class AlignNiFiComponents {
 
     @Inject

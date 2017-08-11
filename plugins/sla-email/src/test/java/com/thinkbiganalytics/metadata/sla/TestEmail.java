@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.config.DeveloperEmailConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
@@ -68,13 +69,33 @@ public class TestEmail {
             }
 
             @Override
-            public String getServiceLevelAgreementId() {
+            public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
                 return null;
             }
 
             @Override
             public DateTime getTime() {
                 return new DateTime();
+            }
+
+            @Override
+            public ServiceLevelAgreementDescription getServiceLevelAgreementDescription() {
+                return new ServiceLevelAgreementDescription() {
+                    @Override
+                    public ServiceLevelAgreement.ID getSlaId() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return null;
+                    }
+                };
             }
 
             @Override

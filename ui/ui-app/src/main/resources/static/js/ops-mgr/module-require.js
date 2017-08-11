@@ -2,7 +2,7 @@
  * Include all common services/directives are are used for the kylo.opsmgr module
  */
 define(['angular',
-        'ops-mgr/services/AlertsService',
+        'ops-mgr/services/AlertsServiceV2',
         'ops-mgr/services/EventService',
         'ops-mgr/services/OpsManagerFeedService',
         'ops-mgr/services/ChartJobStatusService',

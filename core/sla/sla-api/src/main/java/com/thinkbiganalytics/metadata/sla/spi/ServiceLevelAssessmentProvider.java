@@ -23,6 +23,9 @@ package com.thinkbiganalytics.metadata.sla.spi;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 /**
@@ -45,4 +48,13 @@ public interface ServiceLevelAssessmentProvider {
     boolean ensureServiceLevelAgreementOnAssessment(ServiceLevelAssessment assessment);
 
 
-}
+    /**
+     * Find all Assessments  with the provided filter.
+     *
+     * @return a paged result set of all the SLA assessments matching the incoming filter
+     */
+     Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable);
+
+
+
+    }

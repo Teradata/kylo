@@ -152,4 +152,5 @@ public class OperationalMetadataConfig {
     public EvaluationContextExtension securityExtension() {
         return new RoleSetExposingSecurityEvaluationContextExtension();
     }
+
 }

@@ -18,7 +18,7 @@
   #L%
   -->
 
-<div layout="row" layout-sm="column" layout-xs="column"  >
+<div layout="row" layout-sm="column" layout-xs="column"   ng-if="vm.loading == false">
     <div layout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2" >
             <tba-feed-activity  feed-name="vm.feedName"></tba-feed-activity>
       <tba-jobs hide-feed-column="true" card-title="Jobs" feed-filter="vm.feedName" feed="vm.feed"
@@ -99,4 +99,14 @@
 
 </div>
 
+<div layout="row" layout-sm="column" layout-xs="column"   ng-if="vm.loading == true">
+      <md-card layout-fill>
+        <div layout="column" layout-align="center center" flex>
+          <h2 class="md-title">Loading Feed ...</h2>
+        <div layout-align="center center" layout="column">
+          <md-progress-circular md-mode="indeterminate" md-diameter="30"></md-progress-circular>
+        </div>
+        </div>
+      </md-card>
 
+</div>

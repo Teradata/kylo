@@ -31,6 +31,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRemoteProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiReportingTaskRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
@@ -110,6 +111,9 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
      */
     @Nullable
     protected NiFiReportingTaskRestClientV1 reportingTasks;
+
+
+    protected NiFiRemoteProcessGroupsRestClientV1 remoteProcessGroups;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.
@@ -260,9 +264,18 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     @Override
     public NiFiReportingTaskRestClient reportingTasks() {
         if (reportingTasks == null) {
-            return new NiFiReportingTaskRestClientV1(this);
+            reportingTasks = new NiFiReportingTaskRestClientV1(this);
         }
         return reportingTasks;
+    }
+
+    @Nonnull
+    @Override
+    public NiFiRemoteProcessGroupsRestClient remoteProcessGroups() {
+        if (remoteProcessGroups == null) {
+            remoteProcessGroups = new NiFiRemoteProcessGroupsRestClientV1(this);
+        }
+        return remoteProcessGroups;
     }
 
 

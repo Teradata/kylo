@@ -48,6 +48,8 @@
                         </div>
                     </div>
 
+
+
                     <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Description</div>
                     <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;padding-right:16px;">{{vm.alertData.description}}</div>
 
@@ -125,6 +127,14 @@
                         </div>
                     </md-list-item>
                 </md-list>
+                <md-divider></md-divider>
+                <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="vm.alertData.links.length >0" style="padding-left:25px">
+
+                    <div class="md-subheader layout-padding-bottom">Links</div>
+                    <div ng-repeat="link in vm.alertData.links" layout="column" class="layout-padding-bottom">
+                        <a ui-sref="{{link.value}}">{{link.label}}</a>
+                    </div>
+                </div>
             </md-content>
         </body-section>
     </card-layout>

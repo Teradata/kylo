@@ -79,7 +79,7 @@
             </md-item-template>
           </md-autocomplete>
           <button 
-                  ng-if="$chip.editable"
+                  ng-if="$chip.editable == undefined || $chip.editable == true"
                   class="md-chip-remove ng-scope"
                   md-chip-remove 
                   type="button" 

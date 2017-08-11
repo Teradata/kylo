@@ -1,8 +1,10 @@
 define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
 
-    var controller = function($scope, $timeout,$q, $interval,$transition$, $http, OpsManagerFeedService, StateService, OpsManagerJobService, BroadcastService ){
+    var controller = function($scope, $timeout,$q, $interval,$transition$, $http, OpsManagerFeedService, OpsManagerRestUrlService,StateService, OpsManagerJobService, BroadcastService ){
         var self = this;
-        self.feedName = $transition$.params().feedName;
+        self.loading = true;
+        var deferred = $q.defer();
+        self.feedName = null;
         self.feedData = {}
         self.feed = OpsManagerFeedService.emptyFeed();
         self.refreshIntervalTime = 5000;
@@ -12,9 +14,41 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
 
         BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', abandonedAllJobs);
 
-        getFeedHealth();
-       // getFeedNames();
-        setRefreshInterval();
+
+
+        var feedName =$transition$.params().feedName;
+        if(feedName != undefined && isGuid(feedName)){
+            //fetch the feed name from the server using the guid
+            $http.get(OpsManagerRestUrlService.FEED_NAME_FOR_ID(feedName)).then( function(response){
+                deferred.resolve(response.data);
+            }, function(err) {
+                deferred.reject(err);
+            });
+        }
+        else {
+            deferred.resolve(feedName);
+        }
+
+        $q.when(deferred.promise).then(function(feedNameResponse){
+            self.feedName = feedNameResponse;
+            self.loading = false;
+            getFeedHealth();
+            // getFeedNames();
+            setRefreshInterval();
+        });
+
+
+        function isGuid(str) {
+            if (str[0] === "{")
+            {
+                str = str.substring(1, str.length - 1);
+            }
+            //var regexGuid = /^(\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}$/gi;
+            var regexGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            return regexGuid.test(str);
+        }
+
+
         function getFeedHealth(){
             var canceler = $q.defer();
             self.activeRequests.push(canceler);
@@ -150,7 +184,7 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
 
     };
 
-    angular.module(moduleName).controller('OpsManagerFeedDetailsController',['$scope', '$timeout','$q', '$interval','$transition$','$http','OpsManagerFeedService','StateService', 'OpsManagerJobService', 'BroadcastService', controller]);
+    angular.module(moduleName).controller('OpsManagerFeedDetailsController',['$scope', '$timeout','$q', '$interval','$transition$','$http','OpsManagerFeedService','OpsManagerRestUrlService','StateService', 'OpsManagerJobService', 'BroadcastService', controller]);
 
 
 

@@ -26,6 +26,9 @@ import org.apache.commons.lang3.StringUtils;
  * SearchCriteria used for querying data
  */
 public class SearchCriteria {
+    public enum AND_OR {
+        AND,OR
+    }
 
 
     private String key;
@@ -34,6 +37,7 @@ public class SearchCriteria {
 
     private SearchCriteria previousSearchCriteria;
 
+    private AND_OR andOr = AND_OR.AND;
 
     public SearchCriteria() {
 
@@ -50,6 +54,7 @@ public class SearchCriteria {
         this.operation = previousSearchCriteria.getOperation();
         this.value = previousSearchCriteria.getValue();
         this.previousSearchCriteria = previousSearchCriteria;
+        this.andOr = previousSearchCriteria.andOr;
     }
 
     /**
@@ -124,5 +129,17 @@ public class SearchCriteria {
      */
     public SearchCriteria getPreviousSearchCriteria() {
         return previousSearchCriteria;
+    }
+
+    public AND_OR getAndOr() {
+        return andOr;
+    }
+
+    public void setAndOr(AND_OR andOr) {
+        this.andOr = andOr;
+    }
+
+    public boolean isOrFilter(){
+        return AND_OR.OR.equals(getAndOr());
     }
 }

@@ -80,7 +80,7 @@ define(['angular', 'common/module-name'], function (angular, moduleName) {
                     angular.extend(itemCopy, item);
 
                     if ($scope.selectedAdditionalOption) {
-                        $scope.selectedAdditionalOption()(itemCopy);
+                        $scope.selectedAdditionalOption()(item);
                     }
                 };
 

@@ -24,28 +24,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <changeSet id="1" author="ru186002" runOnChange="true">
-    <sqlFile path="check-data-to-feed-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
-
-  <changeSet id="2" author="ru186002" runOnChange="true">
-    <sqlFile path="batch-feed-summary-counts-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
-
-  <changeSet id="3" author="ru186002" runOnChange="true">
-    <sqlFile path="latest-feed-job-end-time-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
-
-  <changeSet id="4" author="ru186002" runOnChange="true">
-    <sqlFile path="latest-feed-job-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
-
-  <changeSet id="5" author="ru186002" runOnChange="true">
-    <sqlFile path="latest-finished-feed-job-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
-
-  <changeSet id="6" author="ru186002" runOnChange="true">
-    <sqlFile path="feed-health-vw.sql" relativeToChangelogFile="true"/>
-  </changeSet>
+  <include file="check_data_to_feed_vw.xml" relativeToChangelogFile="true"/>
+  <include file="batch_feed_summary_counts_vw.xml" relativeToChangelogFile="true"/>
+  <include file="latest_feed_job_end_time_vw.xml" relativeToChangelogFile="true"/>
+  <include file="latest_feed_job_vw.xml" relativeToChangelogFile="true"/>
+  <include file="latest_finished_feed_job_vw.xml" relativeToChangelogFile="true"/>
+  <include file="feed_health_vw.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

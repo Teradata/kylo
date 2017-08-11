@@ -23,7 +23,12 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.FEEDS_BASE + "/" + feedName + "/daily-status-count";
         }
 
-        this.ALERTS_URL = this.ROOT + "/proxy/v1/alerts";
+        this.FEED_NAME_FOR_ID = function(feedId){
+            return self.FEEDS_BASE +"/query/"+feedId
+        }
+
+
+
 
 //JOB urls
 
@@ -95,6 +100,17 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.ALERT_DETAILS_URL = function (alertId) {
             return "/proxy/v1/alerts/" + alertId;
         };
+
+        this.ALERTS_URL = "/proxy/v1/alerts";
+
+        this.ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/alerts/summary/unhandled";
+
+        this.FEED_ALERTS_URL = function(feedName) {
+            return self.FEEDS_BASE +"/"+feedName+"/alerts";
+        }
+
+        //assessments
+        this.LIST_SLA_ASSESSMENTS_URL = "/v1/sla/assessments/"
 
     });
 });

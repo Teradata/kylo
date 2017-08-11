@@ -15,6 +15,7 @@
   </properties>
   <modules>
     <module>feed-manager-api</module>
+    <module>feed-manager-service-api</module>
     <module>feed-manager-rest-model</module>
     <module>feed-manager-nifi-cache-api</module>
     <module>feed-manager-core</module>

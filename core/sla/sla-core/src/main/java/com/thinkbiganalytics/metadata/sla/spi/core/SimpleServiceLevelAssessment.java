@@ -27,6 +27,7 @@ import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,9 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Set<ObligationAssessment> obligationAssessments;
     private ServiceLevelAssessment.ID id;
+
+
+
 
     /**
      *
@@ -98,8 +102,8 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     }
 
     @Override
-    public String getServiceLevelAgreementId() {
-        return this.sla != null ? this.sla.getId().toString() : null;
+    public ServiceLevelAgreement.ID getServiceLevelAgreementId() {
+        return this.sla != null ? this.sla.getId() : null;
     }
 
     /* (non-Javadoc)
@@ -173,6 +177,11 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     }
 
     @Override
+    public ServiceLevelAgreementDescription getServiceLevelAgreementDescription() {
+        return new SimpleServiceLevelAgreementDescription(this.getAgreement().getId(),this.getAgreement().getName(),this.getAgreement().getDescription());
+    }
+
+    @Override
     public ID getId() {
         return this.id;
     }
@@ -218,6 +227,49 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         public void setUuid(UUID uuid) {
             this.idValue = uuid.toString();
 
+        }
+    }
+
+    private static class SimpleServiceLevelAgreementDescription implements ServiceLevelAgreementDescription {
+
+        private String description;
+        private ServiceLevelAgreement.ID slaId;
+        private String name;
+
+        public SimpleServiceLevelAgreementDescription() {
+        }
+
+        public SimpleServiceLevelAgreementDescription(ServiceLevelAgreement.ID slaId, String name,String description) {
+            this.description = description;
+            this.slaId = slaId;
+            this.name = name;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public ServiceLevelAgreement.ID getSlaId() {
+            return slaId;
+        }
+
+        public void setSlaId(ServiceLevelAgreement.ID slaId) {
+            this.slaId = slaId;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 }

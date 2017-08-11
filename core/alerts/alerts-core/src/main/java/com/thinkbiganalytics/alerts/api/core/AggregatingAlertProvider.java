@@ -31,6 +31,7 @@ import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
@@ -44,6 +45,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -109,7 +111,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      * Generates a unique, internal ID for this source
      */
     private static String createAlertSourceId(AlertSource src) {
-        return Integer.toString(src.hashCode());
+        return src.getId().toString();
     }
 
     private static String getSourceId(Alert decorator) {
@@ -159,9 +161,20 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
+
+    @Override
+    public ID resolve(ID id, AlertSource source) {
+        if (id instanceof SourceAlertID) {
+            return id;
+        }
+        else {
+         return new SourceAlertID(id,source);
+        }
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.AlertProvider#addListener(com.thinkbiganalytics.alerts.api.AlertListener)
-     */
+         * @see com.thinkbiganalytics.alerts.api.AlertProvider#addListener(com.thinkbiganalytics.alerts.api.AlertListener)
+         */
     @Override
     public void addListener(AlertListener listener) {
         // TODO matching all alerts for every listener.  Allow filtering at this level, such as by type?
@@ -231,6 +244,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(com.thinkbiganalytics.alerts.api.AlertCriteria)
      */
@@ -238,6 +253,12 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
     public Iterator<? extends Alert> getAlerts(AlertCriteria criteria) {
         Map<String, AlertSource> srcs = snapshotAllSources();
         return combineAlerts(criteria, srcs).iterator();
+    }
+
+
+    public Iterator<? extends AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        Map<String, AlertSource> srcs = snapshotAllSources();
+        return combineAlertSummary(criteria, srcs).iterator();
     }
 
     /* (non-Javadoc)
@@ -312,7 +333,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    private Optional<Alert> getAlert(Alert.ID id, AlertSource src) {
+    public Optional<Alert> getAlert(Alert.ID id, AlertSource src) {
         return src.getAlert(id).map(alert -> wrapAlert(alert, src));
     }
 
@@ -330,6 +351,21 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             .map(alert -> wrapAlert(alert, alert.getSource()))
             .sorted((a1, a2) -> a2.getCreatedTime().compareTo(a1.getCreatedTime()));
     }
+
+    private Stream<AlertSummary> combineAlertSummary(AlertCriteria criteria, Map<String, AlertSource> srcs) {
+        Criteria critImpl = (Criteria) criteria;
+
+        return srcs.values().stream()
+            .map(src -> {
+                AlertCriteria srcCrit = src.criteria();
+                critImpl.transfer(srcCrit);
+                Iterable<AlertSummary> alerts = () -> src.getAlertsSummary(srcCrit);
+                return StreamSupport.stream(alerts.spliterator(), false);
+            })
+            .flatMap(s -> s);
+    }
+
+
 
     private void notifyChanged(Alert alert) {
         notifyListeners(alert);
@@ -443,7 +479,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    private Alert unwrapAlert(Alert proxy) {
+    public Alert unwrapAlert(Alert proxy) {
         if (Proxy.isProxyClass(proxy.getClass())) {
             AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(proxy);
             return handler.wrapped;

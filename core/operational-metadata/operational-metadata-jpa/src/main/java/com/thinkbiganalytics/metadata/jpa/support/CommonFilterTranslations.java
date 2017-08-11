@@ -24,12 +24,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.EntityPathBase;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
+import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAssessment;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,7 +44,14 @@ public class CommonFilterTranslations {
 
     public static final String jobExecutionFeedNameFilterKey = "jobInstance.feed.name";
 
-    static final ImmutableMap<String, String> jobExecutionFilters =
+   public static final ImmutableMap<String, String> feedFilters =
+        new ImmutableMap.Builder<String, String>()
+            .put("feed", "name")
+            .put("feedId","id.uuid").build()
+
+       ;
+
+    public static final ImmutableMap<String, String> jobExecutionFilters =
         new ImmutableMap.Builder<String, String>()
             .put("feed", jobExecutionFeedNameFilterKey)
             .put("feedName", jobExecutionFeedNameFilterKey)
@@ -57,7 +67,17 @@ public class CommonFilterTranslations {
             .put("executionid", "jobExecutionId")
             .put("job", "jobInstance.jobName").build();
 
-    static final ImmutableList<String> dateToMillisFields =
+
+    public static final ImmutableMap<String, String> serviceLevelAssessmentFilters =
+        new ImmutableMap.Builder<String, String>()
+            .put("name", "agreement.name")
+            .put("result", "result")
+            .put("status", "result")
+            .put("state", "result").build();
+
+
+
+    public static final ImmutableList<String> dateToMillisFields =
         new ImmutableList.Builder<String>()
             .add("jobStartTime")
             .add("startTime")
@@ -69,12 +89,22 @@ public class CommonFilterTranslations {
             .add("endTimeMillis").build();
 
 
-    static final ImmutableMap<Class<? extends EntityPathBase>, Map<String, String>>
-        queryDslFilters =
-        new ImmutableMap.Builder<Class<? extends EntityPathBase>, Map<String, String>>().put(QJpaBatchJobExecution.class, jobExecutionFilters).build();
+    static final Map<Class<? extends EntityPathBase>, Map<String, String>>    queryDslFilters =createQueryDslFilters();
+
+   private static Map<Class<? extends EntityPathBase>, Map<String, String>> createQueryDslFilters() {
+       Map<Class<? extends EntityPathBase>, Map<String, String>> map = new HashMap<>();
+       map.put(QJpaBatchJobExecution.class, jobExecutionFilters);
+       map.put(QJpaServiceLevelAssessment.class, serviceLevelAssessmentFilters);
+       map.put(QJpaOpsManagerFeed.class,feedFilters);
+       return map;
+   }
 
     public static boolean isDateStoredAsMillisField(String filterField) {
         return dateToMillisFields.contains(filterField);
+    }
+
+    public static void addFilterTranslations(Class<? extends EntityPathBase> entity, Map<String, String> filters) {
+        queryDslFilters.put(entity,filters);
     }
 
     /**

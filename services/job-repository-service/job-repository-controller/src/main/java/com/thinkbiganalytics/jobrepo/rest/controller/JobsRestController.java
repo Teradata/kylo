@@ -41,11 +41,8 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
 import java.util.Collections;
 import java.util.List;
@@ -278,7 +275,7 @@ public class JobsRestController {
                                  @QueryParam("filter") String filter,
                                  @Context HttpServletRequest request) {
         return metadataAccess.read(() -> {
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -302,7 +299,7 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return page != null ? page.getContent() : Collections.emptyList();
         });
     }
@@ -327,8 +324,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.RUNNING_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.RUNNING_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -352,8 +349,8 @@ public class JobsRestController {
                                        @Context HttpServletRequest request) {
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.FAILED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.FAILED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
     }
@@ -378,8 +375,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.STOPPED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.STOPPED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -404,8 +401,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.COMPLETED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.COMPLETED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
 
@@ -431,8 +428,8 @@ public class JobsRestController {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
         return metadataAccess.read(() -> {
-            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.ABANDONED_FILTER);
-            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            String defaultFilter = QueryUtils.ensureDefaultFilter(filter, jobExecutionProvider.ABANDONED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, QueryUtils.pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
             return ModelUtils.toSearchResult(page);
         });
     }
@@ -478,78 +475,9 @@ public class JobsRestController {
                 return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
             }
             return Collections.emptyList();
-/*
-            //get the streaming stats and merge back into the stats
-            //streaming feeds will mark the Running count as 1 for the entire feed
-            List<? extends NifiFeedStats> streamingStats = nifiFeedStatisticsProvider.findFeedStats(true);
-            if(streamingStats != null){
-                //Map of the feed name to Map of status and job status counts
-             Map<String,Map<String,List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount>>>
-                 feedStats = counts.stream().collect(Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getFeedName, Collectors.groupingBy(com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount::getStatus)));
-
-                 streamingStats.stream().forEach(stats ->
-                                                 {
-                                                     Long runningCount = 0L;
-                                                     if(stats.getRunningFeedFlows() >0){
-                                                         runningCount = 1L;
-                                                     }
-                                                     if(feedStats.containsKey(stats.getFeedName()) && feedStats.get(stats.getFeedName()).containsKey(BatchJobExecution.RUNNING_DISPLAY_STATUS)){
-                                                         //set the total
-                                                             feedStats.get(stats.getFeedName()).get(BatchJobExecution.RUNNING_DISPLAY_STATUS).get(0).setCount(runningCount);
-                                                     }
-                                                     else {
-                                                         //it doesnt exist so create it
-                                                         JpaBatchJobExecutionStatusCounts runningStreamingFeedCounts = new JpaBatchJobExecutionStatusCounts();
-                                                         runningStreamingFeedCounts.setCount(runningCount);
-                                                         runningStreamingFeedCounts.setFeedName(stats.getFeedName());
-                                                         runningStreamingFeedCounts.setJobName(stats.getFeedName());
-                                                         runningStreamingFeedCounts.setStatus(BatchJobExecution.RUNNING_DISPLAY_STATUS);
-                                                         runningStreamingFeedCounts.setDate(DateTime.now());
-                                                         counts.add(runningStreamingFeedCounts);
-                                                     }
-                                                 });
-
-            }
-
-            if (counts != null) {
-                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
-            }
-            return Collections.emptyList();
-            */
         });
 
     }
 
-    /**
-     * This will evaluate the {@code incomingFilter} and append/set the value including the {@code defaultFilter} and return a new String with the updated filter
-     */
-    private String ensureDefaultFilter(String incomingFilter, String defaultFilter) {
-        String filter = incomingFilter;
-        if (StringUtils.isBlank(filter) || !StringUtils.containsIgnoreCase(filter, defaultFilter)) {
-            if (StringUtils.isNotBlank(filter)) {
-                if (StringUtils.endsWith(filter, ",")) {
-                    filter += defaultFilter;
-                } else {
-                    filter += "," + defaultFilter;
-                }
-            } else {
-                filter = defaultFilter;
-            }
-        }
-        return filter;
-    }
-
-    private PageRequest pageRequest(Integer start, Integer limit, String sort) {
-        if (StringUtils.isNotBlank(sort)) {
-            Sort.Direction dir = Sort.Direction.ASC;
-            if (sort.startsWith("-")) {
-                dir = Sort.Direction.DESC;
-                sort = sort.substring(1);
-            }
-            return new PageRequest((start / limit), limit, dir, sort);
-        } else {
-            return new PageRequest((start / limit), limit);
-        }
-    }
 
 }
