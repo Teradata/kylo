@@ -83,6 +83,7 @@ System.config({
         'rxjs': 'npm:rxjs'
     },
     meta: {
+        "@angular/core": {deps:["angular"]},
         "angular": {deps:["jquery"],exports: "angular"},
         'angular-ui-router': {deps:['angular']},
         'angularAria': ['angular'],
