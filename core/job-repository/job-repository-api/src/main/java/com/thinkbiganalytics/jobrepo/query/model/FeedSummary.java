@@ -65,14 +65,14 @@ public interface FeedSummary {
     /**
      * format the millis to a readable time
      *
-     * @return a formatted time of the {@link this#getTimeSinceEndTime()}
+     * @return a formatted time of the {@link #getTimeSinceEndTime()}
      */
     String formatTimeMinSec(Long millis);
 
     /**
-     * Return a formatted string of the {@link this#getTimeSinceEndTime()}
+     * Return a formatted string of the {@link #getTimeSinceEndTime()}
      *
-     * @return a formatted string of the {@link this#getTimeSinceEndTime()}
+     * @return a formatted string of the {@link #getTimeSinceEndTime()}
      */
     String getTimeSinceEndTimeString();
 
@@ -84,9 +84,9 @@ public interface FeedSummary {
     Long getRunTime();
 
     /**
-     * Return a formatted string of the {@link this#getRunTime()}
+     * Return a formatted string of the {@link #getRunTime()}
      *
-     * @return a formatted string of the {@link this#getRunTime()}
+     * @return a formatted string of the {@link #getRunTime()}
      */
     String getRunTimeString();
 
@@ -98,7 +98,7 @@ public interface FeedSummary {
     Long getAvgCompleteTime();
 
     /**
-     * Return a formatted string of the {@link this#getAvgCompleteTime()}
+     * Return a formatted string of the {@link #getAvgCompleteTime()}
      */
     String getAvgCompleteTimeString();
 

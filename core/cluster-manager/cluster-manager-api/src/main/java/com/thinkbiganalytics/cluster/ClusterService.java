@@ -57,7 +57,7 @@ public interface ClusterService {
     String getAddressAsString();
 
     /**
-     * If the node was added to the cluster via the {@link this#start()} method
+     * If the node was added to the cluster via the {@link #start()} method
      * @return true if the node is part of a kylo cluster, false if not
      */
     boolean isClustered();

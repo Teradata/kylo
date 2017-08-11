@@ -52,14 +52,14 @@ public interface SearchResult {
     void setRecordsTotal(Long recordsTotal);
 
     /**
-     * Return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     * Return the number of records from the {@link #getRecordsTotal()} that exist in the {@link #getData()} as a result of the search/filter
      *
-     * @return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     * @return the number of records from the {@link #getRecordsTotal()} that exist in the {@link #getData()} as a result of the search/filter
      */
     Long getRecordsFiltered();
 
     /**
-     * set the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     * set the number of records from the {@link #getRecordsTotal()} that exist in the {@link #getData()} as a result of the search/filter
      */
     void setRecordsFiltered(Long recordsFiltered);
 

@@ -273,9 +273,9 @@ public class JerseyRestClient {
     }
 
     /**
-     * prepends the supplied {@link this#uri} to the supplied path
+     * prepends the supplied {@link #uri} to the supplied path
      *
-     * @param path the path to append to the {@link this#uri}
+     * @param path the path to append to the {@link #uri}
      * @return the target to use to make the REST request
      */
     protected WebTarget getTargetFromPath(String path) {
@@ -399,7 +399,7 @@ public class JerseyRestClient {
      * Sometimes QueryParams dont fit the model of key,value pairs.
      * This method can be used to call a GET request using the path passed in
      * Allow a client to create the target passing in a full url path with ? and & query params
-     * If you have known key,value pairs its recommend you use the {@link this#get(String, Map, Class)}
+     * If you have known key,value pairs its recommend you use the {@link #get(String, Map, Class)}
      *
      * @param path  the path to access, including the root target and the ?key=value&key2=value&key3
      * @param clazz the class type to return as the response from the GET request
