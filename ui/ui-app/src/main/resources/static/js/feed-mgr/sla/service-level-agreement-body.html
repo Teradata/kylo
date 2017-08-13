@@ -21,6 +21,7 @@
   <md-progress-linear md-mode="indeterminate"></md-progress-linear>
   <span class="md-body-2">{{vm.loadingMessage}}</span>
 </div>
+
 <div ng-if="vm.editSla == null && !vm.loading">
   <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
     <md-list flex layout-fill class="list-item-table">
@@ -96,4 +97,10 @@
 
 <div ng-if="vm.editSla != null  && !vm.loading">
   <ng-include src="'js/feed-mgr/sla/service-level-agreement-form.html'"></ng-include>
+
+
+  <div>
+
+  </div>
 </div>
+

@@ -140,6 +140,12 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                             self.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+self.alertData.entityId+"'})"});
 
                         }
+                        else   if(self.alertData.type == 'http://kylo.io/alert/alert/sla/violation') {
+                            if(angular.isDefined(self.alertData.content)) {
+                                self.alertData.links.push({label: "Service Level Assessment", value: "service-level-assessment({assessmentId:'" + self.alertData.content + "'})"});
+                            }
+                            self.alertData.links.push({label:"Service Level Agreement",  value:"service-level-agreements({slaId:'"+self.alertData.entityId+"'})"});
+                        }
 
                         else   if(self.alertData.type == 'http://kylo.io/alert/service') {
                             self.alertData.links.push({label:"Service Details",  value:"service-details({serviceName:'"+self.alertData.subtype+"'})"});

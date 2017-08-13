@@ -1,11 +1,12 @@
-define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
 
     var directive = function() {
         return {
             restrict: "EA",
             bindToController: {
                 cardTitle: "@",
-                pageName: '@'
+                pageName: '@',
+                filter:'@'
             },
             controllerAs: 'vm',
             scope: true,
@@ -17,9 +18,9 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         };
     }
 
-    function controller($scope, $http,$timeout, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService,
+    function controller($scope, $http,$timeout, $q, $mdToast, $mdPanel, OpsManagerRestUrlService, TableOptionsService, PaginationDataService, StateService, IconService,
                                 TabService,
-                                AccessControlService, BroadcastService) {
+                                AccessControlService, BroadcastService ) {
         var self = this;
 
         /**
@@ -42,7 +43,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         this.viewType = PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
-        var tabNames = ['All', 'Failed', 'Completed']
+        var tabNames = ['All', 'Failure', 'Success']
         this.tabs = TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
         this.tabMetadata = TabService.metadata(this.pageName);
 
@@ -52,10 +53,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
          * The filter supplied in the page
          * @type {string}
          */
-        this.filter = '';
-
-        //Load the data
-        //   loadJobs();
+        this.filter = angular.isUndefined(this.filter) ? '' : this.filter;
 
         this.paginationId = function(tab) {
             return PaginationDataService.paginationId(self.pageName, tab.title);
@@ -88,13 +86,13 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
         this.onTabSelected = function(tab) {
             TabService.selectedTab(self.pageName, tab);
-            return loadJobs(true).promise;
+            return loadAssessments(true).promise;
         };
 
         this.onOrderChange = function(order) {
             PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName, order);
-            return loadJobs(true).promise;
+            return loadAssessments(true).promise;
             //return self.deferred.promise;
         };
 
@@ -102,7 +100,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             var activeTab = TabService.getActiveTab(self.pageName);
             activeTab.currentPage = page;
             PaginationDataService.currentPage(self.pageName, activeTab.title, page);
-            return loadJobs(true).promise;
+            return loadAssessments(true).promise;
         };
 
         /**
@@ -110,15 +108,21 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Name': 'name', 'Time':'time','Status': 'status'};
+            var options = {'Name': 'serviceLevelAgreementDescription.name', 'Time':'createdTime','Status': 'result'};
 
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'time', 'desc');
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'createdTime', 'desc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
             if (currentOption) {
                 TableOptionsService.saveSortOption(self.pageName, currentOption)
             }
             return sortOptions;
         }
+
+
+        this.assessmentDetails = function(event, assessment) {
+                StateService.OpsManager().Sla().navigateToServiceLevelAssessment(assessment.id);
+        }
+
 
 
 
@@ -159,7 +163,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
                 var canceler = $q.defer();
                 var successFn = function(response) {
                     if (response.data) {
-
+                        transformAssessments(tabTitle,response.data.data)
                         TabService.setTotal(self.pageName, tabTitle, response.data.recordsFiltered)
 
                         if (self.loading) {
@@ -180,6 +184,12 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
                 self.deferred = canceler;
                 self.promise = self.deferred.promise;
                 var filter = self.filter;
+                if(tabTitle.toUpperCase() != 'ALL'){
+                    if(filter != null && angular.isDefined(filter) && filter != '') {
+                        filter +=','
+                    }
+                    filter += 'result=='+tabTitle.toUpperCase();
+                }
 
                 var params = {start: start, limit: limit, sort: sort, filter:filter};
 
@@ -189,6 +199,16 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             self.showProgress = true;
 
             return self.deferred;
+
+        }
+
+        function transformAssessments(tabTitle, assessments) {
+            //first clear out the arrays
+            TabService.clearTabs(self.pageName);
+            angular.forEach(assessments, function(assessment, i) {
+                TabService.addContent(self.pageName, tabTitle, assessment);
+            });
+            return assessments;
 
         }
 
@@ -215,10 +235,6 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         }
 
 
-        this.assessmentDetails = function(event, assessment) {
-           //TODO navigate to the assessment-details page
-        }
-
 
 
         // Fetch allowed permissions
@@ -229,7 +245,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
     }
 
 
-    angular.module(moduleName).controller("ServiceLevelAssessmentsController", ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",controller]);
+    angular.module(moduleName).controller("ServiceLevelAssessmentsController", ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerRestUrlService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",controller]);
     angular.module(moduleName).directive('kyloServiceLevelAssessments', directive);
 });
 

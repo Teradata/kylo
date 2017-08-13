@@ -55,26 +55,42 @@ public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
     }
 
     public Page<E> findAllWithFetch(EntityPathBase<E> path, Predicate predicate, Pageable pageable, QueryDslFetchJoin... joins) {
+        return findAllWithFetch(path,predicate,false,pageable,joins);
+    }
+
+    public Page<E> findAllWithFetch(EntityPathBase<E> path, Predicate predicate,boolean distinct, Pageable pageable, QueryDslFetchJoin... joins) {
         if (pageable == null) {
             pageable = new QPageRequest(0, Integer.MAX_VALUE);
         }
-        long total = createFetchCountQuery(path, predicate).fetchCount();
+        long total = createFetchQuery(path, predicate,distinct,joins).fetchCount();
 
-        JPQLQuery pagedQuery = getQuerydsl().applyPagination(pageable, createFetchQuery(path, predicate, joins));
+        JPQLQuery pagedQuery = getQuerydsl().applyPagination(pageable, createFetchQuery(path, predicate, distinct,joins));
 
         List<E> content = total > pageable.getOffset() ? pagedQuery.fetch() : Collections.<E>emptyList();
         return new PageImpl<>(content, pageable, total);
     }
 
 
-    private JPQLQuery createFetchCountQuery(EntityPathBase<E> path, Predicate predicate) {
-        JPQLQuery query = from(path);
+    private JPQLQuery createFetchCountQuery(EntityPathBase<E> path, Predicate predicate,boolean distinct) {
+        JPQLQuery query = null;
+        if(distinct){
+            query =from(path).distinct();
+        }
+        else {
+            query = from(path);
+        }
         query.where(predicate);
         return query;
     }
 
-    private JPQLQuery createFetchQuery(EntityPathBase<E> path, Predicate predicate, QueryDslFetchJoin... joins) {
-        JPQLQuery query = from(path);
+    private JPQLQuery createFetchQuery(EntityPathBase<E> path, Predicate predicate, boolean distinct, QueryDslFetchJoin... joins) {
+        JPQLQuery query = null;
+        if(distinct){
+            query =from(path).distinct();
+        }
+        else {
+            query = from(path);
+        }
         for (QueryDslFetchJoin joinDescriptor : joins) {
             join(joinDescriptor, query);
         }

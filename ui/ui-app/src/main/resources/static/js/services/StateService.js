@@ -158,6 +158,9 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.navigateToServiceLevelAgreements = function () {
                 $state.go('service-level-agreements');
             }
+            data.navigateToServiceLevelAgreement = function (slaId) {
+                $state.go('service-level-agreements',{slaId:slaId});
+            }
             return data;
         }
 
@@ -268,6 +271,18 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             return data;
         }
 
+        var SlaAssessmentStates = function () {
+            var data = {};
+            data.navigateToServiceLevelAssessments = function (filter) {
+                filter = angular.isUndefined(filter) ? '' : filter;
+                $state.go('service-level-assessments',{filter:filter});
+            }
+            data.navigateToServiceLevelAssessment = function (assessmentId) {
+                $state.go('service-level-assessment',{assessmentId:assessmentId});
+            }
+            return data;
+        }
+
         var OpsManagerStates = function () {
 
             var data = {};
@@ -278,8 +293,11 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.Job = OpsManagerJobStates;
             data.ServiceStatus = OpsManagerServiceStates
             data.Alert = AlertStates;
+            data.Sla = SlaAssessmentStates;
             return data;
         }
+
+
 
         var States = function () {
             var data = {};

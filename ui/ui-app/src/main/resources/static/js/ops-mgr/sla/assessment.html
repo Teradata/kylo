@@ -1,0 +1,131 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div flex layout="row">
+  <card-layout flex>
+    <header-section transclude-to="head" flex layout>
+      <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment - {{vm.assessment.agreement.name}}</div>
+    </header-section>
+    <body-section transclude-to="body" transclude-replace="true">
+      <md-content ng-if="vm.loading == false">
+        <div layout="column" class="layout-padding-bottom layout-padding-left-16">
+          <div layout="row">
+
+            <div flex="70" layout="column">
+                   <span class="item-title">
+                   {{vm.assessment.agreement.name}}
+                   </span>
+              <span class="column-title-bottom">
+                <ng-md-icon ng-if="vm.assessment.result == 'FAILED'" class="error" icon="error" size="20"></ng-md-icon>
+                <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check" size="20"></ng-md-icon>
+                {{vm.assessment.result}}
+              </span>
+
+
+            </div>
+
+            <div flex="30" layout="column">
+                                               <span class="item-title">{{vm.assessment.time | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+              <span class="column-title column-title-bottom">Created</span>
+            </div>
+          </div>
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Service Level Agreement Description</div>
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.agreement.description"
+               ng-tt-chars-threshold="150">
+          </div>
+
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Assessment</div>
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.message"
+               ng-tt-chars-threshold="150">
+          </div>
+        </div>
+        <div ng-if="vm.assessment.obligationAssessments != null && vm.assessment.obligationAssessments.length >0" class="layout-padding-bottom layout-padding-left-16" >
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Assessment Details</div>
+          <div ng-repeat="obligation in vm.assessment.obligationAssessments">
+            <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}. Obligation Assessment Message</div>
+            <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="obligation.message"
+                 ng-tt-chars-threshold="150">
+            </div>
+
+            <div ng-if="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
+              <div ng-repeat="metric in obligation.metricAssessments ">
+                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}.Metric Assessment Message</div>
+                <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="metric.message"
+                     ng-tt-chars-threshold="150">
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+
+      </md-content>
+      <md-content ng-if="vm.loading == true" style="min-height:300px">
+        <div layout="column" layout-align="center center" flex>
+        <span class="md-subhead">
+        Loading Service Level Assessment
+          </span>
+
+        </div>
+      </md-content>
+    </body-section>
+  </card-layout>
+
+  <card-layout flex="30" header-css="assessment-details-header" body-css="assessment-details-right-body" ng-if="vm.loading == false">
+    <header-section>
+      <div style="white-space:nowrap" class="card-title">Service Level Assessment Details</div>
+      <span flex></span>
+    </header-section>
+    <body-section >
+      <md-content flex md-scroll-y>
+        <md-list flex layout-fill layout="column" class="list-item-table">
+          <md-list-item>
+
+            <div layout="column" class="item-column md-list-item-text ">
+              <ng-md-icon ng-if="vm.assessment.result == 'FAILED'" class="error" icon="error" size="20"></ng-md-icon>
+              <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check" size="20"></ng-md-icon>
+              {{vm.assessment.result}}
+              <span class="column-title-bottom">
+              Result
+              </span>
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item>
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title" >
+                                                  <a href ng-click="vm.serviceLevelAgreement()">Service Level Agreement</a>
+                                               </span>
+            </div>
+          </md-list-item>
+
+        </md-list>
+
+
+      </md-content>
+    </body-section>
+  </card-layout>
+</div>

@@ -9,19 +9,48 @@ define(['angular','ops-mgr/sla/module-name',  'kylo-utils/LazyLoadUtil','constan
 
         $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.state,{
             url:'/service-level-assessments',
+            params: {
+                filter: null
+            },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/sla/assessments.html'
+                    templateUrl: 'js/ops-mgr/sla/assessments.html',
+                    controller:"ServiceLevelAssessmentsInitController",
+                    controllerAs:"vm"
                 }
             },
             resolve: {
-                loadPage: lazyLoad()
+                loadMyCtrl: lazyLoadController(['ops-mgr/sla/ServiceLevelAssessmentsInitController'])
             },
             data:{
                 breadcrumbRoot:false,
                 displayName:'Service Level Assessments',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions
+            }
+        });
+
+
+        $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENT.state,{
+            url:'/service-level-assessment/:assessmentId',
+            params: {
+                assessmentId:null
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/ops-mgr/sla/assessment.html',
+                    controller:"ServiceLevelAssessmentController",
+                    controllerAs:"vm"
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['ops-mgr/sla/service-level-assessment'])
+            },
+            data:{
+                breadcrumbRoot:false,
+                displayName:'Service Level Assessment',
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENT.permissions
             }
         });
 

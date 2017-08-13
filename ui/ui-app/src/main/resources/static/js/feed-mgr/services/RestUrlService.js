@@ -148,6 +148,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
             return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
         }
 
+        this.GET_SLA_BY_ID_URL = function (slaId) {
+            return self.SLA_BASE_URL + "/"+slaId;
+        }
+
         this.GET_SLA_AS_EDIT_FORM = function (slaId) {
             return self.SLA_BASE_URL + "/" + slaId + "/form-object";
         }

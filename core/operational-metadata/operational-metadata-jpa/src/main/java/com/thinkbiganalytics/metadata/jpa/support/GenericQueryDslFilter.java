@@ -170,9 +170,15 @@ public class GenericQueryDslFilter {
                                 }
 
                                 //reset the operator if looking for UUID
-                                if(convertedValue instanceof UUID){
+                                if(convertedValue instanceof UUID || convertedValue instanceof Enum){
                                     op = Ops.EQ;
                                 }
+
+
+                                //reset the operator if looking for UUID
+                               // if(convertedValue instanceof UUID){
+                               //     op = Ops.EQ;
+                               // }
 
                                 if(filter.isOrFilter()) {
                                      booleanBuilder.or(Expressions.predicate(op, p, e));
@@ -355,7 +361,12 @@ public class GenericQueryDslFilter {
                         //handle conversion error
                     }
                 }
-                o = convertedItems;
+                if(convertedItems.size() ==1) {
+                    o = convertedItems.get(0);
+                }
+                else {
+                    o = convertedItems;
+                }
 
             }
         } else {

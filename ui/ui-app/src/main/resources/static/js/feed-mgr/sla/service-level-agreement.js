@@ -5,7 +5,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             restrict: "EA",
             bindToController: {
                 feed: '=?',
-                newSla: '=?'
+                newSla: '=?',
+                slaId:'=?'
             },
             controllerAs: 'vm',
             scope: {},
@@ -32,6 +33,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                               AddButtonService, AccessControlService,EntityAccessControlService) {
 
         var self = this;
+
 
         /**
          * Indicates if editing SLAs is allowed.
@@ -215,6 +217,10 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
         this.filter = PaginationDataService.filter(self.pageName);
 
+
+
+
+
         $scope.$watch(function() {
             return self.viewType;
         }, function(newVal) {
@@ -294,11 +300,31 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             }
         }
 
-        /**
-         * Initiall load the SLA list
-         */
-        loadSlas();
 
+        if(self.slaId){
+            //fetch the sla
+
+
+                SlaService.getSlaForEditForm(self.slaId).then(function(response){
+                    applyEditPermissionsToSLA(response.data);
+                    if (self.allowEdit) {
+                        self.editSla = response.data;
+                        applyAccessPermissions()
+                        self.editSlaId = self.slaId;
+                        self.onEditSla(self.editSla);
+                    }
+                    else {
+                        //
+                    }
+                })
+
+        }
+        else {
+            /**
+             * Initiall load the SLA list
+             */
+            loadSlas();
+        }
 
         /**
          * Load up the Metric Options for defining SLAs
@@ -435,7 +461,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         }
 
         self.onBackToList = function(ev) {
-            showList();
+            var requery = false;
+            if(self.serviceLevelAgreements == null || self.serviceLevelAgreements.length == 0) {
+                requery = true;
+            }
+            showList(requery);
             applyAccessPermissions();
 
         }
@@ -466,6 +496,12 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 );
             }
         };
+
+        self.viewSlaAssessments = function(){
+            if(self.editSla){
+                StateService.OpsManager().Sla().navigateToServiceLevelAssessments('slaId=='+self.editSla.id);
+            }
+        }
 
         self.loadAndEditSla = function(slaId) {
             self.mode = 'EDIT';

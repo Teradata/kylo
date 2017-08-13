@@ -23,6 +23,13 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringExpression;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
@@ -32,6 +39,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,12 +67,21 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
+    public static final ImmutableMap<String, String> slaAssessmentFilters =
+        new ImmutableMap.Builder<String, String>()
+            .put("sla", "serviceLevelAgreementDescription.name")
+            .put("slaId", "serviceLevelAgreementDescription.slaId.uuid")
+            .put("slaDescription", "serviceLevelAgreementDescription.description")
+            .put("assessmentId", "id.uuid")
+            .put("result", "result").build();
+
     @Autowired
     public JpaServiceLevelAssessmentProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository,
                                              JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
         super(JpaServiceLevelAssessment.class);
         this.serviceLevelAssessmentRepository = serviceLevelAssessmentRepository;
         this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
+        CommonFilterTranslations.addFilterTranslations(QJpaServiceLevelAssessment.class,slaAssessmentFilters);
     }
 
 
@@ -184,15 +201,32 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     public Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable) {
         QJpaServiceLevelAssessment serviceLevelAssessment = QJpaServiceLevelAssessment.jpaServiceLevelAssessment;
 
+
         pageable = CommonFilterTranslations.resolveSortFilters(serviceLevelAssessment, pageable);
+
 
         QJpaObligationAssessment obligationAssessment = new QJpaObligationAssessment("obligationAssessment");
         QJpaMetricAssessment metricAssessment = new QJpaMetricAssessment("metricAssessment");
+        QJpaServiceLevelAgreementDescription serviceLevelAgreementDescription = new QJpaServiceLevelAgreementDescription("slaDescription");
+        QJpaOpsManagerFeed feed = new QJpaOpsManagerFeed("feed");
+        BooleanBuilder assessmentPredicate = GenericQueryDslFilter.buildFilter(serviceLevelAssessment, filter);
+        BooleanBuilder feedPredicate = GenericQueryDslFilter.buildFilter(feed, filter);
+        boolean invalidQuery = false;
+        //if there is not predicate found for the supplied 'filter' then fail the query
+        if(StringUtils.isNotBlank(filter) && (!assessmentPredicate.hasValue() && !feedPredicate.hasValue())){
+            invalidQuery = true;
+        }
+        BooleanBuilder predicate = assessmentPredicate.and(feedPredicate);
+        if(invalidQuery){
+            predicate.and(ExpressionUtils.eq(ConstantImpl.create("1"),ConstantImpl.create("2")));
+        }
 
         return findAllWithFetch(serviceLevelAssessment,
-                                GenericQueryDslFilter.buildFilter(serviceLevelAssessment, filter),//.and(augment(feedPath.id)),
+                                predicate,
+                                true,
                                 pageable,
-                                QueryDslFetchJoin.leftJoin(serviceLevelAssessment.serviceLevelAgreementDescription),
+                                QueryDslFetchJoin.innerJoin(serviceLevelAssessment.serviceLevelAgreementDescription, serviceLevelAgreementDescription),
+                                QueryDslFetchJoin.leftJoin(serviceLevelAgreementDescription.feeds, feed),
                                 QueryDslFetchJoin.leftJoin(serviceLevelAssessment.obligationAssessments, obligationAssessment),
                                 QueryDslFetchJoin.leftJoin(obligationAssessment.metricAssessments, metricAssessment));
 

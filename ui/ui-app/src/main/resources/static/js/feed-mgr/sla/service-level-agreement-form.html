@@ -18,7 +18,10 @@
   #L%
   -->
 <ng-form name="vm.slaForm" ng-if="vm.editSla != null" class="layout-padding-left-right layout-padding-top">
+  <div layout="row" layout-align="space-between start">
   <md-button ng-click="vm.onBackToList($event)">Back to List</md-button>
+  <a href ng-click="vm.viewSlaAssessments()" ng-if="vm.feed">Sla Assessments</a>
+  </div>
 
   <div layout="column" class="layout-padding-top" style="padding-top:16px;">
     <md-input-container class="md-block condensed">

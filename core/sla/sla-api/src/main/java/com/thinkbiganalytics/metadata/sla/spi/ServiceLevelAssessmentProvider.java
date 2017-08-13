@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -42,6 +43,7 @@ public interface ServiceLevelAssessmentProvider {
     ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId);
 
 
+    ServiceLevelAssessment.ID resolveId(Serializable id);
     /**
      * Ensure the assessment.getAgreement() is not null and if it is it will query and get the correct agreement according to the slaId on the assessment
      */

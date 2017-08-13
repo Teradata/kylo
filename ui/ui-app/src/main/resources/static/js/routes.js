@@ -162,10 +162,13 @@ define(['angular', 'kylo-common', 'kylo-services',
         $stateProvider.state({
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
+            params: {
+                slaId: null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-agreements')
+                    $stateProvider.stateService.go('service-level-agreements',transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading service-level-agreements ", err);
@@ -284,7 +287,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading business-metadata ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -540,6 +542,44 @@ define(['angular', 'kylo-common', 'kylo-services',
                         console.log("Error loading domain-type-details.", err);
                         return err;
                     });
+            }
+        });
+
+        $stateProvider.state({
+            name: 'service-level-assessments.**',
+            url: '/service-level-assessments',
+            params: {
+                filter: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('service-level-assessments',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading service-level-assessments ", err);
+                    return err;
+                });
+
+            }
+        });
+
+        $stateProvider.state({
+            name: 'service-level-assessment.**',
+            url: '/service-level-assessment',
+            params: {
+                assessmentId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('service-level-assessment',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading service-level-assessment ", err);
+                    return err;
+                });
+
             }
         });
 

@@ -19,9 +19,7 @@
   -->
 <card-layout flex header-css="filter-header">
   <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                  on-menu-open="vm.onOptionsMenuOpen" on-selected-option="vm.selectedTableOption" additional-options="vm.additionalMenuOptions"
-                  on-selected-additional-option="vm.selectedAdditionalMenuOption" filter-model="vm.filter" filter-model-options="{debounce:1000}"
-                  on-show-filter-help="vm.showFilterHelpPanel">
+                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
   </header-section>
     <body-section transclude-to="body">
             <md-tabs   flex md-selected="vm.tabMetadata.selectedIndex"
@@ -40,33 +38,23 @@
                             <br/><br/>
                         </div>
                     <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
-                        <md-list-item  dir-paginate="job in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total" current-page="tab.currentPage" >
+                        <md-list-item  dir-paginate="assessment in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total" current-page="tab.currentPage" >
                             <div layout="row" layout-fill>
-                                <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
+                                <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
                                    <span class="item-title">
-                                       {{job.jobName}}
+                                       {{assessment.agreement.name}}
                                    </span>
-                                   <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}" class="column-title-bottom">
-                                       <ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                       {{job.displayStatus}}</span>
+                                   <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE'}" class="column-title-bottom">
+                                       <!--<ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon> -->
+                                       {{assessment.result}}</span>
                                 </div>
-                                <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
-                                    <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
-                                    <span class="column-title column-title-bottom">Start Time</span>
+                                <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
+                                    <span class="item-title">{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</span>
+                                    <span class="column-title column-title-bottom">Created</span>
                                 </div>
-                                <div flex="25" layout="column" hide show-gt-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title">{{job.runTime | time }}</span>
-                                    <span class="column-title column-title-bottom">Run Time</span>
-                                </div>
-                                <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text" ng-if="!job.stream">
-                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL
-                                    </md-button>
-                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
-                                    <span ng-if="job.errorMessage != ''">
-                                        <br/>
-                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
-                                    </span>
+                                <div flex="45" flex-gt-md="20" layout="column" hide show-gt-sm class="item-column  md-list-item-text">
+                                  <span class="item-title">{{assessment.message}}</span>
+                                  <span class="column-title column-title-bottom">Message</span>
                                 </div>
                             </div>
                             <md-divider ng-if="!$last"></md-divider>
@@ -100,37 +88,23 @@
                             <table md-table md-progress="vm.deferred.promise">
                                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
                                 <tr md-row>
-                                    <th md-column name="Job Name" md-order-by="jobName">Job Name</th>
-                                    <th md-column  name="State">State</th>
-                                    <th md-column  name="Feed" md-order-by="feedName" ng-if="vm.hideFeedColumn == false">Feed</th>
-                                    <th md-column  name="Start Time" md-order-by="startTime"   hide show-gt-sm >Start Time</th>
-                                    <th md-column  name="Run Time" md-order-by="runTime"  hide show-gt-md>Run Time</th>
-                                    <th md-column  name="Status" md-order-by="status">Status</th>
-                                    <th md-column  name="Action" md-hide show-gt-md >Action</th>
+                                    <th md-column name="SLA Name" md-order-by="agreement.name">SLA Name</th>
+                                    <th md-column  name="Result"  md-order-by="result">Result</th>
+                                    <th md-column  name="Created" md-order-by="createdTime">Created</th>
+                                    <th md-column  name="Message" md-order-by="message"   hide show-gt-sm >Message</th>
                                 </tr>
                                 </thead>
                                 <tbody md-body>
-                                <tr md-row ng-repeat="job in tab.data.content" ng-click="vm.jobDetails($event,job)">
-                                    <td md-cell>{{job.jobName}}</td>
+                                <tr md-row ng-repeat="assessment in tab.data.content" ng-click="vm.assessmentDetails($event,assessment)">
+                                    <td md-cell>{{assessment.agreement.name}}</td>
                                     <td md-cell>
-                               <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}">
-                                       <ng-md-icon icon="{{job.icon}}" size="20" >
-                                       </ng-md-icon>
-                                       <span hide show-gt-md>{{job.displayStatus}}</span></span>
+                               <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE'}">
+                                       <!--<ng-md-icon icon="{{job.icon}}" size="20" >  </ng-md-icon> -->
+                                       <span hide show-gt-md>{{assessment.result}}</span></span>
 
                                     </td>
-                                    <td md-cell ng-if="vm.hideFeedColumn == false">{{job.feedName}}</td>
-                                    <td md-cell hide show-gt-sm>{{job.startTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
-                                    <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
-                                    <td md-cell >{{job.status}}</td>
-                                    <td md-cell hide show-gt-md>
-                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL</md-button>
-                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
-                                         <span ng-if="job.errorMessage != ''">
-                                        <br/>
-                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
-                                    </span>
-                                    </td>
+                                    <td md-cell >{{assessment.time}}</td>
+                                    <td md-cell >{{assessment.message}}</td>
                                 </tr>
                                 </tbody>
                             </table>

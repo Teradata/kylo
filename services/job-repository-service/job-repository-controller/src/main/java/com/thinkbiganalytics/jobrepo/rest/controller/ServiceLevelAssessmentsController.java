@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -64,9 +65,9 @@ public class ServiceLevelAssessmentsController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all slas.")
+    @ApiOperation("Lists all sla assessments.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+                      @ApiResponse(code = 200, message = "Returns the sla assessments.", response = SearchResult.class),
                       @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
                       @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
@@ -82,6 +83,22 @@ public class ServiceLevelAssessmentsController {
             return ModelUtils.toSearchResult(page);
         });
 
+    }
+
+    @GET
+    @Path("/{assessmentId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("get an SLA Assessment by the assessmentId")
+    public ServiceLevelAssessment getAssessment(@PathParam("assessmentId")String assessmentId){
+        ServiceLevelAssessment assessment = null;
+        if(assessmentId != null) {
+            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment.ID id = serviceLevelAssessmentProvider.resolveId(assessmentId);
+            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment serviceLevelAssessment = serviceLevelAssessmentProvider.findServiceLevelAssessment(id);
+            if(serviceLevelAssessment != null){
+                assessment = ServiceLevelAssessmentTransform.toModel(serviceLevelAssessment);
+            }
+        }
+        return assessment;
 
     }
 

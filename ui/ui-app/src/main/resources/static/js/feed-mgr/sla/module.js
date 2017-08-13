@@ -6,16 +6,19 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
      */
     module.config(['$stateProvider',function ($stateProvider) {
         $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state,{
-            url:'/service-level-agreements',
+            url:'/service-level-agreements/:slaId',
             params: {
+                slaId:null
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/sla/service-level-agreements-view.html'
+                    templateUrl: 'js/feed-mgr/sla/service-level-agreements-view.html',
+                    controller:"ServiceLevelAgreementInitController",
+                    controllerAs:"vm"
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/sla/service-level-agreement'])
+                loadMyCtrl: lazyLoadController(['feed-mgr/sla/service-level-agreement','feed-mgr/sla/ServiceLevelAgreementInitController'])
             },
             data:{
                 breadcrumbRoot:true,

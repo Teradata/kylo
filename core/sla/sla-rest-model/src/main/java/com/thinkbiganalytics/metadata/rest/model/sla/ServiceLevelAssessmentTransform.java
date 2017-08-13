@@ -58,6 +58,8 @@ public class ServiceLevelAssessmentTransform {
         }
         model.setMessage(assessment.getMessage());
         model.setResult(ServiceLevelAssessment.Result.valueOf(assessment.getResult().name()));
+        model.setTime(assessment.getTime());
+        model.setId(assessment.getId().toString());
         return model;
     }
 

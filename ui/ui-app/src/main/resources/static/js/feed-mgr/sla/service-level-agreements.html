@@ -17,9 +17,8 @@
   limitations under the License.
   #L%
   -->
-<div>
-
-  <card-layout header-css="filter-header" class="centered" body-css="md-padding">
+<div  layout="row" layout-align="center start">
+  <card-layout header-css="filter-header" class="card-width" body-css="md-padding" >
     <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
                     on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
         </header-section>
@@ -29,4 +28,26 @@
         </body-section>
 
     </card-layout>
-</div>
+    <card-layout flex="20" header-css="sla-details-header" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading">
+      <header-section>
+        <div style="white-space:nowrap" class="card-title">Service Level Agreement</div>
+        <div layout="column" class="layout-padding-top-bottom">
+          <span class="item-title" ng-if="vm.editSla.name">{{vm.editSla.name}}</span>
+        </div>
+      </header-section>
+      <body-section >
+        <md-content flex md-scroll-y>
+          <md-list flex layout-fill layout="column" class="list-item-table">
+            <md-list-item>
+              <div layout="column" class="item-column md-list-item-text ">
+                <a href ng-click="vm.viewSlaAssessments()">Sla Assessments</a>
+              </div>
+            </md-list-item>
+
+          </md-list>
+
+
+        </md-content>
+      </body-section>
+    </card-layout>
+  </div>

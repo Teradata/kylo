@@ -127,6 +127,18 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return promise;
 
             },
+            getSlaById: function (slaId) {
+                var successFn = function (response) {
+                    return response.data;
+                }
+                var errorFn = function (err) {
+                    console.log('ERROR ', err)
+                }
+                var promise = $http.get(RestUrlService.GET_SLA_BY_ID_URL(slaId));
+                promise.then(successFn, errorFn);
+                return promise;
+
+            },
             getSlaForEditForm: function (slaId) {
                 var successFn = function (response) {
                     return response.data;

@@ -110,7 +110,11 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         }
 
         //assessments
-        this.LIST_SLA_ASSESSMENTS_URL = "/v1/sla/assessments/"
+        this.LIST_SLA_ASSESSMENTS_URL = "/proxy/v1/sla/assessments/"
+
+        this.GET_SLA_ASSESSMENT_URL = function(assessmentId){
+            return "/proxy/v1/sla/assessments/"+assessmentId;
+        }
 
     });
 });

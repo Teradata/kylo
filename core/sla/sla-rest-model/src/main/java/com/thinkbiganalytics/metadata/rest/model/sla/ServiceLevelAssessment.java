@@ -41,6 +41,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAssessment {
 
+    private String id;
     List<ObligationAssessment> obligationAssessments;
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime time;
@@ -112,4 +113,12 @@ public class ServiceLevelAssessment {
     }
 
     public enum Result {SUCCESS, WARNING, FAILURE}
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }
