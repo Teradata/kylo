@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.service.activemq.config;
 
+
 /*-
  * #%L
  * thinkbig-service-monitor-nifi
@@ -20,6 +21,19 @@ package com.thinkbiganalytics.service.activemq.config;
  * #L%
  */
 
-public class ActivemqServiceCheckSpringConfiguration {
+import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+
+@Configuration
+public class ActivemqServiceCheckSpringConfiguration {
+	
+	@Bean(name = "activemqServiceStatus")
+    public ActivemqServiceStatusCheck nifiServiceStatusCheck() {
+        return new ActivemqServiceStatusCheck();
+    }
+	
+	
 }
