@@ -49,14 +49,15 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 	 @Value("${jms.activemq.broker.url:#{null}}")
 	 private String activemqBrokerUrl;
 
-	private static ActiveMQConnection connection = null;
+	private ActiveMQConnection connection = null;
 	
 	@Autowired
 	private Environment env;
 
 	@Override
 	public ServiceStatusResponse healthCheck() {
-		// TODO Auto-generated method stub
+
+		
 		String serviceName = "Activemq";
 
 		return new DefaultServiceStatusResponse(serviceName, Arrays.asList(activemqStatus()));
@@ -89,11 +90,10 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
 		try {
 
-			//String uri = "tcp://127.0.0.1:61616";
 
 			if ( StringUtils.isNotBlank(activemqBrokerUrl) )
 			{
-			String activemqConnectionUri = activemqBrokerUrl.toString();
+			String activemqConnectionUri = activemqBrokerUrl;
 
 			ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
 
