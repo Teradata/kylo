@@ -1,0 +1,63 @@
+package com.thinkbiganalytics.service.activemq;
+
+
+
+/*-
+ * #%L
+ * thinkbig-service-monitor-nifi
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+
+import java.io.IOException;
+
+import org.apache.activemq.transport.TransportListener;
+import org.apache.log4j.Logger;
+
+class ActivemqTransportListner
+  implements TransportListener
+{
+  private static final Logger log = Logger.getLogger(ActivemqTransportListner.class);
+
+  @Override
+  public void onCommand(Object command)
+  {
+    log.debug("Command detected: '" + command + "'");
+    System.out.println("Command detected: '" + command + "'");
+  }
+
+  @Override
+  public void onException(IOException exception)
+  {
+    log.error("Exception detected: '" + exception + "'");
+    System.out.println("Exception detected: '" + exception + "'");
+  }
+
+  @Override
+  public void transportInterupted()
+  {
+    log.error("Transport interuption detected.");
+    System.out.println("Transport interuption detected.");
+  }
+
+  @Override
+  public void transportResumed()
+  {
+    log.info("Transport resumption detected.");
+    System.out.println("Transport resumption detected.");
+  }
+}
