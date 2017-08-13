@@ -44,85 +44,90 @@ import java.util.Arrays;
 
 public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
-	private static final Logger log = LoggerFactory.getLogger(ActivemqServiceStatusCheck.class);
-	
-	 @Value("${jms.activemq.broker.url:#{null}}")
-	 private String activemqBrokerUrl;
+    private static final Logger log = LoggerFactory.getLogger(ActivemqServiceStatusCheck.class);
 
-	private ActiveMQConnection connection = null;
-	
-	@Autowired
-	private Environment env;
-
-	@Override
-	public ServiceStatusResponse healthCheck() {
-
-		
-		String serviceName = "Activemq";
-
-		return new DefaultServiceStatusResponse(serviceName, Arrays.asList(activemqStatus()));
-	}
-
-	/**
-	 * Check if Activemq is running
-	 * 
-	 * @return Status of Activemq
-	 */
-
-	private ServiceComponent activemqStatus() {
-
-		String componentName = "Activemq";
-		String serviceName = "Activemq";
-		ServiceComponent component = null;
-
-	
-		/**
-		 * Prepare Alert Message
-		 */
-		ServiceAlert alert = null;
-		alert = new DefaultServiceAlert();
-		alert.setLabel(componentName);
-		alert.setServiceName(serviceName);
-		alert.setComponentName(componentName);
+    @Value("${jms.activemq.broker.url:#{null}}")
+    private String activemqBrokerUrl;
 
 
-		String finalServiceMessage = ""; 
+    static final  String SERVICE_NAME = "Activemq"; 
 
-		try {
+    @Autowired
+    private Environment env;
 
-
-			if ( StringUtils.isNotBlank(activemqBrokerUrl) )
-			{
-			String activemqConnectionUri = activemqBrokerUrl;
-
-			ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
-
-			/**
-			 * Exception is thrown if connection failed.
-			 */
-			connection = (ActiveMQConnection)factory.createConnection();
-			connection.addTransportListener(new ActivemqTransportListner());
+    @Override
+    public ServiceStatusResponse healthCheck() {
 
 
-			finalServiceMessage = "Activemq is running.";
-			alert.setMessage(finalServiceMessage);
-			alert.setState(ServiceAlert.STATE.OK);
-			component =
-					new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
-					.message(finalServiceMessage).addAlert(alert).build();;
+        String serviceName = SERVICE_NAME;
 
-			}
+        return new DefaultServiceStatusResponse(serviceName, Arrays.asList(activemqStatus()));
+    }
 
-		} catch (Exception e) {
+    /**
+     * Check if Activemq is running
+     * 
+     * @return Status of Activemq
+     */
 
-			finalServiceMessage = "Activemq is down";
-			alert.setMessage(finalServiceMessage);
-			alert.setState(ServiceAlert.STATE.CRITICAL);
+    private ServiceComponent activemqStatus() {
 
-			component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(e).addAlert(alert).build();
-		}
-		
-		return component;
-	}
+        String componentName = "Activemq";
+        String serviceName = SERVICE_NAME;
+        ServiceComponent component = null;
+
+
+        /**
+         * Prepare Alert Message
+         */
+        ServiceAlert alert = null;
+        alert = new DefaultServiceAlert();
+        alert.setLabel(componentName);
+        alert.setServiceName(serviceName);
+        alert.setComponentName(componentName);
+
+
+        String finalServiceMessage = ""; 
+
+        try {
+
+
+            if ( StringUtils.isNotBlank(activemqBrokerUrl) )
+            {
+
+                ActiveMQConnection connection = null;
+
+                String activemqConnectionUri = activemqBrokerUrl;
+
+
+                ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
+
+                /**
+                 * Exception is thrown if connection failed.
+                 */
+                connection = (ActiveMQConnection)factory.createConnection();
+                connection.addTransportListener(new ActivemqTransportListner());
+
+
+                finalServiceMessage = "Activemq is running.";
+                alert.setMessage(finalServiceMessage);
+                alert.setState(ServiceAlert.STATE.OK);
+                component =
+                                new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
+                                .message(finalServiceMessage).addAlert(alert).build();
+
+            }
+
+        } catch (Exception e) {
+
+            finalServiceMessage = "Activemq is down";
+            alert.setMessage(finalServiceMessage);
+            alert.setState(ServiceAlert.STATE.CRITICAL);
+
+            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(e).addAlert(alert).build();
+        }
+
+        return component;
+    }
 
 }

@@ -29,11 +29,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ActivemqServiceCheckSpringConfiguration {
-	
-	@Bean(name = "activemqServiceStatus")
+
+    @Bean(name = "activemqServiceStatus")
     public ActivemqServiceStatusCheck nifiServiceStatusCheck() {
         return new ActivemqServiceStatusCheck();
     }
-	
-	
+
+
 }

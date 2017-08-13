@@ -28,34 +28,34 @@ import org.apache.log4j.Logger;
 class ActivemqTransportListner
 implements TransportListener
 {
-	private static final Logger log = Logger.getLogger(ActivemqTransportListner.class);
+    private static final Logger log = Logger.getLogger(ActivemqTransportListner.class);
 
-	@Override
-	public void onCommand(Object command)
-	{
-		log.debug("Command detected: '" + command + "'");
-		System.out.println("Command detected: '" + command + "'");
-	}
+    @Override
+    public void onCommand(Object command)
+    {
+        log.debug("Command detected: '" + command + "'");
+        System.out.println("Command detected: '" + command + "'");
+    }
 
-	@Override
-	public void onException(IOException exception)
-	{
-		log.error("Exception detected: '" + exception + "'");
-		System.out.println("Exception detected: '" + exception + "'");
-	}
+    @Override
+    public void onException(IOException exception)
+    {
+        log.error("Exception detected: '" + exception + "'");
+        System.out.println("Exception detected: '" + exception + "'");
+    }
 
-	@Override
-	public void transportInterupted()
-	{
-		log.error("Transport interuption detected.");
-		System.out.println("Transport interuption detected.");
-	}
+    @Override
+    public void transportInterupted()
+    {
+        log.error("Transport interuption detected.");
+        System.out.println("Transport interuption detected.");
+    }
 
-	@Override
-	public void transportResumed()
-	{
-		log.info("Transport resumption detected.");
-		System.out.println("Transport resumption detected.");
-	}
+    @Override
+    public void transportResumed()
+    {
+        log.info("Transport resumption detected.");
+        System.out.println("Transport resumption detected.");
+    }
 
 }
