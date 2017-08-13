@@ -20,42 +20,39 @@ package com.thinkbiganalytics.service.activemq;
  * #L%
  */
 
-
-import java.io.IOException;
 import org.apache.activemq.transport.TransportListener;
 import org.apache.log4j.Logger;
 
-class ActivemqTransportListner
-implements TransportListener
+import java.io.IOException;
+
+class ActivemqTransportListner implements TransportListener
 {
     private static final Logger log = Logger.getLogger(ActivemqTransportListner.class);
 
     @Override
     public void onCommand(Object command)
     {
-        log.debug("Command detected: '" + command + "'");
-        System.out.println("Command detected: '" + command + "'");
+        /**
+         * Do Nothing
+         */
     }
 
     @Override
     public void onException(IOException exception)
     {
-        log.error("Exception detected: '" + exception + "'");
-        System.out.println("Exception detected: '" + exception + "'");
+        log.error("Unable to connection Activemq" + exception.getMessage());
     }
 
     @Override
     public void transportInterupted()
     {
-        log.error("Transport interuption detected.");
-        System.out.println("Transport interuption detected.");
+       log.error("Interruption has occured.");
     }
 
     @Override
     public void transportResumed()
     {
-        log.info("Transport resumption detected.");
-        System.out.println("Transport resumption detected.");
+        log.info("Activemq connection is re-established");
     }
 
 }
