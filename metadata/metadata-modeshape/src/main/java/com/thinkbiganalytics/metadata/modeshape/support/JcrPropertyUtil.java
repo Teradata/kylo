@@ -127,6 +127,17 @@ public class JcrPropertyUtil {
         throw new UnsupportedOperationException();
     }
 
+    public static String getIdentifier(Node node) {
+        try {
+            return node.getIdentifier();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access identifier property of node: " + node, e);
+        }
+    }
+
     public static String getName(Node node) {
         try {
             return node.getName();

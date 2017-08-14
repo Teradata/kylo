@@ -95,6 +95,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -180,6 +181,19 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
+    }
+    
+    @Override
+    public Optional<Node> findVersionableNode(ID id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Feed asEntity(Node versionable) {
+        // The versionable node argument is the summary node.
+        Node feedNode = JcrUtil.getParent(versionable);
+        return JcrUtil.getJcrObject(feedNode, JcrFeed.class, this);
     }
 
     /* (non-Javadoc)

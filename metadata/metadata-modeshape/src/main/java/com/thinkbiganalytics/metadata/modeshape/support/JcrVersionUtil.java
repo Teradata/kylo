@@ -314,5 +314,13 @@ public class JcrVersionUtil {
         throw new MetadataRepositoryException("Unable to find Version " + versionNumber + " for Node " + node.getNodeName());
     }
 
+    public static Node getFrozenNode(Version version) {
+        try {
+            return version.getFrozenNode();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get frozen node of Version: " + version, e);
+        }
+    }
+
 
 }

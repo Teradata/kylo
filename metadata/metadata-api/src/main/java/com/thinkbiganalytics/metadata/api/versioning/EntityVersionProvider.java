@@ -12,9 +12,9 @@ import java.util.Optional;
  */
 public interface EntityVersionProvider<T, PK extends Serializable> {
 
-    List<EntityVersion<T>> findVersions(PK id);
+    Optional<List<EntityVersion<T>>> findVersions(PK id, boolean includeEntity);
     
-    Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId);
+    Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeEntity);
     
-    Optional<EntityVersion<T>> findLatestVersion(PK entityId);
+    Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includeEntity);
 }
