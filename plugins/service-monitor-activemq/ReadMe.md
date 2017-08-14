@@ -6,7 +6,7 @@ Pre-requisite : Make sure jms.activemq.broker.url is configured in application.p
 
 To use this you need to do the following
 
-* Copy jar from /opt/kylo/setup/plugin/kylo-service-monitor-activemq-<Kylo-Version>.jar to the /opt/kylo/kylo-services/plugin/kylo-service-monitor-activemq-<Kylo-Version>.jar  folder
+* Copy jar from /opt/kylo/setup/plugins/kylo-service-monitor-activemq-<Kylo-Version>.jar to the /opt/kylo/kylo-services/plugin/kylo-service-monitor-activemq-<Kylo-Version>.jar  folder
 * Make sure jar file is owned by Kylo service user.
 
 
