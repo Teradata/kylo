@@ -181,7 +181,7 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
         //find
         Iterator<? extends Alert>
             unhandledAlerts = alertProvider.getAlerts(alertProvider.criteria().type(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE).subtype(serviceStatusResponse.getServiceName()).state(
-            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED));
+            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED).asServiceAccount(true));
         //if there is already an unhandled alert with this same service dont do anything, otherwise create one
         if(!unhandledAlerts.hasNext()){
             Alert alert = alertManager.create(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE,
@@ -196,7 +196,7 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
         //called every time a service is marked as healthy
         Iterator<? extends com.thinkbiganalytics.alerts.api.Alert>
             unhandledAlerts = alertProvider.getAlerts(alertProvider.criteria().type(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE).subtype(serviceStatusResponse.getServiceName()).state(
-            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED));
+            com.thinkbiganalytics.alerts.api.Alert.State.UNHANDLED).asServiceAccount(true));
         if(unhandledAlerts.hasNext()){
             Lists.newArrayList(unhandledAlerts).stream().forEach(alert -> {
                 alertProvider.respondTo(alert.getId(), (alert1, response) -> response.handle("Service is back up",null));

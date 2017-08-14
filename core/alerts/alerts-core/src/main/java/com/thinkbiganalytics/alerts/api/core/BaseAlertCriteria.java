@@ -55,6 +55,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     private DateTime afterTime;
     private DateTime beforeTime;
     private boolean includeCleared = false;
+    private boolean asServiceAccount = false;
 
     private String orFilter;
 
@@ -73,6 +74,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         this.states.forEach((s) -> updated.set(updated.get().state(s)));
         this.levels.forEach((l) -> updated.set(updated.get().level(l)));
         updated.set(updated.get().orFilter(orFilter));
+        updated.set(updated.get().asServiceAccount(this.asServiceAccount));
         return updated.get();
     }
 
@@ -196,6 +198,11 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return this;
     }
 
+    public  AlertCriteria asServiceAccount(boolean serviceAccount) {
+        this.asServiceAccount = asServiceAccount;
+        return this;
+    }
+
     protected boolean testTypes(Alert alert) {
         return this.types.stream().anyMatch(uri -> {
             // A match means the type URIs are equal (handles opaque URIs) or the matching URI is a parent as defined by relativize.
@@ -262,5 +269,9 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     public String getOrFilter() {
         return orFilter;
+    }
+
+    public boolean isAsServiceAccount() {
+        return asServiceAccount;
     }
 }

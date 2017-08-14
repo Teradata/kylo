@@ -102,4 +102,8 @@ public interface AlertCriteria {
      */
     AlertCriteria orFilter(String orFilter);
 
+    AlertCriteria asServiceAccount(boolean serviceAccount);
+
+    boolean isAsServiceAccount();
+
 }

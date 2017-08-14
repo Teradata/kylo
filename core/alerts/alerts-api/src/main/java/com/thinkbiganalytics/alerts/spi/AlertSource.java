@@ -47,7 +47,19 @@ public interface AlertSource {
 
     void removeReceiver(AlertNotifyReceiver receiver);
 
+    /**
+     * Gets the alert as the currently logged in User
+     * @param id the id of the alert
+     * @return the alert
+     */
     Optional<Alert> getAlert(Alert.ID id);
+
+    /**
+     * Gets an alert as a Service Account (privileged user)
+     * @param id the id of the alert
+     * @return the Alert
+     */
+    Optional<Alert> getAlertAsServiceAccount(Alert.ID id);
 
     Iterator<Alert> getAlerts(AlertCriteria criteria);
 

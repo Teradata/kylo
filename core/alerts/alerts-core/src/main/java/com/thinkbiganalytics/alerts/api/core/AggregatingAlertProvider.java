@@ -239,7 +239,18 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertSource src = getSource(alertId.sourceId);
 
         if (src != null) {
-            return getAlert(alertId.alertId, src);
+            return getAlert(alertId.alertId, src,false);
+        } else {
+            return null;
+        }
+    }
+
+    public Optional<Alert> getAlertAsServiceAccount(ID id) {
+        SourceAlertID alertId = asSourceAlertId(id);
+        AlertSource src = getSource(alertId.sourceId);
+
+        if (src != null) {
+            return getAlert(alertId.alertId, src,true);
         } else {
             return null;
         }
@@ -298,7 +309,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             final AtomicReference<DateTime> sinceTime = new AtomicReference<>(AggregatingAlertProvider.this.lastAlertsTime);
             Map<String, AlertSource> sources = snapshotAllSources();
 
-            combineAlerts(criteria().after(sinceTime.get()), sources).forEach(alert -> {
+            combineAlerts(criteria().asServiceAccount(true).after(sinceTime.get()), sources).forEach(alert -> {
                 LOG.debug("Alert {} received from {}", alert.getId(), alert.getSource());
 
                 notifyListeners(alert);
@@ -334,8 +345,13 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    public Optional<Alert> getAlert(Alert.ID id, AlertSource src) {
-        return src.getAlert(id).map(alert -> wrapAlert(alert, src));
+    public Optional<Alert> getAlert(Alert.ID id, AlertSource src, boolean asServiceAccount) {
+        if(asServiceAccount) {
+            return src.getAlertAsServiceAccount(id).map(alert -> wrapAlert(alert, src));
+        }
+        else {
+            return src.getAlert(id).map(alert -> wrapAlert(alert, src));
+        }
     }
 
     private Stream<Alert> combineAlerts(AlertCriteria criteria, Map<String, AlertSource> srcs) {
@@ -449,7 +465,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertManager mgr = this.managers.get(srcId.sourceId);
 
         if (mgr != null) {
-            return getAlert(srcId.alertId, mgr)
+            return getAlert(srcId.alertId, mgr,true)
                 .filter(alert -> alert.isActionable())
                 .map(alert -> new SimpleEntry<>(unwrapAlert(alert), mgr))
                 .orElse(null);

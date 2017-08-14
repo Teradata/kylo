@@ -877,7 +877,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
         String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feedName;
         if (StringUtils.isNotBlank(alertId)) {
-            alert = provider.getAlert(provider.resolve(alertId)).orElse(null);
+            alert = provider.getAlertAsServiceAccount(provider.resolve(alertId)).orElse(null);
         }
         if (alert == null) {
             alert = alertManager.createEntityAlert(OperationalAlerts.JOB_FALURE_ALERT_TYPE,

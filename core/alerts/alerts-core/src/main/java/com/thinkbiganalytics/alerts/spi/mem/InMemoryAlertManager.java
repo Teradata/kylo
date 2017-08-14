@@ -155,6 +155,11 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
+    public Optional<Alert> getAlertAsServiceAccount(Alert.ID id) {
+        return getAlert(id);
+    }
+
+    @Override
     public AlertCriteria criteria() {
         return new BaseAlertCriteria();
     }

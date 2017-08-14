@@ -154,6 +154,12 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     public Optional<Alert> getAlert(Alert.ID id) {
         return this.metadataAccess.read(() -> {
             return Optional.of(findAlert(id).map(a -> asValue(a)).orElseThrow(() -> new AlertNotfoundException(id)));
+        });
+    }
+
+    public Optional<Alert> getAlertAsServiceAccount(Alert.ID id) {
+        return this.metadataAccess.read(() -> {
+            return Optional.of(findAlert(id).map(a -> asValue(a)).orElseThrow(() -> new AlertNotfoundException(id)));
         }, MetadataAccess.SERVICE);
     }
 
@@ -162,12 +168,20 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     }
 
     public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
+        Principal[]principal = null;
+        if(criteria != null && criteria.isAsServiceAccount()){
+            principal = new Principal[1];
+            principal[0] = MetadataAccess.SERVICE;
+        }
+        else {
+            principal = new Principal[0];
+        }
         return this.metadataAccess.read(() -> {
             DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createSummaryQuery().fetch().stream()
                 .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
                 .iterator();
-        }, MetadataAccess.SERVICE);
+        },principal);
     }
 
 
@@ -177,13 +191,21 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      */
     @Override
     public Iterator<Alert> getAlerts(AlertCriteria criteria) {
+        Principal[]principal = null;
+        if(criteria != null && criteria.isAsServiceAccount()){
+            principal = new Principal[1];
+            principal[0] = MetadataAccess.SERVICE;
+        }
+        else {
+            principal = new Principal[0];
+        }
         return this.metadataAccess.read(() -> {
             DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createQuery().fetch().stream()
                 .map(a -> asValue(a))
                 .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
                 .iterator();
-        }, MetadataAccess.SERVICE);
+        },principal);
     }
 
 //

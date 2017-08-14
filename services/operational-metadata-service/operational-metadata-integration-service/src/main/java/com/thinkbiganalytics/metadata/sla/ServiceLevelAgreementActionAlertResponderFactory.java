@@ -85,14 +85,22 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
         }
     }
 
-    private void handleViolation(Alert alert) {
-        metadataAccess.read(() -> {
+    /**
+     * handle the violation.  Return true if the sla has actions configured in additional generating an alert.
+     * @param alert the alert
+     * @return true if additional actions were triggered, false if not
+     */
+    private boolean handleViolation(Alert alert) {
+
+        return metadataAccess.read(() -> {
             ServiceLevelAssessment.ID assessmentId = alert.getContent();
             ServiceLevelAssessment assessment = assessmentProvider.findServiceLevelAssessment(assessmentId);
             ServiceLevelAgreement agreement = assessment.getAgreement();
             assessmentProvider.ensureServiceLevelAgreementOnAssessment(assessment);
             agreement = assessment.getAgreement();
+            boolean hasActions = false;
             if (agreement != null && agreement.getSlaChecks() != null && !agreement.getSlaChecks().isEmpty()) {
+                hasActions = true;
                 for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
 
                     for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck) check).getActionConfigurations(true)) {
@@ -119,6 +127,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                     }
                 }
             }
+            return hasActions;
         }, MetadataAccess.SERVICE);
     }
 

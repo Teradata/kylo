@@ -35,10 +35,12 @@ import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
 import com.thinkbiganalytics.metadata.api.alerts.KyloEntityAwareAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,13 +50,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 /**
  * Created by sr186054 on 8/3/17.
  */
 public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
 
-    public KyloEntityAwareAlertCriteria(JPAQueryFactory queryFactory) {
+    private AccessController controller;
+
+    public KyloEntityAwareAlertCriteria(JPAQueryFactory queryFactory, AccessController controller) {
         super(queryFactory);
+        this.controller = controller;
     }
 
 
@@ -63,6 +70,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
     public JPAQuery<JpaAlert> createQuery() {
         QJpaAlert alert = QJpaAlert.jpaAlert;
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        QJpaOpsManagerFeed slaFeed = new QJpaOpsManagerFeed("slaFeed");
         QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
 
         JPAQuery<JpaAlert> query = queryFactory
@@ -70,9 +78,12 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
             .from(alert)
             .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
             .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
+            .leftJoin(sla.feeds,slaFeed)
             .limit(getLimit());
 
         List<Predicate> preds = filter(alert);
+        preds.add(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))));
+        preds.add(slaFeed.isNull().or(slaFeed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(slaFeed.id, controller.isEntityAccessControlled()))));
         BooleanBuilder orFilter = orFilter(alert, feed, sla);
 
         // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
@@ -89,6 +100,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
     public JPAQuery<AlertSummary> createSummaryQuery() {
         QJpaAlert alert = QJpaAlert.jpaAlert;
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        QJpaOpsManagerFeed slaFeed = new QJpaOpsManagerFeed("slaFeed");
         QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
 
         JPAQuery
@@ -107,9 +119,11 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
             .from(alert)
             .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
             .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
+            .leftJoin(sla.feeds,slaFeed)
             .groupBy(alert.typeString, alert.subtype, feed.id, feed.name,sla.slaId,sla.name, alert.level);
         List<Predicate> preds = filter(alert);
-
+        preds.add(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))));
+        preds.add(slaFeed.isNull().or(slaFeed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(slaFeed.id, controller.isEntityAccessControlled()))));
         BooleanBuilder orFilter = orFilter(alert, feed, sla);
 
         return (JPAQuery<AlertSummary>)  super.addWhere(query, preds, orFilter);

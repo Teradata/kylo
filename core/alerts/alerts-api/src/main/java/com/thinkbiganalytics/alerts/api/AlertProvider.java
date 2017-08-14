@@ -91,12 +91,21 @@ public interface AlertProvider {
 
 
     /**
+     * Retrieves a specific alert running as a priviledge user
+     *
+     * @param id the alert's ID
+     * @return the alert, or null if no alert exists with that ID
+     */
+    Optional<Alert> getAlertAsServiceAccount(Alert.ID id);
+
+
+    /**
      * gets the alert for a given source
      * @param id the alert id (without the source
      * @param src the alert source
      * @return the alert
      */
-    Optional<Alert> getAlert(Alert.ID id, AlertSource src);
+    Optional<Alert> getAlert(Alert.ID id, AlertSource src, boolean asServiceAccount);
 
     /**
      * Retrieves alerts matching the given criteria.  Specifying null retrieve all known alerts.

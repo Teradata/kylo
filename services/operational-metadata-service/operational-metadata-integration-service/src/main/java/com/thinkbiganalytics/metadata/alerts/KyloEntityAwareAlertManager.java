@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.sla.QJpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
+import com.thinkbiganalytics.security.AccessController;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -51,6 +52,9 @@ public class KyloEntityAwareAlertManager extends DefaultAlertManager {
 
     @Inject
     private JPAQueryFactory queryFactory;
+
+    @Inject
+    private AccessController controller;
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -77,7 +81,7 @@ public class KyloEntityAwareAlertManager extends DefaultAlertManager {
     }
 
     public KyloEntityAwareAlertCriteria criteria() {
-        return new KyloEntityAwareAlertCriteria(queryFactory);
+        return new KyloEntityAwareAlertCriteria(queryFactory, controller);
     }
 
 
