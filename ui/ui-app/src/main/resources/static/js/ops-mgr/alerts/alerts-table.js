@@ -59,10 +59,23 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
             return self.filter;
         }, function (newVal, oldVal) {
             if (newVal != oldVal) {
-                return loadJobs(true).promise;
+                return loadAlerts(true).promise;
             }
 
-        })
+        });
+
+        var ALL_ALERT_TYPES_FILTER = {label:"ALL",type:""};
+        self.filterAlertType = ALL_ALERT_TYPES_FILTER;
+
+        self.alertTypes = [ALL_ALERT_TYPES_FILTER,
+            {label:"SLA",type:"http://kylo.io/alert/alert/sla/violation"},
+            {label:"Job Failure",type:"http://kylo.io/alert/job/failure"},
+            {label:"Service",type:"http://kylo.io/alert/service"}
+        ];
+
+        self.onFilterAlertTypeChange = function(alertType){
+            loadAlerts(true);
+        }
 
 
         /**
@@ -297,6 +310,16 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                     params.filter = filter;
                 }
 
+                if(self.filterAlertType.label != 'ALL'){
+                    if(params.filter == undefined){
+                        params.filter = self.filterAlertType.type;
+                    }
+                    else {
+                        params.filter+=','+self.filterAlertType.type;
+                    }
+                }
+
+
                 $http.get(OpsManagerRestUrlService.ALERTS_URL, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             self.showProgress = true;
@@ -342,6 +365,15 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
          * @returns {*}
          */
         function transformAlert(alert) {
+            alert.typeDisplay = alert.type;
+            if(alert.typeDisplay.indexOf("http://kylo.io/alert/alert/") == 0){
+                alert.typeDisplay = alert.typeDisplay.substring("http://kylo.io/alert/alert/".length);
+                alert.typeDisplay= alert.typeDisplay.split("/").join(" ");
+            }
+            else if(alert.typeDisplay.indexOf("http://kylo.io/alert/") == 0){
+                alert.typeDisplay = alert.typeDisplay.substring("http://kylo.io/alert/".length);
+                alert.typeDisplay = alert.typeDisplay.split("/").join(" ");
+            }
             return alert;
         }
 

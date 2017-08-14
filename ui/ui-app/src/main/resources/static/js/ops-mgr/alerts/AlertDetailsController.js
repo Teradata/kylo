@@ -37,7 +37,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
          */
         self.alertData = {};
 
-        /**
+         /**
          * Gets the class for the specified state.
          * @param {string} state the name of the state
          * @returns {string} class name

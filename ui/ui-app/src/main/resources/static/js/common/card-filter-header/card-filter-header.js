@@ -14,7 +14,9 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 onSelectedAdditionalOption: "&?",
                 onMenuOpen: '&?',
                 onShowFilterHelp: '&?',
-                renderFilter:'=?'
+                renderFilter:'=?',
+                cardController:'=?',
+                customFilterTemplate:'@?'
             },
             controllerAs: '$cardFilterHeader',
             templateUrl: 'js/common/card-filter-header/card-filter-header-template.html',
@@ -32,6 +34,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 self.renderFilter = angular.isUndefined(self.renderFilter) ? true : self.renderFilter;
 
                 self.renderHelp = angular.isDefined(self.onShowFilterHelp);
+
+                self.customFilterTemplate = angular.isUndefined(self.customFilterTemplate) ? '' : self.customFilterTemplate;
 
                 /**
                  * Called when a user Clicks on a table Option
