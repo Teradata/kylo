@@ -24,9 +24,6 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-
-import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 
 import javax.sql.DataSource;
 
@@ -37,7 +34,6 @@ import liquibase.integration.spring.SpringLiquibase;
  */
 @Configuration
 @EnableConfigurationProperties({LiquibaseProperties.class})
-@Profile(KyloUpgrader.KYLO_UPGRADE)
 public class LiquibaseConfiguration {
 
     @Bean
