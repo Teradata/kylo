@@ -32,7 +32,7 @@ define(['angular','ops-mgr/sla/module-name',  'kylo-utils/LazyLoadUtil','constan
 
 
         $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENT.state,{
-            url:'/service-level-assessment/:assessmentId',
+            url:'/service-level-assessment/{assessmentId}',
             params: {
                 assessmentId:null
             },

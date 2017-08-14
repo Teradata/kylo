@@ -546,6 +546,25 @@ define(['angular', 'kylo-common', 'kylo-services',
         });
 
         $stateProvider.state({
+            name: 'service-level-assessment.**',
+            url: '/service-level-assessment/{assessmentId}',
+            params: {
+                assessmentId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('service-level-assessment',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading service-level-assessment ", err);
+                    return err;
+                });
+
+            }
+        });
+
+        $stateProvider.state({
             name: 'service-level-assessments.**',
             url: '/service-level-assessments',
             params: {
@@ -564,24 +583,7 @@ define(['angular', 'kylo-common', 'kylo-services',
             }
         });
 
-        $stateProvider.state({
-            name: 'service-level-assessment.**',
-            url: '/service-level-assessment',
-            params: {
-                assessmentId: null
-            },
-            lazyLoad: function (transition) {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessment',transition.params())
-                    return args;
-                }, function error(err) {
-                    console.log("Error loading service-level-assessment ", err);
-                    return err;
-                });
 
-            }
-        });
 
         $stateProvider.state({
            name:'access-denied',
