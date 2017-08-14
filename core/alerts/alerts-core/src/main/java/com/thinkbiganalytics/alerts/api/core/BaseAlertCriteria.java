@@ -199,7 +199,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     }
 
     public  AlertCriteria asServiceAccount(boolean serviceAccount) {
-        this.asServiceAccount = asServiceAccount;
+        this.asServiceAccount = serviceAccount;
         return this;
     }
 

@@ -78,7 +78,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                    boolean hasActions = handleViolation(alert);
                    //if we found additional actions mark the alert as being inProgress.
                     //otherwise keep it as unhandled and let an operator handle it
-                   if(!hasActions) {
+                   if(hasActions) {
                        response.inProgress("Handling SLA Alert");
                    }
                 } catch (Exception e) {
@@ -104,7 +104,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
             agreement = assessment.getAgreement();
             boolean hasActions = false;
             if (agreement != null && agreement.getSlaChecks() != null && !agreement.getSlaChecks().isEmpty()) {
-                hasActions = true;
+
                 for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
 
                     for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck) check).getActionConfigurations(true)) {
@@ -115,6 +115,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                             for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
                                 ServiceLevelAgreementAction action = ServiceLevelAgreementActionUtil.instantiate(responderClass);
                                 if (action != null) {
+                                    hasActions = true;
                                     log.info("Found {} action", action.getClass().getName());
                                     //reassign the content of the alert to the ServiceLevelAssessment
                                     //validate the action is ok
