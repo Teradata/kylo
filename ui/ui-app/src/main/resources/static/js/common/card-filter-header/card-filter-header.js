@@ -13,7 +13,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 additionalOptions: '=?',
                 onSelectedAdditionalOption: "&?",
                 onMenuOpen: '&?',
-                onShowFilterHelp: '&?'
+                onShowFilterHelp: '&?',
+                renderFilter:'=?'
             },
             controllerAs: '$cardFilterHeader',
             templateUrl: 'js/common/card-filter-header/card-filter-header-template.html',
@@ -27,6 +28,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             controller: ['$scope', '$element', 'TableOptionsService',function ($scope, $element, TableOptionsService) {
                 var self = this;
                 self.filterModelOptions = self.filterModelOptions || {};
+
+                self.renderFilter = angular.isUndefined(self.renderFilter) ? true : self.renderFilter;
 
                 self.renderHelp = angular.isDefined(self.onShowFilterHelp);
 

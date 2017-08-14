@@ -20,7 +20,7 @@
 <div  layout="row" layout-align="center start">
   <card-layout header-css="filter-header" class="card-width" body-css="md-padding" >
     <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                    on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+                    on-selected-option="vm.selectedTableOption" render-filter="vm.renderFilter" filter-model="vm.filter">
         </header-section>
 
         <body-section>
@@ -28,7 +28,7 @@
         </body-section>
 
     </card-layout>
-    <card-layout flex="20" header-css="sla-details-header" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading">
+    <card-layout flex="20" header-css="sla-details-header" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading && !vm.creatingNewSla">
       <header-section>
         <div style="white-space:nowrap" class="card-title">Service Level Agreement</div>
         <div layout="column" class="layout-padding-top-bottom">

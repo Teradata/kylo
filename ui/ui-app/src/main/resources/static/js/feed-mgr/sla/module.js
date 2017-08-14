@@ -21,7 +21,7 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
                 loadMyCtrl: lazyLoadController(['feed-mgr/sla/service-level-agreement','feed-mgr/sla/ServiceLevelAgreementInitController'])
             },
             data:{
-                breadcrumbRoot:true,
+                breadcrumbRoot:false,
                 displayName:'Service Level Agreements',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions

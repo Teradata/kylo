@@ -1,10 +1,10 @@
  <div style="white-space: nowrap;margin-top:10px;" class="card-title">{{::$cardFilterHeader.cardTitle}}</div>
         <span flex="5"></span>
-        <md-input-container flex style="margin-top:0px;margin-bottom:0px;">
+        <md-input-container flex style="margin-top:0px;margin-bottom:0px;" ng-if="$cardFilterHeader.renderFilter">
             <label>Filter</label>
             <input ng-model="$cardFilterHeader.filterModel" ng-model-options="$cardFilterHeader.filterModelOptions"/>
         </md-input-container>
- <div layout="row" layout-align="space-between center">
+ <div layout="row" layout-align="space-between center"  ng-if="$cardFilterHeader.renderFilter">
    <md-button aria-label="Filter Help" class="md-icon-button filter-help-button" ng-click="$cardFilterHeader.showFilterHelpPanel($event)" ng-if="$cardFilterHeader.renderHelp">
      <ng-md-icon md-icon icon="help" size="15" style="fill:grey;"></ng-md-icon>
    </md-button>

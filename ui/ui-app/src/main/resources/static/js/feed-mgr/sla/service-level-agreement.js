@@ -91,6 +91,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 });
 
         function showList(requery) {
+            self.renderFilter = true;
             self.editSla = null;
             self.creatingNewSla = null;
             self.editSlaId = null;
@@ -478,6 +479,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             self.editSlaId = null;
             self.editSla = {name: '', description: '', rules: [], actionConfigurations: []};
             self.addingSlaCondition = true;
+            self.renderFilter = false;
         }
 
         self.onEditSla = function(sla) {
@@ -485,6 +487,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 AddButtonService.hideAddButton();
                 self.editSlaIndex = _.findIndex(self.serviceLevelAgreements, sla);
                 self.loadAndEditSla(sla.id);
+                self.renderFilter = false;
             } else {
                 $mdDialog.show(
                         $mdDialog.alert()
