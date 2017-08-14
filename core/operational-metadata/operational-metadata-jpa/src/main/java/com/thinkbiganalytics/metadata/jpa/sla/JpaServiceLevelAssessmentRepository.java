@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,5 +45,12 @@ public interface JpaServiceLevelAssessmentRepository extends JpaRepository<JpaSe
            + "                              where assessment2.slaId = :slaId"
            + "                              and assessment2.id != :assessmentId)")
     List<JpaServiceLevelAssessment> findLatestAssessmentsNotEqualTo(@Param("slaId") ServiceLevelAgreementDescriptionId slaId, @Param("assessmentId") ServiceLevelAssessment.ID assessmentId);
+
+    @Query(" select distinct assessment from JpaServiceLevelAssessment assessment " +
+           " left join JpaServiceLevelAgreementDescription slaDescription on slaDescription.slaId = assessment.slaId " +
+           "left join slaDescription.feeds as feed " +
+           "left "+FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED+" "+
+           " where assessment.id = :id  and (feed.id is null or (feed.id is not null and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH+" ))")
+    JpaServiceLevelAssessment findAssessment(@Param("id") ServiceLevelAssessment.ID id);
 
 }

@@ -22,6 +22,7 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.jms.JmsService;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -62,6 +63,11 @@ public class SpringOperationalMetadataTestConfiguration {
     }
 
 
+
+    @Bean
+    public AccessController accessController() {
+        return Mockito.mock(AccessController.class);
+    }
 
 
 

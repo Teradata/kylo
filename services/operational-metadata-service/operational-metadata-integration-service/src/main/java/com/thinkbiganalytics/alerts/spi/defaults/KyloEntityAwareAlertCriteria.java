@@ -52,9 +52,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-/**
- * Created by sr186054 on 8/3/17.
- */
+
 public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
 
     private AccessController controller;

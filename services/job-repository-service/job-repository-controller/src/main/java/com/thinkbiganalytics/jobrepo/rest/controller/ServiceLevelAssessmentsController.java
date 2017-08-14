@@ -92,11 +92,14 @@ public class ServiceLevelAssessmentsController {
     public ServiceLevelAssessment getAssessment(@PathParam("assessmentId")String assessmentId){
         ServiceLevelAssessment assessment = null;
         if(assessmentId != null) {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment.ID id = serviceLevelAssessmentProvider.resolveId(assessmentId);
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment serviceLevelAssessment = serviceLevelAssessmentProvider.findServiceLevelAssessment(id);
-            if(serviceLevelAssessment != null){
-                assessment = ServiceLevelAssessmentTransform.toModel(serviceLevelAssessment);
-            }
+            assessment = metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment.ID id = serviceLevelAssessmentProvider.resolveId(assessmentId);
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment serviceLevelAssessment = serviceLevelAssessmentProvider.findServiceLevelAssessment(id);
+                if (serviceLevelAssessment != null) {
+                    return ServiceLevelAssessmentTransform.toModel(serviceLevelAssessment);
+                }
+                return null;
+            });
         }
         return assessment;
 

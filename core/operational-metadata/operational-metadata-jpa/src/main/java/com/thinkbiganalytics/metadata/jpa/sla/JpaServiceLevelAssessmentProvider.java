@@ -29,6 +29,7 @@ import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
@@ -38,6 +39,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,6 +68,9 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
 
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
+
+    @Inject
+    private AccessController controller;
 
     public static final ImmutableMap<String, String> slaAssessmentFilters =
         new ImmutableMap.Builder<String, String>()
@@ -174,7 +179,9 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
      */
     @Override
     public ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id) {
-        ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findOne(id);
+        ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findAssessment(id);
+        //ensure user has access
+
         return assessment;
     }
 
@@ -220,6 +227,8 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         if(invalidQuery){
             predicate.and(ExpressionUtils.eq(ConstantImpl.create("1"),ConstantImpl.create("2")));
         }
+        predicate.and(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))));
+
 
         return findAllWithFetch(serviceLevelAssessment,
                                 predicate,
