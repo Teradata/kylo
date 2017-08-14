@@ -30,6 +30,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 import javax.inject.Inject;
 
 /**
@@ -47,12 +49,19 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         log.info("Responding to SLA violation.");
         String desc = ServiceLevelAssessmentAlertUtil.getDescription(assessment);
         String slaName = assessment.getAgreement().getName();
-        String email = actionConfiguration.getEmailAddresses();
-        log.info("Responding to SLA violation.  About to send an email for SLA {} ", slaName);
-        //mail it
-        emailService.sendMail(email, "SLA Violated: " + slaName, desc);
-
+        String emails = actionConfiguration.getEmailAddresses();
+        sendToAddresses(desc, slaName, emails);
         return true;
+    }
+
+    void sendToAddresses(String desc, String slaName, String emails) {
+        String[] addresses = emails.split(",");
+        Arrays.stream(addresses).forEach(address -> sendToAddress(desc, slaName, address.trim()));
+    }
+
+    private void sendToAddress(String desc, String slaName, String address) {
+        log.info("Responding to SLA violation.  About to send an email for SLA {} ", slaName);
+        emailService.sendMail(address, "SLA Violated: " + slaName, desc);
     }
 
     /**
@@ -69,4 +78,7 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         }
     }
 
+    public void setEmailService(SlaEmailService emailService) {
+        this.emailService = emailService;
+    }
 }

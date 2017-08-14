@@ -33,6 +33,7 @@ define(['angular',
         'common/accordion-menu/menu_toggle',
         'common/accordion-menu/menulink',
         'common/timer/kylo-timer',
+        'common/multiple-email-validator/multiple-email-validator.js',
         'jquery'],function(angular, moduleName){
     return angular.module(moduleName);
 });
