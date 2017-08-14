@@ -74,9 +74,13 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
         if (alert.getEvents().get(0).getState() == Alert.State.UNHANDLED) {
             if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT_TYPE)) {
                 try {
-                    response.inProgress("Handling SLA Alert");
-                    handleViolation(alert);
-                    response.handle("Handled SLA Alert");
+
+                   boolean hasActions = handleViolation(alert);
+                   //if we found additional actions mark the alert as being inProgress.
+                    //otherwise keep it as unhandled and let an operator handle it
+                   if(!hasActions) {
+                       response.inProgress("Handling SLA Alert");
+                   }
                 } catch (Exception e) {
                     log.error("ERROR Handling Alert Error {} ", e.getMessage());
                     response.unhandle("Failed to handle violation: " + e.getMessage());
