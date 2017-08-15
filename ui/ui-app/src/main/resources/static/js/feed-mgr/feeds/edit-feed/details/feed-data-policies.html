@@ -93,12 +93,11 @@
         </div>
       </md-list-item>
 
-
       <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text">
-            <div>{{policy.name}}</div>
-            <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
+            <div>{{policy.name | characters: 20}}</div>
+            <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType | characters: 20}}</div>
             <md-tooltip md-direction="left" ng-if="vm.fieldNameMap[policy.name].description">
               {{vm.fieldNameMap[policy.name].description}}
             </md-tooltip>
