@@ -20,9 +20,12 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 
 import org.joda.time.DateTime;
@@ -43,12 +46,14 @@ import javax.inject.Inject;
 public class FeedFailureService {
 
 
-    /**
-     * Event listener for failure events
-     */
-    private final MetadataEventListener<FeedOperationStatusEvent> failedFeedEventListener = new FailedFeedEventDispatcher();
     @Inject
     private MetadataEventService eventService;
+
+    @Inject
+    private BatchJobExecutionProvider batchJobExecutionProvider;
+
+    @Inject
+    private MetadataAccess metadataAccess;
 
     public DateTime initializeTime = new DateTime();
     /**
@@ -61,24 +66,40 @@ public class FeedFailureService {
      */
     private Map<String, LastFeedFailure> lastAssessedFeedFailureMap = new HashMap<>();
 
-    /**
-     * Adds listeners for transferring events.
-     */
-    @PostConstruct
-    public void addEventListener() {
-        eventService.addListener(failedFeedEventListener);
-    }
-
-    /**
-     * Removes listeners and stops transferring events.
-     */
-    @PreDestroy
-    public void removeEventListener() {
-        eventService.removeListener(failedFeedEventListener);
-    }
 
     public LastFeedFailure getLastFeedFailure(String feedName){
         return lastFeedFailureMap.get(feedName);
+    }
+
+    public LastFeedFailure findLastJobFeedFailure(String feedName){
+     return   metadataAccess.read(() -> {
+     BatchJobExecution latestJob = batchJobExecutionProvider.findLatestFinishedJobForFeed(feedName);
+         if(latestJob != null) {
+             LastFeedFailure lastFeedFailure = new LastFeedFailure(latestJob.getJobInstance().getFeed().getName(),latestJob.getJobExecutionId(),latestJob.getEndTime(),!BatchJobExecution.JobStatus.FAILED.equals(latestJob.getStatus()));
+            return lastFeedFailure;
+         }
+         else {
+             return null;
+         }
+        },MetadataAccess.SERVICE);
+
+    }
+
+    public boolean hasFailure(LastFeedFailure lastFeedFailure) {
+        if(lastFeedFailure != null){
+            String feedName = lastFeedFailure.getFeedName();
+            LastFeedFailure lastAssessedFailure = lastAssessedFeedFailureMap.get(feedName);
+            if (lastFeedFailure != null) {
+                if (lastAssessedFailure == null || (lastAssessedFailure != null && lastAssessedFailure.isFailure() && lastFeedFailure.isAfter(lastAssessedFailure.getDateTime()))) {
+                    //reassign it as the lastAssessedFailure
+                    lastAssessedFeedFailureMap.put(feedName, lastFeedFailure);
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+
     }
 
     /**
@@ -86,30 +107,32 @@ public class FeedFailureService {
      */
     public boolean hasFailure(String feedName) {
         LastFeedFailure lastFeedFailure = lastFeedFailureMap.get(feedName);
-        LastFeedFailure lastAssessedFailure = lastAssessedFeedFailureMap.get(feedName);
-
-        if (lastFeedFailure != null) {
-            if (lastAssessedFailure == null || (lastAssessedFailure != null && lastFeedFailure.isAfter(lastAssessedFailure.getDateTime()))) {
-                //reassign it as the lastAssessedFailure
-                lastAssessedFeedFailureMap.put(feedName, lastFeedFailure);
-                return true;
-            }
-        }
-        return false;
+        return hasFailure(lastFeedFailure);
     }
+
 
     public static class LastFeedFailure {
 
+        private Long jobExecutionId;
         private String feedName;
         private DateTime dateTime;
+        private boolean success = false;
 
         public LastFeedFailure() {
 
         }
 
-        public LastFeedFailure(String feedName) {
+        public LastFeedFailure(String feedName, Long jobExecutionId){
+            this(feedName,jobExecutionId,DateTime.now());
+        }
+        public LastFeedFailure(String feedName, Long jobExecutionId,DateTime dateTime) {
+           this(feedName,jobExecutionId,dateTime,false);
+        }
+
+        public LastFeedFailure(String feedName, Long jobExecutionId,DateTime dateTime,boolean success) {
             this.feedName = feedName;
-            this.dateTime = DateTime.now();
+            this.dateTime = dateTime;
+            this.success = success;
         }
 
         public String getFeedName() {
@@ -131,20 +154,11 @@ public class FeedFailureService {
         public boolean isAfter(DateTime time) {
             return dateTime != null && dateTime.isAfter(time);
         }
-    }
 
-    /**
-     * populate latest failure events
-     */
-    private class FailedFeedEventDispatcher implements MetadataEventListener<FeedOperationStatusEvent> {
-
-        @Override
-        public void notify(@Nonnull final FeedOperationStatusEvent event) {
-            if (FeedOperation.State.FAILURE.equals(event.getData().getState())) {
-                event.getData().getFeedName();
-                lastFeedFailureMap.put(event.getData().getFeedName(), new LastFeedFailure(event.getData().getFeedName()));
-            }
+        public boolean isFailure(){
+            return !this.success;
         }
     }
+
 
 }

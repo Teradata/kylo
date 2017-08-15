@@ -20,6 +20,9 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -56,17 +59,24 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         builder.metric(metric);
 
         String feedName = metric.getFeedName();
-        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.getLastFeedFailure(feedName);
+
+        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.findLastJobFeedFailure(feedName);
         DateTime lastTime =feedFailureService.initializeTime;
         if(lastFeedFailure != null){
             lastTime = lastFeedFailure.getDateTime();
         }
         //compare with the latest feed time
         builder.compareWith(feedName, lastTime.getMillis());
-        if (feedFailureService.hasFailure(feedName)) {
+
+        if (feedFailureService.hasFailure(lastFeedFailure)) {
             builder.message("Feed " + feedName + " has failed ")
                 .result(AssessmentResult.FAILURE);
-        } else {
+        } else if(lastFeedFailure.isFailure()) {
+            //it failed and is still failing... WARN
+            builder.message("Feed " + feedName + " is still failed.  The last job failed at "+lastFeedFailure.getDateTime())
+                .result(AssessmentResult.WARNING);
+        }
+        else {
             builder.message("Feed " + feedName + " has succeeded ")
                 .result(AssessmentResult.SUCCESS);
         }

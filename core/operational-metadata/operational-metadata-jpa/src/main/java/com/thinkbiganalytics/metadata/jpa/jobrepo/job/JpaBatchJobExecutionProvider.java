@@ -620,6 +620,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
     }
 
+    public BatchJobExecution findLatestFinishedJobForFeed(String feedName) {
+        List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestFinishedJobForFeed(feedName);
+        if (jobExecutions != null && !jobExecutions.isEmpty()) {
+            return jobExecutions.get(0);
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public BatchJobExecution findLatestJobForFeed(String feedName) {
         List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
