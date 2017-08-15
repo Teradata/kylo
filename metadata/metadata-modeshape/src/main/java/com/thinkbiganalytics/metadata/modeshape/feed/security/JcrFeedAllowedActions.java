@@ -38,6 +38,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -63,31 +64,45 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        boolean changed = super.enable(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.feed.getOwner().equals(principal)) {
+            boolean changed = super.enable(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        boolean changed = super.enableOnly(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.feed.getOwner().equals(principal)) {
+            boolean changed = super.enableOnly(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        boolean changed = super.enableOnly(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.feed.getOwner().equals(principal)) {
+            boolean changed = super.enableOnly(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        // Never disable permissions of the owner
+        // Never change permissions of the owner
         if (! this.feed.getOwner().equals(principal)) {
             boolean changed = super.disable(principal, actions);
-            disableEntityAccess(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
         } else {
@@ -122,12 +137,18 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         Set<String> detailPrivs = new HashSet<>();
         Set<String> dataPrivs = new HashSet<>();
         Set<String> summaryPrivs = new HashSet<>();
+        AtomicBoolean opsGranted = new AtomicBoolean(false);
+        
+        // Enable/disable feed ops access
+        if (actions.stream().filter(action -> action.implies(FeedAccessControl.ACCESS_OPS)).findFirst().isPresent()) {
+            this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
+        } else {
+            this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
+        }
 
         // Collect all JCR privilege changes based on the specified actions.
         actions.forEach(action -> {
-            if (action.implies(FeedAccessControl.ACCESS_OPS)) {
-                this.feed.getOpsAccessProvider().ifPresent(provider -> provider.grantAccess(feed.getId(), principal));
-            } else if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
+            if (action.implies(FeedAccessControl.CHANGE_PERMS)) {
                 Collections.addAll(summaryPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
                 Collections.addAll(detailPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
                 Collections.addAll(dataPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
@@ -186,14 +207,5 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.setPermissions(s.getNode(), principal, summaryPrivs));
         this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.setPermissions(d.getNode(), principal, detailPrivs));
         this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.setPermissions(d.getNode(), principal, dataPrivs));
-    }
-
-    private void disableEntityAccess(Principal principal, Set<Action> actions) {
-        actions.forEach(action -> {
-            if (action.implies(FeedAccessControl.ACCESS_OPS)) {
-                this.feed.getOpsAccessProvider().ifPresent(provider -> provider.revokeAccess(feed.getId(), principal));
-            }
-        });
-        
     }
 }

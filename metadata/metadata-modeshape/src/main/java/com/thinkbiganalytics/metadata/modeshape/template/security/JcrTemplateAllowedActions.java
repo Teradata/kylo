@@ -57,28 +57,43 @@ public class JcrTemplateAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        boolean changed = super.enable(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.template.getOwner().equals(principal)) {
+            boolean changed = super.enable(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        boolean changed = super.enableOnly(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.template.getOwner().equals(principal)) {
+            boolean changed = super.enableOnly(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        boolean changed = super.enableOnly(principal, actions);
-        updateEntityAccess(principal, getEnabledActions(principal));
-        return changed;
+        // Never change permissions of the owner
+        if (! this.template.getOwner().equals(principal)) {
+            boolean changed = super.enableOnly(principal, actions);
+            updateEntityAccess(principal, getEnabledActions(principal));
+            return changed;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        // Never disable permissions of the owner
+        // Never change permissions of the owner
         if (! this.template.getOwner().equals(principal)) {
             boolean changed = super.disable(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
