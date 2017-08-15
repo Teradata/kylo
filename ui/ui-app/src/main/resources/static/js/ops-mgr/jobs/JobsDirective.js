@@ -69,6 +69,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
         this.selectedAdditionalMenuOption = selectedAdditionalMenuOption;
 
+        var loaded = false;
         /**
          * The filter supplied in the page
          * @type {string}
@@ -104,8 +105,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             if (newVal != oldVal) {
                 return loadJobs(true).promise;
             }
-
-        })
+        });
 
         this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
@@ -125,12 +125,20 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             //return self.deferred.promise;
         };
 
+
+
         this.onPaginationChange = function(page, limit) {
-            var activeTab = TabService.getActiveTab(self.pageName);
-            activeTab.currentPage = page;
-            PaginationDataService.currentPage(self.pageName, activeTab.title, page);
-            return loadJobs(true).promise;
+            var activeTab= TabService.getActiveTab(self.pageName);
+            //only trigger the reload if the initial page has been loaded.
+            //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
+            //on load the query will be triggered via onTabSelected() method
+            if(loaded) {
+                activeTab.currentPage = page;
+                PaginationDataService.currentPage(self.pageName, activeTab.title, page);
+                return loadJobs(true).promise;
+            }
         };
+
 
         /**
          * Build the possible Sorting Options
@@ -317,6 +325,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             canceler = null;
             self.refreshing = false;
             self.showProgress = false;
+            loaded = true;
         }
 
         function transformJobData(tabTitle, jobs) {

@@ -49,6 +49,8 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
 
         this.sortOptions = loadSortOptions();
 
+        var loaded = false;
+
         /**
          * The filter supplied in the page
          * @type {string}
@@ -98,9 +100,14 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
 
         this.onPaginationChange = function(page, limit) {
             var activeTab = TabService.getActiveTab(self.pageName);
-            activeTab.currentPage = page;
-            PaginationDataService.currentPage(self.pageName, activeTab.title, page);
-            return loadAssessments(true).promise;
+            //only trigger the reload if the initial page has been loaded.
+            //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
+            //on load the query will be triggered via onTabSelected() method
+            if(loaded) {
+                activeTab.currentPage = page;
+                PaginationDataService.currentPage(self.pageName, activeTab.title, page);
+                return loadAssessments(true).promise;
+            }
         };
 
         /**
@@ -222,6 +229,7 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
             canceler = null;
             self.refreshing = false;
             self.showProgress = false;
+            loaded = true;
         }
 
 

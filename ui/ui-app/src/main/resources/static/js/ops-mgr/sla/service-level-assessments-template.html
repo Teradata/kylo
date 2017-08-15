@@ -54,9 +54,9 @@
                                     <span class="item-title">{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                     <span class="column-title column-title-bottom">Created</span>
                                 </div>
-                                <div flex="45" flex-gt-md="20" layout="column" hide show-gt-sm class="item-column  md-list-item-text">
-                                  <span class="item-title">{{assessment.message}}</span>
-                                  <span class="column-title column-title-bottom">Message</span>
+                                <div flex="45" flex-gt-md="20" layout="column" hide show-gt-sm class="item-column  md-list-item-text" title="{{assessment.message}}">
+                                  <span class="item-title" title="{{assessment.message}}">{{assessment.message}}</span>
+                                  <span class="column-title column-title-bottom" title="{{assessment.message}}">Message</span>
                                 </div>
                             </div>
                             <md-divider ng-if="!$last"></md-divider>
