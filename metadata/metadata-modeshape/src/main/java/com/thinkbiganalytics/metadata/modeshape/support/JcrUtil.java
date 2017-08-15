@@ -341,14 +341,14 @@ public class JcrUtil {
     }
 
 
-    public static <T extends JcrObject> List<T> getChildrenMatchingNodeType(Node parentNode, String childNodeType, Class<T> type) {
+    public static <T extends JcrObject> List<T> getChildrenMatchingNodeType(Node parentNode, String childNodeType, Class<T> type, Object... args) {
 
         try {
             String
                 query =
                 "SELECT child.* from [" + parentNode.getPrimaryNodeType() + "] as parent inner join [" + childNodeType + "] as child ON ISCHILDNODE(child,parent) WHERE parent.[mode:id]  = '"
                 + parentNode.getIdentifier() + "'";
-            return JcrQueryUtil.find(parentNode.getSession(), query, type);
+            return JcrQueryUtil.find(parentNode.getSession(), query, type, args);
 
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);

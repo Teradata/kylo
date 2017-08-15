@@ -44,25 +44,25 @@ import javax.jcr.query.RowIterator;
 public class JcrQueryUtil {
 
 
-    public static <T extends Object> List<T> find(Session session, String query, Class<T> type) {
-        return find(session, query, null, type);
+    public static <T extends Object> List<T> find(Session session, String query, Class<T> type, Object... args) {
+        return find(session, query, null, type, args);
     }
 
-    public static <T extends Object> List<T> find(Session session, String query, Map<String, String> bindParams, Class<T> type) {
+    public static <T extends Object> List<T> find(Session session, String query, Map<String, String> bindParams, Class<T> type, Object... args) {
         JcrTools tools = new JcrTools();
         try {
             QueryResult result = query(session, query, bindParams);
-            return queryResultToList(result, type);
+            return queryResultToList(result, null, type, args);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findAll for query : " + query, e);
         }
     }
 
-    public static <T extends Object> List<T> queryResultToList(QueryResult result, Class<T> type) {
-        return queryResultToList(result, type, null);
+    public static <T extends Object> List<T> queryResultToList(QueryResult result, Class<T> type, Object... args) {
+        return queryResultToList(result, null, type, args);
     }
 
-    public static <T extends Object> List<T> queryResultToList(QueryResult result, Class<T> type, Integer fetchSize) {
+    public static <T extends Object> List<T> queryResultToList(QueryResult result, Integer fetchSize, Class<T> type, Object... args) {
         List<T> entities = new ArrayList<>();
 
         if (result != null) {
@@ -71,7 +71,7 @@ public class JcrQueryUtil {
                 int cntr = 0;
                 while (nodeIterator.hasNext()) {
                     Node node = nodeIterator.nextNode();
-                    T entity = JcrUtil.constructNodeObject(node, type, null);
+                    T entity = JcrUtil.constructNodeObject(node, type, args);
                     entities.add(entity);
                     cntr++;
                     if (fetchSize != null && cntr == fetchSize) {
@@ -127,7 +127,7 @@ public class JcrQueryUtil {
         JcrTools tools = new JcrTools();
         try {
             QueryResult result = query(session, query, bindParams);
-            List<T> list = queryResultToList(result, type, 1);
+            List<T> list = queryResultToList(result, 1, type);
             if (list != null && list.size() > 0) {
                 return list.get(0);
             } else {

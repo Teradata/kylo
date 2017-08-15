@@ -38,7 +38,6 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -64,20 +63,15 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.feed.getOwner().equals(principal)) {
-            boolean changed = super.enable(principal, actions);
-            updateEntityAccess(principal, getEnabledActions(principal));
-            return changed;
-        } else {
-            return false;
-        }
+        boolean changed = super.enable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.feed.getOwner().equals(principal)) {
+        // Never replace permissions of the owner
+        if (! principal.equals(this.feed.getOwner())) {
             boolean changed = super.enableOnly(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
@@ -88,8 +82,8 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        // Never change permissions of the owner
-        if (! this.feed.getOwner().equals(principal)) {
+        // Never replace permissions of the owner
+        if (! principal.equals(this.feed.getOwner())) {
             boolean changed = super.enableOnly(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
@@ -100,8 +94,8 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.feed.getOwner().equals(principal)) {
+        // Never disable permissions of the owner
+        if (! principal.equals(this.feed.getOwner())) {
             boolean changed = super.disable(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
@@ -137,7 +131,6 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
         Set<String> detailPrivs = new HashSet<>();
         Set<String> dataPrivs = new HashSet<>();
         Set<String> summaryPrivs = new HashSet<>();
-        AtomicBoolean opsGranted = new AtomicBoolean(false);
         
         // Enable/disable feed ops access
         if (actions.stream().filter(action -> action.implies(FeedAccessControl.ACCESS_OPS)).findFirst().isPresent()) {

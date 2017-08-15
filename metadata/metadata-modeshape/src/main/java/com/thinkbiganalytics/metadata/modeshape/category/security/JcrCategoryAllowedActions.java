@@ -55,20 +55,15 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enable(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.category.getOwner().equals(principal)) {
-            boolean changed = super.enable(principal, actions);
-            updateEntityAccess(principal, getEnabledActions(principal));
-            return changed;
-        } else {
-            return false;
-        }
+        boolean changed = super.enable(principal, actions);
+        updateEntityAccess(principal, getEnabledActions(principal));
+        return changed;
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.category.getOwner().equals(principal)) {
+        // Never replace permissions of the owner
+        if (! principal.equals(this.category.getOwner())) {
             boolean changed = super.enableOnly(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
@@ -79,8 +74,8 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean enableOnly(Principal principal, AllowedActions actions) {
-        // Never change permissions of the owner
-        if (! this.category.getOwner().equals(principal)) {
+        // Never replace permissions of the owner
+        if (! principal.equals(this.category.getOwner())) {
             boolean changed = super.enableOnly(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;
@@ -91,8 +86,8 @@ public class JcrCategoryAllowedActions extends JcrAllowedActions {
 
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
-        // Never change permissions of the owner
-        if (! this.category.getOwner().equals(principal)) {
+        // Never disable permissions of the owner
+        if (! principal.equals(this.category.getOwner())) {
             boolean changed = super.disable(principal, actions);
             updateEntityAccess(principal, getEnabledActions(principal));
             return changed;

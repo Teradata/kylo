@@ -28,10 +28,12 @@ import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessContro
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
@@ -75,13 +77,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private FeedOpsAccessControlProvider opsAccessProvider;
+
     /**
      * Transaction support
      */
     @Inject
     MetadataAccess metadataAccess;
 
-
+    @Override
+    protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
+        return JcrUtil.createJcrObject(node, entityClass, this.opsAccessProvider);
+    }
+    
     @Override
     public Category update(Category category) {
         if (accessController.isEntityAccessControlled()) {

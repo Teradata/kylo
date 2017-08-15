@@ -173,7 +173,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         Node entNode = findOrCreateEntityNode(path, relPath, entClass);
         entNode = JcrPropertyUtil.setProperties(session, entNode, props);
         Class<? extends JcrEntity> actualClass = getJcrEntityClass(entNode); // Handle subtypes
-        return (T) JcrUtil.createJcrObject(entNode, actualClass, constructorArgs);
+        return (T) JcrUtil.createJcrObject(entNode, entClass, constructorArgs);
     }
 
     public Node getNodeByIdentifier(PK id) {

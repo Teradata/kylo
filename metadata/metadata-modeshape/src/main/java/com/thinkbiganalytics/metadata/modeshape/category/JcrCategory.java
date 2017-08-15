@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -65,10 +66,35 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     private CategoryDetails details;
 
+    // TODO: Referencing the ops access provider is kind of ugly but is needed so that 
+    // a it can be passed to each feed entity when they are constructed.
+    private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
+
     public JcrCategory(Node node) {
         super(node);
     }
     
+    public JcrCategory(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
+        super(node);
+        setOpsAccessProvider(opsAccessProvider);
+    }
+
+
+    /**
+     * This should be set after an instance of this type is created to allow the change
+     * of a feed's operations access control.
+     *
+     * @param opsAccessProvider the opsAccessProvider to set
+     */
+    public void setOpsAccessProvider(FeedOpsAccessControlProvider opsAccessProvider) {
+        this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
+    }
+
+    public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
+        return this.opsAccessProvider;
+    }
+
+
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> catRoles, List<SecurityRole> feedRoles) {
         // Setup default access control for this entity
         AccessControlledMixin.super.enableAccessControl(prototype, owner, catRoles);
@@ -115,7 +141,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public Optional<CategoryDetails> getDetails() {
         if (this.details == null) {
             if (JcrUtil.hasNode(getNode(), DETAILS)) {
-                this.details = JcrUtil.getJcrObject(getNode(), DETAILS, CategoryDetails.class);
+                this.details = JcrUtil.getJcrObject(getNode(), DETAILS, CategoryDetails.class, this.opsAccessProvider);
                 return Optional.of(this.details);
             } else {
                 return Optional.empty();

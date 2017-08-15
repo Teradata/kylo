@@ -35,6 +35,7 @@ import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
@@ -57,6 +58,8 @@ public class CategoryDetails extends JcrPropertiesEntity {
     public static final String FEED_ROLE_MEMBERSHIPS = "tba:feedRoleMemberships";
     public static final String FEED_ROLE_MEMBERSHIPS_TYPE = "tba:CategoryFeedRoleMemberships";
 
+    private Optional<FeedOpsAccessControlProvider> opsAccessProvider;
+    
     /**
      * @param node
      */
@@ -64,8 +67,16 @@ public class CategoryDetails extends JcrPropertiesEntity {
         super(node);
     }
     
+    public CategoryDetails(Node node, Optional<FeedOpsAccessControlProvider> opsPvdr) {
+        super(node);
+        this.opsAccessProvider = opsPvdr;
+    }
+    
     public List<? extends Feed> getFeeds() {
-        List<JcrFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, "tba:feed", JcrFeed.class);
+        List<JcrFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, 
+                                                                  "tba:feed", 
+                                                                  JcrFeed.class,
+                                                                  this.opsAccessProvider.map(p -> new Object[] { p }).orElse(new Object[0]));
         return feeds;
     }
 
