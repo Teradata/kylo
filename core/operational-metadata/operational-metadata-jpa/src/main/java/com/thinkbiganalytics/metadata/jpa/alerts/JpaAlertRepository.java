@@ -30,6 +30,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -40,6 +41,11 @@ public interface JpaAlertRepository extends JpaRepository<JpaAlert, JpaAlert.ID>
     @Query("select alert from JpaAlert as alert "
            + "where alert.createdTime > :time")
     List<JpaAlert> findAlertsAfter(@Param("time") DateTime time);
+
+
+    @Query("select distinct alert.typeString from JpaAlert as alert")
+    Set<String> findAlertTypes();
+
 
 
 }

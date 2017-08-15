@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -57,6 +58,7 @@ import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.alerts.rest.model.AlertType;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
@@ -81,8 +83,6 @@ public class AlertsController {
     @Named("kyloAlertManager")
     private AlertManager alertManager;
 
-    @Inject
-    private KyloEntityAwareAlertManager kyloEntityAwareAlertService;
 
     @Inject
     private AccessController accessController;
@@ -112,6 +112,20 @@ public class AlertsController {
         provider.getAlerts(criteria).forEachRemaining(alerts::add);
         return new AlertRange(alerts.stream().map(alertsModel::toModel).collect(Collectors.toList()));
     }
+
+    @GET
+    @Path("/alert-types")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("returns the unique alert types available.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the unique type of alerts.", responseContainer ="Set",response = AlertType.class)
+    )
+    public Set<AlertType> getAlertTypes(@QueryParam("type") String type,
+                                                             @QueryParam("subtype") String subtype) {
+      Set<String> alertTypes =((KyloEntityAwareAlertManager)alertManager).getAlertTypes();
+      return alertTypes.stream().map((t -> new AlertType(t,alertsModel.alertTypeDisplayName(t)))).collect(Collectors.toSet());
+    }
+
 
 
     @GET

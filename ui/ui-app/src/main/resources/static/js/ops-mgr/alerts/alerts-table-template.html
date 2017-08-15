@@ -23,7 +23,7 @@
                     on-selected-additional-option="vm.selectedAdditionalMenuOption"
                     on-selected-option="vm.selectedTableOption"
                     card-controller="vm"
-                    custom-filter-template="js/ops-mgr/alerts/custom-filter-select.html"
+                    custom-filter-template="js/ops-mgr/alerts/alert-type-filter-select.html"
                     filter-model="vm.filter"
                     filter-model-options="{debounce:1000}">
 
@@ -51,7 +51,7 @@
                                         <span class="column-title column-title-bottom">Level</span>
                                     </div>
 
-                                    <div flex="10" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.state }}</span>
                                         <span class="column-title column-title-bottom">State</span>
                                     </div>
@@ -70,7 +70,7 @@
                                         <span class="column-title column-title-bottom">Start Time</span>
                                     </div>
 
-                                    <div flex="45" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="35" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.description }}</span>
                                         <span class="column-title column-title-bottom">Description</span>
                                     </div>
@@ -93,7 +93,7 @@
                                     <tr md-row>
                                         <th md-column  md-order-by="level" name="Level">Level</th>
                                         <th md-column  md-order-by="state" name="State">State</th>
-                                        <th md-column  md-order-by="type" name="Type">type</th>
+                                        <th md-column  md-order-by="type" name="Type">Type</th>
                                         <th md-column name="Cleared" ng-if="vm.showCleared">Cleared</th>
                                         <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>Start Time</th>
                                         <th md-column name="Description">Description</th>
@@ -125,7 +125,7 @@
                                              max-size="5"
                                              direction-links="true"
                                              boundary-links="false"
-                                             template-url="js/common/dir-pagination/dirPagination.tpl.html"
+                                             template-url="js/ops-mgr/alerts/alerts-pagination.tpl.html"
                                              on-page-change="vm.onPaginationChange(newPageNumber)"
                                              label="Rows per page"
                                              rows-per-page="vm.paginationData.rowsPerPage"

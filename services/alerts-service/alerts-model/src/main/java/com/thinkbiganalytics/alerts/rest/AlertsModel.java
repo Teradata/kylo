@@ -49,17 +49,29 @@ public class AlertsModel {
 
     private static final Logger log = LoggerFactory.getLogger(AlertsModel.class);
 
-    public String alertSummaryDisplayName(AlertSummary alertSummary) {
+    /**
+     *
+     * @param alertSummary
+     * @return
+     */
+    public String alertTypeDisplayName(AlertSummary alertSummary) {
         String type = alertSummary.getType();
+        return alertTypeDisplayName(type);
+    }
+
+
+    public String alertTypeDisplayName(String type) {
         String part = type;
-        if (part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
+        if (part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX+"/alert")) {
+            part = StringUtils.substringAfter(part, AlertConstants.KYLO_ALERT_TYPE_PREFIX+"/alert");
+        }
+         else if (part.startsWith(AlertConstants.KYLO_ALERT_TYPE_PREFIX)) {
             part = StringUtils.substringAfter(part, AlertConstants.KYLO_ALERT_TYPE_PREFIX);
         } else {
             int idx = StringUtils.lastOrdinalIndexOf(part, "/", 2);
             part = StringUtils.substring(part, idx);
         }
         String[] parts = part.split("/");
-        StringBuffer displayNameSb = new StringBuffer();
         return Arrays.asList(parts).stream().map(s -> StringUtils.capitalize(s)).collect(Collectors.joining(" "));
     }
 
@@ -69,7 +81,7 @@ public class AlertsModel {
 
             String key = alertSummary.getType() + ":" + alertSummary.getSubtype();
 
-            String displayName = alertSummaryDisplayName(alertSummary);
+            String displayName = alertTypeDisplayName(alertSummary);
             if (alertSummary instanceof EntityAwareAlertSummary) {
                 EntityAwareAlertSummary entityAwareAlertSummary = (EntityAwareAlertSummary) alertSummary;
                 key = entityAwareAlertSummary.getGroupByKey();

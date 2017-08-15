@@ -47,6 +47,13 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
 
         this.selectedAdditionalMenuOption = selectedAdditionalMenuOption;
 
+        var ALL_ALERT_TYPES_FILTER = {label:"ALL",type:""};
+        self.filterAlertType = ALL_ALERT_TYPES_FILTER;
+
+        self.alertTypes = [ALL_ALERT_TYPES_FILTER];
+
+        initAlertTypes();
+
         this.showCleared = false;
 
         /**
@@ -64,14 +71,13 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
 
         });
 
-        var ALL_ALERT_TYPES_FILTER = {label:"ALL",type:""};
-        self.filterAlertType = ALL_ALERT_TYPES_FILTER;
 
-        self.alertTypes = [ALL_ALERT_TYPES_FILTER,
-            {label:"SLA",type:"http://kylo.io/alert/alert/sla/violation"},
-            {label:"Job Failure",type:"http://kylo.io/alert/job/failure"},
-            {label:"Service",type:"http://kylo.io/alert/service"}
-        ];
+
+        function initAlertTypes() {
+            $http.get(OpsManagerRestUrlService.ALERT_TYPES).then(function(response) {
+                self.alertTypes = self.alertTypes.concat(response.data);
+            });
+        }
 
         self.onFilterAlertTypeChange = function(alertType){
             loadAlerts(true);

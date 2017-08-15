@@ -24,6 +24,7 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  */
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.support.QueryBase;
 import com.querydsl.core.types.Predicate;
@@ -39,12 +40,15 @@ import com.thinkbiganalytics.alerts.api.AlertNotfoundException;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
+import com.thinkbiganalytics.alerts.service.ServiceStatusAlerts;
+import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
@@ -206,6 +210,19 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                 .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
                 .iterator();
         },principal);
+    }
+
+    public Set<String>  getAlertTypes(){
+        Set<String> defaultAlertTypes = Sets.newHashSet(AssessmentAlerts.VIOLATION_ALERT_TYPE.toString(),
+                                                        OperationalAlerts.JOB_FALURE_ALERT_TYPE.toString(),
+                                                        ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE.toString());
+        Set<String> alertTypes = repository.findAlertTypes();
+        if(alertTypes == null) {
+            alertTypes = new HashSet<>();
+        }
+        //merge
+        defaultAlertTypes.addAll(alertTypes);
+        return defaultAlertTypes;
     }
 
 //
