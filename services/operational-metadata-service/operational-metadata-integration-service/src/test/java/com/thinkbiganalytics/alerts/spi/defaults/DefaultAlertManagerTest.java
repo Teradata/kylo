@@ -125,7 +125,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlerts() {
-        Iterator<Alert> itr = this.manager.getAlerts(null);
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true));
 
         Assertions.assertThat(itr)
             .isNotNull()
@@ -137,7 +137,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertById() {
-        Optional<Alert> optional = this.manager.getAlert(id2);
+        Optional<Alert> optional = this.manager.getAlertAsServiceAccount(id2);
 
         Assertions.assertThat(optional.isPresent()).isTrue();
         Assertions.assertThat(optional.get())
@@ -152,36 +152,36 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsSinceTime() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(this.beforeTime));
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).after(this.beforeTime));
 
         Assertions.assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
 
-        itr = this.manager.getAlerts(this.manager.criteria().after(this.middleTime));
+        itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).after(this.middleTime));
 
         Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
 
-        itr = this.manager.getAlerts(this.manager.criteria().after(this.afterTime));
+        itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).after(this.afterTime));
 
         Assertions.assertThat(itr).isNotNull().hasSize(0);
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsByType() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert/1")));
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).type(URI.create("http://example.com/test/alert/1")));
 
         Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id1);
     }
 
     @Test(dependsOnGroups = "create", groups = "read1")
     public void testGetAlertsBySuperType() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert")));
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).type(URI.create("http://example.com/test/alert")));
 
         Assertions.assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
     }
 
     @Test(dependsOnGroups = "create", groups = "update1")
     public void testAlertResponding() {
-        Alert alert = this.manager.getAlert(id1).get();
+        Alert alert = this.manager.getAlertAsServiceAccount(id1).get();
         AlertResponse resp = this.manager.getResponse(alert);
 
         alert = resp.inProgress(LONG_DESCR);
@@ -203,27 +203,27 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnGroups = "update1", groups = "read2")
     public void testGetAlertsByState() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.UNHANDLED));
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).state(Alert.State.UNHANDLED));
 
         Assertions.assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
 
-        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.HANDLED));
+        itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).state(Alert.State.HANDLED));
 
         Assertions.assertThat(itr).isNotNull().hasSize(1);
 
-        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.CREATED));
+        itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true).state(Alert.State.CREATED));
 
         Assertions.assertThat(itr).isNotNull().hasSize(0);
     }
 
     @Test(dependsOnGroups = "read2", groups = "update2")
     public void testClear() {
-        Alert alert = this.manager.getAlert(id1).get();
+        Alert alert = this.manager.getAlertAsServiceAccount(id1).get();
         AlertResponse resp = this.manager.getResponse(alert);
 
         resp.clear();
 
-        alert = this.manager.getAlert(id1).get();
+        alert = this.manager.getAlertAsServiceAccount(id1).get();
 
         Assertions.assertThat(alert).isNotNull();
         Assertions.assertThat(alert.isCleared()).isTrue();
@@ -232,7 +232,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnGroups = "update2", groups = "read3")
     public void testGetAlertsAfterClear() {
-        Iterator<Alert> itr = this.manager.getAlerts(null);
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().asServiceAccount(true));
 
         Assertions.assertThat(itr)
             .isNotNull()
