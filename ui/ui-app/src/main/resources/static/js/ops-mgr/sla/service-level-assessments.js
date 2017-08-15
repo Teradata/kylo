@@ -43,7 +43,7 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
         this.viewType = PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
-        var tabNames = ['All', 'Failure', 'Success']
+        var tabNames = ['All', 'Failure', 'Warning','Success']
         this.tabs = TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
         this.tabMetadata = TabService.metadata(this.pageName);
 

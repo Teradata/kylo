@@ -32,8 +32,9 @@
                    {{vm.assessment.agreement.name}}
                    </span>
               <span class="column-title-bottom">
-                <ng-md-icon ng-if="vm.assessment.result == 'FAILED'" class="error" icon="error" size="20"></ng-md-icon>
-                <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check" size="20"></ng-md-icon>
+                <ng-md-icon ng-if="vm.assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+                <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+                <ng-md-icon ng-if="vm.assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
                 {{vm.assessment.result}}
               </span>
 
@@ -48,12 +49,12 @@
           </div>
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Service Level Agreement Description</div>
           <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.agreement.description"
-               ng-tt-chars-threshold="150">
+               ng-tt-chars-threshold="500">
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Assessment</div>
           <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.assessment.message"
-               ng-tt-chars-threshold="150">
+               ng-tt-chars-threshold="500">
           </div>
         </div>
         <div ng-if="vm.assessment.obligationAssessments != null && vm.assessment.obligationAssessments.length >0" class="layout-padding-bottom layout-padding-left-16" >
@@ -61,14 +62,14 @@
           <div ng-repeat="obligation in vm.assessment.obligationAssessments">
             <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}. Obligation Assessment Message</div>
             <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="obligation.message"
-                 ng-tt-chars-threshold="150">
+                 ng-tt-chars-threshold="500">
             </div>
 
             <div ng-if="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
               <div ng-repeat="metric in obligation.metricAssessments ">
                 <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{$index+1}}.Metric Assessment Message</div>
                 <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="metric.message"
-                     ng-tt-chars-threshold="150">
+                     ng-tt-chars-threshold="500">
                 </div>
 
               </div>
@@ -105,9 +106,12 @@
           <md-list-item>
 
             <div layout="column" class="item-column md-list-item-text ">
-              <ng-md-icon ng-if="vm.assessment.result == 'FAILED'" class="error" icon="error" size="20"></ng-md-icon>
-              <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check" size="20"></ng-md-icon>
+             <div layout="row">
+               <ng-md-icon ng-if="vm.assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+              <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+              <ng-md-icon ng-if="vm.assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
               {{vm.assessment.result}}
+             </div>
               <span class="column-title-bottom">
               Result
               </span>

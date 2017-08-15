@@ -44,8 +44,10 @@
                                    <span class="item-title">
                                        {{assessment.agreement.name}}
                                    </span>
-                                   <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE'}" class="column-title-bottom">
-                                       <!--<ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon> -->
+                                   <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE','warn':assessment.result == 'WARNING'}" class="column-title-bottom">
+                                        <ng-md-icon ng-if="assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+                                        <ng-md-icon ng-if="assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+                                        <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
                                        {{assessment.result}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
@@ -98,10 +100,11 @@
                                 <tr md-row ng-repeat="assessment in tab.data.content" ng-click="vm.assessmentDetails($event,assessment)">
                                     <td md-cell>{{assessment.agreement.name}}</td>
                                     <td md-cell>
-                               <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE'}">
-                                       <!--<ng-md-icon icon="{{job.icon}}" size="20" >  </ng-md-icon> -->
+                               <span  ng-class="{'success':(assessment.result == 'SUCCESS'),'error':assessment.result == 'FAILURE','warn':assessment.result == 'WARNING'}">
+                                      <ng-md-icon ng-if="assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
+                                        <ng-md-icon ng-if="assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
+                                        <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
                                        <span hide show-gt-md>{{assessment.result}}</span></span>
-
                                     </td>
                                     <td md-cell >{{assessment.time}}</td>
                                     <td md-cell >{{assessment.message}}</td>
