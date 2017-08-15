@@ -150,7 +150,9 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertManager(this.manager);
 
         when(this.source.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(srcAlert));
+        when(this.source.getAlertAsServiceAccount(any(Alert.ID.class))).thenReturn(Optional.of(srcAlert));
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
+        when(this.manager.getAlertAsServiceAccount(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
 
         Alert getMgrAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(mgrId).get());
         Alert getSrcAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(srcId).get());
@@ -217,6 +219,7 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertManager(this.manager);
 
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
+        when(this.manager.getAlertAsServiceAccount(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
 
         this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
 
@@ -230,6 +233,7 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertManager(this.manager);
 
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
+        when(this.manager.getAlertAsServiceAccount(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
 
         this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
 
@@ -244,6 +248,7 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertManager(this.manager);
 
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(initMgrAlert));
+        when(this.manager.getAlertAsServiceAccount(any(Alert.ID.class))).thenReturn(Optional.of(initMgrAlert));
         when(this.manager.getResponse(any(Alert.class))).thenReturn(this.response);
         when(this.response.handle(any(String.class), any(Serializable.class))).thenReturn(initMgrAlert);
         doAnswer(new Answer<Void>() {
