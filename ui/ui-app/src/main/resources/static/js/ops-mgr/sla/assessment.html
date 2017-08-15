@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-<div flex layout="row">
+<div flex layout="row" ng-if="vm.assessmentNotFound == false">
   <card-layout flex>
     <header-section transclude-to="head" flex layout>
       <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment - {{vm.assessment.agreement.name}}</div>
@@ -127,5 +127,21 @@
 
       </md-content>
     </body-section>
+  </card-layout>
+</div>
+<div flex layout="column" ng-if="vm.assessmentNotFound == true && vm.loading == false">
+  <card-layout flex>
+    <header-section  flex layout>
+      <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment</div>
+    </header-section>
+    <body-section >
+  <md-content  style="min-height:300px">
+    <div layout="column" layout-align="center center" flex>
+        <span class="md-subhead">
+        Unable to find the service level assessment.  This assessment either doesn't exist or you do not have access to view it.
+          </span>
+    </div>
+  </md-content>
+  </body-section>
   </card-layout>
 </div>

@@ -6,12 +6,17 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
 
         self.loading = false;
         self.assessment = {};
+        self.assessmentNotFound = false;
 
         if(this.assessmentId != null){
 
             var successFn = function(response) {
-                if (response.data) {
+                if (response.data && response.data != '') {
                     self.assessment = response.data;
+                    self.assessmentNotFound = false;
+                }
+                else {
+                    self.assessmentNotFound = true;
                 }
                 self.loading = false;
 
