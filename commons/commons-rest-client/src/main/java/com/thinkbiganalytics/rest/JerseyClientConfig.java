@@ -24,8 +24,7 @@ package com.thinkbiganalytics.rest;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 /**
- * Configuration class used by the {@link JerseyRestClient}
- * Parameters here allow you to setup a client and optionally pass in information to connect using Https
+ * Configuration class used by the {@link JerseyRestClient} Parameters here allow you to setup a client and optionally pass in information to connect using Https
  */
 public class JerseyClientConfig {
 
@@ -56,13 +55,6 @@ public class JerseyClientConfig {
      **/
     private boolean useConnectionPooling = false;
     private EncryptionService encryptionService;
-
-    private static class DoNothingEncryptionService extends EncryptionService {
-        @Override
-        public boolean isEncrypted(String str) {
-            return false;
-        }
-    }
 
     public JerseyClientConfig() {
         this(new DoNothingEncryptionService());
@@ -194,7 +186,6 @@ public class JerseyClientConfig {
         this.connectTimeout = connectTimeout;
     }
 
-
     public boolean isUseConnectionPooling() {
         return useConnectionPooling;
     }
@@ -242,4 +233,35 @@ public class JerseyClientConfig {
     public void setKeystoreType(String keystoreType) {
         this.keystoreType = keystoreType;
     }
+
+    @Override
+    public String toString() {
+        return "JerseyClientConfig{" +
+               "host='" + host + '\'' +
+               ", port=" + port +
+               ", username='" + username + '\'' +
+               ", password='XXX'" +
+               ", https=" + https +
+               ", keystoreOnClasspath=" + keystoreOnClasspath +
+               ", keystorePath='" + keystorePath + '\'' +
+               ", keystorePassword='YYY'" +
+               ", keystoreType='" + keystoreType + '\'' +
+               ", truststorePath='" + truststorePath + '\'' +
+               ", truststorePassword='ZZZ'" +
+               ", trustStoreType='" + trustStoreType + '\'' +
+               ", readTimeout=" + readTimeout +
+               ", connectTimeout=" + connectTimeout +
+               ", useConnectionPooling=" + useConnectionPooling +
+               ", encryptionService=" + encryptionService +
+               '}';
+    }
+
+    private static class DoNothingEncryptionService extends EncryptionService {
+
+        @Override
+        public boolean isEncrypted(String str) {
+            return false;
+        }
+    }
+
 }

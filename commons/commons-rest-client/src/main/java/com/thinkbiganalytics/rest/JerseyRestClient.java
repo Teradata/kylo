@@ -58,10 +58,12 @@ import javax.net.ssl.SSLContext;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 /**
@@ -199,6 +201,10 @@ public class JerseyRestClient {
         }
 
         clientConfig.register(MultiPartFeature.class);
+
+        // allow derived classes to modify the client config
+        extendClientConfig(clientConfig);
+
         if (sslContext != null) {
             log.info("Created new Jersey Client with SSL connecting to {} ", config.getUrl());
             client = new JerseyClientBuilder().withConfig(clientConfig).sslContext(sslContext).build();
@@ -237,6 +243,16 @@ public class JerseyRestClient {
     protected void registerClientFeatures(Client client) {
         client.register(JacksonObjectMapperProvider.class);
         client.register(JacksonFeature.class);
+    }
+
+
+    /**
+     * Allows derived classes to make modifactions to the clientConfig before it is used to construct the client.
+     *
+     * @param clientConfig the Rest Client Configuration
+     */
+    protected void extendClientConfig(ClientConfig clientConfig) {
+
     }
 
 
@@ -370,6 +386,27 @@ public class JerseyRestClient {
         }
         return obj;
     }
+
+    /**
+     * call a GET request
+     *
+     * @param path    the path to call.
+     * @param headers key, list parameters to add http request headers to the request
+     * @param clazz   the class type to return as the response from the GET request
+     * @param params  key,value parameters to add to the request
+     * @param <T>     the class to return
+     * @return the response of class type T
+     */
+    public <T> T getWithHeaders(String path, MultivaluedMap<String, Object> headers, Map<String, Object> params, Class<T> clazz) {
+        WebTarget target = buildTarget(path, params);
+
+        Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
+            .headers(headers)
+            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+
+        return builder.get(clazz);
+    }
+
 
     /**
      * Perform a GET request.  if it returns an exception the message will not be logged.
