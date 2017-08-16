@@ -172,7 +172,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch/target</directory>
-      <outputDirectory>kylo-services/plugin</outputDirectory>
+      <outputDirectory>setup/plugins</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>kylo-search-elasticsearch-${project.version}.jar</include>
@@ -190,7 +190,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/target</directory>
-      <outputDirectory>setup/plugins</outputDirectory>
+      <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>kylo-search-elasticsearch-rest-${project.version}.jar</include>
@@ -388,6 +388,12 @@
     </file>
     <file>
       <source>${project.parent.basedir}/bin/encryptSqoopPassword.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/scripts/es-v5/create-kylo-indexes-esv5.sh</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>
