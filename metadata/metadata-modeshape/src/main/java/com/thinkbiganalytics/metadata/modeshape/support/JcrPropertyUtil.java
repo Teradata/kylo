@@ -807,8 +807,8 @@ public class JcrPropertyUtil {
             } else if (value instanceof Value) {
                 return (Value) value;
             } else if (value instanceof Node) {
-                return factory.createValue((Node) value, weakRef);
-//                return factory.createValue(((Node) value).getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
+//                return factory.createValue((Node) value, weakRef);
+                return factory.createValue(((Node) value).getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Binary) {
                 return factory.createValue((Binary) value);
             } else if (value instanceof Calendar) {

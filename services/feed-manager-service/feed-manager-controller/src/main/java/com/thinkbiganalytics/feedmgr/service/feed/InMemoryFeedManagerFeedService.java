@@ -23,9 +23,11 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
@@ -196,6 +198,34 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         return null;
     }
 
+    @Override
+    public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
+        FeedVersions versions = new FeedVersions(feedId);
+        FeedMetadata feed = getFeedById(feedId);
+        
+        if (feed != null) {
+            EntityVersion version = versions.addNewVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate());
+            if (includeContent) {
+                version.setEntity(feed);
+            }
+        }
+        return versions;
+    }
+    
+    @Override
+    public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
+        FeedMetadata feed = getFeedById(feedId);
+        EntityVersion version = null;
+        
+        if (feed != null) {
+            version = new EntityVersion(UUID.randomUUID().toString(), "v1.0", feed.getCreateDate());
+            if (includeContent) {
+                version.setEntity(feed);
+            }
+        }
+        
+        return Optional.ofNullable(version);
+    }
 
     @Override
     public List<FeedMetadata> getFeedsWithTemplate(final String registeredTemplateId) {

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  */
 
 import com.google.common.base.Stopwatch;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
@@ -28,8 +29,10 @@ import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
@@ -287,6 +290,32 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     }
 
+    @Override
+    public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+
+            Feed.ID domainId = feedProvider.resolveId(feedId);
+            
+            return feedProvider.findVersions(domainId, includeContent)
+                            .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
+                            .orElse((FeedVersions) null);
+        });
+    }
+    
+    @Override
+    public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
+            
+            return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+        });
+    }
+    
     @Override
     public Collection<FeedMetadata> getFeeds() {
         return getFeeds(PAGE_ALL, null).getContent();

@@ -39,7 +39,7 @@ public class JcrLatestEntityVersion<E> extends JcrEntityVersion<E> {
     public JcrLatestEntityVersion(Node versionable, E entity) {
         super(null, entity);
         setId(new VersionId(JcrPropertyUtil.getIdentifier(versionable)));
-        this.created = JcrPropertyUtil.getProperty(versionable, "jcr:created");
+        this.created = JcrPropertyUtil.getProperty(versionable, "jcr:lastModified");
     }
 
     @Override

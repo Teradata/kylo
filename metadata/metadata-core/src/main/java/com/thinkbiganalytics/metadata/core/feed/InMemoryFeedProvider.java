@@ -619,28 +619,38 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersions(java.io.Serializable)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersions(java.io.Serializable, boolean)
      */
     @Override
-    public List<EntityVersion<Feed>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id) {
+    public Optional<List<EntityVersion<Feed>>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id, boolean includeEntity) {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersion(java.io.Serializable, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersion(java.io.Serializable, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID, boolean)
      */
     @Override
-    public Optional<EntityVersion<Feed>> findVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId) {
+    public Optional<EntityVersion<Feed>> findVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId,
+                                                     boolean includeEntity) {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findLatestVersion(java.io.Serializable)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findLatestVersion(java.io.Serializable, boolean)
      */
     @Override
-    public Optional<EntityVersion<Feed>> findLatestVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId) {
+    public Optional<EntityVersion<Feed>> findLatestVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeEntity) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#resolveVersion(java.io.Serializable)
+     */
+    @Override
+    public com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID resolveVersion(Serializable ser) {
         // TODO Auto-generated method stub
         return null;
     }

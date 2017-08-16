@@ -24,11 +24,13 @@ package com.thinkbiganalytics.metadata.modeshape.versioning;
  */
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import javax.jcr.version.Version;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
@@ -50,9 +52,11 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
     }
     
     public JcrEntityVersion(Version version, E entity) {
-        this.version = version;
-        this.id = new VersionId(JcrPropertyUtil.getIdentifier(JcrUtil.getNode(version, "jcr:frozenNode")));
+        if (version != null) {
+            this.version = version;
+            this.id = new VersionId(JcrPropertyUtil.getIdentifier(JcrUtil.getNode(version, "jcr:frozenNode")));
 //        this.id = new VersionId(JcrPropertyUtil.getIdentifier(version));
+        }
         this.entity = Optional.ofNullable(entity);
     }
 
@@ -92,7 +96,7 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
         this.id = id;
     }
     
-    public static class VersionId extends BaseId implements ID {
+    public static class VersionId implements ID {
 
         private static final long serialVersionUID = 1L;
 
@@ -103,7 +107,13 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
         }
 
         public VersionId(Serializable ser) {
-            super(ser);
+            if (ser instanceof VersionId) {
+                this.idValue = ((VersionId) ser).idValue;
+            } else if (ser instanceof String) {
+                this.idValue = (String) ser;
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
         }
 
         public String getIdValue() {
@@ -114,17 +124,22 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
         public String toString() {
             return idValue;
         }
-
+        
         @Override
-        public UUID getUuid() {
-            return UUID.fromString(idValue);
+        public boolean equals(Object obj) {
+            if (getClass().isAssignableFrom(obj.getClass())) {
+                VersionId that = (VersionId) obj;
+                return Objects.equals(this.idValue, that.idValue);
+            } else {
+                return false;
+            }
         }
 
         @Override
-        public void setUuid(UUID uuid) {
-            this.idValue = uuid.toString();
-
+        public int hashCode() {
+            return Objects.hash(getClass(), this.idValue);
         }
+
     }
 
 }

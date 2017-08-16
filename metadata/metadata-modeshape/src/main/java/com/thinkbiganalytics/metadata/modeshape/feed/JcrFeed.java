@@ -70,6 +70,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
 
+    private Node summaryNode;
     private FeedSummary summary;
     private FeedData data;
 
@@ -79,6 +80,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public JcrFeed(Node node) {
         super(node);
+    }
+    
+    public JcrFeed(Node feedNode, Node summaryNode) {
+        super(feedNode);
+        // The summary node is different if this is a past version.
+        this.summary = JcrUtil.getJcrObject(summaryNode, FeedSummary.class, this);
     }
 
     public JcrFeed(Node node, FeedOpsAccessControlProvider opsAccessProvider) {

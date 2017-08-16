@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  */
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Set;
@@ -57,19 +58,23 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (CHILD_NODE.contains(method.getName())) {
-            return JcrVersionUtil.createAutoCheckoutProxy((Node) method.invoke(this.versionable, args));
-        } else if (NODE_ITERATOR.contains(method.getName())) {
-            return createNodeIterator((NodeIterator) method.invoke(this.versionable, args));
-        } else if (method.getName().equals("getProperties")) {
-            return createPropertyIterator((PropertyIterator) method.invoke(this.versionable, args));
-        } else if (method.getName().equals("getProperty")) {
-            return createProperty((Property) method.invoke(this.versionable, args));
-        } else if (method.getName().startsWith("set")) {
-            ensureCheckout();
+        try {
+            if (CHILD_NODE.contains(method.getName())) {
+                return JcrVersionUtil.createAutoCheckoutProxy((Node) method.invoke(this.versionable, args));
+            } else if (NODE_ITERATOR.contains(method.getName())) {
+                return createNodeIterator((NodeIterator) method.invoke(this.versionable, args));
+            } else if (method.getName().equals("getProperties")) {
+                return createPropertyIterator((PropertyIterator) method.invoke(this.versionable, args));
+            } else if (method.getName().equals("getProperty")) {
+                return createProperty((Property) method.invoke(this.versionable, args));
+            } else if (method.getName().startsWith("set")) {
+                ensureCheckout();
+            }
+            
+            return method.invoke(this.versionable, args);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
         }
-        
-        return method.invoke(this.versionable, args);
     }
     
     private void ensureCheckout() {
@@ -81,10 +86,14 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         return (NodeIterator) Proxy.newProxyInstance(NodeIterator.class.getClassLoader(), new Class<?>[] { NodeIterator.class }, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getName().equals("nextNode")) {
-                    return JcrVersionUtil.createAutoCheckoutProxy(itr.nextNode());
-                } else {
-                    return method.invoke(itr, args);
+                try {
+                    if (method.getName().equals("nextNode")) {
+                        return JcrVersionUtil.createAutoCheckoutProxy(itr.nextNode());
+                    } else {
+                        return method.invoke(itr, args);
+                    }
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
                 }
             }
         });
@@ -94,10 +103,14 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         return (PropertyIterator) Proxy.newProxyInstance(PropertyIterator.class.getClassLoader(), new Class<?>[] { PropertyIterator.class }, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getName().equals("nextProperty")) {
-                    return createProperty(itr.nextProperty());
-                } else {
-                    return method.invoke(itr, args);
+                try {
+                    if (method.getName().equals("nextProperty")) {
+                        return createProperty(itr.nextProperty());
+                    } else {
+                        return method.invoke(itr, args);
+                    }
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
                 }
             }
         });
@@ -107,11 +120,15 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         return (Property) Proxy.newProxyInstance(Property.class.getClassLoader(), new Class<?>[] { Property.class }, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getName().equals("setValue")) {
-                    ensureCheckout();
+                try {
+                    if (method.getName().equals("setValue")) {
+                        ensureCheckout();
+                    }
+                    
+                    return method.invoke(prop, args);
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
                 }
-                
-                return method.invoke(prop, args);
             }
         });
     }

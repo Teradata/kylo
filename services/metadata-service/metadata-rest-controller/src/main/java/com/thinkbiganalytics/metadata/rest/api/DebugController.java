@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.google.common.base.Strings;
+
 /*-
  * #%L
  * thinkbig-metadata-rest-controller
@@ -239,7 +241,7 @@ public class DebugController {
 
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getRootNode().getNode(abspath);
+                Node node = Strings.isNullOrEmpty(abspath)  ? session.getRootNode() : session.getRootNode().getNode(abspath);
                 JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
             } catch (Exception e) {

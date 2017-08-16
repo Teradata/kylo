@@ -185,15 +185,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     
     @Override
     public Optional<Node> findVersionableNode(ID id) {
-        // TODO Auto-generated method stub
-        return null;
+        final JcrFeed feed = (JcrFeed) findById(id);
+        if (feed != null) {
+            return feed.getFeedSummary().map(s -> s.getNode());
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public Feed asEntity(Node versionable) {
-        // The versionable node argument is the summary node.
-        Node feedNode = JcrUtil.getParent(versionable);
-        return JcrUtil.getJcrObject(feedNode, JcrFeed.class, this);
+    public Feed asEntity(ID id, Node versionable) {
+        try {
+            // The versionable node argument is the summary node.
+            Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
+            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable);
+        } catch (RepositoryException e) {
+            throw new FeedNotFoundExcepton(id);
+        }
     }
 
     /* (non-Javadoc)

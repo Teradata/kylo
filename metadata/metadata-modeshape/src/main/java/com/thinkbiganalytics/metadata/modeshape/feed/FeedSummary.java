@@ -74,7 +74,7 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
         } catch (Exception e) {
             if (category == null) {
                 try {
-                    category = (Category) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
+                    category = (Category) JcrUtil.constructNodeObject(this.feed.getNode().getParent(), categoryClass, null);
                 } catch (Exception e2) {
                     throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
                 }

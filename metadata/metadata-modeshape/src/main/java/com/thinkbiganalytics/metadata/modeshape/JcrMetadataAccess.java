@@ -94,8 +94,6 @@ public class JcrMetadataAccess implements MetadataAccess {
         protected java.util.Set<Node> initialValue() {
             return new HashSet<>();
         }
-
-        ;
     };
 
     private static MetadataRollbackAction nullRollbackAction = (e) -> {
@@ -157,8 +155,9 @@ public class JcrMetadataAccess implements MetadataAccess {
             if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
                 log.debug("***** checking out node: {}", n);
                 JcrVersionUtil.checkout(n);
-                checkedOutNodes.get().add(n);
             }
+            
+            checkedOutNodes.get().add(n);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to checkout node: " + n, e);
         }

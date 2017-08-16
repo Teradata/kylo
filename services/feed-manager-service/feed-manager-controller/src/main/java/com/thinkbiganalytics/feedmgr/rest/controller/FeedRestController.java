@@ -28,6 +28,7 @@ import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
@@ -45,6 +46,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
+import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
@@ -452,6 +454,45 @@ public class FeedRestController {
         }
     }
 
+    @GET
+    @Path("/{feedId}/versions")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response getFeedVersions(@PathParam("feedId") String feedId,
+                                    @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+        FeedVersions feed = getMetadataService().getFeedVersions(feedId, includeContent);
+
+        return Response.ok(feed).build();
+    }
+    
+    @GET
+    @Path("/{feedId}/versions/{versionId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed versions.", response = FeedMetadata.class),
+        @ApiResponse(code = 400, message = "Returns the feed or version does not exist.", response = FeedMetadata.class),
+        @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response getFeedVersion(@PathParam("feedId") String feedId,
+                                   @PathParam("versionId") String versionId,
+                                   @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+        try {
+            return getMetadataService().getFeedVersion(feedId, versionId, includeContent)
+                            .map(version -> Response.ok(version).build())
+                            .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
     @POST
     @Path("/{feedId}/merge-template")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})

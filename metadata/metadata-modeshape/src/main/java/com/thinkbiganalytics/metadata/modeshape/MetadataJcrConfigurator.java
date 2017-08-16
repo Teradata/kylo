@@ -97,14 +97,14 @@ public class MetadataJcrConfigurator {
             }
         }, MetadataAccess.SERVICE);
 
-        this.metadataAccess.commit(() -> {
-            try {
-                Session session = JcrMetadataAccess.getActiveSession();
-                removeVersionableFeedType(session);
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Could remove versioning from feeds", e);
-            }
-        }, MetadataAccess.SERVICE);
+//        this.metadataAccess.commit(() -> {
+//            try {
+//                Session session = JcrMetadataAccess.getActiveSession();
+//                removeVersionableFeedType(session);
+//            } catch (RepositoryException e) {
+//                throw new MetadataRepositoryException("Could remove versioning from feeds", e);
+//            }
+//        }, MetadataAccess.SERVICE);
 
         this.configured.set(true);
         firePostConfigActions();

@@ -1,5 +1,22 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -26,6 +43,7 @@ import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
@@ -43,28 +61,12 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 /**
  * Transforms feeds between Feed Manager and Metadata formats.
@@ -237,6 +239,30 @@ public class FeedModelTransform {
         domain.setVersionName(feedMetadata.getVersionName());
         domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
         return domain;
+    }
+    
+    
+    /**
+     * Transforms the specified domain feed versions to a FeedVersions.
+     *
+     * @param domain the Metadata feed
+     * @return the Feed Manager feed
+     */
+    @Nonnull
+    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed>> versions, @Nonnull final Feed.ID feedId) {
+        FeedVersions feedVersions = new FeedVersions(feedId.toString());
+        versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer)));
+        return feedVersions;
+    }
+    
+    @Nonnull
+    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed> domainVer) {
+        com.thinkbiganalytics.feedmgr.rest.model.EntityVersion version
+            = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(), 
+                                                                         domainVer.getName(), 
+                                                                         domainVer.getCreatedDate().toDate());
+        domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed)));
+        return version;
     }
 
     /**
