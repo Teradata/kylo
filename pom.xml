@@ -98,7 +98,7 @@
 
     <!-- Plugin Versions -->
     <plugin.surefire.version>2.19.1</plugin.surefire.version>
-    <plugin.license.version>1.13</plugin.license.version>
+    <plugin.license.version>1.12</plugin.license.version>
     <liquibase.version>3.5.3</liquibase.version>
     <!--<liquibase.version>3.3.5</liquibase.version>-->
     <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
