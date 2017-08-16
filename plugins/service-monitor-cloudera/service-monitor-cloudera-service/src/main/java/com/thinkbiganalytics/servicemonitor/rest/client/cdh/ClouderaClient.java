@@ -75,7 +75,7 @@ public class ClouderaClient {
         Integer port = new Integer(portString);
         String username = clientConfig.getUsername();
         String password = clientConfig.getPassword();
-        LOG.info("Created New Cloudera Client for Host [" + host + "], user: [" + username + "]");
+        LOG.info("Created New Cloudera Client for Host [" + host + ":" + port + "], user: [" + username + "]");
         this.clouderaManagerClientBuilder =
             new ClouderaManagerClientBuilder().withHost(host).withPort(port).withUsernamePassword(username, password);
 

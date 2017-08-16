@@ -214,6 +214,14 @@
         <include>kylo-search-solr-${project.version}.jar</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/service-monitor-cloudera/service-monitor-cloudera-service/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-service-monitor-cloudera-service-${project.version}.jar</include>
+      </includes>
+    </fileSet>
 
     <fileSet>
       <outputDirectory>kylo-services/lib</outputDirectory>

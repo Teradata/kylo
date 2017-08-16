@@ -25,11 +25,13 @@ import com.thinkbiganalytics.servicemonitor.rest.client.cdh.ClouderaClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * Spring configuration for Cloudera service monitor.
  */
 @Configuration
+@PropertySource("classpath:cloudera.properties")
 public class ClouderaSpringConfiguration {
 
     @Bean(name = "clouderaServicesStatusCheck")
