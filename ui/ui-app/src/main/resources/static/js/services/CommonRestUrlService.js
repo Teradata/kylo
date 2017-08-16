@@ -51,6 +51,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
         this.ENTITY_ACCESS_CONTROLLED_CHECK = self.SECURITY_BASE_URL+"/actions/entity-access-controlled";
 
+        this.ANGULAR_EXTENSION_MODULES_URL = "/api/v1/ui/extension-modules"
+
 
 
     });

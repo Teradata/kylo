@@ -605,11 +605,13 @@ define(['angular', 'kylo-common', 'kylo-services',
 
         });
 
+
+
     }]);
 
     app.run(
-        ['$rootScope', '$state', '$location', "$transitions","$timeout","$q", "AccessControlService",
-         function ($rootScope, $state, $location, $transitions,$timeout, $q, AccessControlService) {
+        ['$rootScope', '$state', '$location', "$transitions","$timeout","$q", "$uiRouter","AccessControlService","AngularModuleExtensionService",
+         function ($rootScope, $state, $location, $transitions,$timeout, $q, $uiRouter, AccessControlService,AngularModuleExtensionService) {
              //initialize the access control
              AccessControlService.init();
 
@@ -619,6 +621,8 @@ define(['angular', 'kylo-common', 'kylo-services',
              $rootScope.typeOf = function (value) {
                  return typeof value;
              };
+
+             AngularModuleExtensionService.registerModules();
 
              /**
               * Add a listener to the start of every transition to do Access control on the page

@@ -18,6 +18,7 @@ define(['angular',
         'services/NotificationService',
         'services/AngularHttpInterceptor',
         'services/UserGroupService',
-'services/BroadcastConstants'], function (angular,moduleName) {
+        'services/AngularModuleExtensionService',
+        'services/BroadcastConstants'], function (angular,moduleName) {
    return angular.module(moduleName);
 });

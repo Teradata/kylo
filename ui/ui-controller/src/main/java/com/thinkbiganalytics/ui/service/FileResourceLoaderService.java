@@ -85,4 +85,24 @@ public class FileResourceLoaderService {
         return Collections.emptyList();
     }
 
+
+    public void loadResources(String pattern,LoadResourceCallback callback ) {
+        try {
+            Resource[] resources = loadResources(pattern);
+            if (resources != null) {
+                Lists.newArrayList(resources).stream().forEach(resource -> {
+                    try {
+                        callback.execute(resource);
+                    }
+                    catch (Exception e){
+                        log.error("Unable to load resource ",resource.getFilename(),e);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            log.error("unable to load resources matching the pattern {} ", pattern, e);
+        }
+
+    }
+
 }

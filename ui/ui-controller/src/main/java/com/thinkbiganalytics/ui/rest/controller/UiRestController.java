@@ -20,6 +20,7 @@ package com.thinkbiganalytics.ui.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
 import com.thinkbiganalytics.ui.service.UiTemplateService;
@@ -54,6 +55,8 @@ public class UiRestController {
 
     private List<ProcessorTemplate> processorTemplates;
 
+    private List<AngularModule> angularExtensionModules;
+
     private Map<String, Object> sparkFunctions;
 
     @PostConstruct
@@ -61,6 +64,11 @@ public class UiRestController {
         processorTemplates = uiTemplateService.loadProcessorTemplateDefinitionFiles();
         if (!processorTemplates.isEmpty()) {
             log.info("Loaded {} custom processor templates ", processorTemplates.size());
+        }
+
+        angularExtensionModules = uiTemplateService.loadAngularModuleDefinitionFiles();
+        if(angularExtensionModules != null && !angularExtensionModules.isEmpty()){
+            log.info("Loaded {} angular extension modules ",angularExtensionModules.size());
         }
 
         sparkFunctions = uiTemplateService.loadSparkFunctionsDefinitions();
@@ -82,5 +90,12 @@ public class UiRestController {
     @Path("spark-functions")
     public Map<String, Object> getSparkFunctions() {
         return sparkFunctions;
+    }
+
+
+    @GET
+    @Path("extension-modules")
+    public List<AngularModule> getAngularExtensionModules() {
+        return angularExtensionModules;
     }
 }
