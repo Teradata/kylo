@@ -59,6 +59,10 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             }
         };
         this.loadingHiveSchemas = false;
+        this.metadataMessage = "";
+        var metadataLoadedMessage = "Use CTRL + space for autocomplete on table and column names";
+        var metadataLoadingMessage = "Loading table and column metadata"
+        var metadataErrorMessage = "Unable to load table and column metadata.  Autocomplete for tables and columns is disabled."
 
         this.codemirrorOptions = {
             lineWrapping: true,
@@ -83,64 +87,22 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
         function getTable(schema, table) {
             self.loadingHiveSchemas = true;
-            var successFn = function(response) {
-                var tableColumns = response.data;
-
-                //store metadata in 3 objects and figure out what to expose to the editor
-                var databaseNames = [];
-                var databaseGroup = {};  //Group data by {Database: { table: [fields]} }
-                var databaseTableGroup = {}  //Group data by {database.Table: [fields] }
-                var tablesObj = {};  //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
-                //TODO need to figure out how to expose the database names to the codemirror editor
-
-                angular.forEach(tableColumns, function(row) {
-                    var db = row.databaseName;
-                    var dbTable = row.databaseName + "." + row.tableName;
-                    if (databaseGroup[db] == undefined) {
-                        databaseGroup[db] = {};
-                        databaseNames.push(db);
-                    }
-                    var tableObj = databaseGroup[db];
-                    if (tableObj[row.tableName] == undefined) {
-                        tableObj[row.tableName] = [];
-                    }
-
-                    if (tablesObj[row.tableName] == undefined) {
-                        tablesObj[row.tableName] = [];
-                    }
-                    var tablesArr = tablesObj[row.tableName]
-
-                    var tableFields = tableObj[row.tableName];
-                    if (databaseTableGroup[dbTable] == undefined) {
-                        databaseTableGroup[dbTable] = [];
-                    }
-                    var databaseTableGroupObj = databaseTableGroup[dbTable];
-
-                    //now populate the tableFields and databaseTableGroupObj with the field Name
-                    tableFields.push(row.columnName);
-                    databaseTableGroupObj.push(row.columnName);
-                    tablesArr.push(row.columnName);
-
-                });
-                self.codemirrorOptions.hintOptions = {tables: databaseTableGroup};
+            self.metadataMessage = metadataLoadingMessage
+            var successFn = function(codeMirrorData) {
+                if(codeMirrorData && codeMirrorData.hintOptions && codeMirrorData.hintOptions.tables) {
+                    self.codemirrorOptions.hintOptions.tables = codeMirrorData.hintOptions.tables;
+                }
                 self.loadingHiveSchemas = false;
-                self.databaseMetadata = databaseGroup;
-                self.databaseNames = databaseNames;
+                self.databaseMetadata = codeMirrorData.databaseMetadata;
+                self.databaseNames = codeMirrorData.databaseNames;
+                self.metadataMessage = metadataLoadedMessage
             };
             var errorFn = function(err) {
                 self.loadingHiveSchemas = false;
-                $mdDialog.show(
-                        $mdDialog.alert()
-                                .parent(angular.element(document.querySelector('#hqlEditorContainer')))
-                                .clickOutsideToClose(true)
-                                .title('Cannot access Thinkbig Hive Jetty App Server')
-                                .textContent('Ensure the thinkbig-hive App.java is Running (In the thinkbig-hive project, right click on App.java -> Run and then refresh this page) ')
-                                .ariaLabel('Cannot access Thinkbig Hive Jetty App Server')
-                                .ok('Got it!')
-                        //.targetEvent(ev)
-                );
+                self.metadataMessage = metadataErrorMessage
+
             };
-            var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/table-columns");
+            var promise = HiveService.getTablesAndColumns(true,30000);
             promise.then(successFn, errorFn);
             return promise;
         }

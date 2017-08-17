@@ -20,7 +20,7 @@
 <div class="md-padding">
 
             <div ng-if="vm.loadingHiveSchemas">
-                <span class="hint">Initializing</span>
+                <span class="hint">Initializing autocomplete data</span>
             <md-progress-linear md-mode="indeterminate" ></md-progress-linear>
             </div>
             <div id="hqlEditorContainer">
@@ -28,7 +28,7 @@
                 <div class="hql-editor" ui-codemirror ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
                 </div>
             </div>
-                <span class="hint">Use CTRL + space for autocomplete on Table and Field names</span>
+                <span class="hint">{{vm.metadataMessage}}</span>
 <div layout="row" layout-fill layout-align="space-between center">
             <md-button class="md-primary md-raised" ng-disabled="vm.sql == ''" ng-click="vm.query()" ng-if="vm.allowExecuteQuery">
                 Execute Query
