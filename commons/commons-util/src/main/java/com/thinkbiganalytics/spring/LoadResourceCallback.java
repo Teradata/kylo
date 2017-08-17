@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.ui.service;
+package com.thinkbiganalytics.spring;
 
 /*-
  * #%L

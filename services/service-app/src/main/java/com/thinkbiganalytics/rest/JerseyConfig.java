@@ -29,11 +29,20 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.wadl.internal.WadlResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Contact;
@@ -57,6 +66,11 @@ import io.swagger.jaxrs.config.BeanConfig;
 )
 public class JerseyConfig extends ResourceConfig {
 
+    @Inject
+    ApplicationContext applicationContext;
+
+
+    private static final Logger log = LoggerFactory.getLogger(JerseyConfig.class);
 
     public JerseyConfig() {
 
@@ -66,12 +80,7 @@ public class JerseyConfig extends ResourceConfig {
         resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
         registerClasses(resources);
 
-        //TODO uncomment once we move away from Spring boot single app.
-        //Spring Boot Jar plugin requires you to unpack all Jersey Controller jars
-        //and also forces you to do package scanning at a more detailed level
-        //TODO: either make the packages driven by a property, or change and uncomment the top level com.thinkbiganalytics package
 
-        //packages("com.thinkbiganalytics");
         packages("com.thinkbiganalytics.ui.rest.controller",
                  "com.thinkbiganalytics.config.rest.controller",
                  "com.thinkbiganalytics.servicemonitor.rest.controller",
@@ -105,6 +114,25 @@ public class JerseyConfig extends ResourceConfig {
         register(provider);
 
         configureSwagger();
+    }
+
+    @PostConstruct
+    /**
+     * Add ability to scan additional Spring Beans annotated with @Path
+     */
+    private void init() {
+        //register any additional beans that are path annotated
+        Map<String, Object> map = applicationContext.getBeansWithAnnotation(Path.class);
+        if (map != null) {
+            Set<Class<?>> pathClasses = map.values().stream().map(o -> o.getClass()).collect(Collectors.toSet());
+            registerClasses(pathClasses);
+        }
+    }
+
+    public void registerPackages(String... pacakges) {
+        if (pacakges != null) {
+            Arrays.asList(pacakges).stream().forEach(p -> register(p));
+        }
     }
 
     private void configureSwagger() {

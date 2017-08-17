@@ -20,7 +20,7 @@ package com.thinkbiganalytics.ui.config;
  * #L%
  */
 
-import com.thinkbiganalytics.ui.service.FileResourceLoaderService;
+import com.thinkbiganalytics.spring.FileResourceService;
 import com.thinkbiganalytics.ui.service.UiTemplateService;
 
 import org.springframework.context.annotation.Bean;
@@ -33,8 +33,8 @@ import org.springframework.context.annotation.Configuration;
 public class UiSpringConfiguration {
 
     @Bean
-    public FileResourceLoaderService fileResourceLoaderService(){
-        return new FileResourceLoaderService();
+    public FileResourceService fileResourceLoaderService(){
+        return new FileResourceService();
     }
 
     @Bean

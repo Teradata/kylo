@@ -20,22 +20,31 @@ package com.thinkbiganalytics.ui.rest;
  * #L%
  */
 
+import com.thinkbiganalytics.spring.FileResourceService;
+
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
+import org.springframework.boot.autoconfigure.jersey.JerseyProperties;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Inject;
+
 @Configuration
 public class SpringJerseyConfiguration {
 
+   @Bean
+   public JerseyConfig jerseyConfig(){
+       return new JerseyConfig();
+   }
+
     @Bean(name = "mainJerseyServlet")
-    public ServletRegistrationBean jerseyServlet() {
-        final ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(new JerseyConfig()));
+    public ServletRegistrationBean jerseyServlet(JerseyConfig jerseyConfig) {
+        final ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(jerseyConfig));
         registration.addUrlMappings("/api/*");
         registration.addInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getName());
         return registration;
     }
-
 
 }

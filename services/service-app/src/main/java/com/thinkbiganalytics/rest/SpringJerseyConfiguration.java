@@ -29,9 +29,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpringJerseyConfiguration {
 
+    @Bean
+    public JerseyConfig jerseyConfig()
+    {
+        return new JerseyConfig();
+    }
+
     @Bean(name = "mainJerseyServlet")
-    public ServletRegistrationBean jerseyServlet() {
-        ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(new JerseyConfig()));
+    public ServletRegistrationBean jerseyServlet(JerseyConfig jerseyConfig) {
+        ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(jerseyConfig));
         registration.addUrlMappings("/api/*");
         // our rest resources will be available in the path /api/*
         registration.addInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getName());

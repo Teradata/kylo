@@ -21,6 +21,7 @@ package com.thinkbiganalytics.ui.service;
  */
 
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.spring.FileResourceService;
 import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.module.DefaultAngularModule;
@@ -49,7 +50,8 @@ public class UiTemplateService {
     private static Logger log = LoggerFactory.getLogger(UiTemplateService.class);
 
     @Autowired
-    private FileResourceLoaderService fileResourceService;
+    private FileResourceService fileResourceService;
+
 
 
     /**

@@ -24,20 +24,59 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.thinkbiganalytics.spring.FileResourceService;
+import com.thinkbiganalytics.ui.service.UiTemplateService;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.Path;
+import javax.ws.rs.ext.Provider;
 
 @ApplicationPath("/api")
 public class JerseyConfig extends ResourceConfig {
 
+    private static Logger log = LoggerFactory.getLogger(UiTemplateService.class);
+
+    @Inject
+    FileResourceService fileResourceService;
+
+    @Inject
+    ApplicationContext applicationContext;
+
+
     public JerseyConfig() {
         packages("com.thinkbiganalytics.ui.rest.controller");
-
         register(JacksonFeature.class);
         register(createJsonProvider());
+
+
+    }
+
+    @PostConstruct
+    private void init(){
+        //register any additional beans that are path annotated
+        Map<String,Object> map = applicationContext.getBeansWithAnnotation(Path.class);
+      if(map != null){
+        Set<Class<?>> pathClasses = map.values().stream().map(o -> o.getClass()).collect(Collectors.toSet());
+       registerClasses(pathClasses);
+      }
     }
 
     private JacksonJaxbJsonProvider createJsonProvider() {

@@ -1,4 +1,17 @@
 <div>
 
   Example Module Page : {{vm.name}}
+
+  <div layout="column">
+    <md-input-container>
+      <label>Food</label>
+      <md-select ng-model="vm.selectedFood">
+        <md-option><em>None</em></md-option>
+        <md-option ng-repeat="food in vm.foods" ng-value="food">
+          {{food}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+
+  </div>
 </div>
