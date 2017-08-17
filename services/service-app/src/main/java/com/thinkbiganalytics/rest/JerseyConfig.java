@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -113,7 +114,7 @@ public class JerseyConfig extends ResourceConfig {
         provider.setMapper(om);
         register(provider);
 
-        configureSwagger();
+
     }
 
     @PostConstruct
@@ -123,22 +124,24 @@ public class JerseyConfig extends ResourceConfig {
     private void init() {
         //register any additional beans that are path annotated
         Map<String, Object> map = applicationContext.getBeansWithAnnotation(Path.class);
+        String packageNames = "com.thinkbiganalytics";
+        if(map != null && !map.isEmpty()) {
+            String beanPackageNames = map.values().stream().map(o -> o.getClass().getPackage().getName()).distinct().collect(Collectors.joining(","));
+            if(StringUtils.isNotBlank(beanPackageNames)) {
+                packageNames += "," + beanPackageNames;
+            }
+        }
         if (map != null) {
             Set<Class<?>> pathClasses = map.values().stream().map(o -> o.getClass()).collect(Collectors.toSet());
             registerClasses(pathClasses);
         }
+        configureSwagger(packageNames);
     }
 
-    public void registerPackages(String... pacakges) {
-        if (pacakges != null) {
-            Arrays.asList(pacakges).stream().forEach(p -> register(p));
-        }
-    }
-
-    private void configureSwagger() {
+    private void configureSwagger(String packageNames) {
         final BeanConfig config = new BeanConfig();
         config.setBasePath("/proxy");
-        config.setResourcePackage("com.thinkbiganalytics");
+        config.setResourcePackage(packageNames);
         config.setPrettyPrint(true);
         config.setScan(true);
     }
