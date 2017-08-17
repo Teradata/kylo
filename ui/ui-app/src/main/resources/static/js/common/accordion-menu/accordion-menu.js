@@ -5,9 +5,9 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         .run(['$templateCache', function ($templateCache) {
             $templateCache.put('accordion-menu.tmpl.html',
                 ' <md-list class="side-menu " > \n' +
-                ' <md-list-item ng-repeat="section in vm.menu" flex layout-fill > \n' +
+                ' <md-list-item ng-repeat="section in vm.menu" flex layout-fill ng-if="!section.hidden"> \n' +
             ' <menu-link section="section" ng-if="section.type === \'link\'" style="width:100%"></menu-link>\n' +
-            ' <menu-toggle section="section" ng-if="section.type === \'toggle\'" style="width:100%"></menu-toggle>\n' +
+            ' <menu-toggle section="section" ng-if="section.type === \'toggle\' " style="width:100%"></menu-toggle>\n' +
                 '<md-divider></md-divider>' +
             ' </md-list-item>\n'
                 + '</md-list>' + '');
