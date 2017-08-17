@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -438,7 +439,7 @@ public class TemplateCreationHelper {
     }
 
     public Map<String, ControllerServiceDTO> getMergedControllerServices() {
-        return mergedControllerServices;
+        return mergedControllerServices == null ? Maps.newHashMap() : mergedControllerServices;
     }
 
     /**
