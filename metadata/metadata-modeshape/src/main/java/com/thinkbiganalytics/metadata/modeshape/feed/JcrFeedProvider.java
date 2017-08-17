@@ -179,6 +179,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.class;
     }
 
+    @Override
+    protected String getFindAllStartingPath() {
+        return EntityUtil.pathForCategory();
+    }
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
      */

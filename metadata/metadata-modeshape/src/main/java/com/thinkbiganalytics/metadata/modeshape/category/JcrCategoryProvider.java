@@ -90,7 +90,12 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
         return JcrUtil.createJcrObject(node, entityClass, this.opsAccessProvider);
     }
-    
+
+
+    @Override
+    protected String getFindAllStartingPath() {
+        return EntityUtil.pathForCategory();
+    }
     @Override
     public Category update(Category category) {
         if (accessController.isEntityAccessControlled()) {

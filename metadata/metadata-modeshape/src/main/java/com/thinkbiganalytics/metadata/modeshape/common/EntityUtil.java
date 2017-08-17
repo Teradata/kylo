@@ -104,6 +104,14 @@ public class EntityUtil {
         return JcrUtil.path("/metadata", "domainTypes").toString();
     }
 
+    public static String pathForUsers() {
+        return JcrUtil.path("/users").toString();
+    }
+
+    public static String pathForGroups() {
+        return JcrUtil.path("/groups").toString();
+    }
+
     public static String asQueryProperty(String prop) {
         return "[" + prop + "]";
     }

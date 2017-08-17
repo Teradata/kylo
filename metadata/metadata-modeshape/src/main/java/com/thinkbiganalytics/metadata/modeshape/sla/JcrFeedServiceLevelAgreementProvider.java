@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
@@ -78,6 +79,7 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
     public List<FeedServiceLevelAgreement> findAllAgreements() {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
                        + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] ";
+                      // + "WHERE ISDESCENDANTNODE('" + EntityUtil.pathForSla()+"') ";
         return queryToList(query, null);
 
     }

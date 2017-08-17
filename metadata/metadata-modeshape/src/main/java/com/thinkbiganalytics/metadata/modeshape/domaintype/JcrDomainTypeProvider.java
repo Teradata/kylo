@@ -62,4 +62,10 @@ public class JcrDomainTypeProvider extends BaseJcrProvider<DomainType, DomainTyp
     public DomainType.ID resolveId(final Serializable fid) {
         return new JcrDomainType.DomainTypeId(fid);
     }
+
+    @Override
+    protected String getFindAllStartingPath() {
+        return EntityUtil.pathForDomainTypes();
+    }
+
 }

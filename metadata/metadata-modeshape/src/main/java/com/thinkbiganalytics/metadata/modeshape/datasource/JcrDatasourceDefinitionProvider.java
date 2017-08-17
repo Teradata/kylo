@@ -64,9 +64,15 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
     }
 
     @Override
+    protected String getFindAllStartingPath() {
+        return EntityUtil.pathForDatasourceDefinition();
+    }
+
+    @Override
     public DatasourceDefinition.ID resolveId(Serializable fid) {
         return new JcrDatasourceDefinition.DatasourceDefinitionId((fid));
     }
+
 
 
     @Override
@@ -108,7 +114,7 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
         String
             query =
             "SELECT * from " + EntityUtil.asQueryProperty(JcrDatasourceDefinition.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(JcrDatasourceDefinition.PROCESSOR_TYPE)
-            + " = $processorType";
+            + " = $processorType AND "+isDescendantNodeFilter();
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("processorType", processorType);
         return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrDatasourceDefinition.class);

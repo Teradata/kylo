@@ -70,6 +70,10 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     protected Class<T> entityClass;
     protected Class<? extends JcrEntity> jcrEntityClass;
 
+    protected String getFindAllStartingPath(){
+        return null;
+    }
+
     public BaseJcrProvider() {
         this.entityClass = (Class<T>) getEntityClass();
         this.jcrEntityClass = getJcrEntityClass();
@@ -237,7 +241,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     public List<T> find(String query) {
-        List<T> entities = new ArrayList<>();
+         List<T> entities = new ArrayList<>();
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
@@ -333,9 +337,13 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
     }
 
+    protected String isDescendantNodeFilter(){
+        return "ISDESCENDANTNODE('"+getFindAllStartingPath()+"') ";
+    }
+
     @Override
     public List<T> findAll() {
-        return find(startBaseQuery().toString());
+        return find(startBaseQuery().append(getFindAllStartingPath() != null ? " WHERE "+isDescendantNodeFilter() : "").toString());
     }
     
     @Override

@@ -86,13 +86,18 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         return JcrFeedTemplate.NODE_TYPE;
     }
 
+    @Override
+    protected String getFindAllStartingPath() {
+        return EntityUtil.pathForTemplates();
+    }
+
     public FeedManagerTemplate ensureTemplate(String systemName) {
-        String sanitiezedName = sanitizeSystemName(systemName);
+        String sanitizedName = sanitizeSystemName(systemName);
         String path = EntityUtil.pathForTemplates();
         Map<String, Object> props = new HashMap<>();
-        props.put(JcrFeedTemplate.TITLE, sanitiezedName);
-        boolean newTemplate = !JcrUtil.hasNode(getSession(), path, sanitiezedName);
-        JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
+        props.put(JcrFeedTemplate.TITLE, sanitizedName);
+        boolean newTemplate = !JcrUtil.hasNode(getSession(), path, sanitizedName);
+        JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitizedName, props);
 
         if (newTemplate) {
             if (this.accessController.isEntityAccessControlled()) {
@@ -109,6 +114,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
         return template;
     }
+
+
 
     @Override
     public FeedManagerTemplate findByName(String name) {
