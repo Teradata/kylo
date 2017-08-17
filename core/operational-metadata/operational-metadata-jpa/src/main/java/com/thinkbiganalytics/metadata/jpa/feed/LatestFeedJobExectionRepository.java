@@ -33,7 +33,7 @@ import java.util.List;
 @RepositoryType(LatestFeedJobExectionSecuringRepository.class)
 public interface LatestFeedJobExectionRepository extends JpaRepository<JpaLatestFeedJobExecution, Long> {
 
-    @Query("select jobExecution from JpaLatestFeedJobExecution as jobExecution "
+    @Query("select distinct jobExecution from JpaLatestFeedJobExecution as jobExecution "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB_EXECUTION
            + "where jobExecution.feedType = 'CHECK' "
            + "and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)

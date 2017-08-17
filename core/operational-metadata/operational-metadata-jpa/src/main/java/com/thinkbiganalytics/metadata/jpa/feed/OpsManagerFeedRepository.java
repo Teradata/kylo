@@ -40,7 +40,7 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
     JpaOpsManagerFeed findByName(String name);
 
-    @Query("select feed from JpaOpsManagerFeed as feed "
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
                     + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
                     + " where feed.id in(:ids)"
                     + " and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
@@ -58,7 +58,7 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
     Integer abandonFeedJobs(@Param("feed") String feed, @Param("exitMessage") String exitMessage, @Param("username") String username);
 
 
-    @Query("select feed from JpaOpsManagerFeed as feed "
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + " where feed.name in(:feedNames)"
            + " and "+FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)

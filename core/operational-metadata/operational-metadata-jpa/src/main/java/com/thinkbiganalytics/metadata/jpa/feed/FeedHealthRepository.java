@@ -34,7 +34,7 @@ import java.util.List;
 @RepositoryType(FeedHealthSecuringRepository.class)
 public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
 
-    @Query("select health from JpaOpsManagerFeedHealth as health "
+    @Query("select distinct health from JpaOpsManagerFeedHealth as health "
            + "join JpaOpsManagerFeed as feed on feed.name = health.feedName "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + "where health.feedName =:feedName"
