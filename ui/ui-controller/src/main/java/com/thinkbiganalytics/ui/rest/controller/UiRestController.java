@@ -21,6 +21,7 @@ package com.thinkbiganalytics.ui.rest.controller;
  */
 
 import com.thinkbiganalytics.ui.api.module.AngularModule;
+import com.thinkbiganalytics.ui.api.module.NavigationLink;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
 import com.thinkbiganalytics.ui.service.UiTemplateService;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
@@ -98,4 +100,5 @@ public class UiRestController {
     public List<AngularModule> getAngularExtensionModules() {
         return angularExtensionModules;
     }
+
 }

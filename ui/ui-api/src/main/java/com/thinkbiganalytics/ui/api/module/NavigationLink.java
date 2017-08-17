@@ -19,26 +19,38 @@ package com.thinkbiganalytics.ui.api.module;
  * limitations under the License.
  * #L%
  */
-
 import java.util.List;
 
 /**
- *
+ * Created by sr186054 on 8/16/17.
  */
-public interface AngularModule {
+public interface NavigationLink {
 
+    String getToggleGroupName();
 
-    /**
-     * get the module state config
-     * @return
-     */
-    List<AngularStateMetadata> getStates();
+    String getSref();
 
+    LINK_TYPE getType();
 
-    String getModuleJsUrl();
+    String getIcon();
 
-    List<NavigationLink> getNavigation();
+    String getText();
 
+    String getNarrowText();
 
+    boolean isDefaultActive();
 
+    boolean isFullscreen();
+
+    List<String> getPermission();
+
+    boolean isExpanded();
+
+    String getElementId();
+
+    public enum LINK_TYPE {
+        TOGGLE, LINK;
+    }
+
+    List<NavigationLink> getLinks();
 }

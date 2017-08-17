@@ -19,7 +19,7 @@
     <module>example-auth-custom</module>
     <module>example-ui-get-file-processor-template</module>
     <module>example-ui-feed-stepper-plugin</module>
-    <module>example-ui-module</module>
+    <module>example-module</module>
   </modules>
 
   <dependencyManagement>

@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.ui.api.module;
+package com.example.kylo.module;
 
 /*-
  * #%L
- * kylo-ui-api
+ * example-module-services
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,25 +20,13 @@ package com.thinkbiganalytics.ui.api.module;
  * #L%
  */
 
-import java.util.List;
-
-/**
- *
- */
-public interface AngularModule {
+import com.thinkbiganalytics.security.action.Action;
 
 
-    /**
-     * get the module state config
-     * @return
-     */
-    List<AngularStateMetadata> getStates();
+public interface ExampleAccessControl {
 
-
-    String getModuleJsUrl();
-
-    List<NavigationLink> getNavigation();
-
-
+        Action ACCESS_EXAMPLE = Action.create("accessExample",
+                                                 "Access Example Services",
+                                                 "Allows the ability to access example module");
 
 }

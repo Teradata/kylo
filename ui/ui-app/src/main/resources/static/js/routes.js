@@ -622,15 +622,8 @@ define(['angular', 'kylo-common', 'kylo-services',
                  return typeof value;
              };
 
-             AngularModuleExtensionService.registerModules();
-
-             /**
-              * Add a listener to the start of every transition to do Access control on the page
-              * and redirect if not authorized
-              */
-             $transitions.onStart({}, function (trans) {
-
-                 if(!AccessControlService.isFutureState(trans.to().name)) {
+             function onStartOfTransition(trans) {
+                 if (!AccessControlService.isFutureState(trans.to().name)) {
                      //if we havent initialized the user yet, init and defer the transition
                      if (!AccessControlService.initialized) {
                          var defer = $q.defer();
@@ -655,8 +648,26 @@ define(['angular', 'kylo-common', 'kylo-services',
                          }
                      }
                  }
-             });
+             }
 
+             /**
+              * Add a listener to the start of every transition to do Access control on the page
+              * and redirect if not authorized
+              */
+             $transitions.onStart({}, function (trans) {
+
+                 if (AngularModuleExtensionService.isInitialized()) {
+                     return onStartOfTransition(trans);
+                 }
+                 else {
+                     var defer = $q.defer();
+                     $q.when(AngularModuleExtensionService.registerModules(), function () {
+                         defer.resolve(onStartOfTransition(trans));
+                     });
+                     return defer.promise;
+                 }
+
+             });
          }
         ]
     );

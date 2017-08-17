@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.module.AngularStateMetadata;
+import com.thinkbiganalytics.ui.api.module.NavigationLink;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,11 @@ public class DefaultAngularModule implements AngularModule {
     private List<AngularStateMetadata> states;
 
     private String moduleJsUrl;
+
+    @JsonSerialize(contentAs = DefaultNavigationLink.class)
+    @JsonDeserialize(contentAs = DefaultNavigationLink.class)
+    private List<NavigationLink> navigation;
+
 
     public DefaultAngularModule(){
 
@@ -61,5 +67,13 @@ public class DefaultAngularModule implements AngularModule {
 
     public void setModuleJsUrl(String moduleJsUrl) {
         this.moduleJsUrl = moduleJsUrl;
+    }
+
+    public List<NavigationLink> getNavigation() {
+        return navigation;
+    }
+
+    public void setNavigation(List<NavigationLink> navigation) {
+        this.navigation = navigation;
     }
 }

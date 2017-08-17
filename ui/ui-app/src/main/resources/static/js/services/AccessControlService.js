@@ -335,6 +335,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
              * @returns {boolean}
              */
             hasAnyAction: function (names, actions) {
+                if (names == "" || names == null || names == undefined || (angular.isArray(names) && names.length == 0)) {
+                    return true;
+                }
                 var self = this;
                 var valid = _.some(names, function (name) {
                     return self.hasAction(name.trim(), actions);
@@ -349,12 +352,17 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
             doesUserHavePermission: function (requiredPermissions) {
                 var self = this;
                 var d = $q.defer();
+                if (requiredPermissions == null || requiredPermissions == undefined || (angular.isArray(requiredPermissions) && requiredPermissions.length == 0)) {
+                    d.resolve(true);
+                }
+                else {
 
                 self.getUserAllowedActions()
                     .then(function (actionSet) {
                         var allowed = self.hasAnyAction(requiredPermissions, actionSet.actions);
                         d.resolve(allowed);
                     });
+                }
                 return d.promise;
             },
 

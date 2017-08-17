@@ -44,6 +44,23 @@ define(['angular','services/module-name','jquery'], function (angular,moduleName
             subscribe: function (scope, event, callback) {
                 var handler = $rootScope.$on(event, callback);
                 scope.$on('$destroy', handler);
+            },
+            /**
+             * Subscribe to some event
+             * @param scope
+             * @param event
+             * @param callback
+             */
+            subscribeOnce: function (event, callback) {
+                var handler = $rootScope.$on(event, function() {
+                   try{
+                       callback();
+                   } catch(err){
+                       console.error("error calling callback for ",event);
+                   }
+                   //deregister the listener
+                    handler();
+                });
             }
 
         }

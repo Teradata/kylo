@@ -1,6 +1,6 @@
-define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav/module'], function (angular,moduleName,AccessConstants) {
+define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav/module','kylo-services'], function (angular,moduleName,AccessConstants) {
 
-    var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService) {
+    var directive = function ($mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService, AngularModuleExtensionService) {
         return {
             restrict: "E",
             scope:{},
@@ -71,7 +71,9 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
 
                 var MENU_KEY = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN"}
 
+                var extensionsMenus = {};
 
+                AngularModuleExtensionService.onInitialized(onAngularExtensionsInitialized);
 
                 /**
                  * Build the Feed Manager Left Nav
@@ -84,7 +86,8 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
                     links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.UI_STATES.TABLES.permissions});
                     links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
-                    links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
+                    links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
+                    addExtensionLinks(MENU_KEY.FEED_MGR);
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;
                  return menu;
@@ -106,6 +109,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                        links.push({sref: "service-level-assessments",type:'link', icon: "work", text: "SLA Assessments", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
                        links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
                        links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
+                      addExtensionLinks(MENU_KEY.OPS_MGR);
                        menu.links = links;
                     menuMap[MENU_KEY.OPS_MGR] = menu;
                     return menu;
@@ -125,9 +129,43 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
                     links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
+                    addExtensionLinks(MENU_KEY.ADMIN);
                     menu.links = links;
                     menuMap[MENU_KEY.ADMIN] = menu;
                   return menu
+                }
+
+                /**
+                 * Builds additional menu items
+                 * @param rootMenu
+                 */
+                function buildExtensionsMenu(rootMenu){
+                    var additionalKeys = _.keys(extensionsMenus);
+                    additionalKeys = _.filter(additionalKeys, function(key) {return MENU_KEY[key] == undefined });
+                    if(additionalKeys.length >0){
+                        _.each(additionalKeys,function(key){
+                            var menu = extensionsMenus[key];
+                            //ensure this is a toggle type
+                            menu.type = 'toggle';
+                            _.each(menu.links,function(link) {
+                                //ensure we set this type to be a child
+                                link.type = 'link';
+                            });
+                            menuMap[key] = menu;
+                            rootMenu.push(menu);
+                        })
+                    }
+                }
+
+                function addExtensionLinks(menuName){
+                    var extensionLinks = extensionsMenus[menuName];
+                    if(extensionLinks){
+                        _.each(extensionLinks,function(link){
+                            //ensure we set this type to be a child
+                            link.type = 'link';
+                            links.push(link);
+                        })
+                    }
                 }
 
                 /**
@@ -219,9 +257,15 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
 
                 function buildSideNavMenu() {
                     var menu = [];
+
+                    //identify any additional menu items
+                    extensionsMenus = AngularModuleExtensionService.getNavigationMenu();
+
+
                     menu.push(buildOpsManagerMenu());
                     menu.push(buildFeedManagerMenu());
                     menu.push(buildAdminMenu());
+                    buildExtensionsMenu(menu);
                     buildMenuStateMap(menu);
 
                     toggleSections = _.filter(menu,function(item){
@@ -242,7 +286,15 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     });
                 }
 
-                buildSideNavMenu();
+                function onAngularExtensionsInitialized(){
+                    buildSideNavMenu();
+                }
+
+                if(AngularModuleExtensionService.isInitialized()){
+                    buildSideNavMenu();
+                }
+
+
 
                 function menuToggleItemForModuleName(moduleName){
                     if(moduleName.indexOf('opsmgr') >=0){
@@ -298,5 +350,5 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
         }
     };
 
-    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService','AccordionMenuService', directive]);
+    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService','AccordionMenuService','AngularModuleExtensionService', directive]);
 });

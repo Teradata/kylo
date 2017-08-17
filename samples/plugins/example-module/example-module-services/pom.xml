@@ -4,18 +4,17 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>example-ui-module</artifactId>
+  <artifactId>example-module-services</artifactId>
   <groupId>com.example.kylo.plugin</groupId>
   <version>0.8.3-SNAPSHOT</version>
-  <name>example-ui-module</name>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>kylo-samples-plugins</artifactId>
+    <groupId>com.example.kylo.plugin</groupId>
+    <artifactId>example-module</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
-    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
   </properties>
 
   <dependencies>
@@ -40,6 +39,22 @@
       <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- needed if you are adding new access control for your module -->
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
   </dependencies>
 <build>
   <plugins>
