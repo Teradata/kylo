@@ -43,7 +43,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
     };
 
-    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils, FeedTagService,
+    var controller = function ($rootScope, $scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils, FeedTagService,
                                DomainTypesService) {
 
         this.defineFeedTableForm = {};
@@ -612,7 +612,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 ensurePartitionData();
             }
             self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;
-
         }
 
         var tableMethodWatch = $scope.$watch(function() {
@@ -732,6 +731,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
                 validate();
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
+
+                $timeout(touchErrorFields, 2000);
             };
             var errorFn = function (data) {
                 hideProgress();
@@ -745,6 +746,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
+        function touchErrorFields() {
+            var errors = self.defineFeedTableForm.$error;
+            for (var key in errors) {
+                if (errors.hasOwnProperty(key)) {
+                    var errorFields = errors[key];
+                    angular.forEach(errorFields, function (errorField) {
+                        errorField.$setTouched();
+                    });
+                }
+            }
+        }
         /**
          * Transforms the specified chip into a tag.
          * @param {string} chip the chip
@@ -767,7 +779,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         });
     };
 
-    angular.module(moduleName).controller('DefineFeedTableController', ["$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils", "FeedTagService", "DomainTypesService", controller]);
+    angular.module(moduleName).controller('DefineFeedTableController', ["$rootScope","$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils", "FeedTagService", "DomainTypesService", controller]);
 
     angular.module(moduleName)
         .directive('thinkbigDefineFeedTable', directive);
