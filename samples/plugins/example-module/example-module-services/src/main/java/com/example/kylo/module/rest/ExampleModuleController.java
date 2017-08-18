@@ -61,9 +61,9 @@ public class ExampleModuleController {
     HttpServletRequest request;
 
     /**
-     * Get the configuration information
+     * Get the list of foods
      *
-     * @return A map of name value key pairs
+     * @return A list of foods
      */
     @GET
     @Path("/food")
@@ -72,7 +72,7 @@ public class ExampleModuleController {
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns sample foods.", response = List.class)
                   })
-    public Response getConfiguration() {
+    public Response getFood() {
        List<String> names = Lists.newArrayList("Pizza","Hamburger","Hot dog","Toast","Candy");
 
 

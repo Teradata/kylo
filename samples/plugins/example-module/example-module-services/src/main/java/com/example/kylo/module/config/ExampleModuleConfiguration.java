@@ -32,9 +32,8 @@ import org.springframework.context.annotation.Bean;
 import javax.inject.Inject;
 
 /**
- * Configuration for accessing encryption services.
+ * Configuration for accessing example module
  */
-//@Configuration
 public class ExampleModuleConfiguration {
 
     @Inject
@@ -44,7 +43,7 @@ public class ExampleModuleConfiguration {
     private ActionsModuleBuilder builder;
 
     @Bean
-    public PostMetadataConfigAction encryptionAccessConfigAction() {
+    public PostMetadataConfigAction exampleAccessConfigAction() {
         return () -> metadata.commit(() -> builder
             .module(AllowedActions.SERVICES)
             .action(ExampleAccessControl.ACCESS_EXAMPLE)
