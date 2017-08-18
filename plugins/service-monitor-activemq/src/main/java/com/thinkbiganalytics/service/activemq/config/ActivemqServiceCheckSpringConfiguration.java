@@ -1,9 +1,8 @@
 package com.thinkbiganalytics.service.activemq.config;
 
-
 /*-
  * #%L
- * thinkbig-service-monitor-nifi
+ * service-monitor-activemq
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,6 +19,8 @@ package com.thinkbiganalytics.service.activemq.config;
  * limitations under the License.
  * #L%
  */
+
+
 
 import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
 

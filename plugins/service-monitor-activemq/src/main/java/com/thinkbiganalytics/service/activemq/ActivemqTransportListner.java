@@ -2,7 +2,7 @@ package com.thinkbiganalytics.service.activemq;
 
 /*-
  * #%L
- * thinkbig-service-monitor-nifi
+ * service-monitor-activemq
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,6 +19,8 @@ package com.thinkbiganalytics.service.activemq;
  * limitations under the License.
  * #L%
  */
+
+
 
 import org.apache.activemq.transport.TransportListener;
 import org.apache.log4j.Logger;
@@ -40,7 +42,7 @@ class ActivemqTransportListner implements TransportListener
     @Override
     public void onException(IOException exception)
     {
-        log.error("Unable to connection Activemq" + exception.getMessage());
+        log.error("Unable to connect Activemq" , exception);
     }
 
     @Override
