@@ -25,4 +25,5 @@
     <module>commons-test-persistence</module>
     <module>commons-test</module>
   </modules>
+
 </project>
