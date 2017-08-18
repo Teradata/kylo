@@ -1,0 +1,1 @@
+This is a dummy folder to get around the nexus-staging-maven-plugin issue. If the last maven module has the ignore flag in  it it will not deploy any of the jars. This is because its the last module ran that initiates the upload. 
