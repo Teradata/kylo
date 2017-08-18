@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedPrecondition;
@@ -73,7 +74,6 @@ import javax.jcr.query.QueryResult;
  */
 public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLevelAgreement, ServiceLevelAgreement.ID> implements ServiceLevelAgreementProvider {
 
-    public static final String SLA_PATH = "/metadata/sla";
 
     private final JcrTools jcrTools = new JcrTools();
 
@@ -95,10 +95,14 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         return "tba:sla";
     }
 
+    @Override
+    protected String getEntityQueryStartingPath() {
+        return EntityUtil.pathForSla();
+    }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#resolve(java.io.Serializable)
-     */
+         * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#resolve(java.io.Serializable)
+         */
     @Override
     public ID resolve(Serializable ser) {
         return resolveId(ser);
@@ -114,7 +118,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     public List<ServiceLevelAgreement> getAgreements() {
         try {
             Session session = getSession();
-            Node slasNode = session.getNode(SLA_PATH);
+            Node slasNode = session.getNode(EntityUtil.pathForSla());
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) slasNode.getNodes("sla-*");
 
@@ -206,7 +210,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     public ServiceLevelAgreementBuilder builder() {
         try {
             Session session = getSession();
-            Node slasNode = session.getNode(SLA_PATH);
+            Node slasNode = session.getNode(EntityUtil.pathForSla());
             Node slaNode = slasNode.addNode("sla-" + UUID.randomUUID(), "tba:sla");
 
             return builder(slaNode);

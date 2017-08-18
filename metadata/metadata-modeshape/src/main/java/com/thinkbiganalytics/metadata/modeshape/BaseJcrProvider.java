@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.google.common.base.Strings;
-
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -11,9 +9,9 @@ import com.google.common.base.Strings;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,7 +41,6 @@ import org.springframework.data.domain.Sort;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +57,8 @@ import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 
+
+
 /**
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
@@ -70,7 +69,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     protected Class<T> entityClass;
     protected Class<? extends JcrEntity> jcrEntityClass;
 
-    protected String getFindAllStartingPath(){
+    protected String getEntityQueryStartingPath() {
         return null;
     }
 
@@ -142,13 +141,13 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Failed to create new entity of type: " + getEntityClass(), e);
         }
     }
-    
+
     /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
      */
     public Node findOrCreateEntityNode(String parentPath, String relPath, Class<? extends JcrEntity> jcrEntityType) {
         Session session = getSession();
-        
+
         try {
             Node typesNode = session.getNode(parentPath);
             JcrTools tools = new JcrTool();
@@ -241,7 +240,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     public List<T> find(String query) {
-         List<T> entities = new ArrayList<>();
+        List<T> entities = new ArrayList<>();
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
@@ -257,7 +256,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
-    
+
     public int findCount() {
         return findCount(null);
     }
@@ -265,22 +264,22 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public int findCount(String filter) {
         StringBuilder bldr = startBaseQuery("[mode:id]");
         int count = 0;
-        
+
         appendJoins(bldr, filter);
         appendFilter(bldr, filter);
-        
+
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), bldr.toString());
-            
+
             if (result != null) {
                 RowIterator rowItr = result.getRows();
-                
+
                 while (rowItr.hasNext()) {
                     rowItr.nextRow();
                     count++;
                 }
             }
-            
+
             return count;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
@@ -337,26 +336,67 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
     }
 
-    protected String isDescendantNodeFilter(){
-        return "ISDESCENDANTNODE('"+getFindAllStartingPath()+"') ";
+    protected String getFindAllFilter() {
+        return getFindAllFilter(getEntityQueryStartingPath());
+    }
+
+    protected String getFindAllFilter(String startingPath) {
+        int depth = 0;
+        if (startingPath != null) {
+            depth = startingPath.split("/").length;
+        }
+        return getFindAllFilter(startingPath, depth);
+    }
+
+    protected String getFindAllFilter(String startingPath, int depth) {
+        boolean skip = false;
+        if (skip) {
+            return null;
+        }
+        if (startingPath == null) {
+            return null;
+        } else {
+            return "ISDESCENDANTNODE('" + startingPath + "') AND ( DEPTH() = CAST(" + depth + " AS LONG) ) "; // OR DEPTH() = CAST(" + (depth + 1) + " AS LONG) ) ";
+        }
+    }
+
+    protected String applyFindAllFilter(String query, String entityPath) {
+        String entityFilter = getFindAllFilter(entityPath);
+        if (entityFilter == null) {
+            return query;
+        } else {
+            String filter = " WHERE ";
+            if (query.toLowerCase().contains("where")) {
+                filter = " AND ";
+            }
+            filter += entityFilter;
+
+            query += filter;
+            return query;
+        }
+    }
+
+
+    protected StringBuilder getFindAllQuery() {
+        return startBaseQuery().append(getFindAllFilter() != null ? " WHERE " + getFindAllFilter() : "");
     }
 
     @Override
     public List<T> findAll() {
-        return find(startBaseQuery().append(getFindAllStartingPath() != null ? " WHERE "+isDescendantNodeFilter() : "").toString());
+        return find(getFindAllQuery().toString());
     }
-    
+
     @Override
     public Page<T> findPage(Pageable pageable, String filter) {
         int count = findCount(filter);
-        
+
         if (count > 0) {
             StringBuilder bldr = startBaseQuery();
             appendJoins(bldr, pageable, filter);
             appendFilter(bldr, filter);
             appendSort(bldr, pageable);
             appendOffset(bldr, pageable);
-            
+
             List<T> list = find(bldr.toString());
             return new PageImpl<>(list, pageable, count);
         } else {
@@ -424,7 +464,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         } else {
             boolean start = true;
             for (String prop : props) {
-                if (! start) {
+                if (!start) {
                     bldr.append(", ");
                     start = false;
                 }
@@ -433,7 +473,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
         return bldr.append(" FROM [").append(getNodeType(getJcrEntityClass())).append("] AS ").append(getEntityAlias()).append(" ");
     }
-    
+
     protected String getEntityAlias() {
         return "e";
     }
@@ -445,11 +485,11 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     protected String sanitizeTitle(String title) {
         return StringEscapeUtils.escapeJava(title);
     }
-    
+
     protected void appendJoins(StringBuilder bldr, String filter) {
         // No joins by default.  Subclasses should override to add any joins needed for sorting and/or filtering.
     }
-    
+
     protected void appendJoins(StringBuilder bldr, Pageable pageable, String filter) {
         // By default, only adds the joins for the filter.
         // Subclasses should override to add any joins needed for sorting and/or filtering.
@@ -466,15 +506,15 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     protected void appendSort(StringBuilder bldr, Pageable pageable) {
         boolean first = true;
-        
+
         if (pageable.getSort() != null && pageable.getSort().iterator().hasNext()) {
             bldr.append("ORDER BY ");
             for (Sort.Order order : pageable.getSort()) {
-                if (! first) {
+                if (!first) {
                     bldr.append(", ");
                     first = false;
                 }
-                
+
                 String jcrPropName = deriveJcrPropertyName(order.getProperty());
                 bldr.append(jcrPropName).append(" ").append(order.getDirection()).append(" NULLS LAST ");
             }

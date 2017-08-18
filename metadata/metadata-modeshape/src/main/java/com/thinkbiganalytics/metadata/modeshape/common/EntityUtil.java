@@ -112,6 +112,10 @@ public class EntityUtil {
         return JcrUtil.path("/groups").toString();
     }
 
+    public static String pathForSla() {
+        return JcrUtil.path("/metadata","sla").toString();
+    }
+
     public static String asQueryProperty(String prop) {
         return "[" + prop + "]";
     }

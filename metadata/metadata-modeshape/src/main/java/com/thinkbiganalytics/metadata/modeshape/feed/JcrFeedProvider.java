@@ -179,15 +179,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.class;
     }
 
-    @Override
-    protected String getFindAllStartingPath() {
-        return EntityUtil.pathForCategory();
-    }
-
-
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
-     */
+         * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
+         */
     @Override
     public Feed create(Feed t) {
         JcrFeed feed = (JcrFeed) super.create(t);
@@ -783,6 +777,16 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_STATE)).append(") LIKE ").append(filterPattern);
 //            bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_TEMPLATE_NAME)).append(") LIKE ").append(filterPattern);
         }
+    }
+
+    @Override
+    protected String getEntityQueryStartingPath() {
+        return EntityUtil.pathForCategory();
+    }
+
+    @Override
+    protected String getFindAllFilter() {
+       return getFindAllFilter(getEntityQueryStartingPath(),5);
     }
 
     /* (non-Javadoc)

@@ -104,14 +104,14 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         NODE_TYPES_MAP = map;
     }
 
-
-    @Override
-    protected String getFindAllStartingPath() {
-        return EntityUtil.pathForDataSource();
-    }
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
 
+
+    @Override
+    protected String getEntityQueryStartingPath() {
+        return EntityUtil.pathForDataSource();
+    }
     @Inject
     private SecurityRoleProvider roleProvider;
     
