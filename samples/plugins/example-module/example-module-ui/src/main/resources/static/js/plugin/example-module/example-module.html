@@ -4,7 +4,7 @@
 
   <div layout="column">
     <md-input-container>
-      <label>Food</label>
+      <label>Favorite Food</label>
       <md-select ng-model="vm.selectedFood">
         <md-option><em>None</em></md-option>
         <md-option ng-repeat="food in vm.foods" ng-value="food">
@@ -13,5 +13,19 @@
       </md-select>
     </md-input-container>
 
+    <div ng-if="vm.selectedFood != null">
+      Your favorite food is: {{vm.selectedFood}}
+    </div>
   </div>
+    <div layout="column">
+      <span>Example Icons</span>
+      <span>
+        <ng-md-icon icon="{{vm.icon}}" ng-style="{'fill':vm.color}" size="50"></ng-md-icon>
+      </span>
+      <span class="hint">
+        Kylo uses the 'ng-md-icon' library found <a href="https://klarsys.github.io/angular-material-icons/" target="_blank">here</a>.
+      </span>
+    </div>
+
+
 </div>

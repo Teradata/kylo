@@ -1,5 +1,6 @@
 {
   "moduleName": "",
+  "moduleJsUrl":"plugin/example-module/module",
   "states": [
     {
       "state": "exampleModule",
@@ -19,7 +20,7 @@
           "sref": "exampleModule",
           "icon": "transform",
           "text": "Example",
-          "permission": ["accessExample" ]
+          "permission": []
         }
       ]
     }
