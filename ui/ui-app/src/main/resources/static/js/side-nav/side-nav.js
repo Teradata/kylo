@@ -87,7 +87,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.UI_STATES.TABLES.permissions});
                     links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                     links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
-                    addExtensionLinks(MENU_KEY.FEED_MGR);
+                    addExtensionLinks(MENU_KEY.FEED_MGR, links);
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;
                  return menu;
@@ -109,7 +109,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                        links.push({sref: "service-level-assessments",type:'link', icon: "work", text: "SLA Assessments", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
                        links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
                        links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
-                      addExtensionLinks(MENU_KEY.OPS_MGR);
+                      addExtensionLinks(MENU_KEY.OPS_MGR, links);
                        menu.links = links;
                     menuMap[MENU_KEY.OPS_MGR] = menu;
                     return menu;
@@ -129,7 +129,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
                     links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
-                    addExtensionLinks(MENU_KEY.ADMIN);
+                    addExtensionLinks(MENU_KEY.ADMIN, links);
                     menu.links = links;
                     menuMap[MENU_KEY.ADMIN] = menu;
                   return menu
@@ -157,10 +157,10 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     }
                 }
 
-                function addExtensionLinks(menuName){
+                function addExtensionLinks(menuName, links){
                     var extensionLinks = extensionsMenus[menuName];
-                    if(extensionLinks){
-                        _.each(extensionLinks,function(link){
+                    if(extensionLinks && extensionLinks.links){
+                        _.each(extensionLinks.links,function(link){
                             //ensure we set this type to be a child
                             link.type = 'link';
                             links.push(link);
