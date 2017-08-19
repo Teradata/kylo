@@ -20,7 +20,7 @@
           "sref": "exampleModule",
           "icon": "transform",
           "text": "Example",
-          "permission": []
+          "permission": ["accessExample"]
         }
       ]
     }

@@ -1,5 +1,9 @@
-Example UI Module
+## Example UI Module
+
 Kylo allows you to code your own custom angular modules to create custom pages 
+
+### The module-definition.json 
+
 1. Create the root user interface folder in your project "/src/main/java/resources/static/js/plugin".  This will be where your user interface code will go.
 2. Create sub folders for your various angular modules you want to code and include into this plugin. 
 3. Inside your module folder (i.e. 'example-module'), create a JSON file with the suffix "module-definition.json".  Usually its good to prefix this file with the name of the module.  This file describes the metadata about the module.
@@ -68,7 +72,25 @@ An example JSON file is here:
 }
 ```
 
+### Angular code
 
-2. The angular code
  - Each module should have a 'module.js' file that defines the ui-router states.
- - Refer to the [module.js](src/main/resources/static/js/plugin/example-module/module.js) 
+ - Refer to the [module.js](src/main/resources/static/js/plugin/example-module/module.js)
+ - You can get access to Kylo Angular Services/directives by including the appropriate dependency in the module.js
+  
+  ```javascript
+  define[angular,'module names to include here']
+  ```
+
+- Adding **'kylo-common'**  allows you to reference/inject all of the services in: [kylo-common](../../../../ui/ui-app/src/main/resources/static/js/common)
+- Adding **'kylo-services'**  allows you to reference/inject all of the services in: [kylo-services](../../../../ui/ui-app/src/main/resources/static/js/services)
+- Adding **'kylo-opsmgr'**  allows you to reference/inject all of the services in: [kylo-opsmgr](../../../../ui/ui-app/src/main/resources/static/js/ops-mgr)
+- Adding **'kylo-feedmgr'**  allows you to reference/inject all of the services in: [kylo-feedmgr](../../../../ui/ui-app/src/main/resources/static/js/feed-mgr)
+
+Example include
+
+ ```javascript
+  define[angular,'kylo-common','kylo-opsmgr']
+  ```
+  
+ - Kylo uses this same model in its own code. You can refer to [internal kylo angular code](../../../../ui/ui-app/src/main/resources/static/js) for more examples 
