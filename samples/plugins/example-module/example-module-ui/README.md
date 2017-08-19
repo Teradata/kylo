@@ -71,4 +71,4 @@ An example JSON file is here:
 
 2. The angular code
  - Each module should have a 'module.js' file that defines the ui-router states.
- - Refer to the [module.js](src/main/resources/js/plugin/example-module/module.js) 
+ - Refer to the [module.js](src/main/resources/static/js/plugin/example-module/module.js) 
