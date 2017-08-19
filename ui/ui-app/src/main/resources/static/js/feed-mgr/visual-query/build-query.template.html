@@ -1,0 +1,87 @@
+<div layout="column" flex ng-class="{'visual-query-auto-complete-centered':$bq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$bq.chartViewModel.data.nodes.length >0}">
+  <div ng-if="$bq.error != null" style="color:#e53935;background-color:rgba(229,57,53,.15);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
+    <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
+    <div layout="column" flex>
+      <div style="font-weight:500;line-height:24px;">Error!</div>
+      <div style="line-height:20px;">{{$bq.error}}</div>
+    </div>
+  </div>
+  <div class="visual-query-loading-wrapper">
+    <div class="visual-query-loading" flex layout="row" layout-align="center center" ng-show="$bq.loadingPage">
+      <md-progress-circular md-mode="indeterminate" md-diameter="80"></md-progress-circular>
+    </div>
+    <div layout="row" layout-align="center center" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
+      <md-input-container style="right: 16px;" flex="5">
+        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="$bq.error != null">
+          <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
+        </md-select>
+        <div class="hint">Data Source</div>
+      </md-input-container>
+      <div flex="30" layout="column">
+        <md-autocomplete
+            md-input-id="tables-auto-complete"
+            md-no-cache="$bq.tablesAutocomplete.noCache"
+            md-selected-item="$bq.tablesAutocomplete.selectedTable"
+            md-search-text="$bq.tablesAutocomplete.searchText"
+            md-items="item in $bq.tablesAutocomplete.querySearch($bq.tablesAutocomplete.searchText)"
+            md-item-text="item.fullName"
+            md-input-min-length="1"
+            md-min-length="1"
+            placeholder="Search tables"
+            md-menu-class="autocomplete-hive-table-template"
+            ng-disabled="$bq.error != null">
+          <md-item-template>
+          <span class="item-title">
+            <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+            <span md-highlight-text="$bq.tablesAutocomplete.searchText" md-highlight-flags="^i" style="padding-left:5px;"> {{item.fullName}} </span>
+          </span>
+            <span class="item-metadata">
+            <span class="item-metastat">
+              <span style="color:grey;">Schema:</span>
+              <span md-highlight-text="$bq.tablesAutocomplete.searchText" md-highlight-flags="^i">{{item.schema}}</span>
+            </span>
+            <span class="item-metastat">
+              <span style="color:grey;">Table:</span>
+              <span md-highlight-text="$bq.tablesAutocomplete.searchText" md-highlight-flags="^i">{{item.tableName}}</span>
+            </span>
+          </span>
+          </md-item-template>
+          <md-not-found>
+            No tables matching "{{$bq.tablesAutocomplete.searchText}}" were found. Try <a href="" ng-click="$bq.onAutocompleteRefreshCache()">refreshing</a> the cache.
+          </md-not-found>
+        </md-autocomplete>
+        <div class="hint md-warn-text" ng-if="$bq.databaseConnectionError">Unable to connect to selected data source.</div>
+      </div>
+      <md-button ng-click="$bq.onAddTable()" class="md-raised md-accent" ng-disabled="!$bq.tablesAutocomplete.selectedTable">Add Table</md-button>
+      <md-button ng-click="$bq.toggleAdvancedMode()" class="md-raised" ng-disabled="$bq.error != null">Edit SQL</md-button>
+      <span flex-auto layout-align="end center">
+      <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}" style="margin-top:-22px"></thinkbig-step-buttons>
+    </span>
+    </div>
+  </div>
+  <div layout="row" layout-align="end center" ng-hide="!$bq.advancedMode" style="padding-top: 20px; padding-bottom: 20px">
+    <md-input-container style="margin-left: 16px;" ng-if="$bq.advancedMode == true">
+      <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source">
+        <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
+      </md-select>
+      <div class="hint">Data Source</div>
+    </md-input-container>
+    <span flex></span>
+
+    <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}"></thinkbig-step-buttons>
+    <span flex="5"></span>
+  </div>
+  <thinkbig-hql-editor ng-model="$bq.advancedModeSql" ng-model-options="{getterSetter: true}" ng-if="$bq.advancedMode == true" allow-fullscreen="false" allow-database-browse="false"
+                       allow-execute-query="false"></thinkbig-hql-editor>
+</div>
+
+<div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$bq.chartViewModel.data.nodes.length == 0 || $bq.advancedMode == true">
+  <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" browser-height-offset="300">
+    <flow-chart class="flowchart" id="visual-query-canvas"
+                chart="$bq.chartViewModel"
+                on-create-connection-callback="$bq.onCreateConnectionCallback.bind($bq)"
+                on-edit-connection-callback="$bq.onEditConnectionCallback.bind($bq)">
+    </flow-chart>
+  </div>
+</div>
+

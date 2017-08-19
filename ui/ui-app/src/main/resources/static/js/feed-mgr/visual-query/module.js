@@ -11,17 +11,19 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
         $compileProvider.preAssignBindingsEnabled(true);
 
         $stateProvider.state(AccessConstants.UI_STATES.VISUAL_QUERY.state, {
-            url: "/visual-query",
-            params: {},
+            url: "/visual-query{engine:.*}",
+            params: {
+                engine: null
+            },
             views: {
                 "content": {
-                    templateUrl: "js/feed-mgr/visual-query/visual-query.html",
-                    controller: "VisualQueryController",
+                    templateUrl: "js/feed-mgr/visual-query/visual-query.template.html",
+                    controller: "VisualQueryComponent",
                     controllerAs: "vm"
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(["feed-mgr/visual-query/VisualQueryController"])
+                loadMyCtrl: lazyLoadController(["feed-mgr/visual-query/visual-query.component"])
             },
             data: {
                 breadcrumbRoot: true,
@@ -39,7 +41,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
         $ocLazyLoad.load({
             name: 'kylo', files: ["bower_components/fattable/fattable.css",
-                                  "js/feed-mgr/visual-query/visual-query.css",
+                                  "js/feed-mgr/visual-query/visual-query.component.css",
                                   "js/feed-mgr/visual-query/flowchart/flowchart.css"
             ]
         })
@@ -47,6 +49,3 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
 
     return module;
 });
-
-
-

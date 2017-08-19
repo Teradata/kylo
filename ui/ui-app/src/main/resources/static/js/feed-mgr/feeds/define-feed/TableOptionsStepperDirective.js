@@ -6,6 +6,7 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
         return {
             restrict: "E",
             scope: {
+                coreDataModel: "=",
                 selectedStepIndex: "=",
                 stepIndex: "=",
                 steps: "=",

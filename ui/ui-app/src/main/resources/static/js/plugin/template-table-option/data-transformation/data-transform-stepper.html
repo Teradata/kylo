@@ -1,9 +1,10 @@
-<kylo-define-feed-step title="Build Query" step="getStep(0)">
-  <thinkbig-visual-query-builder step-index="{{getStepIndex(0)}}" ng-if="isStepSelected(0)"></thinkbig-visual-query-builder>
+<kylo-define-feed-step title="Build Query" step="getStep(0)" kylo-init-query-engine="spark">
+  <thinkbig-visual-query-builder engine="queryEngine" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(0)}}" ng-if="isStepSelected(0)"></thinkbig-visual-query-builder>
 </kylo-define-feed-step>
 
 <kylo-define-feed-step title="Transform Data" step="getStep(1)">
-  <thinkbig-visual-query-transform step-index="{{getStepIndex(1)}}" ng-if="isStepSelected(1) || isStepVisited(1)"></thinkbig-visual-query-transform>
+  <thinkbig-visual-query-transform engine="queryEngine" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(1)}}" ng-if="isStepSelected(1) || isStepVisited(1)">
+  </thinkbig-visual-query-transform>
 </kylo-define-feed-step>
 
 <kylo-define-feed-step title="Table" step="getStep(2)">

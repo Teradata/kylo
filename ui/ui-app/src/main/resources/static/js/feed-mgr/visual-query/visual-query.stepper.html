@@ -1,0 +1,28 @@
+<div>
+  <form name="visualQueryForm">
+    <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-no-ink-bar="true" md-no-ink="true" sticky-tabs>
+      <md-tab ng-disabled="vm.steps[0].disabled">
+        <md-tab-label>
+          <div class="{{vm.steps[0].type}} step-label">
+            <ng-md-icon nomorph md-icon icon="{{vm.steps[0].icon}}" size="{{vm.steps[0].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[0].iconStyle}"></ng-md-icon>
+            Build Query
+          </div>
+        </md-tab-label>
+        <md-tab-body>
+          <thinkbig-visual-query-builder engine="vm.coreDataModel.engine" model="vm.coreDataModel.model" step-index="0" ng-if="vm.selectedStepIndex == 0"></thinkbig-visual-query-builder>
+        </md-tab-body>
+      </md-tab>
+      <md-tab ng-disabled="vm.steps[1].disabled">
+        <md-tab-label>
+          <div class="{{vm.steps[1].type}} step-label">
+            <ng-md-icon nomorph md-icon icon="{{vm.steps[1].icon}}" size="{{vm.steps[1].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[1].iconStyle}"></ng-md-icon>
+            Transform Data
+          </div>
+        </md-tab-label>
+        <md-tab-body>
+          <thinkbig-visual-query-transform engine="vm.coreDataModel.engine" model="vm.coreDataModel.model" step-index="1" ng-if="vm.selectedStepIndex == 1"></thinkbig-visual-query-transform>
+        </md-tab-body>
+      </md-tab>
+    </md-tabs>
+  </form>
+</div>

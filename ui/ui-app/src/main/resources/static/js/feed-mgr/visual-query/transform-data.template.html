@@ -1,0 +1,78 @@
+<div layout="row" style="top:250px;">
+  <div layout="column" layout-padding style="background-color:#ffffff" layout-fill>
+    <div layout="row" layout-align="center center">
+      <md-button class="md-raised " ng-click="$td.toggleFunctionHistory()">History<span ng-if="$td.functionHistory.length>0" style="padding-left:10px;">({{$td.functionHistory.length}})</span>
+      </md-button>
+      <md-button class="md-raised" ng-click="$td.toggleSampleMenu()">Sample</md-button>
+      <md-button class="md-raised" ng-click="$td.showProfileDialog()" ng-disabled="$td.executingQuery">Profile</md-button>
+      <span flex="10"></span>
+      <md-menu>
+        <md-button aria-label="Open formula menu" class="md-icon-button md-primary" ng-click="$mdOpenMenu($event)">
+          <md-icon md-menu-origin>functions</md-icon>
+        </md-button>
+        <md-menu-content width="2">
+          <md-menu-item>
+            <md-button ng-click="$td.setFormula('groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))')">Aggregate</md-button>
+          </md-menu-item>
+          <md-menu-item>
+            <md-button ng-click="$td.setFormula('when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)')">Conditional</md-button>
+          </md-menu-item>
+          <md-menu-item>
+            <md-button ng-click="$td.setFormula('groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))')">Pivot</md-button>
+          </md-menu-item>
+          <md-menu-item>
+            <md-button ng-click="$td.setFormula('sum(COLUMN).over(orderBy(COLUMN))')">Window</md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+      <div rows="1" class="formula-editor" ui-codemirror="$td.codeMirrorConfig" ng-model="$td.currentFormula" ui-codemirror-opts="$td.codemirrorOptions"></div>
+      <md-button class="md-raised md-accent" ng-click="$td.onAddFunction()" ng-disabled="!$td.currentFormula">Add</md-button>
+      <span flex></span>
+      <thinkbig-step-buttons style="padding:inherit" can-continue="$td.isValid" step-index="{{::$td.stepIndex}}"></thinkbig-step-buttons>
+
+    </div>
+    <div layout="column" layout-fill layout-align="center center" browser-height browser-height-scroll-y="false" browser-height-offset="265">
+      <div class="visual-query-function-history" layout="column" ng-show="$td.isShowFunctionHistory">
+        <md-subheader class="md-no-sticky">Function History
+          <div layout="row">
+            <md-button class="md-icon-button " ng-click="$td.onUndo()" ng-disabled="$td.canUndo() == false">
+              <ng-md-icon icon="undo"></ng-md-icon>
+            </md-button>
+            <md-button class="md-icon-button " ng-click="$td.onRedo()" ng-disabled="$td.canRedo() == false">
+              <ng-md-icon icon="redo"></ng-md-icon>
+            </md-button>
+          </div>
+        </md-subheader>
+        <md-list>
+          <md-list-item ng-repeat-start="history in $td.functionHistory">
+            <md-icon>{{history.icon}}</md-icon>
+            <p title="{{history.name}}">{{history.name}}</p>
+          </md-list-item>
+          <md-divider ng-repeat-end></md-divider>
+        </md-list>
+      </div>
+      <div class="visual-query-sample-menu" layout="column" ng-show="$td.isShowSampleMenu">
+        <md-subheader class="md-no-sticky">
+          Sampling
+        </md-subheader>
+        <md-input-container layout="row">
+          <label>Fraction</label>
+          <input type="number" ng-model="$td.engine.sample" ng-model-options="{getterSetter: true}">
+        </md-input-container>
+        <md-input-container layout="row">
+          <label>Limit</label>
+          <input type="number" ng-model="$td.engine.limit" ng-model-options="{getterSetter: true}">
+        </md-input-container>
+        <md-checkbox layout="row" ng-model="$td.engine.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?">Limit before sampling</md-checkbox>
+        <div layout="row">
+          <md-button class="md-primary md-raised" ng-click="$td.isShowSampleMenu = false; $td.query();">Update</md-button>
+        </div>
+      </div>
+
+      <md-progress-linear md-mode="query" ng-show="$td.executingQuery && $td.queryProgress == 0"></md-progress-linear>
+      <md-progress-linear md-mode="determinate" ng-value="$td.queryProgress" ng-show="$td.executingQuery && $td.queryProgress > 0"></md-progress-linear>
+      <visual-query-table table-columns="$td.tableColumns" table-rows="$td.tableRows" table-options="$td.tableOptions" style="width: 100%; height: 500px; position: relative;" browser-height
+                          browser-height-scroll-y="false" browser-height-offset="284"></visual-query-table>
+    </div>
+  </div>
+</div>
