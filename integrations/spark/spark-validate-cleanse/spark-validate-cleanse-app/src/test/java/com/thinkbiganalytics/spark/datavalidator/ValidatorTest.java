@@ -230,7 +230,7 @@ public class ValidatorTest {
 
         HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
         StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, null, fieldDataType);
-        assertNotEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
+        assertEquals(Validator.VALID_RESULT,result.getFinalValidationResult());
 
     }
 
