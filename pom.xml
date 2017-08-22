@@ -48,6 +48,7 @@
     <commons.io.version>2.5</commons.io.version>
     <commons.collections>3.2.2</commons.collections>
     <commons.csv>1.4</commons.csv>
+    <commons.codec>1.10</commons.codec>
     <elasticsearch.version>2.2.0</elasticsearch.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>2.6.2</hadoop.version>
@@ -644,6 +645,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec}</version>
       </dependency>
 
       <dependency>
