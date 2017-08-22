@@ -21,7 +21,6 @@ package com.thinkbiganalytics.spark.datavalidator;
  */
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.internal.Lists;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.hive.util.HiveUtils;
@@ -31,6 +30,7 @@ import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.DataSet;
@@ -49,7 +49,6 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.hive.HiveContext;
-import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
@@ -199,10 +198,10 @@ public class Validator implements Serializable {
             JavaRDD<Row> sourceRDD = sourceDF.javaRDD();
 
             // Extract schema from the source table.  This will be used for the invalidDataFrame
-            StructType invalidSchema = createModifiedSchema(feedTablename,false);
+            StructType invalidSchema = createModifiedInvalidSchema(feedTablename);
 
             //Extract the schema from the target table.  This will be used for the validDataFrame
-            StructType validSchema = createModifiedSchema(feedTablename,true);
+            StructType validSchema = createModifiedValidSchema(feedTablename, refTablename);
 
             log.info("invalidSchema {}", invalidSchema);
 
@@ -210,6 +209,7 @@ public class Validator implements Serializable {
 
             log.info("Persistence level: {}", params.getStorageLevel());
 
+            final List<CleansedRowResult> tempResult = new ArrayList<>();
             // Validate and cleanse input rows
             JavaRDD<CleansedRowResult> cleansedRowResultRDD;
             if (params.getNumPartitions() <= 0) {
@@ -228,7 +228,6 @@ public class Validator implements Serializable {
                     }
                 }).persist(StorageLevel.fromString(params.getStorageLevel()));
             }
-
 
             // Return a new rdd based for Valid Results
             JavaRDD<Row> validResultRDD = cleansedRowResultRDD.filter(new Function<CleansedRowResult, Boolean>() {
@@ -269,7 +268,7 @@ public class Validator implements Serializable {
             if (useDirectInsert) {
                 invalidDataFrame = invalidDF;
             } else {
-                invalidDataFrame =  invalidDF.drop(PROCESSING_DTTM_COL).toDF();
+                invalidDataFrame = invalidDF.drop(PROCESSING_DTTM_COL).toDF();
             }
 
             writeToTargetTable(invalidDataFrame, invalidTableName);
@@ -372,16 +371,28 @@ public class Validator implements Serializable {
         }
     }
 
+
+    private StructType createModifiedInvalidSchema(String sourceTable) {
+        return createModifiedSchema(sourceTable, null);
+    }
+
+    private StructType createModifiedValidSchema(String sourceTable, String target) {
+        return createModifiedSchema(sourceTable, target);
+    }
+
     /**
      * Creates a new RDD schema based on the source schema plus two additional columns for processing dttm and validation reason
+     *
      * @param sourceTable the table to parse for the structure
-     * @param validTableSchema true/false if the table is for the _valid table schema.  Valid schema tables that have standardization rules on a given field will result in the Dataframe type to be of type String
+     * @param targetTable the table the _valid data will be inserted into
      * @return the schema structure
      */
-    private StructType createModifiedSchema(String sourceTable, boolean validTableSchema) {
+    private StructType createModifiedSchema(String sourceTable, String targetTable) {
         // Extract schema from the source table
         StructType schema = scs.toDataSet(getHiveContext(), sourceTable).schema();
+        StructType target = targetTable != null ? scs.toDataSet(getHiveContext(), targetTable).schema() : null;
         StructField[] fields = schema.fields();
+        StructField[] targetFields = target != null ? target.fields() : null;
         List<StructField> fieldsList = new Vector<>();
         for (int i = 0; i < fields.length; i++) {
             //Build a list of feed field names using the policy map
@@ -391,22 +402,26 @@ public class Validator implements Serializable {
             for (Map.Entry<String, FieldPolicy> policyMapItem : policyMap.entrySet()) {
                 String fieldName = policyMapItem.getValue().getFeedField().toLowerCase();
                 policyMapFeedFieldNames.add(fieldName);
-                if(policyMapItem.getValue().hasStandardizationPolicies()) {
+                if (policyMapItem.getValue().hasStandardizationPolicies()) {
                     fieldsWithStandardizers.add(fieldName);
                 }
             }
             String lowerFieldName = fields[i].name().toLowerCase();
-
+            boolean validTableSchema = StringUtils.isNotBlank(targetTable);
+            boolean isBinaryTargetType = (targetFields != null && targetFields[i] != null && targetFields[i].dataType().equals(DataTypes.BinaryType));
             if (policyMapFeedFieldNames.contains(lowerFieldName)) {
                 log.info("Adding field {}", fields[i].name());
                 //if the field has a Standardization policy and its part of the validation table, then we should set the value to a String type
-                if(validTableSchema && fieldsWithStandardizers.contains(lowerFieldName)) {
+                if (validTableSchema && fieldsWithStandardizers.contains(lowerFieldName) && !isBinaryTargetType) {
                     StructField field = fields[i];
-                    field = new StructField(field.name(),DataTypes.StringType,field.nullable(),field.metadata());
+                    field = new StructField(field.name(), DataTypes.StringType, field.nullable(), field.metadata());
                     fieldsList.add(field);
-                }
-                else {
-                    fieldsList.add(fields[i]);
+                } else {
+                    if (isBinaryTargetType) {
+                        fieldsList.add(targetFields[i]);
+                    } else {
+                        fieldsList.add(fields[i]);
+                    }
                 }
             } else {
                 log.warn("Feed table field {} is not present in policy map", fields[i].name().toLowerCase());
@@ -459,12 +474,15 @@ public class Validator implements Serializable {
         List<ValidationResult> results = null;
         boolean[] columnsValid = new boolean[schema.length];
 
+        Map<Integer, Object> originalValues = new HashMap<>();
+
         // Iterate through columns to cleanse and validate
         for (int idx = 0; idx < schema.length; idx++) {
             ValidationResult result = VALID_RESULT;
             FieldPolicy fieldPolicy = policies[idx];
             HCatDataType dataType = schema[idx];
             boolean columnValid = true;
+            boolean isBinaryType = dataType.getConvertibleType().equals(byte[].class);
 
             // Extract the value (allowing for null or missing field for odd-ball data)
             Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
@@ -475,18 +493,25 @@ public class Validator implements Serializable {
                     nulls++;
                 }
                 newValues[idx] = val;
+                originalValues.put(idx, val);
             } else {
                 Object fieldValue = (val != null ? val : null);
 
                 if (fieldValue == null) {
                     nulls++;
                 }
+                originalValues.put(idx, fieldValue);
 
                 StandardizationAndValidationResult standardizationAndValidationResult = standardizeAndValidateField(fieldPolicy, fieldValue, dataType);
                 result = standardizationAndValidationResult.getFinalValidationResult();
+
                 //only apply the standardized result value if the routine is valid
                 fieldValue = result.isValid() ? standardizationAndValidationResult.getFieldValue() : fieldValue;
 
+                if (result.isValid() && isBinaryType && !(fieldValue instanceof byte[])) {
+                    //set it to null
+                    fieldValue = null;
+                }
                 newValues[idx] = fieldValue;
 
                 if (!result.isValid()) {
@@ -509,12 +534,24 @@ public class Validator implements Serializable {
             results.add(ValidationResult.failRow("empty", "Row is empty"));
         }
 
+        if (rowValid == false) {
+            for (int idx = 0; idx < schema.length; idx++) {
+                //if the value is not able to match the invalid schema and the datatype has changed then replace with original value
+                //the _invalid table schema matches the source, not the destination
+                if (newValues[idx] == null || originalValues.get(idx) == null || newValues[idx].getClass() != originalValues.get(idx).getClass()) {
+                    newValues[idx] = originalValues.get(idx);
+                }
+                //otherwise the data has changed, but its still the same data type so we can keep the newly changed value
+
+            }
+        }
+
         // Convert to reject reasons to JSON
         sbRejectReason = toJSONArray(results);
 
         // Record the results in the appended columns, move processing partition value last
         newValues[schema.length] = newValues[schema.length - 1]; //PROCESSING_DTTM_COL
-        newValues[schema.length-1] = sbRejectReason;   //REJECT_REASON_COL
+        newValues[schema.length - 1] = sbRejectReason;   //REJECT_REASON_COL
         //   newValues[schema.length - 1] = (rowValid ? "1" : "0");  //VALID_INVALID_COL
 
         CleansedRowResult cleansedRowResult = new CleansedRowResult();
@@ -563,9 +600,9 @@ public class Validator implements Serializable {
     /**
      * Perform validation using both schema validation the validation policies
      */
-    protected ValidationResult finalValidationCheck(FieldPolicy fieldPolicy, HCatDataType fieldDataType, String fieldValue) {
+    protected ValidationResult finalValidationCheckOld(FieldPolicy fieldPolicy, HCatDataType fieldDataType, Object fieldValue) {
 
-        boolean isEmpty = (StringUtils.isEmpty(fieldValue));
+        boolean isEmpty = ((fieldValue instanceof String && StringUtils.isEmpty((String) fieldValue)) || fieldValue == null);
         if (isEmpty) {
             ValidationPolicy validator;
             if ((validator = fieldPolicy.getNotNullValidator()) != null) {
@@ -575,6 +612,23 @@ public class Validator implements Serializable {
                 }
             }
         } else if (!fieldPolicy.shouldSkipSchemaValidation()) {
+            if (!fieldDataType.isValueConvertibleToType(fieldValue)) {
+                return ValidationResult
+                    .failField("incompatible", fieldDataType.getName(),
+                               "Not convertible to " + fieldDataType.getNativeType());
+            }
+        }
+
+        return VALID_RESULT;
+    }
+
+    /**
+     * Perform validation using both schema validation the validation policies
+     */
+    protected ValidationResult finalValidationCheck(FieldPolicy fieldPolicy, HCatDataType fieldDataType, Object fieldValue) {
+
+        boolean isEmpty = ((fieldValue instanceof String && StringUtils.isEmpty((String) fieldValue)) || fieldValue == null);
+        if (!isEmpty && !fieldPolicy.shouldSkipSchemaValidation()) {
             if (!fieldDataType.isValueConvertibleToType(fieldValue)) {
                 return ValidationResult
                     .failField("incompatible", fieldDataType.getName(),
@@ -622,13 +676,13 @@ public class Validator implements Serializable {
     }
 
 
-    protected ValidationResult validateValue(ValidationPolicy validator, HCatDataType fieldDataType, String fieldValue, Integer idx) {
+    protected ValidationResult validateValue(ValidationPolicy validator, HCatDataType fieldDataType, Object fieldValue, Integer idx) {
         try {
             // Resolve the type of parameter required by the validator. A cache is used to avoid cost of reflection.
             Class expectedParamClazz = resolveValidatorParamType(validator);
             Object nativeValue = fieldValue;
-            if (expectedParamClazz != String.class) {
-                nativeValue = fieldDataType.toNativeValue(fieldValue);
+            if (expectedParamClazz != String.class && fieldValue instanceof String) {
+                nativeValue = fieldDataType.toNativeValue(fieldValue.toString());
             }
             if (!validator.validate(nativeValue)) {
 
@@ -666,17 +720,16 @@ public class Validator implements Serializable {
     }
 
 
-
-
     protected StandardizationAndValidationResult standardizeAndValidateField(FieldPolicy fieldPolicy, Object value, HCatDataType dataType) {
         StandardizationAndValidationResult result = new StandardizationAndValidationResult(value);
 
         List<BaseFieldPolicy> fieldPolicies = fieldPolicy.getAllPolicies();
         int idx = 0;
+        boolean validateNullValues = false;
         for (BaseFieldPolicy p : fieldPolicies) {
+            boolean isEmpty = ((result.getFieldValue() == null) || (StringUtils.isEmpty(result.getFieldValue().toString())));
             if (p instanceof StandardizationPolicy) {
                 StandardizationPolicy standardizationPolicy = (StandardizationPolicy) p;
-                boolean isEmpty = ((result.getFieldValue() == null) || (StringUtils.isEmpty(result.getFieldValue().toString())));
                 boolean shouldStandardize = true;
                 if (isEmpty && !(standardizationPolicy instanceof AcceptsEmptyValues)) {
                     shouldStandardize = false;
@@ -693,18 +746,28 @@ public class Validator implements Serializable {
             }
 
             if (p instanceof ValidationPolicy) {
-
                 ValidationPolicy validationPolicy = (ValidationPolicy) p;
-                ValidationResult validationResult = validateValue(validationPolicy, dataType, result.getFieldValueForValidation(), idx);
-                //only need to add those that are invalid
-                if (validationResult != VALID_RESULT) {
-                    result.addValidationResult(validationResult);
-                    break; //exit out of processing if invalid records found.
+                //run through the validator if the value is not null, or if we are allowed to validate nulls based upon a previous
+                //not null validator
+                if (!isEmpty || (isEmpty && validateNullValues) || (isEmpty && validationPolicy instanceof NotNullValidator)) {
+                    ValidationResult validationResult = validateValue(validationPolicy, dataType, result.getFieldValue(), idx);
+                    if (isEmpty && validationPolicy instanceof NotNullValidator) {
+                        validateNullValues = validationPolicy != VALID_RESULT;
+                    }
+                    //only need to add those that are invalid
+                    if (validationResult != VALID_RESULT) {
+                        result.addValidationResult(validationResult);
+                        break; //exit out of processing if invalid records found.
+                    }
+                }
+                //reset the failOnEmpty flag back to false
+                if (!(validationPolicy instanceof NotNullValidator)) {
+                    validateNullValues = false;
                 }
             }
 
         }
-        ValidationResult finalValidationCheck = finalValidationCheck(fieldPolicy, dataType, result.getFieldValueForValidation());
+        ValidationResult finalValidationCheck = finalValidationCheck(fieldPolicy, dataType, result.getFieldValue());
         if (finalValidationCheck != VALID_RESULT) {
             result.addValidationResult(finalValidationCheck);
         }
