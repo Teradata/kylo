@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.jms.JmsConstants;
+import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
@@ -32,7 +33,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
-import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,11 +111,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
+     *
      * @param events the events.
-     * @return
      */
     public boolean readyToProcess(ProvenanceEventRecordDTOHolder events) {
-     return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && events.getEvents().stream().allMatch(event -> provenanceEventFeedUtil.validateNiFiFeedInformation(event)));
+        return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && events.getEvents().stream()
+            .allMatch(event -> provenanceEventFeedUtil.validateNiFiFeedInformation(event)));
     }
 
 
@@ -228,11 +228,15 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             if (alreadyTriggered == null) {
                 completedJobEvents.put(mapKey, mapKey);
                 /// TRIGGER JOB COMPLETE!!!
-                if (event.isFailure()) {
-                    failedJob(jobExecution, event);
-                } else {
-                    successfulJob(jobExecution, event);
-                }
+                metadataAccess.commit(() -> {
+                    BatchJobExecution batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+                    if (event.isFailure()) {
+                        failedJob(batchJobExecution, event);
+                    } else {
+                        successfulJob(batchJobExecution, event);
+                    }
+
+                }, MetadataAccess.SERVICE);
             }
         }
     }
@@ -317,7 +321,6 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     public void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
         nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution, flowFileId, componentId);
     }
-
 
 
 }

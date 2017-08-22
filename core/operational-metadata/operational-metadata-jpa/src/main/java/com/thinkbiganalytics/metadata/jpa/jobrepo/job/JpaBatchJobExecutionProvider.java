@@ -34,6 +34,7 @@ import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -52,7 +53,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvide
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
-import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
@@ -61,6 +61,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -146,6 +147,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private AlertProvider provider;
+
+
+    @Inject
+    private MetadataAccess metadataAccess;
 
 
     @Autowired
@@ -870,12 +875,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     public void notifyFailure(BatchJobExecution jobExecution, String feedName, String status) {
+
         if (feedName == null) {
             feedName = jobExecution.getJobInstance().getFeed().getName();
         }
         if (StringUtils.isBlank(status)) {
             status = "Failed Job";
         }
+
         FeedOperation.State state = FeedOperation.State.FAILURE;
         this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
 
@@ -899,10 +906,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             executionContext.setStringVal(providerAlertId.toString());
             ((JpaBatchJobExecution) jobExecution).addJobExecutionContext(executionContext);
             save(jobExecution);
+
+
         } else {
             //rest the alert
             provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message, null));
         }
+
+
     }
 
 
