@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.nifi;
+package com.thinkbiganalytics.feedmgr.nifi.controllerservice;
 
 /*-
  * #%L
@@ -21,7 +21,11 @@ package com.thinkbiganalytics.feedmgr.nifi;
  */
 
 import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DescribeTableControllerServiceRequest.DescribeTableControllerServiceRequestBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.ExecuteQueryControllerServiceRequest.ExecuteQueryControllerServiceRequestBuilder;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
@@ -30,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.schema.DBSchemaParser;
+import com.thinkbiganalytics.schema.QueryRunner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -37,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -50,12 +57,12 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
- * Allow Kylo to use a NiFi database pool connection to display database metadata with tables and columns.
+ * Allow Kylo to use a NiFi database pool connection to display database metadata and execute queries.
  */
 @Service
-public class DBCPConnectionPoolTableInfo {
+public class DBCPConnectionPoolService {
 
-    private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
+    private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolService.class);
 
     @Autowired
     private NifiControllerServiceProperties nifiControllerServiceProperties;
@@ -74,6 +81,29 @@ public class DBCPConnectionPoolTableInfo {
     private MetadataAccess metadataAccess;
 
     /**
+     * Executes the specified SELECT query in the context of the specified controller service.
+     *
+     * @param serviceId   a NiFi controller service id
+     * @param serviceName a NiFi controller service name
+     * @param query       the query to execute
+     * @return the query results
+     * @throws DataAccessException      if the query cannot be executed
+     * @throws IllegalArgumentException if the controller service cannot be found
+     */
+    @Nonnull
+    public QueryResult executeQueryForControllerService(@Nonnull final String serviceId, @Nonnull final String serviceName, @Nonnull final String query) {
+        final ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
+        if (controllerService != null) {
+            final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(controllerService);
+            final ExecuteQueryControllerServiceRequest serviceProperties = builder.query(query).build();
+            return executeQueryForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot execute query for controller service. Unable to obtain controller service: {}, {}", serviceId, serviceName);
+            throw new IllegalArgumentException("Not a valid controller service: " + serviceId + ", " + serviceName);
+        }
+    }
+
+    /**
      * Returns a list of table names matching a pattern
      *
      * @param serviceId   a NiFi controller service id
@@ -86,8 +116,8 @@ public class DBCPConnectionPoolTableInfo {
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
 
         if (controllerService != null) {
-            DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService);
-            DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).build();
+            DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService);
+            DescribeTableControllerServiceRequest serviceProperties = builder.schemaName(schema).tableName(tableName).build();
             return getTableNamesForControllerService(serviceProperties);
         } else {
             log.error("Cannot getTable Names for Controller Service. Unable to obtain Controller Service for serviceId or Name ({} , {})", serviceId, serviceName);
@@ -108,8 +138,8 @@ public class DBCPConnectionPoolTableInfo {
         final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
-            final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
-            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            final DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService.get());
+            final DescribeTableControllerServiceRequest serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
             return getTableNamesForControllerService(serviceProperties);
         } else {
             log.error("Cannot get table names for data source: {}", datasource);
@@ -130,8 +160,8 @@ public class DBCPConnectionPoolTableInfo {
 
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
         if (controllerService != null) {
-            DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService);
-            DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).build();
+            DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService);
+            DescribeTableControllerServiceRequest serviceProperties = builder.schemaName(schema).tableName(tableName).build();
             return describeTableForControllerService(serviceProperties);
         } else {
             log.error("Cannot describe Table for Controller Service. Unable to obtain Controller Service for serviceId or Name ({} , {})", serviceId, serviceName);
@@ -151,12 +181,39 @@ public class DBCPConnectionPoolTableInfo {
         final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
             .map(id -> getControllerService(id, null));
         if (controllerService.isPresent()) {
-            final DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService.get());
-            final DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            final DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService.get());
+            final DescribeTableControllerServiceRequest serviceProperties = builder.schemaName(schema).tableName(tableName).password(datasource.getPassword()).useEnvironmentProperties(false).build();
             return describeTableForControllerService(serviceProperties);
         } else {
             log.error("Cannot describe table for data source: {}", datasource);
             return null;
+        }
+    }
+
+    /**
+     * Executes the specified SELECT query in the context of the specified controller service.
+     *
+     * @param serviceProperties properties describing the data source and the query
+     * @return the query results
+     * @throws DataAccessException if the query cannot be executed
+     */
+    @Nonnull
+    private QueryResult executeQueryForControllerService(@Nonnull final ExecuteQueryControllerServiceRequest serviceProperties) {
+        final Map<String, String> properties = serviceProperties.useEnvironmentProperties()
+                                               ? nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
+                                                                                                           serviceProperties.getControllerServiceName())
+                                               : serviceProperties.getControllerServiceDTO().getProperties();
+
+        final PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
+
+        if (evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties)) {
+            log.info("Execute query against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
+                     dataSourceProperties.getUrl());
+            final DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+            return new QueryRunner(dataSource).query(serviceProperties.getQuery());
+        } else {
+            throw new DataAccessResourceFailureException("Unable to determine connection properties for controller service: " + serviceProperties.getControllerServiceName() + "("
+                                                         + serviceProperties.getControllerServiceId() + ")");
         }
     }
 
@@ -166,7 +223,7 @@ public class DBCPConnectionPoolTableInfo {
      * @param serviceProperties properties describing where and what to look for
      * @return a list of schema.table_name
      */
-    private List<String> getTableNamesForControllerService(DescribeTableWithControllerService serviceProperties) {
+    private List<String> getTableNamesForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
 
         if (serviceProperties != null) {
             Map<String, String> properties = serviceProperties.useEnvironmentProperties()
@@ -189,11 +246,10 @@ public class DBCPConnectionPoolTableInfo {
         return null;
     }
 
-    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, DescribeTableWithControllerService serviceProperties) {
+    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) {
         boolean valid = (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && !dataSourceProperties.getPassword().startsWith("**"));
         if (!valid) {
             List<Datasource> matchingDatasources = metadataAccess.read(() -> {
-                JdbcDatasource userDatasource = null;
                 //attempt to get the properties from the stored datatsource
                 return datasetProvider
                     .getDatasources(datasetProvider.datasetCriteria().type(com.thinkbiganalytics.metadata.api.datasource.UserDatasource.class).name(serviceProperties.getControllerServiceName()))
@@ -244,7 +300,7 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
-    private TableSchema describeTableForControllerService(DescribeTableWithControllerService serviceProperties) {
+    private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
 
         String type = serviceProperties.getControllerServiceType();
         if (serviceProperties.getControllerServiceType() != null && serviceProperties.getControllerServiceType().equalsIgnoreCase(type)) {
@@ -279,7 +335,7 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
-    public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, DescribeTableWithControllerService serviceProperties) {
+    public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, AbstractControllerServiceRequest serviceProperties) {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
         String password = (serviceProperties.getPassword() != null) ? serviceProperties.getPassword() : properties.get(serviceProperties.getPasswordPropertyKey());
@@ -298,270 +354,5 @@ public class DBCPConnectionPoolTableInfo {
         }
         boolean testOnBorrow = StringUtils.isNotBlank(validationQuery);
         return new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
-    }
-
-
-    private static class DescribeTableWithControllerServiceBuilder {
-
-        private String connectionStringPropertyKey;
-        private String userNamePropertyKey;
-        private String passwordPropertyKey;
-        private String driverClassNamePropertyKey;
-        private String controllerServiceType;
-        private String controllerServiceName;
-        private String controllerServiceId;
-        private String tableName;
-        private String schemaName;
-        private ControllerServiceDTO controllerServiceDTO;
-        private String password;
-        private boolean useEnvironmentProperties = true;
-
-
-        public DescribeTableWithControllerServiceBuilder(ControllerServiceDTO controllerServiceDTO) {
-            this.controllerServiceDTO = controllerServiceDTO;
-            this.controllerServiceType = controllerServiceDTO != null ? controllerServiceDTO.getType() : null;
-            this.controllerServiceId = controllerServiceDTO != null ? controllerServiceDTO.getId() : null;
-            this.controllerServiceName = controllerServiceDTO != null ? controllerServiceDTO.getName() : null;
-            initializePropertiesFromControllerServiceType();
-        }
-
-
-        public DescribeTableWithControllerServiceBuilder connectionStringPropertyKey(String connectionStringPropertyKey) {
-            this.connectionStringPropertyKey = connectionStringPropertyKey;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder userNamePropertyKey(String userNamePropertyKey) {
-            this.userNamePropertyKey = userNamePropertyKey;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder passwordPropertyKey(String passwordPropertyKey) {
-            this.passwordPropertyKey = passwordPropertyKey;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder driverClassNamePropertyKey(String driverClassNamePropertyKey) {
-            this.driverClassNamePropertyKey = driverClassNamePropertyKey;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder controllerServiceType(String controllerServiceType) {
-            this.controllerServiceType = controllerServiceType;
-
-            return this;
-        }
-
-        private void initializePropertiesFromControllerServiceType() {
-            if ("org.apache.nifi.dbcp.DBCPConnectionPool".equalsIgnoreCase(controllerServiceType)) {
-                this.connectionStringPropertyKey = "Database Connection URL";
-                this.userNamePropertyKey = "Database User";
-                this.passwordPropertyKey = "Password";
-                this.driverClassNamePropertyKey = "Database Driver Class Name";
-            } else if ("com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService".equalsIgnoreCase(controllerServiceType)) {
-                this.connectionStringPropertyKey = "Source Connection String";
-                this.userNamePropertyKey = "Source User Name";
-                this.passwordPropertyKey = "Password";  // users will need to add this as a different property to the application.properties file
-            }
-        }
-
-        public DescribeTableWithControllerServiceBuilder controllerService(ControllerServiceDTO controllerServiceDTO) {
-            this.controllerServiceDTO = controllerServiceDTO;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder controllerServiceName(String controllerServiceName) {
-            this.controllerServiceName = controllerServiceName;
-            return this;
-        }
-
-
-        public DescribeTableWithControllerServiceBuilder controllerServiceId(String controllerServiceId) {
-            this.controllerServiceId = controllerServiceId;
-            return this;
-        }
-
-
-        public DescribeTableWithControllerServiceBuilder tableName(String tableName) {
-            this.tableName = tableName;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder schemaName(String schemaName) {
-            this.schemaName = schemaName;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder password(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public DescribeTableWithControllerServiceBuilder useEnvironmentProperties(boolean useEnvironmentProperties) {
-            this.useEnvironmentProperties = useEnvironmentProperties;
-            return this;
-        }
-
-        public DescribeTableWithControllerService build() {
-            DescribeTableWithControllerService serviceProperties = new DescribeTableWithControllerService();
-            serviceProperties.setConnectionStringPropertyKey(this.connectionStringPropertyKey);
-            serviceProperties.setControllerServiceName(this.controllerServiceName);
-            serviceProperties.setControllerServiceId(this.controllerServiceId);
-            serviceProperties.setControllerServiceType(this.controllerServiceType);
-            serviceProperties.setSchemaName(schemaName);
-            serviceProperties.setTableName(tableName);
-            serviceProperties.setUserNamePropertyKey(userNamePropertyKey);
-            serviceProperties.setPasswordPropertyKey(passwordPropertyKey);
-            serviceProperties.setControllerServiceDTO(this.controllerServiceDTO);
-            serviceProperties.setDriverClassNamePropertyKey(this.driverClassNamePropertyKey);
-            serviceProperties.setPassword(password);
-            serviceProperties.setUseEnvironmentProperties(useEnvironmentProperties);
-            return serviceProperties;
-        }
-    }
-
-
-    public static class DescribeTableWithControllerService {
-
-        private String connectionStringPropertyKey;
-        private String userNamePropertyKey;
-        private String passwordPropertyKey;
-        private String driverClassNamePropertyKey;
-        private String controllerServiceType;
-        private String controllerServiceName;
-        private String controllerServiceId;
-        private String tableName;
-        private String schemaName;
-        private ControllerServiceDTO controllerServiceDTO;
-        private String password;
-        private boolean useEnvironmentProperties;
-
-        public String getConnectionStringPropertyKey() {
-            return connectionStringPropertyKey;
-        }
-
-        public void setConnectionStringPropertyKey(String connectionStringPropertyKey) {
-            this.connectionStringPropertyKey = connectionStringPropertyKey;
-        }
-
-        public String getUserNamePropertyKey() {
-            return userNamePropertyKey;
-        }
-
-        public void setUserNamePropertyKey(String userNamePropertyKey) {
-            this.userNamePropertyKey = userNamePropertyKey;
-        }
-
-        public String getPasswordPropertyKey() {
-            return passwordPropertyKey;
-        }
-
-        public void setPasswordPropertyKey(String passwordPropertyKey) {
-            this.passwordPropertyKey = passwordPropertyKey;
-        }
-
-        public String getDriverClassNamePropertyKey() {
-            return driverClassNamePropertyKey;
-        }
-
-        public void setDriverClassNamePropertyKey(String driverClassNamePropertyKey) {
-            this.driverClassNamePropertyKey = driverClassNamePropertyKey;
-        }
-
-        public String getControllerServiceType() {
-            return controllerServiceType;
-        }
-
-        public void setControllerServiceType(String controllerServiceType) {
-            this.controllerServiceType = controllerServiceType;
-        }
-
-        public String getControllerServiceName() {
-            return controllerServiceName;
-        }
-
-        public void setControllerServiceName(String controllerServiceName) {
-            this.controllerServiceName = controllerServiceName;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
-        public String getSchemaName() {
-            return schemaName;
-        }
-
-        public void setSchemaName(String schemaName) {
-            this.schemaName = schemaName;
-        }
-
-        public String getControllerServiceId() {
-            return controllerServiceId;
-        }
-
-        public void setControllerServiceId(String controllerServiceId) {
-            this.controllerServiceId = controllerServiceId;
-        }
-
-        public ControllerServiceDTO getControllerServiceDTO() {
-            return controllerServiceDTO;
-        }
-
-        public void setControllerServiceDTO(ControllerServiceDTO controllerServiceDTO) {
-            this.controllerServiceDTO = controllerServiceDTO;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public boolean useEnvironmentProperties() {
-            return useEnvironmentProperties;
-        }
-
-        public void setUseEnvironmentProperties(boolean useEnvironmentProperties) {
-            this.useEnvironmentProperties = useEnvironmentProperties;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            DescribeTableWithControllerService that = (DescribeTableWithControllerService) o;
-
-            if (connectionStringPropertyKey != null ? !connectionStringPropertyKey.equals(that.connectionStringPropertyKey) : that.connectionStringPropertyKey != null) {
-                return false;
-            }
-            if (controllerServiceName != null ? !controllerServiceName.equals(that.controllerServiceName) : that.controllerServiceName != null) {
-                return false;
-            }
-            if (controllerServiceId != null ? !controllerServiceId.equals(that.controllerServiceId) : that.controllerServiceId != null) {
-                return false;
-            }
-            return schemaName != null ? schemaName.equals(that.schemaName) : that.schemaName == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = connectionStringPropertyKey != null ? connectionStringPropertyKey.hashCode() : 0;
-            result = 31 * result + (controllerServiceName != null ? controllerServiceName.hashCode() : 0);
-            result = 31 * result + (controllerServiceId != null ? controllerServiceId.hashCode() : 0);
-            result = 31 * result + (schemaName != null ? schemaName.hashCode() : 0);
-            return result;
-        }
     }
 }

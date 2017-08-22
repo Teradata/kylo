@@ -21,11 +21,12 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
-import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -70,9 +71,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -103,7 +106,7 @@ public class NifiIntegrationRestController {
     public static final String FLOWS = "/flows";
     public static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
-    DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
+    DBCPConnectionPoolService dbcpConnectionPoolTableInfo;
     @Inject
     FeedManagerTemplateService feedManagerTemplateService;
     @Inject
@@ -339,6 +342,22 @@ public class NifiIntegrationRestController {
         final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
         entity.setControllerServiceTypes(legacyNifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
+    }
+
+    @POST
+    @Path("/controller-services/{serviceId}/query")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Executes a SELECT query.",
+                  notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Result of the query.", response = QueryResult.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response executeQuery(@PathParam("serviceId") final String serviceId, final String script) {
+        log.debug("Execute query against service '{}': {}", serviceId, script);
+        final QueryResult results = dbcpConnectionPoolTableInfo.executeQueryForControllerService(serviceId, "", script);
+        return Response.ok(results).build();
     }
 
     @GET
