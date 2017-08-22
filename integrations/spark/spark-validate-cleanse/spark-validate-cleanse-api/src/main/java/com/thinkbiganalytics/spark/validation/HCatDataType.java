@@ -323,7 +323,7 @@ public class HCatDataType implements Cloneable, Serializable {
                     }
                 }
             } else {
-                if (val.getClass() == convertibleType) {
+                if (val == null || val != null && val.getClass() == convertibleType) {
                     return true;
                 } else {
                     return false;
