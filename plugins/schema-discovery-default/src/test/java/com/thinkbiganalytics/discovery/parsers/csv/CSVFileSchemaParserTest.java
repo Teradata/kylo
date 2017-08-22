@@ -67,6 +67,11 @@ public class CSVFileSchemaParserTest {
         parser.setSeparatorChar(";");
         validateSchema1("col1;col2;col3\nr1v1;r1v2;r1v3\nr2v1;r2v2;r2v3\n");
     }
+    @org.junit.Test
+    public void testTildeCSVWithEscapeParse() throws Exception {
+        parser.setSeparatorChar("~");
+        validateSchema1("col1~col2~col3\nr1v1~r1v2~r1v3\nr2v1~r2v2~r2v3\n");
+    }
 
     @org.junit.Test
     public void testSemiColonTSVWithEscapeParse() throws Exception {
