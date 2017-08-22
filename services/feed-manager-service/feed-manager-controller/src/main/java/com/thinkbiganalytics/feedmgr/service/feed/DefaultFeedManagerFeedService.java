@@ -49,6 +49,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -57,6 +58,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -632,10 +634,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
 
             // Update Hive metastore
-            try {
-                feedHiveTableService.updateColumnDescriptions(feed);
-            } catch (final DataAccessException e) {
-                log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+            final boolean hasHiveDestination = domainFeed.getDestinations().stream()
+                .map(FeedDestination::getDatasource)
+                .filter(DerivedDatasource.class::isInstance)
+                .map(DerivedDatasource.class::cast)
+                .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
+            if (hasHiveDestination) {
+                try {
+                    feedHiveTableService.updateColumnDescriptions(feed);
+                } catch (final DataAccessException e) {
+                    log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+                }
             }
 
             // Update Kylo metastore

@@ -176,7 +176,7 @@ public class DerivedDatasourceFactory {
     }
 
     public boolean isDataTransformation(FeedMetadata feedMetadata) {
-        return feedMetadata.getDataTransformation() != null;
+        return feedMetadata.getDataTransformation() != null && StringUtils.isNotEmpty(feedMetadata.getDataTransformation().getDataTransformScript());
     }
 
 
