@@ -7,7 +7,7 @@
 
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-ui-annotation</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -19,20 +19,20 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
     </dependency>

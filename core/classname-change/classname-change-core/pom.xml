@@ -6,7 +6,7 @@
   <artifactId>kylo-classname-change-core</artifactId>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-classname-change</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -17,13 +17,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-classname-change-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-core</artifactId>
       <version>${project.version}</version>
     </dependency>

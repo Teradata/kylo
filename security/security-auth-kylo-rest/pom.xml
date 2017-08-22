@@ -6,7 +6,7 @@
 
   <artifactId>kylo-security-auth-kylo-rest</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-security</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -32,17 +32,17 @@
 
     <!-- Think Big dependencies -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-auth</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>

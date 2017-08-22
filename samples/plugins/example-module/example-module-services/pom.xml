@@ -24,7 +24,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-api</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <scope>provided</scope>
@@ -43,13 +43,13 @@
     <!-- needed if you are adding new access control for your module -->
 
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>

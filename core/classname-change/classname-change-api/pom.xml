@@ -6,7 +6,7 @@
   <artifactId>kylo-classname-change-api</artifactId>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-classname-change</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>

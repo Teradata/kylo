@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-services</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-metadata-service</artifactId>
-  <groupId>com.thinkbiganalytics.metadata</groupId>
+  <groupId>com.thinkbiganalytics.kylo</groupId>
   <packaging>pom</packaging>
   <properties>
     <projectprojectreactor.version>2.0.7.RELEASE</projectprojectreactor.version>

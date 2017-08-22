@@ -10,7 +10,7 @@
 
   <parent>
     <artifactId>kylo-spark-shell-service</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
@@ -36,22 +36,22 @@
 
     <!-- Kylo -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-cluster-manager-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-spark-shell-api</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -6,7 +6,7 @@
 
   <parent>
     <artifactId>kylo-samples-plugins</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
 
@@ -20,7 +20,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-api</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>

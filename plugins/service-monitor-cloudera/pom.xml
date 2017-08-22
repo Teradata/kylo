@@ -7,7 +7,7 @@
 
   <parent>
     <artifactId>kylo-plugins</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>

@@ -4,7 +4,7 @@
 
   <artifactId>kylo-nifi-elasticsearch-v1-nar</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.elasticsearch</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-elasticsearch-bundle</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -16,12 +16,12 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.elasticsearch</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-elasticsearch-processors</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-framework-v1</artifactId>
       <version>${project.version}</version>
     </dependency>

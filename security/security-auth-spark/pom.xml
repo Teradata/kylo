@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-security</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -16,7 +16,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-auth</artifactId>
       <version>${project.version}</version>
     </dependency>

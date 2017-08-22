@@ -4,7 +4,7 @@
 
   <artifactId>kylo-security-service</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-services</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>

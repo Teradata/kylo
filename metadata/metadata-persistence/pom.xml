@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>kylo-metadata-persistence</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.metadata</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-metadata</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -13,12 +13,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-modeshape</artifactId>
       <version>${project.version}</version>
     </dependency>

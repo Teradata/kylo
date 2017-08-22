@@ -10,7 +10,7 @@
   <name>example-ui-get-file-processor-template</name>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-samples-plugins</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -25,7 +25,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-api</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <scope>provided</scope>

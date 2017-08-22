@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>kylo-nifi-security</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -17,7 +17,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>

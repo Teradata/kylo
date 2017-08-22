@@ -5,7 +5,7 @@
 
   <artifactId>kylo-nifi-hadoop-service</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-hadoop-service-bundle</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -16,12 +16,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-security-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>
     </dependency>
 

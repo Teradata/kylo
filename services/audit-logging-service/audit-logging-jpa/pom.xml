@@ -4,7 +4,7 @@
 
   <artifactId>kylo-audit-logging-jpa</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-audit-logging-service</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -14,17 +14,17 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-audit-logging-api</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-api</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -91,13 +91,13 @@
 
     <!-- Testing -->
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-test-persistence</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

@@ -7,7 +7,7 @@
 
   <parent>
     <artifactId>kylo-nifi-rest-client</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
@@ -19,20 +19,20 @@
 
     <dependency>
       <artifactId>kylo-nifi-rest-model</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <artifactId>kylo-commons-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <artifactId>kylo-commons-feed-util</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
 

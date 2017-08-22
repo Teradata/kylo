@@ -4,7 +4,7 @@
 
   <artifactId>kylo-field-policy-api</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-field-policy</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -14,7 +14,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-api</artifactId>
       <version>${project.version}</version>
     </dependency>

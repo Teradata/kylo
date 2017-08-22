@@ -6,7 +6,7 @@
 
   <parent>
     <artifactId>kylo-commons</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
 

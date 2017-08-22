@@ -6,7 +6,7 @@
 
   <parent>
     <artifactId>kylo-ui</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
 
@@ -22,12 +22,12 @@
       <artifactId>jsr305</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-api</artifactId>
       <version>${project.version}</version>
     </dependency>

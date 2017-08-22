@@ -4,7 +4,7 @@
 
   <artifactId>kylo-alerts-model</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-alerts-service</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -14,13 +14,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-alerts-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>

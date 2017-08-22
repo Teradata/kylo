@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -10,6 +10,7 @@
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
   </properties>
   <artifactId>kylo-plugins</artifactId>
+  <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
   <packaging>pom</packaging>
   <modules>
     <module>service-monitor-ambari</module>

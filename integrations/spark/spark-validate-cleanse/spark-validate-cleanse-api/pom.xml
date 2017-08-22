@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -17,12 +17,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-field-policy-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-field-policy-default</artifactId>
       <version>${project.version}</version>
     </dependency>

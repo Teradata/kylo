@@ -7,7 +7,7 @@
 
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
@@ -19,25 +19,25 @@
 
     <dependency>
       <artifactId>kylo-feed-manager-api</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <artifactId>kylo-commons-util</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <artifactId>kylo-feed-manager-rest-model</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
 

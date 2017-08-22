@@ -7,7 +7,7 @@
 
   <parent>
     <artifactId>kylo-plugins</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
@@ -16,13 +16,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-service-monitor-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-cluster-manager-api</artifactId>
       <version>${project.version}</version>
     </dependency>

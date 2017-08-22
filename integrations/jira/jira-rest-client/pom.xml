@@ -6,7 +6,7 @@
   <artifactId>kylo-jira-rest-client</artifactId>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-jira</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -16,7 +16,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
     </dependency>

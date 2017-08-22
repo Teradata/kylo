@@ -6,7 +6,7 @@
 
   <parent>
     <artifactId>kylo-spark-job-profiler</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
 
@@ -26,13 +26,13 @@
 
     <!-- Kylo dependencies -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-model</artifactId>
       <version>${project.version}</version>
     </dependency>

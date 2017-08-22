@@ -6,7 +6,7 @@
   <artifactId>kylo-input-format-omniture</artifactId>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-input-format</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>

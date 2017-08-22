@@ -5,7 +5,7 @@
 
   <artifactId>kylo-nifi-provenance-repo-v1.2</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -20,7 +20,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-provenance-repo</artifactId>
       <version>${project.version}</version>
     </dependency>

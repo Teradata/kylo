@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>kylo-metadata-rest-controller</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.metadata</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-metadata-service</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -44,7 +44,7 @@
       <artifactId>spring-jms</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-jms-service-api</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -63,12 +63,12 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-feed-manager-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-controller</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -78,7 +78,7 @@
       <artifactId>jersey-server</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-rest-model</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -97,12 +97,12 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -117,22 +117,22 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-jms</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-modeshape</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-sla-core</artifactId>
       <version>${project.version}</version>
       <exclusions>

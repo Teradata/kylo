@@ -4,7 +4,7 @@
 
   <artifactId>kylo-audit-logging-api</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-audit-logging-service</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>

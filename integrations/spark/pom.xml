@@ -5,7 +5,7 @@
   <artifactId>kylo-spark</artifactId>
   <packaging>pom</packaging>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-integrations</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>

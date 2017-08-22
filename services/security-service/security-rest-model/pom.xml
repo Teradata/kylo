@@ -4,7 +4,7 @@
 
   <artifactId>kylo-security-rest-model</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-security-service</artifactId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
@@ -14,7 +14,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>

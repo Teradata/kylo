@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>kylo-install</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -17,133 +17,133 @@
   <dependencies>
     <!-- Kylo dependencies for third-party file -->
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.core</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.elasticsearch</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-elasticsearch-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-processors</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-provenance-repo-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.spark</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-service-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-service-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-service-v1-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-standard-services-nar</artifactId>
       <version>0.8.3-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-shell-client-v1</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-shell-client-v2</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-spark-v1</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-interpreter-spark-v1</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-interpreter-spark-v2</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-spark-v2</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-validate-cleanse-spark-v2</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-precondition-default</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-schema-discovery-default</artifactId>
       <version>0.8.3-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-service-app</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-app</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <!-- used to copy in the default dependencies to the plugin folder -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-sla-email</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-sla-jira</artifactId>
       <version>${project.version}</version>
     </dependency>

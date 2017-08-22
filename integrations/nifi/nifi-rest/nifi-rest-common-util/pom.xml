@@ -7,7 +7,7 @@
 
   <parent>
     <artifactId>kylo-nifi-rest</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
   <properties>
@@ -18,7 +18,7 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-rest-common-api</artifactId>
       <version>${project.version}</version>
     </dependency>

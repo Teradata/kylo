@@ -6,7 +6,7 @@
 
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
   </parent>
 
@@ -24,7 +24,7 @@
   <dependencies>
     <!-- Kylo dependencies -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-spark-shell-api</artifactId>
       <version>${project.version}</version>
     </dependency>

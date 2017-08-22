@@ -7,7 +7,7 @@
   <packaging>pom</packaging>
   <parent>
     <artifactId>kylo-services</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.8.3-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>

@@ -6,7 +6,7 @@
   <artifactId>kylo-commons-rest-client</artifactId>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-commons</artifactId>
     <version>0.8.3-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -20,7 +20,7 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-security</artifactId>
       <version>${project.version}</version>
     </dependency>
