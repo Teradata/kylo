@@ -7,19 +7,22 @@
 echo "Installing Elasticsearch"
 offline=false
 SETUP_FOLDER=/opt/kylo/setup
+ES_JAVA_HOME=/opt/java/current
 
 if [ $# -eq 0 ]
 then
     echo "No setup folder specified. Defaulting to /opt/kylo/setup"
-elif [ $# -eq 1 ]
+elif [ $# -eq 2 ]
 then
     echo "The setup folder is $1 "
     SETUP_FOLDER=$1
-elif [ $# -eq 2 ] && ([ "$2" = "-o" ] || [ "$2" = "-O" ])
+    ES_JAVA_HOME=$2
+elif [ $# -eq 3 ] && ([ "$3" = "-o" ] || [ "$3" = "-O" ])
 then
     echo "Working in offline mode"
     offline=true
     SETUP_FOLDER=$1
+    ES_JAVA_HOME=$2
 else
     echo "Unknown arguments. The first argument should be the path to the setup folder. Optional you can pass a second argument to set offline mode. The value is -o or -O "
     exit 1
@@ -77,6 +80,13 @@ fi
 
 sed -i "s|#cluster.name: my-application|cluster.name: demo-cluster|" /etc/elasticsearch/elasticsearch.yml
 sed -i "s|#network.host: 192.168.0.1|network.host: localhost|" /etc/elasticsearch/elasticsearch.yml
+
+if [ -z "$ES_JAVA_HOME" ]
+then
+ echo "No Java home has been specified for Elasticsearch. Using the system Java home"
+else
+  echo "JAVA_HOME=$ES_JAVA_HOME" >> /etc/sysconfig/elasticsearch
+fi
 
 echo "Starting Elasticsearch"
 sudo service elasticsearch start

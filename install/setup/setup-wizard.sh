@@ -185,11 +185,17 @@ fi
 
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
+        ES_JAVA_HOME=""
+    if [ "$java_type" == "2" ] ; then
+        ES_JAVA_HOME=/opt/java/current
+    elif [ "$java_type" == "3" ] ; then
+        ES_JAVA_HOME=$java_home
+    fi
     if [ $OFFLINE = true ]
     then
-        ./elasticsearch/install-elasticsearch.sh $CURRENT_DIR -O
+        ./elasticsearch/install-elasticsearch.sh $CURRENT_DIR $ES_JAVA_HOME -O
     else
-        ./elasticsearch/install-elasticsearch.sh $kylo_home_folder/setup
+        ./elasticsearch/install-elasticsearch.sh $kylo_home_folder/setup $ES_JAVA_HOME
     fi
 fi
 
