@@ -10,14 +10,7 @@ curl -i -X POST -u dladmin:thinkbig -H "Content-Type: multipart/form-data" \
     -F "overwrite=false" \
     -F "categorySystemName=" \
     -F "importConnectingReusableFlow=NOT_SET" \
-    -F "file=@/opt/kylo/setup/data/feeds/nifi-1.0/index_schema_service_elasticsearch.feed.zip" \
-     http://localhost:8400/proxy/v1/feedmgr/admin/import-feed
-
-curl -i -X POST -u dladmin:thinkbig -H "Content-Type: multipart/form-data" \
-    -F "overwrite=false" \
-    -F "categorySystemName=" \
-    -F "importConnectingReusableFlow=NOT_SET" \
-    -F "file=@/opt/kylo/setup/data/feeds/nifi-1.0/index_text_service_elasticsearch.feed.zip" \
+    -F "file=@/opt/kylo/setup/data/feeds/nifi-1.3/index_text_service_v2.feed.zip" \
      http://localhost:8400/proxy/v1/feedmgr/admin/import-feed
 
 curl -i -X POST -u dladmin:thinkbig -H "Content-Type: multipart/form-data" \
