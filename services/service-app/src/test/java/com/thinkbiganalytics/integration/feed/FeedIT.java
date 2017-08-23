@@ -120,9 +120,9 @@ public class FeedIT extends IntegrationTestBase {
     }
 
     public void assertExecutedJobs(FeedMetadata feed) throws IOException {
-        LOG.info("Asserting there are 3 completed jobs: userdata ingest job, schema and text system jobs");
+        LOG.info("Asserting there are 2 completed jobs: userdata ingest job, index text service system jobs");
         DefaultExecutedJob[] jobs = getJobs();
-        Assert.assertEquals(3, jobs.length);
+        Assert.assertEquals(2, jobs.length);
 
         //TODO assert all executed jobs are successful
 

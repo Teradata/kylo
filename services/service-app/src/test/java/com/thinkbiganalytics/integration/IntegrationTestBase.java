@@ -61,6 +61,8 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.rest.controller.AccessControlController;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -380,9 +382,6 @@ public class IntegrationTestBase {
     }
 
     protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed schemaIndex = importFeed("index_schema_service_elasticsearch.feed.zip");
-        enableFeed(schemaIndex.getNifiFeed().getFeedMetadata().getFeedId());
-
         ExportImportFeedService.ImportFeed textIndex = importFeed("index_text_service_elasticsearch.feed.zip");
         enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
@@ -590,7 +589,9 @@ public class IntegrationTestBase {
     }
 
     protected FeedSummary[] getFeeds() {
-        return getFeedsExpectingStatus(HTTP_OK).as(FeedSummary[].class);
+        final ObjectMapper mapper = new ObjectMapper();
+        SearchResult searchResult = getFeedsExpectingStatus(HTTP_OK).as(SearchResultImpl.class);
+        return searchResult.getData().stream().map(o -> mapper.convertValue(o, FeedSummary.class)).toArray(FeedSummary[]::new);
     }
 
     protected Response getFeedsExpectingStatus(int expectedStatusCode) {
