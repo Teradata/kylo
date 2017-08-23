@@ -216,24 +216,32 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
          * Deletes the current domain type.
          */
         self.onDelete = function () {
-            DomainTypesService.findById(self.model.id)
-                .then(function () {
-                    $mdToast.show(
-                        $mdToast.simple()
-                            .textContent("Successfully deleted the domain type " + self.model.title)
-                            .hideDelay(3000)
-                    );
-                    StateService.FeedManager().DomainType().navigateToDomainTypes();
-                }, function (err) {
-                    $mdDialog.show(
-                        $mdDialog.alert()
-                            .clickOutsideToClose(true)
-                            .title("Delete Failed")
-                            .textContent("The domain type " + self.model.title + " could not be deleted. " + err.data.message)
-                            .ariaLabel("Failed to delete domain type")
-                            .ok("Got it!")
-                    );
-                });
+            var confirm = $mdDialog.confirm()
+                .title("Delete Domain Type")
+                .textContent("Are you sure you want to delete this domain type? Columns using this domain type will appear to have no domain type.")
+                .ariaLabel("Delete Domain Type")
+                .ok("Please do it!")
+                .cancel("Nope");
+            $mdDialog.show(confirm).then(function () {
+                DomainTypesService.deleteById(self.model.id)
+                    .then(function () {
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent("Successfully deleted the domain type " + self.model.title)
+                                .hideDelay(3000)
+                        );
+                        StateService.FeedManager().DomainType().navigateToDomainTypes();
+                    }, function (err) {
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title("Delete Failed")
+                                .textContent("The domain type " + self.model.title + " could not be deleted. " + err.data.message)
+                                .ariaLabel("Failed to delete domain type")
+                                .ok("Got it!")
+                        );
+                    });
+            });
         };
 
         /**
@@ -244,7 +252,7 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
 
             // Map flags to object
             self.editModel.$regexpFlags = {};
-            for (var i=0; i < self.editModel.regexFlags.length; ++i) {
+            for (var i = 0; i < self.editModel.regexFlags.length; ++i) {
                 self.editModel.$regexpFlags[self.editModel.regexFlags[i]] = true;
             }
 

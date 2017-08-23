@@ -252,6 +252,9 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
                     policy.$currentDomainType = _.find(self.availableDomainTypes, function (domainType) {
                         return policy.domainTypeId === domainType.id;
                     });
+                    if (angular.isUndefined(policy.$currentDomainType)) {
+                        policy.domainTypeId = null;
+                    }
                 }
             });
 
