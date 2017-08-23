@@ -19,9 +19,10 @@
                         <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
                         <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;">Loading Feed</div>
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
+                      <div ng-if="vm.errorLoadingFeed" class="layout-padding">Unable to find the feed.  Either this feed doesnt exist or you don't have access to view it.</div>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="vm.loadingFeedData">
+                <md-tab ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                     <md-tab-label>
                         <div>Profile</div>
                     </md-tab-label>
@@ -29,7 +30,7 @@
                         <thinkbig-feed-profile-history ng-if="vm.selectedTabIndex == 1"></thinkbig-feed-profile-history>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="vm.loadingFeedData">
+                <md-tab ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                     <md-tab-label>
                         <div>Lineage</div>
                     </md-tab-label>
@@ -37,7 +38,7 @@
                        <thinkbig-feed-lineage  ng-if="vm.selectedTabIndex == 2"></thinkbig-feed-lineage>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="vm.loadingFeedData || !vm.allowSlaAccess">
+                <md-tab ng-disabled="vm.loadingFeedData || !vm.allowSlaAccess || vm.errorLoadingFeed">
                     <md-tab-label>
                         <div>SLA</div>
                     </md-tab-label>
@@ -64,7 +65,7 @@
             <div class="card-title" flex>Feed Summary</div>
             <div layout-align="center center" layout="column">
             <md-menu md-position-mode="target-right target">
-              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData">
+              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                 <ng-md-icon icon="more_vert"></ng-md-icon>
               </md-button>
               <md-menu-content width="4">
@@ -158,7 +159,7 @@
                 </div>
 
               <md-divider></md-divider>
-              <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start">
+              <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
                 <div class="md-subheader layout-padding-bottom">Operations Manager</div>
                 <span class="layout-padding-bottom">
                   <a href ng-click="vm.gotoFeedStats($event)">Operational Statistics</a>

@@ -71,6 +71,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploading = false;
         this.uploadAllowed = false;
 
+        /**
+         * flag to indicate the feed could not be loaded
+         * @type {boolean}
+         */
+        this.errorLoadingFeed = false;
+
 
 
         /** flag to indicate if we get a valid connection back from NiFi.  Initially to true. it will be rechecked on load **/
@@ -344,6 +350,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         }
 
         function loadFeed(tabIndex) {
+            self.errorLoadingFeed = false;
             self.loadingFeedData = true;
             self.model.loaded = false;
             self.loadMessage = '';
@@ -436,6 +443,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             }
             var errorFn = function(err) {
                 self.loadingFeedData = false;
+                self.errorLoadingFeed = true;
                 var message = angular.isDefined(err) && angular.isString(err) ? err : '';
                 $mdDialog.show(
                         $mdDialog.alert()
