@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
@@ -41,9 +40,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -69,7 +65,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     private NifiEventProvider nifiEventProvider;
 
     @Inject
-    private AccessController controller;
+    private AccessController accessController;
 
     @Autowired
     public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository, NifiEventRepository nifiEventRepository) {
@@ -78,17 +74,16 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     }
 
     private String getLastModifiedKey(String clusterId) {
-        if(StringUtils.isBlank(clusterId)|| "Node".equalsIgnoreCase(clusterId) || "non-clustered-node-id".equalsIgnoreCase(clusterId)){
+        if (StringUtils.isBlank(clusterId) || "Node".equalsIgnoreCase(clusterId) || "non-clustered-node-id".equalsIgnoreCase(clusterId)) {
             return ITEM_LAST_MODIFIED_KEY;
-        }
-        else {
+        } else {
             return ITEM_LAST_MODIFIED_KEY + "-" + clusterId;
         }
     }
 
     @Override
     public NifiFeedProcessorStats create(NifiFeedProcessorStats t) {
-        NifiFeedProcessorStats stats =  statisticsRepository.save((JpaNifiFeedProcessorStats) t);
+        NifiFeedProcessorStats stats = statisticsRepository.save((JpaNifiFeedProcessorStats) t);
         ItemLastModified lastModified = itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()), t.getMaxEventId().toString());
         return stats;
     }
@@ -111,7 +106,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     @Override
     public List<? extends JpaNifiFeedProcessorStats> findWithinTimeWindow(DateTime start, DateTime end) {
-        return statisticsRepository.findWithinTimeWindow(start, end);
+        return accessController.isEntityAccessControlled() ? statisticsRepository.findWithinTimeWindowWithAcl(start, end) : statisticsRepository.findWithinTimeWindowWithoutAcl(start, end);
     }
 
 
@@ -157,13 +152,14 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
                              stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.totalCount.sum().as("totalCount"),
-                             stats.maxEventTime.max().as("maxEventTime"), stats.minEventTime.min().as("minEventTime"), stats.jobsFailed.sum().as("jobsFailed"), stats.failedCount.sum().as("failedCount"),
+                             stats.maxEventTime.max().as("maxEventTime"), stats.minEventTime.min().as("minEventTime"), stats.jobsFailed.sum().as("jobsFailed"),
+                             stats.failedCount.sum().as("failedCount"),
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
@@ -186,13 +182,14 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
                              stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.totalCount.sum().as("totalCount"),
-                             stats.maxEventTime.max().as("maxEventTime"), stats.minEventTime.min().as("minEventTime"), stats.jobsFailed.sum().as("jobsFailed"),stats.failedCount.sum().as("failedCount"),
+                             stats.maxEventTime.max().as("maxEventTime"), stats.minEventTime.min().as("minEventTime"), stats.jobsFailed.sum().as("jobsFailed"),
+                             stats.failedCount.sum().as("failedCount"),
                              stats.count().as("resultSetCount"))
         )
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorName)
@@ -212,7 +209,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.feedName,
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
-                             stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"),stats.failedCount.sum().as("failedCount"),
+                             stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.failedCount.sum().as("failedCount"),
                              stats.maxEventTime,
                              stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
                              stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
@@ -224,7 +221,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             .from(stats)
             .innerJoin(feed).on(feed.name.eq(stats.feedName))
             .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
 
@@ -235,20 +232,22 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     }
 
     public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrors(String feedName, DateTime start, DateTime end) {
-     return statisticsRepository.findWithErrorsWithinTime(feedName,start,end);
+        return accessController.isEntityAccessControlled() ? statisticsRepository.findWithErrorsWithinTimeWithAcl(feedName, start, end)
+                                                           : statisticsRepository.findWithErrorsWithinTimeWithoutAcl(feedName, start, end);
     }
 
 
-    public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after){
-        return statisticsRepository.findWithErrorsAfterTime(feedName,after);
+    public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after) {
+        return accessController.isEntityAccessControlled() ? statisticsRepository.findWithErrorsAfterTimeWithAcl(feedName, after)
+                                                           : statisticsRepository.findWithErrorsAfterTimeWithoutAcl(feedName, after);
     }
 
 
-                                                                                        @Override
+    @Override
     public List<? extends NifiFeedProcessorStats> save(List<? extends NifiFeedProcessorStats> stats) {
-       if(stats != null && !stats.isEmpty()){
-          return statisticsRepository.save((List<JpaNifiFeedProcessorStats>)stats);
-       }
-       return stats;
+        if (stats != null && !stats.isEmpty()) {
+            return statisticsRepository.save((List<JpaNifiFeedProcessorStats>) stats);
+        }
+        return stats;
     }
 }

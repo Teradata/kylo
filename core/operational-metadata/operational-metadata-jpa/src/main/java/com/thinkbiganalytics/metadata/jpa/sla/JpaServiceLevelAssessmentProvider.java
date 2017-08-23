@@ -27,8 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.ExpressionUtils;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringExpression;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
@@ -70,7 +68,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     private ServiceLevelAgreementProvider slaProvider;
 
     @Inject
-    private AccessController controller;
+    private AccessController accessController;
 
     public static final ImmutableMap<String, String> slaAssessmentFilters =
         new ImmutableMap.Builder<String, String>()
@@ -86,7 +84,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         super(JpaServiceLevelAssessment.class);
         this.serviceLevelAssessmentRepository = serviceLevelAssessmentRepository;
         this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
-        CommonFilterTranslations.addFilterTranslations(QJpaServiceLevelAssessment.class,slaAssessmentFilters);
+        CommonFilterTranslations.addFilterTranslations(QJpaServiceLevelAssessment.class, slaAssessmentFilters);
     }
 
 
@@ -179,10 +177,11 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
      */
     @Override
     public ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id) {
-        ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findAssessment(id);
-        //ensure user has access
-
-        return assessment;
+        if (accessController.isEntityAccessControlled()) {
+            return serviceLevelAssessmentRepository.findAssessmentWithAcl(id);
+        } else {
+            return serviceLevelAssessmentRepository.findAssessmentWithoutAcl(id);
+        }
     }
 
 
@@ -208,9 +207,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
     public Page<? extends ServiceLevelAssessment> findAll(String filter, Pageable pageable) {
         QJpaServiceLevelAssessment serviceLevelAssessment = QJpaServiceLevelAssessment.jpaServiceLevelAssessment;
 
-
         pageable = CommonFilterTranslations.resolveSortFilters(serviceLevelAssessment, pageable);
-
 
         QJpaObligationAssessment obligationAssessment = new QJpaObligationAssessment("obligationAssessment");
         QJpaMetricAssessment metricAssessment = new QJpaMetricAssessment("metricAssessment");
@@ -220,15 +217,14 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         BooleanBuilder feedPredicate = GenericQueryDslFilter.buildFilter(feed, filter);
         boolean invalidQuery = false;
         //if there is not predicate found for the supplied 'filter' then fail the query
-        if(StringUtils.isNotBlank(filter) && (!assessmentPredicate.hasValue() && !feedPredicate.hasValue())){
+        if (StringUtils.isNotBlank(filter) && (!assessmentPredicate.hasValue() && !feedPredicate.hasValue())) {
             invalidQuery = true;
         }
         BooleanBuilder predicate = assessmentPredicate.and(feedPredicate);
-        if(invalidQuery){
-            predicate.and(ExpressionUtils.eq(ConstantImpl.create("1"),ConstantImpl.create("2")));
+        if (invalidQuery) {
+            predicate.and(ExpressionUtils.eq(ConstantImpl.create("1"), ConstantImpl.create("2")));
         }
-        predicate.and(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, controller.isEntityAccessControlled()))));
-
+        predicate.and(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))));
 
         return findAllWithFetch(serviceLevelAssessment,
                                 predicate,
