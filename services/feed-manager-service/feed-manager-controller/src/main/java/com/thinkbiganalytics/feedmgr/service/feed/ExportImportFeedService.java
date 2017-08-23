@@ -399,6 +399,10 @@ public class ExportImportFeedService {
                         return false;
                     }
 
+                    /*
+                       TemplateAccessControl.CREATE_FEED permission is not being used right now.
+                       Uncomment this code once/if we should be checking it
+
                     // Query for Template and ensure the user has access to create feeds
                     final RegisteredTemplate domainTemplate = registeredTemplateService.findRegisteredTemplate(
                         new RegisteredTemplateRequest.Builder().templateName(importingFeed.getTemplateName()).isFeedEdit(true).build());
@@ -410,6 +414,7 @@ public class ExportImportFeedService {
                         feed.setValid(false);
                         return false;
                     }
+                    */
                     return true;
                 });
             }

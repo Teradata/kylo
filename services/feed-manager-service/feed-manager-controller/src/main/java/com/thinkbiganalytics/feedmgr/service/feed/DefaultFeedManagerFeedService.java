@@ -434,7 +434,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     if (domainTemplate == null) {
                         throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
                     }
-                    domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
+                  //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
 
