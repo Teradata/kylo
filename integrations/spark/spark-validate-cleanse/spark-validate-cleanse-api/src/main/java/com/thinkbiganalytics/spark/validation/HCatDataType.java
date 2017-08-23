@@ -301,6 +301,9 @@ public class HCatDataType implements Cloneable, Serializable {
                     } else if (convertibleType == Date.class) {
                         return DateValidator.instance().validate(strVal);
                     }
+                    else if(convertibleType == byte[].class){
+                        return true;
+                    }
                 }
 
                 Comparable nativeValue = toNativeValue(strVal);

@@ -510,7 +510,12 @@ public class Validator implements Serializable {
 
                 if (result.isValid() && isBinaryType && !(fieldValue instanceof byte[])) {
                     //set it to null
-                    fieldValue = null;
+                    if(fieldValue instanceof String){
+                        fieldValue = ((String) fieldValue).getBytes();
+                    }
+                    else {
+                        fieldValue = null;
+                    }
                 }
                 newValues[idx] = fieldValue;
 
