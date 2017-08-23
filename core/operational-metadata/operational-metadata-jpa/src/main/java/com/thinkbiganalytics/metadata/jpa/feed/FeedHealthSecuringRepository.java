@@ -33,4 +33,5 @@ public class FeedHealthSecuringRepository extends AugmentableQueryRepositoryImpl
         super(entityInformation, em);
         this.setAugmentor(new FeedSecuringQueryAugmentor());
     }
+
 }

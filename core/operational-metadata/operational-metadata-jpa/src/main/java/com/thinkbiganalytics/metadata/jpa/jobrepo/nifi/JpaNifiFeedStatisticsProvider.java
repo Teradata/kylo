@@ -22,11 +22,14 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/25/17.
@@ -35,6 +38,9 @@ import java.util.List;
 public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider {
 
     private NifiFeedStatisticsRepository feedStatisticsRepository;
+
+    @Inject
+    private AccessController accessController;
 
     @Autowired
     public JpaNifiFeedStatisticsProvider(NifiFeedStatisticsRepository feedStatisticsRepository) {
@@ -57,14 +63,14 @@ public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider
 
     @Override
     public NifiFeedStats findLatestStatsForFeed(String feedName) {
-        return feedStatisticsRepository.findLatestForFeed(feedName);
+        return accessController.isEntityAccessControlled() ? feedStatisticsRepository.findLatestForFeedWithAcl(feedName) : feedStatisticsRepository.findLatestForFeedWithoutAcl(feedName);
     }
 
     public List<? extends NifiFeedStats> findFeedStats(boolean streamingOnly) {
         if (streamingOnly) {
-            return feedStatisticsRepository.findStreamingFeedStats();
+            return accessController.isEntityAccessControlled() ? feedStatisticsRepository.findStreamingFeedStatsWithAcl() : feedStatisticsRepository.findStreamingFeedStatsWithoutAcl();
         } else {
-            return feedStatisticsRepository.findFeedStats();
+            return accessController.isEntityAccessControlled() ? feedStatisticsRepository.findFeedStatsWithAcl() : feedStatisticsRepository.findFeedStatsWithoutAcl();
         }
     }
 }
