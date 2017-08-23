@@ -106,7 +106,7 @@
                                         <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
                                        <span hide show-gt-md>{{assessment.result}}</span></span>
                                     </td>
-                                    <td md-cell >{{assessment.time}}</td>
+                                    <td md-cell >{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</td>
                                     <td md-cell >{{assessment.message}}</td>
                                 </tr>
                                 </tbody>

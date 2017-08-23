@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 public class CommonFilterTranslations {
 
     public static final String jobExecutionFeedNameFilterKey = "jobInstance.feed.name";
+    public static final String feedTypeFilterKey = "jobInstance.feed.feedType";
 
    public static final ImmutableMap<String, String> feedFilters =
         new ImmutableMap.Builder<String, String>()
@@ -65,7 +66,12 @@ public class CommonFilterTranslations {
             .put("endtime", "endTimeMillis")
             .put("executionId", "jobExecutionId")
             .put("executionid", "jobExecutionId")
-            .put("job", "jobInstance.jobName").build();
+            .put("job", "jobInstance.jobName")
+            .put("jobType",feedTypeFilterKey)
+            .put("jobtype",feedTypeFilterKey)
+            .put("feedType",feedTypeFilterKey)
+            .put("feedtype",feedTypeFilterKey)
+            .put("type",feedTypeFilterKey).build();
 
 
     public static final ImmutableMap<String, String> serviceLevelAssessmentFilters =
