@@ -32,7 +32,7 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.alerts.spi.DefaultAlertContent;
+import com.thinkbiganalytics.alerts.spi.DefaultAlertChangeEventContent;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -911,7 +911,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         } else {
             //if streaming feed with unhandled alerts attempt to update alert content
-            DefaultAlertContent alertContent = null;
+            DefaultAlertChangeEventContent alertContent = null;
 
             if (isStream && alert.getState().equals(Alert.State.UNHANDLED)) {
                 if (alert.getEvents() != null && alert.getEvents().get(0) != null) {
@@ -919,7 +919,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     alertContent = alert.getEvents().get(0).getContent();
 
                     if (alertContent == null) {
-                        alertContent = new DefaultAlertContent();
+                        alertContent = new DefaultAlertChangeEventContent();
                         alertContent.getContent().put("failedCount", 1);
                         alertContent.getContent().put("stream", true);
                     } else {
@@ -927,25 +927,25 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                         count++;
                         alertContent.getContent().put("failedCount", count);
                     }
-                    final DefaultAlertContent content = alertContent;
+                    final DefaultAlertChangeEventContent content = alertContent;
                     provider.respondTo(alert.getId(), (alert1, response) -> response.updateAlertChange(message, content));
                 } else {
                     if (alertContent == null) {
-                        alertContent = new DefaultAlertContent();
+                        alertContent = new DefaultAlertChangeEventContent();
                         alertContent.getContent().put("failedCount", 1);
                         alertContent.getContent().put("stream", true);
                     }
 
-                    final DefaultAlertContent content = alertContent;
+                    final DefaultAlertChangeEventContent content = alertContent;
                     provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message, content));
                 }
             } else {
-                alertContent = new DefaultAlertContent();
+                alertContent = new DefaultAlertChangeEventContent();
                 alertContent.getContent().put("failedCount", 1);
                 if(isStream) {
                     alertContent.getContent().put("stream", true);
                 }
-                final DefaultAlertContent content = alertContent;
+                final DefaultAlertChangeEventContent content = alertContent;
                 provider.respondTo(alert.getId(), (alert1, response) -> response.unhandle(message, content));
             }
 
