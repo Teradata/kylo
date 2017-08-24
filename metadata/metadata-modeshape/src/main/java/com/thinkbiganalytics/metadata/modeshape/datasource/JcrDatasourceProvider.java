@@ -261,6 +261,12 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     }
 
     @Override
+    protected String getFindAllFilter() {
+        return "ISDESCENDANTNODE('" + EntityUtil.pathForDataSource() + "')";
+    }
+
+
+    @Override
     public Datasource getDatasource(Datasource.ID id) {
         return findById(id);
     }
