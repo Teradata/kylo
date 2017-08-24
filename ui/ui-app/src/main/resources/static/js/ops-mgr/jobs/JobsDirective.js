@@ -22,7 +22,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         };
     }
 
-    function JobsCardController($scope, $http,$timeout, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService,
+    function JobsCardController($scope, $http,$mdDialog,$timeout,$mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService,
                                 TabService,
                                 AccessControlService, BroadcastService) {
         var self = this;
@@ -171,13 +171,34 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
         function selectedAdditionalMenuOption(item) {
             if (item.type == 'abandon_all') {
+                $mdMenu.hide();
+                $mdDialog.show({
+                    controller:"AbandonAllJobsDialogController",
+                    templateUrl: 'js/ops-mgr/jobs/abandon-all-jobs-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: true,
+                    locals: {
+                        feedName: self.feedFilter
+                    }
+                });
+
                 OpsManagerJobService.abandonAllJobs(self.feedFilter, function () {
+                    $mdDialog.hide();
                     BroadcastService.notify('ABANDONED_ALL_JOBS', {feed: self.feedFilter});
                     $mdToast.show(
                         $mdToast.simple()
                             .textContent('Abandoned all failed jobs for the feed')
                             .hideDelay(3000)
                     );
+                },function(err){
+                    $mdDialog.hide();
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Unable to abandonal all jobs for the feed.  A unexpected error occurred.')
+                            .hideDelay(3000)
+                    );
+
                 })
             }
         }
@@ -547,9 +568,64 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
     }
 
+    /**
+     * The Controller used for the abandon all
+     */
+    var abandonAllDialogController = function ($scope, $mdDialog, $interval,feedName) {
+        var self = this;
+
+        $scope.feedName = feedName;
+        $scope.message = "Abandoning the failed jobs for "+feedName;
+        var counter = 0;
+        var index = 0;
+        var messages = [];
+        messages.push("Still working. Abandoning the failed jobs for "+feedName);
+        messages.push("Hang tight. Still working.")
+        messages.push("Just a little while longer.")
+        messages.push("Should be done soon.")
+        messages.push("Still working.  Almost done.")
+        messages.push("Its taking longer than expected.  Should be done soon.")
+        messages.push("Its taking longer than expected.  Still working...")
+
+        function updateMessage(){
+            counter++;
+            var len = messages.length;
+            if(counter %2 == 0 && counter >2) {
+                index = index < (len-1) ? index+1 : index;
+            }
+            $scope.message = messages[index];
+
+        }
+        var messageInterval = $interval(function() {
+            updateMessage();
+
+        },5000);
+
+        function cancelMessageInterval(){
+            if(messageInterval != null) {
+                $interval.cancel(messageInterval);
+            }
+        }
+
+
+        $scope.hide = function () {
+            cancelMessageInterval();
+            $mdDialog.hide();
+
+        };
+
+        $scope.cancel = function () {
+            cancelMessageInterval();
+            $mdDialog.cancel();
+        };
+
+    };
+
+    angular.module(moduleName).controller('AbandonAllJobsDialogController', ["$scope","$mdDialog","$interval","feedName",abandonAllDialogController]);
+
     angular.module(moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef",JobFilterHelpPanelMenuCtrl]);
 
-    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",JobsCardController]);
+    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",JobsCardController]);
     angular.module(moduleName).directive('tbaJobs', directive);
 });
 

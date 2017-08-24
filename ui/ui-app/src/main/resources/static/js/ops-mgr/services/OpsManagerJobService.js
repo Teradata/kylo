@@ -66,13 +66,13 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                 })
             };
 
-            data.abandonAllJobs = function (feed, callback) {
+            data.abandonAllJobs = function (feed, callback,errorCallback) {
                 $http.post(data.ABANDON_ALL_JOBS_URL(feed)).then(function (data) {
                     callback(data);
                 },function (msg) {
-                    var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
-                    errorMessasge += msg.message;
-                    //    NotificationService.error( errorMessasge);
+                    if(errorCallback && angular.isFunction(errorCallback)) {
+                        errorCallback(msg);
+                    }
                 })
             };
 

@@ -1,6 +1,6 @@
 define(['angular', 'common/module-name'], function (angular, moduleName) {
 
-    var directive = function ($mdDialog, PaginationDataService) {
+    var directive = function ($mdDialog, $timeout,PaginationDataService) {
         return {
             restrict: "E",
             scope: {
@@ -76,10 +76,8 @@ define(['angular', 'common/module-name'], function (angular, moduleName) {
                  * @param item
                  */
                 $scope.selectAdditionalOption = function (item) {
-                    var itemCopy = {};
-                    angular.extend(itemCopy, item);
-
                     if ($scope.selectedAdditionalOption) {
+                        originatorEv = null;
                         $scope.selectedAdditionalOption()(item);
                     }
                 };
@@ -113,5 +111,5 @@ define(['angular', 'common/module-name'], function (angular, moduleName) {
         }
     };
 
-    angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog', 'PaginationDataService', directive]);
+    angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 'PaginationDataService', directive]);
 });
