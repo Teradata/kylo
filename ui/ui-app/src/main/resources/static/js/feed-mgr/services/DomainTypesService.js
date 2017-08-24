@@ -62,9 +62,9 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             detectDomainType: function (values, domainTypes) {
                 // Remove empty values
                 var valueArray = _.filter(angular.isArray(values) ? values : [values], function (value) {
-                    return (value !== null && value.length > 0);
+                    return (angular.isString(value) && value.trim().length > 0);
                 });
-                if (!_.every(valueArray, angular.isString)) {
+                if (valueArray.length === 0) {
                     return null;
                 }
 
