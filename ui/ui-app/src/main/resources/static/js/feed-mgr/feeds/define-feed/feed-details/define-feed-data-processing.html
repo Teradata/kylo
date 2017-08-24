@@ -102,7 +102,7 @@
 
                       <div flex="30" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
-                          <div>{{policy.name}}</div>
+                          <div>{{policy.name | characters:30}}</div>
                           <div class="hint">{{policy.field.dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
@@ -272,7 +272,7 @@
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
             <span>Field Description</span>
-            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
+            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus="" maxlength="256"></textarea>
           </div>
         </div>
 

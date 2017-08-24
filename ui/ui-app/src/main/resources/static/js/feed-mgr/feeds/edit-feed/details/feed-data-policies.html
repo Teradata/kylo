@@ -325,7 +325,7 @@
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
-              <md-button md-no-ink class="md-primary kylo-edit-field-button" ng-click="vm.showEditFieldDialog(policy.columnDef)">{{policy.name}}</md-button>
+              <md-button md-no-ink class="md-primary kylo-edit-field-button" ng-click="vm.showEditFieldDialog(policy.columnDef)">{{policy.name | characters:20}}</md-button>
               <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
               <md-tooltip md-direction="left" ng-if="policy.columnDef.description">
                 {{policy.columnDef.description}}
