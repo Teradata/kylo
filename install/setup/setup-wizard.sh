@@ -75,18 +75,18 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
 
         if [ "$database_type" == "1"  ] ; then
             echo "Creating MySQL database 'kylo'"
-            ! mysql -h ${hostname} -u ${username} --password=${password} -e "create database if not exists kylo character set utf8 collate utf8_general_ci;" || break;
+            ! mysql -h ${hostname} -u "${username}" --password="${password}" -e "create database if not exists kylo character set utf8 collate utf8_general_ci;" || break;
         fi
         if [ "$database_type" == "2"  ] ; then
             echo "Creating PostgreSQL database 'kylo'"
-            ! PGPASSWORD=${password} createdb -U kylo -h ${hostname} -E UTF8 -e kylo || break;
+            ! PGPASSWORD="${password}" createdb -U kylo -h ${hostname} -E UTF8 -e kylo || break;
         fi
         if [ "$database_type" == "3"  ] ; then
             echo "Creating SQL Server database 'kylo'"
             hash sqlcmd 2>/dev/null || { echo >&2 "The required tool sqlcmd is not present in PATH. Aborting."; exit 1; }
-            echo "If applicable, enter the Azure edition options in brackets, eg. (EDITION='basic'), otherwise leave blank"
+            echo "If applicable, enter the Azure edition options including brackets, eg. (EDITION='basic'), otherwise leave blank"
             read -p "> " azure_options;
-            ! sqlcmd -S ${hostname} -U ${username} -P ${password} -Q "CREATE DATABASE kylo ${azure_options}" || break;
+            ! sqlcmd -S ${hostname} -U "${username}" -P "${password}" -Q "CREATE DATABASE kylo ${azure_options}" || break;
         fi
     done
 fi
