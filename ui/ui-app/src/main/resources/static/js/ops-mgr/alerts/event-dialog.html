@@ -18,9 +18,9 @@
   #L%
   -->
 <md-dialog aria-label="Event dialog">
-    <md-dialog-content layout="column" layout-padding flex>
+    <md-dialog-content layout="column" layout-padding>
         <h4 class="md-title" style="margin-bottom:0px;">Update Alert Details</h4>
-        <form name="actionUpdateForm" layout="column" flex>
+        <form name="actionUpdateForm" layout="column">
             <md-input-container layout="row">
                 <md-select ng-model="state" placeholder="State">
                     <md-option ng-value="'UNHANDLED'">Unhandled</md-option>
@@ -30,7 +30,7 @@
             </md-input-container>
             <md-input-container layout="row">
                 <label>Comment</label>
-                <input ng-model="description" name="description" size="50">
+                <input ng-model="description" name="description" size="50" flex>
             </md-input-container>
         </form>
     </md-dialog-content>
