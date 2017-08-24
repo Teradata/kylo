@@ -584,8 +584,8 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         messages.push("Just a little while longer.")
         messages.push("Should be done soon.")
         messages.push("Still working.  Almost done.")
-        messages.push("Its taking longer than expected.  Should be done soon.")
-        messages.push("Its taking longer than expected.  Still working...")
+        messages.push("It's taking longer than expected.  Should be done soon.")
+        messages.push("It's taking longer than expected.  Still working...")
 
         function updateMessage(){
             counter++;
