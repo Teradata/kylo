@@ -40,6 +40,8 @@ public class AlertUpdateRequest {
      */
     private boolean clear = false;
 
+    private boolean unclear = false;
+
     public Alert.State getState() {
         return state;
     }
@@ -62,6 +64,13 @@ public class AlertUpdateRequest {
 
     public void setClear(boolean clear) {
         this.clear = clear;
+    }
+
+    public boolean isUnclear(){
+        return this.unclear;
+    }
+    public void setUnclear(boolean unclear) {
+        this.unclear = unclear;
     }
 
 }

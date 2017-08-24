@@ -489,9 +489,20 @@ public class InMemoryAlertManager implements AlertManager {
             return this.current;
         }
 
+        @Override
+        public <C extends Serializable> Alert updateAlertChange(String description, C content) {
+            this.current = new GenericAlert(this.current, this.current.getState(),content);
+            return this.current;
+        }
+
+        @Override
+        public void unclear() {
+            this.current = new GenericAlert(this.current, false);
+        }
+
         /* (non-Javadoc)
-         * @see com.thinkbiganalytics.alerts.api.AlertResponse#clear()
-         */
+                 * @see com.thinkbiganalytics.alerts.api.AlertResponse#clear()
+                 */
         @Override
         public void clear() {
             checkCleared();

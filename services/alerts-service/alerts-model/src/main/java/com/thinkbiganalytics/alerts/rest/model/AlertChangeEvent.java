@@ -27,6 +27,8 @@ import com.thinkbiganalytics.alerts.rest.model.Alert.State;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
+
 /**
  * Represents a change event of an alert.
  */
@@ -48,6 +50,11 @@ public class AlertChangeEvent {
      * A description of the change, or {@code null}
      */
     private String description;
+
+    /**
+     * The content of the change
+     */
+    private String content;
 
     /**
      * The principal of the user that created the alert
@@ -86,4 +93,11 @@ public class AlertChangeEvent {
         this.user = user;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

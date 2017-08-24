@@ -251,11 +251,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * @param event        a provenance event
      */
     private void failedJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-        if (queryForNiFiBulletins && event.isStream()) {
+        if (queryForNiFiBulletins && !event.isStream()) {
             queryForNiFiErrorBulletins(event);
         }
         log.debug("Failed JOB for Event {} ", event);
-        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(), null);
+        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(),event.isStream(), null);
     }
 
     /**
@@ -269,7 +269,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     private void successfulJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         log.debug("Success JOB for Event {} ", event);
-        batchJobExecutionProvider.notifySuccess(jobExecution, event.getFeedName(), null);
+        batchJobExecutionProvider.notifySuccess(jobExecution, event.getFeedName(),event.isStream(), null);
     }
 
     /**

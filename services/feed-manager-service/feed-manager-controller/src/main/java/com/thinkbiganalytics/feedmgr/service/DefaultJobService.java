@@ -117,7 +117,7 @@ public class DefaultJobService implements JobService {
                 msg += "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 this.jobExecutionProvider.save(execution);
-                this.jobExecutionProvider.notifyFailure(execution,null,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+                this.jobExecutionProvider.notifyFailure(execution,null,false,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
 
             }
             return execution;
