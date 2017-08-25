@@ -149,7 +149,7 @@
 
 
   <md-input-container nifi-property-input class="md-block layout-padding-top-bottom" property="property" ng-repeat="property in ctl.processor.properties | filter:{userEditable:true}" flex-gt-sm
-                      ng-if="ctl.isCustomProperty(property) == false">
+                      ng-if="ctl.isCustomProperty(property) == false"  on-property-change="ctl.onNiFiPropertyChanged(property)">
 
   </md-input-container>
 
