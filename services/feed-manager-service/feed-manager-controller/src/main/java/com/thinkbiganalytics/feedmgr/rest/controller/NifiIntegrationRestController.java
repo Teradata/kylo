@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
@@ -119,6 +120,9 @@ public class NifiIntegrationRestController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private DatasourceService datasourceService;
 
     @GET
     @Path("/auto-align/{processGroupId}")
@@ -298,6 +302,7 @@ public class NifiIntegrationRestController {
                                                              : nifiRestClient.processGroups().getControllerServices(processGroupId);
         final Set<ControllerServiceDTO> matchingControllerServices = controllerServices.stream()
             .filter(controllerService -> allowedTypes.contains(controllerService.getType()))
+            .filter(datasourceService.getControllerServiceAccessControlFilter())
             .collect(Collectors.toSet());
         return Response.ok(matchingControllerServices).build();
     }
