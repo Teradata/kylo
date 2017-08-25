@@ -85,7 +85,7 @@ public class KyloUpgradeDatabaseVersionChecker {
             DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
 
             connection = dataSource.getConnection();
-            String query = "SELECT * FROM kylo.KYLO_VERSION ORDER BY MAJOR_VERSION DESC, MINOR_VERSION DESC, POINT_VERSION DESC, TAG DESC";
+            String query = "SELECT * FROM KYLO_VERSION ORDER BY MAJOR_VERSION DESC, MINOR_VERSION DESC, POINT_VERSION DESC, TAG DESC";
             statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
             if (rs.next()) {
@@ -99,6 +99,7 @@ public class KyloUpgradeDatabaseVersionChecker {
 
         } catch (SQLException e) {
             // this is ok.. If an error happens assume the upgrade is needed.  The method will return a null value if errors occur and the upgrade app will start.
+            e.printStackTrace();
         } finally {
             JdbcUtils.closeStatement(statement);
             JdbcUtils.closeResultSet(resultSet);
