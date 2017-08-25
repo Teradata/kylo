@@ -388,43 +388,48 @@ public class Validator implements Serializable {
      * @return the schema structure
      */
     private StructType createModifiedSchema(String sourceTable, String targetTable) {
-        // Extract schema from the source table
-        StructType schema = scs.toDataSet(getHiveContext(), sourceTable).schema();
-        StructType target = targetTable != null ? scs.toDataSet(getHiveContext(), targetTable).schema() : null;
-        StructField[] fields = schema.fields();
-        StructField[] targetFields = target != null ? target.fields() : null;
+        // Extract schema from the source and target table
+        StructType sourceSchema = scs.toDataSet(getHiveContext(), sourceTable).schema();
+        StructType targetSchema = targetTable != null ? scs.toDataSet(getHiveContext(), targetTable).schema() : null;
+
+        // Get fields from source and target schema
+        StructField[] sourceFields = sourceSchema.fields();
+        StructField[] targetFields = targetSchema != null ? targetSchema.fields() : null;
+
         List<StructField> fieldsList = new Vector<>();
-        for (int i = 0; i < fields.length; i++) {
+
+        for (int i = 0; i < sourceFields.length; i++) {
             //Build a list of feed field names using the policy map
             List<String> policyMapFeedFieldNames = new ArrayList<>();
             //get a list of all those that have standardization policies on them
             List<String> fieldsWithStandardizers = new ArrayList<>();
             for (Map.Entry<String, FieldPolicy> policyMapItem : policyMap.entrySet()) {
-                String fieldName = policyMapItem.getValue().getFeedField().toLowerCase();
-                policyMapFeedFieldNames.add(fieldName);
+                String feedFieldName = policyMapItem.getValue().getFeedField().toLowerCase();
+                policyMapFeedFieldNames.add(feedFieldName);
                 if (policyMapItem.getValue().hasStandardizationPolicies()) {
-                    fieldsWithStandardizers.add(fieldName);
+                    fieldsWithStandardizers.add(feedFieldName);
                 }
             }
-            String lowerFieldName = fields[i].name().toLowerCase();
+
+            String lowerSourceFieldName = sourceFields[i].name().toLowerCase();
             boolean validTableSchema = StringUtils.isNotBlank(targetTable);
             boolean isBinaryTargetType = (targetFields != null && targetFields[i] != null && targetFields[i].dataType().equals(DataTypes.BinaryType));
-            if (policyMapFeedFieldNames.contains(lowerFieldName)) {
-                log.info("Adding field {}", fields[i].name());
+            if (policyMapFeedFieldNames.contains(lowerSourceFieldName)) {
+                log.info("Adding field {}", sourceFields[i].name());
                 //if the field has a Standardization policy and its part of the validation table, then we should set the value to a String type
-                if (validTableSchema && fieldsWithStandardizers.contains(lowerFieldName) && !isBinaryTargetType) {
-                    StructField field = fields[i];
-                    field = new StructField(field.name(), DataTypes.StringType, field.nullable(), field.metadata());
+                if (validTableSchema && fieldsWithStandardizers.contains(lowerSourceFieldName) && !isBinaryTargetType) {
+                    StructField field = targetFields[i];    //in lieu of fields which are from source
+                    field = new StructField(field.name(), field.dataType(), field.nullable(), field.metadata());
                     fieldsList.add(field);
                 } else {
                     if (isBinaryTargetType) {
                         fieldsList.add(targetFields[i]);
                     } else {
-                        fieldsList.add(fields[i]);
+                        fieldsList.add(sourceFields[i]);
                     }
                 }
             } else {
-                log.warn("Feed table field {} is not present in policy map", fields[i].name().toLowerCase());
+                log.warn("Feed table field {} is not present in policy map", sourceFields[i].name().toLowerCase());
             }
         }
 
@@ -746,6 +751,15 @@ public class Validator implements Serializable {
 
                 if (shouldStandardize) {
                     Object newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
+
+                    //If standardized value is returned as a String, and target column is not String, then convert it to correct type
+                    if(newValue != null && dataType.getConvertibleType() != newValue.getClass()) {
+                        try {
+                            newValue = dataType.toNativeValue(newValue.toString());
+                        }catch (InvalidFormatException e) {
+                            log.warn("Could not convert value {} to correct type {}", newValue.toString(), dataType.getConvertibleType().getName());
+                        }
+                    }
                     result.setFieldValue(newValue);
                 }
             }
