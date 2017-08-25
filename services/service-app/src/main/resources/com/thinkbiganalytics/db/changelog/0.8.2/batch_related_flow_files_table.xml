@@ -22,12 +22,14 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
   <changeSet author="sr186054" id="batch_related_flow_files">
+    <validCheckSum>7:5c2701a8a2ac3ccb5f6d747d690d9d2e</validCheckSum>
+    <validCheckSum>7:053cf120881f08b2489d8061bed7c497</validCheckSum>
     <createTable tableName="BATCH_RELATED_FLOW_FILES">
       <column name="FLOW_FILE_ID" type="VARCHAR(45)">
         <constraints nullable="false" primaryKey="true"/>
       </column>
       <column name="BATCH_JOB_FLOW_FILE_ID" type="VARCHAR(45)"/>
-      <column name="BATCH_JOB_EXECUTION_ID" type="bigint(20)"/>
+      <column name="BATCH_JOB_EXECUTION_ID" type="bigint"/>
     </createTable>
   </changeSet>
 

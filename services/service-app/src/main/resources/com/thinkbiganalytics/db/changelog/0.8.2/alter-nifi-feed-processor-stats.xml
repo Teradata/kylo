@@ -27,7 +27,7 @@
     <validCheckSum>7:aa784981473e0adbde6b4b13a47b80bc</validCheckSum>
     <addColumn
                tableName="NIFI_FEED_PROCESSOR_STATS">
-        <column name="FAILED_EVENTS" type="bigint(20)"/>
+        <column name="FAILED_EVENTS" type="bigint"/>
     </addColumn>
 </changeSet>
 

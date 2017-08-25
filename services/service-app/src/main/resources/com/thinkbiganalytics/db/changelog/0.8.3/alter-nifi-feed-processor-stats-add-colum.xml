@@ -23,6 +23,8 @@
 
 
 <changeSet author="sr186054" id="kylo-0.8.3-ADD-LATEST_FLOW_FILE_ID-column">
+    <validCheckSum>7:59e08b66cb1209cb1780c4d02da3f417</validCheckSum>
+    <validCheckSum>7:773e22e362c39ce9240bfdf4a25da39a</validCheckSum>
     <addColumn tableName="NIFI_FEED_PROCESSOR_STATS">
         <column name="LATEST_FLOW_FILE_ID" type="varchar(45)"/>
     </addColumn>
@@ -32,7 +34,7 @@
     </addColumn>
 
     <addColumn tableName="NIFI_FEED_PROCESSOR_STATS">
-        <column name="ERROR_MESSAGES_TIMESTAMP" type="BIGINT(11)"/>
+        <column name="ERROR_MESSAGES_TIMESTAMP" type="BIGINT"/>
     </addColumn>
 </changeSet>
 

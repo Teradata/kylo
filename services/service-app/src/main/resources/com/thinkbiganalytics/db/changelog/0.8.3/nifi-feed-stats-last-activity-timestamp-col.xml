@@ -23,8 +23,10 @@
 
 
   <changeSet author="sr186054" id="kylo-0.8.3-ADD_LAST_ACTIVITY-column">
+    <validCheckSum>7:e81d9013304ff56950150bdb4a485a1a</validCheckSum>
+    <validCheckSum>7:c4c6cf970d6a8215bb6dc5ad8cde9c7b</validCheckSum>
     <addColumn tableName="NIFI_FEED_STATS">
-      <column name="LAST_ACTIVITY_TIMESTAMP" type="BIGINT(11)"/>
+      <column name="LAST_ACTIVITY_TIMESTAMP" type="BIGINT"/>
     </addColumn>
   </changeSet>
 

@@ -29,7 +29,7 @@
       </column>
       <column name="FEED_ID" type="${uuid.type}"/>
       <column name="RUNNING_FEED_FLOWS" type="BIGINT"/>
-      <column name="TIME" type="BIGINT(11)"/>
+      <column name="TIME" type="BIGINT"/>
       <column name="IS_LATEST" type="varchar(1)"/>
     </createTable>
   </changeSet>

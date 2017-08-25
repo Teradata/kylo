@@ -38,16 +38,16 @@ INNER JOIN KYLO_ALERT a on a.entity_id = f.id and a.entity_type = 'FEED'
     inner join FEED f on f.name = feed and c.FEED_ID = f.id
     inner join FEED checkFeed on checkFeed.id = c.CHECK_DATA_FEED_ID
     UNION
-    SELECT feed from dual )
+    SELECT feed  )
   AND e.STATUS = 'FAILED'
   AND ctx.KEY_NAME = 'Kylo Alert Id'
-and a.id = cast(substr(ctx.STRING_VAL,1,instr(ctx.STRING_VAL,':')-1) as UUID)
+and a.id = cast(substr(ctx.STRING_VAL,1,strpos(ctx.STRING_VAL,':')-1) as UUID)
 and a.state = 'UNHANDLED'
 and a.type ='http://kylo.io/alert/job/failure';
 
-UPDATE KYLO_ALERT a
-set a.state = 'HANDLED'
-where a.id in (SELECT cast(substr(STRING_VAL,1,instr(STRING_VAL,':')-1) as UUID)
+UPDATE KYLO_ALERT
+set state = 'HANDLED'
+where id in (SELECT cast(substr(STRING_VAL,1,strpos(STRING_VAL,':')-1) as UUID)
 FROM BATCH_JOB_EXECUTION_CTX_VALS ctx
 INNER JOIN BATCH_JOB_EXECUTION e on e.JOB_EXECUTION_ID = ctx.JOB_EXECUTION_ID
  INNER JOIN BATCH_JOB_INSTANCE
@@ -57,7 +57,7 @@ INNER JOIN BATCH_JOB_EXECUTION e on e.JOB_EXECUTION_ID = ctx.JOB_EXECUTION_ID
     inner join FEED f on f.name = feed and c.FEED_ID = f.id
     inner join FEED checkFeed on checkFeed.id = c.CHECK_DATA_FEED_ID
     UNION
-    SELECT feed from dual )
+    SELECT feed)
   AND e.STATUS = 'FAILED'
   AND ctx.KEY_NAME = 'Kylo Alert Id');
 
