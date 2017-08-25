@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 
 import java.util.List;
@@ -88,11 +89,12 @@ public class FeedHiveTableService {
         if (feedFields != null && !feedFields.isEmpty()) {
             final TableSchema hiveSchema = hiveService.getTableSchema(feed.getSystemCategoryName(), feed.getSystemFeedName());
             if (hiveSchema != null) {
-                final Map<String, Field> hiveFieldMap = hiveSchema.getFields().stream().collect(Collectors.toMap(Field::getName, Function.identity()));
+                final Map<String, Field> hiveFieldMap = hiveSchema.getFields().stream().collect(Collectors.toMap(field -> field.getName().toLowerCase(), Function.identity()));
                 feedFields.stream()
                     .filter(feedField -> {
-                        final Field hiveField = hiveFieldMap.get(feedField.getName());
-                        return hiveField != null && !Objects.equals(feedField.getDescription(), hiveField.getDescription());
+                        final Field hiveField = hiveFieldMap.get(feedField.getName().toLowerCase());
+                        return hiveField != null && (StringUtils.isNotEmpty(feedField.getDescription()) || StringUtils.isNotEmpty(hiveField.getDescription()))
+                               && !Objects.equals(feedField.getDescription(), hiveField.getDescription());
                     })
                     .forEach(feedField -> changeColumn(feed, feedField.getName(), feedField));
             }
