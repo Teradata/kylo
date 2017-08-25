@@ -2,7 +2,7 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-client-v1.2
+ * thinkbig-nifi-rest-client-v1.1
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,24 +20,25 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
+
+import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 
 /**
  * Created by sr186054 on 6/29/17.
  */
-public class NiFiRestClientV1_2 extends NiFiRestClientV1_1 {
+public class NiFiRestClientV1_1 extends NiFiRestClientV1 {
 
-    public NiFiRestClientV1_2(NifiRestClientConfig config) {
+    public NiFiRestClientV1_1(NifiRestClientConfig config) {
         super(config);
     }
 
     @Override
-    public NiFiControllerServicesRestClient controllerServices() {
-        if (controllerServices == null) {
-            controllerServices = new NiFiControllerServicesRestClientV1_2(this);
+    public NiFiProcessorsRestClient processors() {
+        if (processors == null) {
+            processors = new NiFiProcessorsRestClientV1_1(this);
         }
-        return controllerServices;
+        return processors;
     }
 
 }

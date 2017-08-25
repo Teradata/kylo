@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.rest.client;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
+
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.Optional;
@@ -51,6 +53,14 @@ public interface NiFiProcessorsRestClient {
      */
     @Nonnull
     ProcessorDTO update(@Nonnull ProcessorDTO processor);
+
+
+    /**
+     * Updates the schedule for a processor
+     * @param schedule
+     * @return
+     */
+    ProcessorDTO schedule(NifiProcessorSchedule schedule);
 
     /**
      * Updates a processor and retries {@code retryAmount} number of times if the update is unsuccessful

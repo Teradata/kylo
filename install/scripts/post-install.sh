@@ -229,7 +229,10 @@ export KYLO_SERVICES_OPTS=-Xmx768m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
 KYLO_NIFI_PROFILE="nifi-v1"
-if [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+if [[ \${PROFILES} == *"nifi-v1.1"* ]];
+ then
+ KYLO_NIFI_PROFILE="nifi-v1.1"
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
@@ -246,7 +249,11 @@ export KYLO_SERVICES_OPTS=-Xmx768m
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
 PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
 KYLO_NIFI_PROFILE="nifi-v1"
-if [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+
+if [[ \${PROFILES} == *"nifi-v1.1"* ]];
+ then
+ KYLO_NIFI_PROFILE="nifi-v1.1"
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi

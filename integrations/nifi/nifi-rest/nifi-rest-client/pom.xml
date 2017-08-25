@@ -19,6 +19,7 @@
   <modules>
     <module>nifi-rest-client-api</module>
     <module>nifi-rest-client-v1</module>
+    <module>nifi-rest-client-v1.1</module>
     <module>nifi-rest-client-v1.2</module>
   </modules>
 </project>

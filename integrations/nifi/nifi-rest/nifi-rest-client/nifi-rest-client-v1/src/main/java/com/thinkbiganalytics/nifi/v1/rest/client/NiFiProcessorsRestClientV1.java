@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  */
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -39,7 +40,7 @@ import javax.ws.rs.NotFoundException;
 /**
  * Implements a {@link NiFiProcessorsRestClient} for communicating with NiFi v1.0.
  */
-public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
+public class NiFiProcessorsRestClientV1 extends AbstractNiFiProcessorsRestClient {
 
     /**
      * Base path for processor requests
@@ -127,4 +128,5 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
             return Optional.empty();
         }
     }
+
 }

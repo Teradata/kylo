@@ -2,7 +2,7 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-client-v1.2
+ * thinkbig-nifi-rest-client-v1.1
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,24 +20,27 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
+
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+
+import javax.annotation.Nonnull;
 
 /**
- * Created by sr186054 on 6/29/17.
+ * Created by sr186054 on 8/25/17.
  */
-public class NiFiRestClientV1_2 extends NiFiRestClientV1_1 {
+public class NiFiProcessorsRestClientV1_1  extends NiFiProcessorsRestClientV1{
 
-    public NiFiRestClientV1_2(NifiRestClientConfig config) {
-        super(config);
+    public NiFiProcessorsRestClientV1_1(@Nonnull NiFiRestClientV1 client) {
+        super(client);
     }
 
     @Override
-    public NiFiControllerServicesRestClient controllerServices() {
-        if (controllerServices == null) {
-            controllerServices = new NiFiControllerServicesRestClientV1_2(this);
+    protected ProcessorDTO applySchedule(NifiProcessorSchedule schedule) {
+        ProcessorDTO input = super.applySchedule(schedule);
+        if(input != null) {
+            input.getConfig().setExecutionNode(schedule.getExecutionNode());
         }
-        return controllerServices;
+        return input;
     }
-
 }
