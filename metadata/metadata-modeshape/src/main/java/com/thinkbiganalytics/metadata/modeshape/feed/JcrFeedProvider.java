@@ -762,7 +762,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             // NOTE: This join is not working - results in an empty result set
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
             bldr.append("JOIN [tba:feedDetails] AS fd ON ISCHILDNODE(fd, fs) ");
-            bldr.append("JOIN [tba:feedTemplate] AS t ON t.[jcr:uuid] = fd.[tba:feedTemplate] ");
+            //bldr.append("JOIN [tba:feedTemplate] AS t on fd.[tba:feedTemplate] = t.[jcr:uuid] ");
         } else if (sortProps.contains(SORT_STATE)) {
             bldr.append("JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) ");
         }
@@ -770,7 +770,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     protected void appendFilter(StringBuilder bldr, String filter) {
-        String filterPattern = Strings.isNullOrEmpty(filter) ? null : "'%" + filter + "%'";
+        String filterPattern = Strings.isNullOrEmpty(filter) ? null : "'%" + filter.toLowerCase() + "%'";
         if (filterPattern != null) {
             bldr.append("WHERE LOWER(").append(JCR_PROP_MAP.get(SORT_FEED_NAME)).append(") LIKE ").append(filterPattern);
             bldr.append(" OR LOWER(").append(JCR_PROP_MAP.get(SORT_CATEGORY_NAME)).append(") LIKE ").append(filterPattern);
