@@ -67,15 +67,31 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             getFeeds();
         };
 
-        this.onPaginationChange = function(page, limit) {
+        function onPaginate(page,limit){
             PaginationDataService.currentPage(self.pageName, null, page);
             self.currentPage = page;
             //only trigger the reload if the initial page has been loaded.
             //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
-            if(loaded) {
-            getFeeds();
+            if (loaded) {
+                getFeeds();
             }
+        }
+
+        this.onPaginationChange = function(page, limit) {
+            if(self.viewType == 'list') {
+                onPaginate(page,limit);
+            }
+
         };
+
+        this.onDataTablePaginationChange = function(page, limit) {
+            if(self.viewType == 'table') {
+                onPaginate(page,limit);
+            }
+
+        };
+
+
 
         /**
          * Called when a user Clicks on a table Option
