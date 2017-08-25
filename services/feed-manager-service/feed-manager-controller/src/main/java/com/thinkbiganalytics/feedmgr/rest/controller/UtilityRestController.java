@@ -96,6 +96,14 @@ public class UtilityRestController {
     )
     public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
+        if(valid){
+            try {
+                CronExpression e = new CronExpression(cronExpression);
+                valid = CronExpressionUtil.getNextFireTime(e) != null;
+            }catch (Exception e){
+                valid = false;
+            }
+        }
         return Response.ok("{\"valid\":" + valid + "}").build();
     }
 

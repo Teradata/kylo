@@ -213,7 +213,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                         (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
                         (self.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.editModel.schedule.preconditions != null && self.editModel.schedule.preconditions.length > 0 ) ||
                         (self.editModel.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY" && self.timerAmount != undefined && self.timerAmount != null);
-            self.isValid = valid;
+            self.isValid = valid && self.scheduleFeedForm.$valid;
             return self.isValid;
         }
 
