@@ -52,6 +52,9 @@ public class SimpleRegexReplacer implements StandardizationPolicy {
             if (replace != null) {
                 this.replacement = replace;
             }
+            else {
+                this.replacement="";
+            }
 
             valid = true;
         } catch (PatternSyntaxException e) {
@@ -63,6 +66,9 @@ public class SimpleRegexReplacer implements StandardizationPolicy {
     public String convertValue(String value) {
         if (!valid) {
             return value;
+        }
+        if(replacement== null){
+            replacement = "";
         }
         return pattern.matcher(value).replaceAll(replacement);
     }
