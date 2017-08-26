@@ -98,7 +98,7 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
             //return self.deferred.promise;
         };
 
-        this.onPaginationChange = function(page, limit) {
+        function onPaginate(page,limit){
             var activeTab = TabService.getActiveTab(self.pageName);
             //only trigger the reload if the initial page has been loaded.
             //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
@@ -107,6 +107,18 @@ define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
                 activeTab.currentPage = page;
                 PaginationDataService.currentPage(self.pageName, activeTab.title, page);
                 return loadAssessments(true).promise;
+            }
+        }
+
+        this.onPaginationChange = function(page, limit) {
+            if(self.viewType == 'list') {
+                onPaginate(page,limit);
+            }
+        };
+
+        this.onDataTablePaginationChange = function(page, limit) {
+            if(self.viewType == 'table') {
+                onPaginate(page,limit);
             }
         };
 
