@@ -332,9 +332,7 @@ public class DatasourceModelTransform {
                     controllerService.setComments(ds.getDescription());
                     controllerService.setProperties(properties);
                     try {
-                        nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.DISABLED);
-                        nifiRestClient.controllerServices().update(controllerService);
-                        nifiRestClient.controllerServices().updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
+                       controllerService = nifiRestClient.controllerServices().updateServiceAndReferencingComponents(controllerService);
                         ds.setControllerServiceId(controllerService.getId());
                     } catch (final NifiComponentNotFoundException e) {
                         log.warn("Controller service is missing for datasource: {}", domain.getId(), e);

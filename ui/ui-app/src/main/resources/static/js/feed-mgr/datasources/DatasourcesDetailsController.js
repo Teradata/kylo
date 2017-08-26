@@ -211,6 +211,11 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                     savedModel.owner = self.model.owner;
                     savedModel.roleMemberships = self.model.roleMemberships;
                     self.model = savedModel;
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Saved the datasource' + self.model.name)
+                            .hideDelay(3000)
+                    );
                     return savedModel;
                 }, function (err) {
                     $mdDialog.show(
