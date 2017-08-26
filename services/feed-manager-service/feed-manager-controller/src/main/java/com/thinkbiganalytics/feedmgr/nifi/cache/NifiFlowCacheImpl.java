@@ -230,7 +230,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      * When modeshape and nifi are connected and ready attempt to initialize the cache
      */
     private void checkAndInitializeCache() {
-        log.info("checkAndInitialize = {} , {} , {} ",modeShapeAvailable,nifiConnected,!loaded);
+        log.info("Check and Initialize NiFi Flow Cache. Modeshape available:{}, NiFi Connected:{}, Cache needs loading:{} ",modeShapeAvailable,nifiConnected,!loaded);
         if (modeShapeAvailable && nifiConnected && !loaded) {
             rebuildCacheWithRetry();
         }
