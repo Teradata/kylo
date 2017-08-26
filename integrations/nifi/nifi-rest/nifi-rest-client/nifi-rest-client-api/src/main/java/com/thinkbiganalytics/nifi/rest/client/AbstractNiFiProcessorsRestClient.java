@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.rest.client;
  */
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 
+import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
         if (schedule != null && schedule.getProcessorId() != null) {
             ProcessorDTO input = new ProcessorDTO();
             input.setId(schedule.getProcessorId());
+            input.setConfig(new ProcessorConfigDTO());
             input.getConfig().setSchedulingPeriod(schedule.getSchedulingPeriod());
             input.getConfig().setSchedulingStrategy(schedule.getSchedulingStrategy());
             input.getConfig().setConcurrentlySchedulableTaskCount(schedule.getConcurrentTasks());
