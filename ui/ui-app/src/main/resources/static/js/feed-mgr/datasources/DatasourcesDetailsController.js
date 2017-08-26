@@ -167,8 +167,8 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
             // Save the changes
-            self.saveModel(model)
-                .then(function () {
+            DatasourcesService.saveRoles(model)
+                .then(function (r) {
                     EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityRoleTypes.DATASOURCE, self.model.roleMemberships);
                 })
                 .catch(function () {
