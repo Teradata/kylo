@@ -617,6 +617,7 @@ public class CreateFeedBuilder {
                 schedule = NifiFeedConstants.DEFAULT_TIGGER_FEED_PROCESSOR_SCHEDULE;
             }
             NifiProcessorSchedule scheduleCopy = new NifiProcessorSchedule(feedSchedule);
+            scheduleCopy.setProcessorId(input.getId());
             scheduleCopy.setSchedulingPeriod(schedule);
             scheduleCopy.setSchedulingStrategy(strategy);
             try {
