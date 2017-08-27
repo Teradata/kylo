@@ -409,70 +409,43 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
             MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
-            String[] confs = null;
-            if (!StringUtils.isEmpty(sparkConfs)) {
-                confs = sparkConfs.split("\\|");
-            }
 
-            String[] args = null;
-            if (!StringUtils.isEmpty(appArgs)) {
-                args = appArgs.split(",");
-            }
-
-            final List<String> extraJarPaths = new ArrayList<>();
-            if (!StringUtils.isEmpty(extraJars)) {
-                extraJarPaths.addAll(Arrays.asList(extraJars.split(",")));
-            } else {
-                getLog().info("No extra jars to be added to class path");
-            }
+            final List<String> extraJarPaths = getExtraJarPaths(extraJars);
 
             // If all 3 fields are filled out then assume kerberos is enabled, and user should be authenticated
-            boolean authenticateUser = false;
-            if (!StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources)) {
-                authenticateUser = true;
-            }
+            boolean isAuthenticated = !StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources);
+            try {
+                if (isAuthenticated && isSecurityEnabled(hadoopConfigurationResources)) {
+                    logger.info("Security is enabled");
 
-            if (authenticateUser) {
-                ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                Configuration configuration;
-                try {
-                    getLog().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
-                    configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
-
-                    if (SecurityUtil.isSecurityEnabled(configuration)) {
-                        getLog().info("Security is enabled");
-
-                        if (principal.equals("") && keyTab.equals("")) {
-                            getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster. {} ", new Object[]{flowFile});
-                            session.transfer(flowFile, REL_FAILURE);
-                            return;
-                        }
-
-                        try {
-                            getLog().info("User authentication initiated");
-
-                            boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
-                            if (authenticationStatus) {
-                                getLog().info("User authenticated successfully.");
-                            } else {
-                                getLog().error("User authentication failed.  {} ", new Object[]{flowFile});
-                                session.transfer(flowFile, REL_FAILURE);
-                                return;
-                            }
-
-                        } catch (Exception unknownException) {
-                            getLog().error("Unknown exception occurred while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
-                            session.transfer(flowFile, REL_FAILURE);
-                            return;
-                        }
-
+                    if (principal.equals("") && keyTab.equals("")) {
+                        logger.error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster. {} ", new Object[]{flowFile});
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
                     }
-                } catch (IOException e1) {
-                    getLog().error("Unknown exception occurred while authenticating user : {} and flow file: {}", new Object[]{e1.getMessage(), flowFile});
-                    session.transfer(flowFile, REL_FAILURE);
-                    return;
+
+                    logger.info("User authentication initiated");
+
+                    boolean authenticationStatus = new ApplySecurityPolicy().validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
+                    if (authenticationStatus) {
+                        logger.info("User authenticated successfully.");
+                    } else {
+                        logger.error("User authentication failed.  {} ", new Object[]{flowFile});
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
+                    }
                 }
+            } catch (IOException e1) {
+                logger.error("Unknown exception occurred while authenticating user : {} and flow file: {}", new Object[]{e1.getMessage(), flowFile});
+                session.transfer(flowFile, REL_FAILURE);
+                return;
+
+            } catch (Exception unknownException) {
+                logger.error("Unknown exception occurred while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
+                session.transfer(flowFile, REL_FAILURE);
+                return;
             }
+
 
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
@@ -519,40 +492,16 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
 
-            if(sparkMaster.equals("yarn")) {
-                launcher.setDeployMode(sparkYarnDeployMode);
-                logger.info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
-            }
+            OptionalSparkConfigurator optionalSparkConf = new OptionalSparkConfigurator(launcher)
+                .setDeployMode(sparkMaster, sparkYarnDeployMode)
+                .setAuthentication(isAuthenticated, keyTab, principal)
+                .addAppArgs(appArgs)
+                .addSparkArg(sparkConfs)
+                .addExtraJars(extraJarPaths)
+                .setYarnQueue(yarnQueue)
+                .setExtraFiles(extraFiles);
 
-            if (authenticateUser) {
-                launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
-                launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
-            }
-            if (args != null) {
-                launcher.addAppArgs(args);
-            }
-
-            if (confs != null) {
-                for (String conf : confs) {
-                    getLog().info("Adding sparkconf '" + conf + "'");
-                    launcher.addSparkArg(SPARK_CONFIG_NAME, conf);
-                }
-            }
-
-            if (!extraJarPaths.isEmpty()) {
-                for (String path : extraJarPaths) {
-                    getLog().info("Adding to class path '" + path + "'");
-                    launcher.addJar(path);
-                }
-            }
-            if (StringUtils.isNotEmpty(yarnQueue)) {
-                launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
-            }
-            if (StringUtils.isNotEmpty(extraFiles)) {
-                launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
-            }
-
-            Process spark = launcher.launch();
+            Process spark = optionalSparkConf.getLaucnher().launch();
 
             /* Read/clear the process input stream */
             InputStreamReaderRunnable inputStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getInputStream());
@@ -595,6 +544,23 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         }
     }
 
+    private boolean isSecurityEnabled(String hadoopConfigurationResources) throws IOException {
+        getLog().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
+        Configuration configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
+        return SecurityUtil.isSecurityEnabled(configuration);
+    }
+
+    private List<String> getExtraJarPaths(String extraJars) {
+        final List<String> extraJarPaths = new ArrayList<>();
+        if (!StringUtils.isEmpty(extraJars)) {
+            extraJarPaths.addAll(Arrays.asList(extraJars.split(",")));
+        } else {
+            getLog().info("No extra jars to be added to class path");
+        }
+        return extraJarPaths;
+    }
+
+
     @Override
     protected Collection<ValidationResult> customValidate(@Nonnull final ValidationContext validationContext) {
         final Set<ValidationResult> results = new HashSet<>();
@@ -619,16 +585,85 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
         }
 
-        if (sparkMaster.equals("yarn")) {
-            if (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster"))) {
-                results.add(new ValidationResult.Builder()
-                        .subject(this.getClass().getSimpleName())
-                        .valid(false)
-                        .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
-                        .build());
-            }
+        if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
+            results.add(new ValidationResult.Builder()
+                    .subject(this.getClass().getSimpleName())
+                    .valid(false)
+                    .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
+                    .build());
         }
 
         return results;
+    }
+
+    private class OptionalSparkConfigurator {
+        private SparkLauncher launcher;
+        public OptionalSparkConfigurator(SparkLauncher launcher) {
+            this.launcher = launcher;
+        }
+
+        public SparkLauncher getLaucnher(){
+            return this.launcher;
+        }
+
+        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode){
+            if(sparkMaster.equals("yarn")) {
+                launcher.setDeployMode(sparkYarnDeployMode);
+                getLog().info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setAuthentication(boolean authenticateUser, String keyTab, String principal) {
+            if (authenticateUser) {
+                launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
+                launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addAppArgs(String appArgs) {
+            if (!StringUtils.isEmpty(appArgs)) {
+                launcher.addAppArgs(appArgs.split(","));
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addSparkArg(String sparkConfs) {
+            if (!StringUtils.isEmpty(sparkConfs)) {
+                for (String conf : sparkConfs.split("\\|")) {
+                    getLog().info("Adding sparkconf '" + conf + "'");
+                    launcher.addSparkArg(SPARK_CONFIG_NAME, conf);
+                }
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addExtraJars(List<String> extraJarPaths) {
+            if (!extraJarPaths.isEmpty()) {
+                for (String path : extraJarPaths) {
+                    getLog().info("Adding to class path '" + path + "'");
+                    launcher.addJar(path);
+                }
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setYarnQueue(String yarnQueue) {
+            if (StringUtils.isNotEmpty(yarnQueue)) {
+                launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setExtraFiles(String extraFiles) {
+            if (StringUtils.isNotEmpty(extraFiles)) {
+                launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
+            }
+            return this;
+        }
+
+
+
     }
 }
