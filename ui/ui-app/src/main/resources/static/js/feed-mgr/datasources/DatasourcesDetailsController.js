@@ -219,6 +219,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 .then(function (savedModel) {
                     savedModel.owner = self.model.owner;
                     savedModel.roleMemberships = self.model.roleMemberships;
+                    savedModel.references = self.model.references;
                     self.model = savedModel;
                     $mdDialog.hide()
                     $mdToast.show(
