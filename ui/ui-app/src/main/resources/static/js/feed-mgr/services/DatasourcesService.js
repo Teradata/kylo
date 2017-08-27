@@ -86,6 +86,13 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     });
             },
 
+            findControllerServiceReferences:function(controllerServiceId){
+                return $http.get(RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
+                    .then(function (response) {
+                        return response.data;
+                    });
+            },
+
             /**
              * Gets the schema for the specified table.
              * @param {string} id the data source id

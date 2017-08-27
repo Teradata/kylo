@@ -192,10 +192,19 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             if (!self.isNew() && !self.hasPasswordChanged) {
                 model.password = null;
             }
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .parent(angular.element(document.body))
+                    .clickOutsideToClose(false)
+                    .title('Saving the data source')
+                    .textContent('Saving '+ self.model.name)
+                    .ariaLabel('Saving the data source')
+            );
 
             // Save the changes
             self.saveModel(model)
                 .catch(function () {
+                    $mdDialog.hide()
                     self.isDetailsEditable = true;
                 });
         };
@@ -211,13 +220,15 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                     savedModel.owner = self.model.owner;
                     savedModel.roleMemberships = self.model.roleMemberships;
                     self.model = savedModel;
+                    $mdDialog.hide()
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Saved the datasource' + self.model.name)
+                            .textContent('Saved the data source ' + self.model.name)
                             .hideDelay(3000)
                     );
                     return savedModel;
                 }, function (err) {
+                    $mdDialog.hide()
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
@@ -245,6 +256,12 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 .then(function (model) {
                     self.model = model;
                     self.loading = false;
+                    if(self.model.controllerServiceId){
+                        //see if we can find the references and show them
+                        DatasourcesService.findControllerServiceReferences(self.model.controllerServiceId).then(function(references){
+                            self.model.references = references;
+                        });
+                    }
 
                     $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
                         .then(function (access) {
@@ -295,6 +312,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             }
         });
     }
+
 
     angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$q", "$transition$", "AccessControlService", "DatasourcesService",
                                                                            "EntityAccessControlService", "StateService", DatasourcesDetailsController]);

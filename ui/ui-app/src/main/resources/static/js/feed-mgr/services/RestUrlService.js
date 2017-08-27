@@ -288,6 +288,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
 
+        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function(id){
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/"+id+"/references";
+        }
+
         /**
          * Get/Post roles changes for a Feed entity
          * @param feedId the feed id
