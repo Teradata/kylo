@@ -201,20 +201,23 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
             Set<String> distinctStates = previousProcessorState.values().stream().collect(Collectors.toSet());
             if (distinctStates.size() > 0) {
                 if (distinctStates.size() == 1) {
-                    UpdateControllerServiceReferenceRequestEntity startComponentsRequest = new UpdateControllerServiceReferenceRequestEntity();
                     String state = new ArrayList<>(distinctStates).get(0);
-                    startComponentsRequest.setState(state);
-                    startComponentsRequest.setReferencingComponentRevisions(finalComponentRevisions);
-                    startComponentsRequest.setId(controllerService.getId());
-                    updateReferences(id, startComponentsRequest);
-                    log.info("Updating all component references to be {} for controller service  {} ", state, controllerService.getName());
-                    boolean updatedReferences = ensureComponentsAreOfState(id, "Processor", state, 5, 500, TimeUnit.MILLISECONDS);
-                    if (!updatedReferences) {
-                        //error unable to change the state of the references. ... error
-                        throw new NifiClientRuntimeException("The controller service {} was updated, but it was unable to update the state of the processors as " + state
-                                                             + ".  Please visit NiFi to reconcile and fix any controller service issues. " + controllerService.getName());
+                    if(!NifiProcessUtil.PROCESS_STATE.STOPPED.name().equals(state)) {
+                        UpdateControllerServiceReferenceRequestEntity startComponentsRequest = new UpdateControllerServiceReferenceRequestEntity();
+
+                        startComponentsRequest.setState(state);
+                        startComponentsRequest.setReferencingComponentRevisions(finalComponentRevisions);
+                        startComponentsRequest.setId(controllerService.getId());
+                        updateReferences(id, startComponentsRequest);
+                        log.info("Updating all component references to be {} for controller service  {} ", state, controllerService.getName());
+                        boolean updatedReferences = ensureComponentsAreOfState(id, "Processor", state, 5, 500, TimeUnit.MILLISECONDS);
+                        if (!updatedReferences) {
+                            //error unable to change the state of the references. ... error
+                            throw new NifiClientRuntimeException("The controller service {} was updated, but it was unable to update the state of the processors as " + state
+                                                                 + ".  Please visit NiFi to reconcile and fix any controller service issues. " + controllerService.getName());
+                        }
+                        log.info("Successfully updated controller service {}", controllerService.getName());
                     }
-                    log.info("Successfully updated controller service {}", controllerService.getName());
                 } else {
                     log.info(
                         "The controller service component references ({} total) had mixed states prior to updating {}.  Going through each processor/component and setting its state back to what it was prior to the update.",
@@ -222,6 +225,7 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
                     //update references back to previous states
                     List<ProcessorEntity> updatedProcessors = references.get().getControllerServiceReferencingComponents().stream()
                         .filter(c -> c.getComponent().getReferenceType().equalsIgnoreCase("PROCESSOR"))
+                        .filter(c-> !c.getComponent().getState().equals(NifiProcessUtil.PROCESS_STATE.STOPPED.name()))
                         .map(referencingComponentEntity -> referencingComponentEntity.getComponent()).map(c -> {
                             ProcessorEntity entity = new ProcessorEntity();
                             entity.setRevision(finalComponentRevisions.get(c.getId()));
