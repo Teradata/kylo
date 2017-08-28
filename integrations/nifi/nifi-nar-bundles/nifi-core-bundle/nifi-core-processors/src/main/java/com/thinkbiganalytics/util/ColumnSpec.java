@@ -77,7 +77,7 @@ public class ColumnSpec {
         this.pk = pk;
         this.createDt = createDt;
         this.modifiedDt = modifiedDt;
-        this.otherColumnName = otherColumnName.toLowerCase();
+        this.otherColumnName = otherColumnName != null ? otherColumnName.toLowerCase() : "";
         validate();
     }
 
