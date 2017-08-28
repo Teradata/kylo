@@ -140,11 +140,11 @@ public interface Field {
     Boolean getUpdatedTracker();
 
     /**
-     * Returns the structure in a canonical format as follows: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
-     *
+     * Returns the structure in a canonical format as follows: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker | otherName
+     *@param otherName the name of the related column in the other table (either source or destination)
      * @return canonical format structure
      */
-    String asFieldStructure();
+    String asFieldStructure(String otherName);
 
     /**
      * Gets tags assigned to this column.

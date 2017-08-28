@@ -41,10 +41,13 @@ import org.mockito.Mockito;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -141,6 +144,60 @@ public class TableRegisterSupportTest {
             }
         }
     }
+
+    @Test
+    public void testRemovingColumns() {
+        ColumnSpec[] feedSpecs = ColumnSpec.createFromString("id|string|my comment|0|0|0|id\n"
+                                                         + "name|string||0|0|0|name\n"
+                                                         + "company|string|some description|0|0|0|change_company\n"
+                                                         + "zip|string||0|0|0|zip_code\n"
+                                                         + "phone|string\n"
+                                                         + "email|string\n"
+                                                         + "country|string\n"
+                                                         + "hired|string");
+
+        ColumnSpec[] targetSpecs = ColumnSpec.createFromString("id|bigint|my comment|0|0|0|id\n"
+                                                             + "name|string||0|0|0|name\n"
+                                                             + "change_company|string|some description|0|0|0|company\n"
+                                                             + "zip_code|string||0|0|0|zip\n"
+                                                             + "email|string\n"
+                                                             + "hired|date||0|0|0|hired");
+
+        ColumnSpec[] parts = ColumnSpec.createFromString("year|int\ncountry|string");
+        TableRegisterConfiguration conf = new TableRegisterConfiguration();
+
+        TableRegisterSupport support = new TableRegisterSupport(connection, conf);
+        ColumnSpec[] invalidColumnSpecs = support.adjustInvalidColumnSpec(feedSpecs,targetSpecs);
+
+            assertEquals(targetSpecs.length,invalidColumnSpecs.length);
+
+        Map<String,ColumnSpec> feedColumnSpecMap = Arrays.asList(feedSpecs).stream().collect(Collectors.toMap(ColumnSpec::getName, Function.identity()));
+
+            for(ColumnSpec invalid: invalidColumnSpecs)
+            {
+                if(StringUtils.isNotBlank(invalid.getOtherColumnName())) {
+                    assertEquals(invalid.getDataType(), feedColumnSpecMap.get(invalid.getOtherColumnName()).getDataType());
+                }
+            }
+
+        TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
+        for (TableType tableType : tableTypes) {
+            ColumnSpec[] useColumnSpecs = targetSpecs;
+            if(tableType == TableType.INVALID){
+                useColumnSpecs = invalidColumnSpecs;
+            }
+            else if(tableType == TableType.FEED){
+                useColumnSpecs = feedSpecs;
+            }
+
+
+            String ddl = support.createDDL("source_table","target_table",useColumnSpecs,parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'","stored as orc","tblproperties (\"orc.compress\"=\"SNAPPY\")",tableType);
+            int i = 0;
+
+
+        }
+    }
+
 
     /**
      * Verify dropping a table.

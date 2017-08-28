@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import scala.annotation.meta.field;
+
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad.
@@ -197,15 +199,21 @@ public class Validator implements Serializable {
             DataSet sourceDF = scs.sql(getHiveContext(), sql);
             JavaRDD<Row> sourceRDD = sourceDF.javaRDD();
 
+            ModifiedSchema modifiedSchema = new ModifiedSchema(feedTablename,refTablename);
+
+
             // Extract schema from the source table.  This will be used for the invalidDataFrame
-            StructType invalidSchema = createModifiedInvalidSchema(feedTablename);
+            StructType invalidSchema =  modifiedSchema.getInvalidTableSchema();
 
             //Extract the schema from the target table.  This will be used for the validDataFrame
-            StructType validSchema = createModifiedValidSchema(feedTablename, refTablename);
+            StructType validSchema =  modifiedSchema.getValidTableSchema();
+
 
             log.info("invalidSchema {}", invalidSchema);
 
             log.info("validSchema {}", validSchema);
+
+
 
             log.info("Persistence level: {}", params.getStorageLevel());
 
@@ -282,6 +290,9 @@ public class Validator implements Serializable {
             } else {
                 validDataFrame = validatedDF.drop(REJECT_REASON_COL).drop(PROCESSING_DTTM_COL).toDF();
             }
+            //Remove the columns from _valid that dont exist in the validTableName
+
+
             writeToTargetTable(validDataFrame, validTableName);
 
             log.info("wrote values to the valid Table  {}", validTableName);
@@ -372,74 +383,181 @@ public class Validator implements Serializable {
     }
 
 
-    private StructType createModifiedInvalidSchema(String sourceTable) {
-        return createModifiedSchema(sourceTable, null);
-    }
 
-    private StructType createModifiedValidSchema(String sourceTable, String target) {
-        return createModifiedSchema(sourceTable, target);
-    }
+    private class ModifiedSchema {
 
-    /**
-     * Creates a new RDD schema based on the source schema plus two additional columns for processing dttm and validation reason
-     *
-     * @param sourceTable the table to parse for the structure
-     * @param targetTable the table the _valid data will be inserted into
-     * @return the schema structure
-     */
-    private StructType createModifiedSchema(String sourceTable, String targetTable) {
-        // Extract schema from the source and target table
-        StructType sourceSchema = scs.toDataSet(getHiveContext(), sourceTable).schema();
-        StructType targetSchema = targetTable != null ? scs.toDataSet(getHiveContext(), targetTable).schema() : null;
+        /**
+         * the name of the feed table
+         */
+        private String feedTable;
 
-        // Get fields from source and target schema
-        StructField[] sourceFields = sourceSchema.fields();
-        StructField[] targetFields = targetSchema != null ? targetSchema.fields() : null;
+        /**
+         * the name of the valid table
+         */
+        private String validTable;
 
-        List<StructField> fieldsList = new Vector<>();
+        /**
+         * A map of the feedFieldName to validFieldName
+         */
+        Map<String,String> feedFieldToValidFieldMap = new HashMap<>();
 
-        for (int i = 0; i < sourceFields.length; i++) {
-            //Build a list of feed field names using the policy map
-            List<String> policyMapFeedFieldNames = new ArrayList<>();
-            //get a list of all those that have standardization policies on them
-            List<String> fieldsWithStandardizers = new ArrayList<>();
+
+        /**
+         * A map of the feedFieldName to validFieldName
+         */
+        Map<String,String> validFieldToFeedFieldMap = new HashMap<>();
+
+        /**
+         * List of all the feedFieldNames that are part of the policyMap
+         */
+        List<String> policyMapFeedFieldNames = new ArrayList<>();
+
+        /**
+         * List of all the validFieldNames that are part of the policyMap
+         */
+        List<String> policyMapValidFieldNames = new ArrayList<>();
+
+        /**
+         * List of all those validFieldNames that have a standardizer on them
+         */
+        List<String> validFieldsWithStandardizers = new ArrayList<>();
+
+        /**
+         * Map of the lower feed Field name to the field type
+         */
+        Map<String,StructField> feedFieldsMap = new HashMap<>();
+
+        /**
+         * Map of the lower feed valid name to the field type
+         */
+        Map<String,StructField> validFieldsMap = new HashMap<>();
+
+        private StructType invalidTableSchema;
+
+        private StructType validTableSchema;
+
+        public ModifiedSchema(String feedTable, String validTable) {
+            this.feedTable = feedTable;
+            this.validTable = validTable;
+            buildSchemas();
+        }
+
+        private void initializeMetadata(){
             for (Map.Entry<String, FieldPolicy> policyMapItem : policyMap.entrySet()) {
                 String feedFieldName = policyMapItem.getValue().getFeedField().toLowerCase();
+                String fieldName = policyMapItem.getValue().getFeedField().toLowerCase();
                 policyMapFeedFieldNames.add(feedFieldName);
+                policyMapValidFieldNames.add(fieldName);
+                feedFieldToValidFieldMap.put(feedFieldName,fieldName);
+                validFieldToFeedFieldMap.put(fieldName,feedFieldName);
                 if (policyMapItem.getValue().hasStandardizationPolicies()) {
-                    fieldsWithStandardizers.add(feedFieldName);
+                    validFieldsWithStandardizers.add(fieldName);
                 }
-            }
-
-            String lowerSourceFieldName = sourceFields[i].name().toLowerCase();
-            boolean validTableSchema = StringUtils.isNotBlank(targetTable);
-            boolean isBinaryTargetType = (targetFields != null && targetFields[i] != null && targetFields[i].dataType().equals(DataTypes.BinaryType));
-            if (policyMapFeedFieldNames.contains(lowerSourceFieldName)) {
-                log.info("Adding field {}", sourceFields[i].name());
-                //if the field has a Standardization policy and its part of the validation table, then we should set the value to a String type
-                if (validTableSchema && fieldsWithStandardizers.contains(lowerSourceFieldName) && !isBinaryTargetType) {
-                    StructField field = targetFields[i];    //in lieu of fields which are from source
-                    field = new StructField(field.name(), field.dataType(), field.nullable(), field.metadata());
-                    fieldsList.add(field);
-                } else {
-                    if (isBinaryTargetType) {
-                        fieldsList.add(targetFields[i]);
-                    } else {
-                        fieldsList.add(sourceFields[i]);
-                    }
-                }
-            } else {
-                log.warn("Feed table field {} is not present in policy map", sourceFields[i].name().toLowerCase());
             }
         }
 
-        // Insert the two custom fields before the processing partition column
-        fieldsList.add(new StructField(PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
-        //  fieldsList.add(fieldsList.size() - 1, new StructField(VALID_INVALID_COL, DataTypes.StringType, true, Metadata.empty()));
-        fieldsList.add(fieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
+        private StructType  buildFeedSchema(StructType feedTableSchema){
+            List<StructField> feedFieldsList  = new Vector<>();
 
-        return new StructType(fieldsList.toArray(new StructField[0]));
+            StructField[] feedFields = feedTableSchema.fields();
+            for (int i = 0; i < feedFields.length; i++) {
+                String lowerFieldName = feedFields[i].name().toLowerCase();
+                StructField field = feedFields[i];
+
+                if (policyMapFeedFieldNames.contains(lowerFieldName)) {
+                    addToList(field,feedFieldsList);
+                    feedFieldsMap.put(lowerFieldName,field);
+                }
+                else {
+                    log.warn("Feed table field {} is not present in policy map", lowerFieldName);
+                }
+
+            }
+            return finalizeFieldsList(feedFieldsList);
+        }
+
+        private StructType  buildValidSchema(StructType feedTableSchema, StructType validTableSchema){
+            List<StructField>  fieldsList = new Vector<>();
+
+            StructField[] validFields = validTableSchema.fields();
+            for (int i = 0; i < validFields.length; i++) {
+                String lowerFieldName = validFields[i].name().toLowerCase();
+                StructField field = validFields[i];
+                validFieldsMap.put(lowerFieldName, field);
+            }
+
+            StructField[] feedFields = feedTableSchema.fields();
+            for (int i = 0; i < feedFields.length; i++) {
+               String lowerFeedFieldName = feedFields[i].name().toLowerCase();
+                if (policyMapFeedFieldNames.contains(lowerFeedFieldName)) {
+                    StructField field = feedFields[i];
+                //get the corresponding valid table field name
+                String lowerFieldName = validFieldToFeedFieldMap.get(lowerFeedFieldName);
+                //if we are standardizing then use the field type matching the _valid table
+                if(validFieldsWithStandardizers.contains(lowerFieldName)) {
+                    //get the valid table
+                    field = validFieldsMap.get(lowerFieldName);
+                 //   field = new StructField(field.name(), field.dataType(), field.nullable(), field.metadata());
+                }
+                    addToList(field,fieldsList);
+                }
+                else {
+                    log.warn("Valid table field {} is not present in policy map", lowerFeedFieldName);
+                }
+
+            }
+            return finalizeFieldsList(fieldsList);
+        }
+
+        private void addToList(StructField field, List<StructField> fieldList){
+            if(!field.name().equalsIgnoreCase(PROCESSING_DTTM_COL) && !field.name().equalsIgnoreCase(REJECT_REASON_COL)){
+                fieldList.add(field);
+            }
+        }
+
+        /**
+         * Add in the REJECT_REASON_COL to the fields list after the PROCESSING_DTTM
+         * @param fieldsList
+         */
+        private StructType finalizeFieldsList(List<StructField> fieldsList){
+            // Insert the two custom fields before the processing partition column
+            fieldsList.add(new StructField(PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
+            //  fieldsList.add(fieldsList.size() - 1, new StructField(VALID_INVALID_COL, DataTypes.StringType, true, Metadata.empty()));
+            fieldsList.add(fieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
+
+            return new StructType(fieldsList.toArray(new StructField[0]));
+        }
+
+
+        public void buildSchemas(){
+
+            initializeMetadata();
+
+            StructType feedTableSchema = scs.toDataSet(getHiveContext(), feedTable).schema();
+            StructType validTableSchema = scs.toDataSet(getHiveContext(), validTable).schema();
+
+            this.invalidTableSchema =  buildFeedSchema(feedTableSchema);
+            this.validTableSchema = buildValidSchema(feedTableSchema,validTableSchema);
+
+        }
+
+        public StructType getInvalidTableSchema() {
+            return invalidTableSchema;
+        }
+
+        public void setInvalidTableSchema(StructType invalidTableSchema) {
+            this.invalidTableSchema = invalidTableSchema;
+        }
+
+        public StructType getValidTableSchema() {
+            return validTableSchema;
+        }
+
+        public void setValidTableSchema(StructType validTableSchema) {
+            this.validTableSchema = validTableSchema;
+        }
     }
+
 
     private void writeToTargetTable(DataSet sourceDF, String targetTable) throws Exception {
         final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);

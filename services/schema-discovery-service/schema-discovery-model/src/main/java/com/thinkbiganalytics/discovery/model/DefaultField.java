@@ -150,12 +150,16 @@ public class DefaultField implements Field {
     }
 
     /**
-     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
+     *
+     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker | otherName
+     *
+     * @param otherName the name of the related field in either the alternate (either source or target) table
+     * @return
      */
-    public String asFieldStructure() {
+    public String asFieldStructure(String otherName) {
         return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + getDescriptionWithoutNewLines() + "|" +
                BooleanUtils.toInteger(primaryKey) + "|" + BooleanUtils.toInteger(createdTracker) + "|" +
-               BooleanUtils.toInteger(updatedTracker);
+               BooleanUtils.toInteger(updatedTracker)+"|"+StringUtils.trimToEmpty(otherName);
     }
 
 

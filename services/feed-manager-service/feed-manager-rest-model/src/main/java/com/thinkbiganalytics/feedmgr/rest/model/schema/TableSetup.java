@@ -37,7 +37,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +102,12 @@ public class TableSetup {
 
     @MetadataField(description = "List of fields that are primary keys separated by a comma")
     private String primaryKeyFields;
+
+    @MetadataField(description = "A map of the source column name to destination target name")
+    private Map<String,String> sourceTargetFieldMap;
+
+    @MetadataField(description = "A map of the target column name to source target name")
+    private Map<String,String> targetSourceFieldMap;
 
     public String getDescription() {
         return description;
@@ -262,14 +270,21 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    public String getFieldStructure(TableSchema schema) {
+    public String getFieldStructure(String type, TableSchema schema) {
         StringBuffer sb = new StringBuffer();
         if (schema != null && schema.getFields() != null) {
             for (Field field : schema.getFields()) {
                 if (StringUtils.isNotBlank(sb.toString())) {
                     sb.append("\n");
                 }
-                sb.append(field.asFieldStructure());
+                String otherName = "";
+                if(type.equalsIgnoreCase("FEED")) {
+                    otherName = getSourceTargetFieldMap().getOrDefault(field.getName(), "");
+                }
+                else {
+                    otherName = getTargetSourceFieldMap().getOrDefault(field.getName(),"");
+                }
+                sb.append(field.asFieldStructure(otherName));
 
             }
         }
@@ -279,12 +294,12 @@ public class TableSetup {
 
     @JsonIgnore
     public void updateFieldStructure() {
-        setFieldStructure(getFieldStructure(tableSchema));
+        setFieldStructure(getFieldStructure("TARGET",tableSchema));
     }
 
     @JsonIgnore
     public void updateFeedStructure() {
-        setFeedFieldStructure(getFieldStructure(feedTableSchema));
+        setFeedFieldStructure(getFieldStructure("FEED",feedTableSchema));
     }
 
     @JsonIgnore
@@ -308,9 +323,17 @@ public class TableSetup {
     @JsonIgnore
     public void updateFieldPolicyNames() {
         if (tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null && fieldPolicies.size() == tableSchema.getFields().size()) {
+            if(sourceTargetFieldMap == null){
+                sourceTargetFieldMap = new HashMap<>();
+            }
+            if(targetSourceFieldMap == null){
+                targetSourceFieldMap = new HashMap<>();
+            }
             int idx = 0;
             for (FieldPolicy field : fieldPolicies) {
                 field.setFieldName(tableSchema.getFields().get(idx).getName());
+                sourceTargetFieldMap.put(field.getFeedFieldName(),field.getFieldName());
+                targetSourceFieldMap.put(field.getFieldName(),field.getFeedFieldName());
                 idx++;
             }
         }
@@ -395,8 +418,7 @@ public class TableSetup {
     public void updateMetadataFieldValues() {
         ensurePartitionSourceDataTypes();
         updatePartitionStructure();
-        updateFieldStructure();
-        updateFeedStructure();
+
         updateFieldStringData();
         ensureSourceTableSchemaFieldNames();
         updateSourceFieldsString();
@@ -404,6 +426,8 @@ public class TableSetup {
         updateFieldIndexString();
         updatePartitionSpecs();
         updateFieldPolicyNames();
+        updateFieldStructure();
+        updateFeedStructure();
         updateFieldPolicyJson();
         updateTargetTblProperties();
         ensureNotEmpty();
@@ -578,5 +602,21 @@ public class TableSetup {
 
     public void setFeedFieldStructure(String feedFieldStructure) {
         this.feedFieldStructure = feedFieldStructure;
+    }
+
+    public Map<String, String> getSourceTargetFieldMap() {
+        return sourceTargetFieldMap;
+    }
+
+    public void setSourceTargetFieldMap(Map<String, String> sourceTargetFieldMap) {
+        this.sourceTargetFieldMap = sourceTargetFieldMap;
+    }
+
+    public Map<String, String> getTargetSourceFieldMap() {
+        return targetSourceFieldMap;
+    }
+
+    public void setTargetSourceFieldMap(Map<String, String> targetSourceFieldMap) {
+        this.targetSourceFieldMap = targetSourceFieldMap;
     }
 }

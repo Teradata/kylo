@@ -34,8 +34,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -81,6 +86,26 @@ public class TableRegisterSupport {
     }
 
     /**
+     * copy the columnSpecs and reset the datatypes to match that of the feed column specs
+     * @param feedColumnSpecs
+     * @param columnSpecs
+     * @return
+     */
+    protected ColumnSpec[] adjustInvalidColumnSpec(ColumnSpec[] feedColumnSpecs, ColumnSpec[] columnSpecs){
+        //find the source data types from the _feed table that match these columns and replace the data types
+        Map<String,ColumnSpec> feedColumnSpecMap = Arrays.asList(feedColumnSpecs).stream().collect(Collectors.toMap(ColumnSpec::getName, Function.identity()));
+        List<ColumnSpec> invalidColumnSpecs = Arrays.asList(columnSpecs).stream().map(c->  {
+              ColumnSpec copy = new ColumnSpec(c);
+               if(StringUtils.isNotBlank(copy.getOtherColumnName()) && feedColumnSpecMap.containsKey(copy.getOtherColumnName())) {
+                   ColumnSpec feedSpec = feedColumnSpecMap.get(copy.getOtherColumnName());
+                   copy.setDataType(feedSpec.getDataType());
+                  }
+                  return copy;
+            }).collect(Collectors.toList());
+        return invalidColumnSpecs.toArray(new ColumnSpec[invalidColumnSpecs.size()]);
+    }
+
+    /**
      * Registers the specified table by generating and executing a {@code CREATE TABLE} query.
      *
      * @param source                the name of the database
@@ -101,7 +126,13 @@ public class TableRegisterSupport {
 
         //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
         //_valid and the final feed table should use the target schema
-        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED || tableType == TableType.INVALID) ? feedColumnSpecs : columnSpecs);
+        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED ) ? feedColumnSpecs : columnSpecs);
+
+        //if invalid use the feed column specs and update the data types on the _invalid table
+        if(tableType == TableType.INVALID){
+           useColumnSpecs = adjustInvalidColumnSpec(feedColumnSpecs,columnSpecs);
+        }
+
 
         // Register the database
         if (registerDatabase && !registerDatabase(source)) {
