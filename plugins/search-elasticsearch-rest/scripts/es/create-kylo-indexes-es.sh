@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #################################################################################################
-#	Run this script before starting Kylo services for the 1st time, for Elasticsearch v5        #
+#	Run this script before starting Kylo services for the 1st time, for Elasticsearch (v2,v5)   #
 #################################################################################################
 
 ELASTIC_SEARCH_HOST=$1
@@ -11,7 +11,7 @@ NUMBER_OF_REPLICAS=$4
 
 if [ $# -eq 4 ]
 then
-	echo "Setting up kylo indexes in Elasticsearch (v5): host="$ELASTIC_SEARCH_HOST", port="$ELASTIC_SEARCH_REST_PORT", num-shards="$NUMBER_OF_SHARDS", num-replicas="$NUMBER_OF_REPLICAS
+	echo "Setting up kylo indexes in Elasticsearch: host="$ELASTIC_SEARCH_HOST", port="$ELASTIC_SEARCH_REST_PORT", num-shards="$NUMBER_OF_SHARDS", num-replicas="$NUMBER_OF_REPLICAS
 else
 	echo "Usage: <command> <host> <rest-port> <num-shards> <num-replicas>"
 	echo "Examples values:"

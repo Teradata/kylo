@@ -133,12 +133,12 @@ then
         echo "Waiting for 10 seconds for the engine to start up, and then will create Kylo indexes in Elasticsearch."
         echo "NOTE: If they already exist, an index_already_exists_exception will be reported. This is OK."
         sleep 10s
-        $SETUP_FOLDER/../bin/create-kylo-indexes-esv5.sh localhost 9200 1 1
+        $SETUP_FOLDER/../bin/create-kylo-indexes-es.sh localhost 9200 1 1
 else
         echo "$SERVICE service did not start within a reasonable time. Please check and start it. Then, execute this script manually before starting Kylo."
         echo "This script will create Kylo indexes in Elasticsearch."
         echo "NOTE: If they already exist, an index_already_exists_exception will be reported. This is OK."
-        echo "$SETUP_FOLDER/../bin/create-kylo-indexes-esv5.sh localhost 9200 1 1"
+        echo "$SETUP_FOLDER/../bin/create-kylo-indexes-es.sh localhost 9200 1 1"
 fi
 
 echo "Elasticsearch index creation complete"
