@@ -37,8 +37,11 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsV2;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 
@@ -142,6 +145,18 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
         return errors;
     }
 
+    private String getFeedName(AggregatedFeedProcessorStatistics feedProcessorStatistics){
+        String feedName = null;
+        String feedProcessorId = feedProcessorStatistics.getStartingProcessorId();
+        if(feedProcessorStatistics instanceof AggregatedFeedProcessorStatisticsV2){
+           feedName = ((AggregatedFeedProcessorStatisticsV2)feedProcessorStatistics).getFeedName();
+        }
+        if(feedProcessorId != null && feedName == null){
+             feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
+        }
+        return feedName;
+    }
+
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
      *
@@ -149,11 +164,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
      */
     public boolean readyToProcess(AggregatedFeedProcessorStatisticsHolder stats) {
         return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && stats.getFeedStatistics().values().stream()
-            .allMatch(feedProcessorStats -> {
-                String feedProcessorId = feedProcessorStats.getStartingProcessorId();
-                String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
-                return StringUtils.isNotBlank(feedName);
-            }));
+            .allMatch(feedProcessorStats -> StringUtils.isNotBlank(getFeedName(feedProcessorStats))));
     }
 
 
@@ -317,7 +328,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats -> {
             Long collectionIntervalMillis = feedProcessorStats.getCollectionIntervalMillis();
             String feedProcessorId = feedProcessorStats.getStartingProcessorId();
-            String feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);  //ensure not null
+            String feedName = getFeedName(feedProcessorStats);
             if (StringUtils.isNotBlank(feedName)) {
                 String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
 
@@ -339,6 +350,9 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
                             processorName =
                             provenanceEventFeedUtil
                                 .getProcessorName(processorStats.getProcessorId());
+                        if(processorName == null) {
+                            processorName = processorStats.getProcessorName();
+                        }
                         nifiFeedProcessorStats.setProcessorName(processorName);
                         nifiFeedProcessorStats
                             .setFeedProcessGroupId(feedProcessGroupId);
