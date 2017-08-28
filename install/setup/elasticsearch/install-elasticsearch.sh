@@ -7,11 +7,14 @@
 echo "Installing Elasticsearch"
 offline=false
 SETUP_FOLDER=/opt/kylo/setup
-ES_JAVA_HOME=/opt/java/current
 
 if [ $# -eq 0 ]
 then
     echo "No setup folder specified. Defaulting to /opt/kylo/setup"
+elif [ $# -eq 1 ]
+then
+    echo "The setup folder is $1 "
+    SETUP_FOLDER=$1
 elif [ $# -eq 2 ]
 then
     echo "The setup folder is $1 "
