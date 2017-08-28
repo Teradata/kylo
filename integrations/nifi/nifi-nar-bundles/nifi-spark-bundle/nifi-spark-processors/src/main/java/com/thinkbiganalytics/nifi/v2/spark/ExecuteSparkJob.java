@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -279,31 +280,27 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
      * Validates that one or more files exist, as specified in a single property.
      */
     public static final Validator createMultipleFilesExistValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                final String[] files = input.split(",");
-                for (String filename : files) {
-                    try {
-                        final File file = new File(filename.trim());
-                        if (!file.exists()) {
-                            final String message = "file " + filename + " does not exist";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.isFile()) {
-                            final String message = filename + " is not a file";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.canRead()) {
-                            final String message = "could not read " + filename;
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        }
-                    } catch (SecurityException e) {
-                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+        return (subject, input, context) -> {
+            final String[] files = input.split(",");
+            for (String filename : files) {
+                try {
+                    final File file = new File(filename.trim());
+                    if (!file.exists()) {
+                        final String message = "file " + filename + " does not exist";
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    } else if (!file.isFile()) {
+                        final String message = filename + " is not a file";
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    } else if (!file.canRead()) {
+                        final String message = "could not read " + filename;
                         return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
                     }
+                } catch (SecurityException e) {
+                    final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
                 }
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
             }
-
+            return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
         };
     }
 
@@ -450,34 +447,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
             // Build environment
-            final Map<String, String> env = new HashMap<>();
-
-            if (StringUtils.isNotBlank(datasourceIds)) {
-                final StringBuilder datasources = new StringBuilder(10240);
-                final ObjectMapper objectMapper = new ObjectMapper();
-                final MetadataProvider provider = metadataService.getProvider();
-
-                for (final String id : datasourceIds.split(",")) {
-                    datasources.append((datasources.length() == 0) ? '[' : ',');
-
-                    final Optional<Datasource> datasource = provider.getDatasource(id);
-                    if (datasource.isPresent()) {
-                        if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
-                            final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
-                            extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
-                        }
-                        datasources.append(objectMapper.writeValueAsString(datasource.get()));
-                    } else {
-                        logger.error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
-                        session.transfer(flowFile, REL_FAILURE);
-                        return;
-                    }
-                }
-
-                datasources.append(']');
-                env.put("DATASOURCES", datasources.toString());
-            }
+            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, metadataService, extraJarPaths);
+            if (env == null) return;
 
              /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
@@ -526,7 +497,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             int exitCode = spark.exitValue();
 
-            flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
+            flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, Integer.toString(exitCode));
             if (exitCode != 0) {
                 logger.error("ExecuteSparkJob for {} and flowfile: {} completed with failed status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed");
@@ -542,6 +513,39 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
+    }
+
+    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
+        final Map<String, String> env = new HashMap<>();
+
+        if (StringUtils.isNotBlank(datasourceIds)) {
+            final StringBuilder datasources = new StringBuilder(10240);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final MetadataProvider provider = metadataService.getProvider();
+
+            for (final String id : datasourceIds.split(",")) {
+                datasources.append((datasources.length() == 0) ? '[' : ',');
+
+                final Optional<Datasource> datasource = provider.getDatasource(id);
+                if (datasource.isPresent()) {
+                    if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
+                        final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
+                        extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+                    }
+                    datasources.append(objectMapper.writeValueAsString(datasource.get()));
+
+                } else {
+                    getLog().error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                    flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
+                    session.transfer(flowFile, REL_FAILURE);
+                    return null;
+                }
+            }
+
+            datasources.append(']');
+            env.put("DATASOURCES", datasources.toString());
+        }
+        return env;
     }
 
     private boolean isSecurityEnabled(String hadoopConfigurationResources) throws IOException {
