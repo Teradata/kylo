@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.service.activemq;
+package com.thinkbiganalytics.service.activemq.config;
 
 /*-
  * #%L
