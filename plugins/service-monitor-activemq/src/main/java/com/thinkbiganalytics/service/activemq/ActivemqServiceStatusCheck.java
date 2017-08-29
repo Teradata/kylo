@@ -38,7 +38,6 @@ import org.springframework.core.env.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Arrays;
-import javax.jms.JMSException;
 
 /**
  * Monitor Activemq service and return status to Kylo platform.
@@ -113,8 +112,8 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
                 finalServiceMessage = "Activemq is running.";
                 alert.setMessage(finalServiceMessage);
                 alert.setState(ServiceAlert.STATE.OK);
-                component =
-                                new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
+                
+                component = new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
                                 .message(finalServiceMessage).addAlert(alert).build();
 
             }
@@ -122,32 +121,12 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
         }
         catch(Exception jmsConnectionException)
         {
+            finalServiceMessage = "Activemq is down.";
+            alert.setMessage(finalServiceMessage);
+            alert.setState(ServiceAlert.STATE.CRITICAL);
 
-            JMSException jmsException;
-
-            /**
-             * Catch Nested JMS Exception 
-             */
-            if(jmsConnectionException.getCause() != null && jmsConnectionException.getCause().getCause() instanceof JMSException) {
-                jmsException = (JMSException)jmsConnectionException.getCause().getCause();
-
-                finalServiceMessage = jmsException.getMessage();
-                alert.setMessage(finalServiceMessage);
-                alert.setState(ServiceAlert.STATE.CRITICAL);
-
-                component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(jmsConnectionException).addAlert(alert).build();
-
-            } else {
-
-                finalServiceMessage = "Activemq is down.";
-                alert.setMessage(finalServiceMessage);
-                alert.setState(ServiceAlert.STATE.CRITICAL);
-
-                component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(jmsConnectionException).addAlert(alert).build();
-
-            }
+            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(jmsConnectionException).addAlert(alert).build();
         }
-
         return component;
     }
 }
