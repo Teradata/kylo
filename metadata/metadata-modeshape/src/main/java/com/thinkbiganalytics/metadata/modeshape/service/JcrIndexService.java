@@ -182,11 +182,13 @@ public class JcrIndexService implements EventListener {
      * Updates the index with derived datasource events.
      */
     private void indexDerivedDatasourceEvent(@Nonnull final Event event) throws RepositoryException {
-        boolean commit;
+        boolean commit = false;
 
         if (event.getType() == Event.NODE_REMOVED) {
-            search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, event.getIdentifier());
-            commit = true;
+            if (event.getPath().matches("^/metadata/datasources/derived/HiveDatasource-[^/]+$")) {
+                search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, event.getIdentifier());
+                commit = true;
+            }
         } else {
             commit = metadataAccess.read(() -> {
                 final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(event.getIdentifier()));
