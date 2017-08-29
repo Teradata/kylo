@@ -164,6 +164,10 @@ public class HCatDataType implements Cloneable, Serializable {
 
     }
 
+    public boolean isDateOrTimestamp() {
+        return this.convertibleType == Date.class || this.convertibleType == Timestamp.class;
+    }
+
     /**
      * Generate a data type validator for the given hive data type
      *
@@ -281,6 +285,27 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     /**
+     * Returns true if Hive is able to convert a string value to the correct convertible type.
+     * @param strVal the string value
+     * @return true if the string value will be ok, false if explicit conversion is needed.
+     */
+    public boolean isStringValueValidForHiveType(String strVal) {
+        if (isstring) {
+            return true;
+        }
+        if (strVal != null && !isnumeric) {
+            if (convertibleType == Timestamp.class) {
+                return new TimestampValidator(true).validate(strVal);
+            } else if (convertibleType == Date.class) {
+                return DateValidator.instance().validate(strVal);
+            } else if (convertibleType == byte[].class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Tests whether the string value can be converted to the hive data type defined by this class. If it is not convertible then
      * hive will not be able to show the value
      *
@@ -300,8 +325,7 @@ public class HCatDataType implements Cloneable, Serializable {
                         return new TimestampValidator(true).validate(strVal);
                     } else if (convertibleType == Date.class) {
                         return DateValidator.instance().validate(strVal);
-                    }
-                    else if(convertibleType == byte[].class){
+                    } else if (convertibleType == byte[].class) {
                         return true;
                     }
                 }
@@ -326,7 +350,7 @@ public class HCatDataType implements Cloneable, Serializable {
                     }
                 }
             } else {
-                if (val == null || val != null && val.getClass() == convertibleType || (val instanceof Number && Number.class.isAssignableFrom(convertibleType)) ) {
+                if (val == null || val != null && val.getClass() == convertibleType || (val instanceof Number && Number.class.isAssignableFrom(convertibleType))) {
                     return true;
                 } else {
                     return false;
@@ -354,5 +378,9 @@ public class HCatDataType implements Cloneable, Serializable {
 
     public boolean isUnchecked() {
         return unchecked;
+    }
+
+    public boolean isNumeric() {
+        return isnumeric;
     }
 }
