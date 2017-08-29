@@ -511,6 +511,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
 
     @Override
+    public List<Feed> find(String query) {
+       return super.find(query).stream().filter(f -> JcrUtil.hasNode(((JcrFeed)f).getNode(),JcrFeed.SUMMARY)).collect(Collectors.toList());
+    }
+
+    @Override
     public List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId) {
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(FeedDetails.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();

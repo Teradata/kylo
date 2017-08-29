@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.jcr.AccessDeniedException;
@@ -396,9 +397,11 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             appendJoins(bldr, pageable, filter);
             appendFilter(bldr, filter);
             appendSort(bldr, pageable);
-            appendOffset(bldr, pageable);
+//            appendOffset(bldr, pageable);
 
-            List<T> list = find(bldr.toString());
+            String query = bldr.toString();
+            List<T> fullList = find(query);
+            List<T> list = fullList.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList());
             return new PageImpl<>(list, pageable, count);
         } else {
             return new PageImpl<T>(Collections.emptyList());
