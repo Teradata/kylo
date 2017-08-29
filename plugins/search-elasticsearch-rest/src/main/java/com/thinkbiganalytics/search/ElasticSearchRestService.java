@@ -309,7 +309,7 @@ public class ElasticSearchRestService implements Search {
                 elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
                 return elasticSearchRestSearchResponse;
             } catch (IOException | JSONException exception) {
-                System.out.println("An error occurred during decoding search result");
+                log.warn("An error occurred during decoding search result");
                 exception.printStackTrace();
                 return null;
             }
