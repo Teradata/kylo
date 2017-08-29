@@ -29,9 +29,9 @@ import com.thinkbiganalytics.service.activemq.config.ActivemqTransportListner;
 
 public class ActivemqPoolableConnectionProvider {
 
-    
+
     private static final Logger log = Logger.getLogger(ActivemqPoolableConnectionProvider.class);
-    
+
     /**
      * 
      * @param activemqBrokerUrl  - Activemq Broker Connection String
@@ -69,12 +69,12 @@ public class ActivemqPoolableConnectionProvider {
     private ActiveMQConnectionFactory initializeActiveMqFactoryConnection(String activemqConnectionUri) {
 
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
-        
+
         /**
          * Add Transport Listener for any unusual failure
          */
         factory.setTransportListener(new ActivemqTransportListner());
-        
+
         return factory;
     }
 

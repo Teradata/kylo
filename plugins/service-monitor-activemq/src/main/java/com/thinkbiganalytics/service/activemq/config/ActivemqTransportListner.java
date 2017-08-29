@@ -48,7 +48,7 @@ public class ActivemqTransportListner implements TransportListener
     @Override
     public void transportInterupted()
     {
-       log.error("Activemq service has interrupted..");
+        log.error("Activemq service has interrupted..");
     }
 
     @Override
