@@ -631,14 +631,11 @@ public class Validator implements Serializable {
                 //only apply the standardized result value if the routine is valid
                 fieldValue = result.isValid() ? standardizationAndValidationResult.getFieldValue() : fieldValue;
 
-                if (result.isValid() && isBinaryType && !(fieldValue instanceof byte[])) {
+                //if the field is a binary type, but cant be converted set it to null.
+                //hive will auto convert byte[] or String fields to a target binary type.
+                if (result.isValid() && isBinaryType && !(fieldValue instanceof byte[]) && !(fieldValue instanceof String)) {
                     //set it to null
-                    if(fieldValue instanceof String){
-                        fieldValue = ((String) fieldValue).getBytes();
-                    }
-                    else {
                         fieldValue = null;
-                    }
                 }
                 newValues[idx] = fieldValue;
 
