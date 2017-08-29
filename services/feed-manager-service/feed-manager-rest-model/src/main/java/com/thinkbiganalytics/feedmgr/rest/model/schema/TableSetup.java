@@ -103,10 +103,8 @@ public class TableSetup {
     @MetadataField(description = "List of fields that are primary keys separated by a comma")
     private String primaryKeyFields;
 
-    @MetadataField(description = "A map of the source column name to destination target name")
     private Map<String,String> sourceTargetFieldMap;
 
-    @MetadataField(description = "A map of the target column name to source target name")
     private Map<String,String> targetSourceFieldMap;
 
     public String getDescription() {
