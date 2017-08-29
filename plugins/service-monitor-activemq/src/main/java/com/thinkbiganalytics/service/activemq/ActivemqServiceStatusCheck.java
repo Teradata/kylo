@@ -32,9 +32,6 @@ import com.thinkbiganalytics.servicemonitor.model.ServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
-import org.apache.activemq.ActiveMQConnection;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +41,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import javax.jms.JMSException;
+
+/**
+ * Monitor Activemq service and return status to Kylo platform.
+ */
 
 public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
@@ -94,7 +95,6 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
         try {
 
-
             if ( StringUtils.isNotBlank(activemqBrokerUrl) )
             {
 
@@ -111,7 +111,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
                 /**
                  *  On successful connection , return status to Kylo 
                  */
-              
+
                 finalServiceMessage = "Activemq is running.";
                 alert.setMessage(finalServiceMessage);
                 alert.setState(ServiceAlert.STATE.OK);
@@ -124,10 +124,12 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
         }
         catch(Exception jmsConnectionException)
         {
-            System.out.println("************************ Caught exception ---------------------");
 
             JMSException jmsException;
 
+            /**
+             * Catch Nested JMS Exception 
+             */
             if(jmsConnectionException.getCause() != null && jmsConnectionException.getCause().getCause() instanceof JMSException) {
                 jmsException = (JMSException)jmsConnectionException.getCause().getCause();
 
@@ -145,41 +147,9 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
                 component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(jmsConnectionException).addAlert(alert).build();
 
-
             }
-
-
-
         }
-        //        catch (Exception e) {
-        //
-        //            
-        //            System.out.println("--------------------- kuchh to jhol hai ---------" );
-        //            
-        //            finalServiceMessage = "Activemq is down";
-        //            alert.setMessage(finalServiceMessage);
-        //            alert.setState(ServiceAlert.STATE.CRITICAL);
-        //
-        //            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(e).addAlert(alert).build();
-        //        }
 
         return component;
     }
-
-
-
-    //    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory) {
-    //        UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
-    //        adapter.setTargetConnectionFactory(connectionFactory);
-    //        String username = env.getProperty("jms.activemq.broker.username");
-    //        String password = env.getProperty("jms.activemq.broker.password");
-    //        adapter.setUsername(username);
-    //        adapter.setPassword(password);
-    //
-    //        log.info("Connecting to ActiveMQ {} ", username != null ? "as " + username : "anonymously");
-    //
-    //        return adapter;
-    //    }
-
-
 }
