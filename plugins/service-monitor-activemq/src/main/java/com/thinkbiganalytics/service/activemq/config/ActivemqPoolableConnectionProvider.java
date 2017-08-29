@@ -20,43 +20,36 @@ package com.thinkbiganalytics.service.activemq.config;
  * #L%
  */
 
-import javax.jms.JMSException;
-
-import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 
 
 public class ActivemqPoolableConnectionProvider {
 
-    
+
     public PooledConnectionFactory activemqPoolableConnection(String activemqBrokerUrl)
     {
-        ActiveMQConnection connection = null;
-
-        String activemqConnectionUri = activemqBrokerUrl;
 
 
         /**
-         * Initalize Activemq Factory for Connection
+         * Initialise Activemq Factory for Connection
          */
-        ActiveMQConnectionFactory factory = initializeActiveMqFactoryConnection(activemqConnectionUri);
-        
-     //   factory.createConnection();
+        ActiveMQConnectionFactory factory = initializeActiveMqFactoryConnection(activemqBrokerUrl);
+
+
         /**
          * Exception is thrown if connection failed.
          */
-        
+
         PooledConnectionFactory poolConnection = new PooledConnectionFactory ();
         poolConnection.setConnectionFactory(factory);
-        
-        
-        
+
+
         /**
          * Return connection from Pool
          */
         return poolConnection;
-        
+
     }
 
     /**
@@ -65,12 +58,17 @@ public class ActivemqPoolableConnectionProvider {
      * @return activemq factory 
      */
     private ActiveMQConnectionFactory initializeActiveMqFactoryConnection(String activemqConnectionUri) {
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
 
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activemqConnectionUri);
+        
+        /**
+         * Add Transport Listener for any unusual failure
+         */
         factory.setTransportListener(new ActivemqTransportListner());
+        
         return factory;
     }
-    
-    
-    
+
+
+
 }
