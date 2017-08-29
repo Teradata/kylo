@@ -83,14 +83,14 @@ public class ElasticSearchRestService implements Search {
         try {
             restClient.performRequest(
                 DELETE_METHOD,
-                getIndexDeleteEndPoint(indexName)
+                getIndexDeleteEndPoint(indexName, typeName, id)
             );
-            log.debug("Deleted index with name {}", indexName);
+            log.debug("Deleted document for index={}, type={}, id={}", indexName, typeName, id);
         } catch (ResponseException responseException) {
-            log.warn("Index deletion encountered issues in Elasticsearch for index name {}", indexName);
+            log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
             responseException.printStackTrace();
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for delete for index name {}", indexName);
+            log.debug("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id);
             clientProtocolException.printStackTrace();
         } catch (IOException ioException) {
             ioException.printStackTrace();
@@ -150,8 +150,8 @@ public class ElasticSearchRestService implements Search {
         return "/" + indexName + "/" + typeName + "/" + id;
     }
 
-    private String getIndexDeleteEndPoint(String indexName) {
-        return indexName;
+    private String getIndexDeleteEndPoint(String indexName, String typeName, String id) {
+        return "/" + indexName + "/" + typeName + "/" + id;
     }
 
     private String getIndexRefreshEndPoint(String indexName) {
