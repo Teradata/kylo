@@ -445,7 +445,7 @@ public class Validator implements Serializable {
         private void initializeMetadata(){
             for (Map.Entry<String, FieldPolicy> policyMapItem : policyMap.entrySet()) {
                 String feedFieldName = policyMapItem.getValue().getFeedField().toLowerCase();
-                String fieldName = policyMapItem.getValue().getFeedField().toLowerCase();
+                String fieldName = policyMapItem.getValue().getField().toLowerCase();
                 policyMapFeedFieldNames.add(feedFieldName);
                 policyMapValidFieldNames.add(fieldName);
                 feedFieldToValidFieldMap.put(feedFieldName,fieldName);
