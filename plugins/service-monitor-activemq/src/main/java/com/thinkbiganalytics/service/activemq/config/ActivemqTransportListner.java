@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-class ActivemqTransportListner implements TransportListener
+public class ActivemqTransportListner implements TransportListener
 {
     private static final Logger log = Logger.getLogger(ActivemqTransportListner.class);
 

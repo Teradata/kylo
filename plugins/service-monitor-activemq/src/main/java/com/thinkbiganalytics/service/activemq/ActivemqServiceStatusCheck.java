@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.service.activemq;
 
-import com.thinkbiganalytics.service.activemq.config.ActivemqPoolableConnectionProvider;
+import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionProvider;
 
 /*-
  * #%L

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.service.activemq.config;
+package com.thinkbiganalytics.service.activemq.util;
 
 /*-
  * #%L
@@ -23,13 +23,22 @@ package com.thinkbiganalytics.service.activemq.config;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 
+import org.apache.log4j.Logger;
+
+import com.thinkbiganalytics.service.activemq.config.ActivemqTransportListner;
 
 public class ActivemqPoolableConnectionProvider {
 
-
+    
+    private static final Logger log = Logger.getLogger(ActivemqPoolableConnectionProvider.class);
+    
+    /**
+     * 
+     * @param activemqBrokerUrl  - Activemq Broker Connection String
+     * @return pooled connection
+     */
     public PooledConnectionFactory activemqPoolableConnection(String activemqBrokerUrl)
     {
-
 
         /**
          * Initialise Activemq Factory for Connection
@@ -38,10 +47,10 @@ public class ActivemqPoolableConnectionProvider {
 
 
         /**
-         * Exception is thrown if connection failed.
+         * Create Connection Pool using PooledConnectionFactory and add connectionFactory to it.
          */
 
-        PooledConnectionFactory poolConnection = new PooledConnectionFactory ();
+        PooledConnectionFactory poolConnection = new PooledConnectionFactory();
         poolConnection.setConnectionFactory(factory);
 
 
@@ -68,7 +77,5 @@ public class ActivemqPoolableConnectionProvider {
         
         return factory;
     }
-
-
 
 }
