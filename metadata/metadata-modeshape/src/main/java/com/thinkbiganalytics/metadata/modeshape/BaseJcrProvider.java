@@ -269,7 +269,8 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         appendFilter(bldr, filter);
 
         try {
-            QueryResult result = JcrQueryUtil.query(getSession(), bldr.toString());
+            String query = bldr.toString();
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
 
             if (result != null) {
                 RowIterator rowItr = result.getRows();
