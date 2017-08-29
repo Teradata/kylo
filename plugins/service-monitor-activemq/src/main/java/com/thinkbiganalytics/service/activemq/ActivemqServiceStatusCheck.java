@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.service.activemq;
 
-import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionProvider;
 
 /*-
  * #%L
@@ -22,8 +21,6 @@ import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionPro
  * #L%
  */
 
-
-
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
@@ -31,6 +28,7 @@ import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
 import com.thinkbiganalytics.servicemonitor.model.ServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
+import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionProvider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
