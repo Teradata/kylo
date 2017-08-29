@@ -25,12 +25,17 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientExceptionTranslator;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.ClientErrorException;
 
 /**
  */
 @Aspect
 public class NifiRestClientAroundAspect {
 
+    private static final Logger logger = LoggerFactory.getLogger(NifiRestClientAroundAspect.class);
 
     @Around("execution(* com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient.*(..))")
     public Object NifiRestClientAroundAspect(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -38,6 +43,10 @@ public class NifiRestClientAroundAspect {
             Object obj = joinPoint.proceed();
             return obj;
         } catch (Throwable ex) {
+            if (ex instanceof ClientErrorException) {
+                String err = ((ClientErrorException) ex).getResponse().readEntity(String.class);
+                logger.error("Nifi Client Error Message: {}", err);
+            }
             ex = NifiRestClientExceptionTranslator.translateException(ex);
             throw ex;
         }
