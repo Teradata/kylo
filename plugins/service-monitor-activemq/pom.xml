@@ -7,7 +7,7 @@
 	<artifactId>kylo-service-monitor-activemq</artifactId>
 
 	<parent>
-		<groupId>com.thinkbiganalytics.datalake</groupId>
+		<groupId>com.thinkbiganalytics.kylo.plugins</groupId>
 		<artifactId>kylo-plugins</artifactId>
 		<version>0.8.3-SNAPSHOT</version>
 	</parent>
@@ -24,7 +24,7 @@
 
 		<!-- Define Kylo Dependency -->
 		<dependency>
-			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
 			<artifactId>kylo-service-monitor-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
