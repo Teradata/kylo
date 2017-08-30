@@ -21,6 +21,7 @@ package com.thinkbiganalytics.integration.access;
  */
 
 import com.jayway.restassured.response.Response;
+import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -33,7 +34,9 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.Action;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
+import com.thinkbiganalytics.security.rest.model.UserGroup;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,6 +47,7 @@ import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static com.thinkbiganalytics.integration.UserContext.User.ANALYST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Asserts that Category, Template and Feeds are only accessible when given permission to do so.
@@ -449,9 +453,18 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void grantCategoryEntityPermissionToAnalysts(String roleName) {
         LOG.debug("EntityLevelAccessIT.grantCategoryEntityPermissionToAnalysts " + roleName);
         runAs(ADMIN);
-        RoleMembershipChange roleChange = new RoleMembershipChange(RoleMembershipChange.ChangeType.REPLACE, roleName);
-        roleChange.addGroup(GROUP_ANALYSTS);
-        setCategoryEntityPermissions(roleChange, category.getId());
+        RoleMembership roleMembership = category.getRoleMemberships().stream().filter(r -> r.getRole().getSystemName().equalsIgnoreCase(roleName)).findFirst().orElse(null);
+        if(roleMembership == null) {
+            roleMembership =new RoleMembership(roleName,roleName,roleName);
+            category.getRoleMemberships().add(roleMembership);
+        }
+        roleMembership.addGroup(new UserGroup(GROUP_ANALYSTS));
+        Response response = given(FeedCategoryRestController.BASE)
+            .body(category)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
     }
 
     private void revokeFeedEntityPermissionsFromAnalysts() {

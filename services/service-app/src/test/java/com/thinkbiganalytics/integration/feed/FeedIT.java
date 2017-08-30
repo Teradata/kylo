@@ -134,15 +134,15 @@ public class FeedIT extends IntegrationTestBase {
         DefaultExecutedJob job = getJobWithSteps(ingest.getExecutionId());
         Assert.assertEquals(ingest.getExecutionId(), job.getExecutionId());
         List<ExecutedStep> steps = job.getExecutedSteps();
-        Assert.assertEquals(24, steps.size());
+        Assert.assertEquals(21, steps.size());
         for (ExecutedStep step : steps) {
             Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
         }
 
         LOG.info("Asserting number of total/valid/invalid rows");
-        Assert.assertEquals(1001, getTotalNumberOfRecords(feed.getFeedId()));
-        Assert.assertEquals(984, getNumberOfValidRecords(feed.getFeedId()));
-        Assert.assertEquals(17, getNumberOfInvalidRecords(feed.getFeedId()));
+        Assert.assertEquals(1000, getTotalNumberOfRecords(feed.getFeedId()));
+        Assert.assertEquals(1000, getNumberOfValidRecords(feed.getFeedId()));
+        Assert.assertEquals(0, getNumberOfInvalidRecords(feed.getFeedId()));
 
         assertNamesAreInUppercase(feed.getFeedId());
 
