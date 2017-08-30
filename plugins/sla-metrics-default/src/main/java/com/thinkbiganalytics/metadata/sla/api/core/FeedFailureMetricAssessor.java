@@ -60,11 +60,11 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
 
         String feedName = metric.getFeedName();
 
-        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.findLastJobFeedFailure(feedName);
+        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.findLastJob(feedName);
         DateTime lastTime =feedFailureService.initializeTime;
-        if(lastFeedFailure != null){
+        if(!lastFeedFailure.equals(FeedFailureService.EMPTY_JOB)){
             lastTime = lastFeedFailure.getDateTime();
-        }
+
         //compare with the latest feed time
         builder.compareWith(feedName, lastTime.getMillis());
 
@@ -79,6 +79,7 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         else {
             builder.message("Feed " + feedName + " has succeeded ")
                 .result(AssessmentResult.SUCCESS);
+        }
         }
 
     }
