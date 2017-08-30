@@ -74,7 +74,7 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion startingVersion) {
-        log.info("Upgrading from version: {}", startingVersion);
+        log.info("Upgrading hive columns from version: {}", startingVersion);
 
         feedService.getFeeds().stream()
             .filter(feed -> Optional.ofNullable(feed.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent())
@@ -83,6 +83,7 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
                 final DerivedDatasource datasource = datasourceProvider.findDerivedDatasource("HiveDatasource",
                                                                                               feed.getSystemCategoryName() + "." + feed.getSystemFeedName());
                 if (datasource != null) {
+                    log.info("Upgrading schema: {}/{}", schema.getDatabaseName(), schema.getSchemaName());
                     datasource.setGenericProperties(Collections.singletonMap("columns", (Serializable) schema.getFields()));
                 }
             });
