@@ -81,7 +81,7 @@ define(['angular','app'], function (angular) {
         this.search = function () {
             SearchService.searchQuery = this.searchQuery;
             if (self.currentState.name != 'search') {
-                StateService.Search().navigateToSearch();
+                StateService.Search().navigateToSearch(true);
             }
         };
 

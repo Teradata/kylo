@@ -246,10 +246,13 @@ define(['angular', 'kylo-common', 'kylo-services',
 
         $stateProvider.state('search.**', {
             url: '/search',
+            params: {
+                bcExclude_globalSearchResetPaging: null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('search/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('search')
+                    $stateProvider.stateService.go('search',transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading search ", err);

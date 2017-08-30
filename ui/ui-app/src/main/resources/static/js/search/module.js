@@ -6,6 +6,7 @@ define(['angular','search/module-name','kylo-utils/LazyLoadUtil','constants/Acce
         $stateProvider.state(AccessConstants.UI_STATES.SEARCH.state,{
             url:'/search',
             params: {
+                bcExclude_globalSearchResetPaging: null
             },
             views: {
                 'content': {
