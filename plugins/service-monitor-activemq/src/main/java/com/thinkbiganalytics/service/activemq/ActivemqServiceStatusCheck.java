@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.service.activemq;
 
-
 /*-
  * #%L
  * service-monitor-activemq
@@ -30,14 +29,15 @@ import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionProvider;
 
+import org.apache.activemq.jms.pool.PooledConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Arrays;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
 
 /**
  * Monitor Activemq service and return status to Kylo platform.
@@ -47,14 +47,21 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
     private static final Logger log = LoggerFactory.getLogger(ActivemqServiceStatusCheck.class);
 
-    @Value("${jms.activemq.broker.url:#{null}}")
-    private String activemqBrokerUrl;
-
-
+    private final PooledConnectionFactory activemqPoolConnection;
+    private String activemqBrokerUrl = "";
     static final  String SERVICE_NAME = "Activemq"; 
 
-    @Autowired
-    private Environment env;
+
+    public ActivemqServiceStatusCheck(String activemqBrokerUrl) {
+
+        this.activemqBrokerUrl = activemqBrokerUrl;
+        /**
+         * Create Poolable Class Object and create multiple instance of connection 
+         */
+        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
+        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
+
+    }
 
     @Override
     public ServiceStatusResponse healthCheck() {
@@ -64,6 +71,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
         return new DefaultServiceStatusResponse(serviceName, Arrays.asList(activemqStatus()));
     }
+
 
     /**
      * Check if Activemq is running
@@ -76,7 +84,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
         String componentName = "Activemq";
         String serviceName = SERVICE_NAME;
         ServiceComponent component = null;
-
+        Connection activemqConnection = null;
 
         /**
          * Prepare Alert Message
@@ -92,18 +100,14 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
         try {
 
-            if ( StringUtils.isNotBlank(activemqBrokerUrl) )
+            if ( StringUtils.isNotBlank(this.activemqBrokerUrl) )
             {
 
                 /**
-                 *  Create Pool Object
+                 * Create Instance of Connection from Pool
                  */
-                ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
 
-                /**
-                 * Create Connection from Pool
-                 */
-                activemqPoolableConnection.activemqPoolableConnection(activemqBrokerUrl).createConnection();
+                activemqConnection =  this.activemqPoolConnection.createConnection();
 
                 /**
                  *  On successful connection , return status to Kylo 
@@ -112,10 +116,9 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
                 finalServiceMessage = "Activemq is running.";
                 alert.setMessage(finalServiceMessage);
                 alert.setState(ServiceAlert.STATE.OK);
-                
+
                 component = new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
                                 .message(finalServiceMessage).addAlert(alert).build();
-
             }
 
         }
@@ -127,6 +130,16 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
             component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).message(finalServiceMessage).exception(jmsConnectionException).addAlert(alert).build();
         }
+        finally
+        {
+            if(activemqConnection != null)
+                try {
+                    activemqConnection.close();
+                } catch (JMSException e) {
+                    log.error("Unable to close activemq connection" ,e);
+                }
+        }
         return component;
     }
 }
+

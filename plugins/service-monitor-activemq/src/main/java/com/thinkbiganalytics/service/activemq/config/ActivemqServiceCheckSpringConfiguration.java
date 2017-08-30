@@ -24,16 +24,21 @@ package com.thinkbiganalytics.service.activemq.config;
 
 import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 
 @Configuration
+@PropertySource("classpath:activemq.properties")
 public class ActivemqServiceCheckSpringConfiguration {
 
     @Bean(name = "activemqServiceStatus")
-    public ActivemqServiceStatusCheck activemqServiceStatusCheck() {
-        return new ActivemqServiceStatusCheck();
+    public ActivemqServiceStatusCheck activemqServiceStatusCheck(@Value("${jms.activemq.broker.url}") String activemqBrokerUrl ) {
+    
+      return new ActivemqServiceStatusCheck(activemqBrokerUrl);
+         
     }
 
 

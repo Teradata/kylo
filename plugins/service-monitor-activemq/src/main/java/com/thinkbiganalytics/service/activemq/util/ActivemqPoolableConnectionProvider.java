@@ -29,9 +29,6 @@ import com.thinkbiganalytics.service.activemq.config.ActivemqTransportListner;
 
 public class ActivemqPoolableConnectionProvider {
 
-
-    private static final Logger log = Logger.getLogger(ActivemqPoolableConnectionProvider.class);
-
     /**
      * 
      * @param activemqBrokerUrl  - Activemq Broker Connection String
@@ -44,8 +41,7 @@ public class ActivemqPoolableConnectionProvider {
          * Initialise Activemq Factory for Connection
          */
         ActiveMQConnectionFactory factory = initializeActiveMqFactoryConnection(activemqBrokerUrl);
-
-
+        
         /**
          * Create Connection Pool using PooledConnectionFactory and add connectionFactory to it.
          */
