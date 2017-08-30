@@ -20,6 +20,7 @@ package com.thinkbiganalytics.integration;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -153,7 +154,7 @@ public class IntegrationTestBase {
             om.registerModule(new JodaModule());
             om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
+            om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             configureObjectMapper(om);
 
             return om;
