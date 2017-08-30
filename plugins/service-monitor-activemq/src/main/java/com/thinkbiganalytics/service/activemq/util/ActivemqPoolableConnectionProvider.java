@@ -23,8 +23,6 @@ package com.thinkbiganalytics.service.activemq.util;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
 
-import org.apache.log4j.Logger;
-
 import com.thinkbiganalytics.service.activemq.config.ActivemqTransportListner;
 
 public class ActivemqPoolableConnectionProvider {

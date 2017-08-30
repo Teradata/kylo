@@ -55,6 +55,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
     public ActivemqServiceStatusCheck(String activemqBrokerUrl) {
 
         this.activemqBrokerUrl = activemqBrokerUrl;
+        
         /**
          * Create Poolable Class Object and create multiple instance of connection 
          */
@@ -132,6 +133,10 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
         }
         finally
         {
+            /*
+             * Close Connection
+             */
+            
             if(activemqConnection != null)
                 try {
                     activemqConnection.close();
