@@ -235,6 +235,8 @@ public class ElasticSearchRestService implements Search {
                 elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
 
                 JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
+                elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
+
                 JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
 
                 List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();

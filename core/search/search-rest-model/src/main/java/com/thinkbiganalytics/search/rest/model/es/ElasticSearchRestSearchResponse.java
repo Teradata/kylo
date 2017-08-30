@@ -37,6 +37,7 @@ public class ElasticSearchRestSearchResponse {
     private List<String> headers;
     private List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits;
     private HttpEntity rawEntity;
+    private long totalResults;
 
     public ElasticSearchRestSearchResponse() {
         headers = new ArrayList<>();
@@ -97,5 +98,13 @@ public class ElasticSearchRestSearchResponse {
 
     public void setRawEntity(HttpEntity rawEntity) {
         this.rawEntity = rawEntity;
+    }
+
+    public long getTotalResults() {
+        return totalResults;
+    }
+
+    public void setTotalResults(long totalResults) {
+        this.totalResults = totalResults;
     }
 }

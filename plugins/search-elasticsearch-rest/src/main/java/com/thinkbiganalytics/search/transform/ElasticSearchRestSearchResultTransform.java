@@ -83,7 +83,7 @@ public class ElasticSearchRestSearchResultTransform {
         SearchResult elasticSearchRestResult = new SearchResult();
         elasticSearchRestResult.setQuery(query);
 
-        Long totalHits = Long.parseLong(String.valueOf(restSearchResponse.getElasticSearchRestSearchHits().size()));
+        Long totalHits = restSearchResponse.getTotalResults();
         elasticSearchRestResult.setTotalHits(totalHits);
         elasticSearchRestResult.setFrom((long) (start + 1));
         elasticSearchRestResult.setTo((long) (start + size));
