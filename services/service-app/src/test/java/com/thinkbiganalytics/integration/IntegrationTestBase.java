@@ -49,6 +49,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
@@ -836,6 +837,8 @@ public class IntegrationTestBase {
 
         table.setTableType("SNAPSHOT");
         feed.setTable(table);
+        feed.setOptions(new FeedProcessingOptions());
+        feed.getOptions().setSkipHeader(true);
 
         feed.setDataOwner("Marketing");
 
