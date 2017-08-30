@@ -38,7 +38,7 @@
                             <table style="border-collapse:collapse; border-spacing:0;">
                               <tr ng-repeat="highlight in searchHit.highlights">
                                 <td style="text-align:left; padding-left: 3px;">{{highlight.key}}</td>
-                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
+                                <td style="text-align:left; padding-left: 50px;" ng-bind-html="highlight.value"></td>
                               </tr>
                             </table>
                           </div>
