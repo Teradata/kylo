@@ -290,8 +290,8 @@ define(["angular", "feed-mgr/domain-types/module-name"], function (angular, modu
         self.onSave = function () {
             var model = angular.copy(self.editModel);
             DomainTypesService.save(model)
-                .then(function () {
-                    self.model = model;
+                .then(function (savedModel) {
+                    self.model = savedModel;
                 }, function (err) {
                     self.isEditable = true;
                     $mdDialog.show(
