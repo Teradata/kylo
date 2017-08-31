@@ -36,6 +36,7 @@ git commit -a -m "Begin $NEXT_VERSION-SNAPSHOT"
 git checkout master
 git merge release-$RELEASE_VERSION
 
+git push 
 git push --tags
 ##git branch -d release-$RELEASE_VERSION
 
@@ -49,7 +50,7 @@ git checkout -b point-$RELEASE_VERSION v$RELEASE_VERSION
 mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$RELEASE_VERSION.1-SNAPSHOT
 
 git commit -a -m "Begin $RELEASE_VERSION.1-SNAPSHOT"
-git push point-$RELEASE_VERSION:release/$RELEASE_VERSION
+git push origin point-$RELEASE_VERSION:release/$RELEASE_VERSION
 ##git branch -d point-$RELEASE_VERSION
 
 exit 0
