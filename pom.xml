@@ -1211,7 +1211,7 @@
       <properties>
         <nifi.version>1.4.0</nifi.version>
       </properties>
-    </profile>
+      </profile>
   </profiles>
 
 </project>
