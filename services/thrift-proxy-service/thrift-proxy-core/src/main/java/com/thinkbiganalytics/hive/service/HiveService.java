@@ -23,13 +23,13 @@ package com.thinkbiganalytics.hive.service;
 
 import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
-import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kerberos.KerberosUtil;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +56,9 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
+ * Executes Hive queries and retrieves Hive metadata.
+ *
+ * <p>Acquires a Kerberos ticket as needed to execute the Hive queries. The HTTP transport mode for Hive requires a Kerberos ticket whenever interacting with the Hive JDBC driver.</p>
  */
 public class HiveService {
 
@@ -83,33 +86,12 @@ public class HiveService {
     }
 
     public List<String> getSchemaNames() {
-        return getDBSchemaParser().listSchemas();
+        return KerberosUtil.runWithOrWithoutKerberos(() -> getDBSchemaParser().listSchemas(), kerberosHiveConfiguration);
     }
 
     public List<String> getTables(String schema) {
-        List<String> tables = getDBSchemaParser().listTables(schema, null);
-        return tables;
+        return KerberosUtil.runWithOrWithoutKerberos(() -> getDBSchemaParser().listTables(schema, null), kerberosHiveConfiguration);
     }
-
-    /**
-     * returns a list of schemanName.TableName
-     */
-    private List<String> getAllTables() {
-        List<String> allTables = new ArrayList<>();
-        List<String> schemas = getSchemaNames();
-        if (schemas != null) {
-            for (String schema : schemas) {
-                List<String> tables = getTables(schema);
-                if (tables != null) {
-                    for (String table : tables) {
-                        allTables.add(schema + "." + table);
-                    }
-                }
-            }
-        }
-        return allTables;
-    }
-
 
     /**
      * returns a list of all the scheam.tablename for a given schema
@@ -139,40 +121,11 @@ public class HiveService {
     }
 
     /**
-     * returns a list of populated TableSchema objects
-     */
-    public List<TableSchema> getAllTableSchemas() {
-        List<TableSchema> allTables = new ArrayList<>();
-        List<String> schemas = getSchemaNames();
-        if (schemas != null) {
-            for (String schema : schemas) {
-                List<String> tables = getTables(schema);
-                if (tables != null) {
-                    for (String table : tables) {
-                        allTables.add(getTableSchema(schema, table));
-                    }
-                }
-            }
-        }
-        return allTables;
-    }
-
-    /**
      * Describes the given Table
      */
     public TableSchema getTableSchema(String schema, String table) {
-        return getDBSchemaParser().describeTable(schema, table);
+        return KerberosUtil.runWithOrWithoutKerberos(() -> getDBSchemaParser().describeTable(schema, table), kerberosHiveConfiguration);
     }
-
-
-    public List<? extends Field> getFields(String schema, String table) {
-        TableSchema tableSchema = getTableSchema(schema, table);
-        if (tableSchema != null) {
-            return tableSchema.getFields();
-        }
-        return null;
-    }
-
 
     public QueryResult browse(String schema, String table, String where, Integer limit) throws DataAccessException {
 
@@ -195,10 +148,10 @@ public class HiveService {
     }
 
     private boolean validateQuery(String query) {
-        String[] validSql = new String[]{"show", "select","desc","describe"};
+        String[] validSql = new String[]{"show", "select", "desc", "describe"};
         String testQuery = StringUtils.trimToEmpty(query).toLowerCase();
         if (StringUtils.isNotEmpty(testQuery) && Arrays.stream(validSql).anyMatch(start -> testQuery.startsWith(start))) {
-          return true;
+            return true;
         }
         return false;
     }
@@ -207,54 +160,55 @@ public class HiveService {
         final DefaultQueryResult queryResult = new DefaultQueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String, Integer> displayNameMap = new HashMap<>();
-        if(!validateQuery(query)){
-            throw new DataRetrievalFailureException("Invalid Query: "+query);
+        if (!validateQuery(query)) {
+            throw new DataRetrievalFailureException("Invalid Query: " + query);
         }
-        try {
-            //  Setting in order to query complex formats like parquet
-            jdbcTemplate.execute("set hive.optimize.index.filter=false");
-            jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
-                @Override
-                public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    if (columns.isEmpty()) {
-                        ResultSetMetaData rsMetaData = rs.getMetaData();
-                        for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
-                            String colName = rsMetaData.getColumnName(i);
-                            DefaultQueryResultColumn column = new DefaultQueryResultColumn();
-                            column.setField(rsMetaData.getColumnName(i));
-                            String displayName = rsMetaData.getColumnLabel(i);
-                            column.setHiveColumnLabel(displayName);
-                            //remove the table name if it exists
-                            displayName =StringUtils.contains(displayName,".") ? StringUtils.substringAfterLast(displayName, ".") : displayName;
-                            Integer count = 0;
-                            if (displayNameMap.containsKey(displayName)) {
-                                count = displayNameMap.get(displayName);
-                                count++;
+        return KerberosUtil.runWithOrWithoutKerberos(() -> {
+            try {
+                //  Setting in order to query complex formats like parquet
+                jdbcTemplate.execute("set hive.optimize.index.filter=false");
+                jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
+                    @Override
+                    public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        if (columns.isEmpty()) {
+                            ResultSetMetaData rsMetaData = rs.getMetaData();
+                            for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
+                                String colName = rsMetaData.getColumnName(i);
+                                DefaultQueryResultColumn column = new DefaultQueryResultColumn();
+                                column.setField(rsMetaData.getColumnName(i));
+                                String displayName = rsMetaData.getColumnLabel(i);
+                                column.setHiveColumnLabel(displayName);
+                                //remove the table name if it exists
+                                displayName = StringUtils.contains(displayName, ".") ? StringUtils.substringAfterLast(displayName, ".") : displayName;
+                                Integer count = 0;
+                                if (displayNameMap.containsKey(displayName)) {
+                                    count = displayNameMap.get(displayName);
+                                    count++;
+                                }
+                                displayNameMap.put(displayName, count);
+                                column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
+
+                                column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
+                                column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
+                                columns.add(column);
                             }
-                            displayNameMap.put(displayName, count);
-                            column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
-
-                            column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
-                            column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
-                            columns.add(column);
+                            queryResult.setColumns(columns);
                         }
-                        queryResult.setColumns(columns);
+                        Map<String, Object> row = new LinkedHashMap<>();
+                        for (QueryResultColumn column : columns) {
+                            row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                        }
+                        queryResult.addRow(row);
+                        return row;
                     }
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    for (QueryResultColumn column : columns) {
-                        row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
-                    }
-                    queryResult.addRow(row);
-                    return row;
-                }
-            });
+                });
 
-        } catch (DataAccessException dae) {
-            dae.printStackTrace();
-            throw dae;
-        }
-        return queryResult;
-
+            } catch (DataAccessException dae) {
+                dae.printStackTrace();
+                throw dae;
+            }
+            return queryResult;
+        }, kerberosHiveConfiguration);
     }
 
 
