@@ -187,6 +187,7 @@ define(["angular", "admin/module-name"], function (angular, moduleName) {
         function query() {
             self.loading = true;
             self.errorMessage = null;
+            self.explainPlain = null;
             var sql = self.sql;
             var successFn = function(response) {
                 if(_.indexOf(self.previousQueries,sql) == -1) {
@@ -231,6 +232,7 @@ define(["angular", "admin/module-name"], function (angular, moduleName) {
             var rows = [];
             var columns = [];
            self.queryTime = result.queryTime;
+           self.explainPlain = result.explainPlain;
 
 
             angular.forEach(result.columns,function(col,i){
