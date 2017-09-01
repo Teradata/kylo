@@ -365,13 +365,18 @@ public class DebugController {
             Long startTime = System.currentTimeMillis();
             JcrQueryResult jcrQueryResult = new JcrQueryResult();
 
+
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
 
                 Workspace workspace = (Workspace) session.getWorkspace();
-                Map<String,IndexDefinition> indexDefinitionMap = workspace.getIndexManager().getIndexDefinitions();
+
+                String explainPlain = JcrQueryUtil.explainPlain(session,query);
+                //start the timer now:
+                startTime = System.currentTimeMillis();
 
                 QueryResult result = JcrQueryUtil.query(session, query);
+                jcrQueryResult.setExplainPlan(explainPlain);
                 RowIterator rowItr = result.getRows();
                 List<JcrQueryResultColumn> columns = new ArrayList<>();
                 String colsStr = StringUtils.substringAfter(query.toLowerCase(),"select");

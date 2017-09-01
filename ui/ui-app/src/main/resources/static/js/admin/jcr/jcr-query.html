@@ -29,6 +29,10 @@
           <span ng-if="vm.queryTime != null" class="md-subhead">The query returned {{vm.resultSize}} rows and took: {{vm.queryTime | timeWithMillis }} </span>
           <div ui-grid-auto-resize  style="width:100%;height:500px;" ui-grid="vm.gridOptions"></div>
         </div>
+          <div layout="column" ng-if="vm.explainPlan != null">
+            <div class="md-subhead">Explain Plan</div>
+            <div style="white-space: pre-wrap;">{{vm.explainPlan}}</div>
+          </div>
         </div>
       </md-tab-body>
     </md-tab>
