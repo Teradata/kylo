@@ -143,6 +143,16 @@ public class JcrQueryUtil {
         return query(session, queryExpression, null);
     }
 
+    public static String explainPlain(Session session, String queryExpression) throws RepositoryException {
+        Query query = session.getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
+        org.modeshape.jcr.api.query.Query msQuery = (org.modeshape.jcr.api.query.Query)query;
+
+        // Get the query plan without executing it ...
+        org.modeshape.jcr.api.query.QueryResult result = msQuery.explain();
+        String plan = result.getPlan();
+        return plan;
+    }
+
     public static QueryResult query(Session session, String queryExpression, Map<String, String> bindParams) throws RepositoryException {
 
         QueryResult results = null;
