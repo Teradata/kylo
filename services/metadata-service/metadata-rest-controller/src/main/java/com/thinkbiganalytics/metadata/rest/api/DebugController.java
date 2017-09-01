@@ -376,7 +376,7 @@ public class DebugController {
                 startTime = System.currentTimeMillis();
 
                 QueryResult result = JcrQueryUtil.query(session, query);
-                jcrQueryResult.setExplainPlain(explainPlain);
+                jcrQueryResult.setExplainPlan(explainPlain);
                 RowIterator rowItr = result.getRows();
                 List<JcrQueryResultColumn> columns = new ArrayList<>();
                 String colsStr = StringUtils.substringAfter(query.toLowerCase(),"select");
