@@ -34,6 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+
 import java.util.Arrays;
 
 import javax.jms.Connection;
@@ -52,6 +54,8 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
     static final  String SERVICE_NAME = "Activemq"; 
 
 
+    
+    
     public ActivemqServiceStatusCheck(String activemqBrokerUrl) {
 
         this.activemqBrokerUrl = activemqBrokerUrl;

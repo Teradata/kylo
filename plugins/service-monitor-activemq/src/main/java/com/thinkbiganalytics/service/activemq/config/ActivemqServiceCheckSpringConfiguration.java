@@ -24,6 +24,7 @@ package com.thinkbiganalytics.service.activemq.config;
 
 import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
 
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +41,5 @@ public class ActivemqServiceCheckSpringConfiguration {
       return new ActivemqServiceStatusCheck(activemqBrokerUrl);
          
     }
-
 
 }
