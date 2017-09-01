@@ -586,6 +586,20 @@ define(['angular', 'kylo-common', 'kylo-services',
             }
         });
 
+        $stateProvider.state('jcr-query.**', {
+            url: '/admin/jcr-query',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('jcr-query',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading admin jcr ", err);
+                    return err;
+                });
+                ;
+            }
+        });
 
 
         $stateProvider.state({
