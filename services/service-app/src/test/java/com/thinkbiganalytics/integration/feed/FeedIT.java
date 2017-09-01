@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
- * Basic Feed Integration Test which imports two system feeds, creates category, imports data ingest template,
+ * Basic Feed Integration Test which imports data index feed, creates category, imports data ingest template,
  * creates data ingest feed, runs the feed, validates number of executed jobs, validates validators and
  * standardisers have been applied by looking at profiler summary, validates total number and number of
  * valid and invalid rows, validates expected hive tables have been created and runs a simple hive
@@ -61,6 +61,7 @@ public class FeedIT extends IntegrationTestBase {
     private static final Logger LOG = LoggerFactory.getLogger(FeedIT.class);
 
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
+    private static final String FEED_NAME = "users_" + System.currentTimeMillis();
 
 
     @Override
@@ -83,7 +84,7 @@ public class FeedIT extends IntegrationTestBase {
         ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
-        FeedMetadata feed = getCreateFeedRequest(category, ingest, "Users1");
+        FeedMetadata feed = getCreateFeedRequest(category, ingest, FEED_NAME);
         FeedMetadata response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
@@ -94,25 +95,27 @@ public class FeedIT extends IntegrationTestBase {
         //TODO edit the feed / re-run / re-assert
     }
 
-//    @Override
-//    public void teardown() {
+    @Override
+    public void teardown() {
 //        super.teardown();
-//    }
+    }
 
-//    @Override
-//    protected void cleanup() {
-//    }
+    @Override
+    public void startClean() {
+        super.startClean();
+    }
 
 //    @Test
-//    public void temp() {
-//        disableExistingFeeds();
-//        deleteExistingFeeds();
-//        deleteExistingReusableVersionedFlows();
-//        deleteExistingTemplates();
-//        deleteExistingCategories();
+    public void temp() {
+        String feedId = "1d8efcda-98d0-4109-82dc-4abd8560280f";
+        String processingDttm = "1504278286973";
+        assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
+        assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
+        assertValidatorResults(feedId, processingDttm, "EmailValidator", 3);
+        assertValidatorResults(feedId, processingDttm, "LookupValidator", 4);
+        assertValidatorResults(feedId, processingDttm, "IPAddressValidator", 4);
+    }
 
-//        FeedCategory category = createCategory("Functional Tests");
-//    }
 
     private void waitForFeedToComplete() {
         //wait for feed completion by waiting for certain amount of time and then
@@ -141,35 +144,38 @@ public class FeedIT extends IntegrationTestBase {
 
         LOG.info("Asserting number of total/valid/invalid rows");
         Assert.assertEquals(1000, getTotalNumberOfRecords(feed.getFeedId()));
-        Assert.assertEquals(1000, getNumberOfValidRecords(feed.getFeedId()));
-        Assert.assertEquals(0, getNumberOfInvalidRecords(feed.getFeedId()));
+        Assert.assertEquals(879, getNumberOfValidRecords(feed.getFeedId()));
+        Assert.assertEquals(121, getNumberOfInvalidRecords(feed.getFeedId()));
 
-        assertNamesAreInUppercase(feed.getFeedId());
-
-        assertHiveData();
+        String processingDttm = getProcessingDttm(feed.getFeedId());
+        assertNamesAreInUppercase(feed.getFeedId(), processingDttm);
+        assertValidatorsAndStandardisers(feed.getFeedId(), processingDttm);
 
         //TODO assert data via global search
+        assertHiveData();
+    }
 
+    private void assertValidatorsAndStandardisers(String feedId, String processingDttm) {
+        LOG.info("Asserting Validators and Standardisers");
+
+        //TODO assert countries are readable countries after base 64 encoding and decoding
+        //TODO assert base 64 encoding for cc field by comparing known rows
+        assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
+        assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
+        assertValidatorResults(feedId, processingDttm, "EmailValidator", 3);
+        assertValidatorResults(feedId, processingDttm, "LookupValidator", 4);
+        assertValidatorResults(feedId, processingDttm, "IPAddressValidator", 4);
     }
 
     private void assertHiveData() {
-        assertHiveTables("functional_tests", "users1");
-        assertHiveSchema("functional_tests", "users1");
-        assertHiveQuery("functional_tests", "users1");
+        assertHiveTables("functional_tests", FEED_NAME);
+        assertHiveSchema("functional_tests", FEED_NAME);
+        assertHiveQuery("functional_tests", FEED_NAME);
     }
 
-    private void assertNamesAreInUppercase(String feedId) {
+    private void assertNamesAreInUppercase(String feedId, String processingDttm) {
         LOG.info("Asserting all names are in upper case");
-
-        String processingDttm = getProcessingDttm(feedId);
-
-        Response response = given(FeedRestController.BASE)
-            .when()
-            .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
-
-        response.then().statusCode(HTTP_OK);
-
-        String topN = JsonPath.from(response.asString()).getString("find {entry ->entry.metrictype == 'TOP_N_VALUES' && entry.columnname == 'first_name'}.metricvalue");
+        String topN = getMetricvalueOfMetricTypeForColumn(feedId, processingDttm, "TOP_N_VALUES", "first_name");
         Assert.assertTrue(CharMatcher.JAVA_LOWER_CASE.matchesNoneOf(topN));
     }
 }
