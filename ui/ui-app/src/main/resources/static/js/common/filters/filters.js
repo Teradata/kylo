@@ -199,4 +199,14 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             return time;
         };
     }]);
+
+
+    angular.module(moduleName).filter('timeWithMillis', ['Utils', function (Utils) {
+        return function (timeInMs) {
+            if(angular.isDefined(timeInMs)) {
+                return moment.utc(timeInMs).format("mm:ss.SSS");
+            }
+            return '';
+        };
+    }]);
 });
