@@ -30,7 +30,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.PrintWriter;
@@ -86,24 +85,26 @@ public class RefreshableDataSource implements DataSource {
     }
 
     public boolean testConnection(String username, String password) throws SQLException {
-        boolean valid = false;
-        Connection connection = null;
-        Statement statement = null;
-        try {
-            String prefix = getPrefixWithTrailingDot();
-            String query = env.getProperty(prefix + "validationQuery");
-            connection = getConnectionForValidation();
-            statement = connection.createStatement();
-            statement.execute(query);
-            valid = true;
-        } catch (SQLException e) {
-            DataSourceUtils.releaseConnection(connection, this.getDataSource());
-            throw e;
-        } finally {
-            JdbcUtils.closeStatement(statement);
-            DataSourceUtils.releaseConnection(connection, this.getDataSource());
-        }
-        return valid;
+        return KerberosUtil.runWithOrWithoutKerberos(() -> {
+            boolean valid = false;
+            Connection connection = null;
+            Statement statement = null;
+            try {
+                String prefix = getPrefixWithTrailingDot();
+                String query = env.getProperty(prefix + "validationQuery");
+                connection = getConnectionForValidation();
+                statement = connection.createStatement();
+                statement.execute(query);
+                valid = true;
+            } catch (SQLException e) {
+                DataSourceUtils.releaseConnection(connection, this.getDataSource());
+                throw e;
+            } finally {
+                JdbcUtils.closeStatement(statement);
+                DataSourceUtils.releaseConnection(connection, this.getDataSource());
+            }
+            return valid;
+        }, kerberosTicketConfiguration);
     }
 
     private Connection getConnectionForValidation() throws SQLException {
