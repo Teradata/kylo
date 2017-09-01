@@ -29,7 +29,7 @@ import java.util.List;
 public class JcrQueryResult {
     private List<JcrQueryResultColumn> columns;
     private List<JcrQueryResultRow> rows;
-    private String explainPlain;
+    private String explainPlan;
 
     private long queryTime = 0L;
 
@@ -64,11 +64,11 @@ public class JcrQueryResult {
         getRows().add(row);
     }
 
-    public String getExplainPlain() {
-        return explainPlain;
+    public String getExplainPlan() {
+        return explainPlan;
     }
 
-    public void setExplainPlain(String explainPlain) {
-        this.explainPlain = explainPlain;
+    public void setExplainPlan(String explainPlan) {
+        this.explainPlan = explainPlan;
     }
 }
