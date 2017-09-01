@@ -12,7 +12,7 @@
     </div>
     <div layout="row" layout-align="center center" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
       <md-input-container style="right: 16px;" flex="5">
-        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="$bq.error != null">
+        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="!$bq.canChangeDatasource()">
           <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
         </md-select>
         <div class="hint">Data Source</div>

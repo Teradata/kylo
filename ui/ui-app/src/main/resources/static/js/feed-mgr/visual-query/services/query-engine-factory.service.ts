@@ -1,7 +1,6 @@
 import {QueryEngine} from "./query-engine"
 import {SparkQueryEngine} from "./spark/spark-query-engine";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
-import VisualQueryService = VisualQueryServiceStatic.VisualQueryService;
 
 declare const angular: angular.IAngularStatic;
 
@@ -16,7 +15,7 @@ export class QueryEngineFactory {
      * Constructs a {@code QueryEngineFactory}.
      */
     constructor(private $http: angular.IHttpService, private $timeout: angular.ITimeoutService, private DatasourcesService: DatasourcesServiceStatic.DatasourcesService,
-                private HiveService: any, private RestUrlService: any, private VisualQueryService: VisualQueryService) {
+                private HiveService: any, private RestUrlService: any, private VisualQueryService: any) {
     }
 
     /**

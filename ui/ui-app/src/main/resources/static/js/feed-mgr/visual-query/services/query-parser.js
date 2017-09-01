@@ -27,27 +27,6 @@ define(["require", "exports"], function (require, exports) {
                 return this.fromVisualQueryModel(source);
             }
         };
-        /**
-         * Generates a transform script for the specified select statement and data sources.
-         *
-         * @param tree - the select statement
-         * @returns  the transform script
-         * @throws {Error} if the tree is not valid
-         */
-        QueryParser.prototype.fromSelectStmt = function (tree) {
-            throw new Error("method not supported");
-        };
-        /**
-         * Generates a Spark script for the specified visual query model and data sources.
-         *
-         * @param visualQueryModel - the visual query model
-         * @returns the transform script
-         * @throws {Error} if the model is not valid
-         */
-        QueryParser.prototype.fromVisualQueryModel = function (visualQueryModel) {
-            var tree = this.VisualQueryService.sqlBuilder(visualQueryModel).buildTree();
-            return this.fromSelectStmt(tree);
-        };
         return QueryParser;
     }());
     exports.QueryParser = QueryParser;

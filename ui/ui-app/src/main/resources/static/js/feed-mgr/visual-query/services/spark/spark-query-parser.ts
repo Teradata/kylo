@@ -2,11 +2,7 @@ import {UserDatasource} from "../../../model/user-datasource";
 import {QueryParser} from "../query-parser";
 import {SparkConstants} from "./spark-constants";
 import {UnderscoreStatic} from "underscore";
-import VisualQueryModel = VisualQueryServiceStatic.VisualQueryModel;
-import JoinExpr = VisualQueryServiceStatic.JoinExpr;
-import RangeVar = VisualQueryServiceStatic.RangeVar;
-import A_Expr = VisualQueryServiceStatic.A_Expr;
-import BoolExpr = VisualQueryServiceStatic.BoolExpr;
+import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, VisualQueryModel} from "../../../services/VisualQueryService";
 
 declare const _: UnderscoreStatic;
 
@@ -21,7 +17,7 @@ export class SparkQueryParser extends QueryParser {
     /**
      * Constructs a {@code SparkQueryParser}.
      */
-    constructor(VisualQueryService: VisualQueryServiceStatic.VisualQueryService) {
+    constructor(VisualQueryService: any) {
         super(VisualQueryService);
     }
 
@@ -57,7 +53,7 @@ export class SparkQueryParser extends QueryParser {
         // Group targets by table
         let targetsByTableAlias = {};
 
-        tree.targetList.forEach(function (target) {
+        tree.targetList.forEach(function (target: ResTarget) {
             if (typeof targetsByTableAlias[target.val.fields[0]] === "undefined") {
                 targetsByTableAlias[target.val.fields[0]] = [];
             }
@@ -94,7 +90,7 @@ export class SparkQueryParser extends QueryParser {
 
         let firstTarget = true;
         script += joinScript + ".select(";
-        tree.targetList.forEach(function (target) {
+        tree.targetList.forEach(function (target: ResTarget) {
             if (firstTarget) {
                 firstTarget = false;
             } else {

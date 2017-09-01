@@ -124,6 +124,12 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             return this.model.sql;
         };
         /**
+         * Indicates if the active datasource can be changed.
+         */
+        QueryBuilderComponent.prototype.canChangeDatasource = function () {
+            return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
+        };
+        /**
          * Adds the table to the flowchart.
          */
         QueryBuilderComponent.prototype.onAddTable = function () {
@@ -163,6 +169,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 if (self.model.$selectedDatasourceId == null) {
                     self.model.$selectedDatasourceId = datasources[0].id;
                 }
+                self.validate();
             })
                 .catch(function (err) {
                 self.error = err;
@@ -263,8 +270,8 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             if (this.advancedMode) {
                 var sql = this.advancedModeSql();
                 this.isValid = (typeof (sql) !== "undefined" && sql.length > 0);
-                delete this.model.$selectedColumnsAndTables;
-                delete this.model.chartViewModel;
+                this.model.$selectedColumnsAndTables = null;
+                this.model.chartViewModel = null;
                 this.model.datasourceIds = [this.model.$selectedDatasourceId];
                 this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
             }
@@ -464,7 +471,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
          * @returns the SQL string or null if multiple data sources are used
          */
         QueryBuilderComponent.prototype.getSQLModel = function () {
-            var builder = this.VisualQueryService.sqlBuilder(this.chartViewModel.data);
+            var builder = this.VisualQueryService.sqlBuilder(this.chartViewModel.data, this.engine.sqlDialect);
             var sql = builder.build();
             this.selectedColumnsAndTables = builder.getSelectedColumnsAndTables();
             this.selectedDatasourceIds = builder.getDatasourceIds();
@@ -563,7 +570,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 this.model.$selectedDatasourceId = this.model.datasourceIds[0];
             }
             // Allow for SQL editing
-            if (typeof this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
+            if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
                 this.advancedMode = true;
                 this.advancedModeText = "Visual Mode";
             }

@@ -35,6 +35,16 @@ define(["require", "exports", "./query-engine-constants"], function (require, ex
              */
             this.states_ = [this.newState()];
         }
+        Object.defineProperty(QueryEngine.prototype, "allowMultipleDataSources", {
+            /**
+             * Indicates if multiple data sources are allowed in the same query.
+             */
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Indicates if a previously undone transformation can be redone.
          *
@@ -177,7 +187,9 @@ define(["require", "exports", "./query-engine-constants"], function (require, ex
             var profile = [];
             var state = this.getState();
             profile.push({ columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0 }, { columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length }, { columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0 });
-            profile = profile.concat(state.profile);
+            if (state.profile) {
+                profile = profile.concat(state.profile);
+            }
             return profile;
         };
         /**

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../query-engine", "./spark-constants", "./spark-script-builder", "./spark-query-parser", "rxjs/Subject"], function (require, exports, query_engine_1, spark_constants_1, spark_script_builder_1, spark_query_parser_1, Subject_1) {
+define(["require", "exports", "../query-engine", "./spark-constants", "./spark-script-builder", "./spark-query-parser", "rxjs/Subject", "../../../services/VisualQueryService"], function (require, exports, query_engine_1, spark_constants_1, spark_script_builder_1, spark_query_parser_1, Subject_1, VisualQueryService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -32,6 +32,26 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
             $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
             return _this;
         }
+        Object.defineProperty(SparkQueryEngine.prototype, "allowMultipleDataSources", {
+            /**
+             * Indicates if multiple data sources are allowed in the same query.
+             */
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SparkQueryEngine.prototype, "sqlDialect", {
+            /**
+             * Gets the SQL dialect used by this engine.
+             */
+            get: function () {
+                return VisualQueryService_1.SqlDialect.HIVE;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Returns the data sources that are supported natively by this engine.
          */
@@ -101,6 +121,20 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
             else {
                 return _super.prototype.getTableSchema.call(this, schema, table, datasourceId);
             }
+        };
+        /**
+         * Fetches the Ternjs definitions for this query engine.
+         */
+        SparkQueryEngine.prototype.getTernjsDefinitions = function () {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                _this.$http.get(_this.RestUrlService.UI_BASE_URL + "/spark-functions")
+                    .then(function (response) {
+                    resolve(response.data);
+                }, function (err) {
+                    reject(err);
+                });
+            });
         };
         /**
          * Searches for table names matching the specified query.

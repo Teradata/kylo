@@ -1,7 +1,5 @@
 import {UserDatasource} from "../../model/user-datasource";
-import VisualQueryService = VisualQueryServiceStatic.VisualQueryService;
-import VisualQueryModel = VisualQueryServiceStatic.VisualQueryModel;
-import SelectStmt = VisualQueryServiceStatic.SelectStmt;
+import {VisualQueryModel} from "../../services/VisualQueryService";
 
 /**
  * Parses a query and generates a transform script.
@@ -11,7 +9,7 @@ export abstract class QueryParser {
     /**
      * Constructs a {@code QueryParser}.
      */
-    constructor(protected VisualQueryService: VisualQueryService) {
+    constructor(protected VisualQueryService: any) {
     }
 
     /**
@@ -31,17 +29,6 @@ export abstract class QueryParser {
     }
 
     /**
-     * Generates a transform script for the specified select statement and data sources.
-     *
-     * @param tree - the select statement
-     * @returns  the transform script
-     * @throws {Error} if the tree is not valid
-     */
-    protected fromSelectStmt(tree: SelectStmt): string {
-        throw new Error("method not supported");
-    }
-
-    /**
      * Generates a Spark script for the specified SQL query and optional data source.
      *
      * @param sql - the SQL query
@@ -58,8 +45,5 @@ export abstract class QueryParser {
      * @returns the transform script
      * @throws {Error} if the model is not valid
      */
-    protected fromVisualQueryModel(visualQueryModel: VisualQueryModel): string {
-        let tree = this.VisualQueryService.sqlBuilder(visualQueryModel).buildTree();
-        return this.fromSelectStmt(tree);
-    }
+    protected abstract fromVisualQueryModel(visualQueryModel: VisualQueryModel): string;
 }

@@ -1,27 +1,30 @@
 /**
  * A collection of utility functions for strings.
  */
-var StringUtils = (function () {
+var StringUtils: any = (function() {
     function StringUtils() {
     }
+
     /**
      * Escapes the specified string using Scala String rules.
      *
      * @param str the string to escape
      * @returns {string} the string with escaped values
      */
-    StringUtils.escapeScala = function (str) {
+    (StringUtils as any).escapeScala = function(str: string): string {
         return str.replace(/\\/g, "\\\\").replace(/"/g, "\\\"").replace(/\t/g, "\\t").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
     };
+
     /**
      * Escapes parentheses in the specified string.
      *
      * @param {string} str the string to be escaped
      * @returns {string} the string with parentheses escaped
      */
-    StringUtils.quote = function (str) {
+    (StringUtils as any).quote = function(str: string): string {
         return str.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
     };
+
     /**
      * Escapes backticks in SQL identifiers.
      *
@@ -30,17 +33,15 @@ var StringUtils = (function () {
      * @param escapeChar - the escape char for the SQL dialect
      * @returns the identifier with backticks escaped
      */
-    StringUtils.quoteSql = function (str, quoteChar, escapeChar) {
-        if (quoteChar === void 0) { quoteChar = "`"; }
-        if (escapeChar === void 0) { escapeChar = "\\"; }
-        return str.replace("/" + quoteChar + "/g", "" + escapeChar + quoteChar);
+    (StringUtils as any).quoteSql = function(str: string, quoteChar: string = "`", escapeChar: string = "\\"): string {
+        return str.replace(`/${quoteChar}/g`, `${escapeChar}${quoteChar}`);
     };
+
     /**
      * Indicates if the specified string is blank.
      */
-    StringUtils.isBlank = function (str) {
+    (StringUtils as any).isBlank = function(str: string): boolean {
         return (!str || str.length === 0 || !str.trim());
     };
     return StringUtils;
 })();
-//# sourceMappingURL=StringUtils.js.map

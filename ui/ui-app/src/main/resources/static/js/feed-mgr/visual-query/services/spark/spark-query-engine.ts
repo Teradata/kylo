@@ -9,6 +9,7 @@ import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {TableSchema} from "../../../model/table-schema";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
+import {SqlDialect} from "../../../services/VisualQueryService";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
@@ -35,6 +36,20 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         // Ensure Kylo Spark Shell is running
         $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
+    }
+
+    /**
+     * Indicates if multiple data sources are allowed in the same query.
+     */
+    get allowMultipleDataSources(): boolean {
+        return true;
+    }
+
+    /**
+     * Gets the SQL dialect used by this engine.
+     */
+    get sqlDialect(): SqlDialect {
+        return SqlDialect.HIVE;
     }
 
     /**
@@ -107,6 +122,20 @@ export class SparkQueryEngine extends QueryEngine<string> {
         } else {
             return super.getTableSchema(schema, table, datasourceId);
         }
+    }
+
+    /**
+     * Fetches the Ternjs definitions for this query engine.
+     */
+    getTernjsDefinitions(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.$http.get(this.RestUrlService.UI_BASE_URL + "/spark-functions")
+                .then(function (response: any) {
+                    resolve(response.data);
+                }, function (err: string) {
+                    reject(err);
+                });
+        });
     }
 
     /**

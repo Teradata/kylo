@@ -149,7 +149,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
                 private $document: angular.IDocumentService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
-                private VisualQueryService: VisualQueryServiceStatic.VisualQueryService, private FeedService: any, private DatasourcesService: any) {
+                private VisualQueryService: any, private FeedService: any, private DatasourcesService: any) {
         // Setup initializers
         this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
         this.initKeyBindings();
@@ -170,6 +170,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.validate();
         }
         return this.model.sql;
+    }
+
+    /**
+     * Indicates if the active datasource can be changed.
+     */
+    canChangeDatasource(): boolean {
+        return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
     }
 
     /**
@@ -211,6 +218,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                 if (self.model.$selectedDatasourceId == null) {
                     self.model.$selectedDatasourceId = datasources[0].id;
                 }
+                self.validate();
             })
             .catch((err: string) => {
                 self.error = err;
@@ -326,8 +334,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             let sql = this.advancedModeSql();
             this.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
 
-            delete this.model.$selectedColumnsAndTables;
-            delete this.model.chartViewModel;
+            this.model.$selectedColumnsAndTables = null;
+            this.model.chartViewModel = null;
             this.model.datasourceIds = [this.model.$selectedDatasourceId];
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
         } else if (this.chartViewModel.nodes != null) {
@@ -539,7 +547,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * @returns the SQL string or null if multiple data sources are used
      */
     getSQLModel(): string | null {
-        let builder = this.VisualQueryService.sqlBuilder(this.chartViewModel.data);
+        let builder = this.VisualQueryService.sqlBuilder(this.chartViewModel.data, this.engine.sqlDialect);
         let sql = builder.build();
 
         this.selectedColumnsAndTables = builder.getSelectedColumnsAndTables();
@@ -647,7 +655,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Allow for SQL editing
-        if (typeof this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
+        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
             this.advancedMode = true;
             this.advancedModeText = "Visual Mode";
         } else {

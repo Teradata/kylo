@@ -7,6 +7,7 @@ import {QueryEngineConstants} from "./query-engine-constants";
 import {Observable} from "rxjs/Observable";
 import {TableSchema} from "../../model/table-schema";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
+import {SqlDialect} from "../../services/VisualQueryService";
 
 /**
  * Provides the ability to query and transform data.
@@ -58,6 +59,18 @@ export abstract class QueryEngine<T> {
      */
     constructor(private DatasourcesService: DatasourcesServiceStatic.DatasourcesService) {
     }
+
+    /**
+     * Indicates if multiple data sources are allowed in the same query.
+     */
+    get allowMultipleDataSources(): boolean {
+        return false;
+    }
+
+    /**
+     * Gets the SQL dialect used by this engine.
+     */
+    abstract get sqlDialect(): SqlDialect;
 
     /**
      * Indicates if a previously undone transformation can be redone.
@@ -217,7 +230,9 @@ export abstract class QueryEngine<T> {
         profile.push({columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0} as ProfileOutputRow,
             {columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length} as ProfileOutputRow,
             {columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0} as ProfileOutputRow);
-        profile = profile.concat(state.profile);
+        if (state.profile) {
+            profile = profile.concat(state.profile);
+        }
 
         return profile;
     }
@@ -262,6 +277,11 @@ export abstract class QueryEngine<T> {
         const self = this;
         return new Promise((resolve, reject) => self.DatasourcesService.getTableSchema(datasourceId, table, schema).then(resolve, reject));
     }
+
+    /**
+     * Fetches the Ternjs definitions for this query engine.
+     */
+    abstract getTernjsDefinitions(): Promise<any>;
 
     /**
      * The number of rows to select in the initial query.
@@ -429,7 +449,7 @@ export abstract class QueryEngine<T> {
     }
 
     /**
-     * Runs the current Spark script on the server.
+     * Runs the current script on the server.
      *
      * @return an observable for the response progress
      */

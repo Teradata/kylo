@@ -43,6 +43,7 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceReferencingComponentDTO;
@@ -54,6 +55,7 @@ import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentsEnti
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -352,12 +354,19 @@ public class NifiIntegrationRestController {
                   notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Result of the query.", response = QueryResult.class),
+                      @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response executeQuery(@PathParam("serviceId") final String serviceId, final String script) {
         log.debug("Execute query against service '{}': {}", serviceId, script);
-        final QueryResult results = dbcpConnectionPoolTableInfo.executeQueryForControllerService(serviceId, "", script);
-        return Response.ok(results).build();
+        try {
+            final QueryResult results = dbcpConnectionPoolTableInfo.executeQueryForControllerService(serviceId, "", script);
+            return Response.ok(results).build();
+        } catch (final DataAccessException e) {
+            throw new BadRequestException(ExceptionUtils.getRootCause(e).getMessage(), e);
+        } catch (final IllegalArgumentException e) {
+            throw new NotFoundException("The controller service could not be found.", e);
+        }
     }
 
     @GET

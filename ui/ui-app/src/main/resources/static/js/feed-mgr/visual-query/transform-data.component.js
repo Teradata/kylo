@@ -204,9 +204,9 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
          */
         TransformDataComponent.prototype.createTernServer = function () {
             var self = this;
-            this.$http.get(this.RestUrlService.UI_BASE_URL + "/spark-functions").then(function (response) {
-                self.engine.setFunctionDefs(response.data);
-                self.ternServer = new CodeMirror.TernServer({ defs: [response.data] });
+            this.engine.getTernjsDefinitions().then(function (response) {
+                self.engine.setFunctionDefs(response);
+                self.ternServer = new CodeMirror.TernServer({ defs: [response] });
                 self.ternServer.server.addDefs(self.engine.getColumnDefs());
                 var _editor = self.codemirrorEditor;
                 _editor.setOption("extraKeys", {

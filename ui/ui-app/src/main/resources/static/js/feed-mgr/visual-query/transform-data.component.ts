@@ -239,10 +239,10 @@ export class TransformDataComponent implements OnInit {
      */
     private createTernServer() {
         const self = this;
-        this.$http.get(this.RestUrlService.UI_BASE_URL + "/spark-functions").then(function (response: any) {
-            self.engine.setFunctionDefs(response.data);
+        this.engine.getTernjsDefinitions().then(function (response: any) {
+            self.engine.setFunctionDefs(response);
 
-            self.ternServer = new CodeMirror.TernServer({defs: [response.data]});
+            self.ternServer = new CodeMirror.TernServer({defs: [response]});
             self.ternServer.server.addDefs(self.engine.getColumnDefs());
 
             const _editor = self.codemirrorEditor;
