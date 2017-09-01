@@ -22,6 +22,13 @@
 
 	<dependencies>
 
+
+		<dependency>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
+			<artifactId>kylo-jms-service-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- Define Kylo Dependency -->
 		<dependency>
 			<groupId>com.thinkbiganalytics.kylo</groupId>

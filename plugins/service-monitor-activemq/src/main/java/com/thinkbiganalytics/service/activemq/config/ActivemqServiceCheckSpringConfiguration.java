@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.service.activemq.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 /*-
  * #%L
  * service-monitor-activemq
@@ -20,26 +23,28 @@ package com.thinkbiganalytics.service.activemq.config;
  * #L%
  */
 
-
-
-import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
-
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
+
+import javax.jms.ConnectionFactory;
 
 @Configuration
 @PropertySource("classpath:activemq.properties")
 public class ActivemqServiceCheckSpringConfiguration {
 
-    @Bean(name = "activemqServiceStatus")
-    public ActivemqServiceStatusCheck activemqServiceStatusCheck(@Value("${jms.activemq.broker.url}") String activemqBrokerUrl ) {
-    
-      return new ActivemqServiceStatusCheck(activemqBrokerUrl);
-         
-    }
 
+    @Autowired(required = false)
+    @Qualifier("activemqConnectionPool")
+    ConnectionFactory connectionFactory;
+
+
+    @Bean(name = "activemqServiceStatus")
+    public ActivemqServiceStatusCheck activemqServiceStatusCheck() {
+
+        return new ActivemqServiceStatusCheck(this.connectionFactory);
+
+    }
 }

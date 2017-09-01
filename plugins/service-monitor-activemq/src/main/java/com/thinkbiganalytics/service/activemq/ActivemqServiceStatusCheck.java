@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Bean;
 import java.util.Arrays;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
 /**
@@ -52,19 +53,19 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
     private final PooledConnectionFactory activemqPoolConnection;
     private String activemqBrokerUrl = "";
     static final  String SERVICE_NAME = "Activemq"; 
-
-
     
     
-    public ActivemqServiceStatusCheck(String activemqBrokerUrl) {
+    public ActivemqServiceStatusCheck(ConnectionFactory connectionFactory) {
 
-        this.activemqBrokerUrl = activemqBrokerUrl;
-        
+  
         /**
          * Create Poolable Class Object and create multiple instance of connection 
          */
-        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
-        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
+        this.activemqPoolConnection = (PooledConnectionFactory) connectionFactory;
+        
+        
+//        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
+//        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
 
     }
 
