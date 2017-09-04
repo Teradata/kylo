@@ -27,14 +27,11 @@ import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
 import com.thinkbiganalytics.servicemonitor.model.ServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
-import com.thinkbiganalytics.service.activemq.util.ActivemqPoolableConnectionProvider;
 
 import org.apache.activemq.jms.pool.PooledConnectionFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
 
