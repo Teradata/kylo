@@ -70,9 +70,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
     @Override
     public ServiceStatusResponse healthCheck() {
 
-
         String serviceName = SERVICE_NAME;
-
         return new DefaultServiceStatusResponse(serviceName, Arrays.asList(activemqStatus()));
     }
 
