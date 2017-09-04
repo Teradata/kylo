@@ -41,7 +41,7 @@ public class ActivemqServiceCheckSpringConfiguration {
     @Bean(name = "activemqServiceStatus")
     public ActivemqServiceStatusCheck activemqServiceStatusCheck( ) {
 
-       return new ActivemqServiceStatusCheck(this.connectionFactory);
+        return new ActivemqServiceStatusCheck(this.connectionFactory);
 
     }
 }

@@ -51,7 +51,6 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
     private static final Logger log = LoggerFactory.getLogger(ActivemqServiceStatusCheck.class);
 
     private  PooledConnectionFactory activemqPoolConnection = null;
-    private String activemqBrokerUrl = "";
     static final  String SERVICE_NAME = "Activemq"; 
 
     public ActivemqServiceStatusCheck()
