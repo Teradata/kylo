@@ -28,19 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import javax.jms.ConnectionFactory;
 
 @Configuration
-@PropertySource("classpath:activemq.properties")
 public class ActivemqServiceCheckSpringConfiguration {
-
 
     @Autowired(required = true)
     @Qualifier("activemqConnectionPool")
     ConnectionFactory connectionFactory;
-
 
     @Bean(name = "activemqServiceStatus")
     public ActivemqServiceStatusCheck activemqServiceStatusCheck( ) {

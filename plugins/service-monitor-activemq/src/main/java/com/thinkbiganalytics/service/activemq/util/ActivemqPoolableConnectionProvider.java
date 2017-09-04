@@ -25,6 +25,11 @@ import org.apache.activemq.jms.pool.PooledConnectionFactory;
 
 import com.thinkbiganalytics.service.activemq.config.ActivemqTransportListner;
 
+/**
+ * 
+ * This class is not used. Connection will be comming from Activemq JMS provider.
+ *
+ */
 public class ActivemqPoolableConnectionProvider {
 
     /**

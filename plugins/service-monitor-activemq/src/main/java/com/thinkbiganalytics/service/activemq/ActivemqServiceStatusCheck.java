@@ -137,7 +137,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
         }
         finally
         {
-            /*
+            /**
              * Close Connection
              */
 
