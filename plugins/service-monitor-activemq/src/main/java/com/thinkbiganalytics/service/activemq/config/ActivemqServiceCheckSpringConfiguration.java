@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.service.activemq.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /*-
  * #%L
@@ -23,11 +21,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * #L%
  */
 
+
+import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.thinkbiganalytics.service.activemq.ActivemqServiceStatusCheck;
 
 import javax.jms.ConnectionFactory;
 
@@ -36,15 +37,15 @@ import javax.jms.ConnectionFactory;
 public class ActivemqServiceCheckSpringConfiguration {
 
 
-    @Autowired(required = false)
+    @Autowired(required = true)
     @Qualifier("activemqConnectionPool")
     ConnectionFactory connectionFactory;
 
 
     @Bean(name = "activemqServiceStatus")
-    public ActivemqServiceStatusCheck activemqServiceStatusCheck() {
+    public ActivemqServiceStatusCheck activemqServiceStatusCheck( ) {
 
-        return new ActivemqServiceStatusCheck(this.connectionFactory);
+       return new ActivemqServiceStatusCheck(this.connectionFactory);
 
     }
 }

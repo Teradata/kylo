@@ -50,22 +50,28 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
     private static final Logger log = LoggerFactory.getLogger(ActivemqServiceStatusCheck.class);
 
-    private final PooledConnectionFactory activemqPoolConnection;
+    private  PooledConnectionFactory activemqPoolConnection = null;
     private String activemqBrokerUrl = "";
     static final  String SERVICE_NAME = "Activemq"; 
-    
-    
+
+    public ActivemqServiceStatusCheck()
+    {
+        System.out.println("**********************Empty Constructor ***********************8");
+
+        log.info("**********************Empty Constructor ***********************8");
+    }
+
     public ActivemqServiceStatusCheck(ConnectionFactory connectionFactory) {
 
-  
+        log.info("**********************Inside Constructor ***********************8");
         /**
          * Create Poolable Class Object and create multiple instance of connection 
          */
         this.activemqPoolConnection = (PooledConnectionFactory) connectionFactory;
-        
-        
-//        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
-//        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
+
+
+        //        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
+        //        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
 
     }
 
@@ -87,6 +93,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
     private ServiceComponent activemqStatus() {
 
+
         String componentName = "Activemq";
         String serviceName = SERVICE_NAME;
         ServiceComponent component = null;
@@ -106,7 +113,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
         try {
 
-            if ( StringUtils.isNotBlank(this.activemqBrokerUrl) )
+            if ( this.activemqPoolConnection != null)
             {
 
                 /**
@@ -123,8 +130,10 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
                 alert.setMessage(finalServiceMessage);
                 alert.setState(ServiceAlert.STATE.OK);
 
-                component = new DefaultServiceComponent.Builder(componentName + " - " + "", ServiceComponent.STATE.UP)
+                component = new DefaultServiceComponent.Builder(componentName , ServiceComponent.STATE.UP)
                                 .message(finalServiceMessage).addAlert(alert).build();
+                
+               
             }
 
         }
@@ -141,7 +150,7 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
             /*
              * Close Connection
              */
-            
+
             if(activemqConnection != null)
                 try {
                     activemqConnection.close();

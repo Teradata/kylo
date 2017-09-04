@@ -48,7 +48,4 @@ public class ActiveMqJmsService implements JmsService {
 		//nothing to do here
 	}
 
-
-
-
 }

@@ -12,6 +12,10 @@
 		<version>0.8.4-SNAPSHOT</version>
 	</parent>
 
+
+	<!-- <packaging>jar</packaging> <version>0.8.4-SNAPSHOT</version> -->
+
+
 	<properties>
 		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
 	</properties>
@@ -23,11 +27,8 @@
 	<dependencies>
 
 
-		<dependency>
-			<groupId>com.thinkbiganalytics.kylo</groupId>
-			<artifactId>kylo-jms-service-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		<!-- <dependency> <groupId>com.thinkbiganalytics.kylo</groupId> <artifactId>kylo-jms-service-api</artifactId> 
+			<version>${project.version}</version> </dependency> -->
 
 		<!-- Define Kylo Dependency -->
 		<dependency>
@@ -35,6 +36,31 @@
 			<artifactId>kylo-service-monitor-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+
+  <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+        <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-jersey2-jaxrs</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    
+    
 
 		<!-- Define Activemq Dependency -->
 		<dependency>

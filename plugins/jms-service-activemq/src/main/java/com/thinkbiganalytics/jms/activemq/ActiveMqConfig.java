@@ -59,7 +59,6 @@ public class ActiveMqConfig {
     public JmsService activeMqJmsService() {
         return new ActiveMqJmsService();
         
-        
     }
 
     @Bean (name = "activemqConnectionPool")
@@ -76,10 +75,7 @@ public class ActiveMqConfig {
         PooledConnectionFactory pool = new PooledConnectionFactory();
         pool.setIdleTimeout(0);
         pool.setConnectionFactory(getCredentialsAdapter(factory));
-
-        
-        
-        
+      
         log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
         return pool;
     }
