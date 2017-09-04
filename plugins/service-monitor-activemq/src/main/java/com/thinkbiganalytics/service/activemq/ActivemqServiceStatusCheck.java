@@ -56,22 +56,14 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
     public ActivemqServiceStatusCheck()
     {
-        System.out.println("**********************Empty Constructor ***********************8");
-
-        log.info("**********************Empty Constructor ***********************8");
     }
 
     public ActivemqServiceStatusCheck(ConnectionFactory connectionFactory) {
 
-        log.info("**********************Inside Constructor ***********************8");
         /**
          * Create Poolable Class Object and create multiple instance of connection 
          */
         this.activemqPoolConnection = (PooledConnectionFactory) connectionFactory;
-
-
-        //        ActivemqPoolableConnectionProvider activemqPoolableConnection = new ActivemqPoolableConnectionProvider ();
-        //        this.activemqPoolConnection = activemqPoolableConnection.activemqPoolableConnection(this.activemqBrokerUrl);
 
     }
 
@@ -132,8 +124,8 @@ public class ActivemqServiceStatusCheck implements ServiceStatusCheck{
 
                 component = new DefaultServiceComponent.Builder(componentName , ServiceComponent.STATE.UP)
                                 .message(finalServiceMessage).addAlert(alert).build();
-                
-               
+
+
             }
 
         }
