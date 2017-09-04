@@ -33,9 +33,11 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
@@ -91,7 +93,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -469,23 +471,23 @@ public class IntegrationTestBase {
     }
 
     protected int getTotalNumberOfRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "TOTAL_COUNT");
+        return getProfileSummary(feedId, "TOTAL_COUNT");
     }
 
     protected int getNumberOfValidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "VALID_COUNT");
+        return getProfileSummary(feedId, "VALID_COUNT");
     }
 
     protected int getNumberOfInvalidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "INVALID_COUNT");
+        return getProfileSummary(feedId, "INVALID_COUNT");
     }
 
     protected String getProcessingDttm(String feedId) {
         return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
     }
 
-    protected int getMetricvalueOfMetricType(String feedId, String metricType) {
-        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + metricType + "'}.metricvalue"));
+    protected int getProfileSummary(String feedId, String profileType) {
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
     }
 
     protected String getJsonPathOfProfileSummary(String feedId, String path) {
@@ -498,14 +500,14 @@ public class IntegrationTestBase {
         return JsonPath.from(response.asString()).getString(path);
     }
 
-    protected String getMetricvalueOfMetricTypeForColumn(String feedId, String processingDttm, String metricType, String column) {
+    protected String getProfileStatsForColumn(String feedId, String processingDttm, String profileType, String column) {
         Response response = given(FeedRestController.BASE)
             .when()
             .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
 
         response.then().statusCode(HTTP_OK);
 
-        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", metricType, column);
+        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
         return JsonPath.from(response.asString()).getString(path);
     }
 
@@ -768,7 +770,7 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
     }
 
-    protected void assertHiveSchema(String schemaName, String tableName) {
+    protected DefaultHiveSchema getHiveSchema(String schemaName, String tableName) {
         LOG.info("Asserting hive schema");
 
         Response response = given(HiveRestController.BASE)
@@ -776,6 +778,7 @@ public class IntegrationTestBase {
             .get(String.format("/schemas/%s/tables/%s", schemaName, tableName));
 
         response.then().statusCode(HTTP_OK);
+        return response.as(DefaultHiveSchema.class);
     }
 
     protected void assertHiveTables(final String schemaName, final String tableName) {
@@ -796,18 +799,17 @@ public class IntegrationTestBase {
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_invalid"));
     }
 
-    protected void assertHiveQuery(String schemaName, String tableName) {
+    protected List<HashMap<String, String>> getHiveQuery(String query) {
         LOG.info("Asserting hive query");
 
         int limit = 10;
         Response response = given(HiveRestController.BASE)
             .when()
-            .get("/query-result?query=SELECT * FROM " + schemaName + "." + tableName + " LIMIT " + limit);
+            .get("/query-result?query=" + query);
 
         response.then().statusCode(HTTP_OK);
 
-        List rows = JsonPath.from(response.asString()).getList("rows");
-        Assert.assertEquals(limit, rows.size());
+        return JsonPath.from(response.asString()).getList("rows");
     }
 
     protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
@@ -883,8 +885,8 @@ public class IntegrationTestBase {
         policies.add(newPolicyBuilder("email").withValidation(email).toPolicy());
         policies.add(newPolicyBuilder("gender").withValidation(lookup, notNull).toPolicy());
         policies.add(newPolicyBuilder("ip_address").withValidation(ipAddress).toPolicy());
-        policies.add(newPolicyBuilder("cc").withStandardisation(base64EncodeBinary).toPolicy());
-        policies.add(newPolicyBuilder("country").withStandardisation(base64EncodeBinary, base64DecodeBinary, base64EncodeString, base64DecodeString).withValidation(notNull, length).toPolicy());
+        policies.add(newPolicyBuilder("cc").withStandardisation(base64EncodeBinary).withProfile().toPolicy());
+        policies.add(newPolicyBuilder("country").withStandardisation(base64EncodeBinary, base64DecodeBinary, base64EncodeString, base64DecodeString).withValidation(notNull, length).withProfile().toPolicy());
         policies.add(newPolicyBuilder("birthdate").toPolicy());
         policies.add(newPolicyBuilder("salary").toPolicy());
         table.setFieldPolicies(policies);

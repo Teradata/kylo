@@ -23,9 +23,8 @@ package com.thinkbiganalytics.integration.feed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.CharMatcher;
-import com.jayway.restassured.path.json.JsonPath;
-import com.jayway.restassured.response.Response;
-import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
+import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
+import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
@@ -43,10 +42,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Basic Feed Integration Test which imports data index feed, creates category, imports data ingest template,
@@ -61,7 +59,8 @@ public class FeedIT extends IntegrationTestBase {
     private static final Logger LOG = LoggerFactory.getLogger(FeedIT.class);
 
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
-    private static final String FEED_NAME = "users_" + System.currentTimeMillis();
+    private static final int VALID_RESULTS = 879;
+    private static String FEED_NAME = "users_" + System.currentTimeMillis();
 
 
     @Override
@@ -107,13 +106,8 @@ public class FeedIT extends IntegrationTestBase {
 
 //    @Test
     public void temp() {
-        String feedId = "1d8efcda-98d0-4109-82dc-4abd8560280f";
-        String processingDttm = "1504278286973";
-        assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
-        assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
-        assertValidatorResults(feedId, processingDttm, "EmailValidator", 3);
-        assertValidatorResults(feedId, processingDttm, "LookupValidator", 4);
-        assertValidatorResults(feedId, processingDttm, "IPAddressValidator", 4);
+//        FEED_NAME = "users_1504528826443";
+//        assertHiveData();
     }
 
 
@@ -142,24 +136,27 @@ public class FeedIT extends IntegrationTestBase {
             Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
         }
 
+        String feedId = feed.getFeedId();
         LOG.info("Asserting number of total/valid/invalid rows");
-        Assert.assertEquals(1000, getTotalNumberOfRecords(feed.getFeedId()));
-        Assert.assertEquals(879, getNumberOfValidRecords(feed.getFeedId()));
-        Assert.assertEquals(121, getNumberOfInvalidRecords(feed.getFeedId()));
+        Assert.assertEquals(1000, getTotalNumberOfRecords(feedId));
+        Assert.assertEquals(VALID_RESULTS, getNumberOfValidRecords(feedId));
+        Assert.assertEquals(121, getNumberOfInvalidRecords(feedId));
 
-        String processingDttm = getProcessingDttm(feed.getFeedId());
-        assertNamesAreInUppercase(feed.getFeedId(), processingDttm);
-        assertValidatorsAndStandardisers(feed.getFeedId(), processingDttm);
+        assertValidatorsAndStandardisers(feedId);
 
         //TODO assert data via global search
         assertHiveData();
     }
 
-    private void assertValidatorsAndStandardisers(String feedId, String processingDttm) {
+    private void assertValidatorsAndStandardisers(String feedId) {
         LOG.info("Asserting Validators and Standardisers");
 
-        //TODO assert countries are readable countries after base 64 encoding and decoding
-        //TODO assert base 64 encoding for cc field by comparing known rows
+        String processingDttm = getProcessingDttm(feedId);
+
+        assertNamesAreInUppercase(feedId, processingDttm);
+        assertMultipleBase64Encodings(feedId, processingDttm);
+        assertBinaryColumnData();
+
         assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
         assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
         assertValidatorResults(feedId, processingDttm, "EmailValidator", 3);
@@ -169,13 +166,39 @@ public class FeedIT extends IntegrationTestBase {
 
     private void assertHiveData() {
         assertHiveTables("functional_tests", FEED_NAME);
-        assertHiveSchema("functional_tests", FEED_NAME);
-        assertHiveQuery("functional_tests", FEED_NAME);
+        getHiveSchema("functional_tests", FEED_NAME);
+        List<HashMap<String, String>> rows = getHiveQuery("SELECT * FROM " + "functional_tests" + "." + FEED_NAME + " LIMIT 880");
+        Assert.assertEquals(VALID_RESULTS, rows.size());
+    }
+
+    private void assertBinaryColumnData() {
+        LOG.info("Asserting binary CC column data");
+        DefaultHiveSchema schema = getHiveSchema("functional_tests", FEED_NAME);
+        Field ccField = schema.getFields().stream().filter(field -> field.getName().equals("cc")).iterator().next();
+        Assert.assertEquals("binary", ccField.getDerivedDataType());
+
+        List<HashMap<String, String>> rows = getHiveQuery("SELECT cc FROM " + "functional_tests" + "." + FEED_NAME + " where id = 1");
+        Assert.assertEquals(1, rows.size());
+        HashMap<String, String> row = rows.get(0);
+
+        // where TmpjMU9UVXlNVGcyTkRreU1ERXhOZz09 is double Base64 encoding for cc field of the first row (6759521864920116),
+        // one base64 encoding by our standardiser and second base64 encoding by spring framework for returning binary data
+        Assert.assertEquals("TmpjMU9UVXlNVGcyTkRreU1ERXhOZz09", row.get("cc"));
     }
 
     private void assertNamesAreInUppercase(String feedId, String processingDttm) {
         LOG.info("Asserting all names are in upper case");
-        String topN = getMetricvalueOfMetricTypeForColumn(feedId, processingDttm, "TOP_N_VALUES", "first_name");
+        String topN = getProfileStatsForColumn(feedId, processingDttm, "TOP_N_VALUES", "first_name");
         Assert.assertTrue(CharMatcher.JAVA_LOWER_CASE.matchesNoneOf(topN));
+    }
+
+    private void assertMultipleBase64Encodings(String feedId, String processingDttm) {
+        LOG.info("Asserting multiple base 64 encoding and decoding, which also operate on different data types (string and binary), produce expected initial human readable form");
+        String countries = getProfileStatsForColumn(feedId, processingDttm, "TOP_N_VALUES", "country");
+        Assert.assertTrue(countries.contains("China"));
+        Assert.assertTrue(countries.contains("Indonesia"));
+        Assert.assertTrue(countries.contains("Russia"));
+        Assert.assertTrue(countries.contains("Philippines"));
+        Assert.assertTrue(countries.contains("Brazil"));
     }
 }
