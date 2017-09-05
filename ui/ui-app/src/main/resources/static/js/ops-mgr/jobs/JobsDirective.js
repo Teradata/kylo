@@ -10,7 +10,9 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
                 feedFilter: '=',
                 onJobAction: '&',
                 hideFeedColumn: '=?',
-                feed: '=?'
+                feed: '=?',
+                filter:'=?',
+                tab:'=?'
             },
             controllerAs: 'vm',
             scope: true,
@@ -36,6 +38,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
         if (this.hideFeedColumn == undefined) {
             this.hideFeedColumn = false;
         }
+
 
         this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'jobs';
         //Page State
@@ -74,16 +77,16 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
          * The filter supplied in the page
          * @type {string}
          */
-        this.filter = '';
+        this.filter = angular.isUndefined(this.filter) ? '' : this.filter;
+
+        this.tab = angular.isUndefined(this.tab) ? '' : this.tab;
+
 
         BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', updateJobs);
 
         function updateJobs() {
             loadJobs(true);
         }
-
-        //Load the data
-        //   loadJobs();
 
         this.paginationId = function(tab) {
             return PaginationDataService.paginationId(self.pageName, tab.title);
@@ -103,6 +106,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             return self.filter;
         }, function (newVal, oldVal) {
             if (newVal != oldVal) {
+                console.log('filter changed ',newVal,oldVal)
                 return loadJobs(true).promise;
             }
         });
@@ -561,6 +565,15 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
                 .then(function(actionSet) {
                     self.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });
+
+        if(self.tab != ''){
+            var index = _.indexOf(tabNames,self.tab);
+            if(index >=0){
+                self.tabMetadata.selectedIndex = index;
+            }
+        }
+
+
     }
 
     function JobFilterHelpPanelMenuCtrl(mdPanelRef) {

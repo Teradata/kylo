@@ -367,6 +367,10 @@ define(['angular', 'kylo-common', 'kylo-services',
         $stateProvider.state({
             name: 'jobs.**',
             url: '/jobs',
+            params: {
+                filter: null,
+                tab:null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/module').then(function success(args) {
                     //upon success go back to the state

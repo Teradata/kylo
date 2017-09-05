@@ -233,6 +233,9 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.navigateToJobDetails = function (executionId) {
                 $state.go('job-details', {executionId: executionId});
             }
+            data.navigateToJobs = function (tab,filter) {
+                $state.go('jobs', {tab:tab,filter: filter});
+            }
             return data;
         }
 
