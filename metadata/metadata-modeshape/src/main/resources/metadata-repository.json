@@ -58,13 +58,6 @@
             "nodeType": "mix:title",
             "columns": "jcr:title(STRING)"
         },
-        "nodesByName": {
-            "kind": "value",
-            "provider": "local",
-            "synchronous": "true",
-            "nodeType": "nt:base",
-            "columns": "jcr:name(NAME)"
-        },
         "nodesByDepth": {
             "kind": "value",
             "provider": "local",
