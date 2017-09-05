@@ -57,4 +57,16 @@
     </plugins>
   </build>
 
+  <profiles>
+  <profile>
+    <id>nifi.version.override</id>
+    <activation>
+      <activeByDefault>false</activeByDefault>
+    </activation>
+    <properties>
+      <nifi.version>${nifi.version.override}</nifi.version>
+    </properties>
+  </profile>
+  </profiles>
+
 </project>
