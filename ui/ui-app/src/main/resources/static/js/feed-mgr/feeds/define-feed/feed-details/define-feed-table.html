@@ -155,6 +155,7 @@
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                                    ng-disabled="vm.tableLocked || columnDef.deleted"
                                    ng-class="{strike: columnDef.deleted}"
+                                   maxlength="767"
                             />
 
                             <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
@@ -422,7 +423,7 @@
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
             <span>Field Description</span>
-            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
+            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus="" maxlength="256"></textarea>
           </div>
         </div>
 

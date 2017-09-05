@@ -7,8 +7,8 @@
 
   <parent>
     <artifactId>kylo-job-repository</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -17,19 +17,19 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-job-repository-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -72,7 +72,7 @@
 
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>

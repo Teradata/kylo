@@ -167,8 +167,8 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
             // Save the changes
-            self.saveModel(model)
-                .then(function () {
+            DatasourcesService.saveRoles(model)
+                .then(function (r) {
                     EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityRoleTypes.DATASOURCE, self.model.roleMemberships);
                 })
                 .catch(function () {
@@ -192,10 +192,21 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             if (!self.isNew() && !self.hasPasswordChanged) {
                 model.password = null;
             }
+            $mdDialog.show({
+                controller:"SaveDatasourceDialogController",
+                templateUrl: 'js/feed-mgr/datasources/datasource-saving-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {
+                    datasourceName: self.model.name
+                }
+            });
 
             // Save the changes
             self.saveModel(model)
                 .catch(function () {
+                    $mdDialog.hide()
                     self.isDetailsEditable = true;
                 });
         };
@@ -210,9 +221,17 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 .then(function (savedModel) {
                     savedModel.owner = self.model.owner;
                     savedModel.roleMemberships = self.model.roleMemberships;
+                    savedModel.references = self.model.references;
                     self.model = savedModel;
+                    $mdDialog.hide()
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Saved the data source ' + self.model.name)
+                            .hideDelay(3000)
+                    );
                     return savedModel;
                 }, function (err) {
+                    $mdDialog.hide()
                     $mdDialog.show(
                         $mdDialog.alert()
                             .clickOutsideToClose(true)
@@ -240,6 +259,12 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 .then(function (model) {
                     self.model = model;
                     self.loading = false;
+                    if(self.model.controllerServiceId){
+                        //see if we can find the references and show them
+                        DatasourcesService.findControllerServiceReferences(self.model.controllerServiceId).then(function(references){
+                            self.model.references = references;
+                        });
+                    }
 
                     $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
                         .then(function (access) {
@@ -290,6 +315,59 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             }
         });
     }
+
+
+    /**
+     * The Controller used for the abandon all
+     */
+    var saveDatasourceDialogController = function ($scope, $mdDialog, $interval,datasourceName) {
+        var self = this;
+
+        $scope.datasourceName = datasourceName;
+        $scope.message = "Saving the data source "+datasourceName;
+        var counter = 0;
+        var index = 0;
+        var messages = [];
+        messages.push("Hang tight. Still working.")
+        messages.push("Just a little while longer.")
+        messages.push("Saving the data source.")
+
+        function updateMessage(){
+            index++;
+            var len = messages.length;
+            if(index == len){
+                index = 0;
+            }
+            $scope.message = messages[index];
+
+        }
+        var messageInterval = $interval(function() {
+            updateMessage();
+
+        },3000);
+
+        function cancelMessageInterval(){
+            if(messageInterval != null) {
+                $interval.cancel(messageInterval);
+            }
+        }
+
+
+        $scope.hide = function () {
+            cancelMessageInterval();
+            $mdDialog.hide();
+
+        };
+
+        $scope.cancel = function () {
+            cancelMessageInterval();
+            $mdDialog.cancel();
+        };
+
+    };
+
+    angular.module(moduleName).controller('SaveDatasourceDialogController', ["$scope","$mdDialog","$interval","datasourceName",saveDatasourceDialogController]);
+
 
     angular.module(moduleName).controller("DatasourcesDetailsController", ["$scope", "$mdDialog", "$mdToast", "$q", "$transition$", "AccessControlService", "DatasourcesService",
                                                                            "EntityAccessControlService", "StateService", DatasourcesDetailsController]);

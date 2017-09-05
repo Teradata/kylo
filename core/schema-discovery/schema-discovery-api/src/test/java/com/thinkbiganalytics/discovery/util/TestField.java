@@ -108,7 +108,7 @@ public class TestField implements Field {
         this.sampleValues = sampleValues;
     }
 
-    public String asFieldStructure() {
+    public String asFieldStructure(String otherName) {
         return name + "|" + derivedDataType;
     }
 

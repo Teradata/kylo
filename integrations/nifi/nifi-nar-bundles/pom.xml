@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.thinkbiganalytics.nifi</groupId>
+  <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
   <artifactId>kylo-nifi-nar-bundles</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -49,28 +49,28 @@
       <!-- API -->
 
       <dependency>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
+        <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
         <artifactId>kylo-nifi-hadoop-service-api</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
 
       <dependency>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
+        <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
         <artifactId>kylo-nifi-spark-service-api</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
 
       <dependency>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
+        <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
         <artifactId>kylo-nifi-core-service-api</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
 
       <dependency>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
+        <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
         <artifactId>kylo-nifi-standard-services-nar</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -193,7 +193,7 @@
       </dependency>
 
       <dependency>
-        <groupId>com.thinkbiganalytics.metadata</groupId>
+        <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
         <artifactId>kylo-metadata-rest-model</artifactId>
         <version>${project.version}</version>
         <exclusions>

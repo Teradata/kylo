@@ -27,7 +27,7 @@
     <validCheckSum>7:ab5cdf176b6711ea6583bea5dc38fff2</validCheckSum>
     <addColumn
             tableName="FEED">
-        <column name="TIME_BTWN_BATCH_JOBS" type="int(11)" defaultValue="1000"/>
+        <column name="TIME_BTWN_BATCH_JOBS" type="int" defaultValue="1000"/>
     </addColumn>
 </changeSet>
 

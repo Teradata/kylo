@@ -142,8 +142,17 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
      */
     public boolean validateNiFiFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
+        if(StringUtils.isBlank(feedName)) {
+            feedName = event.getFeedName();
+        }
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
+        if(StringUtils.isBlank(processGroupId)){
+            processGroupId = event.getFeedProcessGroupId();
+        }
         String processorName = getProcessorName(event.getComponentId());
+        if(StringUtils.isBlank(processorName)){
+            processorName = event.getComponentName();
+        }
         return StringUtils.isNotBlank(feedName) && StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(processorName);
     }
 
@@ -153,8 +162,17 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
+        if(StringUtils.isBlank(feedName)) {
+            feedName = event.getFeedName();
+        }
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
+        if(StringUtils.isBlank(processGroupId)){
+            processGroupId = event.getFeedProcessGroupId();
+        }
         String processorName = getProcessorName(event.getComponentId());
+        if(StringUtils.isBlank(processorName)){
+            processorName = event.getComponentName();
+        }
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);
@@ -266,11 +284,11 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
     }
 
     public String getFeedProcessGroupId(String feedProcessorId) {
-        return getFlowCache().getProcessorIdToFeedProcessGroupId().get(feedProcessorId);
+        return feedProcessorId != null ? getFlowCache().getProcessorIdToFeedProcessGroupId().get(feedProcessorId) : null;
     }
 
     public String getProcessorName(String processorId) {
-        return getFlowCache().getProcessorIdToProcessorName().get(processorId);
+        return processorId != null ? getFlowCache().getProcessorIdToProcessorName().get(processorId) : null;
     }
 
 

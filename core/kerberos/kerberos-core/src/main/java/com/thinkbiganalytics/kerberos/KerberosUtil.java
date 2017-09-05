@@ -20,6 +20,8 @@ package com.thinkbiganalytics.kerberos;
  * #L%
  */
 
+import com.google.common.base.Throwables;
+
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,38 +29,56 @@ import org.slf4j.LoggerFactory;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
+ * Utility methods for executing code that requires an active Kerberos ticket.
  */
 public class KerberosUtil {
 
     private static final Logger log = LoggerFactory.getLogger(KerberosUtil.class);
 
+    /**
+     * Gets a connection for the specified data source using the optional Kerberos ticket.
+     */
     public static Connection getConnectionWithOrWithoutKerberos(final DataSource dataSource, KerberosTicketConfiguration kerberosTicketConfiguration) throws SQLException {
-        Connection connection = null;
-        if (kerberosTicketConfiguration.isKerberosEnabled()) {
-            log.info("Initializing Kerberos ticket for Hive connection");
-            UserGroupInformation userGroupInformation;
-            try {
-                KerberosTicketGenerator t = new KerberosTicketGenerator();
-                userGroupInformation = t.generateKerberosTicket(kerberosTicketConfiguration);
-                connection = userGroupInformation.doAs(new PrivilegedExceptionAction<Connection>() {
-                    @Override
-                    public Connection run() throws Exception {
-
-                        return dataSource.getConnection();
-                    }
-                });
-            } catch (Exception e) {
-                log.error("Error in Kerberos authentication", e);
-                throw new RuntimeException(e);
+        return runWithOrWithoutKerberos(new Callable<Connection>() {
+            @Override
+            public Connection call() throws Exception {
+                try {
+                    return dataSource.getConnection();
+                } catch (final Exception e) {
+                    log.error("Error in Kerberos authentication", e);
+                    throw new RuntimeException(e);
+                }
             }
-        } else {
-            connection = dataSource.getConnection();
-        }
-        return connection;
+        }, kerberosTicketConfiguration);
     }
 
+    /**
+     * Executes the specified action using the optional Kerberos ticket.
+     */
+    public static <T> T runWithOrWithoutKerberos(@Nonnull final Callable<T> action, @Nonnull final KerberosTicketConfiguration kerberosTicketConfiguration) {
+        try {
+            if (kerberosTicketConfiguration.isKerberosEnabled()) {
+                log.debug("Running action with Kerberos ticket");
+                final KerberosTicketGenerator kerberosTicketGenerator = new KerberosTicketGenerator();
+                final UserGroupInformation userGroupInformation = kerberosTicketGenerator.generateKerberosTicket(kerberosTicketConfiguration);
+                return userGroupInformation.doAs(new PrivilegedExceptionAction<T>() {
+                    @Override
+                    public T run() throws Exception {
+                        return action.call();
+                    }
+                });
+            } else {
+                log.debug("Running action without Kerberos");
+                return action.call();
+            }
+        } catch (final Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
 }

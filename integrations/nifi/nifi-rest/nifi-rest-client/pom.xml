@@ -6,8 +6,8 @@
 
   <parent>
     <artifactId>kylo-nifi-rest</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
@@ -19,6 +19,7 @@
   <modules>
     <module>nifi-rest-client-api</module>
     <module>nifi-rest-client-v1</module>
+    <module>nifi-rest-client-v1.1</module>
     <module>nifi-rest-client-v1.2</module>
   </modules>
 </project>

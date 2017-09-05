@@ -7,8 +7,8 @@
   <artifactId>kylo-commons-spark-repl</artifactId>
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
 
   <description>A collection of useful helper functions for Spark.</description>
@@ -21,7 +21,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-scala-api</artifactId>
       <version>${project.version}</version>
     </dependency>

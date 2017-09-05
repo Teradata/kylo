@@ -47,11 +47,27 @@ public class ColumnSpec {
 
     private boolean modifiedDt;
 
+    private String otherColumnName;
+
     public ColumnSpec(String name, String dataType, String comment) {
         this(name, dataType, comment, false, false, false);
     }
 
     public ColumnSpec(String name, String dataType, String comment, boolean pk, boolean createDt, boolean modifiedDt) {
+        this(name, dataType, comment, pk, createDt, modifiedDt,null);
+    }
+
+    public ColumnSpec(ColumnSpec other) {
+        this.name = other.name;
+        this.comment = other.comment;
+        this.dataType = other.dataType;
+        this.pk = other.pk;
+        this.createDt = other.createDt;
+        this.modifiedDt = other.modifiedDt;
+        this.otherColumnName = other.otherColumnName;
+    }
+
+    public ColumnSpec(String name, String dataType, String comment, boolean pk, boolean createDt, boolean modifiedDt, String otherColumnName) {
         super();
         Validate.notEmpty(name);
 
@@ -61,6 +77,7 @@ public class ColumnSpec {
         this.pk = pk;
         this.createDt = createDt;
         this.modifiedDt = modifiedDt;
+        this.otherColumnName = otherColumnName != null ? otherColumnName.toLowerCase() : "";
         validate();
     }
 
@@ -107,8 +124,11 @@ public class ColumnSpec {
                     boolean pk = false;
                     boolean modifiedDt = false;
                     boolean createDt = false;
+                    String otherName = "";
                     switch (len) {
                         default:
+                        case 7:
+                            otherName = parts[6];
                         case 6:
                             modifiedDt = "1".equals(parts[5].trim());
                         case 5:
@@ -122,7 +142,7 @@ public class ColumnSpec {
                         case 1:
                             columnName = parts[0];
                     }
-                    specs.add(new ColumnSpec(columnName, dataType, comment, pk, createDt, modifiedDt));
+                    specs.add(new ColumnSpec(columnName, dataType, comment, pk, createDt, modifiedDt,otherName));
                 }
             }
             return specs.toArray(new ColumnSpec[0]);
@@ -201,5 +221,9 @@ public class ColumnSpec {
 
     public String toPartitionSQL() {
         return HiveUtils.quoteIdentifier(name) + " " + dataType;
+    }
+
+    public String getOtherColumnName() {
+        return otherColumnName;
     }
 }

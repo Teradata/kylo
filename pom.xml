@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.thinkbiganalytics.datalake</groupId>
+  <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.8.3-SNAPSHOT</version>
+  <version>0.8.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
@@ -48,6 +48,7 @@
     <commons.io.version>2.5</commons.io.version>
     <commons.collections>3.2.2</commons.collections>
     <commons.csv>1.4</commons.csv>
+    <commons.codec>1.10</commons.codec>
     <elasticsearch.version>2.2.0</elasticsearch.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>2.6.2</hadoop.version>
@@ -69,7 +70,7 @@
     <mockito.version>1.10.19</mockito.version>
     <!-- The maria db driver version is references in the post-install.sh file. Manually update it there if you change it here.  -->
     <mariadb.version>1.5.7</mariadb.version>
-    <nifi.version>1.1.0</nifi.version>
+    <nifi.version>1.0.0</nifi.version>
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
@@ -442,7 +443,7 @@
 
       <dependency>
         <artifactId>kylo-rest-client</artifactId>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <groupId>com.thinkbiganalytics.kylo</groupId>
         <version>${project.version}</version>
         <exclusions>
           <exclusion>
@@ -644,6 +645,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec}</version>
       </dependency>
 
       <dependency>

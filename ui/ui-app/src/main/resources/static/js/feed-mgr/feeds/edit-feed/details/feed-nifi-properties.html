@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div flex ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
+            <div ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
                 <div class="layout-padding-indent">
                     <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom" property="property" flex-gt-sm
                                         ng-repeat="property in vm.editModel.inputProcessor.properties " track by property.key/>
@@ -88,7 +88,7 @@
                 <custom-processor-rendering template-url="{{vm.editModel.inputProcessor.feedPropertiesUrl}}" processor="vm.editModel.inputProcessor" mode="edit"></custom-processor-rendering>
             </div>
 
-            <div ng-repeat="processor in vm.editModel.nonInputProcessors track by processor.processorId" flex ng-if="processor.userEditable">
+            <div ng-repeat="processor in vm.editModel.nonInputProcessors track by processor.processorId" ng-if="processor.userEditable">
                 <div class="md-subhead">{{processor.name}}</div>
                 <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
                     <div ng-repeat="property in processor.properties track by property.key">

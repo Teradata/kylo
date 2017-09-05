@@ -78,7 +78,21 @@ public interface AlertResponse {
     <C extends Serializable> Alert unhandle(String description, C content);
 
     /**
+     * Changes an alert status to unhandled.
+     *
+     * @param description a description of the change (may be null)
+     * @param content     alert type-specific content associated with the state change
+     */
+    <C extends Serializable> Alert updateAlertChange(String description, C content);
+
+    /**
      * clears (hides or removes) an alert.  No other responder will see this alert if cleared.
      */
     void clear();
+
+
+    /**
+     * resets the clear flag on the alert
+     */
+    void unclear();
 }

@@ -38,17 +38,31 @@ public interface NifiFeedStatisticsRepository extends JpaRepository<JpaNifiFeedS
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") "
                    + "where stats.feedName = :feedName ")
-    JpaNifiFeedStats findLatestForFeed(@Param("feedName") String feedName);
+    JpaNifiFeedStats findLatestForFeedWithAcl(@Param("feedName") String feedName);
+
+    @Query(value = "select distinct stats from JpaNifiFeedStats as stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + "where stats.feedName = :feedName ")
+    JpaNifiFeedStats findLatestForFeedWithoutAcl(@Param("feedName") String feedName);
 
     @Query(value = "select distinct stats from JpaNifiFeedStats stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") "
                    + "where feed.isStream = true ")
-    List<JpaNifiFeedStats> findStreamingFeedStats();
+    List<JpaNifiFeedStats> findStreamingFeedStatsWithAcl();
+
+    @Query(value = "select distinct stats from JpaNifiFeedStats stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+                   + "where feed.isStream = true ")
+    List<JpaNifiFeedStats> findStreamingFeedStatsWithoutAcl();
 
     @Query(value = "select distinct stats from JpaNifiFeedStats stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") ")
-    List<JpaNifiFeedStats> findFeedStats();
+    List<JpaNifiFeedStats> findFeedStatsWithAcl();
+
+    @Query(value = "select distinct stats from JpaNifiFeedStats stats "
+                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName ")
+    List<JpaNifiFeedStats> findFeedStatsWithoutAcl();
 
 }

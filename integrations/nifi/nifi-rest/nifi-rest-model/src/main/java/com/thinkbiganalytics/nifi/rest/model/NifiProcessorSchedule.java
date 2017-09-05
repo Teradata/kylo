@@ -28,6 +28,9 @@ import com.thinkbiganalytics.metadata.MetadataField;
  */
 public class NifiProcessorSchedule {
 
+
+    private String processorId;
+
     @MetadataField
     private String schedulingPeriod;
     @MetadataField
@@ -36,6 +39,27 @@ public class NifiProcessorSchedule {
     private Integer concurrentTasks;
     @MetadataField
     private String executionNode;
+
+
+    public NifiProcessorSchedule() {
+
+    }
+
+    public NifiProcessorSchedule(NifiProcessorSchedule other) {
+        this.processorId = other.processorId;
+        this.schedulingPeriod = other.schedulingPeriod;
+        this.schedulingStrategy = other.schedulingStrategy;
+        this.concurrentTasks = other.concurrentTasks;
+        this.executionNode = other.executionNode;
+    }
+
+    public String getProcessorId() {
+        return processorId;
+    }
+
+    public void setProcessorId(String processorId) {
+        this.processorId = processorId;
+    }
 
     /**
      * Return the NiFi schedule period.
@@ -95,4 +119,6 @@ public class NifiProcessorSchedule {
     public void setExecutionNode(String executionNode) {
         this.executionNode = executionNode;
     }
+
+
 }

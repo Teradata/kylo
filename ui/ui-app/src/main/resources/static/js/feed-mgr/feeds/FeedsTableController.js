@@ -11,7 +11,14 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         self.allowExport = false;
 
         self.feedData = [];
-        this.loading = true;
+        this.loading = false;
+
+        /**
+         * Flag to indicate the page has been loaded the first time
+         * @type {boolean}
+         */
+        var loaded = false;
+
         this.cardTitle = 'Feeds';
 
         // Register Add button
@@ -45,8 +52,10 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         $scope.$watch(function () {
             return self.filter;
         }, function (newVal, oldValue) {
-            PaginationDataService.filter(self.pageName, newVal)
-            getFeeds();
+            if (newVal != oldValue || (!loaded && !self.loading)) {
+                PaginationDataService.filter(self.pageName, newVal)
+                getFeeds();
+            }
         })
 
         this.onViewTypeChange = function(viewType) {
@@ -58,11 +67,31 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             getFeeds();
         };
 
-        this.onPaginationChange = function(page, limit) {
+        function onPaginate(page,limit){
             PaginationDataService.currentPage(self.pageName, null, page);
             self.currentPage = page;
-            getFeeds();
+            //only trigger the reload if the initial page has been loaded.
+            //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
+            if (loaded) {
+                getFeeds();
+            }
+        }
+
+        this.onPaginationChange = function(page, limit) {
+            if(self.viewType == 'list') {
+                onPaginate(page,limit);
+            }
+
         };
+
+        this.onDataTablePaginationChange = function(page, limit) {
+            if(self.viewType == 'table') {
+                onPaginate(page,limit);
+            }
+
+        };
+
+
 
         /**
          * Called when a user Clicks on a table Option
@@ -82,7 +111,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
          */
         function loadSortOptions() {
             var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Last Modified': 'updateDate'};
-//            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'updateDate', 'desc');
             TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
@@ -95,12 +123,14 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         }
 
         function getFeeds() {
-        	
+            self.loading = true;
+
             var successFn = function(response) {
                 self.loading = false;
                 if (response.data) {
                 	self.feedData = populateFeeds(response.data.data);
                 	PaginationDataService.setTotal(self.pageName,response.data.recordsFiltered);
+                    loaded = true;
                 } else {
                 	self.feedData = [];
                 }
@@ -108,6 +138,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             
             var errorFn = function(err) {
                 self.loading = false;
+                loaded = true;
             }
 
         	var limit = PaginationDataService.rowsPerPage(self.pageName);
@@ -150,8 +181,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             
             return simpleFeedData;
         }
-
-//        getFeeds();
 
         // Fetch the allowed actions
         AccessControlService.getUserAllowedActions()

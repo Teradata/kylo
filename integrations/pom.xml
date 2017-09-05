@@ -3,14 +3,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
   </properties>
   <artifactId>kylo-integrations</artifactId>
+  <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
   <packaging>pom</packaging>
   <modules>
     <module>jira</module>

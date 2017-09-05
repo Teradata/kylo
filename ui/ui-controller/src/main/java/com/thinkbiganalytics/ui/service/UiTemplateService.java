@@ -73,36 +73,37 @@ public class UiTemplateService {
             try {
                 final String json = fileResourceService.resourceAsString(resource);
                 DefaultAngularModule module = (json != null) ? ObjectMapperSerializer.deserialize(json, DefaultAngularModule.class) : null;
-                if(module != null && StringUtils.isBlank(module.getModuleJsUrl())){
-                    //attempt to derive it
-                    try {
-                        String url = resource.getURL().getPath().toString();
-                        String modulePath = StringUtils.substringAfter(url,"/classes/static/js/");
-                        String absolutePath = StringUtils.substringBeforeLast(url,"/");
-                        boolean fileExists = false;
-                        if(StringUtils.isBlank(modulePath) ){
-                            modulePath = StringUtils.substringAfter(url,"/classes/");
-                        }
-                        if(StringUtils.isNotBlank(modulePath)){
-                            String moduleJsUrl = StringUtils.substringBefore(modulePath,resource.getFilename())+"module";
-                            //ensure module.js exists
-                            File f =  new File(absolutePath + "/module.js");
-                            if(f.exists()){
+                String moduleJsUrl = "";
+                if(module != null) {
+                    if (StringUtils.isBlank(module.getModuleJsUrl())) {
+                        //attempt to derive it
+                        try {
+                            String url = resource.getURL().getPath().toString();
+                            String modulePath = "";
+                            int idx = url.indexOf("/static/js/");
+                            if (idx >= 0) {
+                                modulePath = url.substring(idx + ("/static/js/".length()));
+                            }
+                            if (StringUtils.isNotBlank(modulePath)) {
+                                moduleJsUrl = StringUtils.substringBefore(modulePath, resource.getFilename()) + "module";
                                 modulePath = moduleJsUrl;
                                 module.setModuleJsUrl(modulePath);
-                                modules.add(module);
-                            }
-                            else {
-                                log.error("Unable to load Angular Extension Module {}.  Please ensure you have a module.js file located in the same directory as the {} definition file",resource.getFilename(),resource.getFilename());
+                            } else {
+                                log.error("Unable to load Angular Extension Module {}.  Please ensure you have a module.js file located in the same directory as the {} definition file",
+                                          resource.getFilename(), resource.getFilename());
                             }
 
+
+                        } catch (Exception e) {
+                            log.error("Unable to load Angular Extension Module ", resource.getFilename(), e);
                         }
 
-                    }catch (Exception e){
-                        log.error("Unable to load Angular Extension Module ",resource.getFilename(),e);
                     }
-
+                    if (StringUtils.isNotBlank(module.getModuleJsUrl())) {
+                        modules.add(module);
+                    }
                 }
+
             } catch (final RuntimeException e) {
                 log.error("Failed to parse Angular Extension Module: {}", resource.getFilename(), e);
             }

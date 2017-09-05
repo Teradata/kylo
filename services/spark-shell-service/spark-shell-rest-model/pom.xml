@@ -10,8 +10,8 @@
 
   <parent>
     <artifactId>kylo-spark-shell-service</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
 
   <properties>
@@ -29,22 +29,22 @@
 
     <!-- Kylo -->
     <dependency>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-service-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-schema-discovery-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-api</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -67,6 +67,11 @@ define(['angular','common/module-name','angular-ui-router'], function (angular,m
                     if(params ) {
                         angular.extend(copyParams, params);
                     }
+
+                    copyParams = _.omit(copyParams, function(value, key, object) {
+                        return key.startsWith("bcExclude_")
+                    });
+
                     var displayName = getDisplayName(state);
                     $scope.breadcrumbs.push({
                         key:breadcrumbKey,

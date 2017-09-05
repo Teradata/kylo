@@ -7,9 +7,9 @@
   <packaging>pom</packaging>
 
   <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-samples</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -25,7 +25,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <groupId>com.thinkbiganalytics.kylo</groupId>
         <artifactId>kylo-security-auth</artifactId>
         <version>${project.version}</version>
       </dependency>

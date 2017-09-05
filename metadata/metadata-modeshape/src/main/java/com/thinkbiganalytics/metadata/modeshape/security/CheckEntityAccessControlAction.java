@@ -139,7 +139,7 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
 
     private void createDefaultRoles() {
         // Create default roles
-        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Allows a user to edit, enable/disable, delete, export, and access job operations.",
+        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Allows a user to edit, enable/disable, delete and export feed. Allows access to job operations for feed. If role inherited via a category, allows these operations for feeds under that category.",
                                                     FeedAccessControl.EDIT_DETAILS,
                                                     FeedAccessControl.DELETE,
                                                     FeedAccessControl.ACCESS_OPS,
@@ -165,7 +165,7 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
 
         createDefaultRole(SecurityRole.TEMPLATE, "readOnly", "Read-Only", "Allows a user to view the template", TemplateAccessControl.ACCESS_TEMPLATE);
 
-        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor", "Allows a user to edit, export, delete, and create feeds using this category",
+        SecurityRole categoryEditor = createDefaultRole(SecurityRole.CATEGORY, "editor", "Editor", "Allows a user to edit, export and delete category. Allows creating feeds under the category",
                                                         CategoryAccessControl.ACCESS_CATEGORY,
                                                         CategoryAccessControl.EDIT_DETAILS,
                                                         CategoryAccessControl.EDIT_SUMMARY,

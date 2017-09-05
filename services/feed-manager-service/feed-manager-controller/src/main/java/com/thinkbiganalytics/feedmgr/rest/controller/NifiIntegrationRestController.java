@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
@@ -43,17 +44,23 @@ import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceReferencingComponentDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentEntity;
+import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -119,6 +126,9 @@ public class NifiIntegrationRestController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private DatasourceService datasourceService;
 
     @GET
     @Path("/auto-align/{processGroupId}")
@@ -298,6 +308,7 @@ public class NifiIntegrationRestController {
                                                              : nifiRestClient.processGroups().getControllerServices(processGroupId);
         final Set<ControllerServiceDTO> matchingControllerServices = controllerServices.stream()
             .filter(controllerService -> allowedTypes.contains(controllerService.getType()))
+            .filter(datasourceService.getControllerServiceAccessControlFilter())
             .collect(Collectors.toSet());
         return Response.ok(matchingControllerServices).build();
     }
@@ -381,6 +392,55 @@ public class NifiIntegrationRestController {
             return Response.ok(error).build();
         }
     }
+
+    @GET
+    @Path("/controller-services/{serviceId}/references")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets a controller service references in a map by component type. (i.e. Processor -> list, Controller Service -> list ...)",
+                  notes = "returns a map of the type and reference objects")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "returns a map of the type and reference objects", response = ControllerServiceDTO.class),
+                      @ApiResponse(code = 500, message = "Unable to find the controller service", response = RestResponseStatus.class)
+                  })
+    public Response getControllerServiceReferencesMap(@PathParam("serviceId") String serviceId) {
+        Map<String,List<ControllerServiceReferencingComponentDTO>> map = null;
+        try {
+            final ControllerServiceDTO controllerService = legacyNifiRestClient.getControllerService(null, serviceId);
+            if(controllerService != null){
+                Optional<ControllerServiceReferencingComponentsEntity> optional = legacyNifiRestClient.getNiFiRestClient().controllerServices().getReferences(serviceId);
+               if(optional.isPresent()) {
+                ControllerServiceReferencingComponentsEntity entity = optional.get();
+                   map =  getReferencingComponents(entity.getControllerServiceReferencingComponents()).values().stream().map(c -> c.getComponent())
+                    .collect(Collectors.groupingBy(x -> x.getReferenceType()));
+                }
+                else {
+                   map = Collections.emptyMap();
+               }
+            }
+            return Response.ok(map).build();
+        } catch (Exception e) {
+            RestResponseStatus error = new RestResponseStatus.ResponseStatusBuilder().message("Unable to find controller service references for " + serviceId).buildError();
+            return Response.ok(error).build();
+        }
+    }
+
+    /**
+     * get all referencing components in a single hashmap
+     *
+     * @param references references
+     * @return the map of id to component entity
+     */
+    private Map<String, ControllerServiceReferencingComponentEntity> getReferencingComponents(Collection<ControllerServiceReferencingComponentEntity> references) {
+        Map<String, ControllerServiceReferencingComponentEntity> map = new HashMap<>();
+        references.stream().forEach(c -> {
+            map.put(c.getId(), c);
+            if (c.getComponent().getReferencingComponents() != null && !c.getComponent().getReferencingComponents().isEmpty()) {
+                map.putAll(getReferencingComponents(c.getComponent().getReferencingComponents()));
+            }
+        });
+        return map;
+    }
+
 
     @GET
     @Path("/status")

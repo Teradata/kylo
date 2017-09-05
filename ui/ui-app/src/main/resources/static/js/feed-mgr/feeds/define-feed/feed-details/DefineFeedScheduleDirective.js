@@ -97,6 +97,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.isValid = false;
 
         /**
+         * the angular form
+         * @type {{}}
+         */
+        this.defineFeedScheduleForm = {};
+
+        /**
          * The object that is populated after the Feed is created and returned from the server
          * @type {null}
          */
@@ -386,26 +392,28 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * Create the feed, save it to the server, populate the {@code createdFeed} object upon save
          */
         this.createFeed = function() {
-            self.savingFeed = true;
-            showProgress();
+            if(self.defineFeedScheduleForm.$valid) {
+                self.savingFeed = true;
+                showProgress();
 
-            self.createdFeed = null;
+                self.createdFeed = null;
 
-            FeedService.saveFeedModel(self.model).then(function(response) {
+                FeedService.saveFeedModel(self.model).then(function (response) {
 
-                self.createdFeed = response.data;
-                CategoriesService.reload();
-                self.savingFeed = false;
-                StateService.FeedManager().Feed().navigateToDefineFeedComplete(self.createdFeed, null);
+                    self.createdFeed = response.data;
+                    CategoriesService.reload();
+                    self.savingFeed = false;
+                    StateService.FeedManager().Feed().navigateToDefineFeedComplete(self.createdFeed, null);
 
-                //  self.showCompleteDialog();
-            }, function(response) {
-                self.savingFeed = false;
-                self.createdFeed = response.data;
-                FeedCreationErrorService.buildErrorData(self.model.feedName, self.createdFeed);
-                hideProgress();
-                FeedCreationErrorService.showErrorDialog();
-            });
+                    //  self.showCompleteDialog();
+                }, function (response) {
+                    self.savingFeed = false;
+                    self.createdFeed = response.data;
+                    FeedCreationErrorService.buildErrorData(self.model.feedName, self.createdFeed);
+                    hideProgress();
+                    FeedCreationErrorService.showErrorDialog();
+                });
+            }
         };
 
         // Detect if NiFi is clustered

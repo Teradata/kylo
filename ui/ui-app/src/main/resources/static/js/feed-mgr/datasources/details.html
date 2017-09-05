@@ -40,6 +40,10 @@
             <span flex="25" class="property-name">Database User</span>
             <div flex>{{vm.model.databaseUser}}</div>
           </div>
+          <div layout="row" class="layout-padding-top-bottom" ng-repeat="(key,list) in vm.model.references" ng-if="vm.model.references">
+            <span flex="25" class="property-name">{{key}} references</span>
+            <div flex>{{list.length}}</div>
+          </div>
         </readonly-section>
         <editable-section>
           <ng-form name="vm.datasourceForm">

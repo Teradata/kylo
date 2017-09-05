@@ -53,7 +53,7 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider
 import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
 import com.thinkbiganalytics.search.api.Search;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -176,7 +176,7 @@ public class MetadataJcrConfig {
     }
 
     @Bean
-    @ConditionalOnBean(Search.class)
+    @ConditionalOnProperty(prefix="config", value="search.engine")
     public JcrIndexService indexService(final Search search, final DatasourceProvider datasourceProvider, final MetadataAccess metadataAccess, final Repository repository) {
         final JcrIndexService indexService = new JcrIndexService(search, datasourceProvider, metadataAccess);
         try {

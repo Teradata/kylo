@@ -74,12 +74,12 @@
                                 </span>
                                 <span class="column-title column-title-bottom {{item.stateClass}}">
                                     <ng-md-icon icon="{{item.stateIcon}}" size="20"></ng-md-icon>
-                                    {{item.stateText}}
+                                    {{item.stateText}} {{item.contentSummary}}
                                 </span>
                             </div>
                             <div flex="60" style="word-wrap:break-word;" class="item-column md-list-item-text {{item.stateClass}}" ng-if="item.description == null || item.description.length == 0">
                                 <ng-md-icon icon="{{item.stateIcon}}" size="20"></ng-md-icon>
-                                {{item.stateText}}
+                                {{item.stateText}} {{item.contentSummary}}
                             </div>
                             <div flex="15" style="word-wrap:break-word;" class="item-column md-list-item-text">
                                 {{item.user}}
@@ -105,6 +105,7 @@
                 <div class="card-content">
                     <md-button ng-if="vm.alertData.actionable && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showEventDialog($event)">UPDATE</md-button>
                     <md-button ng-if="vm.alertData.cleared == false && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.hideAlert($event)">HIDE</md-button>
+                    <md-button ng-if="vm.alertData.cleared == true && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showAlert($event)">SHOW</md-button>
                 </div>
 
                 <md-list flex layout-fill layout="column" class="list-item-table">

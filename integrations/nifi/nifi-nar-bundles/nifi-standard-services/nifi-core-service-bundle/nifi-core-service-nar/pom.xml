@@ -4,9 +4,9 @@
 
   <artifactId>kylo-nifi-core-service-nar</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-core-service-bundle</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <packaging>nar</packaging>
   <properties>
@@ -18,13 +18,13 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-standard-services-nar</artifactId>
       <version>${project.version}</version>
       <type>nar</type>

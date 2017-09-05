@@ -20,6 +20,7 @@ package com.thinkbiganalytics.integration;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -32,9 +33,11 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
@@ -48,6 +51,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
@@ -59,8 +63,11 @@ import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.rest.controller.AccessControlController;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -86,7 +93,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,6 +138,14 @@ public class IntegrationTestBase {
 
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
+    private FieldValidationRule lookup = new FieldValidationRule();
+    private FieldValidationRule notNull = new FieldValidationRule();
+    private FieldStandardizationRule base64EncodeBinary = new FieldStandardizationRule();
+    private FieldStandardizationRule base64EncodeString = new FieldStandardizationRule();
+    private FieldStandardizationRule base64DecodeBinary = new FieldStandardizationRule();
+    private FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
+    private FieldValidationRule length = new FieldValidationRule();
+    private FieldValidationRule ipAddress = new FieldValidationRule();
 
     protected void runAs(UserContext.User user) {
         UserContext.setUser(user);
@@ -151,7 +166,7 @@ public class IntegrationTestBase {
             om.registerModule(new JodaModule());
             om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
+            om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             configureObjectMapper(om);
 
             return om;
@@ -177,7 +192,78 @@ public class IntegrationTestBase {
         email.setObjectClassType("com.thinkbiganalytics.policy.validation.EmailValidator");
         email.setObjectShortClassType("EmailValidator");
 
+        ipAddress.setName("IP Address");
+        ipAddress.setDisplayName("IP Address");
+        ipAddress.setDescription("Valid IP address");
+        ipAddress.setObjectClassType("com.thinkbiganalytics.policy.validation.IPAddressValidator");
+        ipAddress.setObjectShortClassType("IPAddressValidator");
+
+        lookup.setName("lookup");
+        lookup.setDisplayName("Lookup");
+        lookup.setDescription("Must be contained in the list");
+        lookup.setObjectClassType("com.thinkbiganalytics.policy.validation.LookupValidator");
+        lookup.setObjectShortClassType("LookupValidator");
+        lookup.setProperties(newFieldRuleProperties(newFieldRuleProperty("List", "lookupList", "Male,Female")));
+
+        base64DecodeBinary.setName("Base64 Decode");
+        base64DecodeBinary.setDisplayName("Base64 Decode");
+        base64DecodeBinary.setDescription("Base64 decode a string or a byte[].  Strings are evaluated using the UTF-8 charset");
+        base64DecodeBinary.setObjectClassType("com.thinkbiganalytics.policy.standardization.Base64Decode");
+        base64DecodeBinary.setObjectShortClassType("Base64Decode");
+        base64DecodeBinary.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "base64Output", "BINARY")));
+
+        base64DecodeString.setName("Base64 Decode");
+        base64DecodeString.setDisplayName("Base64 Decode");
+        base64DecodeString.setDescription("Base64 decode a string or a byte[].  Strings are evaluated using the UTF-8 charset");
+        base64DecodeString.setObjectClassType("com.thinkbiganalytics.policy.standardization.Base64Decode");
+        base64DecodeString.setObjectShortClassType("Base64Decode");
+        base64DecodeString.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "base64Output", "STRING")));
+
+        base64EncodeBinary.setName("Base64 Encode");
+        base64EncodeBinary.setDisplayName("Base64 Encode");
+        base64EncodeBinary.setDescription("Base64 encode a string or a byte[].  Strings are evaluated using the UTF-8 charset.  String output is urlsafe");
+        base64EncodeBinary.setObjectClassType("com.thinkbiganalytics.policy.standardization.Base64Encode");
+        base64EncodeBinary.setObjectShortClassType("Base64Encode");
+        base64EncodeBinary.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "base64Output", "BINARY")));
+
+        base64EncodeString.setName("Base64 Encode");
+        base64EncodeString.setDisplayName("Base64 Encode");
+        base64EncodeString.setDescription("Base64 encode a string or a byte[].  Strings are evaluated using the UTF-8 charset.  String output is urlsafe");
+        base64EncodeString.setObjectClassType("com.thinkbiganalytics.policy.standardization.Base64Encode");
+        base64EncodeString.setObjectShortClassType("Base64Encode");
+        base64EncodeString.setProperties(newFieldRuleProperties(newFieldRuleProperty("Output", "base64Output", "STRING")));
+
+        notNull.setName("Not Null");
+        notNull.setDisplayName("Not Null");
+        notNull.setDescription("Validate a value is not null");
+        notNull.setObjectClassType("com.thinkbiganalytics.policy.validation.NotNullValidator");
+        notNull.setObjectShortClassType("NotNullValidator");
+        notNull.setProperties(newFieldRuleProperties(newFieldRuleProperty("EMPTY_STRING", "allowEmptyString", "false"),
+                                                     newFieldRuleProperty("TRIM_STRING", "trimString", "true")));
+
+        length.setName("Length");
+        length.setDisplayName("Length");
+        length.setDescription("Validate String falls between desired length");
+        length.setObjectClassType("com.thinkbiganalytics.policy.validation.LengthValidator");
+        length.setObjectShortClassType("LengthValidator");
+        length.setProperties(newFieldRuleProperties(newFieldRuleProperty("Max Length", "maxLength", "15"),
+                                                    newFieldRuleProperty("Min Length", "minLength", "5")));
+
         startClean();
+    }
+
+    private List<FieldRuleProperty> newFieldRuleProperties(FieldRuleProperty... props) {
+        List<FieldRuleProperty> lengthProps = new ArrayList<>(props.length);
+        lengthProps.addAll(Arrays.asList(props));
+        return lengthProps;
+    }
+
+    private FieldRuleProperty newFieldRuleProperty(String name, String objectProperty, String value) {
+        FieldRuleProperty list = new FieldRuleProperty();
+        list.setName(name);
+        list.setObjectProperty(objectProperty);
+        list.setValue(value);
+        return list;
     }
 
     @After
@@ -185,7 +271,7 @@ public class IntegrationTestBase {
         cleanup();
     }
 
-    private void startClean() {
+    protected void startClean() {
         cleanup();
     }
 
@@ -380,31 +466,28 @@ public class IntegrationTestBase {
     }
 
     protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed schemaIndex = importFeed("index_schema_service_elasticsearch.feed.zip");
-        enableFeed(schemaIndex.getNifiFeed().getFeedMetadata().getFeedId());
-
         ExportImportFeedService.ImportFeed textIndex = importFeed("index_text_service_elasticsearch.feed.zip");
         enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
 
     protected int getTotalNumberOfRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "TOTAL_COUNT");
+        return getProfileSummary(feedId, "TOTAL_COUNT");
     }
 
     protected int getNumberOfValidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "VALID_COUNT");
+        return getProfileSummary(feedId, "VALID_COUNT");
     }
 
     protected int getNumberOfInvalidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "INVALID_COUNT");
+        return getProfileSummary(feedId, "INVALID_COUNT");
     }
 
     protected String getProcessingDttm(String feedId) {
         return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
     }
 
-    protected int getMetricvalueOfMetricType(String feedId, String metricType) {
-        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + metricType + "'}.metricvalue"));
+    protected int getProfileSummary(String feedId, String profileType) {
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
     }
 
     protected String getJsonPathOfProfileSummary(String feedId, String path) {
@@ -417,6 +500,16 @@ public class IntegrationTestBase {
         return JsonPath.from(response.asString()).getString(path);
     }
 
+    protected String getProfileStatsForColumn(String feedId, String processingDttm, String profileType, String column) {
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
+
+        response.then().statusCode(HTTP_OK);
+
+        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
+        return JsonPath.from(response.asString()).getString(path);
+    }
 
     protected DefaultExecutedJob getJobWithSteps(long executionId) {
         //http://localhost:8400/proxy/v1/jobs
@@ -462,33 +555,8 @@ public class IntegrationTestBase {
         return part;
     }
 
-    protected FieldPolicy newPolicyWithValidation(String fieldName, FieldValidationRule... rules) {
-        FieldPolicy policy = newEmptyPolicy(fieldName);
-        List<FieldValidationRule> validationRules = new ArrayList<>();
-        if (rules != null) {
-            Collections.addAll(validationRules, rules);
-        }
-        policy.setValidation(validationRules);
-        return policy;
-    }
-
-    protected FieldPolicy newPolicyWithProfileAndIndex(String fieldName, FieldStandardizationRule... rules) {
-        FieldPolicy policy = newEmptyPolicy(fieldName);
-        policy.setProfile(true);
-        policy.setIndex(true);
-        List<FieldStandardizationRule> standardisation = new ArrayList<>();
-        if (rules != null) {
-            Collections.addAll(standardisation, rules);
-        }
-        policy.setStandardization(standardisation);
-        return policy;
-    }
-
-    protected FieldPolicy newEmptyPolicy(String fieldName) {
-        FieldPolicy policy = new FieldPolicy();
-        policy.setFieldName(fieldName);
-        policy.setFeedFieldName(fieldName);
-        return policy;
+    protected FieldPolicyRuleBuilder newPolicyBuilder(String fieldName) {
+        return new FieldPolicyRuleBuilder(fieldName);
     }
 
     protected DefaultField newStringField(String name) {
@@ -499,6 +567,10 @@ public class IntegrationTestBase {
         return newNamedField(name, new DefaultDataTypeDescriptor(), "timestamp");
     }
 
+    protected DefaultField newBinaryField(String name) {
+        return newNamedField(name, new DefaultDataTypeDescriptor(), "binary");
+    }
+
     protected DefaultField newBigIntField(String name) {
         DefaultDataTypeDescriptor numericDescriptor = new DefaultDataTypeDescriptor();
         numericDescriptor.setNumeric(true);
@@ -506,11 +578,11 @@ public class IntegrationTestBase {
         return newNamedField(name, numericDescriptor, "bigint");
     }
 
-    protected DefaultField newNamedField(String name, DefaultDataTypeDescriptor numericDescriptor, String bigint) {
+    protected DefaultField newNamedField(String name, DefaultDataTypeDescriptor typeDescriptor, String type) {
         DefaultField field = new DefaultField();
         field.setName(name);
-        field.setDerivedDataType(bigint);
-        field.setDataTypeDescriptor(numericDescriptor);
+        field.setDerivedDataType(type);
+        field.setDataTypeDescriptor(typeDescriptor);
         return field;
     }
 
@@ -590,7 +662,9 @@ public class IntegrationTestBase {
     }
 
     protected FeedSummary[] getFeeds() {
-        return getFeedsExpectingStatus(HTTP_OK).as(FeedSummary[].class);
+        final ObjectMapper mapper = new ObjectMapper();
+        SearchResult searchResult = getFeedsExpectingStatus(HTTP_OK).as(SearchResultImpl.class);
+        return searchResult.getData().stream().map(o -> mapper.convertValue(o, FeedSummary.class)).toArray(FeedSummary[]::new);
     }
 
     protected Response getFeedsExpectingStatus(int expectedStatusCode) {
@@ -696,7 +770,7 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
     }
 
-    protected void assertHiveSchema(String schemaName, String tableName) {
+    protected DefaultHiveSchema getHiveSchema(String schemaName, String tableName) {
         LOG.info("Asserting hive schema");
 
         Response response = given(HiveRestController.BASE)
@@ -704,6 +778,7 @@ public class IntegrationTestBase {
             .get(String.format("/schemas/%s/tables/%s", schemaName, tableName));
 
         response.then().statusCode(HTTP_OK);
+        return response.as(DefaultHiveSchema.class);
     }
 
     protected void assertHiveTables(final String schemaName, final String tableName) {
@@ -716,8 +791,6 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
 
         String[] tables = response.as(String[].class);
-        Assert.assertEquals(5, tables.length);
-
         List<String> tableNames = Arrays.asList(tables);
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName));
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_feed"));
@@ -726,18 +799,17 @@ public class IntegrationTestBase {
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_invalid"));
     }
 
-    protected void assertHiveQuery(String schemaName, String tableName) {
+    protected List<HashMap<String, String>> getHiveQuery(String query) {
         LOG.info("Asserting hive query");
 
         int limit = 10;
         Response response = given(HiveRestController.BASE)
             .when()
-            .get("/query-result?query=SELECT * FROM " + schemaName + "." + tableName + " LIMIT " + limit);
+            .get("/query-result?query=" + query);
 
         response.then().statusCode(HTTP_OK);
 
-        List rows = JsonPath.from(response.asString()).getList("rows");
-        Assert.assertEquals(limit, rows.size());
+        return JsonPath.from(response.asString()).getList("rows");
     }
 
     protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
@@ -787,16 +859,14 @@ public class IntegrationTestBase {
         fields.add(newTimestampField("registration_dttm"));
         fields.add(newBigIntField("id"));
         fields.add(newStringField("first_name"));
-        fields.add(newStringField("last_name"));
+        fields.add(newStringField("second_name"));
         fields.add(newStringField("email"));
         fields.add(newStringField("gender"));
         fields.add(newStringField("ip_address"));
-        fields.add(newStringField("cc"));
+        fields.add(newBinaryField("cc"));
         fields.add(newStringField("country"));
         fields.add(newStringField("birthdate"));
         fields.add(newStringField("salary"));
-        fields.add(newStringField("title"));
-        fields.add(newStringField("comments"));
         schema.setFields(fields);
 
         table.setTableSchema(schema);
@@ -808,19 +878,17 @@ public class IntegrationTestBase {
         table.setTargetFormat("STORED AS ORC");
 
         List<FieldPolicy> policies = new ArrayList<>();
-        policies.add(newEmptyPolicy("registration_dttm"));
-        policies.add(newEmptyPolicy("id"));
-        policies.add(newPolicyWithProfileAndIndex("first_name", toUpperCase));
-        policies.add(newPolicyWithProfileAndIndex("last_name"));
-        policies.add(newPolicyWithValidation("email", email));
-        policies.add(newEmptyPolicy("gender"));
-        policies.add(newEmptyPolicy("ip_address"));
-        policies.add(newEmptyPolicy("cc"));
-        policies.add(newEmptyPolicy("country"));
-        policies.add(newEmptyPolicy("birthdate"));
-        policies.add(newEmptyPolicy("salary"));
-        policies.add(newEmptyPolicy("title"));
-        policies.add(newEmptyPolicy("comments"));
+        policies.add(newPolicyBuilder("registration_dttm").toPolicy());
+        policies.add(newPolicyBuilder("id").toPolicy());
+        policies.add(newPolicyBuilder("first_name").withStandardisation(toUpperCase).withProfile().withIndex().toPolicy());
+        policies.add(newPolicyBuilder("second_name").withProfile().withIndex().toPolicy());
+        policies.add(newPolicyBuilder("email").withValidation(email).toPolicy());
+        policies.add(newPolicyBuilder("gender").withValidation(lookup, notNull).toPolicy());
+        policies.add(newPolicyBuilder("ip_address").withValidation(ipAddress).toPolicy());
+        policies.add(newPolicyBuilder("cc").withStandardisation(base64EncodeBinary).withProfile().toPolicy());
+        policies.add(newPolicyBuilder("country").withStandardisation(base64EncodeBinary, base64DecodeBinary, base64EncodeString, base64DecodeString).withValidation(notNull, length).withProfile().toPolicy());
+        policies.add(newPolicyBuilder("birthdate").toPolicy());
+        policies.add(newPolicyBuilder("salary").toPolicy());
         table.setFieldPolicies(policies);
 
         List<PartitionField> partitions = new ArrayList<>();
@@ -834,6 +902,8 @@ public class IntegrationTestBase {
 
         table.setTableType("SNAPSHOT");
         feed.setTable(table);
+        feed.setOptions(new FeedProcessingOptions());
+        feed.getOptions().setSkipHeader(true);
 
         feed.setDataOwner("Marketing");
 
@@ -914,4 +984,13 @@ public class IntegrationTestBase {
     }
 
 
+    protected void assertValidatorResults(String feedId, String processingDttm, String validator, int invalidRowCount) {
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-invalid-results?filter=%s&limit=100&processingdttm=%s", feedId, validator, processingDttm));
+
+        response.then().statusCode(HTTP_OK);
+        Object[] result = response.as(Object[].class);
+        Assert.assertEquals(invalidRowCount, result.length);
+    }
 }

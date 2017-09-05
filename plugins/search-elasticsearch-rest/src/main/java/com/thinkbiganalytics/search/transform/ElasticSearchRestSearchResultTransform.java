@@ -34,6 +34,8 @@ import com.thinkbiganalytics.search.rest.model.UnknownTypeSearchResultData;
 import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchHit;
 import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchResponse;
 
+import org.springframework.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,7 +85,7 @@ public class ElasticSearchRestSearchResultTransform {
         SearchResult elasticSearchRestResult = new SearchResult();
         elasticSearchRestResult.setQuery(query);
 
-        Long totalHits = Long.parseLong(String.valueOf(restSearchResponse.getElasticSearchRestSearchHits().size()));
+        Long totalHits = restSearchResponse.getTotalResults();
         elasticSearchRestResult.setTotalHits(totalHits);
         elasticSearchRestResult.setFrom((long) (start + 1));
         elasticSearchRestResult.setTo((long) (start + size));
@@ -162,7 +164,9 @@ public class ElasticSearchRestSearchResultTransform {
         List<HiveColumn> hiveColumns = new ArrayList<>();
         List<Pair> highlightsList = new ArrayList<>();
 
-        hiveColumns.addAll(elasticSearchRestSearchHit.getHiveColumns());
+        if (!CollectionUtils.isEmpty(elasticSearchRestSearchHit.getHiveColumns())) {
+            hiveColumns.addAll(elasticSearchRestSearchHit.getHiveColumns());
+        }
 
         for (Pair highlightPair : elasticSearchRestSearchHit.getHighlights()) {
             String key = highlightPair.getKey();

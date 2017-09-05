@@ -61,6 +61,8 @@ public class FeedFailureService {
      */
     private Map<String, LastFeedFailure> lastFeedFailureMap = new HashMap<>();
 
+    public static LastFeedFailure EMPTY_JOB = new LastFeedFailure("empty",0L,DateTime.now(),true);
+
     /**
      * Map with the Latest recorded failure that has been assessed by the FeedFailureMetricAssessor
      */
@@ -71,7 +73,7 @@ public class FeedFailureService {
         return lastFeedFailureMap.get(feedName);
     }
 
-    public LastFeedFailure findLastJobFeedFailure(String feedName){
+    public LastFeedFailure findLastJob(String feedName){
      return   metadataAccess.read(() -> {
      BatchJobExecution latestJob = batchJobExecutionProvider.findLatestFinishedJobForFeed(feedName);
          if(latestJob != null) {
@@ -79,24 +81,21 @@ public class FeedFailureService {
             return lastFeedFailure;
          }
          else {
-             return null;
+             return EMPTY_JOB;
          }
         },MetadataAccess.SERVICE);
 
     }
 
     public boolean hasFailure(LastFeedFailure lastFeedFailure) {
-        if(lastFeedFailure != null){
+        if(lastFeedFailure != null && lastFeedFailure.isFailure()){
             String feedName = lastFeedFailure.getFeedName();
             LastFeedFailure lastAssessedFailure = lastAssessedFeedFailureMap.get(feedName);
-            if (lastFeedFailure != null) {
-                if (lastAssessedFailure == null || (lastAssessedFailure != null && lastAssessedFailure.isFailure() && lastFeedFailure.isAfter(lastAssessedFailure.getDateTime()))) {
+               if (lastAssessedFailure == null || (lastAssessedFailure != null && lastAssessedFailure.isFailure() && lastFeedFailure.isAfter(lastAssessedFailure.getDateTime()))) {
                     //reassign it as the lastAssessedFailure
                     lastAssessedFeedFailureMap.put(feedName, lastFeedFailure);
                     return true;
                 }
-            }
-            return false;
         }
         return false;
 

@@ -32,8 +32,10 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
+import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
+import org.apache.nifi.web.api.entity.UpdateControllerServiceReferenceRequestEntity;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -174,5 +176,20 @@ public class NiFiControllerServicesRestClientV1 extends AbstractNiFiControllerSe
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<ControllerServiceReferencingComponentsEntity> getReferences(@Nonnull String id) {
+        try {
+        return Optional.ofNullable(client.get(BASE_PATH+id+"/references",null, ControllerServiceReferencingComponentsEntity.class));
+    } catch (final NotFoundException e) {
+        return Optional.empty();
+    }
+    }
+
+    @Override
+    public ControllerServiceReferencingComponentsEntity updateReferences(@Nonnull String id,@Nonnull UpdateControllerServiceReferenceRequestEntity update) {
+        update.getId();
+        return client.put(BASE_PATH+id+"/references",update,ControllerServiceReferencingComponentsEntity.class);
     }
 }

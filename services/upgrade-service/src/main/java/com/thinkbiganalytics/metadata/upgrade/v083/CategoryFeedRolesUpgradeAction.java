@@ -65,7 +65,7 @@ public class CategoryFeedRolesUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion startingVersion) {
-        log.info("Upgrading from version: {}", startingVersion);
+        log.info("Upgrading category feed roles from version: {}", startingVersion);
 
         if (this.accessController.isEntityAccessControlled()) {
             final List<SecurityRole> feedRoles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
@@ -74,7 +74,10 @@ public class CategoryFeedRolesUpgradeAction implements UpgradeState {
                 .map(JcrCategory.class::cast)
                 .map(cat -> cat.getDetails().get())
                 .filter(details -> ! JcrUtil.hasNode(details.getNode(), CategoryDetails.FEED_ROLE_MEMBERSHIPS))
-                .forEach(details -> details.enableFeedRoles(feedRoles));
+                .forEach(details -> { 
+                    log.info("Updating roles for category: {}", JcrUtil.getName(JcrUtil.getParent(details.getNode())));
+                    details.enableFeedRoles(feedRoles); 
+                    });
         }
     }
 }

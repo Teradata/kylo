@@ -26,6 +26,7 @@ import com.thinkbiganalytics.alerts.api.EntityAlert;
 import com.thinkbiganalytics.alerts.api.SourceAlert;
 import com.thinkbiganalytics.alerts.rest.model.Alert;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
 
 import org.apache.commons.lang3.StringUtils;
@@ -142,6 +143,11 @@ public class AlertsModel {
         result.setDescription(event.getDescription());
         result.setState(toModel(event.getState()));
         result.setUser(event.getUser() != null ? event.getUser().getName() : null);
+        try {
+        result.setContent(event.getContent() != null ? ObjectMapperSerializer.serialize(event.getContent()) : null);
+        }catch (Exception e){
+
+        }
         return result;
     }
 

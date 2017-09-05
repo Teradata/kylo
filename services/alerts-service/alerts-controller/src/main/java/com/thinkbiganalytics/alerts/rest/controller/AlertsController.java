@@ -237,6 +237,9 @@ public class AlertsController {
 
                 if (req.isClear()) {
                     response.clear();
+                } else if (req.isUnclear()) {
+                    response.unclear();
+
                 }
             }
         }

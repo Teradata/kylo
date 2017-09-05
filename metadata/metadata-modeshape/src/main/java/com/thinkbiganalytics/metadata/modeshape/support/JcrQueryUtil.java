@@ -23,6 +23,8 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 import org.modeshape.jcr.api.JcrTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,7 +45,7 @@ import javax.jcr.query.RowIterator;
  */
 public class JcrQueryUtil {
 
-
+    private static final Logger log = LoggerFactory.getLogger(JcrQueryUtil.class);
     public static <T extends Object> List<T> find(Session session, String query, Class<T> type, Object... args) {
         return find(session, query, null, type, args);
     }
@@ -143,10 +145,20 @@ public class JcrQueryUtil {
         return query(session, queryExpression, null);
     }
 
+    public static String explainPlain(Session session, String queryExpression) throws RepositoryException {
+        Query query = session.getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
+        org.modeshape.jcr.api.query.Query msQuery = (org.modeshape.jcr.api.query.Query)query;
+
+        // Get the query plan without executing it ...
+        org.modeshape.jcr.api.query.QueryResult result = msQuery.explain();
+        String plan = result.getPlan();
+        return plan;
+    }
+
     public static QueryResult query(Session session, String queryExpression, Map<String, String> bindParams) throws RepositoryException {
 
         QueryResult results = null;
-
+        log.debug("JCR-SQL2 query: {} ",queryExpression);
         Query query = session.getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
         if (bindParams != null && !bindParams.isEmpty()) {
             Iterator e = bindParams.entrySet().iterator();

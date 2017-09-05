@@ -180,8 +180,11 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
 
         var SearchStates = function () {
             var data = {};
-            data.navigateToSearch = function () {
-                $state.go('search');
+            data.navigateToSearch = function (resetPaging) {
+                if (angular.isUndefined(resetPaging)) {
+                    resetPaging = false;
+                }
+                $state.go('search', {"bcExclude_globalSearchResetPaging":resetPaging});
             }
             return data;
         }

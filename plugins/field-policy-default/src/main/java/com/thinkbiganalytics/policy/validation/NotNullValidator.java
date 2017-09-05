@@ -59,7 +59,7 @@ public class NotNullValidator implements ValidationPolicy {
         if (value == null) {
             return false;
         }
-        if (!allowEmptyString) {
+        if (!allowEmptyString && value instanceof String) {
             String svalue = (trimString ? StringUtils.trim((String) value) : (String) value);
             return (!StringUtils.isEmpty(svalue));
         }

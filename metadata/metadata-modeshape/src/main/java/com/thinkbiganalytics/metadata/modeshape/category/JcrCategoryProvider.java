@@ -93,9 +93,10 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
 
     @Override
-    protected String getFindAllStartingPath() {
-        return EntityUtil.pathForCategory();
+    protected String getEntityQueryStartingPath() {
+        return  EntityUtil.pathForCategory();
     }
+
     @Override
     public Category update(Category category) {
         if (accessController.isEntityAccessControlled()) {
@@ -106,7 +107,8 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public Category findBySystemName(String systemName) {
-        final String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = $systemName";
+        String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = $systemName ";
+        query = applyFindAllFilter(query, EntityUtil.pathForCategory());
         return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("systemName", systemName), getEntityClass());
     }
 

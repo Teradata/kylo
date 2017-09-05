@@ -4,9 +4,9 @@
 
   <artifactId>kylo-nifi-standard-services-nar</artifactId>
   <parent>
-    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-standard-services</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <packaging>nar</packaging>
   <properties>
@@ -18,21 +18,21 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-service-api</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-service-api</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>

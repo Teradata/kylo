@@ -49,6 +49,12 @@ public class JcrHadoopSecurityGroupProvider extends BaseJcrProvider<HadoopSecuri
         return new JcrHadoopSecurityGroup.HadoopSecurityGroupId(fid);
     }
 
+
+    @Override
+    protected String getEntityQueryStartingPath() {
+        return EntityUtil.pathForHadoopSecurityGroups();
+    }
+
     @Override
     public Class<? extends HadoopSecurityGroup> getEntityClass() {
         return JcrHadoopSecurityGroup.class;

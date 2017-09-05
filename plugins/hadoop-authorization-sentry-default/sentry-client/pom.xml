@@ -4,8 +4,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>kylo-hadoop-authorization-sentry-default</artifactId>
-		<groupId>com.thinkbiganalytics.datalake</groupId>
-		<version>0.8.3-SNAPSHOT</version>
+		<groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+		<version>0.8.4-SNAPSHOT</version>
 	</parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -19,17 +19,17 @@
 		<dependency>
 			<artifactId>kylo-hadoop-authorization-core</artifactId>
 			<version>${project.version}</version>
-			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
 		</dependency>
 		<dependency>
 			<artifactId>kylo-hadoop-authorization-api</artifactId>
 			<version>${project.version}</version>
-			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
 		</dependency>
 		<dependency>
 			<artifactId>kylo-commons-util</artifactId>
 			<version>${project.version}</version>
-			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
 		</dependency>
 
 		<dependency>

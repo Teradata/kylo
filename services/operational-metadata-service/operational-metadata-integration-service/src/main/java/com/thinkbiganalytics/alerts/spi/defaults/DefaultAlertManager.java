@@ -332,6 +332,36 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }, MetadataAccess.SERVICE);
     }
 
+    protected JpaAlert unclearAlert(JpaAlert.AlertId id) {
+        return this.metadataAccess.commit(() -> {
+            JpaAlert alert = repository.findOne(id);
+            alert.setCleared(false);
+            return alert;
+        }, MetadataAccess.SERVICE);
+    }
+
+
+    protected <C extends Serializable> Alert updateAlertChangeEntry(JpaAlert.AlertId id, String descr, C content) {
+        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
+                               ? SecurityContextHolder.getContext().getAuthentication()
+                               : null;
+
+        Alert changed = this.metadataAccess.commit(() -> {
+            JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
+            List<AlertChangeEvent> events = alert.getEvents();
+            if(events != null && !events.isEmpty()) {
+                JpaAlertChangeEvent event = (JpaAlertChangeEvent) events.get(0);
+                    event.setDescription(descr);
+                    event.setContent(content);
+                    event.setChangeTime(DateTime.now());
+            }
+            return asValue(alert);
+        }, MetadataAccess.SERVICE);
+
+        notifyReceivers(1);
+        return changed;
+    }
+
     protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, String descr, C content) {
         final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
                                ? SecurityContextHolder.getContext().getAuthentication()
@@ -542,13 +572,25 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             return changeAlert(this.id, State.UNHANDLED, descr, content);
         }
 
+        @Override
+        public <C extends Serializable> Alert updateAlertChange(String description, C content) {
+            return updateAlertChangeEntry(this.id,description,content);
+        }
+
         /* (non-Javadoc)
-         * @see com.thinkbiganalytics.alerts.api.AlertResponse#clear()
-         */
+                 * @see com.thinkbiganalytics.alerts.api.AlertResponse#clear()
+                 */
         @Override
         public void clear() {
             clearAlert(this.id);
         }
+
+        @Override
+        public void unclear() {
+            unclearAlert(this.id);
+        }
+
+
     }
 
 

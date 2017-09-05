@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  */
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -39,7 +40,7 @@ import javax.ws.rs.NotFoundException;
 /**
  * Implements a {@link NiFiProcessorsRestClient} for communicating with NiFi v1.0.
  */
-public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
+public class NiFiProcessorsRestClientV1 extends AbstractNiFiProcessorsRestClient {
 
     /**
      * Base path for processor requests
@@ -69,22 +70,9 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
     @Nonnull
     @Override
     public ProcessorDTO update(@Nonnull final ProcessorDTO processor) {
-        return findEntityById(processor.getId())
-            .flatMap(current -> {
-                final ProcessorEntity entity = new ProcessorEntity();
-                entity.setComponent(processor);
-
-                final RevisionDTO revision = new RevisionDTO();
-                revision.setVersion(current.getRevision().getVersion());
-                entity.setRevision(revision);
-
-                try {
-                    return Optional.of(client.put(BASE_PATH + processor.getId(), entity, ProcessorEntity.class).getComponent());
-                } catch (final NotFoundException e) {
-                    return Optional.empty();
-                }
-            })
-            .orElseThrow(() -> new NifiComponentNotFoundException(processor.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
+        final ProcessorEntity entity = new ProcessorEntity();
+        entity.setComponent(processor);
+        return update(entity).orElseThrow(() -> new NifiComponentNotFoundException(processor.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
     }
 
     /**
@@ -113,6 +101,29 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
 
     }
 
+    @Nonnull
+    @Override
+    public Optional<ProcessorDTO> update(@Nonnull final ProcessorEntity processorEntity) {
+        if (processorEntity.getRevision() == null) {
+            if (processorEntity.getId() == null && processorEntity.getComponent() != null) {
+                processorEntity.setId(processorEntity.getComponent().getId());
+            }
+            findEntityById(processorEntity.getId()).ifPresent(current -> {
+                final RevisionDTO revision = new RevisionDTO();
+                revision.setVersion(current.getRevision().getVersion());
+                processorEntity.setRevision(revision);
+            });
+        }
+
+        try {
+            return Optional.of(client.put(BASE_PATH + processorEntity.getId(), processorEntity, ProcessorEntity.class).getComponent());
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+
+    }
+
+
     /**
      * Gets a processor entity.
      *
@@ -127,4 +138,5 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
             return Optional.empty();
         }
     }
+
 }

@@ -65,14 +65,15 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     }
 
     @Override
-    protected String getFindAllStartingPath() {
+    protected String getEntityQueryStartingPath() {
         return EntityUtil.pathForUsers();
     }
 
     @Nonnull
     @Override
     public Optional<User> findUserBySystemName(@Nonnull final String systemName) {
-        final String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = $systemName AND ISDESCENDANTNODE('"+getFindAllStartingPath()+"') ";
+        String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = $systemName ";
+        query = applyFindAllFilter(query,EntityUtil.pathForUsers());
         final Map<String, String> bindParams = Collections.singletonMap("systemName", encodeUserName(systemName));
         return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
     }
@@ -153,7 +154,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Iterable<User> findUsers() {
-        String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] WHERE ISDESCENDANTNODE('"+EntityUtil.pathForUsers()+"')";
+        String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] ";
+        query = applyFindAllFilter(query,EntityUtil.pathForUsers());
         return findIterable(query, User.class, JcrUser.class);
     }
 
@@ -194,7 +196,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<UserGroup> findGroupByName(@Nonnull final String groupName) {
-        final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = $groupName AND ISDESCENDANTNODE('"+EntityUtil.pathForGroups()+"')";
+        String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = $groupName ";
+        query = applyFindAllFilter(query,EntityUtil.pathForGroups());
         final Map<String, String> bindParams = Collections.singletonMap("groupName", encodeGroupName(groupName));
         return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrUserGroup.class));
     }
@@ -205,7 +208,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Iterable<UserGroup> findGroups() {
-        String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] WHERE ISDESCENDANTNODE('"+EntityUtil.pathForGroups()+"')";
+        String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] ";
+        query = applyFindAllFilter(query,EntityUtil.pathForGroups());
         return findIterable(query, UserGroup.class, JcrUserGroup.class);
     }
 

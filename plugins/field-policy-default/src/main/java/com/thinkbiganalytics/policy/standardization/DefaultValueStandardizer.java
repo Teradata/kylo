@@ -61,7 +61,6 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
                 return convertValue(value.toString());
             }
         }
-
         return value;
     }
 }

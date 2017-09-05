@@ -62,19 +62,23 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             detectDomainType: function (values, domainTypes) {
                 // Remove empty values
                 var valueArray = _.filter(angular.isArray(values) ? values : [values], function (value) {
-                    return (value !== null && value.length > 0);
+                    return (angular.isString(value) && value.trim().length > 0);
                 });
-                if (!_.every(valueArray, angular.isString)) {
+                if (valueArray.length === 0) {
                     return null;
                 }
 
                 // Find matching domain type
                 var matchingDomainType = _.find(domainTypes, function (domainType) {
                     var regexp = getRegExp(domainType);
-                    return valueArray.every(function (value) {
-                        var result = regexp.exec(value);
-                        return (result !== null && result.index === 0 && result[0].length === value.length);
-                    });
+                    if (regexp !== null) {
+                        return valueArray.every(function (value) {
+                            var result = regexp.exec(value);
+                            return (result !== null && result.index === 0 && result[0].length === value.length);
+                        });
+                    } else {
+                        return false;
+                    }
                 });
                 return angular.isObject(matchingDomainType) ? matchingDomainType : null;
             },

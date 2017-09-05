@@ -64,7 +64,7 @@ public class JcrDomainTypeProvider extends BaseJcrProvider<DomainType, DomainTyp
     }
 
     @Override
-    protected String getFindAllStartingPath() {
+    protected String getEntityQueryStartingPath() {
         return EntityUtil.pathForDomainTypes();
     }
 

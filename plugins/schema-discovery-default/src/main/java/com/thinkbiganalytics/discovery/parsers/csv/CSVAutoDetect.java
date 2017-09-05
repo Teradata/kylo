@@ -20,10 +20,12 @@ package com.thinkbiganalytics.discovery.parsers.csv;
  * #L%
  */
 
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -66,10 +68,14 @@ class CSVAutoDetect {
      * @return A configured parser
      * @throws IOException If there is an error parsing the sample file
      */
-    public CSVFormat detectCSVFormat(String sampleText, boolean headerRow) throws IOException {
+    public CSVFormat detectCSVFormat(String sampleText, boolean headerRow, String seperatorStr) throws IOException {
         CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
+        Character separatorChar = null;
+        if(StringUtils.isNotBlank(seperatorStr)){
+            separatorChar = seperatorStr.charAt(0);
+        }
         try (BufferedReader br = new BufferedReader(new StringReader(sampleText))) {
-            List<LineStats> lineStats = generateStats(br);
+            List<LineStats> lineStats = generateStats(br,separatorChar);
             Character quote = guessQuote(lineStats);
             Character delim = guessDelimiter(lineStats, sampleText, quote, headerRow);
             if (delim == null) {
@@ -81,13 +87,13 @@ class CSVAutoDetect {
         return format;
     }
 
-    private List<LineStats> generateStats(BufferedReader br) throws IOException {
+    private List<LineStats> generateStats(BufferedReader br,Character separatorChar) throws IOException {
         List<LineStats> lineStats = new Vector<>();
         String line;
         int rows = 0;
         br.mark(32765);
         while ((line = br.readLine()) != null && rows < 100) {
-            LineStats stats = new LineStats(line);
+            LineStats stats = new LineStats(line,separatorChar);
             rows++;
             lineStats.add(stats);
         }
@@ -188,50 +194,47 @@ class CSVAutoDetect {
         Character firstDelim;
 
         public LineStats(String line) {
+        this(line, null);
+        }
+
+        /**
+         *
+         * @param line the line to evaluate
+         * @param suppliedDelimiter the explicit delimiter supplied by the user, or null if not defined
+         */
+        public LineStats(String line, final Character suppliedDelimiter) {
             // Look for delimiters
             char[] chars = line.toCharArray();
+            String delimiterString=" :;|\t+";
+            String nonDelimiterString = "\"'<>\\";
+
+            if(suppliedDelimiter != null){
+                delimiterString+=Character.toString(suppliedDelimiter);
+            }
+
+            char[] delimiters = delimiterString.toCharArray();
+            char[] nonDelimiters = nonDelimiterString.toCharArray();
+
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
-                switch (c) {
-                    case ' ':
-                        increment(' ', true);
+
+                boolean found = false;
+                for(char delim: delimiters){
+                    if(c == delim){
+                        increment(delim, true);
+                        found = true;
                         break;
-                    case ':':
-                        increment(':', true);
-                        break;
-                    case ';':
-                        increment(';', true);
-                        break;
-                    case ',':
-                        increment(',', true);
-                        break;
-                    case '|':
-                        increment('|', true);
-                        break;
-                    case '\t':
-                        increment('\t', true);
-                        break;
-                    case '+':
-                        increment('+', true);
-                        break;
-                    case '"':
-                        increment('"', false);
-                        break;
-                    case '\'':
-                        increment('\'', false);
-                        break;
-                    case '<':
-                        increment('<', false);
-                        break;
-                    case '>':
-                        increment('>', false);
-                        break;
-                    case '\\':
-                        increment('\\', false);
-                        break;
-                    default:
+                    }
                 }
-            }
+                if(!found){
+                    for(char delim: nonDelimiters){
+                        if(c == delim){
+                            increment(delim, false);
+                            break;
+                        }
+                    }
+                }
+                }
         }
 
         boolean containsNoDelimCharOfType(Character quoteType) {

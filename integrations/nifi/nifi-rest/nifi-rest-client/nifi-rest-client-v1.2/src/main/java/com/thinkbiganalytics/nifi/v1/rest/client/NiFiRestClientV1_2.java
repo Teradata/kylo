@@ -26,7 +26,7 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 /**
  * Created by sr186054 on 6/29/17.
  */
-public class NiFiRestClientV1_2 extends NiFiRestClientV1 {
+public class NiFiRestClientV1_2 extends NiFiRestClientV1_1 {
 
     public NiFiRestClientV1_2(NifiRestClientConfig config) {
         super(config);

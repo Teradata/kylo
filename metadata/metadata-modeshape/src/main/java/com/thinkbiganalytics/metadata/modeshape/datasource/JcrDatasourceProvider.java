@@ -104,14 +104,14 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         NODE_TYPES_MAP = map;
     }
 
-
-    @Override
-    protected String getFindAllStartingPath() {
-        return EntityUtil.pathForDataSource();
-    }
     @Inject
     private JcrAllowedEntityActionsProvider actionsProvider;
 
+
+    @Override
+    protected String getEntityQueryStartingPath() {
+        return EntityUtil.pathForDataSource();
+    }
     @Inject
     private SecurityRoleProvider roleProvider;
     
@@ -259,6 +259,12 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         datasource.setDescription(descr);
         return (D) datasource;
     }
+
+    @Override
+    protected String getFindAllFilter() {
+        return "ISDESCENDANTNODE('" + EntityUtil.pathForDataSource() + "')";
+    }
+
 
     @Override
     public Datasource getDatasource(Datasource.ID id) {

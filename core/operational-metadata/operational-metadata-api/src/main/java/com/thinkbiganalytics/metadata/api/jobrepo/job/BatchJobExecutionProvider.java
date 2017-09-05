@@ -209,8 +209,8 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
     List<String> findRelatedFlowFiles(String flowFileId);
 
 
-    void notifyFailure(BatchJobExecution jobExecution, String feedName, String status);
+    void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream,String status);
 
-    void notifySuccess(BatchJobExecution jobExecution, String feedName, String status);
+    void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status);
 
 }

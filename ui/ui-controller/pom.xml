@@ -6,8 +6,8 @@
 
   <parent>
     <artifactId>kylo-ui</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-ui-controller</artifactId>
@@ -24,7 +24,7 @@
 
     <!-- Kylo -->
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-api</artifactId>
       <version>${project.version}</version>
     </dependency>

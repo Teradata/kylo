@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>kylo-hadoop-authorization-ranger-default</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.3-SNAPSHOT</version>
+    <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+    <version>0.8.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -20,17 +20,17 @@
     <dependency>
       <artifactId>kylo-hadoop-authorization-core</artifactId>
       <version>${project.version}</version>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
     </dependency>
     <dependency>
       <artifactId>kylo-ranger-rest-client</artifactId>
       <version>${project.version}</version>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
     </dependency>
     <dependency>
       <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
     </dependency>
 
     <!-- Hadoop Dependency -->
@@ -73,7 +73,7 @@
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <artifactSet>
                 <includes>
-                  <include>com.thinkbiganalytics.datalake:kylo-ranger-rest-client</include>
+                  <include>com.thinkbiganalytics.kylo.plugins:kylo-ranger-rest-client</include>
                 </includes>
               </artifactSet>
             </configuration>

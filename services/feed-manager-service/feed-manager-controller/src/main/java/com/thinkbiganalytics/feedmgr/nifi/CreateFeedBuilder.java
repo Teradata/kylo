@@ -616,16 +616,12 @@ public class CreateFeedBuilder {
                 strategy = NifiFeedConstants.SCHEDULE_STRATEGIES.TIMER_DRIVEN.name();
                 schedule = NifiFeedConstants.DEFAULT_TIGGER_FEED_PROCESSOR_SCHEDULE;
             }
-            input.getConfig().setSchedulingPeriod(schedule);
-            input.getConfig().setSchedulingStrategy(strategy);
-            input.getConfig().setConcurrentlySchedulableTaskCount(feedSchedule.getConcurrentTasks());
-            input.getConfig().setExecutionNode(feedSchedule.getExecutionNode());
-            //clear the properties before updating the schedule
-            if(input.getConfig().getProperties() != null) {
-                input.getConfig().getProperties().clear();
-            }
+            NifiProcessorSchedule scheduleCopy = new NifiProcessorSchedule(feedSchedule);
+            scheduleCopy.setProcessorId(input.getId());
+            scheduleCopy.setSchedulingPeriod(schedule);
+            scheduleCopy.setSchedulingStrategy(strategy);
             try {
-                restClient.updateProcessor(input);
+                restClient.getNiFiRestClient().processors().schedule(scheduleCopy);
             } catch (Exception e) {
                 String
                     errorMsg =

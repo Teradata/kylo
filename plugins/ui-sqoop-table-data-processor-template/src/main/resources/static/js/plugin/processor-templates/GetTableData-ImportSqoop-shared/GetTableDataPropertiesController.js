@@ -212,6 +212,27 @@ define(['angular'], function (angular) {
         }
 
         /**
+         * Change listener when the user updates a NiFi property in UI
+         *
+         * Currently, this handles the output type property specified by the user for a database ingest feed
+         * This is used to set the Hive table's format
+
+         * @param nifiPropertyChanged
+         */
+        this.onNiFiPropertyChanged = function (nifiPropertyChanged) {
+            if (self.mode == 'create') {
+                if (nifiPropertyChanged.key == 'Output Type') {
+                    if (nifiPropertyChanged.value == 'AVRO') {
+                        self.model.table.feedFormat = 'STORED AS AVRO'
+                    }
+                    else if (nifiPropertyChanged.value == 'DELIMITED') {
+                        self.model.table.feedFormat = FeedService.getNewCreateFeedModel().table.feedFormat
+                    }
+                }
+            }
+        };
+
+        /**
          * Finds the correct NiFi processor Property associated with the incoming key.
          *
          * @param key

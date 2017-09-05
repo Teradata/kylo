@@ -59,6 +59,7 @@ public class HCatDataType implements Cloneable, Serializable {
         dataTypes.put("real", new HCatDataType(-Double.MAX_VALUE, Double.MAX_VALUE));
         dataTypes.put("date", new HCatDataType(Date.class));
         dataTypes.put("timestamp", new HCatDataType(Timestamp.class));
+        dataTypes.put("binary", new HCatDataType(byte[].class));
 
     }
 
@@ -144,7 +145,7 @@ public class HCatDataType implements Cloneable, Serializable {
     private HCatDataType(Class clazz) {
 
         this.convertibleType = clazz;
-        if (clazz == Date.class || clazz == Timestamp.class) {
+        if (clazz == Date.class || clazz == Timestamp.class || clazz == byte[].class) {
             this.isnumeric = false;
         } else {
             this.isnumeric = true;
@@ -161,6 +162,10 @@ public class HCatDataType implements Cloneable, Serializable {
             }
         }
 
+    }
+
+    public boolean isDateOrTimestamp() {
+        return this.convertibleType == Date.class || this.convertibleType == Timestamp.class;
     }
 
     /**
@@ -198,7 +203,7 @@ public class HCatDataType implements Cloneable, Serializable {
                     hcatType.digits = decDigits;
                     hcatType.max = new BigDecimal(generateRepeatingCharacters(decSize, '9')
                                                   + "."
-                                                  + generateRepeatingCharacters(decDigits,'9'));
+                                                  + generateRepeatingCharacters(decDigits, '9'));
                     hcatType.min = ((BigDecimal) hcatType.max).negate();
 
                 } else if (strLen != null) {
@@ -280,43 +285,75 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     /**
+     * Returns true if Hive is able to convert a string value to the correct convertible type.
+     * @param strVal the string value
+     * @return true if the string value will be ok, false if explicit conversion is needed.
+     */
+    public boolean isStringValueValidForHiveType(String strVal) {
+        if (isstring) {
+            return true;
+        }
+        if (strVal != null && !isnumeric) {
+            if (convertibleType == Timestamp.class) {
+                return new TimestampValidator(true).validate(strVal);
+            } else if (convertibleType == Date.class) {
+                return DateValidator.instance().validate(strVal);
+            } else if (convertibleType == byte[].class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Tests whether the string value can be converted to the hive data type defined by this class. If it is not convertible then
      * hive will not be able to show the value
      *
-     * @param val the string value
+     * @param val the value
      * @return whether value is valid
      */
-    public boolean isValueConvertibleToType(String val) {
+    public boolean isValueConvertibleToType(Object val) {
         return isValueConvertibleToType(val, false);
     }
 
-    public boolean isValueConvertibleToType(String val, boolean enforcePrecision) {
+    public boolean isValueConvertibleToType(Object val, boolean enforcePrecision) {
         try {
-            if (val != null && !isnumeric) {
-                if (convertibleType == Timestamp.class) {
-                    return new TimestampValidator(true).validate(val);
-                } else if (convertibleType == Date.class) {
-                    return DateValidator.instance().validate(val);
+            if (val instanceof String) {
+                String strVal = (String) val;
+                if (strVal != null && !isnumeric) {
+                    if (convertibleType == Timestamp.class) {
+                        return new TimestampValidator(true).validate(strVal);
+                    } else if (convertibleType == Date.class) {
+                        return DateValidator.instance().validate(strVal);
+                    } else if (convertibleType == byte[].class) {
+                        return true;
+                    }
                 }
-            }
 
-            Comparable nativeValue = toNativeValue(val);
-            if (nativeValue != null) {
-                if (isnumeric) {
-                    if (min != null && min.compareTo(nativeValue) > 0) {
-                        return false;
-                    }
-                    if (max != null && max.compareTo(nativeValue) < 0) {
-                        return false;
-                    }
-                    if (digits != null && !(!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
-                        return false;
-                    }
+                Comparable nativeValue = toNativeValue(strVal);
+                if (nativeValue != null) {
+                    if (isnumeric) {
+                        if (min != null && min.compareTo(nativeValue) > 0) {
+                            return false;
+                        }
+                        if (max != null && max.compareTo(nativeValue) < 0) {
+                            return false;
+                        }
+                        if (digits != null && !(!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
+                            return false;
+                        }
 
-                } else if (isstring) {
-                    if (val.length() > maxlength) {
-                        return false;
+                    } else if (isstring) {
+                        if (strVal.length() > maxlength) {
+                            return false;
+                        }
                     }
+                }
+            } else {
+                if (val == null || val != null && val.getClass() == convertibleType || (val instanceof Number && Number.class.isAssignableFrom(convertibleType))) {
+                    return true;
+                } else {
+                    return false;
                 }
             }
 
@@ -341,5 +378,9 @@ public class HCatDataType implements Cloneable, Serializable {
 
     public boolean isUnchecked() {
         return unchecked;
+    }
+
+    public boolean isNumeric() {
+        return isnumeric;
     }
 }

@@ -15,7 +15,7 @@
  */
 
 define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
-    angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService", function ($http, $q, RestUrlService) {
+    angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService","EntityAccessControlService", function ($http, $q, RestUrlService,EntityAccessControlService) {
 
         /**
          * Type name for JDBC data sources.
@@ -81,6 +81,13 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
              */
             findById: function (id) {
                 return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id)
+                    .then(function (response) {
+                        return response.data;
+                    });
+            },
+
+            findControllerServiceReferences:function(controllerServiceId){
+                return $http.get(RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
                     .then(function (response) {
                         return response.data;
                     });
@@ -160,6 +167,12 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     databaseUser: "",
                     password: ""
                 };
+            },
+
+            saveRoles:function(datasource){
+
+               return EntityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
+
             },
 
             /**

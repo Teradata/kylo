@@ -32,6 +32,7 @@ import com.thinkbiganalytics.search.transform.ElasticSearchRestSearchResultTrans
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.nio.entity.NStringEntity;
@@ -40,6 +41,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,11 +83,17 @@ public class ElasticSearchRestService implements Search {
         try {
             restClient.performRequest(
                 DELETE_METHOD,
-                getIndexDeleteEndPoint(indexName)
+                getIndexDeleteEndPoint(indexName, typeName, id)
             );
-        } catch (IOException exception) {
-            log.warn("Index deletion failed for index name {}", indexName);
-            exception.printStackTrace();
+            log.debug("Deleted document for index={}, type={}, id={}", indexName, typeName, id);
+        } catch (ResponseException responseException) {
+            log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
+            responseException.printStackTrace();
+        } catch (ClientProtocolException clientProtocolException) {
+            log.debug("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id);
+            clientProtocolException.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         } finally {
             closeRestClient();
         }
@@ -99,9 +107,15 @@ public class ElasticSearchRestService implements Search {
                 POST_METHOD,
                 getIndexRefreshEndPoint(indexName)
             );
-        } catch (IOException exception) {
-            log.warn("Index refresh failed for index name {}", indexName);
-            exception.printStackTrace();
+            log.debug("Committed index with name {}", indexName);
+        } catch (ResponseException responseException) {
+            log.warn("Index refresh encountered issues in Elasticsearch for index name {}", indexName);
+            responseException.printStackTrace();
+        } catch (ClientProtocolException clientProtocolException) {
+            log.trace("Http protocol error for refresh for index name {}", indexName);
+            clientProtocolException.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         } finally {
             closeRestClient();
         }
@@ -112,15 +126,21 @@ public class ElasticSearchRestService implements Search {
         buildRestClient();
         try {
             JSONObject jsonContent = new JSONObject(fields);
-            HttpEntity httpEntity = new NStringEntity(jsonContent.toString());
+            HttpEntity httpEntity = new NStringEntity(jsonContent.toString(), ContentType.APPLICATION_JSON);
             restClient.performRequest(
                 PUT_METHOD,
                 getIndexWriteEndPoint(indexName, typeName, id),
                 Collections.emptyMap(),
                 httpEntity);
-        } catch (IOException exception) {
-            log.warn("Indexing failed for index name {} of type {} with id {}", indexName, typeName, id);
-            exception.printStackTrace();
+            log.debug("Wrote to index with name {}", indexName);
+        } catch (ResponseException responseException) {
+            log.warn("Index write encountered issues in Elasticsearch for index name {} of type {} with id {}", indexName, typeName, id);
+            responseException.printStackTrace();
+        } catch (ClientProtocolException clientProtocolException) {
+            log.debug("Http protocol error for write for index name {}", indexName);
+            clientProtocolException.printStackTrace();
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         } finally {
             closeRestClient();
         }
@@ -130,8 +150,8 @@ public class ElasticSearchRestService implements Search {
         return "/" + indexName + "/" + typeName + "/" + id;
     }
 
-    private String getIndexDeleteEndPoint(String indexName) {
-        return indexName;
+    private String getIndexDeleteEndPoint(String indexName, String typeName, String id) {
+        return "/" + indexName + "/" + typeName + "/" + id;
     }
 
     private String getIndexRefreshEndPoint(String indexName) {
@@ -215,6 +235,8 @@ public class ElasticSearchRestService implements Search {
                 elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
 
                 JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
+                elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
+
                 JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
 
                 List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();
@@ -289,7 +311,7 @@ public class ElasticSearchRestService implements Search {
                 elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
                 return elasticSearchRestSearchResponse;
             } catch (IOException | JSONException exception) {
-                System.out.println("An error occurred during decoding search result");
+                log.warn("An error occurred during decoding search result");
                 exception.printStackTrace();
                 return null;
             }

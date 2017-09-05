@@ -30,25 +30,49 @@ import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.modeshape.support.ModeshapeIndexUtil;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrIndexDefinition;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrQueryResult;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrQueryResultColumn;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrQueryResultColumnValue;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrQueryResultRow;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.jcr.api.Workspace;
+import org.modeshape.jcr.api.index.IndexDefinition;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
+import javax.jcr.query.QueryResult;
+import javax.jcr.query.Row;
+import javax.jcr.query.RowIterator;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -62,6 +86,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
@@ -223,6 +250,183 @@ public class DebugController {
             return sw.toString();
         });
     }
+    @GET
+    @Path("jcr-index")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<JcrIndexDefinition> getIndexes(){
+      return  metadata.read(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                Map<String, IndexDefinition> indexDefinitionMap = workspace.getIndexManager().getIndexDefinitions();
+                if (indexDefinitionMap != null) {
+                    return indexDefinitionMap.entrySet().stream().map((Map.Entry<String, IndexDefinition> e) -> {
+                        JcrIndexDefinition indexDefinition = new JcrIndexDefinition();
+                          StringBuffer names = new StringBuffer();
+                        StringBuffer types = new StringBuffer();
+                                for(int i=0; i< e.getValue().size(); i++){
+                                    if(i >0){
+                                        names.append(",");
+                                        types.append(",");
+                                    }
+                                    int columnType =e.getValue().getColumnDefinition(i).getColumnType();
+                                    String propertyName =e.getValue().getColumnDefinition(i).getPropertyName();
+                                    names.append(propertyName);
+                                    types.append(PropertyType.nameFromValue(columnType));
+                                }
+                                indexDefinition.setIndexKind(e.getValue().getKind().name());
+                        indexDefinition.setIndexName(e.getKey());
+                        indexDefinition.setNodeType(e.getValue().getNodeTypeName());
+                        indexDefinition.setPropertyName(names.toString());
+                        indexDefinition.setPropertyTypes(types.toString());
+
+                        return indexDefinition;
+                    }).collect(Collectors.toList());
+                } else {
+                    return Collections.emptyList();
+                }
+
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @POST
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus unregisterIndex(){
+        return  metadata.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                workspace.reindex();
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+
+    @POST
+    @Path("jcr-index/{indexName}/unregister")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus unregisterIndex(@PathParam("indexName") String indexName){
+       return  metadata.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                ModeshapeIndexUtil.unregisterIndex(workspace.getIndexManager(), indexName);
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+
+    @POST
+    @Path("jcr-index/register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("registers an index with modeshape")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "registers an index with modeshape", response = String.class)
+    )
+    public RestResponseStatus registerIndex(JcrIndexDefinition indexDefinition){
+       return  metadata.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                ModeshapeIndexUtil.registerIndex(workspace.getIndexManager(), indexDefinition.getIndexName(), IndexDefinition.IndexKind.valueOf(indexDefinition.getIndexKind().toUpperCase()), "local", indexDefinition.getNodeType(), indexDefinition.getDescription(), null, indexDefinition.getPropertyName(),
+                                                 indexDefinition.getPropertyType());
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    /**
+     * Prints the nodes of the JCR path given, for debugging.
+     *
+     * @param query the jcr query
+     * @return a printout of the JCR tree
+     */
+    @GET
+    @Path("jcr-sql")
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
+    //    this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+
+        return metadata.read(() -> {
+            List<List<String>> rows = new ArrayList<>();
+            Long startTime = System.currentTimeMillis();
+            JcrQueryResult jcrQueryResult = new JcrQueryResult();
+
+
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+
+                Workspace workspace = (Workspace) session.getWorkspace();
+
+                String explainPlain = JcrQueryUtil.explainPlain(session,query);
+                //start the timer now:
+                startTime = System.currentTimeMillis();
+
+                QueryResult result = JcrQueryUtil.query(session, query);
+                jcrQueryResult.setExplainPlan(explainPlain);
+                RowIterator rowItr = result.getRows();
+                List<JcrQueryResultColumn> columns = new ArrayList<>();
+                String colsStr = StringUtils.substringAfter(query.toLowerCase(),"select");
+                colsStr = StringUtils.substringBefore(colsStr,"from");
+                if(StringUtils.isNotBlank(colsStr)){
+                    colsStr = colsStr.trim();
+                    columns = Arrays.asList(colsStr.split(",")).stream().map(c ->{
+                        String columnName =c;
+                        if(c.contains("as ")){
+                            columnName = StringUtils.substringAfter(c,"as ");
+                        }else if(c.contains(" ")){
+                            columnName = StringUtils.substringAfter(c, " ");
+                        }
+                       return new JcrQueryResultColumn(columnName);
+                    }).collect(Collectors.toList());
+                }
+                jcrQueryResult.setColumns(columns);
+
+                while (rowItr.hasNext()) {
+                   Row row =rowItr.nextRow();
+                   Value[] rowValues = row.getValues();
+                    if(rowValues != null){
+                        if(rowValues.length != columns.size()){
+                           columns = IntStream.range(0, rowValues.length)
+                                .mapToObj(i ->  new JcrQueryResultColumn("Column "+i)).collect(Collectors.toList());
+                           jcrQueryResult.setColumns(columns);
+                        }
+                        JcrQueryResultRow jcrQueryResultRow = new JcrQueryResultRow();
+                        jcrQueryResult.addRow(jcrQueryResultRow);
+                      List<JcrQueryResultColumnValue> jcrQueryResultColumnValues = Arrays.asList(rowValues).stream().map(v->{
+                           try {
+                               String value = v.getString();
+                               return new JcrQueryResultColumnValue(value);
+                           }catch (Exception e){
+                               return new JcrQueryResultColumnValue("ERROR: "+e.getMessage());
+                           }
+                       }).collect(Collectors.toList());
+                       jcrQueryResultRow.setColumnValues(jcrQueryResultColumnValues);
+                   }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            long totalTime = System.currentTimeMillis() - startTime;
+            jcrQueryResult.setQueryTime(totalTime);
+            return jcrQueryResult;
+
+        });
+    }
+
 
 
     /**

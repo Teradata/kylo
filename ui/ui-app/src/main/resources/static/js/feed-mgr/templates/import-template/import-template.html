@@ -33,7 +33,7 @@
     <body-section>
 
 
-      <div layout="column" flex class="md-padding">
+      <div layout="column" class="md-padding">
 
         <div>
           <div class="item-title">Import one of the following from another environment:</div>
@@ -87,11 +87,11 @@
           </md-list>
         </div>
 
-        <div fex layout="column" layout-align="start start" style="padding-top:15px;"
+        <div layout="column" style="padding-top:15px;"
              class="layout-padding-indent">
           <upload-file upload-file-model="vm.templateFile"></upload-file>
 
-          <div ng-if="vm.uploadType == 'zip'" layout-fill  >
+          <div ng-if="vm.uploadType == 'zip'">
             <!-- validation messages -->
             <div ng-if="vm.templateDataImportOption.errorMessages != null && vm.templateDataImportOption.errorMessages.length >0">
               <div ng-repeat="message in vm.templateDataImportOption.errorMessages" layout="column">
@@ -200,7 +200,7 @@
 
         </div>
 
-        <div layout="row" class="layout-padding-top" flex>
+        <div layout="row" class="layout-padding-top">
           <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"
                      ng-disabled="vm.uploadInProgress">
             Import Template

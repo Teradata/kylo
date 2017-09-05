@@ -87,9 +87,10 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     }
 
     @Override
-    protected String getFindAllStartingPath() {
+    protected String getEntityQueryStartingPath() {
         return EntityUtil.pathForTemplates();
     }
+
 
     public FeedManagerTemplate ensureTemplate(String systemName) {
         String sanitizedName = sanitizeSystemName(systemName);
@@ -120,10 +121,11 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     @Override
     public FeedManagerTemplate findByName(String name) {
         if (StringUtils.isNotBlank(name)) {
-            String sanitiezedTitle = sanitizeTitle(name);
-            String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.TITLE) + " = $title";
+            String sanitizedTitle = sanitizeTitle(name);
+            String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.TITLE) + " = $title ";
+            query = applyFindAllFilter(query,EntityUtil.pathForTemplates());
             Map<String, String> bindParams = new HashMap<>();
-            bindParams.put("title", sanitiezedTitle);
+            bindParams.put("title", sanitizedTitle);
             return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
         } else {
             return null;
@@ -134,7 +136,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     public FeedManagerTemplate findByNifiTemplateId(String nifiTemplateId) {
         String
             query =
-            "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.NIFI_TEMPLATE_ID) + " = $nifiTemplateId";
+            "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.NIFI_TEMPLATE_ID) + " = $nifiTemplateId ";
+        query = applyFindAllFilter(query,EntityUtil.pathForTemplates());
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("nifiTemplateId", nifiTemplateId);
         return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);

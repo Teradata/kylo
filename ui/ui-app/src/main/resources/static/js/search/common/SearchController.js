@@ -1,6 +1,6 @@
 define(['angular', "search/module-name"], function (angular, moduleName) {
 
-    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, SearchService, Utils, CategoriesService, StateService, FeedService,PaginationDataService) {
+    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService,PaginationDataService) {
 
         var self = this;
         /**
@@ -15,6 +15,7 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
          */
         this.searching = false;
 
+        var resetPaging = $transition$.params().bcExclude_globalSearchResetPaging || false;
 
         //Pagination Data
         this.pageName = "search";
@@ -37,8 +38,8 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
         $scope.$watch(function () {
             return SearchService.searchQuery
         }, function (newVal,oldVal) {
-            if(newVal != oldVal || self.searchResult == null) {
-                var resetCurrentPage = newVal != oldVal;
+            if(newVal != oldVal || self.searchResult == null || resetPaging == true) {
+                var resetCurrentPage = ((newVal != oldVal) || (resetPaging == true));
                 self.search(resetCurrentPage);
             }
         });
@@ -134,7 +135,7 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
     };
 
     angular.module(moduleName).controller('SearchController',
-        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService","PaginationDataService", controller]);
+        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "$transition$", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService","PaginationDataService", controller]);
 });
 
 

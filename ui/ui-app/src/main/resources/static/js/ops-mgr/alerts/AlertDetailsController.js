@@ -102,6 +102,15 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         };
 
         /**
+         * Shows the alert removing the 'cleared' flag
+         */
+        self.showAlert = function() {
+            self.alertData.cleared = false;
+            $http.post(OpsManagerRestUrlService.ALERT_DETAILS_URL(self.alertData.id), {state: self.alertData.state, clear: false, unclear:true});
+        };
+
+
+        /**
          * Loads the data for the specified alert.
          * @param {string} alertId the id of the alert
          */
@@ -122,18 +131,33 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                             self.alertData.stateIcon = self.getStateIcon(self.alertData.state);
                             self.alertData.stateText = self.getStateText(self.alertData.state);
                         }
+                        var isStream = false;
 
                         if (angular.isArray(self.alertData.events)) {
                             angular.forEach(self.alertData.events, function (event) {
                                 event.stateClass = self.getStateClass(event.state);
                                 event.stateIcon = self.getStateIcon(event.state);
                                 event.stateText = self.getStateText(event.state);
+                                event.contentSummary = null;
+                                if(angular.isDefined(event.content)){
+                                    try {
+                                        var alertEventContent = angular.fromJson(event.content);
+                                        if(alertEventContent && alertEventContent.content){
+                                            event.contentSummary = angular.isDefined(alertEventContent.content.failedCount) ? alertEventContent.content.failedCount +" failures"  : null;
+                                            if(!isStream && angular.isDefined(alertEventContent.content.stream)){
+                                                isStream = alertEventContent.content.stream;
+                                            }
+                                        }
+                                    }catch(err){
+
+                                    }
+                                }
                             });
                         }
                         self.alertData.links = [];
                         //add in the detail URLs
                         if(self.alertData.type == 'http://kylo.io/alert/job/failure') {
-                            if(angular.isDefined(self.alertData.content)) {
+                            if(angular.isDefined(self.alertData.content) && !isStream) {
                                 var jobExecutionId = self.alertData.content;
                                 self.alertData.links.push({label: "Job Execution", value: "job-details({executionId:'" + jobExecutionId + "'})"});
                             }

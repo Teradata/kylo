@@ -42,7 +42,7 @@
 
 </changeSet>
 
-    <changeSet author="sr186054" id="postgres_update_SLA_ID_values" dbms="postgres">
+    <changeSet author="sr186054" id="postgres_update_SLA_ID_values" dbms="postgresql">
         <update
             tableName="SLA_ASSESSMENT" >
             <column name="SLA_ID" type="${uuid.type}" valueComputed="uuid(SLA_ID_OLD)" />
@@ -64,12 +64,12 @@
         </sql>
     </changeSet>
 
-    <changeSet id="postgres_insert_job_failure_alerts" author="sr186054" dbms="postgres">
-        <sqlFile path="postgresl_insert_job_failures.sql" relativeToChangelogFile="true"/>
+    <changeSet id="postgres_insert_job_failure_alerts" author="sr186054" dbms="postgresql">
+        <sqlFile path="postgres_insert_job_failure_alerts.sql" splitStatements="false" relativeToChangelogFile="true"/>
     </changeSet>
 
-    <changeSet id="call_postgres_kylo_job_execution_alerts_proc" author="sr186054" dbms="postgres">
-        <sql dbms="postgres" >
+    <changeSet id="call_postgres_kylo_job_execution_alerts_proc" author="sr186054" dbms="postgresql">
+        <sql dbms="postgresql" >
             select kylo_job_execution_alerts();
             DROP FUNCTION IF EXISTS kylo_job_execution_alerts();
         </sql>

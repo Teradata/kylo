@@ -660,6 +660,16 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             this.delegate.clear();
         }
 
+        @Override
+        public <C extends Serializable> Alert updateAlertChange(String description, C content) {
+            return delegate.updateAlertChange(description,content);
+        }
+
+        @Override
+        public void unclear() {
+            this.delegate.unclear();
+        }
+
         private Alert changed(Alert alert) {
             notifyChanged(alert);
             this.latestAlert = alert;

@@ -100,7 +100,7 @@ public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeStat
      */
     @Override
     public void upgradeTo(KyloVersion startingVersion) {
-        log.info("Upgrading from version: " + startingVersion);
+        log.info("Upgrading template feed relationships from version: " + startingVersion);
         
         ensureFeedTemplateFeedRelationships();
     }
@@ -126,6 +126,7 @@ public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeStat
                         }
                     }
                     if (templateFeeds == null || !templateFeeds.contains(feed)) {
+                        log.info("Updating relationship temlate: {} -> feed: {}", template.getName(), feed.getName());
                         template.addFeed(feed);
                         feedManagerTemplateProvider.update(template);
                     }

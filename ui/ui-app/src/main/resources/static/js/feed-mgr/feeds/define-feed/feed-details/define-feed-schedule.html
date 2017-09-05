@@ -130,7 +130,7 @@
       </div>
 
 
-      <thinkbig-step-buttons can-continue="vm.isValid && !vm.savingFeed" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
+      <thinkbig-step-buttons can-continue="vm.isValid && vm.defineFeedScheduleForm.$valid &&  !vm.savingFeed" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 
     </ng-form>
   </body-section>

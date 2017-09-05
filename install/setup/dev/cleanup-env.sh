@@ -48,6 +48,8 @@ elif [ "$linux_type" == "update-rc.d" ]; then
 fi
 
 rm -rf /var/lib/elasticsearch/
+rm -rf /etc/elasticsearch/
+rm -rf /usr/share/elasticsearch/
 
 echo "Uninstalling /opt/java"
 rm -rf /opt/java

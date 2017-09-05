@@ -49,8 +49,14 @@ public interface JpaServiceLevelAssessmentRepository extends JpaRepository<JpaSe
     @Query(" select distinct assessment from JpaServiceLevelAssessment assessment " +
            " left join JpaServiceLevelAgreementDescription slaDescription on slaDescription.slaId = assessment.slaId " +
            "left join slaDescription.feeds as feed " +
-           "left "+FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED+" "+
-           " where assessment.id = :id  and (feed.id is null or (feed.id is not null and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH+" ))")
-    JpaServiceLevelAssessment findAssessment(@Param("id") ServiceLevelAssessment.ID id);
+           " where assessment.id = :id ")
+    JpaServiceLevelAssessment findAssessmentWithoutAcl(@Param("id") ServiceLevelAssessment.ID id);
+
+    @Query(" select distinct assessment from JpaServiceLevelAssessment assessment " +
+           " left join JpaServiceLevelAgreementDescription slaDescription on slaDescription.slaId = assessment.slaId " +
+           "left join slaDescription.feeds as feed " +
+           "left " + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " " +
+           " where assessment.id = :id  and (feed.id is null or (feed.id is not null and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + " ))")
+    JpaServiceLevelAssessment findAssessmentWithAcl(@Param("id") ServiceLevelAssessment.ID id);
 
 }

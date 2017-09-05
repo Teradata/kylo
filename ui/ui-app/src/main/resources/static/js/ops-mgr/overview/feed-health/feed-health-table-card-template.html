@@ -138,9 +138,9 @@
                                        </span>
                   </td>
                   <td md-cell>
-                    <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
+                    <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true" ng-if="(!feed.stream || (feed.stream && !feed.running))"></kylo-timer>
                   </td>
-                  <td md-cell>{{feed.runTimeString}}</td>
+                  <td md-cell><span ng-if="!feed.stream">{{feed.runTimeString}}</span></td>
                 </tr>
                 </tbody>
               </table>

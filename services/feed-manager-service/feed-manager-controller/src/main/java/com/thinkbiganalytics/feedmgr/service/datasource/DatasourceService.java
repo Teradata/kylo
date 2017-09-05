@@ -26,12 +26,17 @@ import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +45,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -62,6 +71,9 @@ public class DatasourceService implements PostMetadataConfigAction {
     @Inject
     private DatasourceDefinitionProvider datasourceDefinitionProvider;
     private Map<String, FeedLineageStyle> feedLineageStyleMap;
+
+    @Inject
+    private DatasourceProvider datasourceProvider;
 
     @PostConstruct
     private void init() {
@@ -106,8 +118,7 @@ public class DatasourceService implements PostMetadataConfigAction {
 
 
     /**
-     * Load the 'datasource-definitions.json' datasource definitions file
-     * this is called on startup of Kylo
+     * Load the 'datasource-definitions.json' datasource definitions file this is called on startup of Kylo
      */
     public void loadDefinitionsFromFile() {
 
@@ -171,5 +182,27 @@ public class DatasourceService implements PostMetadataConfigAction {
         loadDefinitionsFromFile();
     }
 
+    /**
+     * Predicate function that filters controller services for those that aren't referenced by a data source or where the current user has access to the data source.
+     */
+    @Nonnull
+    public Predicate<ControllerServiceDTO> getControllerServiceAccessControlFilter() {
+        final Set<String> allControllerServiceIds = metadataAccess.read(this::getControllerServiceIds, MetadataAccess.SERVICE);
+        final Set<String> allowedControllerServiceIds = metadataAccess.read(this::getControllerServiceIds);
+        return controllerService -> !allControllerServiceIds.contains(controllerService.getId()) || allowedControllerServiceIds.contains(controllerService.getId());
+    }
 
+    /**
+     * Returns the set of all controller service ids.
+     */
+    @Nonnull
+    private Set<String> getControllerServiceIds() {
+        final DatasourceCriteria criteria = datasourceProvider.datasetCriteria().type(UserDatasource.class);
+        return datasourceProvider.getDatasources(criteria).stream()
+            .map(UserDatasource.class::cast)
+            .map(UserDatasource::getDetails).filter(Optional::isPresent).map(Optional::get)
+            .filter(JdbcDatasourceDetails.class::isInstance).map(JdbcDatasourceDetails.class::cast)
+            .map(JdbcDatasourceDetails::getControllerServiceId).filter(Optional::isPresent).map(Optional::get)
+            .collect(Collectors.toSet());
+    }
 }
