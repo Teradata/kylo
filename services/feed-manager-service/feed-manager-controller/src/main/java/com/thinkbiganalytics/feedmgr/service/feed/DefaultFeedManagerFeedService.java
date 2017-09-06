@@ -199,6 +199,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
 
+    @Value("${nifi.auto.align:true}")
+    private boolean nifiAutoFeedsAlignAfterSave;
+
     /**
      * Adds listeners for transferring events.
      */
@@ -526,7 +529,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder.newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
-                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows);
+                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
+            .autoAlign(nifiAutoFeedsAlignAfterSave);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

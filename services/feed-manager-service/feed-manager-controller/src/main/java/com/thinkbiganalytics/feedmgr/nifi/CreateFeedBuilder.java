@@ -107,6 +107,8 @@ public class CreateFeedBuilder {
      **/
     private ProcessGroupDTO categoryGroup;
 
+    private boolean autoAlign = true;
+
 
     protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver,
                                 NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
@@ -145,6 +147,10 @@ public class CreateFeedBuilder {
 
     public CreateFeedBuilder removeInactiveVersionedProcessGroup(boolean removeInactiveVersionedProcessGroup) {
         this.removeInactiveVersionedProcessGroup = removeInactiveVersionedProcessGroup;
+        return this;
+    }
+    public CreateFeedBuilder autoAlign(boolean autoAlign){
+        this.autoAlign = autoAlign;
         return this;
     }
 
@@ -302,16 +308,24 @@ public class CreateFeedBuilder {
                     updateFeedMetadataControllerServiceReferences(updatedControllerServiceProperties);
 
                     //align items
-                    log.info("Aligning Feed flows in NiFi ");
-                    AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
-                    alignProcessGroupComponents.autoLayout();
-
-                    //if this is a new feedProcessGroup (i.e. new category), align the root level items also
-                    //fetch the parent to get that id to align
-                    if (previousFeedProcessGroup == null) {
-                        log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
-                        new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
+                    if(this.autoAlign) {
+                        log.info("Aligning Feed flows in NiFi ");
+                        AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
+                        alignProcessGroupComponents.autoLayout();
+                        //if this is a new feedProcessGroup (i.e. new category), align the root level items also
+                        //fetch the parent to get that id to align
+                        if (previousFeedProcessGroup == null) {
+                            log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
+                            new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
+                        }
                     }
+                    else {
+                        log.info("Skipping auto alignment in NiFi. You can always manually align this category and all of its feeds by using the rest api: /v1/feedmgr/nifi/auto-align/{}",entity.getParentGroupId());
+                        if (previousFeedProcessGroup == null) {
+                            log.info("To re align the categories: /v1/feedmgr/nifi/auto-align/{}",this.categoryGroup.getParentGroupId());
+                        }
+                    }
+
 
                 }
             }
