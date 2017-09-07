@@ -213,8 +213,8 @@ public class IntegrationTestBase {
     }
 
     protected void copyDataToDropzone(String testFileName) {
-        ssh("touch /var/dropzone/" + testFileName);
-        ssh("chown -R nifi:nifi /var/dropzone");
+        ssh("sudo touch /var/dropzone/" + testFileName);
+        ssh("sudo chown -R nifi:nifi /var/dropzone");
     }
 
     protected void waitForFeedToComplete() {
