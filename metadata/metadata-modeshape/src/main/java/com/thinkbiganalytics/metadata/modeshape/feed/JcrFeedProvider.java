@@ -198,7 +198,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             // The versionable node argument is the summary node.
             Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
-            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable);
+            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable, null);
         } catch (RepositoryException e) {
             throw new FeedNotFoundExcepton(id);
         }

@@ -59,15 +59,17 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         try {
-            if (CHILD_NODE.contains(method.getName())) {
+            String methodName = method.getName();
+            
+            if (CHILD_NODE.contains(methodName)) {
                 return JcrVersionUtil.createAutoCheckoutProxy((Node) method.invoke(this.versionable, args));
-            } else if (NODE_ITERATOR.contains(method.getName())) {
+            } else if (NODE_ITERATOR.contains(methodName)) {
                 return createNodeIterator((NodeIterator) method.invoke(this.versionable, args));
-            } else if (method.getName().equals("getProperties")) {
+            } else if (methodName.equals("getProperties")) {
                 return createPropertyIterator((PropertyIterator) method.invoke(this.versionable, args));
-            } else if (method.getName().equals("getProperty")) {
+            } else if (methodName.equals("getProperty")) {
                 return createProperty((Property) method.invoke(this.versionable, args));
-            } else if (method.getName().startsWith("set")) {
+            } else if (methodName.startsWith("set") || methodName.equals("addMixin")) {
                 ensureCheckout();
             }
             

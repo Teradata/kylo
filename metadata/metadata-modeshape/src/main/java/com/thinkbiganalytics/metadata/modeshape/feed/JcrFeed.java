@@ -82,9 +82,10 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         super(node);
     }
     
-    public JcrFeed(Node feedNode, Node summaryNode) {
-        super(feedNode);
-        // The summary node is different if this is a past version.
+    public JcrFeed(Node feedNode, Node summaryNode, FeedOpsAccessControlProvider opsAccessProvider) {
+        this(feedNode, opsAccessProvider);
+        // The summary node will be different (not a child of the feed node) if this is a past version,
+        // so it must be supplied at construction.
         this.summary = JcrUtil.getJcrObject(summaryNode, FeedSummary.class, this);
     }
 
