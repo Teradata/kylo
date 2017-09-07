@@ -230,7 +230,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
                 /// TRIGGER JOB COMPLETE!!!
                 metadataAccess.commit(() -> {
                     BatchJobExecution batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
-                    if (event.isFailure()) {
+                    if (batchJobExecution.isFailed()) {
                         failedJob(batchJobExecution, event);
                     } else {
                         successfulJob(batchJobExecution, event);

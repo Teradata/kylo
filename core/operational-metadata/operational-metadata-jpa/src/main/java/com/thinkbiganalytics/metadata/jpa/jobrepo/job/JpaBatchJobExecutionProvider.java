@@ -332,7 +332,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (event.isStream()) {
             jobExecution.finishStreamingJob();
         } else {
-            if (event.isFailure()) {  //event.hasFailureEvents
+            if (event.isFailure() || jobExecution.isFailed()) {  //event.hasFailureEvents
                 jobExecution.failJob();
             } else {
                 jobExecution.completeJob();
