@@ -21,8 +21,8 @@
  *
  */
 define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","AccessControlService","EntityAccessControlService",
-        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,AccessControlService,EntityAccessControlService) {
+    angular.module(moduleName).factory('FeedService',["$http","$q","$mdToast","$mdDialog","RestUrlService","VisualQueryService","FeedCreationErrorService","FeedPropertyService","AccessControlService","EntityAccessControlService","StateService",
+        function ($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService,FeedPropertyService,AccessControlService,EntityAccessControlService, StateService) {
 
             function trim(str) {
                 return str.replace(/^\s+|\s+$/g, "");
@@ -174,8 +174,21 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         roleMemberships:[],
                         owner:null,
                         roleMembershipsUpdated:false,
-                        tableOption: {}
+                        tableOption: {},
+                        cloned:false
                     };
+                },
+                cloneFeed:function(){
+                    //copy the feed
+                    data.createFeedModel = angular.copy(data.editFeedModel);
+                    data.createFeedModel.id = null;
+                    data.createFeedModel.cloned = true;
+                    data.createFeedModel.clonedFrom = data.createFeedModel.feedName;
+                    data.createFeedModel.feedName +="_copy";
+                    data.createFeedModel.systemFeedName +="_copy";
+
+                  return data.createFeedModel;
+
                 },
                 /**
                  * Called when starting a new feed.
@@ -274,7 +287,21 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                  * Resets the Create feed ({@code this.createFeedModel}) object
                  */
                 resetFeed: function () {
-                    angular.extend(this.createFeedModel, this.getNewCreateFeedModel());
+                    //get the new model and its keys
+                    var newFeedObj = this.getNewCreateFeedModel();
+                    var keys = _.keys(newFeedObj)
+                    var createFeedModel = angular.extend(this.createFeedModel, newFeedObj);
+
+                    //get the create model and its keys
+                    var modelKeys = _.keys(this.createFeedModel);
+
+                    //find those that have been added and delete them
+                    var extraKeys = _.difference(modelKeys,keys);
+                    _.each(extraKeys,function(key){
+                        delete createFeedModel[key];
+                    })
+
+
                     VisualQueryService.resetModel();
                     FeedCreationErrorService.reset();
                 },

@@ -1,6 +1,6 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular, moduleName) {
 
-    var controller = function ($scope, $http, $mdDialog, $q, AccessControlService, FeedService, FeedSecurityGroups,RestUrlService, StateService, UiComponentsService) {
+    var controller = function ($scope, $http, $mdDialog, $q, $transition$, AccessControlService, FeedService, FeedSecurityGroups, RestUrlService, StateService, UiComponentsService) {
 
         var self = this;
 
@@ -10,14 +10,54 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         self.allowImport = false;
 
+        /**
+         * the layout choosen.  Either 'first', or 'all'  changed via the 'more' link
+         * @type {string}
+         */
         this.layout = 'first';
+
+        /**
+         * The selected template
+         * @type {null}
+         */
         this.template = null;
+
+        /**
+         * The model for creating the feed
+         * @type {*}
+         */
         self.model = FeedService.createFeedModel;
+
+        /**
+         * the number of steps for the selected feed/template
+         * @type {null}
+         */
         self.model.totalSteps = null;
 
+        /**
+         * All the templates available
+         * @type {Array}
+         */
         self.allTemplates = [];
+
+        /**
+         * Array of the first n templates to be displayed prior to the 'more' link
+         * @type {Array}
+         */
         self.firstTemplates = [];
+
+        /**
+         * flag to indicate we need to display the 'more templates' link
+         * @type {boolean}
+         */
         self.displayMoreLink = false;
+        /**
+         * Flag to indicate we are cloning
+         * This is set via a $transition$ param in the init() method
+         * @type {boolean}
+         */
+        self.cloning = false;
+
         /**
          * Return a list of the Registered Templates in the system
          * @returns {HttpPromise}
@@ -37,6 +77,19 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     }
                     self.allTemplates = data;
                     self.firstTemplates = _.first(data, 3);
+                    if (self.cloning) {
+                        self.model = FeedService.cloneFeed();
+                        var registeredTemplate = self.model.registeredTemplate;
+                        var templateObj = {
+                            id: registeredTemplate.id,
+                            templateName: registeredTemplate.templateName,
+                            defineTable: registeredTemplate.defineTable,
+                            allowPreconditions: registeredTemplate.allowPreconditions,
+                            dataTransformation: registeredTemplate.dataTransformation,
+                            templateTableOption: registeredTemplate.templateTableOption
+                        }
+                        self.selectTemplate(templateObj);
+                    }
 
                 }
 
@@ -49,15 +102,24 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             return promise;
         }
 
+        /**
+         * Click the more link to show all the template cards
+         */
         this.more = function () {
             this.layout = 'all';
         };
 
+        /**
+         * Navigate to the import feed screen
+         */
         this.gotoImportFeed = function () {
             StateService.FeedManager().Feed().navigatetoImportFeed();
         };
-        getRegisteredTemplates();
 
+        /**
+         * Select a template
+         * @param template
+         */
         this.selectTemplate = function (template) {
             self.model.templateId = template.id;
             self.model.templateName = template.templateName;
@@ -98,33 +160,96 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         };
 
+        /**
+         * Cancel the stepper
+         */
         self.cancelStepper = function () {
             FeedService.resetFeed();
             self.model.totalSteps = null;
         };
 
-
-        self.onStepperInitialized = function(stepper) {
+        /**
+         * After the stepper is initialized this will get called to setup access control
+         * @param stepper
+         */
+        self.onStepperInitialized = function (stepper) {
             var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
             $q.all(accessChecks).then(function (response) {
                 var entityAccess = AccessControlService.isEntityAccessControlled();
                 var securityGroupsAccess = response.securityGroups;
                 //disable the access control step
-                if(!entityAccess && !securityGroupsAccess) {
+                if (!entityAccess && !securityGroupsAccess) {
                     //Access Control is second to last step 0 based array indexc
-                    stepper.deactivateStep(self.model.totalSteps -2);
+                    stepper.deactivateStep(self.model.totalSteps - 2);
+                }
+                if (self.cloning) {
+                    hideCloningDialog();
                 }
             });
+
         };
 
-        // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
-            .then(function (actionSet) {
-                self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
+        /**
+         * initialize the controller
+         */
+        function init() {
+
+            var isCloning = $transition$.params().bcExclude_cloning;
+            var cloneFeedName = $transition$.params().bcExclude_cloneFeedName;
+            self.cloning = angular.isUndefined(isCloning) ? false : isCloning;
+
+            getRegisteredTemplates();
+            if (self.cloning) {
+                showCloningDialog(cloneFeedName);
+            }
+            // Fetch the allowed actions
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                    self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
+                });
+
+        }
+
+        /**
+         * hide the cloning dialog
+         */
+        function hideCloningDialog() {
+            $mdDialog.hide();
+        }
+
+        /**
+         * Show a dialog while the cloning is setting up the stepper with the data
+         * @param cloneFeedName
+         */
+        function showCloningDialog(cloneFeedName) {
+            if (angular.isUndefined(cloneFeedName)) {
+                cloneFeedName = "the feed";
+            }
+            $mdDialog.show({
+                templateUrl: 'js/feed-mgr/feeds/define-feed/clone-feed-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                locals: {
+                    feedName: cloneFeedName
+                },
+                controller: CloningDialogController,
+                fullscreen: true
             });
+            function CloningDialogController($scope, $mdDialog, feedName) {
+                $scope.feedName = feedName;
+                $scope.closeDialog = function () {
+                    $mdDialog.hide();
+                }
+            }
+        }
+
+        //initialize the controller
+        init();
+
     };
 
-    angular.module(moduleName).controller('DefineFeedController', ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "FeedService", "FeedSecurityGroups", "RestUrlService", "StateService",
-                                                                   "UiComponentsService", controller]);
+    angular.module(moduleName).controller('DefineFeedController',
+        ["$scope", "$http", "$mdDialog", "$q", "$transition$", "AccessControlService", "FeedService", "FeedSecurityGroups", "RestUrlService", "StateService",
+         "UiComponentsService", controller]);
 
 });

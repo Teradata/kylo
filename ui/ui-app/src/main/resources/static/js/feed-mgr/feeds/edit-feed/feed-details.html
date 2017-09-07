@@ -82,6 +82,12 @@
                     Enable
                   </md-button>
                 </md-menu-item>
+                <md-menu-item ng-click="vm.cloneFeed()" >
+                  <md-button ng-disabled="!vm.allowEdit">
+                    <ng-md-icon icon="content_copy" class="orange" md-menu-align-target=""></ng-md-icon>
+                    Clone
+                  </md-button>
+                </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()">
                   <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
                     <ng-md-icon icon="delete_forever" class="orange" md-menu-align-target=""></ng-md-icon>

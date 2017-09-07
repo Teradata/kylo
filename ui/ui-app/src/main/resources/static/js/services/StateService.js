@@ -110,6 +110,10 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
                 $state.go('define-feed', {templateId: templateId});
             }
 
+            data.navigateToCloneFeed = function (feedName) {
+                $state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
+            }
+
             data.navigateToDefineFeedComplete = function (feedModel, error) {
                 $state.go('define-feed-complete', {feedModel: feedModel, error: error});
             }

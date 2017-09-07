@@ -117,12 +117,11 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
             loadFeed(requestedTabIndex);
             nifiRunningCheck();
-
-
-
-
-
         };
+
+        this.cloneFeed = function(){
+            StateService.FeedManager().Feed().navigateToCloneFeed(this.model.feedName);
+        }
 
         /**
          * Displays a confirmation dialog for deleting the feed.
