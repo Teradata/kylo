@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
@@ -45,8 +44,8 @@ import javax.jms.ConnectionFactory;
 @Profile("jms-activemq")
 @Configuration
 @PropertySources({
-                     @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true),
-                     @PropertySource(value = "classpath:activemq.properties", ignoreResourceNotFound = true)
+                     @PropertySource(value = "classpath:activemq.properties", ignoreResourceNotFound = true),
+                     @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true)
                  })
 public class ActiveMqConfig {
 
