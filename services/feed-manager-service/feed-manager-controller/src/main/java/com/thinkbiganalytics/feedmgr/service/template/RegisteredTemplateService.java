@@ -95,6 +95,9 @@ public class RegisteredTemplateService {
     @Inject
     private NiFiTemplateCache niFiTemplateCache;
 
+    @Inject
+    private RegisteredTemplateCache registeredTemplateCache;
+
     /**
      * Checks the current security context has been granted permission to perform the specified action(s)
      * on the template with the specified ID.  If the template does not exist then no check is made.
@@ -716,6 +719,8 @@ public class RegisteredTemplateService {
             domain = templateProvider.findById(domain.getId());
             RegisteredTemplate updatedTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
             updatedTemplate.setUpdated(true);
+
+            registeredTemplateCache.invalidateProcessors(updatedTemplate.getId());
             return updatedTemplate;
         }
     }

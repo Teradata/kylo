@@ -84,6 +84,8 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
+
+
     /**
      * Gets Template data, either a quick view or including all its content
      */
@@ -165,6 +167,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
                                                       ReusableTemplateCreationCallback creationCallback) {
         TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, templateProperties, staticConfigProperties, createReusableFlow, creationCallback);
         NifiProcessGroup group = creator.createTemplate();
+
         return group;
     }
 
@@ -1223,6 +1226,11 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     //walk entire graph
     public List<NifiFlowProcessGroup> getFeedFlows() {
         return client.flows().getFeedFlows();
+    }
+
+
+    public List<NifiFlowProcessGroup> getFeedFlowsWithCache(NifiConnectionOrderVisitorCache cache) {
+        return client.flows().getFeedFlowsWithCache(cache);
     }
 
     public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {

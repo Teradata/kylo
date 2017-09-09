@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -65,7 +66,6 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -183,9 +183,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Inject
     private LegacyNifiRestClient nifiRestClient;
 
-
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
+
+    @Value("${nifi.auto.align:true}")
+    private boolean nifiAutoFeedsAlignAfterSave;
+
+    @Inject
+    private CreateFeedBuilderCache createFeedBuilderCache;
 
     /**
      * Adds listeners for transferring events.
@@ -414,7 +419,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     if (domainTemplate == null) {
                         throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
                     }
-                    domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
+                    //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
 
@@ -505,8 +510,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         CreateFeedBuilder
             feedBuilder =
-            CreateFeedBuilder.newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
-                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows);
+            CreateFeedBuilder
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, createFeedBuilderCache)
+                .enabled(enabled)
+                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
+                .autoAlign(nifiAutoFeedsAlignAfterSave);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);
@@ -580,7 +588,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
             }
 
-
             //if this is the first time saving this feed create a new one
             Feed domainFeed = feedModelTransform.feedToDomain(feed);
 
@@ -605,7 +612,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             boolean isStream = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().isStream() : false;
             Long timeBetweenBatchJobs = feed.getRegisteredTemplate() != null ? feed.getRegisteredTemplate().getTimeBetweenStartingBatchJobs() : 0L;
             //sync the feed information to ops manager
-            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName,isStream, timeBetweenBatchJobs));
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName, isStream, timeBetweenBatchJobs));
 
             // Update hadoop security group polices if the groups changed
             if (!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
@@ -613,6 +620,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
                 hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
             }
+            // Update Kylo metastore
             domainFeed = feedProvider.update(domainFeed);
 
             // Return result
@@ -927,7 +935,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                     ? SecurityContextHolder.getContext().getAuthentication()
                                     : null;
         String feedName = feedMetadata != null ? feedMetadata.getCategoryAndFeedName() : "";
-        FeedChange change = new FeedChange(changeType, feedName,feedName, feedId, state);
+        FeedChange change = new FeedChange(changeType, feedName, feedName, feedId, state);
         FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
         metadataEventService.notify(event);
     }
