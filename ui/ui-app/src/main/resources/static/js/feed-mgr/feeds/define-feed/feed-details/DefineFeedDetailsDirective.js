@@ -90,6 +90,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FeedService.findControllerServicesForProperty(property);
         }
 
+        function matchInputProcessor(inputProcessor, inputProcessors){
+
+           var matchingInput = _.find(inputProcessors,function(input) {
+                if(input.id == inputProcessor.id){
+                    return true;
+                }
+               return (input.type == inputProcessor.type && input.name == inputProcessor.name);
+            });
+
+           return matchingInput;
+        }
+
         /**
          * Prepares the processor properties of the specified template for display.
          *
@@ -103,6 +115,14 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             //    return self.model.inputProcessorType == processor.type;
             // });
             self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+
+            if(angular.isDefined(self.model.inputProcessor)){
+                var match = matchInputProcessor(self.model.inputProcessor,self.inputProcessors);
+                if(angular.isDefined(match)){
+                    self.inputProcessor = match;
+                    self.inputProcessorId = match.id;
+                }
+            }
 
             if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
                 self.inputProcessorId = self.inputProcessors[0].id;
