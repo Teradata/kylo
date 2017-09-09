@@ -316,7 +316,7 @@ public class RegisteredTemplateService {
      */
     public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest) {
 
-        if (registeredTemplateRequest.isTemplateEdit()) {
+        if(registeredTemplateRequest.isTemplateEdit()){
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
         }
 
@@ -327,18 +327,18 @@ public class RegisteredTemplateService {
         serviceLevelRequest.setFeedEdit(true);
         RegisteredTemplate template = findRegisteredTemplate(serviceLevelRequest);
         boolean canEdit = true;
-        if (template != null && StringUtils.isNotBlank(template.getId()) && registeredTemplateRequest.isTemplateEdit()) {
-            canEdit = checkTemplatePermission(template.getId(), TemplateAccessControl.EDIT_TEMPLATE);
+        if(template != null && StringUtils.isNotBlank(template.getId()) && registeredTemplateRequest.isTemplateEdit()) {
+          canEdit = checkTemplatePermission(template.getId(),TemplateAccessControl.EDIT_TEMPLATE);
         }
-        if (canEdit) {
-            registeredTemplate = template;
+        if(canEdit) {
+             registeredTemplate = template;
             if (registeredTemplate == null) {
                 registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
             }
             if (registeredTemplate == null) {
                 //throw exception
             } else {
-                if (StringUtils.isBlank(registeredTemplate.getId()) && template != null && StringUtils.isNotBlank(template.getId())) {
+                if(StringUtils.isBlank(registeredTemplate.getId()) && template != null && StringUtils.isNotBlank(template.getId()) ) {
                     registeredTemplate.setId(template.getId());
                 }
                 Set<PortDTO> ports = null;
@@ -631,8 +631,8 @@ public class RegisteredTemplateService {
         if (nifiTemplateId != null && !oldId.equalsIgnoreCase(nifiTemplateId)) {
             template.setNifiTemplateId(nifiTemplateId);
             return metadataAccess.commit(() -> {
-                RegisteredTemplate t = findRegisteredTemplateById(template.getId());
-                t.setNifiTemplateId(nifiTemplateId);
+            RegisteredTemplate t = findRegisteredTemplateById(template.getId());
+            t.setNifiTemplateId(nifiTemplateId);
                 return saveTemplate(t);
             }, MetadataAccess.ADMIN);
         }
@@ -702,7 +702,7 @@ public class RegisteredTemplateService {
             log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());
             return null;
         } else {
-            if (StringUtils.isNotBlank(registeredTemplate.getId())) {
+            if(StringUtils.isNotBlank(registeredTemplate.getId())) {
                 checkTemplatePermission(registeredTemplate.getId(), TemplateAccessControl.EDIT_TEMPLATE);
             }
             log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
