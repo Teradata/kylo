@@ -82,7 +82,7 @@ public class FeedIT extends IntegrationTestBase {
     private static final String NIFI_VERSION = "nifi-1.0";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_VERSION + "/";
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_VERSION + "/";
-    private static final String DATA_INGEST_ZIP = "data_ingest.zip";
+    protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
@@ -90,7 +90,7 @@ public class FeedIT extends IntegrationTestBase {
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
 
     private String sampleFeedsPath;
-    private String sampleTemplatesPath;
+    protected String sampleTemplatesPath;
     private String usersDataPath;
 
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
@@ -137,6 +137,9 @@ public class FeedIT extends IntegrationTestBase {
         //TODO edit the feed / re-run / re-assert
     }
 
+
+
+
     @Override
     public void startClean() {
         super.startClean();
@@ -148,7 +151,7 @@ public class FeedIT extends IntegrationTestBase {
 //        assertHiveData();
     }
 
-    private void prepare() throws Exception {
+    protected void prepare() throws Exception {
         String path = getClass().getResource(".").toURI().getPath();
         String basedir = path.substring(0, path.indexOf("services"));
         sampleFeedsPath = basedir + FEED_SAMPLES_DIR;
@@ -353,7 +356,7 @@ public class FeedIT extends IntegrationTestBase {
         Assert.assertTrue(countries.contains("Brazil"));
     }
 
-    private FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) throws Exception {
+    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) throws Exception {
         FeedMetadata feed = new FeedMetadata();
         feed.setFeedName(name);
         feed.setSystemFeedName(name.toLowerCase());

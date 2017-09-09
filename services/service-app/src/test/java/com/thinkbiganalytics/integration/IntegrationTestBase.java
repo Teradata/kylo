@@ -102,6 +102,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -536,6 +537,24 @@ public class IntegrationTestBase {
             .get();
 
         response.then().statusCode(expectedStatusCode);
+        return response;
+    }
+
+    protected FeedCategory getorCreateCategoryByName(String name) {
+        Response response = getCategoryByName(name);
+        if(response.statusCode() == HTTP_BAD_REQUEST){
+            return createCategory(name);
+        }
+        else {
+            return response.as(FeedCategory.class);
+        }
+    }
+
+    protected Response getCategoryByName(String categoryName) {
+        String url = String.format("/by-name/%s", categoryName);
+        Response response = given(FeedCategoryRestController.BASE)
+            .when()
+            .get(url);
         return response;
     }
 
