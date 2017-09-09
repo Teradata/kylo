@@ -45,7 +45,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     "systemName": null
                 };
 
-                if(this.currentUser == null){
+                if(currentUser == null){
                     $http.get("/proxy/v1/about/me").then(function (response) {
                             currentUser = response.data;
                             deferred.resolve(currentUser);
