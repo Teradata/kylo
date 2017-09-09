@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.rest;
  */
 
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
@@ -58,6 +59,7 @@ import java.util.Optional;
 public class NifiRestTest {
 
 
+    private CreateFeedBuilderCache createFeedBuilderCache;
     private LegacyNifiRestClient restClient;
     private NifiFlowCache nifiFlowCache;
     private NiFiPropertyDescriptorTransformV1 propertyDescriptorTransform;
@@ -72,6 +74,8 @@ public class NifiRestTest {
         restClient.setClient(c);
         nifiFlowCache = new NifiFlowCacheImpl();
         propertyDescriptorTransform = new NiFiPropertyDescriptorTransformV1();
+        createFeedBuilderCache = new CreateFeedBuilderCache();
+        createFeedBuilderCache.setRestClient(restClient);
 
     }
 
@@ -93,7 +97,7 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform,createFeedBuilderCache).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
@@ -146,7 +150,7 @@ public class NifiRestTest {
                 feedMetadata.getCategory().setSystemName(processGroupName);
                 feedMetadata.setSystemFeedName("feedPrefix + i");
 
-                CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, template.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+                CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, template.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform,createFeedBuilderCache).inputProcessorType(inputType)
                     .feedSchedule(schedule).properties(instanceProperties).build();
 
             }
@@ -173,7 +177,7 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform,createFeedBuilderCache).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
