@@ -71,7 +71,12 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
     }
 
     /**
-     * @param quiet dont throw any NotFound exceptions from the REST API
+     *
+     * @param processGroupEntity
+     * @param cache
+     * @param logRestAccessErrors
+     * @return
+     * @throws NifiComponentNotFoundException
      */
     public NifiVisitableProcessGroup getFlowOrder(ProcessGroupDTO processGroupEntity, NifiConnectionOrderVisitorCache cache, boolean logRestAccessErrors) throws NifiComponentNotFoundException {
         if (cache == null) {
@@ -150,9 +155,22 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
     }
 
     public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {
+        return getFeedFlows(feedNames, new NifiConnectionOrderVisitorCache());
+    }
+
+    @Override
+    public List<NifiFlowProcessGroup> getFeedFlowsWithCache(NifiConnectionOrderVisitorCache cache) {
+        if (cache == null) {
+            cache = new NifiConnectionOrderVisitorCache();
+        }
+        return getFeedFlows(null, cache);
+    }
+
+    public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames, final NifiConnectionOrderVisitorCache cache) {
+
         log.info("get Graph of Nifi Flows looking for {} ", feedNames == null ? "ALL Feeds " : feedNames);
         long start = System.currentTimeMillis();
-        NifiConnectionOrderVisitorCache cache = new NifiConnectionOrderVisitorCache();
+
         List<NifiFlowProcessGroup> feedFlows = new ArrayList<>();
         ProcessGroupDTO processGroupEntity = restClient.processGroups().findRoot();
         ProcessGroupDTO root = processGroupEntity;
@@ -192,7 +210,7 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
 
     //walk entire graph
     public List<NifiFlowProcessGroup> getFeedFlows() {
-        return getFeedFlows(null);
+        return getFeedFlows(null, new NifiConnectionOrderVisitorCache());
     }
 
 
@@ -223,7 +241,7 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
             groups.stream().forEach(group -> cache.add(group));
         }
         //add any remote ProcessGroups
-        if(template.getSnippet().getRemoteProcessGroups() != null) {
+        if (template.getSnippet().getRemoteProcessGroups() != null) {
             template.getSnippet().getRemoteProcessGroups().stream().forEach(remoteProcessGroupDTO -> cache.add(remoteProcessGroupDTO));
         }
         NifiVisitableProcessGroup visitableGroup = getFlowOrder(parentProcessGroup, cache, false);

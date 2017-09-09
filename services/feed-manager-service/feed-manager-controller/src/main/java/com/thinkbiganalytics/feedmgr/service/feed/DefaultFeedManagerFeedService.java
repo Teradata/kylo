@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -67,7 +68,6 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -201,6 +201,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Value("${nifi.auto.align:true}")
     private boolean nifiAutoFeedsAlignAfterSave;
+
+    @Inject
+    private CreateFeedBuilderCache createFeedBuilderCache;
 
     /**
      * Adds listeners for transferring events.
@@ -437,7 +440,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     if (domainTemplate == null) {
                         throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
                     }
-                  //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
+                    //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
 
@@ -528,9 +531,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         CreateFeedBuilder
             feedBuilder =
-            CreateFeedBuilder.newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
+            CreateFeedBuilder
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, createFeedBuilderCache)
+                .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
-            .autoAlign(nifiAutoFeedsAlignAfterSave);
+                .autoAlign(nifiAutoFeedsAlignAfterSave);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

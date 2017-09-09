@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.config;
  */
 
 
+import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -50,6 +51,7 @@ import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplate
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -277,5 +279,15 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedHiveTableService feedHiveTableService(@Nonnull final HiveService hiveService) {
         return new FeedHiveTableService(hiveService);
+    }
+
+    @Bean
+    public CreateFeedBuilderCache createFeedBuilderCache(){
+        return new CreateFeedBuilderCache();
+    }
+
+    @Bean
+    public RegisteredTemplateCache registeredTemplateCache() {
+        return new RegisteredTemplateCache();
     }
 }

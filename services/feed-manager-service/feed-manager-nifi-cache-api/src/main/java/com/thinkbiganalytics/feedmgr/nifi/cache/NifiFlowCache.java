@@ -25,8 +25,10 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.Collection;
@@ -63,4 +65,9 @@ public interface NifiFlowCache {
     void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections);
 
     void subscribe(NiFiFlowCacheListener listener);
+
+    NifiVisitableProcessGroup getFlowOrder(ProcessGroupDTO group, boolean useCache);
+
+    void addConnectionToCache(ConnectionDTO connectionDTO);
+
 }
