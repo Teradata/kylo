@@ -40,13 +40,13 @@ public class FeedLoadTest extends FeedIT {
      * Load the Data Ingest template
      * @throws Exception
      */
-    @Test
-    @Ignore
+    //@Test
+    //@Ignore
     public void loadTestDataIngest() throws Exception {
         // the num of categories to use
         int categories = 1;
         //the num of feeds to create in each category
-        int maxFeedsInCategory = 1;
+        int maxFeedsInCategory = 200;
         //the category id to start.   categories are created as cat_#
 
         int startingCategoryId = 62;
@@ -59,8 +59,8 @@ public class FeedLoadTest extends FeedIT {
      * Load the simple template with just 3 processors
      * @throws Exception
      */
-    @Test
-    @Ignore
+   // @Test
+   // @Ignore
     public void loadSimpleFeed() throws Exception {
         // the num of categories to use
         int categories = 1;
