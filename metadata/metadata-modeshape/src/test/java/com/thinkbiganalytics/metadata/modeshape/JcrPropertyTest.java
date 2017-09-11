@@ -262,7 +262,7 @@ public class JcrPropertyTest {
                     List<? extends Feed> categoryFeeds = jcrCategory.getFeeds();
                     if (categoryFeeds != null) {
                         for (Feed feed : categoryFeeds) {
-                            log.info("Feed for category {} is {}", cat.getName(), feed.getName());
+                            log.info("Feed for category {} is {}", cat.getSystemName(), feed.getName());
                         }
                     }
 

@@ -103,7 +103,7 @@ public class JcrFeedRolesTest {
             cat.getAllowedActions().enableAll(TEST_USER1);
             cat.getAllowedActions().enableAll(TEST_USER2);
             
-            return cat.getName();
+            return cat.getSystemName();
         }, JcrMetadataAccess.SERVICE);
         
         this.idA = metadata.commit(() -> {

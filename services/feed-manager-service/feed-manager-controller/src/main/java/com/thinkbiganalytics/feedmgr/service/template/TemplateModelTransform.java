@@ -183,7 +183,7 @@ public class TemplateModelTransform {
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
                 template.setStream(domain.isStream());
                 if (includeFeedNames && feeds != null) {
-                    template.setFeedNames(feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getName(), feedManagerFeed.getName())).collect(
+                    template.setFeedNames(feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getSystemName(), feedManagerFeed.getName())).collect(
                         Collectors.toSet()));
                 }
                 if (domain.getCreatedTime() != null) {

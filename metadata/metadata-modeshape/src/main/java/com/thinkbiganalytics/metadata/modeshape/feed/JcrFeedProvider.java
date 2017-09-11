@@ -297,7 +297,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
         Category category = categoryProvider.findById(categoryId);
-        return ensureFeed(category.getName(), feedSystemName);
+        return ensureFeed(category.getSystemName(), feedSystemName);
     }
 
     /**
@@ -691,7 +691,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Map<String, Object> merged = feed.mergeProperties(properties);
 
         PropertyChange change = new PropertyChange(feed.getId().getIdValue(),
-                                                   feed.getCategory().getName(),
+                                                   feed.getCategory().getSystemName(),
                                                    feed.getSystemName(),
                                                    securityGroupNames,
                                                    feed.getProperties(),
@@ -912,7 +912,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.name != null && !name.equals(input.getName())) {
                 return false;
             }
-            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())) {
+            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getSystemName())) {
                 return false;
             }
             if (!this.destIds.isEmpty()) {

@@ -76,10 +76,10 @@ public interface CategoryProvider extends BaseProvider<Category, Category.ID> {
     void setFeedUserFields(@Nonnull Category.ID categoryId, @Nonnull Set<UserFieldDescriptor> userFields);
 
     /**
-     * Renames the specified category.
+     * Renames system name for the specified category.
      *
      * @param categoryId the category id
-     * @param newName    the new name
+     * @param newSystemName    the new system name
      */
-    void rename(@Nonnull Category.ID categoryId, @Nonnull String newName);
+    void renameSystemName(@Nonnull Category.ID categoryId, @Nonnull String newSystemName);
 }

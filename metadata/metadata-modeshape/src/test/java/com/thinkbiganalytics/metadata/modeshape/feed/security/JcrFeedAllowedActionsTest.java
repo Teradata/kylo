@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
@@ -38,7 +37,6 @@ import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -72,24 +70,24 @@ public class JcrFeedAllowedActionsTest {
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
 
-    private String categoryName;
+    private String categorySystemName;
     private Feed.ID idA;
     private Feed.ID idB;
     private Feed.ID idC;
 
     @Before
     public void createFeeds() {
-        categoryName = metadata.commit(() -> {
+        categorySystemName = metadata.commit(() -> {
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER1));
             actionsProvider.getAllowedActions(AllowedActions.SERVICES).ifPresent(allowed -> allowed.enableAll(TEST_USER2));
             Category cat = categoryProvider.ensureCategory("test");
             cat.getAllowedActions().enableAll(TEST_USER1);
             cat.getAllowedActions().enableAll(TEST_USER2);
-            return cat.getName();
+            return cat.getSystemName();
         }, JcrMetadataAccess.SERVICE);
 
         this.idA = metadata.commit(() -> {
-            Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedA");
+            Feed feed = this.feedProvider.ensureFeed(categorySystemName, "FeedA");
             feed.setDescription("Feed A");
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
@@ -97,7 +95,7 @@ public class JcrFeedAllowedActionsTest {
         }, TEST_USER1);
 
         this.idB = metadata.commit(() -> {
-            Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedB");
+            Feed feed = this.feedProvider.ensureFeed(categorySystemName, "FeedB");
             feed.setDescription("Feed B");
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
@@ -105,7 +103,7 @@ public class JcrFeedAllowedActionsTest {
         }, TEST_USER2);
 
         this.idC = metadata.commit(() -> {
-            Feed feed = this.feedProvider.ensureFeed(categoryName, "FeedC");
+            Feed feed = this.feedProvider.ensureFeed(categorySystemName, "FeedC");
             feed.setDescription("Feed C");
             feed.setJson("{ \"property\":\"value\" }");
             feed.setState(State.ENABLED);
@@ -178,7 +176,7 @@ public class JcrFeedAllowedActionsTest {
             Feed feed = this.feedProvider.findById(idB);
 
             assertThat(feed.getName()).isNotNull().isEqualTo("FeedB");
-            assertThat(feed.getCategory()).isNotNull().hasFieldOrPropertyWithValue("name", this.categoryName);
+            assertThat(feed.getCategory()).isNotNull().hasFieldOrPropertyWithValue("systemName", this.categorySystemName);
 
             assertThat(feed.getJson()).isNull();
             assertThat(feed.getState()).isNull();

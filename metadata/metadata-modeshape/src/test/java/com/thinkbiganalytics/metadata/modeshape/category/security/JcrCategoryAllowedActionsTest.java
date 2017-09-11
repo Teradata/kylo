@@ -139,13 +139,13 @@ public class JcrCategoryAllowedActionsTest {
         Object[] nameDescr = metadata.commit(() -> {
             Category cat = this.categoryProvider.findById(idB);
             cat.getAllowedActions().enable(TEST_USER1, CategoryAccessControl.ACCESS_CATEGORY);
-            return new String[]{cat.getName(), cat.getDescription()};
+            return new String[]{cat.getSystemName(), cat.getDescription()};
         }, TEST_USER2);
 
         metadata.read(() -> {
             Category cat = this.categoryProvider.findById(idB);
 
-            assertThat(cat).extracting("name", "description").contains(nameDescr);
+            assertThat(cat).extracting("systemName", "description").contains(nameDescr);
 
             assertThat(cat.getUserProperties()).isEmpty();
         }, TEST_USER1);

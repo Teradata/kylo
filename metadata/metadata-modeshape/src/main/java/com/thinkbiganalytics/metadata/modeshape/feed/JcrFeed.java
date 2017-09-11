@@ -261,7 +261,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     @Override
     public String getQualifiedName() {
-        return getCategory().getName() + "." + getName();
+        return getCategory().getSystemName() + "." + getName();
     }
 
     @Override

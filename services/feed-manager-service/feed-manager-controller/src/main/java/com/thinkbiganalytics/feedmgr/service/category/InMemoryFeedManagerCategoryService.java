@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategoryBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -129,7 +130,7 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
     public void saveCategory(final FeedCategory category) {
         if (category.getId() == null) {
             category.setId(UUID.randomUUID().toString());
-            category.generateSystemName();
+            category.setSystemName(SystemNamingService.generateSystemName(category.getName()));
         } else {
             FeedCategory oldCategory = categories.get(category.getId());
 
@@ -137,7 +138,7 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
                 ///names have changed
                 //only regenerate the system name if there are no related feeds
                 if (oldCategory.getRelatedFeeds() == 0) {
-                    category.generateSystemName();
+                    category.setSystemName(SystemNamingService.generateSystemName(category.getName()));
                 }
             }
             List<FeedSummary> feeds = categories.get(category.getId()).getFeeds();

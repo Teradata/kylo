@@ -60,16 +60,27 @@
 
           <div ng-messages="vm.categoryForm.categoryName.$error" md-auto-hide="false">
             <div ng-message="required">A category name is required.</div>
-            <div ng-message="duplicateName">There is an existing category with that name.</div>
+            <div ng-message="duplicateDisplayName">There is an existing category with that name.</div>
             <div ng-message="reservedCategoryName">That category is reserved. Please choose another category.</div>
           </div>
         </md-input-container>
         <div flex="10"></div>
         <md-input-container flex="40">
           <label>System Name</label>
-          <input readonly ng-model="vm.editModel.systemName"/>
 
-          <div class="hint">Auto generated from the Category Name</div>
+          <input id="systemName" name="systemName" ng-readonly="!vm.isSystemNameEditable() || vm.hasFeeds()" ng-model="vm.editModel.systemName" required/>
+
+          <div class="hint">
+            <span>{{vm.getSystemNameDescription()}}</span>
+            <br>
+            <a href="" ng-if="!vm.isSystemNameEditable() && vm.hasNoFeeds()" ng-click="vm.allowEditSystemName()">Let me change system name</a>
+          </div>
+          <div ng-messages="vm.categoryForm.systemName.$error" md-auto-hide="false">
+            <div ng-message="required">A category system name is required.</div>
+            <div ng-message="invalidName">Invalid, must not contain other than alpha-numeric and underscores.</div>
+            <div ng-message="duplicateSystemName">There is an existing category with that system name.</div>
+            <div ng-message="reservedCategoryName">That category is reserved. Please choose another category.</div>
+          </div>
         </md-input-container>
 
       </div>

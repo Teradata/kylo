@@ -96,7 +96,7 @@ public class UpgradeAction implements UpgradeState {
 
             List<OpsManagerFeed> feedsToAdd = new ArrayList<>();
             for (Feed feed : feedManagerFeedMap.values()) {
-                String fullName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
+                String fullName = FeedNameUtil.fullName(feed.getCategory().getSystemName(), feed.getName());
                 OpsManagerFeed.ID opsManagerFeedId = opsManagerFeedProvider.resolveId(feed.getId().toString());
                 OpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);
                 feedsToAdd.add(opsManagerFeed);

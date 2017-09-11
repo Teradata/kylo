@@ -91,7 +91,7 @@ public class Model {
         public FeedCategory apply(Category category) {
             FeedCategory feedCategory = new FeedCategory();
             feedCategory.setId(category.getId().toString());
-            feedCategory.setSystemName(category.getName());
+            feedCategory.setSystemName(category.getSystemName());
             feedCategory.setDisplayName(category.getDisplayName());
             feedCategory.setDescription(category.getDescription());
             return feedCategory;

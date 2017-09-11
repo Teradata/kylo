@@ -113,7 +113,7 @@ public class CategoryModelTransform {
             category.setIconColor(domainCategory.getIconColor());
             category.setIcon(domainCategory.getIcon());
             category.setName(domainCategory.getDisplayName());
-            category.setSystemName(domainCategory.getName());
+            category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
             category.setDescription(domainCategory.getDescription());
             category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
@@ -158,7 +158,7 @@ public class CategoryModelTransform {
             category.setIconColor(domainCategory.getIconColor());
             category.setIcon(domainCategory.getIcon());
             category.setName(domainCategory.getDisplayName());
-            category.setSystemName(domainCategory.getName());
+            category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
             category.setDescription(domainCategory.getDescription());
             category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
@@ -226,6 +226,7 @@ public class CategoryModelTransform {
         domainId = category.getId();
         feedCategory.setId(domainId.toString());
         category.setDisplayName(feedCategory.getName());
+        category.setSystemName(feedCategory.getSystemName());
         category.setDescription(feedCategory.getDescription());
         category.setIcon(feedCategory.getIcon());
         category.setIconColor(feedCategory.getIconColor());
