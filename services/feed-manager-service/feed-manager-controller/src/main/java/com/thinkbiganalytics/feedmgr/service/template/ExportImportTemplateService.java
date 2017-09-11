@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;

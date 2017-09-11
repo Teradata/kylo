@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.config;
  */
 
 
-import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -271,11 +270,6 @@ public class FeedManagerConfiguration {
     @Bean
     public NifiFlowCacheClusterManager nifiFlowCacheClusterManager() {
         return new NifiFlowCacheClusterManager();
-    }
-
-    @Bean
-    public CreateFeedBuilderCache createFeedBuilderCache(){
-        return new CreateFeedBuilderCache();
     }
 
     @Bean

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.rest.config;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 
@@ -49,6 +50,11 @@ public class SpringNifiRestConfiguration {
         LegacyNifiRestClient restClient = new LegacyNifiRestClient();
         return restClient;
 
+    }
+
+    @Bean
+    public NiFiObjectCache niFiObjectCache(){
+        return new NiFiObjectCache();
     }
 
     /**

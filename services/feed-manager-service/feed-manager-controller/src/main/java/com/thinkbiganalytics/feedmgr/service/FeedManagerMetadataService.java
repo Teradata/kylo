@@ -101,7 +101,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedModelTransform feedModelTransform;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -119,11 +119,11 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
-    
-    
+
+
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
-            return feedProvider.checkFeedPermission(id, action, more);
+        return feedProvider.checkFeedPermission(id, action, more);
 
     }
 
