@@ -55,8 +55,10 @@ public class CreateFeedBuilderCache {
 
     private Map<String, PortDTO> reusableTemplateCategoryInputPortsByName = new ConcurrentHashMap<>();
 
+    //Make a evictingQueue  to reduce size??
     private Map<String, Map<String, PortDTO>> categoryProcessGroupIdToOutputPortByName = new ConcurrentHashMap<>();
 
+    //Make a evictingQueue  to reduce size??
     private Map<String, Set<ConnectionDTO>> processGroupConnections = new ConcurrentHashMap<>();
 
 
@@ -169,5 +171,8 @@ public class CreateFeedBuilderCache {
         processGroupConnections.putIfAbsent(processGroupId, new HashSet<>()).add(connectionDTO);
     }
 
+    public void addProcessGroupConnections(Set<ConnectionDTO> connections) {
+        connections.stream().forEach(c -> addConnection(c.getParentGroupId(), c));
+    }
 
 }

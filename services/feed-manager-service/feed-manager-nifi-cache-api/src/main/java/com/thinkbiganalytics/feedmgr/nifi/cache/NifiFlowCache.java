@@ -57,6 +57,7 @@ public interface NifiFlowCache {
     NiFiFlowCacheSync refreshAll(String syncId);
 
     void updateFlow(FeedMetadata feedMetadata, NifiFlowProcessGroup feedProcessGroup);
+    void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs);
 
     void updateRegisteredTemplate(RegisteredTemplate template, boolean notifyClusterMembers);
 
@@ -66,7 +67,6 @@ public interface NifiFlowCache {
 
     void subscribe(NiFiFlowCacheListener listener);
 
-    NifiVisitableProcessGroup getFlowOrder(ProcessGroupDTO group, boolean useCache);
 
     void addConnectionToCache(ConnectionDTO connectionDTO);
 

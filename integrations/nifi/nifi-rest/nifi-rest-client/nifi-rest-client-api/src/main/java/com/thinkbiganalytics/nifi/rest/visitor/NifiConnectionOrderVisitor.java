@@ -355,7 +355,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
     private ConnectionDTO searchConnectionMatchingSource(String parentGroupId, String destinationId) {
         //search up to find the connection that matches this dest id
-
         try {
             ProcessGroupDTO parent = null;
             try {
