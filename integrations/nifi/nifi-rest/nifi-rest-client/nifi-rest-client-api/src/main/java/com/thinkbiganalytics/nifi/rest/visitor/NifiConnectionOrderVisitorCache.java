@@ -47,11 +47,11 @@ public class NifiConnectionOrderVisitorCache {
         remoteProcessGroupCache.computeIfAbsent(processGroupDTO.getId(), groupId -> processGroupDTO);
     }
 
-    public Map<String,ProcessGroupDTO> getProcessGroupCache() {
+    public Map<String, ProcessGroupDTO> getProcessGroupCache() {
         return processGroupCache;
     }
 
-    public Map<String,RemoteProcessGroupDTO> getRemoteProcessGroupCache() {
+    public Map<String, RemoteProcessGroupDTO> getRemoteProcessGroupCache() {
         return remoteProcessGroupCache;
     }
 
@@ -74,5 +74,7 @@ public class NifiConnectionOrderVisitorCache {
         }
     }
 
-
+    public Map<String, NifiConnectionOrderVisitorCachedItem> getCache() {
+        return cache;
+    }
 }
