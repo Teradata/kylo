@@ -62,6 +62,7 @@ public interface NifiFlowCache {
 
     @Deprecated
     void updateFlow(FeedMetadata feedMetadata, NifiFlowProcessGroup feedProcessGroup);
+    void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs);
 
     void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs);
 
