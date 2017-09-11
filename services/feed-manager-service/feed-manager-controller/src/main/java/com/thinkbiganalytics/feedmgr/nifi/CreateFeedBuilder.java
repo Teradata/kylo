@@ -37,9 +37,6 @@ import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
@@ -59,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -300,23 +298,30 @@ public class CreateFeedBuilder {
                         //update the input schedule
                         updateFeedSchedule(newProcessGroup, input);
                         log.debug("Time to update feed schedule.  ElapsedTime: {} ms", eventTime(eventTime));
-
                         eventTime.start();
+
+                        //just need to update for this processgroup
+                        Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(entity);
+                        Collection<ConnectionDTO> connections = NifiConnectionUtil.getAllConnections(entity);
+                        nifiFlowCache.updateFlowForFeed(feedMetadata, entity.getId(), processors, connections);
+                        log.debug("Time to build flow graph with {} processors and {} connections.  ElapsedTime: {} ms", processors.size(), connections.size(), eventTime(eventTime));
+                        /*
+
                         //Cache the processorIds to the respective flowIds for availability in the ProvenanceReportingTask
                         NifiVisitableProcessGroup group = nifiFlowCache.getFlowOrder(newProcessGroup.getProcessGroupEntity(), true);
-                        log.debug("Time to get the flow order.  ElapsedTime: {} ms", eventTime(eventTime));
+                       log.debug("Time to get the flow order.  ElapsedTime: {} ms", eventTime(eventTime));
 
                         eventTime.start();
                         NifiFlowProcessGroup
                             flow =
                             new NifiFlowBuilder().build(
                                 group);
-                        log.debug("Time to build flow graph with {} processors.  ElapsedTime: {} ms", flow.getProcessorMap().size(), eventTime(eventTime));
+                       log.debug("Time to build flow graph with {} processors.  ElapsedTime: {} ms", flow.getProcessorMap().size(), eventTime(eventTime));
 
                         eventTime.start();
                         nifiFlowCache.updateFlow(feedMetadata, flow);
-                        log.debug("Time to update NiFiFlowCache with {} processors.  ElapsedTime: {} ms", flow.getProcessorMap().size(), eventTime(eventTime));
-
+                       log.debug("Time to update NiFiFlowCache with {} processors.  ElapsedTime: {} ms", flow.getProcessorMap().size(), eventTime(eventTime));
+                        */
                         eventTime.start();
                         //disable all inputs
                         restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getId());
@@ -494,7 +499,8 @@ public class CreateFeedBuilder {
 
 
     private void connectFeedToReusableTemplate(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup) throws NifiComponentNotFoundException {
-        Stopwatch stopwatch = Stopwatch.createUnstarted();
+
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String categoryProcessGroupId = categoryProcessGroup.getId();
         String categoryParentGroupId = categoryProcessGroup.getParentGroupId();
         String categoryProcessGroupName = categoryProcessGroup.getName();
@@ -508,34 +514,58 @@ public class CreateFeedBuilder {
                                                  + " You may need to import the base reusable template for this feed.");
         }
         String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
+        stopwatch.stop();
+        log.debug("Time to get reusableTemplateCategory: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+
+        Stopwatch totalStopWatch = Stopwatch.createUnstarted();
         for (InputOutputPort port : inputOutputPorts) {
+            totalStopWatch.start();
             stopwatch.start();
             PortDTO reusableTemplatePort = createFeedBuilderCache.getReusableTemplateInputPort(port.getInputPortName());
+            stopwatch.stop();
+            log.debug("Time to get reusableTemplate inputPort {} : {} ", port.getInputPortName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.reset();
             if (reusableTemplatePort != null) {
 
                 String categoryOutputPortName = categoryProcessGroupName + " to " + port.getInputPortName();
+                stopwatch.start();
                 PortDTO categoryOutputPort = createFeedBuilderCache.getCategoryOutputPort(categoryProcessGroupId, categoryOutputPortName);
+                stopwatch.stop();
+                log.debug("Time to get categoryOutputPort {} : {} ", categoryOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
                 if (categoryOutputPort == null) {
+                    stopwatch.start();
                     //create it
                     PortDTO portDTO = new PortDTO();
                     portDTO.setParentGroupId(categoryProcessGroupId);
                     portDTO.setName(categoryOutputPortName);
                     categoryOutputPort = restClient.getNiFiRestClient().processGroups().createOutputPort(categoryProcessGroupId, portDTO);
                     createFeedBuilderCache.addCategoryOutputPort(categoryProcessGroupId, categoryOutputPort);
+                    stopwatch.stop();
+                    log.debug("Time to create categoryOutputPort {} : {} ", categoryOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                    stopwatch.reset();
 
                 }
-
+                stopwatch.start();
                 Set<PortDTO> feedOutputPorts = feedProcessGroup.getContents().getOutputPorts();
                 String feedOutputPortName = port.getOutputPortName();
                 if (feedOutputPorts == null || feedOutputPorts.isEmpty()) {
                     feedOutputPorts = restClient.getNiFiRestClient().processGroups().getOutputPorts(feedProcessGroup.getId());
                 }
                 PortDTO feedOutputPort = NifiConnectionUtil.findPortMatchingName(feedOutputPorts, feedOutputPortName);
+                stopwatch.stop();
+                log.debug("Time to create feedOutputPort {} : {} ", feedOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
                 if (feedOutputPort != null) {
-
+                    stopwatch.start();
                     //make the connection on the category from feed to category
                     ConnectionDTO feedOutputToCategoryOutputConnection = createFeedBuilderCache.getConnection(categoryProcessGroupId, feedOutputPort.getId(), categoryOutputPort.getId());
+                    stopwatch.stop();
+                    log.debug("Time to get feedOutputToCategoryOutputConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                    stopwatch.reset();
                     if (feedOutputToCategoryOutputConnection == null) {
+                        stopwatch.start();
                         //CONNECT FEED OUTPUT PORT TO THE Category output port
                         ConnectableDTO source = new ConnectableDTO();
                         source.setGroupId(feedProcessGroupId);
@@ -550,13 +580,21 @@ public class CreateFeedBuilder {
                         feedOutputToCategoryOutputConnection = restClient.createConnection(categoryProcessGroupId, source, dest);
                         createFeedBuilderCache.addConnection(categoryProcessGroupId, feedOutputToCategoryOutputConnection);
                         nifiFlowCache.addConnectionToCache(feedOutputToCategoryOutputConnection);
+                        stopwatch.stop();
+                        log.debug("Time to create feedOutputToCategoryOutputConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                        stopwatch.reset();
                     }
 
+                    stopwatch.start();
                     //connection made on parent (root) to reusable template
                     ConnectionDTO
                         categoryToReusableTemplateConnection = createFeedBuilderCache.getConnection(categoryProcessGroup.getParentGroupId(), categoryOutputPort.getId(), reusableTemplatePort.getId());
+                    stopwatch.stop();
+                    log.debug("Time to get categoryToReusableTemplateConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                    stopwatch.reset();
                     //Now connect the category ProcessGroup to the global template
                     if (categoryToReusableTemplateConnection == null) {
+                        stopwatch.start();
                         ConnectableDTO categorySource = new ConnectableDTO();
                         categorySource.setGroupId(categoryProcessGroupId);
                         categorySource.setId(categoryOutputPort.getId());
@@ -570,14 +608,17 @@ public class CreateFeedBuilder {
                         categoryToReusableTemplateConnection = restClient.createConnection(categoryParentGroupId, categorySource, categoryToGlobalTemplate);
                         createFeedBuilderCache.addConnection(categoryParentGroupId, categoryToReusableTemplateConnection);
                         nifiFlowCache.addConnectionToCache(categoryToReusableTemplateConnection);
+                        stopwatch.stop();
+                        log.debug("Time to create categoryToReusableTemplateConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                        stopwatch.reset();
                     }
                 }
 
 
             }
-            stopwatch.stop();
-            log.debug("Time to connect feed to {} port. ElapsedTime: {} ", port.getInputPortName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
+            totalStopWatch.stop();
+            log.debug("Time to connect feed to {} port. ElapsedTime: {} ", port.getInputPortName(), totalStopWatch.elapsed(TimeUnit.MILLISECONDS));
+            totalStopWatch.reset();
         }
 
     }

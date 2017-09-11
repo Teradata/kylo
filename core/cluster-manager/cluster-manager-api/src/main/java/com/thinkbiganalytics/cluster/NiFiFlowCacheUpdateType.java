@@ -25,5 +25,5 @@ package com.thinkbiganalytics.cluster;
  */
 public enum NiFiFlowCacheUpdateType {
 
-    CONNECTION,PROCESSOR,FEED,TEMPLATE
+    CONNECTION,PROCESSOR,FEED,FEED2,TEMPLATE
 }
