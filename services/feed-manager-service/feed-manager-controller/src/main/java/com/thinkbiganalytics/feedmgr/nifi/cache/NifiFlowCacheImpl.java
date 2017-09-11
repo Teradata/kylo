@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionListener;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -110,7 +110,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private NifiFlowCacheClusterManager nifiFlowCacheClusterManager;
 
     @Inject
-    private CreateFeedBuilderCache createFeedBuilderCache;
+    private NiFiObjectCache createFeedBuilderCache;
 
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 

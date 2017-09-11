@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.nifi;
+package com.thinkbiganalytics.nifi.rest;
 
 /*-
  * #%L
@@ -28,30 +28,47 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 /**
  * Cache used to help speed up creating the feed.
  *
- * @see CreateFeedBuilder
  */
-public class CreateFeedBuilderCache {
+public class NiFiObjectCache {
+
+    private static final Logger log = LoggerFactory.getLogger(NiFiObjectCache.class);
 
 
     @Inject
     private LegacyNifiRestClient restClient;
 
+    @Value("${nifi.cache.connections:true}")
+    private boolean cacheConnections;
+
+    @Value("${nifi.cache.categoryGroups:true}")
+    private boolean cacheCategoryGroups;
+
     private ProcessGroupDTO rootProcessGroup;
 
     private ProcessGroupDTO reusableTemplateCategory;
 
+    private Map<String,ProcessGroupDTO> categoryProcessGroup = new ConcurrentHashMap<>();
+
+    private ProcessGroupDTO temporaryTemplateInspectionGroup;
     private String reusableTemplateCategoryName = TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME;
+
+    private String temporaryInspectionGroupName = TemplateCreationHelper.TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME;
 
     private Map<String, PortDTO> reusableTemplateCategoryInputPortsByName = new ConcurrentHashMap<>();
 
@@ -62,7 +79,7 @@ public class CreateFeedBuilderCache {
     private Map<String, Set<ConnectionDTO>> processGroupConnections = new ConcurrentHashMap<>();
 
 
-    public CreateFeedBuilderCache() {
+    public NiFiObjectCache() {
     }
 
 
@@ -86,6 +103,24 @@ public class CreateFeedBuilderCache {
         }
         return reusableTemplateCategory;
     }
+
+    /**
+     * returns the 'reusable_templates' process group
+     */
+    public ProcessGroupDTO getOrCreateTemporaryTemplateInspectionGroup() {
+        if(temporaryTemplateInspectionGroup == null) {
+
+            Optional<ProcessGroupDTO> group = restClient.getNiFiRestClient().processGroups().findByName("root", temporaryInspectionGroupName, false, false);
+            if (!group.isPresent()) {
+                temporaryTemplateInspectionGroup = restClient.getNiFiRestClient().processGroups().create("root", temporaryInspectionGroupName);
+            } else {
+                temporaryTemplateInspectionGroup = group.get();
+            }
+        }
+        return temporaryTemplateInspectionGroup;
+    }
+
+
 
     public void setRestClient(LegacyNifiRestClient restClient) {
         this.restClient = restClient;
@@ -136,6 +171,17 @@ public class CreateFeedBuilderCache {
         categoryProcessGroupIdToOutputPortByName.putIfAbsent(categoryProcessGroupId, new ConcurrentHashMap<>()).put(portDTO.getName(), portDTO);
     }
 
+    public Set<ConnectionDTO> getConnections(String processGroupId){
+        return processGroupConnections.get(processGroupId);
+    }
+
+    public void removeConnections(String processGroupId, Set<String> connectionIds){
+        Set<ConnectionDTO> connections = getConnections(processGroupId);
+        if(connections != null && connectionIds != null && !connectionIds.isEmpty()){
+            connections.removeIf(c ->connectionIds.contains(c.getId()));
+        }
+    }
+
     /**
      * @param processGroupId    (i.e. category process group)
      * @param sourcePortId      (feed output port)
@@ -148,11 +194,13 @@ public class CreateFeedBuilderCache {
 
         Set<ConnectionDTO> connectionDTOS = processGroupConnections.get(processGroupId);
 
-        if (connectionDTOS == null) {
+        if (connectionDTOS == null || !cacheConnections) {
             //find all connections in the category
             Set<ConnectionDTO> connectionsEntity = restClient.getNiFiRestClient().processGroups().getConnections(processGroupId);
             if (connectionsEntity != null) {
-                processGroupConnections.put(processGroupId, connectionsEntity);
+                if(cacheConnections) {
+                    processGroupConnections.put(processGroupId, connectionsEntity);
+                }
                 connectionDTOS = connectionsEntity;
             }
         }
@@ -175,4 +223,28 @@ public class CreateFeedBuilderCache {
         connections.stream().forEach(c -> addConnection(c.getParentGroupId(), c));
     }
 
+    public boolean isCacheConnections() {
+        return cacheConnections;
+    }
+
+    public ProcessGroupDTO getCategoryProcessGroup(String name){
+        if(!cacheCategoryGroups){
+           return restClient.getProcessGroupByName("root", name);
+        }else {
+            if (categoryProcessGroup.containsKey(name)) {
+                return categoryProcessGroup.get(name);
+            } else {
+                Set<ProcessGroupDTO> categoryGroups = restClient.getNiFiRestClient().processGroups().findAll("root");
+                Map<String, ProcessGroupDTO> groups = categoryGroups.stream().collect(Collectors.toMap(c -> c.getName(), c -> c));
+                categoryProcessGroup.putAll(groups);
+                return categoryProcessGroup.get(name);
+            }
+        }
+    }
+
+    public void addCategoryProcessGroup(ProcessGroupDTO processGroupDTO){
+        if(cacheCategoryGroups){
+           categoryProcessGroup.put(processGroupDTO.getName(),processGroupDTO);
+        }
+    }
 }

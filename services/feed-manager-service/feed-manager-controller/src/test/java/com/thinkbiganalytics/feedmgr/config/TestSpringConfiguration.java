@@ -22,7 +22,7 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
-import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilderCache;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -481,8 +481,8 @@ public class TestSpringConfiguration {
 
 
     @Bean
-    public CreateFeedBuilderCache createFeedBuilderCache(){
-        return new CreateFeedBuilderCache();
+    public NiFiObjectCache createFeedBuilderCache(){
+        return new NiFiObjectCache();
     }
 
     @Bean
