@@ -21,10 +21,11 @@ package com.thinkbiganalytics.metadata.upgrade.v084;
  */
 
 import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeException;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
 import org.slf4j.Logger;
@@ -34,18 +35,20 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Optional;
+
 import javax.inject.Inject;
-import javax.jcr.Node;
 
 /**
  * Ensures that all categories have the new, mandatory feedRoleMemberships node.
  */
-@Component("versionableFeedUpgradeAction084")
-@Order(Ordered.LOWEST_PRECEDENCE - 100)
+@Component("initialFeedVersionUpgradeAction084")
+@Order(Ordered.LOWEST_PRECEDENCE)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class VersionableFeedUpgradeAction implements UpgradeState {
+public class InitialFeedVersionUpgradeAction implements UpgradeState {
 
-    private static final Logger log = LoggerFactory.getLogger(VersionableFeedUpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(InitialFeedVersionUpgradeAction.class);
 
     @Inject
     private FeedProvider feedProvider;
@@ -57,17 +60,18 @@ public class VersionableFeedUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion startingVersion) {
-        log.info("Upgrading feeds as versionable for version: {}", startingVersion);
+        log.info("Upgrading feeds as versionable from version: {}", startingVersion);
 
         feedProvider.getFeeds().forEach(feed -> {
             JcrFeed jcrFeed = (JcrFeed) feed;
-            Node summaryNode = jcrFeed.getFeedSummary().get().getNode();
-            try {
-                summaryNode.addMixin("mix:versionable");
-            } catch (Exception e) {
-                log.error("Failed to set a feed as versionable: {}", feed.getName(), e);;
-                throw new UpgradeException("Failed to set a feed summary node as versionable: " + summaryNode, e);
-            }
+            Optional<List<EntityVersion<Feed>>> versions = feedProvider.findVersions(jcrFeed.getId(), false);
+            
+            versions.ifPresent(list -> {
+                if (list.size() <= 1) {
+                    jcrFeed.setDescription(jcrFeed.getDescription());
+                    feedProvider.update(jcrFeed);
+                }
+            });
         });
     }
 }

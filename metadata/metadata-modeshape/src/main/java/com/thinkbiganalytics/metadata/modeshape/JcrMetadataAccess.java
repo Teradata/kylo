@@ -154,9 +154,10 @@ public class JcrMetadataAccess implements MetadataAccess {
         try {
             if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
                 log.debug("***** checking out node: {}", n);
-                JcrVersionUtil.checkout(n);
             }
             
+            // Checking out an already checked-out node is a no-op.
+            JcrVersionUtil.checkout(n);
             checkedOutNodes.get().add(n);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to checkout node: " + n, e);

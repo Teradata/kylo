@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,19 +99,25 @@ public class KyloUpgradeService {
             }, MetadataAccess.SERVICE);
             
             if (nextVersion != null) {
-                // Invoke any upgrade actions for this next version and update it to be the current version.
-                isComplete = metadataAccess.commit(() -> {
-                    this.upgradeActions.get().stream()
-                        .filter(a -> a.isTargetVersion(nextVersion))
-                        .forEach(a -> a.upgradeTo(nextVersion));
+                // Invoke any upgrade actions targeted for this next version in its own transaction.
+                this.upgradeActions.get().stream()
+                    .filter(action -> action.isTargetVersion(nextVersion))
+                    .forEach(action -> {
+                        metadataAccess.commit(() -> {
+                            action.upgradeTo(nextVersion);
+                        }, MetadataAccess.SERVICE);
+                    });
+                
+                // Update this version it to be the current version.
+                metadataAccess.commit(() -> {
                     versionProvider.setCurrentVersion(nextVersion);
-                    
-                    log.info("=================================");
-                    log.info("Finished upgrade through v{}", nextVersion);
-                    
-                    return nextVersion.equals(this.buildVersion);
                 }, MetadataAccess.SERVICE);
                 
+                log.info("=================================");
+                log.info("Finished upgrade through v{}", nextVersion);
+                
+                isComplete = nextVersion.equals(this.buildVersion);
+//                
                 // If upgrades are complete and this was starting from a fresh install then invoke any
                 // fresh install actions.
                 if (isComplete && this.freshInstall) {
