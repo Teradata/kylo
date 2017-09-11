@@ -45,6 +45,7 @@ import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
 
+import org.modeshape.jcr.JcrLexicon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,7 +157,11 @@ public class JcrVersionUtil {
      * @return the created version
      */
     public static Version checkin(Node node) throws RepositoryException {
-        if (node.getSession().isLive()) {
+        // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
+        // if it is null on check-in in as the node.isCheckedOut() method does.  This can be null
+        // when the node being checked-in has not been saved after being just made versionable; which 
+        // can occur during upgrades.
+        if (node.getSession().isLive() && node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
             return getVersionManager(node.getSession()).checkin(node.getPath());
         } else {
             return null;
