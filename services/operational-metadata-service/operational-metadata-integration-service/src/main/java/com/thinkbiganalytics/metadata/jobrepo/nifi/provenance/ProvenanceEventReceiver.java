@@ -113,11 +113,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
+     *
      * @param events the events.
-     * @return
      */
     public boolean readyToProcess(ProvenanceEventRecordDTOHolder events) {
-     return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && events.getEvents().stream().allMatch(event -> provenanceEventFeedUtil.validateNiFiFeedInformation(event)));
+        return provenanceEventFeedUtil.isNifiFlowCacheAvailable() || (!provenanceEventFeedUtil.isNifiFlowCacheAvailable() && events.getEvents().stream()
+            .allMatch(event -> provenanceEventFeedUtil.validateNiFiFeedInformation(event)));
     }
 
 
@@ -154,10 +155,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
     /**
-     * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link #lockAcquisitionRetryAmount}
      *
      * @param event        a provenance event
-     * @param retryAttempt the retry number.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     * @param retryAttempt the retry number.  If there is a lock error it will retry until it hits the {@link #lockAcquisitionRetryAmount}
      */
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
@@ -229,11 +230,15 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             if (alreadyTriggered == null) {
                 completedJobEvents.put(mapKey, mapKey);
                 /// TRIGGER JOB COMPLETE!!!
-                if (event.isFailure()) {
-                    failedJob(jobExecution, event);
-                } else {
-                    successfulJob(jobExecution, event);
-                }
+                metadataAccess.commit(() -> {
+                    BatchJobExecution batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+                    if (batchJobExecution.isFailed()) {
+                        failedJob(batchJobExecution, event);
+                    } else {
+                        successfulJob(batchJobExecution, event);
+                    }
+
+                }, MetadataAccess.SERVICE);
             }
         }
     }
@@ -248,11 +253,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * @param event        a provenance event
      */
     private void failedJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-        if (queryForNiFiBulletins) {
+        if (queryForNiFiBulletins && !event.isStream()) {
             queryForNiFiErrorBulletins(event);
         }
         log.debug("Failed JOB for Event {} ", event);
-        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(), null);
+        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(),event.isStream(), null);
     }
 
     /**
@@ -266,7 +271,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     private void successfulJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         log.debug("Success JOB for Event {} ", event);
-        batchJobExecutionProvider.notifySuccess(jobExecution, event.getFeedName(), null);
+        batchJobExecutionProvider.notifySuccess(jobExecution, event.getFeedName(),event.isStream(), null);
     }
 
     /**
@@ -318,7 +323,6 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     public void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
         nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution, flowFileId, componentId);
     }
-
 
 
 }
