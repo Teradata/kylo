@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -132,7 +133,7 @@ public class DefaultJobService implements JobService {
                 msg += "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
                 this.jobExecutionProvider.save(execution);
-                this.jobExecutionProvider.notifyFailure(execution,null,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+                this.jobExecutionProvider.notifyFailure(execution,null,false,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
 
             }
             return execution;
