@@ -676,7 +676,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
 
             final String domainId = domainFeed.getId().toString();
-            final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getSystemName(), domainFeed.getName());
+            final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getName(), domainFeed.getName());
 
             // Build preconditions
             stopwatch.start();

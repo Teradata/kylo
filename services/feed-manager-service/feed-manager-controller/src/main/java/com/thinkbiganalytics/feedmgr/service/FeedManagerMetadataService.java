@@ -368,6 +368,11 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
+        return categoryProvider.getCategories(includeFeedDetails);
+    }
+
+    @Override
     public FeedCategory getCategoryBySystemName(String name) {
         return categoryProvider.getCategoryBySystemName(name);
     }

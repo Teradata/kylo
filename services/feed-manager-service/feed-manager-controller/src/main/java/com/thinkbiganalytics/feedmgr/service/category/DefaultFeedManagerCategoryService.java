@@ -85,11 +85,15 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public Collection<FeedCategory> getCategories() {
+       return getCategories(false);
+    }
+
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
         return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             List<Category> domainCategories = categoryProvider.findAll();
-            return categoryModelTransform.domainToFeedCategory(domainCategories);
+            return categoryModelTransform.domainToFeedCategory(domainCategories,includeFeedDetails);
         });
     }
 
