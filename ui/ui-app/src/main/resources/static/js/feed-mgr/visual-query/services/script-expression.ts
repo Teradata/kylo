@@ -1,3 +1,5 @@
+import {ScriptExpressionType} from "./script-expression-type";
+
 /**
  * An expression in a script.
  */
@@ -21,5 +23,5 @@ export abstract class ScriptExpression {
     /**
      * Result type
      */
-    type: any;
+    type: ScriptExpressionType;
 }

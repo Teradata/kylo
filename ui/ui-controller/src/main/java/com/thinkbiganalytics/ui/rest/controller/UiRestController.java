@@ -61,6 +61,8 @@ public class UiRestController {
 
     private Map<String, Object> sparkFunctions;
 
+    private Map<String, Object> teradataFunctions;
+
     @PostConstruct
     private void init() {
         processorTemplates = uiTemplateService.loadProcessorTemplateDefinitionFiles();
@@ -74,6 +76,7 @@ public class UiRestController {
         }
 
         sparkFunctions = uiTemplateService.loadSparkFunctionsDefinitions();
+        teradataFunctions = uiTemplateService.loadTeradataFunctionsDefinitions();
     }
 
     @GET
@@ -94,11 +97,15 @@ public class UiRestController {
         return sparkFunctions;
     }
 
-
     @GET
     @Path("extension-modules")
     public List<AngularModule> getAngularExtensionModules() {
         return angularExtensionModules;
     }
 
+    @GET
+    @Path("teradata-functions")
+    public Map<String, Object> getTeradataFunctions() {
+        return teradataFunctions;
+    }
 }

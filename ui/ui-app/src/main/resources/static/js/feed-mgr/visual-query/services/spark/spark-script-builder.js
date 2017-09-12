@@ -28,6 +28,12 @@ define(["require", "exports", "../script-builder", "./spark-expression", "./spar
             return _this;
         }
         /**
+         * Creates a script expression with the specified child expression appended to the parent expression.
+         */
+        SparkScriptBuilder.prototype.appendChildExpression = function (parent, child) {
+            return this.createScriptExpression(parent.source + child.source, child.type, child.start, child.end);
+        };
+        /**
          * Creates a script expression for the specified AST node.
          */
         SparkScriptBuilder.prototype.createScriptExpression = function (source, type, start, end) {
@@ -60,20 +66,20 @@ define(["require", "exports", "../script-builder", "./spark-expression", "./spar
          * Converts the specified script expression to a transform script.
          */
         SparkScriptBuilder.prototype.prepareScript = function (spark) {
-            switch (spark.type.toString()) {
-                case spark_expression_type_1.SparkExpressionType.COLUMN.value:
-                case spark_expression_type_1.SparkExpressionType.CONDITION_CHAIN.value:
-                    return ".select(" + spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + spark.source + ")";
-                case spark_expression_type_1.SparkExpressionType.DATA_FRAME.value:
-                    return spark.source;
-                case spark_expression_type_1.SparkExpressionType.LITERAL.value:
-                    var column = spark_expression_1.SparkExpression.format("%c", spark);
-                    return ".select(" + spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + column + ")";
-                case spark_expression_type_1.SparkExpressionType.TRANSFORM.value:
-                    return ".transform(" + spark.source + ")";
-                default:
-                    throw new Error("Result type not supported: " + spark.type);
+            if (spark_expression_type_1.SparkExpressionType.COLUMN.equals(spark.type) || spark_expression_type_1.SparkExpressionType.CONDITION_CHAIN.equals(spark.type)) {
+                return ".select(" + spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + spark.source + ")";
             }
+            if (spark_expression_type_1.SparkExpressionType.DATA_FRAME.equals(spark.type)) {
+                return spark.source;
+            }
+            if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(spark.type)) {
+                var column = spark_expression_1.SparkExpression.format("%c", spark);
+                return ".select(" + spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + column + ")";
+            }
+            if (spark_expression_type_1.SparkExpressionType.TRANSFORM.equals(spark.type)) {
+                return ".transform(" + spark.source + ")";
+            }
+            throw new Error("Result type not supported: " + spark.type);
         };
         /**
          * Gets the Ternjs name of the specified expression type.

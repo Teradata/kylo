@@ -11,17 +11,8 @@
           <md-icon md-menu-origin>functions</md-icon>
         </md-button>
         <md-menu-content width="2">
-          <md-menu-item>
-            <md-button ng-click="$td.setFormula('groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))')">Aggregate</md-button>
-          </md-menu-item>
-          <md-menu-item>
-            <md-button ng-click="$td.setFormula('when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)')">Conditional</md-button>
-          </md-menu-item>
-          <md-menu-item>
-            <md-button ng-click="$td.setFormula('groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))')">Pivot</md-button>
-          </md-menu-item>
-          <md-menu-item>
-            <md-button ng-click="$td.setFormula('sum(COLUMN).over(orderBy(COLUMN))')">Window</md-button>
+          <md-menu-item ng-repeat="item in $td.sampleFormulas | orderBy: 'name'">
+            <md-button ng-click="$td.setFormula(item.formula)">{{item.name}}</md-button>
           </md-menu-item>
         </md-menu-content>
       </md-menu>
@@ -55,15 +46,21 @@
         <md-subheader class="md-no-sticky">
           Sampling
         </md-subheader>
-        <md-input-container layout="row">
+        <md-radio-group ng-model="$td.sampleMethod" layout="row" ng-if="!$td.engine.allowLimitWithSample" ng-change="$td.onSampleMethodChange()">
+          <md-radio-button value="SAMPLE">Sample</md-radio-button>
+          <md-radio-button value="LIMIT">Limit</md-radio-button>
+        </md-radio-group>
+        <md-input-container layout="row" ng-if="$td.engine.allowLimitWithSample || $td.sampleMethod == 'SAMPLE'">
           <label>Fraction</label>
           <input type="number" ng-model="$td.engine.sample" ng-model-options="{getterSetter: true}">
         </md-input-container>
-        <md-input-container layout="row">
+        <md-input-container layout="row" ng-if="$td.engine.allowLimitWithSample || $td.sampleMethod == 'LIMIT'">
           <label>Limit</label>
           <input type="number" ng-model="$td.engine.limit" ng-model-options="{getterSetter: true}">
         </md-input-container>
-        <md-checkbox layout="row" ng-model="$td.engine.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?">Limit before sampling</md-checkbox>
+        <md-checkbox layout="row" ng-model="$td.engine.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?" ng-if="$td.engine.allowLimitWithSample">
+          Limit before sampling
+        </md-checkbox>
         <div layout="row">
           <md-button class="md-primary md-raised" ng-click="$td.isShowSampleMenu = false; $td.query();">Update</md-button>
         </div>

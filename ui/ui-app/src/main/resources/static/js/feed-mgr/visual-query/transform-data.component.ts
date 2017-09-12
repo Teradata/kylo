@@ -105,11 +105,20 @@ export class TransformDataComponent implements OnInit {
     stepIndex: any;
 
     /**
+     * Method for limiting the number of results.
+     */
+    sampleMethod: string = "LIMIT";
+
+    /**
+     * List of sample formulas.
+     */
+    sampleFormulas: { name: string, formula: string }[] = [];
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any,
-                SideNavService: any, private VisualQueryColumnDelegate: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any, StepperService: any,
-                WindowUnloadService: any) {
+                SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any, StepperService: any, WindowUnloadService: any) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -140,6 +149,7 @@ export class TransformDataComponent implements OnInit {
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
+        this.sampleFormulas = this.engine.sampleFormulas;
 
         // Select source model
         let useSqlModel = false;
@@ -424,7 +434,7 @@ export class TransformDataComponent implements OnInit {
         let profile = this.engine.getProfile();
 
         angular.forEach(this.engine.getColumns(), function (col) {
-            let delegate = new self.VisualQueryColumnDelegate(col.dataType, self);
+            let delegate = self.engine.createColumnDelegate(col.dataType, self);
             let longestValue = _.find(profile, function (row: any) {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });
@@ -435,7 +445,7 @@ export class TransformDataComponent implements OnInit {
                 filters: delegate.filters,
                 headerTooltip: col.hiveColumnLabel,
                 longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
-                name: col.displayName
+                name: self.engine.getColumnName(col)
             });
         });
 
@@ -624,13 +634,7 @@ export class TransformDataComponent implements OnInit {
                 self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
         } else if (changedSteps.newStep === thisIndex && this.sql == null) {
-            // TODO
-            // const functionDefs = this.engine.getFunctionDefs();
-            //
-            // this.sql = this.model.sql;
-            // this.engine.setQuery(this.sql, this.model.datasourceIds);
-            // this.engine.setFunctionDefs(functionDefs);
-            // this.query();
+            this.ngOnInit();
         }
     }
 
@@ -679,11 +683,22 @@ export class TransformDataComponent implements OnInit {
 
         return deferred.promise;
     }
+
+    /**
+     * Reset the sample or limit value when the sample method changes.
+     */
+    onSampleMethodChange() {
+        if (this.sampleMethod === "SAMPLE") {
+            this.engine.sample(0.1);
+        } else if (this.sampleMethod === "LIMIT") {
+            this.engine.limit(1000);
+        }
+    }
 }
 
 angular.module(moduleName)
-    .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "VisualQueryColumnDelegate", "uiGridConstants",
-        "FeedService", "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
+    .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService",
+        "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
     .directive('thinkbigVisualQueryTransform', function () {
         return {
             bindToController: {

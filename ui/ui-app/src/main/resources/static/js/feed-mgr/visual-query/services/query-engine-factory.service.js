@@ -1,4 +1,4 @@
-define(["require", "exports", "./spark/spark-query-engine"], function (require, exports, spark_query_engine_1) {
+define(["require", "exports", "./spark/spark-query-engine", "./teradata/teradata-query-engine"], function (require, exports, spark_query_engine_1, teradata_query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -9,12 +9,14 @@ define(["require", "exports", "./spark/spark-query-engine"], function (require, 
         /**
          * Constructs a {@code QueryEngineFactory}.
          */
-        function QueryEngineFactory($http, $timeout, DatasourcesService, HiveService, RestUrlService, VisualQueryService) {
+        function QueryEngineFactory($http, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService) {
             this.$http = $http;
+            this.$mdDialog = $mdDialog;
             this.$timeout = $timeout;
             this.DatasourcesService = DatasourcesService;
             this.HiveService = HiveService;
             this.RestUrlService = RestUrlService;
+            this.uiGridConstants = uiGridConstants;
             this.VisualQueryService = VisualQueryService;
         }
         /**
@@ -26,7 +28,10 @@ define(["require", "exports", "./spark/spark-query-engine"], function (require, 
         QueryEngineFactory.prototype.getEngine = function (name) {
             var standardName = name.toLowerCase();
             if (standardName === "spark") {
-                return new spark_query_engine_1.SparkQueryEngine(this.$http, this.$timeout, this.DatasourcesService, this.HiveService, this.RestUrlService, this.VisualQueryService);
+                return new spark_query_engine_1.SparkQueryEngine(this.$http, this.$mdDialog, this.$timeout, this.DatasourcesService, this.HiveService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
+            }
+            else if (standardName === "teradata") {
+                return new teradata_query_engine_1.TeradataQueryEngine(this.$http, this.$mdDialog, this.DatasourcesService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
             }
             else {
                 throw new Error("Unsupported query engine: " + name);
@@ -35,7 +40,7 @@ define(["require", "exports", "./spark/spark-query-engine"], function (require, 
         return QueryEngineFactory;
     }());
     exports.QueryEngineFactory = QueryEngineFactory;
-    angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "VisualQueryService",
-        QueryEngineFactory]);
+    angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants",
+        "VisualQueryService", QueryEngineFactory]);
 });
 //# sourceMappingURL=query-engine-factory.service.js.map

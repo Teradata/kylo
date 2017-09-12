@@ -11,7 +11,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
         $compileProvider.preAssignBindingsEnabled(true);
 
         $stateProvider.state(AccessConstants.UI_STATES.VISUAL_QUERY.state, {
-            url: "/visual-query{engine:.*}",
+            url: "/visual-query/{engine}",
             params: {
                 engine: null
             },

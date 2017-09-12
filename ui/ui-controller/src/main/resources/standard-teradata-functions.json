@@ -1,0 +1,1434 @@
+{
+  "!name": "apache-spark-functions",
+  "!define": {
+    "Column": {
+      "as": {
+        "!type": "fn(alias: string) -> Column",
+        "!doc": "Gives the column an alias.",
+        "!sql": " AS %s",
+        "!sqlType": "Column"
+      }
+    },
+    "Select": {
+      "groupBy": {
+        "!type": "fn(expression_varargs: Column) -> Select",
+        "!doc": "Groups result rows by the values in one or more columns.",
+        "!sql": "%*c",
+        "!sqlType": "GroupBy"
+      },
+      "having": {
+        "!type": "fn(expression_varargs: Column) -> Select",
+        "!doc": "A conditional expression that must be satisfied for a group of rows to be included in the result data.",
+        "!sql": "%*c",
+        "!sqlType": "Having"
+      }
+    },
+    "SYSLIB": {
+      "SparseTableAMPs": {
+        "!type": "fn(DatabaseNameString: Column, ObjectNameString: Column) -> Column",
+        "!doc": "SYSLIB.SparseTableAMPs is a function that returns the AMPs on which a table, join index, or hash index with a sparse map is defined.",
+        "!sql": "SparseTableAMPs(%c, %c)",
+        "!sqlType": "Column"
+      }
+    },
+    "TopN": {
+      "withTies": {
+        "!type": "fn()",
+        "!doc": "Includes rows where the value of the sort key is the same as the value of the sort key in the last row that satisfies the specified number or percentage of rows.",
+        "!sql": " WITH TIES",
+        "!sqlType": "Keyword"
+      }
+    }
+  },
+
+  "!DML_CHAPTER_01": "Select Statements",
+
+  "select": {
+    "!type": "fn(expression_varargs: Column) -> Select",
+    "!sql": "%*c",
+    "!sqlType": "Select"
+  },
+  "withDeletedRows": {
+    "!type": "fn()",
+    "!doc": "Include deleted rows in the query processing for a single load isolated table.",
+    "!sql": "WITH DELETED ROWS",
+    "!sqlType": "Keyword"
+  },
+  "distinct": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Specifies that duplicate values are not to be returned when an expression is processed.",
+    "!sql": "DISTINCT %c",
+    "!sqlType": "Column"
+  },
+  "all": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Specifies that duplicate values are to be returned when an expression is processed.",
+    "!sql": "ALL %c",
+    "!sqlType": "Column"
+  },
+  "topN": {
+    "!type": "fn(n: number) -> TopN",
+    "!doc": "Specifies that either an explicit number of rows is to be returned from the query result set.",
+    "!sql": "TOP %d",
+    "!sqlType": "Keyword"
+  },
+  "topPercent": {
+    "!type": "fn(percent: number) -> TopN",
+    "!doc": "Specifies that either an explicit percentage of rows is to be returned from the query result set.",
+    "!sql": "TOP %f PERCENT",
+    "!sqlType": "Keyword"
+  },
+  "where": {
+    "!type": "fn(expression: Column)",
+    "!doc": "Filters rows that satisfy a conditional expression.",
+    "!sql": "%c",
+    "!sqlType": "Where"
+  },
+
+  "!CHAPTER_01": "Introduction",
+
+  "add": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Arithmetic addition",
+    "!sql": "%c + %c",
+    "!sqlType": "Column"
+  },
+  "subtract": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Arithmetic subtraction",
+    "!sql": "%c - %c",
+    "!sqlType": "Column"
+  },
+  "multiply": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Arithmetic multiplication",
+    "!sql": "%c * %c",
+    "!sqlType": "Column"
+  },
+  "divide": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Arithmetic division",
+    "!sql": "%c / %c",
+    "!sqlType": "Column"
+  },
+  "equal": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Equal to",
+    "!sql": "%c = %c",
+    "!sqlType": "Column"
+  },
+  "notEqual": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Not equal to",
+    "!sql": "%c != %c",
+    "!sqlType": "Column"
+  },
+  "greaterThan": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Greater than",
+    "!sql": "%c > %c",
+    "!sqlType": "Column"
+  },
+  "greaterThanOrEqual": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Greater than or equal",
+    "!sql": "%c >= %c",
+    "!sqlType": "Column"
+  },
+  "lessThan": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Less than",
+    "!sql": "%c < %c",
+    "!sqlType": "Column"
+  },
+  "lessThanOrEqual": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Less than or equal",
+    "!sql": "%c <= %c",
+    "!sqlType": "Column"
+  },
+  "and": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Logical and",
+    "!sql": "(%c AND %c)",
+    "!sqlType": "Column"
+  },
+  "or": {
+    "!type": "fn(expression_1: Column, expression_2: Column) -> Column",
+    "!doc": "Logical or",
+    "!sql": "(%c OR %c)",
+    "!sqlType": "Column"
+  },
+  "negate": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Negate",
+    "!sql": "-%c",
+    "!sqlType": "Column"
+  },
+  "not": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Not",
+    "!sql": "!%c",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_02": "SQL Aggregate Functions",
+
+  "avg": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the arithmetic average of all values in value_expression.",
+    "!sql": "AVG(%c)",
+    "!sqlType": "Column"
+  },
+  "corr": {
+    "!type": "fn(value_expression_1: Column, value_expression_2: Column) -> Column",
+    "!doc": "Returns the Sample Pearson product moment correlation coefficient of its arguments for all non-null data point pairs.",
+    "!sql": "CORR(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "count": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns a column value that is the total number of qualified rows in value_expression.",
+    "!sql": "COUNT(%c)",
+    "!sqlType": "Column"
+  },
+  "covar_pop": {
+    "!type": "fn(value_expression_1: Column, value_expression_2: Column) -> Column",
+    "!doc": "Returns the population covariance of its arguments for all non-null data point pairs.",
+    "!sql": "COVAR_POP(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "covar_samp": {
+    "!type": "fn(value_expression_1: Column, value_expression_2: Column) -> Column",
+    "!doc": "Returns the sample covariance of its arguments for all non-null data point pairs.",
+    "!sql": "COVAR_SAMP(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "grouping": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns a value that indicates whether a specified column in the result row was excluded from the grouping set of a GROUP BY clause.",
+    "!sql": "GROUPING(%c)",
+    "!sqlType": "Column"
+  },
+  "kurtosis": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the kurtosis of the distribution of value_expression.",
+    "!sql": "KURTOSIS(%c)",
+    "!sqlType": "Column"
+  },
+  "max": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns a column value that is the maximum value for value_expression.",
+    "!sql": "MAX(%c)",
+    "!sqlType": "Column"
+  },
+  "min": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns a column value that is the minimum value for value_expression.",
+    "!sql": "MIN(%c)",
+    "!sqlType": "Column"
+  },
+  "regr_avgx": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the mean of the independent_variable_expression for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_AVGX(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_avgy": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the mean of the dependent_variable_expression for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_AVGY(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_count": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the count of all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_COUNT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_intercept": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the intercept of the univariate linear regression line through all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_INTERCEPT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_r2": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the coefficient of determination for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_R2(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_slope": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the slope of the univariate linear regression line through all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_SLOPE(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_sxx": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the sum of the squares of the independent_variable_expression for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_SXX(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_sxy": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the sum of the products of the independent_variable_expression and the dependent_variable_expression for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_SXY(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "regr_syy": {
+    "!type": "fn(dependent_variable_expression: Column, independent_variable_expression: Column) -> Column",
+    "!doc": "Returns the sum of the squares of the dependent_variable_expression for all non-null data pairs of the dependent and independent variable arguments.",
+    "!sql": "REGR_SYY(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "skew": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the skewness of the distribution of value_expression.",
+    "!sql": "SKEW(%c)",
+    "!sqlType": "Column"
+  },
+  "stddev_pop": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the population standard deviation for the non-null data points in value_expression.",
+    "!sql": "STDDEV_POP(%c)",
+    "!sqlType": "Column"
+  },
+  "stddev_samp": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the sample standard deviation for the non-null data points in value_expression.",
+    "!sql": "STDDEV_SAMP(%c)",
+    "!sqlType": "Column"
+  },
+  "sum": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns a column value that is the arithmetic sum of value_expression.",
+    "!sql": "SUM(%c)",
+    "!sqlType": "Column"
+  },
+  "var_pop": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the population variance for the data points in value_expression.",
+    "!sql": "VAR_POP(%c)",
+    "!sqlType": "Column"
+  },
+  "var_samp": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the sample variance for the data points in value_expression.",
+    "!sql": "VAR_SAMP(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_03": "Arithmetic, Trigonometric, Hyperbolic Operators/Functions",
+
+  "abs": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Computes the absolute value of an argument.",
+    "!sql": "ABS(%c)",
+    "!sqlType": "Column"
+  },
+  "ceiling": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Returns the smallest integer value that is not less than the input argument.",
+    "!sql": "CEILING(%c)",
+    "!sqlType": "Column"
+  },
+  "exp": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Raises e (the base of natural logarithms) to the power of the argument, where e = 2.71828182845905.",
+    "!sql": "EXP(%c)",
+    "!sqlType": "Column"
+  },
+  "floor": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Returns the largest integer equal to or less than the input argument.",
+    "!sql": "FLOOR(%c)",
+    "!sqlType": "Column"
+  },
+  "ln": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Computes the natural logarithm of the argument.",
+    "!sql": "LN(%c)",
+    "!sqlType": "Column"
+  },
+  "log": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Computes the base 10 logarithm of an argument.",
+    "!sql": "LOG(%c)",
+    "!sqlType": "Column"
+  },
+  "nullifzero": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Converts data from zero to null to avoid problems with division by zero.",
+    "!sql": "NULLIFZERO(%c)",
+    "!sqlType": "Column"
+  },
+  "power": {
+    "!type": "fn(base_value: Column, exponent_value: Column) -> Column",
+    "!doc": "Returns base_value raised to the power of exponent_value.",
+    "!sql": "POWER(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "random": {
+    "!type": "fn(lower_bound: Column, upper_bound: Column) -> Column",
+    "!doc": "Returns a random integer number for each row of the results table.",
+    "!sql": "RANDOM(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "round": {
+    "!type": "fn(numeric_value: Column, opt_places_value: Column) -> Column",
+    "!doc": "Returns numeric_value rounded places_value places to the right or left of the decimal point.",
+    "!sql": "ROUND(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "sign": {
+    "!type": "fn(numeric_value: Column) -> Column",
+    "!doc": "Returns the sign of numeric_value.",
+    "!sql": "SIGN(%c)",
+    "!sqlType": "Column"
+  },
+  "sqrt": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Computes the square root of an argument.",
+    "!sql": "SQRT(%c)",
+    "!sqlType": "Column"
+  },
+  "trunc": {
+    "!type": "fn(numeric_value: Column, opt_places_value: Column) -> Column",
+    "!doc": "Returns numeric_value truncated places_value places to the right or left of the decimal point.",
+    "!sql": "TRUNC(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "width_bucket": {
+    "!type": "fn(value_expression: Column, lower_bound: Column, upper_bound: Column, partition_count: Column) -> Column",
+    "!doc": "Returns the number of the partition to which value_expression is assigned.",
+    "!sql": "WIDTH_BUCKET(%c, %c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "zeroifnull": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Converts data from null to 0 to avoid cases where a null result creates an error.",
+    "!sql": "ZEROIFNULL(%c)",
+    "!sqlType": "Column"
+  },
+  "cos": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the trigonometric cosine of an argument.",
+    "!sql": "COS(%c)",
+    "!sqlType": "Column"
+  },
+  "sin": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the trigonometric sine of an argument.",
+    "!sql": "SIN(%c)",
+    "!sqlType": "Column"
+  },
+  "tan": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the trigonometric tangent of an argument.",
+    "!sql": "TAN(%c)",
+    "!sqlType": "Column"
+  },
+  "acos": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse trigonometric cosine of an argument.",
+    "!sql": "ACOS(%c)",
+    "!sqlType": "Column"
+  },
+  "asin": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse trigonometric sine of an argument.",
+    "!sql": "ASIN(%c)",
+    "!sqlType": "Column"
+  },
+  "atan": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse trigonometric tangent of an argument.",
+    "!sql": "ATAN(%c)",
+    "!sqlType": "Column"
+  },
+  "atan2": {
+    "!type": "fn(x: Column, y: Column) -> Column",
+    "!doc": "Performs the inverse trigonometric tangent of x and y.",
+    "!sql": "ATAN2(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "degrees": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Takes a value specified in radians and converts it to degrees.",
+    "!sql": "DEGREES(%c)",
+    "!sqlType": "Column"
+  },
+  "radians": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Takes a value specified in degrees and converts it to radians.",
+    "!sql": "RADIANS(%c)",
+    "!sqlType": "Column"
+  },
+  "cosh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the hyperbolic cosine of an argument.",
+    "!sql": "COSH(%c)",
+    "!sqlType": "Column"
+  },
+  "sinh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the hyperbolic sine of an argument.",
+    "!sql": "SINH(%c)",
+    "!sqlType": "Column"
+  },
+  "tanh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the hyperbolic tangent of an argument.",
+    "!sql": "TANH(%c)",
+    "!sqlType": "Column"
+  },
+  "acosh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse hyperbolic cosine of an argument.",
+    "!sql": "ACOSH(%c)",
+    "!sqlType": "Column"
+  },
+  "asinh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse hyperbolic sine of an argument.",
+    "!sql": "ASINH(%c)",
+    "!sqlType": "Column"
+  },
+  "atanh": {
+    "!type": "fn(arg: Column) -> Column",
+    "!doc": "Performs the inverse hyperbolic tangent of an argument.",
+    "!sql": "ATANH(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_04": "ARRAY/VARRAY Functions and Operators",
+
+  "!CHAPTER_05": "Attribute Functions",
+
+  "character_length": {
+    "!type": "fn(string_expression: Column) -> Column",
+    "!doc": "Returns the length of a string either in logical characters or in bytes.",
+    "!sql": "CHARACTER_LENGTH(%c)",
+    "!sqlType": "Column"
+  },
+  "default": {
+    "!type": "fn(opt_column_name: Column) -> Column",
+    "!doc": "Returns the current default value for the specified or derived column.",
+    "!sql": "DEFAULT(%?c)",
+    "!sqlType": "Column"
+  },
+  "format": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the declared format for the named expression.",
+    "!sql": "FORMAT(%c)",
+    "!sqlType": "Column"
+  },
+  "octet_length": {
+    "!type": "fn(string_expression: Column, opt_character_set_name: Column) -> Column",
+    "!doc": "Returns the length of string_expression in octets when it is converted to the named character set.",
+    "!sql": "OCTET_LENGTH(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "title": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the title of an expression as it would appear in the heading for displayed or printed results.",
+    "!sql": "TITLE(%c)",
+    "!sqlType": "Column"
+  },
+  "type": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the data type defined for an expression.",
+    "!sql": "TYPE(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_06": "Bit/Byte Manipulation Functions",
+
+  "bitand": {
+    "!type": "fn(target_arg: Column, bit_mask_arg: Column) -> Column",
+    "!doc": "Performs the logical AND operation on the corresponding bits from the two input arguments.",
+    "!sql": "BITAND(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "bitnot": {
+    "!type": "fn(target_arg: Column) -> Column",
+    "!doc": "Performs a bitwise complement on the binary representation of the input argument.",
+    "!sql": "BITNOT(%c)",
+    "!sqlType": "Column"
+  },
+  "bitor": {
+    "!type": "fn(target_arg: Column, bit_mask_arg: Column) -> Column",
+    "!doc": "Performs the logical OR operation on the corresponding bits from the two input arguments.",
+    "!sql": "BITOR(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "bitxor": {
+    "!type": "fn(target_arg: Column, bit_mask_arg: Column) -> Column",
+    "!doc": "Performs a bitwise XOR operation on the binary representation of the two input arguments.",
+    "!sql": "BITXOR(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "countset": {
+    "!type": "fn(target_arg: Column, opt_target_value_arg: Column) -> Column",
+    "!doc": "Returns the count of the binary bits within the target_arg expression that are either set to 1 or set to 0 depending on the target_value_arg value.",
+    "!sql": "COUNTSET(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "getbit": {
+    "!type": "fn(target_arg: Column, target_bit_arg: Column) -> Column",
+    "!doc": "Returns the value of the bit specified by target_bit_arg from the target_arg byte expression.",
+    "!sql": "GETBIT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "rotateleft": {
+    "!type": "fn(target_arg: Column, num_bits_arg: Column) -> Column",
+    "!doc": "Returns the expression target_arg rotated by the specified number of bits (num_bits_arg) to the right, with the most significant bits wrapping around to the left.",
+    "!sql": "ROTATELEFT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "rotateright": {
+    "!type": "fn(target_arg: Column, num_bits_arg: Column) -> Column",
+    "!doc": "Returns the expression target_arg rotated by the specified number of bits (num_bits_arg) to the right, with the least significant bits wrapping around to the left.",
+    "!sql": "ROTATERIGHT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "setbit": {
+    "!type": "fn(target_arg: Column, target_bit_arg: Column, opt_target_value_arg: Column) -> Column",
+    "!doc": "Sets the value of the bit specified by target_bit_arg to the value of target_value_arg in the target_arg byte expression.",
+    "!sql": "SETBIT(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "shiftleft": {
+    "!type": "fn(target_arg: Column, num_bits_arg: Column) -> Column",
+    "!doc": "Returns the expression target_arg shifted by the specified number of bits (num_bits_arg) to the left.",
+    "!sql": "SHIFTLEFT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "shiftright": {
+    "!type": "fn(target_arg: Column, num_bits_arg: Column) -> Column",
+    "!doc": "Returns the expression target_arg shifted by the specified number of bits (num_bits_arg) to the right.",
+    "!sql": "SHIFTRIGHT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "subbitstr": {
+    "!type": "fn(target_arg: Column, position_arg: Column, num_bits_arg: Column) -> Column",
+    "!doc": "Extracts a bit substring from the target_arg input expression based on the specified bit position.",
+    "!sql": "SUBBITSTR(%c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "to_byte": {
+    "!type": "fn(target_arg: Column) -> Column",
+    "!doc": "Converts a numeric data type to the Teradata Database server byte representation (byte value) of the input value.",
+    "!sql": "TO_BYTE(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_07": "Built-In Functions",
+
+  "ACCOUNT": "Column",
+  "CURRENT_ROLE": "Column",
+  "CURRENT_USER": "Column",
+  "DATABASE": "Column",
+  "PROFILE": "Column",
+  "ROLE": "Column",
+  "SESSION": "Column",
+  "TEMPORAL_DATE": "Column",
+  "USER": "Column",
+
+  "!CHAPTER_08": "Business Calendars",
+
+  "td_week_begin": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the week that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_week_begin(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_week_end": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the week end that falls immediately after the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_week_end(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_sunday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Sunday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_sunday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_monday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Monday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_monday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_tuesday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Tuesday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_tuesday(%c,%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_wednesday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Wednesday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_wednesday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_thursday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Thursday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_thursday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_friday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Friday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_friday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_saturday": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the Saturday that falls immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_saturday(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "DayNumber_Of_Week": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of days from the beginning of the week to the specified date.",
+    "!sql": "DAYNUMBER_OF_WEEK(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "td_month_begin": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the month that begins immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_month_begin(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_month_end": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the month that ends immediately after the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_month_end(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "DayNumber_Of_Month": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of days from the beginning of the month to the specified date.",
+    "!sql": "DAYNUMBER_OF_MONTH(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "DayOccurrence_Of_Month": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the n th occurrence of the weekday in the month for the specified date.",
+    "!sql": "DAYOCCURRENCE_OF_MONTH(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "WeekNumber_Of_Month": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of weeks from the beginning of the month to the specified date.",
+    "!sql": "WEEKNUMBER_OF_MONTH(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "td_year_begin": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the year that begins immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_year_begin(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_year_end": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the year that ends immediately after the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_year_end(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "DayNumber_Of_Year": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of days from the beginning of the year to the specified date.",
+    "!sql": "DAYNUMBER_OF_YEAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "WeekNumber_Of_Year": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of weeks from the beginning of the year to the specified date.",
+    "!sql": "WEEKNUMBER_OF_YEAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "MonthNumber_Of_Year": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of months from the beginning of the year to the specified date.",
+    "!sql": "MONTHNUMBER_OF_YEAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "td_quarter_begin": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the quarter that begins immediately before the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_quarter_begin(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "td_quarter_end": {
+    "!type": "fn(expression_1: Column, opt_calendar_name: string, opt_expression_2: Column) -> Column",
+    "!doc": "Returns the quarter that ends immediately after the DATE or TIMESTAMP specified in expression_1.",
+    "!sql": "td_quarter_end(%c%,?s%,?c)",
+    "!sqlType": "Column"
+  },
+  "WeekNumber_Of_Quarter": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of weeks from the beginning of the quarter to the specified date.",
+    "!sql": "WEEKNUMBER_OF_QUARTER(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "MonthNumber_Of_Quarter": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of months from the beginning of the quarter to the specified date.",
+    "!sql": "MONTHNUMBER_OF_QUARTER(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "QuarterNumber_Of_Year": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of quarters from the beginning of the year to the specified date.",
+    "!sql": "QUARTERNUMBER_OF_YEAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "DayNumber_Of_Calendar": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of days from the beginning of the business calendar to the specified date.",
+    "!sql": "DAYNUMBER_OF_CALENDAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "WeekNumber_Of_Calendar": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of weeks from the beginning of the business calendar to the specified date.",
+    "!sql": "WEEKNUMBER_OF_CALENDAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "MonthNumber_Of_Calendar": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of months from the beginning of the calendar to the specified date.",
+    "!sql": "MONTHNUMBER_OF_CALENDAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "QuarterNumber_Of_Calendar": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the number of quarters from the beginning of the calendar to the specified date.",
+    "!sql": "QUARTERNUMBER_OF_CALENDAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+  "YearNumber_Of_Calendar": {
+    "!type": "fn(expression: Column, opt_calendar_name: string) -> Column",
+    "!doc": "Returns the year of the specified date.",
+    "!sql": "YEARNUMBER_OF_CALENDAR(%c%,?s)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_09": "Calendar Functions",
+
+  "td_day_of_week": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the day of the week on which the specified date falls.",
+    "!sql": "td_day_of_week(%c)",
+    "!sqlType": "Column"
+  },
+  "td_day_of_month": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of days from the beginning of the month through the specified date.",
+    "!sql": "td_day_of_month(%c)",
+    "!sqlType": "Column"
+  },
+  "td_day_of_year": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of days from the beginning of the year (January 1st) to the specified date.",
+    "!sql": "td_day_of_year(%c)",
+    "!sqlType": "Column"
+  },
+  "td_weekday_of_month": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the nth occurrence of the weekday in the month for the specified date.",
+    "!sql": "td_weekday_of_month(%c)",
+    "!sqlType": "Column"
+  },
+  "td_week_of_month": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the nth full week from the beginning of the month to the specified date.",
+    "!sql": "td_week_of_month(%c)",
+    "!sqlType": "Column"
+  },
+  "td_week_of_year": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the nth full week from the beginning of the year (January 1st) to the specified date.",
+    "!sql": "td_week_of_year(%c)",
+    "!sqlType": "Column"
+  },
+  "td_week_of_calendar": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of weeks from the beginning of the calendar starting on 01/01/1900 to the specified date.",
+    "!sql": "td_week_of_calendar(%c)",
+    "!sqlType": "Column"
+  },
+  "td_week_of_quarter": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of months from the beginning of the quarter to the specified date.",
+    "!sql": "td_week_of_quarter(%c)",
+    "!sqlType": "Column"
+  },
+  "td_month_of_year": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of months from the beginning of the year (January 1st) to the specified date.",
+    "!sql": "td_month_of_year(%c)",
+    "!sqlType": "Column"
+  },
+  "td_month_of_calendar": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of months from the beginning of the calendar starting on 01/01/1900 to the specified date.",
+    "!sql": "td_month_of_calendar(%c)",
+    "!sqlType": "Column"
+  },
+  "td_quarter_of_year": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the quarter number of the year for the specified date.",
+    "!sql": "td_quarter_of_year(%c)",
+    "!sqlType": "Column"
+  },
+  "td_quarter_of_calendar": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the number of quarters from the beginning of the calendar starting on 01/01/1900 to the specified date.",
+    "!sql": "td_quarter_of_calendar(%c)",
+    "!sqlType": "Column"
+  },
+  "td_year_of_calendar": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the year of the specified date.",
+    "!sql": "td_year_of_calendar(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_10": "Comparison Operators and Functions",
+
+  "decode": {
+    "!type": "fn(expr: Column, search_result_default_varargs: Column) -> Column",
+    "!doc": "Compares expr to each search parameter with its corresponding result parameter.",
+    "!sql": "DECODE(%c%,*c)",
+    "!sqlType": "Column"
+  },
+  "greatest": {
+    "!type": "fn(values_varargs: Column) -> Column",
+    "!doc": "Returns the largest value in the list of input arguments.",
+    "!sql": "GREATEST(%*c)",
+    "!sqlType": "Column"
+  },
+  "least": {
+    "!type": "fn(values_varargs: Column) -> Column",
+    "!doc": "Returns the least value in the list of input arguments.",
+    "!sql": "LEAST(%*c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_11": "Compression/Decompression Functions",
+
+  "camset": {
+    "!type": "fn(unicode_string: Column) -> Column",
+    "!doc": "Compresses the specified Unicode character data into the following possible values using a proprietary Teradata algorithm.",
+    "!sql": "CAMSET(%c)",
+    "!sqlType": "Column"
+  },
+  "camset_l": {
+    "!type": "fn(latin_string: Column) -> Column",
+    "!doc": "Compresses the specified Latin character data into the following possible values using a proprietary Teradata algorithm.",
+    "!sql": "CAMSET_L(%c)",
+    "!sqlType": "Column"
+  },
+  "decamset": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses the Unicode data that was compressed using the CAMSET function.",
+    "!sql": "DECAMSET(%c)",
+    "!sqlType": "Column"
+  },
+  "decamset_l": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses the Latin data that was compressed using the CAMSET_L function.",
+    "!sql": "DECAMSET_L(%c)",
+    "!sqlType": "Column"
+  },
+  "json_compress": {
+    "!type": "fn(json_expr: Column) -> Column",
+    "!doc": "Compresses JSON data type values.",
+    "!sql": "JSON_COMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "json_decompress": {
+    "!type": "fn(compressed_json_data: Column) -> Column",
+    "!doc": "Uncompresses the JSON data previously compressed using the JSON_COMPRESS function.",
+    "!sql": "JSON_DECOMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "lzcomp": {
+    "!type": "fn(unicode_string: Column) -> Column",
+    "!doc": "Compresses the specified Unicode character data using the Lempel-Ziv algorithm.",
+    "!sql": "LZCOMP(%c)",
+    "!sqlType": "Column"
+  },
+  "lzcomp_l": {
+    "!type": "fn(latin_string: Column) -> Column",
+    "!doc": "Compresses the specified Latin character data using the Lempel-Ziv algorithm.",
+    "!sql": "LZCOMP_L(%c)",
+    "!sqlType": "Column"
+  },
+  "lzdecomp": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses the Unicode data that was compressed using the LZCOMP function.",
+    "!sql": "LZDECOMP(%c)",
+    "!sqlType": "Column"
+  },
+  "lzdecomp_l": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses the Latin data that was compressed using the LZCOMP_L function.",
+    "!sql": "LZDECOMP_L(%c)",
+    "!sqlType": "Column"
+  },
+  "td_lz_compress": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Compresses any supported ALC data type or predefined type data using the Lempel-Ziv algorithm.",
+    "!sql": "TD_LZ_COMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "td_lz_decompress": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Uncompresses data that was compressed using the TD_LZ_COMPRESS function.",
+    "!sql": "TD_LZ_DECOMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "ts_compress": {
+    "!type": "fn(td_anytype: Column) -> Column",
+    "!doc": "Compresses TIME and TIMESTAMP with or without time zone to the minimum possible bytes.",
+    "!sql": "TS_COMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "ts_decompress": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses TIME and TIMESTAMP data with or without time zone that the TS_COMPRESS function compressed.",
+    "!sql": "TS_DECOMPRESS(%c)",
+    "!sqlType": "Column"
+  },
+  "TransUnicodeToUTF8": {
+    "!type": "fn(unicode_string: Column) -> Column",
+    "!doc": "Compress the specified Unicode character data into UTF8 format.",
+    "!sql": "TransUnicodeToUTF8(%c)",
+    "!sqlType": "Column"
+  },
+  "TransUTF8ToUnicode": {
+    "!type": "fn(compressed_string: Column) -> Column",
+    "!doc": "Uncompresses the Unicode data that was compressed using the TransUnicodeToUTF8 function.",
+    "!sql": "TransUTF8ToUnicode(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_12": "CASE Expressions",
+
+  "coalesce": {
+    "!type": "fn(varargs_scala_expression_n: Column) -> Column",
+    "!doc": "Returns NULL if all its arguments evaluate to null. Otherwise, it returns the value of the first non-null argument in the scalar_expression list.",
+    "!sql": "COALESCE(%*c)",
+    "!sqlType": "Column"
+  },
+  "nullif": {
+    "!type": "fn(scalar_expression_1: Column, scalar_expression_2: Column) -> Column",
+    "!doc": "Returns NULL if its arguments are equal. Otherwise, it returns its first argument, scalar_expression_1.",
+    "!sql": "NULLIF(%c, %c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_13": "Data Type Conversions",
+
+  "!CHAPTER_14": "Data Type Conversion Functions",
+
+  "to_bytes": {
+    "!type": "fn(instring: Column, in_encoding: Column) -> Column",
+    "!doc": "Decodes a sequence of characters in a given encoding into a sequence of bits.",
+    "!sql": "TO_BYTES(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "from_bytes": {
+    "!type": "fn(instring: Column, out_encoding: Column) -> Column",
+    "!doc": "Encodes a sequence of bits into a sequence of characters representing its encoding.",
+    "!sql": "FROM_BYTES(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "to_number": {
+    "!type": "fn(string_expr: Column, opt_format_arg: Column, opt_nls_param: Column) -> Column",
+    "!doc": "Converts string_expr to a NUMBER data type.",
+    "!sql": "TO_NUMBER(%c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "to_char": {
+    "!type": "fn(expr: Column, opt_format_arg: Column, opt_nls_param: Column) -> Column",
+    "!doc": "Converts expr to a character string.",
+    "!sql": "TO_CHAR(%c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "to_date": {
+    "!type": "fn(string_expr: Column, format_arg: Column) -> Column",
+    "!doc": "Converts string_expr to a DATE data type.",
+    "!sql": "TO_DATE(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "to_timestamp": {
+    "!type": "fn(expr: Column, opt_format_arg: Column) -> Column",
+    "!doc": "Converts string_expror integer_expr to a TIMESTAMP data type.",
+    "!sql": "TO_TIMESTAMP(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "to_timestamp_tz": {
+    "!type": "fn(string_expr: Column, opt_format_arg: Column) -> Column",
+    "!doc": "Converts string_expr to a TIMESTAMP WITH TIME ZONE data type.",
+    "!sql": "TO_TIMESTAMP_TZ(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "to_yminterval": {
+    "!type": "fn(string_value: Column) -> Column",
+    "!doc": "Converts string_value specified as either a SQL interval format or an ISO duration format into an INTERVAL YEAR(4) TO MONTH value.",
+    "!sql": "TO_YMINTERVAL(%c)",
+    "!sqlType": "Column"
+  },
+  "to_dsinterval": {
+    "!type": "fn(string_value: Column) -> Column",
+    "!doc": "Converts string_value specified as either a SQL interval format or an ISO duration format into an INTERVAL DAY(4) TO SECOND(6) value.",
+    "!sql": "TO_DSINTERVAL(%c)",
+    "!sqlType": "Column"
+  },
+  "numtodsinterval": {
+    "!type": "fn(numeric_value: Column, interval_unit: Column) -> Column",
+    "!doc": "Converts numeric_value into an INTERVAL DAY(4) TO SECOND(6) value.",
+    "!sql": "NUMTODSINTERVAL(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "numtoyminterval": {
+    "!type": "fn(numeric_value: column, interval_unit: Column) -> Column",
+    "!doc": "Converts numeric_value into an INTERVAL YEAR(4) TO MONTH value.",
+    "!sql": "NUMTOYMINTERVAL(%c, %c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_15": "DateTime and Interval Functions and Expressions",
+
+  "last_day": {
+    "!type": "fn(period_expression_or_derived_period: Column) -> Column",
+    "!doc": "Returns the date of the last day of month that contains date_timestamp_value.",
+    "!sql": "LAST_DAY(%c)",
+    "!sqlType": "Column"
+  },
+  "next_day": {
+    "!type": "fn(date_timestamp_value: Column, day_value: Column) -> Column",
+    "!doc": "Returns the date of the first weekday (day_value) that is later than the date specified by date_timestamp_value.",
+    "!sql": "NEXT_DAY(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "months_between": {
+    "!type": "fn(date_timestamp_value1: Column, date_timestamp_value2: Column) -> Column",
+    "!doc": "Returns the number of months between date_timestamp_value1 and date_timestamp_value2.",
+    "!sql": "MONTHS_BETWEEN(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "add_months": {
+    "!type": "fn(date_or_timestamp_expression: Column, integer_expression: Column) -> Column",
+    "!doc": "Adds an integer number of months to a DATE or TIMESTAMP expression and normalizes the result.",
+    "!sql": "ADD_MONTHS(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "oadd_months": {
+    "!type": "fn(date_timestamp_value: Column, num_months: Column) -> Column",
+    "!doc": "Adds a specified date_timestamp_value to a specified num_months and returns the resulting date.",
+    "!sql": "OADD_MONTHS(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "GetTimeZoneDisplacement": {
+    "!type": "fn(time_zone_string: Column) -> Column",
+    "!doc": "Returns the rules and time zone displacement information for a specified time zone string.",
+    "!sql": "GetTimeZoneDisplacement(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_16": "Export Width Procedures",
+
+  "!CHAPTER_17": "Hash-Related Functions",
+
+  "hashbucket": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns the hash bucket number that corresponds to a specified row hash value.",
+    "!sql": "HASHBUCKET(%c)",
+    "!sqlType": "Column"
+  },
+  "hashrow": {
+    "!type": "fn(varargs_expression: Column) -> Column",
+    "!doc": "Returns the hexadecimal row hash value for an expression or sequence of expressions.",
+    "!sql": "HASHROW(%*c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_18": "File System Information Macros and Functions",
+
+  "!CHAPTER_19": "LOB Functions",
+
+  "empty_blob": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns an empty BLOB (Binary Large Object), that is, one that contains 0 bytes.",
+    "!sql": "EMPTY_BLOB()",
+    "!sqlType": "Column"
+  },
+  "empty_clob": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns an empty CLOB (Character Large Object), that is, one that contains 0 bytes.",
+    "!sql": "EMPTY_CLOB()",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_20": "Logical Predicates",
+
+  "!CHAPTER_21": "Map Functions, Macros, and Procedures",
+
+  "SYSLIB": "SYSLIB",
+
+  "!CHAPTER_22": "Null-Handling Functions",
+
+  "nvl": {
+    "!type": "fn(expr1: Column, expr2: Column) -> Column",
+    "!doc": "Replaces a NULL with a numeric or a string value as the result value.",
+    "!sql": "NVL(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "nvl2": {
+    "!type": "fn(expr1: Column, expr2: Column, expr3: Column) -> Column",
+    "!doc": "Returns one of two values based on whether or not expr1 is NULL.",
+    "!sql": "NVL2(%c, %c, %c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_23": "Ordered Analytical/Window Aggregate Functions",
+
+  "median": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Takes a numeric or datetime value and returns the middle value or an interpolated value that would be the middle value after the values are sorted.",
+    "!sql": "MEDIAN(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_24": "Period Functions and Operators",
+
+  "begin": {
+    "!type": "fn(period_expression_or_derived_period: Column) -> Column",
+    "!doc": "Returns the beginning bound of a Period expression or a derived period.",
+    "!sql": "BEGIN(%c)",
+    "!sqlType": "Column"
+  },
+  "end": {
+    "!type": "fn(period_expression_or_derived_period: Column) -> Column",
+    "!doc": "Returns the ending bound of the period argument.",
+    "!sql": "END(%c)",
+    "!sqlType": "Column"
+  },
+  "last": {
+    "!type": "fn(period_expression_or_derived_period: Column) -> Column",
+    "!doc": "Returns the last value of the Period argument.",
+    "!sql": "LAST(%c)",
+    "!sqlType": "Column"
+  },
+  "next": {
+    "!type": "fn(datetime_expression: Column) -> Column",
+    "!doc": "Returns the succeeding value of the argument so that there is one granule of the argument type between the argument and the returned value.",
+    "!sql": "NEXT(%c)",
+    "!sqlType": "Column"
+  },
+  "prior": {
+    "!type": "fn(datetime_expression: Column) -> Column",
+    "!doc": "Returns the preceding value of the argument so that there is one granule of the argument type between the returned value and the argument.",
+    "!sql": "PRIOR(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_25": "Regular Expression Functions",
+
+  "regexp_substr": {
+    "!type": "fn(source_string: Column, regexp_string: Column, position_arg: Column, occurrence_arg: Column, match_arg: Column) -> Column",
+    "!doc": "Extracts a substring from source_string that matches a regular expression specified by regexp_string.",
+    "!sql": "REGEXP_SUBSTR(%c, %c, %c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "regexp_replace": {
+    "!type": "fn(source_string: Column, regexp_string: Column, replace_string: Column, position_arg: Column, occurrence_arg: Column, match_arg: Column) -> Column",
+    "!doc": "Replaces portions of source_string that match regexp_string with the replace_string.",
+    "!sql": "REGEXP_REPLACE(%c, %c, %c, %c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "regexp_instr": {
+    "!type": "fn(source_string: Column, regexp_string: Column, position_arg: Column, occurrence_arg: Column, return_opt: Column, match_arg: Column) -> Column",
+    "!doc": "Searches source_string for a match to regexp_string.",
+    "!sql": "REGEXP_INSTR(%c, %c, %c, %c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "regexp_similar": {
+    "!type": "fn(source_string: Column, regexp_string: Column, opt_match_arg: Column) -> Column",
+    "!doc": "Compares source_string to regexp_string and returns integer value.",
+    "!sql": "REGEXP_SIMILAR(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_26": "Set Operators",
+
+  "!CHAPTER_27": "String Operators and Functions",
+
+  "ascii": {
+    "!type": "fn(string_expr: Column) -> Column",
+    "!doc": "Returns the decimal representation of the first character in string_expr as a NUMBER value.",
+    "!sql": "ASCII(%c)",
+    "!sqlType": "Column"
+  },
+  "char2hexint": {
+    "!type": "fn(character_string_expression: Column) -> Column",
+    "!doc": "Returns the hexadecimal representation for a character string.",
+    "!sql": "CHAR2HEXINT(%c)",
+    "!sqlType": "Column"
+  },
+  "chr": {
+    "!type": "fn(numeric_expr: Column) -> Column",
+    "!doc": "Returns the Latin ASCII character given a numeric code value.",
+    "!sql": "CHR(%c)",
+    "!sqlType": "Column"
+  },
+  "editdistance": {
+    "!type": "fn(string1: Column, string2: Column, opt_ci: Column, opt_cd: Column, opt_cs: Column, opt_ct: Column) -> Column",
+    "!doc": "Returns the minimum number of edit operations (insertions, deletions, substitutions and transpositions) required to transform string1 into string2.",
+    "!sql": "EDITDISTANCE(%c, %c%,?c%,?c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "index": {
+    "!type": "fn(string_expression_1: Column, string_expression_2: Column) -> Column",
+    "!doc": "Returns the position in string_expression_1 where string_expression_2 starts.",
+    "!sql": "INDEX(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "initcap": {
+    "!type": "fn(string: Column) -> Column",
+    "!doc": "Modifies a string argument and returns the string with the first character in each word in uppercase and all other characters in lowercase.",
+    "!sql": "INITCAP(%c)",
+    "!sqlType": "Column"
+  },
+  "instr": {
+    "!type": "fn(source_string: Column, search_string: Column, opt_position: Column, opt_occurence: Column) -> Column",
+    "!doc": "Searches the source_string argument for occurrences of search_string.",
+    "!sql": "INSTR(%c, %c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "left": {
+    "!type": "fn(source_string: Column, length: Column) -> Column",
+    "!doc": "Truncates in input string to a specified number of characters.",
+    "!sql": "LEFT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "length": {
+    "!type": "fn(string: Column) -> Column",
+    "!doc": "Returns the number of characters in the string argument.",
+    "!sql": "LENGTH(%c)",
+    "!sqlType": "Column"
+  },
+  "lower": {
+    "!type": "fn(character_string_expression: Column) -> Column",
+    "!doc": "Returns a character string identical to character_string_expression, except that all uppercase letters are replaced with their lowercase equivalents.",
+    "!sql": "LOWER(%c)",
+    "!sqlType": "Column"
+  },
+  "lpad": {
+    "!type": "fn(source_string: Column, length: Column, opt_fill_string: Column) -> Column",
+    "!doc": "Returns the source_string padded to the left with the characters in fill_string so that the resulting string is length characters.",
+    "!sql": "LPAD(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "ltrim": {
+    "!type": "fn(string1: Column, string2: Column) -> Column",
+    "!doc": "Returns the string argument string1, with its left-most characters removed up to the first character that is not in the string argument string2.",
+    "!sql": "LTRIM(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "ngram": {
+    "!type": "fn(string1: Column, string2: Column, length: Column, opt_position: Column) -> Column",
+    "!doc": "Returns the number of n-gram matches between string1 and string2.",
+    "!sql": "NGRAM(%c, %c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "nvp": {
+    "!type": "fn(instring: Column, name_to_search: Column, opt_name_delimiters: Column, opt_value_delimiters: Column, opt_occurrence: Column) -> Column",
+    "!doc": "Extracts the value of a name-value pair where the name in the pair matches the name and the number of the occurrence specified.",
+    "!sql": "NVP(%c, %c%,?c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "oreplace": {
+    "!type": "fn(source_string: Column, search_string: Column, opt_replace_string: Column) -> Column",
+    "!doc": "Replaces every occurrence of search_string in the source_string with the replace_string.",
+    "!sql": "OREPLACE(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "otranslate": {
+    "!type": "fn(source_string: Column, from_string: Column, to_string: Column) -> Column",
+    "!doc": "Returns source_string with every occurrence of each character in from_string replaced with the corresponding character in to_string.",
+    "!sql": "OTRANSLATE(%c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "reverse": {
+    "!type": "fn(source_string: Column) -> Column",
+    "!doc": "Reverses the input string.",
+    "!sql": "REVERSE(%c)",
+    "!sqlType": "Column"
+  },
+  "right": {
+    "!type": "fn(source_string: Column, length: Column) -> Column",
+    "!doc": "Starting from the end of the input string, a substring is created with the number of characters specified by the second parameter.",
+    "!sql": "RIGHT(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "rpad": {
+    "!type": "fn(source_string: Column, length: Column, opt_fill_string: Column) -> Column",
+    "!doc": "Returns the source_string padded to the right with the characters in fill_string so that the resulting string is length characters.",
+    "!sql": "RPAD(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "rtrim": {
+    "!type": "fn(string1: Column, opt_string2: Column) -> Column",
+    "!doc": "Returns the string argument string1, with its right-most characters removed up to the first character that is not in the string argument string2.",
+    "!sql": "RTRIM(%c%,?c)",
+    "!sqlType": "Column"
+  },
+  "soundex": {
+    "!type": "fn(string_expression: Column) -> Column",
+    "!doc": "Returns a character string that represents the Soundex code for string_expression.",
+    "!sql": "SOUNDEX(%c)",
+    "!sqlType": "Column"
+  },
+  "string_cs": {
+    "!type": "fn(string_expression: Column) -> Column",
+    "!doc": "Returns a heuristically derived integer value that you can use to help determine which KANJI1-compatible client character set was used to encode string_expression.",
+    "!sql": "STRING_CS(%c)",
+    "!sqlType": "Column"
+  },
+  "strtok": {
+    "!type": "fn(instring: Column, opt_delimiter: Column, opt_tokennum: Column) -> Column",
+    "!doc": "Splits instring into tokens based on the specified list of delimiter characters and returns the nth token, where n is specified by the tokennum argument.",
+    "!sql": "STRTOK(%c%,?c%,?c)",
+    "!sqlType": "Column"
+  },
+  "substr": {
+    "!type": "fn(string_expression: Column, n1: Column, opt_n2: Column) -> Column",
+    "!doc": "Extracts a substring from a named string based on position.",
+    "!sql": "SUBSTR(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "upper": {
+    "!type": "fn(character_string_expression: Column) -> Column",
+    "!doc": "Returns a character string identical to character_string_expression, except that all lowercase letters are replaced by their uppercase equivalents.",
+    "!sql": "UPPER(%c)",
+    "!sqlType": "Column"
+  },
+  "vargraphic": {
+    "!type": "fn(character_string_expression: Column) -> Column",
+    "!doc": "Returns the VARGRAPHIC representation of the character data in character_string_expression.",
+    "!sql": "VARGRAPHIC(%c)",
+    "!sqlType": "Column"
+  },
+
+  "!CHAPTER_28": "Table Operators"
+}

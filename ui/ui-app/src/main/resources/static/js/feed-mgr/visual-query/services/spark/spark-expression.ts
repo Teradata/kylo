@@ -89,7 +89,7 @@ export class SparkExpression {
         const source = SparkExpression.format.apply(SparkExpression, args);
 
         // Return expression
-        return new SparkExpression(source, definition[SparkExpression.TYPE_DIRECTIVE], node.start, node.end);
+        return new SparkExpression(source, SparkExpressionType.valueOf(definition[SparkExpression.TYPE_DIRECTIVE]), node.start, node.end);
     }
 
     /**
@@ -203,7 +203,7 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to an array
      */
     private static toArray(expression: SparkExpression, type: string): string {
-        if (expression.type === SparkExpressionType.ARRAY) {
+        if (SparkExpressionType.ARRAY.equals(expression.type)) {
             let source = expression.source as SparkExpression[];
             return "Array(" + source
                 .map(function (e) {
@@ -223,7 +223,7 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a boolean
      */
     private static toBoolean(expression: SparkExpression): string {
-        if (expression.type === SparkExpressionType.LITERAL && (expression.source === "true" || expression.source === "false")) {
+        if (SparkExpressionType.LITERAL.equals(expression.type) && (expression.source === "true" || expression.source === "false")) {
             return expression.source;
         } else {
             throw new ParseException("Expression cannot be converted to a boolean: " + expression.type, expression.start);
@@ -238,16 +238,13 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a column
      */
     private static toColumn(expression: SparkExpression): string {
-        switch (expression.type) {
-            case SparkExpressionType.COLUMN:
-                return expression.source as string;
-
-            case SparkExpressionType.LITERAL:
-                return "functions.lit(" + expression.source + ")";
-
-            default:
-                throw new ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
+        if (SparkExpressionType.COLUMN.equals(expression.type)) {
+            return expression.source as string;
         }
+        if (SparkExpressionType.LITERAL.equals(expression.type)) {
+            return "functions.lit(" + expression.source + ")";
+        }
+        throw new ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
     }
 
     /**
@@ -258,13 +255,10 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a DataFrame
      */
     private static toDataFrame(expression: SparkExpression): string {
-        switch (expression.type) {
-            case SparkExpressionType.DATA_FRAME:
-                return SparkConstants.DATA_FRAME_VARIABLE + expression.source;
-
-            default:
-                throw new ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
+        if (SparkExpressionType.DATA_FRAME.equals(expression.type)) {
+            return SparkConstants.DATA_FRAME_VARIABLE + expression.source;
         }
+        throw new ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
     }
 
     /**
@@ -275,7 +269,7 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a double
      */
     private static toDouble(expression: SparkExpression): string {
-        if (expression.type === SparkExpressionType.LITERAL && (expression.source as string).match(/^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/) !== null) {
+        if (SparkExpressionType.LITERAL.equals(expression.type) && (expression.source as string).match(/^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/) !== null) {
             return expression.source as string;
         } else {
             throw new ParseException("Expression cannot be converted to an integer: " + expression.type, expression.start);
@@ -290,7 +284,7 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a number
      */
     private static toInteger(expression: SparkExpression): string {
-        if (expression.type === SparkExpressionType.LITERAL && (expression.source as string).match(/^(0|-?[1-9][0-9]*)$/) !== null) {
+        if (SparkExpressionType.LITERAL.equals(expression.type) && (expression.source as string).match(/^(0|-?[1-9][0-9]*)$/) !== null) {
             return expression.source as string;
         } else {
             throw new ParseException("Expression cannot be converted to an integer: " + expression.type, expression.start);
@@ -307,7 +301,7 @@ export class SparkExpression {
     private static toObject(expression: SparkExpression): string {
         if (SparkExpressionType.isObject(expression.type.toString())) {
             return expression.source as string;
-        } else if (expression.type == SparkExpressionType.LITERAL) {
+        } else if (SparkExpressionType.LITERAL.equals(expression.type)) {
             if ((expression.source as string).charAt(0) === "\"" || (expression.source as string).charAt(0) === "'") {
                 return SparkExpression.toString(expression);
             } else {
@@ -326,7 +320,7 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a string
      */
     private static toString(expression: SparkExpression): string {
-        if (expression.type !== SparkExpressionType.LITERAL) {
+        if (!SparkExpressionType.LITERAL.equals(expression.type)) {
             throw new ParseException("Expression cannot be converted to a string: " + expression.type, expression.start);
         }
         if ((expression.source as string).charAt(0) === "\"") {

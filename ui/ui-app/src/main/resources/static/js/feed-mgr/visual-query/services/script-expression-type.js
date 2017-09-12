@@ -12,6 +12,30 @@ define(["require", "exports"], function (require, exports) {
             this.value = value;
         }
         /**
+         * Returns the constant with the specified name.
+         *
+         * @return the matching constant or {@code null} if not found
+         */
+        ScriptExpressionType.valueOf = function (name) {
+            switch (name) {
+                case "array":
+                    return ScriptExpressionType.ARRAY;
+                case "Column":
+                case "column":
+                    return ScriptExpressionType.COLUMN;
+                case "literal":
+                    return ScriptExpressionType.LITERAL;
+                default:
+                    return new ScriptExpressionType(name);
+            }
+        };
+        /**
+         * Returns true if the specified object is equal to this enum constant.
+         */
+        ScriptExpressionType.prototype.equals = function (other) {
+            return this.value === other.value;
+        };
+        /**
          * Returns the string value of this type.
          */
         ScriptExpressionType.prototype.toString = function () {

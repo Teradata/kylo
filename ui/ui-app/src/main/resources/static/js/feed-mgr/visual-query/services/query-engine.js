@@ -1,4 +1,4 @@
-define(["require", "exports", "./query-engine-constants"], function (require, exports, query_engine_constants_1) {
+define(["require", "exports", "./query-engine-constants", "./column-delegate"], function (require, exports, query_engine_constants_1, column_delegate_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8,8 +8,10 @@ define(["require", "exports", "./query-engine-constants"], function (require, ex
         /**
          * Construct a {@code QueryEngine}.
          */
-        function QueryEngine(DatasourcesService) {
+        function QueryEngine($mdDialog, DatasourcesService, uiGridConstants) {
+            this.$mdDialog = $mdDialog;
             this.DatasourcesService = DatasourcesService;
+            this.uiGridConstants = uiGridConstants;
             /**
              * Transformation function definitions.
              */
@@ -60,6 +62,12 @@ define(["require", "exports", "./query-engine-constants"], function (require, ex
          */
         QueryEngine.prototype.canUndo = function () {
             return (this.states_.length > 1);
+        };
+        /**
+         * Creates a column delegate of the specified data type.
+         */
+        QueryEngine.prototype.createColumnDelegate = function (dataType, controller) {
+            return new column_delegate_1.ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants);
         };
         /**
          * Gets the type definitions for the output columns of the current script. These definitions are only available after receiving a {@link #transform} response.

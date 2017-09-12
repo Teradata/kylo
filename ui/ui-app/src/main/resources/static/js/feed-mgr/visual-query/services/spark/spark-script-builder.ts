@@ -8,7 +8,7 @@ import {SparkQueryEngine} from "./spark-query-engine";
 /**
  * Parses an abstract syntax tree into a Spark script.
  */
-export class SparkScriptBuilder extends ScriptBuilder<SparkExpression> {
+export class SparkScriptBuilder extends ScriptBuilder<SparkExpression, string> {
 
     /**
      * Constructs a {@code SparkScriptBuilder}.
@@ -18,6 +18,13 @@ export class SparkScriptBuilder extends ScriptBuilder<SparkExpression> {
      */
     constructor(functions: any, private queryEngine: SparkQueryEngine) {
         super(functions);
+    }
+
+    /**
+     * Creates a script expression with the specified child expression appended to the parent expression.
+     */
+    protected appendChildExpression(parent: SparkExpression, child: SparkExpression): SparkExpression {
+        return this.createScriptExpression((parent.source as string) + (child.source as string), child.type, child.start, child.end);
     }
 
     /**
@@ -53,24 +60,20 @@ export class SparkScriptBuilder extends ScriptBuilder<SparkExpression> {
      * Converts the specified script expression to a transform script.
      */
     protected prepareScript(spark: SparkExpression): string {
-        switch (spark.type.toString()) {
-            case SparkExpressionType.COLUMN.value:
-            case SparkExpressionType.CONDITION_CHAIN.value:
-                return ".select(" + SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + spark.source + ")";
-
-            case SparkExpressionType.DATA_FRAME.value:
-                return spark.source as string;
-
-            case SparkExpressionType.LITERAL.value:
-                const column = SparkExpression.format("%c", spark);
-                return ".select(" + SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + column + ")";
-
-            case SparkExpressionType.TRANSFORM.value:
-                return ".transform(" + spark.source + ")";
-
-            default:
-                throw new Error("Result type not supported: " + spark.type);
+        if (SparkExpressionType.COLUMN.equals(spark.type) || SparkExpressionType.CONDITION_CHAIN.equals(spark.type)) {
+            return ".select(" + SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + spark.source + ")";
         }
+        if (SparkExpressionType.DATA_FRAME.equals(spark.type)) {
+            return spark.source as string;
+        }
+        if (SparkExpressionType.LITERAL.equals(spark.type)) {
+            const column = SparkExpression.format("%c", spark);
+            return ".select(" + SparkConstants.DATA_FRAME_VARIABLE + "(\"*\"), " + column + ")";
+        }
+        if (SparkExpressionType.TRANSFORM.equals(spark.type)) {
+            return ".transform(" + spark.source + ")";
+        }
+        throw new Error("Result type not supported: " + spark.type);
     }
 
     /**

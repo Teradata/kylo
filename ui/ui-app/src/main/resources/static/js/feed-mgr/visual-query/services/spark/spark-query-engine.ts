@@ -10,6 +10,7 @@ import {Subject} from "rxjs/Subject";
 import {TableSchema} from "../../../model/table-schema";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
+import {QueryResultColumn} from "../../../model/query-result-column";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
@@ -27,15 +28,22 @@ export class SparkQueryEngine extends QueryEngine<string> {
     /**
      * Constructs a {@code SparkQueryEngine}.
      */
-    constructor(private $http: angular.IHttpService, private $timeout: angular.ITimeoutService, DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any,
-                private RestUrlService: any, private VisualQueryService: any) {
-        super(DatasourcesService);
+    constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
+                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any) {
+        super($mdDialog, DatasourcesService, uiGridConstants);
 
         // Initialize properties
         this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
 
         // Ensure Kylo Spark Shell is running
         $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
+    }
+
+    /**
+     * Indicates if both limit and sample can be applied at the same time.
+     */
+    get allowLimitWithSample(): boolean {
+        return true;
     }
 
     /**
@@ -46,10 +54,29 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 
     /**
+     * Gets the sample formulas.
+     */
+    get sampleFormulas(): {name: string; formula: string}[] {
+        return [
+            {name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))"},
+            {name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)"},
+            {name: "Pivot", formula: "groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))"},
+            {name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))"}
+        ];
+    }
+
+    /**
      * Gets the SQL dialect used by this engine.
      */
     get sqlDialect(): SqlDialect {
         return SqlDialect.HIVE;
+    }
+
+    /**
+     * Gets the field name for the specified column.
+     */
+    getColumnName(column: QueryResultColumn): string {
+        return column.displayName;
     }
 
     /**
@@ -67,8 +94,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * @param sample - {@code false} to disable sampling
      * @returns the Spark script
      */
-    getScript(start: number = 0, end: number = null, sample: boolean = true): string {
+    getScript(start: number = null, end: number = null, sample: boolean = true): string {
         // Parse arguments
+        start = (start !== null) ? start : 0;
         end = (end !== null) ? end + 1 : this.states_.length;
 
         // Build script

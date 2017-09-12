@@ -7,7 +7,7 @@ import {ScriptExpressionType} from "./script-expression-type";
 /**
  * Builds a script from an abstract syntax tree.
  */
-export abstract class ScriptBuilder<T extends ScriptExpression> {
+export abstract class ScriptBuilder<E extends ScriptExpression, T> {
 
     /**
      * Constructs a {@code ScriptBuilder}.
@@ -25,7 +25,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if a function definition is not valid
      * @throws {ParseException} if the program is not valid
      */
-    toScript(program: Program): string {
+    toScript(program: Program): T {
         // Check node parameters
         if (program.type !== "Program") {
             throw new Error("Cannot convert non-program");
@@ -40,14 +40,19 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
     }
 
     /**
+     * Creates a script expression with the specified child expression appended to the parent expression.
+     */
+    protected abstract appendChildExpression(parent: E, child: E): E;
+
+    /**
      * Creates a script expression for the specified AST node.
      */
-    protected abstract createScriptExpression<X extends ScriptExpressionType>(source: any, type: X, start: number, end: number): T;
+    protected abstract createScriptExpression<X extends ScriptExpressionType>(source: any, type: X, start: number, end: number): E;
 
     /**
      * Creates a script expression from a function definition and AST node.
      */
-    protected abstract createScriptExpressionFromDefinition(definition: any, node: acorn.Node, ...var_args: T[]): T;
+    protected abstract createScriptExpressionFromDefinition(definition: any, node: acorn.Node, ...var_args: E[]): E;
 
     /**
      * Indicates if the specified expression type is an object.
@@ -57,12 +62,12 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
     /**
      * Parses an identifier into a script expression.
      */
-    protected abstract parseIdentifier(node: Identifier & acorn.Node): T;
+    protected abstract parseIdentifier(node: Identifier & acorn.Node): E;
 
     /**
      * Converts the specified script expression to a transform script.
      */
-    protected abstract prepareScript(expression: T): string;
+    protected abstract prepareScript(expression: E): T;
 
     /**
      * Gets the Ternjs name of the specified expression type.
@@ -77,7 +82,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if a function definition is not valid
      * @throws {ParseException} if the node is not valid
      */
-    private parseArrayExpression(node: ArrayExpression & acorn.Node): T {
+    private parseArrayExpression(node: ArrayExpression & acorn.Node): E {
         const source = node.elements.map(this.parseExpression.bind(this));
         return this.createScriptExpression(source, ScriptExpressionType.ARRAY, node.start, node.end);
     }
@@ -90,7 +95,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a function argument cannot be converted to the required type
      */
-    private parseBinaryExpression(node: BinaryExpression & acorn.Node): T {
+    private parseBinaryExpression(node: BinaryExpression & acorn.Node): E {
         // Get the function definition
         let def = null;
 
@@ -156,7 +161,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a function argument cannot be converted to the required type
      */
-    private parseCallExpression(node: CallExpression): T {
+    private parseCallExpression(node: CallExpression): E {
         // Get the function definition
         let def;
         let name;
@@ -172,7 +177,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
                 parent = this.parseExpression(node.callee.object as Expression);
 
                 // Find function definition
-                let ternjsName = this.toTernjsName(new ScriptExpressionType(parent.type));
+                let ternjsName = this.toTernjsName(parent.type);
 
                 if (ternjsName !== null) {
                     def = this.functions[QueryEngineConstants.DEFINE_DIRECTIVE][ternjsName][(node.callee.property as Identifier).name];
@@ -192,13 +197,13 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
         // Convert to a Spark expression
         const args = [def, node].concat(node.arguments.map(this.parseExpression.bind(this)));
         const spark = this.createScriptExpressionFromDefinition.apply(this, args);
-        return (parent !== null) ? this.createScriptExpression(parent.source + spark.source, spark.type, spark.start, spark.end) : spark;
+        return (parent !== null) ? this.appendChildExpression(parent, spark) : spark;
     }
 
     /**
      * Converts the specified expression to a script expression object.
      */
-    private parseExpression(expression: Expression): T {
+    private parseExpression(expression: Expression): E {
         switch (expression.type) {
             case "ArrayExpression":
                 return this.parseArrayExpression(expression as ArrayExpression & acorn.Node);
@@ -235,7 +240,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a function argument cannot be converted to the required type
      */
-    private parseLogicalExpression(node: LogicalExpression & acorn.Node): T {
+    private parseLogicalExpression(node: LogicalExpression & acorn.Node): E {
         // Get the function definition
         let def = null;
 
@@ -269,7 +274,7 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if a function definition is not valid
      * @throws {ParseException} if the node is not valid
      */
-    private parseStatement(statement: Statement): T {
+    private parseStatement(statement: Statement): E {
         if (statement.type === "ExpressionStatement") {
             return this.parseExpression(statement.expression);
         } else {
@@ -285,16 +290,16 @@ export abstract class ScriptBuilder<T extends ScriptExpression> {
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a function argument cannot be converted to the required type
      */
-    private parseUnaryExpression(node: UnaryExpression & acorn.Node): T {
+    private parseUnaryExpression(node: UnaryExpression & acorn.Node): E {
         // Get the function definition
         let arg = this.parseExpression(node.argument);
         let def = null;
 
         switch (node.operator) {
             case "-":
-                if (arg.type === ScriptExpressionType.COLUMN.toString()) {
+                if (ScriptExpressionType.COLUMN.equals(arg.type)) {
                     def = this.functions.negate;
-                } else if (arg.type === ScriptExpressionType.LITERAL.toString()) {
+                } else if (ScriptExpressionType.LITERAL.equals(arg.type)) {
                     return this.createScriptExpression("-" + arg.source, ScriptExpressionType.LITERAL, arg.start, node.end);
                 }
                 break;

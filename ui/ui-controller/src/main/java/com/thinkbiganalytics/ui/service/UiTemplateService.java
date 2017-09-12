@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +52,6 @@ public class UiTemplateService {
     private FileResourceService fileResourceService;
 
 
-
     /**
      * Load the '*processor-template-definition.json files
      */
@@ -67,14 +65,14 @@ public class UiTemplateService {
         }
     }
 
-    public List<AngularModule> loadAngularModuleDefinitionFiles(){
+    public List<AngularModule> loadAngularModuleDefinitionFiles() {
         List<AngularModule> modules = new ArrayList<>();
         fileResourceService.loadResources("classpath*:**/*module-definition.json", (resource) -> {
             try {
                 final String json = fileResourceService.resourceAsString(resource);
                 DefaultAngularModule module = (json != null) ? ObjectMapperSerializer.deserialize(json, DefaultAngularModule.class) : null;
                 String moduleJsUrl = "";
-                if(module != null) {
+                if (module != null) {
                     if (StringUtils.isBlank(module.getModuleJsUrl())) {
                         //attempt to derive it
                         try {
@@ -109,7 +107,7 @@ public class UiTemplateService {
             }
 
         });
-      return modules;
+        return modules;
     }
 
     /**
@@ -118,10 +116,28 @@ public class UiTemplateService {
      * @return the Spark function definitions
      */
     public Map<String, Object> loadSparkFunctionsDefinitions() {
+        return loadFunctionsDefinitions("spark-functions", "classpath*:**/*spark-functions.json");
+    }
+
+    /**
+     * Loads and merges the '*teradata-functions.json' files.
+     *
+     * @return the Teradata function definitions
+     */
+    public Map<String, Object> loadTeradataFunctionsDefinitions() {
+        return loadFunctionsDefinitions("teradata-functions", "classpath*:**/*teradata-functions.json");
+    }
+
+    /**
+     * Loads and merges function definition files.
+     *
+     * @return the function definitions
+     */
+    private Map<String, Object> loadFunctionsDefinitions(@Nonnull final String name, @Nonnull final String pattern) {
         // Attempt to load resources
         final Resource[] resources;
         try {
-            resources = fileResourceService.loadResources("classpath*:**/*spark-functions.json");
+            resources = fileResourceService.loadResources(pattern);
         } catch (final IOException e) {
             log.error("Unable to load Spark function definitions", e);
             return Collections.emptyMap();
@@ -129,7 +145,7 @@ public class UiTemplateService {
 
         // Merge resources into map
         final Map<String, Object> merged = new LinkedHashMap<>();
-        merged.put("!name", "spark-functions");
+        merged.put("!name", name);
 
         for (final Resource resource : resources) {
             // Deserialize resource
@@ -138,7 +154,7 @@ public class UiTemplateService {
                 final String json = fileResourceService.resourceAsString(resource);
                 functions = (json != null) ? ObjectMapperSerializer.deserialize(json, Map.class) : null;
             } catch (final RuntimeException e) {
-                log.error("Failed to parse Spark functions: {}", resource.getFilename(), e);
+                log.error("Failed to parse {} functions: {}", name, resource.getFilename(), e);
             }
 
             // Merge definitions
@@ -146,7 +162,7 @@ public class UiTemplateService {
                 try {
                     merge(merged, functions, null);
                 } catch (final Exception e) {
-                    log.error("Failed to merge Spark functions: {}", resource.getFilename(), e);
+                    log.error("Failed to merge {} functions: {}", name, resource.getFilename(), e);
                 }
             }
         }

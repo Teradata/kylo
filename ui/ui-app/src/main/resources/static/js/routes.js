@@ -274,11 +274,14 @@ define(['angular', 'kylo-common', 'kylo-services',
 
         $stateProvider.state({
             name: 'visual-query.**',
-            url: '/visual-query{engine:.*}',
+            url: '/visual-query/{engine}',
+            params: {
+                engine: null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/visual-query/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('visual-query');
+                    $stateProvider.stateService.go('visual-query', transition.params());
                     return args;
                 }, function error(err) {
                     console.log("Error loading visual query", err);

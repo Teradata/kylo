@@ -19,8 +19,8 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
         /**
          * Constructs a {@code SparkQueryEngine}.
          */
-        function SparkQueryEngine($http, $timeout, DatasourcesService, HiveService, RestUrlService, VisualQueryService) {
-            var _this = _super.call(this, DatasourcesService) || this;
+        function SparkQueryEngine($http, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService) {
+            var _this = _super.call(this, $mdDialog, DatasourcesService, uiGridConstants) || this;
             _this.$http = $http;
             _this.$timeout = $timeout;
             _this.HiveService = HiveService;
@@ -32,12 +32,37 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
             $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
             return _this;
         }
+        Object.defineProperty(SparkQueryEngine.prototype, "allowLimitWithSample", {
+            /**
+             * Indicates if both limit and sample can be applied at the same time.
+             */
+            get: function () {
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SparkQueryEngine.prototype, "allowMultipleDataSources", {
             /**
              * Indicates if multiple data sources are allowed in the same query.
              */
             get: function () {
                 return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SparkQueryEngine.prototype, "sampleFormulas", {
+            /**
+             * Gets the sample formulas.
+             */
+            get: function () {
+                return [
+                    { name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))" },
+                    { name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)" },
+                    { name: "Pivot", formula: "groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))" },
+                    { name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))" }
+                ];
             },
             enumerable: true,
             configurable: true
@@ -53,6 +78,12 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
             configurable: true
         });
         /**
+         * Gets the field name for the specified column.
+         */
+        SparkQueryEngine.prototype.getColumnName = function (column) {
+            return column.displayName;
+        };
+        /**
          * Returns the data sources that are supported natively by this engine.
          */
         SparkQueryEngine.prototype.getNativeDataSources = function () {
@@ -67,10 +98,11 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
          * @returns the Spark script
          */
         SparkQueryEngine.prototype.getScript = function (start, end, sample) {
-            if (start === void 0) { start = 0; }
+            if (start === void 0) { start = null; }
             if (end === void 0) { end = null; }
             if (sample === void 0) { sample = true; }
             // Parse arguments
+            start = (start !== null) ? start : 0;
             end = (end !== null) ? end + 1 : this.states_.length;
             // Build script
             var sparkScript = "import org.apache.spark.sql._\n";

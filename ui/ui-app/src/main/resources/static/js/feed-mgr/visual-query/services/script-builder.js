@@ -118,7 +118,7 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
                 case "MemberExpression":
                     parent = this.parseExpression(node.callee.object);
                     // Find function definition
-                    var ternjsName = this.toTernjsName(new script_expression_type_1.ScriptExpressionType(parent.type));
+                    var ternjsName = this.toTernjsName(parent.type);
                     if (ternjsName !== null) {
                         def = this.functions[query_engine_constants_1.QueryEngineConstants.DEFINE_DIRECTIVE][ternjsName][node.callee.property.name];
                     }
@@ -135,7 +135,7 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
             // Convert to a Spark expression
             var args = [def, node].concat(node.arguments.map(this.parseExpression.bind(this)));
             var spark = this.createScriptExpressionFromDefinition.apply(this, args);
-            return (parent !== null) ? this.createScriptExpression(parent.source + spark.source, spark.type, spark.start, spark.end) : spark;
+            return (parent !== null) ? this.appendChildExpression(parent, spark) : spark;
         };
         /**
          * Converts the specified expression to a script expression object.
@@ -219,10 +219,10 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
             var def = null;
             switch (node.operator) {
                 case "-":
-                    if (arg.type === script_expression_type_1.ScriptExpressionType.COLUMN.toString()) {
+                    if (script_expression_type_1.ScriptExpressionType.COLUMN.equals(arg.type)) {
                         def = this.functions.negate;
                     }
-                    else if (arg.type === script_expression_type_1.ScriptExpressionType.LITERAL.toString()) {
+                    else if (script_expression_type_1.ScriptExpressionType.LITERAL.equals(arg.type)) {
                         return this.createScriptExpression("-" + arg.source, script_expression_type_1.ScriptExpressionType.LITERAL, arg.start, node.end);
                     }
                     break;

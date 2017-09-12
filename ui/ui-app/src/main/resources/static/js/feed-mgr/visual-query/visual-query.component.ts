@@ -56,8 +56,6 @@ class VisualQueryComponent implements OnDestroy {
         const engineName = (function (name) {
             if (name === null) {
                 return "spark";
-            } else if (name.startsWith("/")) {
-                return name.substr(1);
             } else {
                 return name;
             }

@@ -18,13 +18,12 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $http, $q, $mdDialog, RestUrlService, SideNavService, VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $http, $q, $mdDialog, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
             this.$scope = $scope;
             this.$http = $http;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
             this.RestUrlService = RestUrlService;
-            this.VisualQueryColumnDelegate = VisualQueryColumnDelegate;
             this.uiGridConstants = uiGridConstants;
             this.FeedService = FeedService;
             this.BroadcastService = BroadcastService;
@@ -84,6 +83,14 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             // Progress of transformation from 0 to 100
             this.queryProgress = 0;
             /**
+             * Method for limiting the number of results.
+             */
+            this.sampleMethod = "LIMIT";
+            /**
+             * List of sample formulas.
+             */
+            this.sampleFormulas = [];
+            /**
              * Called when the user clicks Add on the function bar
              */
             this.onAddFunction = function () {
@@ -111,6 +118,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             this.sql = this.model.sql;
             this.sqlModel = this.model.chartViewModel;
             this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
+            this.sampleFormulas = this.engine.sampleFormulas;
             // Select source model
             var useSqlModel = false;
             if (angular.isObject(this.sqlModel)) {
@@ -370,7 +378,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             var columns = [];
             var profile = this.engine.getProfile();
             angular.forEach(this.engine.getColumns(), function (col) {
-                var delegate = new self.VisualQueryColumnDelegate(col.dataType, self);
+                var delegate = self.engine.createColumnDelegate(col.dataType, self);
                 var longestValue = _.find(profile, function (row) {
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"));
                 });
@@ -380,7 +388,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                     filters: delegate.filters,
                     headerTooltip: col.hiveColumnLabel,
                     longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
-                    name: col.displayName
+                    name: self.engine.getColumnName(col)
                 });
             });
             //update the ag-grid
@@ -554,13 +562,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                 });
             }
             else if (changedSteps.newStep === thisIndex && this.sql == null) {
-                // TODO
-                // const functionDefs = this.engine.getFunctionDefs();
-                //
-                // this.sql = this.model.sql;
-                // this.engine.setQuery(this.sql, this.model.datasourceIds);
-                // this.engine.setFunctionDefs(functionDefs);
-                // this.query();
+                this.ngOnInit();
             }
         };
         /**
@@ -603,6 +605,17 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             }
             return deferred.promise;
         };
+        /**
+         * Reset the sample or limit value when the sample method changes.
+         */
+        TransformDataComponent.prototype.onSampleMethodChange = function () {
+            if (this.sampleMethod === "SAMPLE") {
+                this.engine.sample(0.1);
+            }
+            else if (this.sampleMethod === "LIMIT") {
+                this.engine.limit(1000);
+            }
+        };
         return TransformDataComponent;
     }());
     __decorate([
@@ -615,8 +628,8 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
     ], TransformDataComponent.prototype, "model", void 0);
     exports.TransformDataComponent = TransformDataComponent;
     angular.module(moduleName)
-        .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "VisualQueryColumnDelegate", "uiGridConstants",
-        "FeedService", "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
+        .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService",
+        "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
         .directive('thinkbigVisualQueryTransform', function () {
         return {
             bindToController: {

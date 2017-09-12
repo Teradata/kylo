@@ -8,6 +8,8 @@ import {Observable} from "rxjs/Observable";
 import {TableSchema} from "../../model/table-schema";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../services/VisualQueryService";
+import {ColumnDelegate} from "./column-delegate";
+import {TransformDataComponent} from "../transform-data.component";
 
 /**
  * Provides the ability to query and transform data.
@@ -57,8 +59,13 @@ export abstract class QueryEngine<T> {
     /**
      * Construct a {@code QueryEngine}.
      */
-    constructor(private DatasourcesService: DatasourcesServiceStatic.DatasourcesService) {
+    constructor(protected $mdDialog: angular.material.IDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any) {
     }
+
+    /**
+     * Indicates if both limit and sample can be applied at the same time.
+     */
+    abstract get allowLimitWithSample(): boolean;
 
     /**
      * Indicates if multiple data sources are allowed in the same query.
@@ -66,6 +73,11 @@ export abstract class QueryEngine<T> {
     get allowMultipleDataSources(): boolean {
         return false;
     }
+
+    /**
+     * Gets the sample formulas.
+     */
+    abstract get sampleFormulas(): {name: string, formula: string}[];
 
     /**
      * Gets the SQL dialect used by this engine.
@@ -88,6 +100,13 @@ export abstract class QueryEngine<T> {
      */
     canUndo(): boolean {
         return (this.states_.length > 1);
+    }
+
+    /**
+     * Creates a column delegate of the specified data type.
+     */
+    createColumnDelegate(dataType: string, controller: TransformDataComponent): ColumnDelegate {
+        return new ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants);
     }
 
     /**
@@ -136,6 +155,11 @@ export abstract class QueryEngine<T> {
         }
         return null;
     }
+
+    /**
+     * Gets the field name of the specified column.
+     */
+    abstract getColumnName(column: QueryResultColumn): string;
 
     /**
      * Gets the columns after applying the current transformation.
@@ -501,7 +525,7 @@ export abstract class QueryEngine<T> {
     /**
      * Gets the current state.
      */
-    private getState(): ScriptState<T> {
+    protected getState(): ScriptState<T> {
         return this.states_.length > 0 ? this.states_[this.states_.length - 1] : {} as ScriptState<T>;
     }
 

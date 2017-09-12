@@ -1,6 +1,7 @@
 import {QueryEngine} from "./query-engine"
 import {SparkQueryEngine} from "./spark/spark-query-engine";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
+import {TeradataQueryEngine} from "./teradata/teradata-query-engine";
 
 declare const angular: angular.IAngularStatic;
 
@@ -14,8 +15,9 @@ export class QueryEngineFactory {
     /**
      * Constructs a {@code QueryEngineFactory}.
      */
-    constructor(private $http: angular.IHttpService, private $timeout: angular.ITimeoutService, private DatasourcesService: DatasourcesServiceStatic.DatasourcesService,
-                private HiveService: any, private RestUrlService: any, private VisualQueryService: any) {
+    constructor(private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
+                private DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, private uiGridConstants: any,
+                private VisualQueryService: any) {
     }
 
     /**
@@ -27,12 +29,14 @@ export class QueryEngineFactory {
     getEngine(name: string): QueryEngine<any> {
         let standardName = name.toLowerCase();
         if (standardName === "spark") {
-            return new SparkQueryEngine(this.$http, this.$timeout, this.DatasourcesService, this.HiveService, this.RestUrlService, this.VisualQueryService);
+            return new SparkQueryEngine(this.$http, this.$mdDialog, this.$timeout, this.DatasourcesService, this.HiveService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
+        } else if (standardName === "teradata") {
+            return new TeradataQueryEngine(this.$http, this.$mdDialog, this.DatasourcesService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
         } else {
             throw new Error("Unsupported query engine: " + name);
         }
     }
 }
 
-angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "VisualQueryService",
-    QueryEngineFactory]);
+angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants",
+    "VisualQueryService", QueryEngineFactory]);

@@ -67,7 +67,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
             Array.prototype.push.apply(args, Array.prototype.slice.call(arguments, 2));
             var source = SparkExpression.format.apply(SparkExpression, args);
             // Return expression
-            return new SparkExpression(source, definition[SparkExpression.TYPE_DIRECTIVE], node.start, node.end);
+            return new SparkExpression(source, spark_expression_type_1.SparkExpressionType.valueOf(definition[SparkExpression.TYPE_DIRECTIVE]), node.start, node.end);
         };
         /**
          * Converts the next argument to the specified type for a Spark conversion string.
@@ -161,7 +161,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to an array
          */
         SparkExpression.toArray = function (expression, type) {
-            if (expression.type === spark_expression_type_1.SparkExpressionType.ARRAY) {
+            if (spark_expression_type_1.SparkExpressionType.ARRAY.equals(expression.type)) {
                 var source = expression.source;
                 return "Array(" + source
                     .map(function (e) {
@@ -181,7 +181,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a boolean
          */
         SparkExpression.toBoolean = function (expression) {
-            if (expression.type === spark_expression_type_1.SparkExpressionType.LITERAL && (expression.source === "true" || expression.source === "false")) {
+            if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type) && (expression.source === "true" || expression.source === "false")) {
                 return expression.source;
             }
             else {
@@ -196,14 +196,13 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a column
          */
         SparkExpression.toColumn = function (expression) {
-            switch (expression.type) {
-                case spark_expression_type_1.SparkExpressionType.COLUMN:
-                    return expression.source;
-                case spark_expression_type_1.SparkExpressionType.LITERAL:
-                    return "functions.lit(" + expression.source + ")";
-                default:
-                    throw new parse_exception_1.ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
+            if (spark_expression_type_1.SparkExpressionType.COLUMN.equals(expression.type)) {
+                return expression.source;
             }
+            if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type)) {
+                return "functions.lit(" + expression.source + ")";
+            }
+            throw new parse_exception_1.ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
         };
         /**
          * Converts the specified Spark expression to a DataFrame type.
@@ -213,12 +212,10 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a DataFrame
          */
         SparkExpression.toDataFrame = function (expression) {
-            switch (expression.type) {
-                case spark_expression_type_1.SparkExpressionType.DATA_FRAME:
-                    return spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + expression.source;
-                default:
-                    throw new parse_exception_1.ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
+            if (spark_expression_type_1.SparkExpressionType.DATA_FRAME.equals(expression.type)) {
+                return spark_constants_1.SparkConstants.DATA_FRAME_VARIABLE + expression.source;
             }
+            throw new parse_exception_1.ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
         };
         /**
          * Converts the specified Spark expression to a double.
@@ -228,7 +225,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a double
          */
         SparkExpression.toDouble = function (expression) {
-            if (expression.type === spark_expression_type_1.SparkExpressionType.LITERAL && expression.source.match(/^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/) !== null) {
+            if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type) && expression.source.match(/^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/) !== null) {
                 return expression.source;
             }
             else {
@@ -243,7 +240,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a number
          */
         SparkExpression.toInteger = function (expression) {
-            if (expression.type === spark_expression_type_1.SparkExpressionType.LITERAL && expression.source.match(/^(0|-?[1-9][0-9]*)$/) !== null) {
+            if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type) && expression.source.match(/^(0|-?[1-9][0-9]*)$/) !== null) {
                 return expression.source;
             }
             else {
@@ -261,7 +258,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
             if (spark_expression_type_1.SparkExpressionType.isObject(expression.type.toString())) {
                 return expression.source;
             }
-            else if (expression.type == spark_expression_type_1.SparkExpressionType.LITERAL) {
+            else if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type)) {
                 if (expression.source.charAt(0) === "\"" || expression.source.charAt(0) === "'") {
                     return SparkExpression.toString(expression);
                 }
@@ -281,7 +278,7 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
          * @throws {ParseException} if the expression cannot be converted to a string
          */
         SparkExpression.toString = function (expression) {
-            if (expression.type !== spark_expression_type_1.SparkExpressionType.LITERAL) {
+            if (!spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type)) {
                 throw new parse_exception_1.ParseException("Expression cannot be converted to a string: " + expression.type, expression.start);
             }
             if (expression.source.charAt(0) === "\"") {
