@@ -21,6 +21,7 @@ package com.thinkbiganalytics.integration.access;
  */
 
 import com.jayway.restassured.response.Response;
+import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -33,6 +34,7 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.Action;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import org.junit.Assert;
@@ -44,6 +46,7 @@ import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static com.thinkbiganalytics.integration.UserContext.User.ANALYST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Asserts that Category, Template and Feeds are only accessible when given permission to do so.
@@ -61,9 +64,10 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
     private static final String FEED_EDIT_FORBIDDEN = "Error saving Feed Not authorized to perform the action: Edit Feeds";
     private static final String FEED_NOT_FOUND = "Error saving Feed Feed not found for id";
+    private static final String TEST_FILE = "access.txt";
 
     private FeedCategory category;
-    private ExportImportTemplateService.ImportTemplate ingestTemplate;
+    private ExportImportTemplateService.ImportTemplate template;
     private FeedMetadata feed;
 
     @Test
@@ -151,12 +155,6 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         assertAnalystCantAccessCategories();
         assertAnalystCantAccessTemplates();
         assertAnalystCantAccessFeeds();
-    }
-
-    @Override
-    public void teardown() {
-        LOG.debug("EntityLevelAccessIT.teardown");
-        super.teardown();
     }
 
     @Override
@@ -274,7 +272,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     }
 
     private FeedMetadata getEditFeedRequest() {
-        FeedMetadata editFeedRequest = getCreateFeedRequest(category, ingestTemplate, feed.getFeedName());
+        FeedMetadata editFeedRequest = makeCreateFeedRequest(category, template, feed.getFeedName(), TEST_FILE);
         editFeedRequest.setId(feed.getId());
         editFeedRequest.setFeedId(feed.getFeedId());
         editFeedRequest.setDescription("New Description");
@@ -299,7 +297,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void createFeedWithAdmin() {
         LOG.debug("EntityLevelAccessIT.createFeedWithAdmin");
         runAs(ADMIN);
-        FeedMetadata feedRequest = getCreateFeedRequest(category, ingestTemplate, "Feed A");
+        FeedMetadata feedRequest = makeCreateFeedRequest(category, template, "Feed A", TEST_FILE);
         feed = createFeed(feedRequest).getFeedMetadata();
     }
 
@@ -313,7 +311,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void createTemplateWithAdmin() {
         LOG.debug("EntityLevelAccessIT.createTemplateWithAdmin");
         runAs(ADMIN);
-        ingestTemplate = importDataIngestTemplate();
+        template = importSimpleTemplate();
     }
 
     private void assertAnalystCanAccessCategoriesButCantSeeCategory() {
@@ -449,9 +447,18 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void grantCategoryEntityPermissionToAnalysts(String roleName) {
         LOG.debug("EntityLevelAccessIT.grantCategoryEntityPermissionToAnalysts " + roleName);
         runAs(ADMIN);
-        RoleMembershipChange roleChange = new RoleMembershipChange(RoleMembershipChange.ChangeType.REPLACE, roleName);
-        roleChange.addGroup(GROUP_ANALYSTS);
-        setCategoryEntityPermissions(roleChange, category.getId());
+        RoleMembership roleMembership = category.getRoleMemberships().stream().filter(r -> r.getRole().getSystemName().equalsIgnoreCase(roleName)).findFirst().orElse(null);
+        if(roleMembership == null) {
+            roleMembership =new RoleMembership(roleName,roleName,roleName);
+            category.getRoleMemberships().add(roleMembership);
+        }
+        roleMembership.addGroup(GROUP_ANALYSTS);
+        Response response = given(FeedCategoryRestController.BASE)
+            .body(category)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
     }
 
     private void revokeFeedEntityPermissionsFromAnalysts() {

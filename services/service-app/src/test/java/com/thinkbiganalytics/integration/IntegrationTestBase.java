@@ -20,6 +20,7 @@ package com.thinkbiganalytics.integration;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -32,8 +33,7 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
-import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
-import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
@@ -45,27 +45,20 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.Tag;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
-
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
+import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
-import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
-import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.security.rest.controller.AccessControlController;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -73,7 +66,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.optional.ssh.SSHBase;
 import org.apache.tools.ant.taskdefs.optional.ssh.SSHExec;
 import org.apache.tools.ant.taskdefs.optional.ssh.Scp;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -84,17 +76,17 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -107,15 +99,9 @@ public class IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestBase.class);
 
-    private static final String SAMPLES_DIR = "/samples";
-    private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
-    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
-    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final int PROCESSOR_STOP_WAIT_DELAY = 10;
-    private static final String DATA_INGEST_ZIP = "data_ingest.zip";
-    private static final String VAR_DROPZONE = "/var/dropzone";
-    private static final String USERDATA1_CSV = "userdata1.csv";
-
+    private static final String GET_FILE_LOG_ATTRIBUTE_TEMPLATE_ZIP = "get-file-log-attribute.template.zip";
+    private static final String FUNCTIONAL_TESTS = "Functional Tests";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
@@ -124,13 +110,6 @@ public class IntegrationTestBase {
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
     private SshConfig sshConfig;
-
-    private String feedsPath;
-    private String templatesPath;
-    private String usersDataPath;
-
-    private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
-    private FieldValidationRule email = new FieldValidationRule();
 
     protected void runAs(UserContext.User user) {
         UserContext.setUser(user);
@@ -151,7 +130,7 @@ public class IntegrationTestBase {
             om.registerModule(new JodaModule());
             om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
+            om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             configureObjectMapper(om);
 
             return om;
@@ -159,34 +138,75 @@ public class IntegrationTestBase {
         com.jayway.restassured.mapper.ObjectMapper objectMapper = new Jackson2Mapper(factory);
         RestAssured.objectMapper(objectMapper);
 
-
-        String path = getClass().getResource(".").toURI().getPath();
-        String basedir = path.substring(0, path.indexOf("services"));
-        feedsPath = basedir + FEED_SAMPLES_DIR;
-        templatesPath = basedir + TEMPLATE_SAMPLES_DIR;
-        usersDataPath = basedir + DATA_SAMPLES_DIR;
-
-        toUpperCase.setName("Uppercase");
-        toUpperCase.setDisplayName("Uppercase");
-        toUpperCase.setDescription("Convert string to uppercase");
-        toUpperCase.setObjectClassType("com.thinkbiganalytics.policy.standardization.UppercaseStandardizer");
-        toUpperCase.setObjectShortClassType("UppercaseStandardizer");
-
-        email.setName("email");
-        email.setDisplayName("Email");
-        email.setDescription("Valid email address");
-        email.setObjectClassType("com.thinkbiganalytics.policy.validation.EmailValidator");
-        email.setObjectShortClassType("EmailValidator");
-
         startClean();
     }
 
-    @After
-    public void teardown() {
-        cleanup();
+    protected FeedMetadata createSimpleFeed(String feedName, String testFile) {
+        FeedCategory category = createCategory(FUNCTIONAL_TESTS);
+        ExportImportTemplateService.ImportTemplate template = importSimpleTemplate();
+        FeedMetadata request = makeCreateFeedRequest(category, template, feedName, testFile);
+        FeedMetadata response = createFeed(request).getFeedMetadata();
+        Assert.assertEquals(request.getFeedName(), response.getFeedName());
+        return response;
     }
 
-    private void startClean() {
+    protected FeedMetadata makeCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name, String testFile) {
+        FeedMetadata feed = new FeedMetadata();
+        feed.setFeedName(name);
+        feed.setSystemFeedName(name.toLowerCase());
+        feed.setCategory(category);
+        feed.setTemplateId(template.getTemplateId());
+        feed.setTemplateName(template.getTemplateName());
+        feed.setDescription("Created by functional test");
+        feed.setInputProcessorType("org.apache.nifi.processors.standard.GetFile");
+
+        List<NifiProperty> properties = new ArrayList<>();
+        NifiProperty fileFilter = new NifiProperty("b6b20dc3-8489-3770-0000-000000000000", "cffa8f24-d097-3c7a-0000-000000000000", "File Filter", testFile);
+        fileFilter.setProcessGroupName("NiFi Flow");
+        fileFilter.setProcessorName("Filesystem");
+        fileFilter.setProcessorType("org.apache.nifi.processors.standard.GetFile");
+        fileFilter.setTemplateValue("mydata\\d{1,3}.csv");
+        fileFilter.setInputProperty(true);
+        fileFilter.setUserEditable(true);
+        properties.add(fileFilter);
+
+        feed.setProperties(properties);
+
+        FeedSchedule schedule = new FeedSchedule();
+        schedule.setConcurrentTasks(1);
+        schedule.setSchedulingPeriod("15 sec");
+        schedule.setSchedulingStrategy("TIMER_DRIVEN");
+        feed.setSchedule(schedule);
+
+        feed.setDataOwner("Marketing");
+
+        return feed;
+    }
+
+    protected void copyDataToDropzone(String testFileName) {
+        ssh("sudo touch /var/dropzone/" + testFileName);
+        ssh("sudo chown -R nifi:nifi /var/dropzone");
+    }
+
+    protected void waitForFeedToComplete() {
+        waitFor(20, TimeUnit.SECONDS, "for feed to complete");
+    }
+
+    protected List<FieldRuleProperty> newFieldRuleProperties(FieldRuleProperty... props) {
+        List<FieldRuleProperty> lengthProps = new ArrayList<>(props.length);
+        lengthProps.addAll(Arrays.asList(props));
+        return lengthProps;
+    }
+
+    protected FieldRuleProperty newFieldRuleProperty(String name, String objectProperty, String value) {
+        FieldRuleProperty list = new FieldRuleProperty();
+        list.setName(name);
+        list.setObjectProperty(objectProperty);
+        list.setValue(value);
+        return list;
+    }
+
+    protected void startClean() {
         cleanup();
     }
 
@@ -359,53 +379,24 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importDataIngestTemplate() {
-        return importFeedTemplate(DATA_INGEST_ZIP);
-    }
-
-    protected ExportImportTemplateService.ImportTemplate importFeedTemplate(String templateName) {
-        LOG.info("Importing feed template {}", templateName);
-
-        //get number of templates already there
-        int existingTemplateNum = getTemplates().length;
-
-        //import standard feedTemplate template
-        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templateName);
-        Assert.assertEquals(templateName, feedTemplate.getFileName());
-        Assert.assertTrue(feedTemplate.isSuccess());
-
-        //assert new template is there
-        RegisteredTemplate[] templates = getTemplates();
-        Assert.assertTrue(templates.length == existingTemplateNum + 1);
-        return feedTemplate;
-    }
-
-    protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed schemaIndex = importFeed("index_schema_service_elasticsearch.feed.zip");
-        enableFeed(schemaIndex.getNifiFeed().getFeedMetadata().getFeedId());
-
-        ExportImportFeedService.ImportFeed textIndex = importFeed("index_text_service_elasticsearch.feed.zip");
-        enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
-    }
-
     protected int getTotalNumberOfRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "TOTAL_COUNT");
+        return getProfileSummary(feedId, "TOTAL_COUNT");
     }
 
     protected int getNumberOfValidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "VALID_COUNT");
+        return getProfileSummary(feedId, "VALID_COUNT");
     }
 
     protected int getNumberOfInvalidRecords(String feedId) {
-        return getMetricvalueOfMetricType(feedId, "INVALID_COUNT");
+        return getProfileSummary(feedId, "INVALID_COUNT");
     }
 
     protected String getProcessingDttm(String feedId) {
         return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
     }
 
-    protected int getMetricvalueOfMetricType(String feedId, String metricType) {
-        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + metricType + "'}.metricvalue"));
+    protected int getProfileSummary(String feedId, String profileType) {
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
     }
 
     protected String getJsonPathOfProfileSummary(String feedId, String path) {
@@ -418,6 +409,16 @@ public class IntegrationTestBase {
         return JsonPath.from(response.asString()).getString(path);
     }
 
+    protected String getProfileStatsForColumn(String feedId, String processingDttm, String profileType, String column) {
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-stats?processingdttm=%s", feedId, processingDttm));
+
+        response.then().statusCode(HTTP_OK);
+
+        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
+        return JsonPath.from(response.asString()).getString(path);
+    }
 
     protected DefaultExecutedJob getJobWithSteps(long executionId) {
         //http://localhost:8400/proxy/v1/jobs
@@ -463,33 +464,8 @@ public class IntegrationTestBase {
         return part;
     }
 
-    protected FieldPolicy newPolicyWithValidation(String fieldName, FieldValidationRule... rules) {
-        FieldPolicy policy = newEmptyPolicy(fieldName);
-        List<FieldValidationRule> validationRules = new ArrayList<>();
-        if (rules != null) {
-            Collections.addAll(validationRules, rules);
-        }
-        policy.setValidation(validationRules);
-        return policy;
-    }
-
-    protected FieldPolicy newPolicyWithProfileAndIndex(String fieldName, FieldStandardizationRule... rules) {
-        FieldPolicy policy = newEmptyPolicy(fieldName);
-        policy.setProfile(true);
-        policy.setIndex(true);
-        List<FieldStandardizationRule> standardisation = new ArrayList<>();
-        if (rules != null) {
-            Collections.addAll(standardisation, rules);
-        }
-        policy.setStandardization(standardisation);
-        return policy;
-    }
-
-    protected FieldPolicy newEmptyPolicy(String fieldName) {
-        FieldPolicy policy = new FieldPolicy();
-        policy.setFieldName(fieldName);
-        policy.setFeedFieldName(fieldName);
-        return policy;
+    protected FieldPolicyRuleBuilder newPolicyBuilder(String fieldName) {
+        return new FieldPolicyRuleBuilder(fieldName);
     }
 
     protected DefaultField newStringField(String name) {
@@ -500,6 +476,10 @@ public class IntegrationTestBase {
         return newNamedField(name, new DefaultDataTypeDescriptor(), "timestamp");
     }
 
+    protected DefaultField newBinaryField(String name) {
+        return newNamedField(name, new DefaultDataTypeDescriptor(), "binary");
+    }
+
     protected DefaultField newBigIntField(String name) {
         DefaultDataTypeDescriptor numericDescriptor = new DefaultDataTypeDescriptor();
         numericDescriptor.setNumeric(true);
@@ -507,11 +487,11 @@ public class IntegrationTestBase {
         return newNamedField(name, numericDescriptor, "bigint");
     }
 
-    protected DefaultField newNamedField(String name, DefaultDataTypeDescriptor numericDescriptor, String bigint) {
+    protected DefaultField newNamedField(String name, DefaultDataTypeDescriptor typeDescriptor, String type) {
         DefaultField field = new DefaultField();
         field.setName(name);
-        field.setDerivedDataType(bigint);
-        field.setDataTypeDescriptor(numericDescriptor);
+        field.setDerivedDataType(type);
+        field.setDataTypeDescriptor(typeDescriptor);
         return field;
     }
 
@@ -527,6 +507,23 @@ public class IntegrationTestBase {
             .get();
 
         response.then().statusCode(expectedStatusCode);
+        return response;
+    }
+
+    protected FeedCategory getorCreateCategoryByName(String name) {
+        Response response = getCategoryByName(name);
+        if (response.statusCode() == HTTP_BAD_REQUEST) {
+            return createCategory(name);
+        } else {
+            return response.as(FeedCategory.class);
+        }
+    }
+
+    protected Response getCategoryByName(String categoryName) {
+        String url = String.format("/by-name/%s", categoryName);
+        Response response = given(FeedCategoryRestController.BASE)
+            .when()
+            .get(url);
         return response;
     }
 
@@ -561,12 +558,12 @@ public class IntegrationTestBase {
     }
 
 
-    protected ExportImportFeedService.ImportFeed importFeed(String feedName) {
-        LOG.info("Importing feed {}", feedName);
+    protected ExportImportFeedService.ImportFeed importFeed(String feedPath) {
+        LOG.info("Importing feed {}", feedPath);
 
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
-            .multiPart(new File(feedsPath + feedName))
+            .multiPart(new File(feedPath))
             .multiPart("overwrite", true)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_FEED);
@@ -576,10 +573,17 @@ public class IntegrationTestBase {
         return post.as(ExportImportFeedService.ImportFeed.class);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importTemplate(String templateName) {
+    protected ExportImportTemplateService.ImportTemplate importSimpleTemplate() {
+        URL resource = IntegrationTestBase.class.getResource(GET_FILE_LOG_ATTRIBUTE_TEMPLATE_ZIP);
+        return importTemplate(resource.getPath());
+    }
+
+    protected ExportImportTemplateService.ImportTemplate importTemplate(String templatePath) {
+        LOG.info("Importing template {}", templatePath);
+
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
-            .multiPart(new File(templatesPath + templateName))
+            .multiPart(new File(templatePath))
             .multiPart("overwrite", true)
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
@@ -591,7 +595,10 @@ public class IntegrationTestBase {
     }
 
     protected FeedSummary[] getFeeds() {
-        return getFeedsExpectingStatus(HTTP_OK).as(FeedSummary[].class);
+        final ObjectMapper mapper = new ObjectMapper();
+        FeedSummary[] searchResult = getFeedsExpectingStatus(HTTP_OK).as(FeedSummary[].class);
+        return searchResult;
+        // return searchResult.getData().stream().map(o -> mapper.convertValue(o, FeedSummary.class)).toArray(FeedSummary[]::new);
     }
 
     protected Response getFeedsExpectingStatus(int expectedStatusCode) {
@@ -697,7 +704,7 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
     }
 
-    protected void assertHiveSchema(String schemaName, String tableName) {
+    protected DefaultHiveSchema getHiveSchema(String schemaName, String tableName) {
         LOG.info("Asserting hive schema");
 
         Response response = given(HiveRestController.BASE)
@@ -705,6 +712,7 @@ public class IntegrationTestBase {
             .get(String.format("/schemas/%s/tables/%s", schemaName, tableName));
 
         response.then().statusCode(HTTP_OK);
+        return response.as(DefaultHiveSchema.class);
     }
 
     protected void assertHiveTables(final String schemaName, final String tableName) {
@@ -717,8 +725,6 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
 
         String[] tables = response.as(String[].class);
-        Assert.assertEquals(5, tables.length);
-
         List<String> tableNames = Arrays.asList(tables);
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName));
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_feed"));
@@ -727,140 +733,17 @@ public class IntegrationTestBase {
         Assert.assertTrue(tableNames.contains(schemaName + "." + tableName + "_invalid"));
     }
 
-    protected void assertHiveQuery(String schemaName, String tableName) {
+    protected List<HashMap<String, String>> getHiveQuery(String query) {
         LOG.info("Asserting hive query");
 
         int limit = 10;
         Response response = given(HiveRestController.BASE)
             .when()
-            .get("/query-result?query=SELECT * FROM " + schemaName + "." + tableName + " LIMIT " + limit);
+            .get("/query-result?query=" + query);
 
         response.then().statusCode(HTTP_OK);
 
-        List rows = JsonPath.from(response.asString()).getList("rows");
-        Assert.assertEquals(limit, rows.size());
-    }
-
-    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
-        FeedMetadata feed = new FeedMetadata();
-        feed.setFeedName(name);
-        feed.setSystemFeedName(name.toLowerCase());
-        feed.setCategory(category);
-        feed.setTemplateId(template.getTemplateId());
-        feed.setTemplateName(template.getTemplateName());
-        feed.setDescription("Created by functional test");
-        feed.setInputProcessorType("org.apache.nifi.processors.standard.GetFile");
-
-        List<NifiProperty> properties = new ArrayList<>();
-        NifiProperty fileFilter = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "File Filter", USERDATA1_CSV);
-        fileFilter.setProcessGroupName("NiFi Flow");
-        fileFilter.setProcessorName("Filesystem");
-        fileFilter.setProcessorType("org.apache.nifi.processors.standard.GetFile");
-        fileFilter.setTemplateValue("mydata\\d{1,3}.csv");
-        fileFilter.setInputProperty(true);
-        fileFilter.setUserEditable(true);
-        properties.add(fileFilter);
-
-        NifiProperty inputDir = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "Input Directory", VAR_DROPZONE);
-        inputDir.setProcessGroupName("NiFi Flow");
-        inputDir.setProcessorName("Filesystem");
-        inputDir.setProcessorType("org.apache.nifi.processors.standard.GetFile");
-        inputDir.setInputProperty(true);
-        inputDir.setUserEditable(true);
-        properties.add(inputDir);
-
-        NifiProperty loadStrategy = new NifiProperty("305363d8-015a-1000-0000-000000000000", "6aeabec7-ec36-4ed5-0000-000000000000", "Load Strategy", "FULL_LOAD");
-        loadStrategy.setProcessorType("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
-        properties.add(loadStrategy);
-
-        feed.setProperties(properties);
-
-        FeedSchedule schedule = new FeedSchedule();
-        schedule.setConcurrentTasks(1);
-        schedule.setSchedulingPeriod("15 sec");
-        schedule.setSchedulingStrategy("TIMER_DRIVEN");
-        feed.setSchedule(schedule);
-
-        TableSetup table = new TableSetup();
-        DefaultTableSchema schema = new DefaultTableSchema();
-        schema.setName("test1");
-        List<Field> fields = new ArrayList<>();
-        fields.add(newTimestampField("registration_dttm"));
-        fields.add(newBigIntField("id"));
-        fields.add(newStringField("first_name"));
-        fields.add(newStringField("last_name"));
-        fields.add(newStringField("email"));
-        fields.add(newStringField("gender"));
-        fields.add(newStringField("ip_address"));
-        fields.add(newStringField("cc"));
-        fields.add(newStringField("country"));
-        fields.add(newStringField("birthdate"));
-        fields.add(newStringField("salary"));
-        fields.add(newStringField("title"));
-        fields.add(newStringField("comments"));
-        schema.setFields(fields);
-
-        table.setTableSchema(schema);
-        table.setSourceTableSchema(schema);
-        table.setFeedTableSchema(schema);
-        table.setTargetMergeStrategy("DEDUPE_AND_MERGE");
-        table.setFeedFormat("ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES ( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE");
-        table.setTargetFormat("STORED AS ORC");
-
-        List<FieldPolicy> policies = new ArrayList<>();
-        policies.add(newEmptyPolicy("registration_dttm"));
-        policies.add(newEmptyPolicy("id"));
-        policies.add(newPolicyWithProfileAndIndex("first_name", toUpperCase));
-        policies.add(newPolicyWithProfileAndIndex("last_name"));
-        policies.add(newPolicyWithValidation("email", email));
-        policies.add(newEmptyPolicy("gender"));
-        policies.add(newEmptyPolicy("ip_address"));
-        policies.add(newEmptyPolicy("cc"));
-        policies.add(newEmptyPolicy("country"));
-        policies.add(newEmptyPolicy("birthdate"));
-        policies.add(newEmptyPolicy("salary"));
-        policies.add(newEmptyPolicy("title"));
-        policies.add(newEmptyPolicy("comments"));
-        table.setFieldPolicies(policies);
-
-        List<PartitionField> partitions = new ArrayList<>();
-        partitions.add(byYear("registration_dttm"));
-        table.setPartitions(partitions);
-
-        TableOptions options = new TableOptions();
-        options.setCompressionFormat("SNAPPY");
-        options.setAuditLogging(true);
-        table.setOptions(options);
-
-        table.setTableType("SNAPSHOT");
-        feed.setTable(table);
-
-        feed.setDataOwner("Marketing");
-
-        List<Tag> tags = new ArrayList<>();
-        tags.add(new Tag("users"));
-        tags.add(new Tag("registrations"));
-        feed.setTags(tags);
-
-        UserPrincipal owner = new UserPrincipal();
-        owner.setSystemName("dladmin");
-        owner.setDisplayName("Data Lake Admin");
-        Set<String> groups = new HashSet<>();
-        groups.add("admin");
-        groups.add("user");
-        owner.setGroups(groups);
-        feed.setOwner(owner);
-
-        return feed;
-    }
-
-    protected void copyDataToDropzone() {
-        LOG.info("Copying data to dropzone");
-
-        //drop files in dropzone to run the feed
-        ssh(String.format("sudo chmod a+w %s", VAR_DROPZONE));
-        scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
-        ssh(String.format("sudo chown -R nifi:nifi %s", VAR_DROPZONE));
+        return JsonPath.from(response.asString()).getList("rows");
     }
 
     protected ActionGroup getServicePermissions(String group) {
@@ -911,6 +794,17 @@ public class IntegrationTestBase {
 
         response.then().statusCode(httpStatus);
         return response;
+    }
+
+
+    protected void assertValidatorResults(String feedId, String processingDttm, String validator, int invalidRowCount) {
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/profile-invalid-results?filter=%s&limit=100&processingdttm=%s", feedId, validator, processingDttm));
+
+        response.then().statusCode(HTTP_OK);
+        Object[] result = response.as(Object[].class);
+        Assert.assertEquals(invalidRowCount, result.length);
     }
 
 

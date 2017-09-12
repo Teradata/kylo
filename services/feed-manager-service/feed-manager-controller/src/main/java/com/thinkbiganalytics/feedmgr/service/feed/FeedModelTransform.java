@@ -217,7 +217,9 @@ public class FeedModelTransform {
         domain.setSecurityGroups(securityGroups);
 
         domain.setVersionName(feedMetadata.getVersionName());
-        domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+        if(feedMetadata.getTags() != null) {
+            domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+        }
         return domain;
     }
 
