@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -106,6 +108,7 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
             }
             group.accept(orderVisitor);
             finalCache.add(orderVisitor.toCachedItem());
+           group.setConnections(cache.getCache().get(processGroupEntity.getId()).getAllConnections().stream().map(c -> c.getDto()).collect(Collectors.toSet()));
         }
         return group;
     }

@@ -358,4 +358,8 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
     public Set<ConnectionDTO> getConnections() {
         return connections;
     }
+
+    public void setConnections(Set<ConnectionDTO> connections) {
+        this.connections = connections;
+    }
 }
