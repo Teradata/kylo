@@ -308,7 +308,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
             CategoriesService.save(model).then(function (response) {
                 self.systemNameEditable = false;
-                CategoriesService.reload();
+                CategoriesService.update(response.data);
                 self.model = CategoriesService.model = response.data;
                 $mdToast.show(
                     $mdToast.simple()

@@ -104,7 +104,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             final Category.ID domainId = categoryProvider.resolveId(id);
             final Category domainCategory = categoryProvider.findById(domainId);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory,true);
         });
     }
 
@@ -114,7 +114,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             final Category domainCategory = categoryProvider.findBySystemName(name);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory,true);
         });
     }
 

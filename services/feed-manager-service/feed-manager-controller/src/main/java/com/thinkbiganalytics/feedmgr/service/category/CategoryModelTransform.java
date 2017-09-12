@@ -81,6 +81,10 @@ public class CategoryModelTransform {
         return domainToFeedCategory(domainCategory, categoryProvider.getUserFields());
     }
 
+    public FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, boolean includeFeedDetails) {
+        return domainToFeedCategory(domainCategory, categoryProvider.getUserFields(),includeFeedDetails);
+    }
+
     /**
      * Transforms the specified Metadata categories into Feed Manager categories.
      *
