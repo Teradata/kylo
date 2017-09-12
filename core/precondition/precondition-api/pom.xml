@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-precondition</artifactId>
-    <version>0.8.2.2-SNAPSHOT</version>
+    <version>0.8.2.2</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
