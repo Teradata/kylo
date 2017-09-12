@@ -51,6 +51,7 @@ public class NifiFlowCacheSnapshot {
     private Map<String, String> connectionIdToConnectionName = new ConcurrentHashMap<>();
     private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
     private Set<String> allStreamingFeeds = new HashSet<>();
+    private Set<String> reusableTemplateProcessorIds = new HashSet<>();
     /**
      * Set of the category.feed names
      */
@@ -145,6 +146,14 @@ public class NifiFlowCacheSnapshot {
         this.connectionIdToConnection = connectionIdToConnection;
     }
 
+    public Set<String> getReusableTemplateProcessorIds() {
+        return reusableTemplateProcessorIds;
+    }
+
+    public void setReusableTemplateProcessorIds(Set<String> reusableTemplateProcessorIds) {
+        this.reusableTemplateProcessorIds = reusableTemplateProcessorIds;
+    }
+
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
         processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
@@ -154,6 +163,7 @@ public class NifiFlowCacheSnapshot {
         snapshotDate = syncSnapshot.getSnapshotDate();
         connectionIdToConnection.putAll(syncSnapshot.getConnectionIdToConnection());
         connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
+        reusableTemplateProcessorIds.addAll(syncSnapshot.getReusableTemplateProcessorIds());
     }
 
     public static class Builder {
@@ -174,6 +184,7 @@ public class NifiFlowCacheSnapshot {
          */
         private Set<String> allFeeds = new HashSet<>();
 
+        private Set<String> reusableTemplateProcessorIds = new HashSet<>();
         private DateTime snapshotDate;
 
 
@@ -206,6 +217,11 @@ public class NifiFlowCacheSnapshot {
 
         public Builder withFeeds(Set<String> feeds) {
             this.allFeeds = feeds;
+            return this;
+        }
+
+        public Builder withReusableTemplateProcessorIds(Set<String> processorIds) {
+            this.reusableTemplateProcessorIds = processorIds;
             return this;
         }
 

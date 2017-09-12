@@ -807,7 +807,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return relatedRootFlowFilesRepository.findRelatedFlowFiles(flowFileId);
     }
 
-    public void notifyFailure(BatchJobExecution jobExecution, String feedName, String status) {
+    public void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream,String status) {
         if (feedName == null) {
             feedName = jobExecution.getJobInstance().getFeed().getName();
         }
@@ -819,7 +819,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-    public void notifySuccess(BatchJobExecution jobExecution, String feedName, String status) {
+    public void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream,String status) {
         if (feedName == null) {
             feedName = jobExecution.getJobInstance().getFeed().getName();
         }
