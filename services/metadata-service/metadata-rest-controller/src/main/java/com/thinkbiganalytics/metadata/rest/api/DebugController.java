@@ -275,10 +275,7 @@ public class DebugController {
         });
     }
 
-    @POST
-    @Path("jcr-index/reindex")
-    @Produces(MediaType.APPLICATION_JSON)
-    public RestResponseStatus unregisterIndex() {
+    private RestResponseStatus reindex() {
         return metadata.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -289,8 +286,24 @@ public class DebugController {
                 throw new RuntimeException(e);
             }
         });
+
     }
 
+    @POST
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus postReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+      return  reindex();
+    }
+
+    @GET
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus getReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+        return reindex();
+    }
 
     /**
      * Prints the subgraph of the node in JCR with the specified ID.
