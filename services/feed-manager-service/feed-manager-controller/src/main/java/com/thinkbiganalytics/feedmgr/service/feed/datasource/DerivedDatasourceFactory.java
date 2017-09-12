@@ -262,7 +262,7 @@ public class DerivedDatasourceFactory {
     private List<String> getFeedInputProcessorTypes(FeedMetadata feedMetadata) {
         List<String> types = new ArrayList<>();
         types.add(feedMetadata.getInputProcessorType());
-        if (feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")) {
+        if (feedMetadata != null && "com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark".equalsIgnoreCase(feedMetadata.getInputProcessorType())) {
             types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
             types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         }
