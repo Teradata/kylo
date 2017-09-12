@@ -54,6 +54,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
@@ -574,6 +575,7 @@ public class IntegrationTestBase {
 
         FeedCategory category = new FeedCategory();
         category.setName(name);
+        category.setSystemName(SystemNamingService.generateSystemName(name));
         category.setDescription("this category was created by functional test");
         category.setIcon("account_balance");
         category.setIconColor("#FF8A65");
