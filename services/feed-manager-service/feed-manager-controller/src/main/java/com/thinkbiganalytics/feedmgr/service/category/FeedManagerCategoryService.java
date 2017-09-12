@@ -51,6 +51,8 @@ public interface FeedManagerCategoryService {
 
     Collection<FeedCategory> getCategories();
 
+    Collection<FeedCategory> getCategories(boolean includeFeedDetails);
+
     FeedCategory getCategoryById(String id);
 
     FeedCategory getCategoryBySystemName(String name);

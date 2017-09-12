@@ -64,13 +64,6 @@
                     <ng-md-icon icon="block" class="disabled" ng-if="!item.createFeed"></ng-md-icon>
                     <span> {{item.name}} </span>
                   </span>
-                  <span class="item-metadata">
-                    <span class="item-metastat"  ng-if="item.createFeed">
-                       <strong>{{item.relatedFeeds}}</strong> Related Feeds
-                    </span>
-                      <span class="item-metastat"  ng-if="!item.createFeed">
-                    </span>
-                  </span>
                         </md-item-template>
                         <md-not-found>
                             No categories matching "{{vm.categorySearchText}}" were found.
