@@ -92,6 +92,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         function matchInputProcessor(inputProcessor, inputProcessors){
 
+            if (inputProcessor == null) {
+                //input processor is null when feed is being created
+                return undefined;
+            }
+
            var matchingInput = _.find(inputProcessors,function(input) {
                 if(input.id == inputProcessor.id){
                     return true;
