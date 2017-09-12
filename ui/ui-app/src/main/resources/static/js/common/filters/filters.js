@@ -199,4 +199,26 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             return time;
         };
     }]);
+
+
+    angular.module(moduleName).filter('timeWithMillis', ['Utils', function (Utils) {
+        return function (timeInMs) {
+            if(angular.isDefined(timeInMs)) {
+                return moment.utc(timeInMs).format("mm:ss.SSS");
+            }
+            return '';
+        };
+    }]);
+
+    angular.module(moduleName).filter('titleCase', [function() {
+        return function(input) {
+            input = input || '';
+            return input.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        };
+    }]);
+
+
+
+
+
 });

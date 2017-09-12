@@ -49,6 +49,8 @@ public interface NiFiFlowVisitorClient {
 
     List<NifiFlowProcessGroup> getFeedFlows();
 
+    List<NifiFlowProcessGroup> getFeedFlowsWithCache(NifiConnectionOrderVisitorCache cache);
+
     List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames);
 
     Set<ProcessorDTO> getProcessorsForFlow(String processGroupId);

@@ -13,6 +13,10 @@ angular.module(moduleName).factory('ServicesStatusData',
 
             ServicesStatusData.fetchServiceStatusErrorCount = 0;
 
+            ServicesStatusData.setFetchTimeout = function(timeout){
+                ServicesStatusData.FETCH_INTERVAL = timeout;
+            }
+
             ServicesStatusData.fetchServiceStatus = function (successCallback, errorCallback) {
 
                 var successFn = function (response) {

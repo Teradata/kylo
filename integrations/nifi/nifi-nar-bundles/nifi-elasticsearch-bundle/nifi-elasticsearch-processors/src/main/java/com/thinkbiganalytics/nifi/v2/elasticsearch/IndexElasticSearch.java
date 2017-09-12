@@ -20,9 +20,11 @@ package com.thinkbiganalytics.nifi.v2.elasticsearch;
  * #L%
  */
 
+import com.thinkbiganalytics.hashing.HashingUtil;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
@@ -33,7 +35,6 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.io.InputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -44,8 +45,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -134,6 +133,31 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * Property for Kylo category name
+     */
+    public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
+        .name("KyloCategory")
+        .description("Kylo category system name for data to be indexed")
+        .required(true)
+        .defaultValue("${category}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    /**
+     * Property for Kylo feed name
+     */
+    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
+        .name("KyloFeed")
+        .description("Kylo feed system name for data to be indexed")
+        .required(true)
+        .defaultValue("${feed}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -152,6 +176,8 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         pds.add(HOST_NAME);
         pds.add(CLUSTER_NAME);
         pds.add(ID_FIELD);
+        pds.add(CATEGORY_NAME);
+        pds.add(FEED_NAME);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -173,33 +199,33 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
             return;
         }
         try {
-              /* Configuration parameters for spark launcher */
             String indexName = context.getProperty(INDEX_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String type = context.getProperty(TYPE).evaluateAttributeExpressions(flowFile).getValue();
             String hostName = context.getProperty(HOST_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String clusterName = context.getProperty(CLUSTER_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(flowFile).getValue();
+            String categoryName = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
 
             final StringBuffer sb = new StringBuffer();
-            session.read(flowFile, new InputStreamCallback() {
-
-                @Override
-                public void process(InputStream in) throws IOException {
-                    sb.append(IOUtils.toString(in, Charset.defaultCharset()));
-                }
-
-            });
+            session.read(flowFile, in -> sb.append(IOUtils.toString(in, Charset.defaultCharset())));
 
             logger.debug("The json that was received is: " + sb.toString());
 
-            boolean success = sendToElasticSearch(sb.toString(), hostName, indexName, type, clusterName, idField);
+            boolean success = sendToElasticSearch(sb.toString(),
+                                                  hostName,
+                                                  indexName,
+                                                  type,
+                                                  clusterName,
+                                                  idField,
+                                                  categoryName,
+                                                  feedName);
 
-             /* Wait for job completion */
             if (!success) {
-                logger.info("*** Completed with failed status ");
+                logger.info("*** Completed with failed status");
                 session.transfer(flowFile, REL_FAILURE);
             } else {
-                logger.info("*** Completed with status ");
+                logger.info("*** Completed with success status");
                 session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
@@ -209,7 +235,15 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
 
     }
 
-    private boolean sendToElasticSearch(String json, String hostName, String index, String type, String clusterName, String idField) throws Exception {
+    private boolean sendToElasticSearch(String json,
+                                        String hostName,
+                                        String index,
+                                        String type,
+                                        String clusterName,
+                                        String idField,
+                                        String categoryName,
+                                        String feedName
+                                        ) throws Exception {
         final ComponentLog logger = getLog();
         Settings settings = Settings.settingsBuilder()
             .put("cluster.name", clusterName).build();
@@ -221,12 +255,24 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
 
         for (int i = 0; i < array.length(); i++) {
             JSONObject jsonObj = array.getJSONObject(i);
-            String id;
+            String id = null;
+
             if (idField != null && idField.length() > 0) {
                 id = jsonObj.getString(idField);
-            } else {
-                id = UUID.randomUUID().toString();
+                logger.debug("Document index id using field " + idField + ": " + id);
+            } else if (StringUtils.isNotEmpty(categoryName) && (StringUtils.isNotEmpty(feedName))) {
+                String hash = HashingUtil.getHashMD5(jsonObj.toString());
+                if (StringUtils.isNotEmpty(hash)) {
+                    id = categoryName + "::" + feedName + "::" + hash;
+                    logger.debug("Document index id using hash: " + id);
+                }
             }
+
+            if (StringUtils.isEmpty(id)) {
+                id = UUID.randomUUID().toString();
+                logger.debug("Document index id auto-generated + " + id);
+            }
+
             jsonObj.put("post_date", String.valueOf(System.currentTimeMillis()));
             bulkRequest.add(client.prepareIndex(index, type, id)
                                 .setSource(jsonObj.toString())

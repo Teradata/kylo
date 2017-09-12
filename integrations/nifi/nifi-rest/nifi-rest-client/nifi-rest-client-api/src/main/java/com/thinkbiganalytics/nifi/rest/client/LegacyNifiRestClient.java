@@ -28,6 +28,7 @@ import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -83,6 +84,11 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+    @Inject
+    private NiFiObjectCache niFiObjectCache;
+
+
 
     /**
      * Gets Template data, either a quick view or including all its content
@@ -165,6 +171,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
                                                       ReusableTemplateCreationCallback creationCallback) {
         TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, templateProperties, staticConfigProperties, createReusableFlow, creationCallback);
         NifiProcessGroup group = creator.createTemplate();
+
         return group;
     }
 
@@ -233,7 +240,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      */
     public List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, boolean includePropertyDescriptors) {
         if (includePropertyDescriptors) {
-            TemplateCreationHelper helper = new TemplateCreationHelper(this);
+            TemplateCreationHelper helper = new TemplateCreationHelper(this, niFiObjectCache);
             ProcessGroupDTO groupDTO = helper.createTemporaryTemplateFlow(dto.getId());
             dto.setSnippet(groupDTO.getContents());
         }
@@ -1231,6 +1238,11 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     //walk entire graph
     public List<NifiFlowProcessGroup> getFeedFlows() {
         return client.flows().getFeedFlows();
+    }
+
+
+    public List<NifiFlowProcessGroup> getFeedFlowsWithCache(NifiConnectionOrderVisitorCache cache) {
+        return client.flows().getFeedFlowsWithCache(cache);
     }
 
     public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {

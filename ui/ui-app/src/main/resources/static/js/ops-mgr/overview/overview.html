@@ -20,20 +20,20 @@
 <div>
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
     <div layout="row" layout-sm="column" layout-xs="column" ng-if="vm.allowed">
-        <div layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2">
+        <div layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs= "2" flex-order-sm="2">
             <!-- THE KPIs -->
             <div layout="row" layout-xs="column" layout-wrap layout-align="space-between center" class="kpi-row">
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi"  layout-wrap tba-services-indicator id="services-summary" panel-title="Services" refresh-interval-time="5000"></div>
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap tba-feed-status-indicator id="feeds-health-summary" panel-title="Feed Status" refresh-interval-time="5000"></div>
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap tba-data-confidence-indicator id="data-confidence-summary" panel-title="Data Confidence" refresh-interval-time="5000"></div>
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi"  layout-wrap tba-services-indicator id="services-summary" panel-title="Services" refresh-interval-time="vm.refreshInterval"></div>
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap tba-feed-status-indicator id="feeds-health-summary" panel-title="Feed Status" refresh-interval-time="vm.refreshInterval"></div>
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap tba-data-confidence-indicator id="data-confidence-summary" panel-title="Data Confidence" refresh-interval-time="vm.refreshInterval"></div>
                 <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap tba-job-status-indicator id="job-activity-kpi" panel-title="Job Status" refresh-interval-time="1000"></div>
             </div>
             <!-- END KPIs -->
             <!-- the Feeds Table-->
-            <tba-feed-health-table-card refresh-interval-time="5000" card-title="Feed Health"></tba-feed-health-table-card>
+            <tba-feed-health-table-card refresh-interval-time="vm.refreshInterval" card-title="Feed Health"></tba-feed-health-table-card>
             <!-- end feeds table-->
         </div>
         <!-- the ALERTS -->
-        <tba-alerts layout="column" flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1"></tba-alerts>
+        <tba-alerts layout="column" flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" refresh-interval-time="vm.refreshInterval"></tba-alerts>
     </div>
 </div>

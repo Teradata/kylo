@@ -52,6 +52,7 @@ import javax.inject.Inject;
  * Manage the Nifi flow cache when Kylo is clustered
  */
 public class NifiFlowCacheClusterManager implements ClusterServiceListener {
+
     private static final String LAST_MODIFIED_KEY_PREFIX = "NIFI_FLOW_CACHE";
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCacheClusterManager.class);
@@ -75,23 +76,24 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
         clusterService.subscribe(this);
     }
 
-    public NifiFlowCacheClusterUpdateMessage  updateTemplate(String templateName) {
-        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.TEMPLATE,templateName);
+    public NifiFlowCacheClusterUpdateMessage updateTemplate(String templateName) {
+        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.TEMPLATE, templateName);
         updatedCache(updateMessage);
         return updateMessage;
     }
 
 
-    public NifiFlowCacheClusterUpdateMessage  updateConnections(Collection<ConnectionDTO> connections) {
+    public NifiFlowCacheClusterUpdateMessage updateConnections(Collection<ConnectionDTO> connections) {
         String json = ObjectMapperSerializer.serialize(connections);
-        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.CONNECTION,json);
+        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.CONNECTION, json);
         updatedCache(updateMessage);
         return updateMessage;
     }
-    public NifiFlowCacheClusterUpdateMessage  updateProcessors(Collection<ProcessorDTO> processors) {
+
+    public NifiFlowCacheClusterUpdateMessage updateProcessors(Collection<ProcessorDTO> processors) {
         //strip for serialization ... create new NifiFlowCacheSimpleProcessorDTO
-        List<NifiFlowCacheSimpleProcessorDTO> processorsToCache =processors.stream()
-            .map(p -> new NifiFlowCacheSimpleProcessorDTO(p.getId(),p.getName(),p.getType(),p.getParentGroupId()))
+        List<NifiFlowCacheSimpleProcessorDTO> processorsToCache = processors.stream()
+            .map(p -> new NifiFlowCacheSimpleProcessorDTO(p.getId(), p.getName(), p.getType(), p.getParentGroupId()))
             .collect(Collectors.toList());
         String json = ObjectMapperSerializer.serialize(processorsToCache);
         NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.PROCESSOR, json);
@@ -99,90 +101,124 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
         return updateMessage;
     }
 
-    public NifiFlowCacheClusterUpdateMessage  updateFeed(String feedName, boolean isStream,NifiFlowProcessGroup feedFlow) {
+    public NifiFlowCacheClusterUpdateMessage updateFeed(String feedName, boolean isStream, NifiFlowProcessGroup feedFlow) {
 
-        NifiFlowCacheFeedUpdate feedUpdate =  new NifiFlowCacheFeedUpdate(feedName,isStream, feedFlow.getId(), feedFlow.getProcessorMap().values(), feedFlow.getConnectionIdMap().values());
+        NifiFlowCacheFeedUpdate feedUpdate = new NifiFlowCacheFeedUpdate(feedName, isStream, feedFlow.getId(), feedFlow.getProcessorMap().values(), feedFlow.getConnectionIdMap().values());
         String json = ObjectMapperSerializer.serialize(feedUpdate);
-        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED,json);
+        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED, json);
         updatedCache(updateMessage);
         return updateMessage;
     }
 
-    public NifiFlowCacheClusterUpdateMessage  updateFeed(String feedName, boolean isStream,  String feedProcessGroupId,Collection<NifiFlowProcessor> processors, Collection<NifiFlowConnection> connections) {
-        NifiFlowCacheSimpleFeedUpdate feedUpdate =  new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformNifiFlowProcesors(processors), connections);
+    public NifiFlowCacheClusterUpdateMessage updateFeed(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors,
+                                                        Collection<NifiFlowConnection> connections) {
+        NifiFlowCacheSimpleFeedUpdate feedUpdate = new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformNifiFlowProcesors(processors), connections);
         String json = ObjectMapperSerializer.serialize(feedUpdate);
-        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED,json);
+        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED, json);
+        updatedCache(updateMessage);
+        return updateMessage;
+    }
+
+    public NifiFlowCacheClusterUpdateMessage updateFeed2(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors, Collection<ConnectionDTO> connections) {
+        NifiFlowCacheSimpleFeedUpdate feedUpdate = new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformProcessors(processors), transformConnections(connections));
+        String json = ObjectMapperSerializer.serialize(feedUpdate);
+        NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED2, json);
         updatedCache(updateMessage);
         return updateMessage;
     }
 
 
-    public NifiFlowCacheFeedUpdate getFeedUpdate(String json){
-        NifiFlowCacheFeedUpdate update = ObjectMapperSerializer.deserialize(json,NifiFlowCacheFeedUpdate.class);
+    public NifiFlowCacheFeedUpdate getFeedUpdate(String json) {
+        NifiFlowCacheFeedUpdate update = ObjectMapperSerializer.deserialize(json, NifiFlowCacheFeedUpdate.class);
         return update;
     }
 
-    public Collection<ProcessorDTO> getProcessorsUpdate(String json){
-        Set<ProcessorDTO> processors = ObjectMapperSerializer.deserialize(json,new TypeReference<Set<ProcessorDTO>>(){});
+    public NifiFlowCacheFeedUpdate2 getFeedUpdate2(String json) {
+        NifiFlowCacheFeedUpdate2 update = ObjectMapperSerializer.deserialize(json, NifiFlowCacheFeedUpdate2.class);
+        return update;
+    }
+
+
+    public Collection<ProcessorDTO> getProcessorsUpdate(String json) {
+        Set<ProcessorDTO> processors = ObjectMapperSerializer.deserialize(json, new TypeReference<Set<ProcessorDTO>>() {
+        });
         return processors;
     }
 
-    public Collection<ConnectionDTO> getConnectionsUpdate(String json){
-        Set<ConnectionDTO> connections = ObjectMapperSerializer.deserialize(json,new TypeReference<Set<ConnectionDTO>>(){});
+    public Collection<ConnectionDTO> getConnectionsUpdate(String json) {
+        Set<ConnectionDTO> connections = ObjectMapperSerializer.deserialize(json, new TypeReference<Set<ConnectionDTO>>() {
+        });
         return connections;
     }
 
-    public RegisteredTemplate getTemplate(String templateName){
+    public RegisteredTemplate getTemplate(String templateName) {
         return metadataService.findRegisteredTemplateByName(templateName);
     }
 
-    public boolean isClustered(){
+    public boolean isClustered() {
         return clusterService.isClustered();
     }
 
     private void updatedCache(NifiFlowCacheClusterUpdateMessage update) {
         metadataAccess.commit(() -> {
-            niFiFlowCacheProvider.updatedCache(update.getType(),update.getMessage());
-        },MetadataAccess.SERVICE);
+            niFiFlowCacheProvider.updatedCache(update.getType(), update.getMessage());
+        }, MetadataAccess.SERVICE);
         //send it off to notify others its been updated?
     }
 
 
-    public boolean needsUpdate(){
-      return  metadataAccess.commit(() -> {
-           return niFiFlowCacheProvider.needsUpdate();
-        },MetadataAccess.SERVICE);
+    public boolean needsUpdate() {
+        return metadataAccess.commit(() -> {
+            return niFiFlowCacheProvider.needsUpdate();
+        }, MetadataAccess.SERVICE);
     }
 
-    public List<NifiFlowCacheClusterUpdateMessage> findUpdates(){
-        return  metadataAccess.commit(() -> {
+    public List<NifiFlowCacheClusterUpdateMessage> findUpdates() {
+        return metadataAccess.commit(() -> {
             List<NiFiFlowCacheClusterUpdateItem> updates = niFiFlowCacheProvider.findUpdates();
-             return transformUpdates(updates);
-        },MetadataAccess.SERVICE);
+            return transformUpdates(updates);
+        }, MetadataAccess.SERVICE);
     }
 
 
-    public void appliedUpdates(List<NifiFlowCacheClusterUpdateMessage> updateMessages){
-          metadataAccess.commit(() -> {
+    public void appliedUpdates(List<NifiFlowCacheClusterUpdateMessage> updateMessages) {
+        metadataAccess.commit(() -> {
             List<String> updateKeys = updateMessages.stream().map(m -> m.getUpdateKey()).collect(Collectors.toList());
-           niFiFlowCacheProvider.appliedUpdates(updateKeys);
-        },MetadataAccess.SERVICE);
+            niFiFlowCacheProvider.appliedUpdates(updateKeys);
+        }, MetadataAccess.SERVICE);
     }
 
     private List<NifiFlowCacheClusterUpdateMessage> transformUpdates(List<NiFiFlowCacheClusterUpdateItem> updates) {
-        if(updates != null){
-            return updates.stream().map(update -> new NifiFlowCacheClusterUpdateMessage(update.getUpdateType(),update.getUpdateValue(), update.getUpdateKey())).collect(Collectors.toList());
-        }
-        else {
+        if (updates != null) {
+            return updates.stream().map(update -> new NifiFlowCacheClusterUpdateMessage(update.getUpdateType(), update.getUpdateValue(), update.getUpdateKey())).collect(Collectors.toList());
+        } else {
             return Collections.emptyList();
         }
     }
 
-    private Collection<NifiFlowCacheClusterNifiFlowProcessor> transformNifiFlowProcesors(Collection<NifiFlowProcessor> processors){
-        if(processors != null){
-            return processors.stream().map(p -> new NifiFlowCacheClusterNifiFlowProcessor(p.getId(),p.getName(),p.getType(),p.getFlowId())).collect(Collectors.toList());
+    private Collection<NifiFlowCacheClusterNifiFlowProcessor> transformNifiFlowProcesors(Collection<NifiFlowProcessor> processors) {
+        if (processors != null) {
+            return processors.stream().map(p -> new NifiFlowCacheClusterNifiFlowProcessor(p.getId(), p.getName(), p.getType(), p.getFlowId())).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
         }
-        else {
+    }
+
+
+    private Collection<NifiFlowCacheClusterNifiFlowProcessor> transformProcessors(Collection<ProcessorDTO> processors) {
+        if (processors != null) {
+            return processors.stream().map(p -> new NifiFlowCacheClusterNifiFlowProcessor(p.getId(), p.getName(), p.getType(), null)).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private Collection<NifiFlowConnection> transformConnections(Collection<ConnectionDTO> connections) {
+        if (connections != null) {
+            return connections.stream()
+                .map(c -> new NifiFlowConnection(c.getId(), c.getName(), c.getSource() != null ? c.getSource().getId() : null, c.getDestination() != null ? c.getDestination().getId() : null))
+                .collect(Collectors.toList());
+        } else {
             return Collections.emptyList();
         }
     }
@@ -195,19 +231,19 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
 
     @Override
     public void onConnected(List<String> currentMembers) {
-        log.info("Kylo Cluster Node connected {} members exist.  {} ",currentMembers.size(),currentMembers);
+        log.info("Kylo Cluster Node connected {} members exist.  {} ", currentMembers.size(), currentMembers);
         //on connected reset the previous db entries
-            if (currentMembers.size() == 1) {
-                try {
+        if (currentMembers.size() == 1) {
+            try {
                 metadataAccess.commit(() -> {
                     log.info("This is the First Member connecting to the cluster.  Resetting the previous Cluster cache updates  {} members exist.  {} ", currentMembers.size(), currentMembers);
                     niFiFlowCacheProvider.resetClusterSyncUpdates();
                 }, MetadataAccess.SERVICE);
-                }catch (Exception e){
-                    //log the error and carry on
-                    log.error("Error attempting to reset the NiFi Flow Cache in the database when starting the Kylo Cluster. {} ",e.getMessage(),e);
-                }
+            } catch (Exception e) {
+                //log the error and carry on
+                log.error("Error attempting to reset the NiFi Flow Cache in the database when starting the Kylo Cluster. {} ", e.getMessage(), e);
             }
+        }
 
     }
 

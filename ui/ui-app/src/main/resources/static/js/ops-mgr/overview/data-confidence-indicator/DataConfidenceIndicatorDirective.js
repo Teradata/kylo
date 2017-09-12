@@ -6,7 +6,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope: true,
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime: "@"
+                refreshIntervalTime: "=?"
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html',
@@ -20,7 +20,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, OpsManagerJobService) {
+    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService) {
         var self = this;
         this.refreshInterval = null;
         this.refreshing = false;
@@ -28,6 +28,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         this.dataMap = {'Healthy':{count:0, color:'#5cb85c'},'Unhealthy':{count:0,color:'#a94442'}};
 
+        /** All the data returned from the rest call
+         *
+         * @type {null}
+         */
+        self.allData = null;
         this.chartApi = {};
 
         this.chartOptions = {
@@ -56,12 +61,35 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                         return '#FF0000';
                     }
                 },
+                pie: {
+                    dispatch: {
+                        'elementClick': function(e){
+                            self.openDetailsDialog(e.data.key);
+                        }
+                    }
+                },
                 dispatch: {
 
                 }
             }
         };
         this.chartData = [];
+
+        this.openDetailsDialog = function(key){
+            $mdDialog.show({
+                controller:"DataConfidenceDetailsDialogController",
+                templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-details-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                fullscreen: true,
+                locals: {
+                    status: key,
+                    allChartData: self.allData
+                }
+            });
+        }
+
+
 
         this.updateChart = function(){
             angular.forEach(self.chartData,function(row,i){
@@ -87,6 +115,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 self.refreshing = true;
                 var successFn = function (response) {
                     var data = response.data;
+                    self.allData = data;
                     if (self.dataLoaded == false) {
                         self.dataLoaded = true;
                     }
@@ -135,7 +164,47 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
     };
 
-    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","OpsManagerJobService", controller]);
+
+    var DataConfidenceDetailsDialogController = function ($scope, $mdDialog, $interval,StateService,status,allChartData) {
+        var self = this;
+
+        $scope.jobs = [];
+
+        if(status == 'Unhealthy') {
+            $scope.css = "md-warn";
+            $scope.jobs = allChartData.failedJobs;
+        } else {
+            $scope.css = "";
+            $scope.jobs = _.filter(allChartData.latestCheckDataFeeds,function(job) {
+                return job.status != 'FAILED';
+            });
+        }
+
+        $scope.allChartData = allChartData;
+        $scope.status = status;
+
+        $scope.hide = function () {
+            $mdDialog.hide();
+
+        };
+
+        $scope.gotoJobDetails = function(jobExecutionId){
+            $mdDialog.hide();
+            StateService.OpsManager().Job().navigateToJobDetails(jobExecutionId);
+        }
+
+        $scope.cancel = function () {
+            $mdDialog.cancel();
+        };
+
+    };
+
+    angular.module(moduleName).controller('DataConfidenceDetailsDialogController', ["$scope","$mdDialog","$interval","StateService","status","allChartData",DataConfidenceDetailsDialogController]);
+
+
+
+
+    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService", controller]);
 
 
     angular.module(moduleName)

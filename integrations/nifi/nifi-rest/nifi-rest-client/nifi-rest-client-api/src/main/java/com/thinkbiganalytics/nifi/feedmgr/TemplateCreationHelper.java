@@ -25,6 +25,7 @@ import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -80,7 +81,8 @@ public class TemplateCreationHelper {
      */
     @Nonnull
     private final NiFiRestClient nifiRestClient;
-    LegacyNifiRestClient restClient;
+    private LegacyNifiRestClient restClient;
+    private NiFiObjectCache nifiObjectCache;
     private List<NifiError> errors = new ArrayList<>();
     private Set<ControllerServiceDTO> snapshotControllerServices;
 
@@ -95,7 +97,15 @@ public class TemplateCreationHelper {
     public TemplateCreationHelper(LegacyNifiRestClient restClient) {
         this.restClient = restClient;
         this.nifiRestClient = restClient.getNiFiRestClient();
+        this.nifiObjectCache = new NiFiObjectCache();
     }
+
+    public TemplateCreationHelper(LegacyNifiRestClient restClient,NiFiObjectCache nifiObjectCache) {
+        this.restClient = restClient;
+        this.nifiRestClient = restClient.getNiFiRestClient();
+        this.nifiObjectCache = nifiObjectCache;
+    }
+
 
 
     public static String getVersionedProcessGroupName(String name) {
@@ -117,14 +127,8 @@ public class TemplateCreationHelper {
      * @return the process group holding this template
      */
     public ProcessGroupDTO createTemporaryTemplateFlow(@Nonnull final String templateId) {
-        ProcessGroupDTO temporaryTemplateInspectionGroup = null;
-        //first get the parent temp group
-        Optional<ProcessGroupDTO> group = nifiRestClient.processGroups().findByName("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME, false, false);
-        if (!group.isPresent()) {
-            temporaryTemplateInspectionGroup = nifiRestClient.processGroups().create("root", TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME);
-        } else {
-            temporaryTemplateInspectionGroup = group.get();
-        }
+        ProcessGroupDTO temporaryTemplateInspectionGroup =  nifiObjectCache.getOrCreateTemporaryTemplateInspectionGroup();
+
 
         //next create the temp group
         snapshotControllerServiceReferences();
@@ -572,7 +576,10 @@ public class TemplateCreationHelper {
      */
     private void deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
         // Get the list of incoming connections coming from some source to this process group
-        final Set<ConnectionDTO> connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+
+
+        final Set<ConnectionDTO> connectionsEntity = nifiObjectCache.isCacheConnections() ? nifiObjectCache.getConnections(processGroup.getParentGroupId()) : restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+
         if (connectionsEntity == null) {
             return;
         }
@@ -582,6 +589,7 @@ public class TemplateCreationHelper {
             return;
         }
 
+        Set<String> removedConnections = new HashSet<>();
         // Delete the connections
         for (ConnectionDTO connection : connections) {
             final String type = connection.getSource().getType();
@@ -602,6 +610,7 @@ public class TemplateCreationHelper {
             // Delete the connection
             try {
                 restClient.deleteConnection(connection, false);
+                removedConnections.add(connection.getId());
             } catch (Exception e) {
                 log.error("Failed to delete the connection: {}", connection.getId(), e);
 
@@ -610,6 +619,7 @@ public class TemplateCreationHelper {
                 throw new NifiClientRuntimeException("Error deleting the connection " + connection.getId() + " with source " + source + " and destination " + destination + ".");
             }
         }
+        nifiObjectCache.removeConnections(processGroup.getParentGroupId(),removedConnections);
     }
 
     /**

@@ -86,9 +86,6 @@ public class FeedCategory extends EntityAccessControl {
     }
 
     public String getSystemName() {
-        if (systemName == null) {
-            generateSystemName();
-        }
         return systemName;
     }
 
@@ -215,11 +212,10 @@ public class FeedCategory extends EntityAccessControl {
         this.relatedFeeds = relatedFeeds;
     }
 
-    @JsonIgnore
-    public void generateSystemName() {
-
-        this.systemName = SystemNamingService.generateSystemName(name);
-    }
+//    @JsonIgnore
+//    public void generateSystemName() {
+//        this.systemName = SystemNamingService.generateSystemName(systemName);
+//    }
 
     public Date getUpdateDate() {
         return updateDate;

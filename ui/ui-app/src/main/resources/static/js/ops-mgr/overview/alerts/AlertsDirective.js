@@ -6,7 +6,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope: true,
             bindToController: {
                 panelTitle: "@",
-                feedName:'@'
+                feedName:'@',
+                refreshIntervalTime:'=?'
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/alerts/alerts-template.html',
@@ -31,6 +32,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         this.feedRefresh = null;
 
+        this.refreshIntervalTime = angular.isUndefined(self.refreshIntervalTime) ? 5000 : self.refreshIntervalTime;
+
 
 
         if(this.feedName == undefined || this.feedName == ''){
@@ -43,7 +46,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     self.alerts = newVal;
                 }
             );
-            AlertsService.startRefreshingAlerts();
+            AlertsService.startRefreshingAlerts(self.refreshIntervalTime);
         }
         else {
             self.alerts = [];

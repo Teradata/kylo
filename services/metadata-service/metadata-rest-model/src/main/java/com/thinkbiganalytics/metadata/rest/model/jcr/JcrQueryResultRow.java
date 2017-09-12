@@ -1,5 +1,4 @@
 package com.thinkbiganalytics.metadata.rest.model.jcr;
-
 /*-
  * #%L
  * kylo-metadata-rest-model

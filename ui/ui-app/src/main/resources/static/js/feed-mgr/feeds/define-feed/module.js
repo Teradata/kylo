@@ -13,7 +13,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
             url: '/define-feed',
             params: {
-                templateId: null
+                templateId: null,
+                bcExclude_cloning:null,
+                bcExclude_cloneFeedName:null
             },
             views: {
                 'content': {

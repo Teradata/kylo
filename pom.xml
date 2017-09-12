@@ -71,6 +71,7 @@
     <!-- The maria db driver version is references in the post-install.sh file. Manually update it there if you change it here.  -->
     <mariadb.version>1.5.7</mariadb.version>
     <nifi.version>1.0.0</nifi.version>
+    <nifi.version.override>1.2.0</nifi.version.override>
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
@@ -1011,6 +1012,7 @@
     </pluginManagement>
   </build>
 
+
   <profiles>
     <profile>
       <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
@@ -1166,6 +1168,15 @@
           </plugins>
         </reporting>
       </profile>
+    <profile>
+      <id>nifi.version.override</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <nifi.version>${nifi.version.override}</nifi.version>
+      </properties>
+    </profile>
   </profiles>
 
 </project>

@@ -19,79 +19,79 @@
   -->
 <card-layout body-css="md-padding">
 
-    <header-section>
-        <div layout="row" layout-align="space-between-center" flex>
-          <div class="card-title" flex>General Info</div>
-          <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+  <header-section>
+    <div layout="row" layout-align="space-between-center" flex>
+      <div class="card-title" flex>General Info</div>
+      <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+    </div>
+    <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+  </header-section>
+
+  <body-section md-content>
+    <ng-form name="vm.defineFeedGeneralForm">
+      <div layout="column">
+        <div layout="row" layout-align="space-between start">
+          <md-input-container flex="45" class="condensed">
+            <label>Display Name</label>
+            <input required ng-model="vm.model.feedName" name="feedName" ng-disabled="vm.model.id != null"/>
+            <div ng-messages="vm.defineFeedGeneralForm.feedName.$error" md-auto-hide="false">
+              <div ng-message="required">Required.</div>
+              <div ng-message="notUnique">A feed with this name already exists.</div>
+            </div>
+          </md-input-container>
+          <div flex="10"></div>
+          <md-input-container flex="45" class="condensed">
+            <label>System Table Name</label>
+            <input readonly ng-model="vm.model.systemFeedName"/>
+            <div class="hint">Auto generated from the feed display name</div>
+          </md-input-container>
         </div>
-        <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
-    </header-section>
-
-    <body-section md-content >
-<ng-form name="vm.defineFeedGeneralForm">
-        <div layout="column">
-                <div layout="row" layout-align="space-between start">
-                    <md-input-container flex="45" class="condensed">
-                        <label>Display Name</label>
-                        <input required ng-model="vm.model.feedName" name="feedName" ng-disabled="vm.model.id != null"/>
-                        <div ng-messages="vm.defineFeedGeneralForm.feedName.$error"  md-auto-hide="false">
-                            <div ng-message="required">Required.</div>
-                          <div ng-message="notUnique">A feed with this name already exists.</div>
-                       </div>
-                    </md-input-container>
-                    <div flex="10"></div>
-                    <md-input-container flex="45" class="condensed">
-                        <label>System Name</label>
-                        <input  readonly ng-model="vm.model.systemFeedName"/>
-                        <div class="hint">Auto generated from the feed display name</div>
-                    </md-input-container>
-                </div>
-          <div layout="row" layout-align="space-between start">
-                    <md-autocomplete flex="45" required ng-disabled="vm.model.id != null"
-                                     md-input-name="category"
-                            md-selected-item="vm.category"
-                            md-search-text-change="vm.categorySearchTextChanged(vm.categorySearchText)"
-                            md-search-text="vm.categorySearchText"
-                            md-selected-item-change="vm.categorySelectedItemChange(item)"
-                            md-items="item in vm.categoriesService.querySearch(vm.categorySearchText)"
-                            md-item-text="item.name"
-                            md-min-length="0"
-                                     md-floating-label="Category"
-                            md-menu-class="autocomplete-categories-template">
-                        <md-item-template>
-                  <span class="item-title" ng-class="item.createFeed ? '' : 'disabled'">
-                       <ng-md-icon icon="{{item.icon}}" ng-style="{'fill':item.iconColor}" ng-if="item.createFeed"></ng-md-icon>
-                    <ng-md-icon icon="block" class="disabled" ng-if="!item.createFeed"></ng-md-icon>
-                    <span> {{item.name}} </span>
-                  </span>
-                  <span class="item-metadata">
-                    <span class="item-metastat"  ng-if="item.createFeed">
-                       <strong>{{item.relatedFeeds}}</strong> Related Feeds
-                    </span>
-                      <span class="item-metastat"  ng-if="!item.createFeed">
-                    </span>
-                  </span>
-                        </md-item-template>
-                        <md-not-found>
-                            No categories matching "{{vm.categorySearchText}}" were found.
-                        </md-not-found>
-                      <div ng-messages="vm.defineFeedGeneralForm.category.$error">
-                        <div ng-message="required">Required.</div>
-                        <div ng-message="accessDenied">You are not allowed to create a feed under this category.</div>
-                      </div>
-                  </md-autocomplete>
-               </div>
-
-                <md-input-container class="md-block condensed">
-                    <label>Description</label>
-                    <textarea ng-model="vm.model.description"></textarea>
-                </md-input-container>
-
+        <div layout="row" layout-align="space-between start">
+          <md-autocomplete flex="45" required ng-disabled="vm.model.id != null"
+                           md-input-name="category"
+                           md-selected-item="vm.category"
+                           md-search-text-change="vm.categorySearchTextChanged(vm.categorySearchText)"
+                           md-search-text="vm.categorySearchText"
+                           md-selected-item-change="vm.categorySelectedItemChange(item)"
+                           md-items="item in vm.categoriesService.querySearch(vm.categorySearchText)"
+                           md-item-text="item.name"
+                           md-min-length="0"
+                           md-floating-label="Category"
+                           md-menu-class="autocomplete-categories-template">
+            <md-item-template>
+              <span class="item-title" ng-class="item.createFeed ? '' : 'disabled'">
+                <ng-md-icon icon="{{item.icon}}" ng-style="{'fill':item.iconColor}" ng-if="item.createFeed"></ng-md-icon>
+                <ng-md-icon icon="block" class="disabled" ng-if="!item.createFeed"></ng-md-icon>
+                <span> {{item.name}} </span>
+              </span>
+              <span class="item-metadata">
+                <span class="item-metastat" ng-if="item.createFeed">
+                  <strong>{{item.relatedFeeds}}</strong> Related Feeds
+                </span>
+                  <span class="item-metastat" ng-if="!item.createFeed">
+                </span>
+              </span>
+            </md-item-template>
+            <md-not-found>
+              No categories matching "{{vm.categorySearchText}}" were found.
+            </md-not-found>
+            <div ng-messages="vm.defineFeedGeneralForm.category.$error">
+              <div ng-message="required">Required.</div>
+              <div ng-message="accessDenied">You are not allowed to create a feed under this category.</div>
+            </div>
+          </md-autocomplete>
         </div>
 
-        <thinkbig-step-buttons can-continue="vm.isValid &&  vm.defineFeedGeneralForm.$valid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
-        </ng-form>
-    </body-section>
+        <md-input-container class="md-block condensed">
+          <label>Description</label>
+          <textarea ng-model="vm.model.description"></textarea>
+        </md-input-container>
+
+      </div>
+
+      <thinkbig-step-buttons can-continue="vm.isValid &&  vm.defineFeedGeneralForm.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+    </ng-form>
+  </body-section>
 
 </card-layout>
 

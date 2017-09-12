@@ -38,7 +38,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.jcr.Repository;
@@ -51,18 +54,22 @@ import javax.jcr.Repository;
 public class ModeShapeEngineConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
+    
+    public static final String INDEX_DIR_PROP = "modeshape.index.dir";
+    public static final File DEFAULT_INDEX_DIR = new File("/opt/kylo/modeshape/modeshape-local-index");
 
     public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
-                                                  "modeshape.datasource.password"
+                                                  "modeshape.datasource.password",
+                                                  INDEX_DIR_PROP
     };
 
     @Inject
     private Environment environment;
 
-    @Autowired (required = false)
-    RepositoryIndexConfiguration repositoryIndexConfiguration;
+    @Inject
+    private Optional<RepositoryIndexConfiguration> repositoryIndexConfiguration;
 
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
@@ -78,24 +85,38 @@ public class ModeShapeEngineConfig {
                 System.setProperty(prop, this.environment.getProperty(prop));
             }
         }
+        
+        File dir = DEFAULT_INDEX_DIR;
+        if (this.environment.containsProperty(INDEX_DIR_PROP)) {
+            String idxPath = this.environment.getProperty(INDEX_DIR_PROP);
+            dir = new File(idxPath);
+        }
+        
+        try {
+            // Create index directory if necessary.
+            dir.mkdirs();
+        } catch (Exception e) {
+            log.error("Failed to verify Modeshape index directory in property: {}", INDEX_DIR_PROP, e);
+            throw new IllegalStateException("Failed to verify Modeshape index directory in property: " + INDEX_DIR_PROP, e);
+        }
 
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
-        RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
-
-        if (repositoryIndexConfiguration != null) {
-            RepositoryConfiguration updatedConfigWithIndexes = repositoryIndexConfiguration.build();
-            EditableDocument original = config.edit();
+        final AtomicReference<RepositoryConfiguration> config = new AtomicReference<>(RepositoryConfiguration.read(res.getURL()));
+        
+        repositoryIndexConfiguration.ifPresent(idxConfig -> {
+            RepositoryConfiguration updatedConfigWithIndexes = idxConfig.build();
+            EditableDocument original = config.get().edit();
             EditableDocument added = updatedConfigWithIndexes.edit();
             original.merge(added);
-            RepositoryConfiguration updatedConfig = new RepositoryConfiguration(original, config.getName());
+            RepositoryConfiguration updatedConfig = new RepositoryConfiguration(original, config.get().getName());
             log.debug("Original ModeShape configuration: {}", config.toString());
             log.debug("ModeShape indexing configuration: {}", updatedConfigWithIndexes.toString());
             log.debug("Updated ModeShape configuration: {}", updatedConfig.toString());
-            config = updatedConfig;
+            config.set(updatedConfig);
             log.info("ModeShape indexing configured");
-        }
+        });
 
-        Problems problems = config.validate();
+        Problems problems = config.get().validate();
         if (problems.hasErrors()) {
             log.error("Problems with the ModeShape repository configuration: \n{}", problems);
             throw new RuntimeException("Problems with the ModeShape repository configuration: " + problems);
@@ -103,7 +124,7 @@ public class ModeShapeEngineConfig {
 
 //        config.getSecurity();
 
-        return config;
+        return config.get();
     }
 
     @Bean(destroyMethod="shutdown")

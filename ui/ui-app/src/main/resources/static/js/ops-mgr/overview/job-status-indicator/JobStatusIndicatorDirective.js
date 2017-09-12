@@ -7,7 +7,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             controllerAs:'vm',
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime:"@"
+                refreshIntervalTime:"=?"
             },
             templateUrl: 'js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html',
             controller: "JobStatusIndicatorController",
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope,$element,$http, $q,$interval,OpsManagerJobService, HttpService,ChartJobStatusService) {
+    var controller = function ($scope,$element,$http, $q,$interval,StateService,OpsManagerJobService, HttpService,ChartJobStatusService) {
         var self = this;
         this.refreshInterval = null;
         this.dataLoaded = false;
@@ -67,6 +67,13 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 showLegend:false,
                 showXAxis:false,
                 showYAxis:true,
+                lines: {
+                    dispatch: {
+                        'elementClick':function(e){
+                            self.chartClick();
+                        }
+                    }
+                },
                 dispatch: {
 
                 }
@@ -78,6 +85,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             }
         }
 
+        this.chartClick = function(){
+            StateService.OpsManager().Job().navigateToJobs("Running",null);
+        }
         function getRunningFailedCounts() {
                 var successFn = function (response) {
                     if(response){
@@ -198,7 +208,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
     };
 
-    angular.module(moduleName).controller('JobStatusIndicatorController', ["$scope","$element","$http","$q","$interval","OpsManagerJobService","HttpService","ChartJobStatusService",controller]);
+    angular.module(moduleName).controller('JobStatusIndicatorController', ["$scope","$element","$http","$q","$interval","StateService","OpsManagerJobService","HttpService","ChartJobStatusService",controller]);
 
 
     angular.module(moduleName)

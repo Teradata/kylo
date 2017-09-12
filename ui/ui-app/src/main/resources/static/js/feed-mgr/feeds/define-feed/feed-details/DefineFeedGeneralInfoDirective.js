@@ -182,7 +182,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         $scope.$watch(function(){
             return self.model.id;
         },function(newVal){
-            if(newVal == null) {
+            if(newVal == null && (angular.isUndefined(self.model.cloned) || self.model.cloned == false)) {
                 self.category = null;
             }
             else {

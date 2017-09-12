@@ -56,8 +56,6 @@ import javax.annotation.Nullable;
 
 /**
  * A POJO implementation of {@link Feed}.
- *
- * @param the type of parent category
  */
 public class BaseFeed implements Feed {
 
@@ -174,7 +172,7 @@ public class BaseFeed implements Feed {
 
     @Override
     public String getQualifiedName() {
-        return getCategory().getName() + "." + getName();
+        return getCategory().getSystemName() + "." + getName();
     }
 
     public boolean isInitialized() {

@@ -20,41 +20,11 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.ReportingTaskDTO;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionListener;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -71,13 +41,39 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  * Cache processor definitions in a flow for use by the KyloProvenanceReportingTask
@@ -113,6 +109,9 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     @Inject
     private NifiFlowCacheClusterManager nifiFlowCacheClusterManager;
 
+    @Inject
+    private NiFiObjectCache createFeedBuilderCache;
+
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedFlowIdProcessorMap = new ConcurrentHashMap<>();
@@ -130,7 +129,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private List<NiFiFlowCacheListener> listeners = new ArrayList<>();
 
 
-    public void subscribe(NiFiFlowCacheListener listener){
+    public void subscribe(NiFiFlowCacheListener listener) {
         this.listeners.add(listener);
     }
 
@@ -157,6 +156,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
     private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnectionMap = new ConcurrentHashMap<>();
     private Map<String, String> connectionIdCacheNameMap = new ConcurrentHashMap<>();
+
 
     /**
      * Set of the category.feed names for those that are just streaming feeds
@@ -196,8 +196,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     @Override
     public void run() {
         boolean isLatest = kyloVersionProvider.isUpToDate();
-        log.info("flow cache run ... isLatest {} ",isLatest);
-        if(isLatest) {
+        log.info("flow cache run ... isLatest {} ", isLatest);
+        if (isLatest) {
             this.modeShapeAvailable = true;
             checkAndInitializeCache();
         }
@@ -218,10 +218,10 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         this.nifiConnected = false;
         //reset the flag to force cache initialization on nifi availability
         this.loaded = false;
-       notifyCacheUnavailable();
+        notifyCacheUnavailable();
     }
 
-    public boolean isConnectedToNiFi(){
+    public boolean isConnectedToNiFi() {
         return this.nifiConnected;
     }
 
@@ -230,7 +230,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      * When modeshape and nifi are connected and ready attempt to initialize the cache
      */
     private void checkAndInitializeCache() {
-        log.info("Check and Initialize NiFi Flow Cache. Modeshape available:{}, NiFi Connected:{}, Cache needs loading:{} ",modeShapeAvailable,nifiConnected,!loaded);
+        log.info("Check and Initialize NiFi Flow Cache. Modeshape available:{}, NiFi Connected:{}, Cache needs loading:{} ", modeShapeAvailable, nifiConnected, !loaded);
         if (modeShapeAvailable && nifiConnected && !loaded) {
             rebuildCacheWithRetry();
         }
@@ -265,8 +265,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
     /**
      * If kylo is clustered it needs to do an additional check to ensure the flow cache is synchronized across all kylo instances
-     * @return true if kylo is clustered, false if not.
      *
+     * @return true if kylo is clustered, false if not.
      */
     @Override
     public boolean isKyloClustered() {
@@ -316,6 +316,21 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         return sync;
     }
 
+    private void getRootConnections() {
+        ScheduledExecutorService service = Executors
+            .newSingleThreadScheduledExecutor();
+        service.submit(() -> {
+            log.info("Scannning for all Root connections in NiFi and adding them to cache");
+            Set<ConnectionDTO> rootConnections = nifiRestClient.getNiFiRestClient().processGroups().getConnections("root");
+            if (rootConnections != null) {
+                log.info("Adding {} Root Connections to the createFeedBuilderCache ", rootConnections.size());
+                createFeedBuilderCache.addProcessGroupConnections(rootConnections);
+            }
+        });
+        service.shutdown();
+
+
+    }
 
     /**
      * Rebuild the base cache that others will update from.
@@ -326,8 +341,9 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         boolean notify = reloadCount.get() == 0;
         loaded = false;
 
-        List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
-
+        getRootConnections();
+        List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlowsWithCache(null);
+        //populate the connection dtos
         List<RegisteredTemplate> templates = null;
         clearAll();
 
@@ -340,9 +356,9 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         List<NifiFlowProcessGroup> reusableTemplateProcessGroups = new ArrayList<>();
 
         allFlows.stream().forEach(nifiFlowProcessGroup -> {
-            if(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(nifiFlowProcessGroup.getParentGroupName())) {
+            if (TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(nifiFlowProcessGroup.getParentGroupName())) {
                 reuseableTemplateProcessorIds.addAll(nifiFlowProcessGroup.getProcessorMap().keySet());
-                reusableTemplateProcessGroupId =  nifiFlowProcessGroup.getId();
+                reusableTemplateProcessGroupId = nifiFlowProcessGroup.getId();
             }
             RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
             if (template != null) {
@@ -357,14 +373,14 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         lastUpdated = DateTime.now();
         loaded = true;
         reloadCount.incrementAndGet();
-        if(notify){
+        if (notify) {
             notifyCacheAvailable();
         }
 
 
     }
 
-    private void notifyCacheAvailable(){
+    private void notifyCacheAvailable() {
         this.listeners.stream().forEach(listener -> {
             try {
                 listener.onCacheAvailable();
@@ -451,60 +467,70 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     /**
      * if Kylo is clustered it needs to sync any updates from the other Kylo instances before proceeding
      */
-    private void applyClusterUpdates(){
-       List<NifiFlowCacheClusterUpdateMessage> updates = nifiFlowCacheClusterManager.findUpdates();
-       Set<String> templateUpdates = new HashSet<>();
-       boolean needsUpdates = !updates.isEmpty();
-       if(needsUpdates){
-           log.info("Kylo Cluster Update: Detected changes.  About to apply {} updates ",updates.size());
-       }
-       updates.stream().forEach(update -> {
-           switch(update.getType()) {
-               case FEED:
-                   NifiFlowCacheFeedUpdate feedUpdate=  nifiFlowCacheClusterManager.getFeedUpdate(update.getMessage());
-                   log.info("Kylo Cluster Update:  Applying Feed Change update for {}",feedUpdate.getFeedName());
-                   updateFlow(feedUpdate);
-               break;
-               case CONNECTION:
-                   Collection<ConnectionDTO> connectionDTOS = nifiFlowCacheClusterManager.getConnectionsUpdate(update.getMessage());
-                   log.info("Kylo Cluster Update:  Applying Connection list update");
-                   updateConnectionMap(connectionDTOS, false);
-               break;
-              case  PROCESSOR:
-                  Collection<ProcessorDTO> processorDTOS = nifiFlowCacheClusterManager.getProcessorsUpdate(update.getMessage());
-                  log.info("Kylo Cluster Update:  Applying Processor list update");
-                  updateProcessorIdNames(processorDTOS, false);
-               break;
-              case  TEMPLATE:
-                  if(!templateUpdates.contains(update.getMessage())) {
-                      RegisteredTemplate template = nifiFlowCacheClusterManager.getTemplate(update.getMessage());
-                      log.info("Kylo Cluster Update:  Applying Template update for {} ",template.getTemplateName());
-                      updateRegisteredTemplate(template,false);
-                      templateUpdates.add(update.getMessage());
-                  }
-               break;
-               default:
-                   break;
-           }
-       });
+    private void applyClusterUpdates() {
+        List<NifiFlowCacheClusterUpdateMessage> updates = nifiFlowCacheClusterManager.findUpdates();
+        Set<String> templateUpdates = new HashSet<>();
+        boolean needsUpdates = !updates.isEmpty();
+        if (needsUpdates) {
+            log.info("Kylo Cluster Update: Detected changes.  About to apply {} updates ", updates.size());
+        }
+        updates.stream().forEach(update -> {
+            switch (update.getType()) {
+                case FEED:
+                    NifiFlowCacheFeedUpdate feedUpdate = nifiFlowCacheClusterManager.getFeedUpdate(update.getMessage());
+                    log.info("Kylo Cluster Update:  Applying Feed Change update for {}", feedUpdate.getFeedName());
+                    updateFlow(feedUpdate);
+                    break;
+                case FEED2:
+                    NifiFlowCacheFeedUpdate2 feedUpdate2 = nifiFlowCacheClusterManager.getFeedUpdate2(update.getMessage());
+                    log.info("Kylo Cluster Update:  Applying Feed Change update for {}", feedUpdate2.getFeedName());
+                    updateFlow(feedUpdate2);
+                    break;
+                case CONNECTION:
+                    Collection<ConnectionDTO> connectionDTOS = nifiFlowCacheClusterManager.getConnectionsUpdate(update.getMessage());
+                    log.info("Kylo Cluster Update:  Applying Connection list update");
+                    updateConnectionMap(connectionDTOS, false);
+                    if (connectionDTOS != null) {
+                        connectionDTOS.stream().forEach(c -> {
+                            createFeedBuilderCache.addConnection(c.getParentGroupId(), c);
+                        });
+                    }
+                    break;
+                case PROCESSOR:
+                    Collection<ProcessorDTO> processorDTOS = nifiFlowCacheClusterManager.getProcessorsUpdate(update.getMessage());
+                    log.info("Kylo Cluster Update:  Applying Processor list update");
+                    updateProcessorIdNames(processorDTOS, false);
+                    break;
+                case TEMPLATE:
+                    if (!templateUpdates.contains(update.getMessage())) {
+                        RegisteredTemplate template = nifiFlowCacheClusterManager.getTemplate(update.getMessage());
+                        log.info("Kylo Cluster Update:  Applying Template update for {} ", template.getTemplateName());
+                        updateRegisteredTemplate(template, false);
+                        templateUpdates.add(update.getMessage());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
 
-       if(needsUpdates){
-           nifiFlowCacheClusterManager.appliedUpdates(updates);
-           lastUpdated = DateTime.now();
-           log.info("Kylo Cluster Update: NiFi Flow File Cache is in sync. All {} updates have been applied to the cache. ",updates.size());
-       }
+        if (needsUpdates) {
+            nifiFlowCacheClusterManager.appliedUpdates(updates);
+            lastUpdated = DateTime.now();
+            log.info("Kylo Cluster Update: NiFi Flow File Cache is in sync. All {} updates have been applied to the cache. ", updates.size());
+        }
 
     }
 
-    public NifiFlowCacheSnapshot getLatest(){
+    public NifiFlowCacheSnapshot getLatest() {
         if (!isAvailable()) {
             return NifiFlowCacheSnapshot.EMPTY;
         }
         return latest;
     }
 
-    private void initializeLatestSnapshot(){
-      latest =
+    private void initializeLatestSnapshot() {
+        latest =
             new NifiFlowCacheSnapshot(processorIdToFeedNameMap, processorIdToFeedProcessGroupId, processorIdToProcessorName, streamingFeeds, allFeeds);
         latest.setConnectionIdToConnection(connectionIdToConnectionMap);
         latest.setConnectionIdToConnectionName(connectionIdCacheNameMap);
@@ -513,15 +539,13 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     }
 
 
-
     private NiFiFlowCacheSync syncAndReturnUpdates(NiFiFlowCacheSync sync, boolean preview) {
         if (!preview) {
             lastSyncTimeMap.put(sync.getSyncId(), DateTime.now());
         }
-        if(isKyloClustered()){
+        if (isKyloClustered()) {
             applyClusterUpdates();
         }
-
 
         if (sync.needsUpdate(lastUpdated)) {
             Map<String, String> processorIdToFeedNameMapCopy = ImmutableMap.copyOf(processorIdToFeedNameMap);
@@ -627,9 +651,9 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         } else {
             streamingFeeds.removeAll(feedNames);
         }
-        if(notifyClusterMembers) {
+        if (notifyClusterMembers) {
             //mark the persistent table that this was updated
-            if(nifiFlowCacheClusterManager.isClustered()) {
+            if (nifiFlowCacheClusterManager.isClustered()) {
                 nifiFlowCacheClusterManager.updateTemplate(template.getTemplateName());
             }
             lastUpdated = DateTime.now();
@@ -639,10 +663,11 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
     /**
      * Update the cache of processorIds and connections when a reusable template is updated
-     * @param templateName the name of the template
+     *
+     * @param templateName    the name of the template
      * @param processGroupDTO the process group that stores the flow of the reusable template
      */
-    public void updateCacheForReusableTemplate(String templateName, ProcessGroupDTO processGroupDTO){
+    public void updateCacheForReusableTemplate(String templateName, ProcessGroupDTO processGroupDTO) {
         Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(processGroupDTO);
         updateProcessorIdNames(templateName, processors);
         Set<ConnectionDTO> connections = NifiConnectionUtil.getAllConnections(processGroupDTO);
@@ -659,7 +684,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      * @param processors   processors to add to the cache
      */
     public void updateProcessorIdNames(String templateName, Collection<ProcessorDTO> processors) {
-       updateProcessorIdNames(processors, true);
+        updateProcessorIdNames(processors, true);
     }
 
     private void updateProcessorIdNames(Collection<ProcessorDTO> processors, boolean notifyClusterMembers) {
@@ -671,8 +696,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
 
-        if(notifyClusterMembers) {
-            if(nifiFlowCacheClusterManager.isClustered()) {
+        if (notifyClusterMembers) {
+            if (nifiFlowCacheClusterManager.isClustered()) {
                 nifiFlowCacheClusterManager.updateProcessors(processors);
             }
             lastUpdated = DateTime.now();
@@ -686,7 +711,7 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
      * @param connections  connections to add to the cache
      */
     public void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections) {
-      updateConnectionMap(connections, true);
+        updateConnectionMap(connections, true);
     }
 
     private void updateConnectionMap(Collection<ConnectionDTO> connections, boolean notifyClusterMembers) {
@@ -707,15 +732,13 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
             connectionIdCacheNameMap.putAll(connectionIdToNameMap);
         }
 
-        if(notifyClusterMembers) {
-            if(nifiFlowCacheClusterManager.isClustered()) {
+        if (notifyClusterMembers) {
+            if (nifiFlowCacheClusterManager.isClustered()) {
                 nifiFlowCacheClusterManager.updateConnections(connections);
             }
             lastUpdated = DateTime.now();
         }
     }
-
-
 
 
     /**
@@ -728,6 +751,11 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
     public void updateFlow(FeedMetadata feed, NifiFlowProcessGroup feedProcessGroup) {
         String feedName = feed.getCategoryAndFeedName();
         this.updateFlow(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values(), feedProcessGroup.getConnectionIdMap().values(), true);
+    }
+
+    public void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs) {
+        String feedName = feed.getCategoryAndFeedName();
+        this.updateFlowForFeed(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroupId, processorDTOs, connectionDTOs, true);
     }
 
     /**
@@ -744,34 +772,56 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
 
     /**
      * update for clustered kylo
-     * @param flowCacheFeedUpdate
      */
-    public void updateFlow(NifiFlowCacheFeedUpdate flowCacheFeedUpdate){
-        updateFlow(flowCacheFeedUpdate.getFeedName(),flowCacheFeedUpdate.isStream(),flowCacheFeedUpdate.getFeedProcessGroupId(),flowCacheFeedUpdate.getProcessors(),flowCacheFeedUpdate.getConnections(),false);
+    public void updateFlow(NifiFlowCacheFeedUpdate2 flowCacheFeedUpdate) {
+        updateFlowForFeed(flowCacheFeedUpdate.getFeedName(), flowCacheFeedUpdate.isStream(), flowCacheFeedUpdate.getFeedProcessGroupId(), flowCacheFeedUpdate.getProcessors(),
+                          flowCacheFeedUpdate.getConnections(), false);
     }
 
-    private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors, Collection<NifiFlowConnection> connections, boolean notifyClusterMembers) {
+
+    /**
+     * update for clustered kylo
+     */
+    public void updateFlow(NifiFlowCacheFeedUpdate flowCacheFeedUpdate) {
+        updateFlow(flowCacheFeedUpdate.getFeedName(), flowCacheFeedUpdate.isStream(), flowCacheFeedUpdate.getFeedProcessGroupId(), flowCacheFeedUpdate.getProcessors(),
+                   flowCacheFeedUpdate.getConnections(), false);
+    }
+
+    private void updateFlowForFeed(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors, Collection<ConnectionDTO> connections,
+                                   boolean notifyClusterMembers) {
+        Map<String, String> processorIdToProcessorName = processors.stream().collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
+        Map<String, String> processorIdToFeedProcessGroupId = processors.stream().collect(Collectors.toMap(p -> p.getId(), p -> feedProcessGroupId));
+        Map<String, String> processorIdToFeedName = processors.stream().collect(Collectors.toMap(p -> p.getId(), p -> feedName));
+        this.processorIdToFeedProcessGroupId.putAll(processorIdToFeedProcessGroupId);
+        this.processorIdToProcessorName.putAll(processorIdToProcessorName);
+        processorIdToFeedNameMap.putAll(processorIdToFeedName);
+
+        if (isStream) {
+            streamingFeeds.add(feedName);
+        }
+        allFeeds.add(feedName);
+
+        updateConnectionMap(connections, false);
+
+        //notify others of the cache update only if we are not doing a full refresh
+        if (loaded && notifyClusterMembers) {
+            if (nifiFlowCacheClusterManager.isClustered()) {
+                nifiFlowCacheClusterManager.updateFeed2(feedName, isStream, feedProcessGroupId, processors, connections);
+            }
+            lastUpdated = DateTime.now();
+        }
+
+
+    }
+
+    private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors, Collection<NifiFlowConnection> connections,
+                            boolean notifyClusterMembers) {
         feedFlowIdProcessorMap.put(feedName, toFlowIdProcessorMap(processors));
         feedProcessorIdProcessorMap.put(feedName, toProcessorIdProcessorMap(processors));
 
         updateProcessorIdMaps(feedProcessGroupId, processors);
-        Map<String, String> processorIdToProcessGroupId = new HashMap<>();
-        Map<String, String> processorIdToProcessorName = new HashMap<>();
-        processors.stream().forEach(flowProcessor -> {
-            processorIdToProcessGroupId.put(flowProcessor.getId(), feedProcessGroupId);
-            processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
-            if(flowProcessor.getProcessGroup() != null && flowProcessor.getProcessGroup().getParentGroupName() != null && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(flowProcessor.getProcessGroup().getParentGroupName())){
-                reuseableTemplateProcessorIds.add(flowProcessor.getId());
-                if(reusableTemplateProcessGroupId == null){
-                    reusableTemplateProcessGroupId = flowProcessor.getProcessGroup().getId();
-                }
-            }
-        });
-        this.processorIdToFeedProcessGroupId.putAll(processorIdToProcessGroupId);
-        this.processorIdToProcessorName.putAll(processorIdToProcessorName);
 
         connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
-
 
         if (connections != null) {
             Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
@@ -786,11 +836,9 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         }
         allFeeds.add(feedName);
 
-        Long lastUpdatedTime = DateTimeUtil.getNowUTCTime().getMillis();
-
         //notify others of the cache update only if we are not doing a full refresh
-        if(loaded && notifyClusterMembers){
-            if(nifiFlowCacheClusterManager.isClustered()) {
+        if (loaded && notifyClusterMembers) {
+            if (nifiFlowCacheClusterManager.isClustered()) {
                 nifiFlowCacheClusterManager.updateFeed(feedName, isStream, feedProcessGroupId, processors, connections);
             }
             lastUpdated = DateTime.now();
@@ -805,6 +853,14 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         processors.stream().forEach(flowProcessor -> {
             processorIdToProcessGroupId.put(flowProcessor.getId(), processGroupId);
             processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
+
+            if (flowProcessor.getProcessGroup() != null && flowProcessor.getProcessGroup().getParentGroupName() != null && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME
+                .equalsIgnoreCase(flowProcessor.getProcessGroup().getParentGroupName())) {
+                reuseableTemplateProcessorIds.add(flowProcessor.getId());
+                if (reusableTemplateProcessGroupId == null) {
+                    reusableTemplateProcessGroupId = flowProcessor.getProcessGroup().getId();
+                }
+            }
         });
         this.processorIdToFeedProcessGroupId.putAll(processorIdToProcessGroupId);
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
@@ -816,6 +872,16 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         connections.stream().forEach(conn -> {
             connectionMap
                 .put(conn.getConnectionIdentifier(), new NiFiFlowCacheConnectionData(conn.getConnectionIdentifier(), conn.getName(), conn.getSourceIdentifier(), conn.getDestinationIdentifier()));
+        });
+        return connectionMap;
+    }
+
+    private Map<String, NiFiFlowCacheConnectionData> connectionDTOtoConnectionIdMap(Collection<ConnectionDTO> connections) {
+        Map<String, NiFiFlowCacheConnectionData> connectionMap = new HashMap<>();
+        connections.stream().forEach(conn -> {
+            connectionMap
+                .put(conn.getId(), new NiFiFlowCacheConnectionData(conn.getId(), conn.getName(), conn.getSource() != null ? conn.getSource().getId() : null,
+                                                                   conn.getDestination() != null ? conn.getDestination().getId() : null));
         });
         return connectionMap;
     }
@@ -856,7 +922,6 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
             checkAndExpireUnusedCache();
         }, timer, timer, TimeUnit.SECONDS);
 
-
     }
 
     /**
@@ -879,6 +944,11 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         } catch (Exception e) {
             log.error("Error attempting to invalidate flow cache for items not touched in {} or more minutes", minutes, e);
         }
+    }
+
+    public void addConnectionToCache(ConnectionDTO connectionDTO) {
+        Collection<ConnectionDTO> connectionList = Lists.newArrayList(connectionDTO);
+        updateConnectionMap(connectionList, true);
     }
 
 

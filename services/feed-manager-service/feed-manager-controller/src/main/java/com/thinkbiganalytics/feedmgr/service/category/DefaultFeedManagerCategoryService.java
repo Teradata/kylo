@@ -122,18 +122,13 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         // If the category exists and it is being renamed, perform the rename in a privileged transaction.
         // This is to get around the ModeShape problem of requiring admin privileges to do type manipulation.
         FeedCategory categoryUpdate = metadataAccess.commit(() -> {
-            // Determine the system name
-            if (feedCategory.getId() == null) {
-                feedCategory.generateSystemName();
-            } else {
+            if (feedCategory.getId() != null) {
                 final FeedCategory oldCategory = getCategoryById(feedCategory.getId());
-                if (oldCategory != null && !oldCategory.getName().equalsIgnoreCase(feedCategory.getName())) {
-                    //names have changed
-                    //only regenerate the system name if there are no related feeds
+                if (oldCategory != null && !oldCategory.getSystemName().equalsIgnoreCase(feedCategory.getSystemName())) {
+                    //system names have changed, only regenerate the system name if there are no related feeds
                     if (oldCategory.getRelatedFeeds() == 0) {
                         Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
-                        feedCategory.generateSystemName();
-                        categoryProvider.rename(domainId, feedCategory.getSystemName());
+                        categoryProvider.renameSystemName(domainId, feedCategory.getSystemName());
                     }
                 }
             }

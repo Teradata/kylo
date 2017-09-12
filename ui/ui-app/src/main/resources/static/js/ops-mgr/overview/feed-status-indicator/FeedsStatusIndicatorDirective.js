@@ -7,7 +7,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             controllerAs:'vm',
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime: "@"
+                refreshIntervalTime: "=?"
             },
             templateUrl: 'js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html',
             controller: "FeedStatusIndicatorController",
@@ -54,6 +54,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 self.feedSummaryData = newVal;
                   }
         );
+        function onChartElementClick(key){
+        //    OpsManagerFeedService.setFeedHealthCardTab(key);
+        }
 
         function updateChartData(){
             angular.forEach(self.chartData,function(row,i){
@@ -94,6 +97,13 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 },
                 valueFormat: function(d){
                     return parseInt(d);
+                },
+                pie: {
+                    dispatch: {
+                        'elementClick': function(e){
+                           onChartElementClick(e.data.key);
+                        }
+                    }
                 },
                 dispatch: {
 

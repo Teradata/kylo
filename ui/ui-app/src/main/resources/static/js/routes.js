@@ -48,11 +48,16 @@ define(['angular', 'kylo-common', 'kylo-services',
             }
         }).state({
             name: 'define-feed.**',
+            params: {
+                templateId:null,
+                bcExclude_cloning:null,
+                bcExclude_cloneFeedName:null
+            },
             url: '/define-feed',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('define-feed')
+                    $stateProvider.stateService.go('define-feed', transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading define-feed ", err);
@@ -367,6 +372,10 @@ define(['angular', 'kylo-common', 'kylo-services',
         $stateProvider.state({
             name: 'jobs.**',
             url: '/jobs',
+            params: {
+                filter: null,
+                tab:null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('ops-mgr/jobs/module').then(function success(args) {
                     //upon success go back to the state

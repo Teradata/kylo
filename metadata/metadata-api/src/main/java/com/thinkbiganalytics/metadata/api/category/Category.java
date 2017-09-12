@@ -50,9 +50,9 @@ public interface Category extends AccessControlled {
 
     void setDisplayName(String displayName);
 
-    String getName();
+    String getSystemName();
 
-    void setName(String name);
+    void setSystemName(String name);
 
     Integer getVersion();
 

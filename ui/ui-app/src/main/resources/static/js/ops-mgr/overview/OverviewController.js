@@ -22,6 +22,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         self.loading = true;
 
+        /**
+         * Refresh interval for the Services, Feed Health, Data Confidence, and Alerts   (Job Activity KPI is not using this value.  it is set to every second)
+         * @type {number}
+         */
+        self.refreshInterval = 5000;
+
         // Stop polling on destroy
         $scope.$on("$destroy", function() {
             HttpService.cancelPendingHttpRequests();
@@ -47,7 +53,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     self.loading = false;
                 });
         ServicesStatusData.fetchServiceStatus();
-        OpsManagerFeedService.fetchFeedHealth();
+      //  OpsManagerFeedService.fetchFeedHealth();
     }
 
     angular.module(moduleName).controller("OverviewController", ["$scope","$mdDialog","AccessControlService","HttpService","ServicesStatusData","OpsManagerFeedService",OverviewController]);

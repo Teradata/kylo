@@ -196,7 +196,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         Feed feed = this.feedProvider.getFeed(feedId);
 
         if (feed != null) {
-            String systemFeedName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
+            String systemFeedName = FeedNameUtil.fullName(feed.getCategory().getSystemName(), feed.getName());
             FeedDependencyDeltaResults results = new FeedDependencyDeltaResults(feed.getId().toString(), systemFeedName);
 
             //find this feeds latest completion
@@ -207,7 +207,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             if (dependents != null) {
                 for (Feed depFeed : dependents) {
 
-                    String depFeedSystemName = FeedNameUtil.fullName(depFeed.getCategory().getName(), depFeed.getName());
+                    String depFeedSystemName = FeedNameUtil.fullName(depFeed.getCategory().getSystemName(), depFeed.getName());
                     //find Completed feeds executed since time
                     Set<BatchJobExecution> jobs = null;
                     if (latest != null) {

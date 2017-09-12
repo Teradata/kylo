@@ -1,33 +1,18 @@
 define(["angular", "admin/module-name"], function (angular, moduleName) {
 
-    /**
-     * Identifier for this page.
-     * @type {string}
-     */
-    var PAGE_NAME = "adminJcr";
-
-    /**
-     * Displays a list of data sources.
-     *
-     * @constructor
-     * @param $scope the application model
-     * @param {AccessControlService} AccessControlService the access control service
-     * @param AddButtonService the Add button service
-     * @param DatasourcesService the data sources service
-     * @param PaginationDataService the table pagination service
-     * @param StateService the page state service
-     * @param TableOptionsService the table options service
-     */
-    var JcrQueryController = function ($scope, $http, AccessControlService) {
+    var JcrQueryController = function ($scope, $http, $mdDialog, $mdToast,AccessControlService) {
         var self = this;
 
         var init = function() {
-            self.sql = 'SELECT fs.[jcr:title], fd.[tba:state], c.[tba:systemName] '
-                       + 'FROM [tba:feed] as e '
-                       + 'JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) '
-                       + 'JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) '
-                       +'JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd)'
+            self.sql = 'SELECT fs.[jcr:title], fd.[tba:state], c.[tba:systemName] \n'
+                       + 'FROM [tba:feed] as e \n'
+                       + 'JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) \n'
+                       + 'JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e) \n'
+                       +'JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) \n'
                        + 'JOIN [tba:category] as c on ISCHILDNODE(cd,c)';
+
+            getIndexes();
+
         };
         this.loading = false;
         self.errorMessage = null;
@@ -52,35 +37,204 @@ define(["angular", "admin/module-name"], function (angular, moduleName) {
             flatEntityAccess: true
         };
 
-        self.results = [];
+        self.resultSize = 0;
+
+        self.indexes = [];
+
+
+        self.index = {
+            indexName:'',
+            nodeType:'',
+            propertyName:'',
+            propertyType:''
+        };
+
+        self.indexTable = {
+            currentPage:1,
+            rowsPerPage:5
+        }
+
+        self.previousQueries = [];
+        self.previousQuery = '';
+
+        self.explainPlan = null;
+
+
         this.executeQuery = function(){
             query();
         }
 
+        this.propertyTypes = [{name:"String",value:1},
+        {name:"Binary",value:2},
+        {name:"Long",value:3},
+        {name:"Double",value:4},
+        {name:"Date",value:5},
+        {name:"Boolean",value:6},
+        {name:"Name",value:7},
+        {name:"Path",value:8},
+        {name:"Reference",value:9},
+        {name:"Weak Referebce",value:10},
+        {name:"URI",value:11},
+        {name:"Decimal",value:12}]
 
-        function query(schema, table) {
+        this.indexKinds = ["VALUE","ENUMERATED_VALUE","UNIQUE_VALUE","TEXT","NODE_TYPE"]
+
+        this.registerIndex = function(){
+            showDialog("Adding Index", "Adding index. Please wait...");
+            var successFn = function (response) {
+                if (response.data) {
+                    hideDialog();
+                    getIndexes();
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Added the index')
+                            .hideDelay(3000)
+                    );
+                }
+            }
+            var errorFn = function (err) {
+                hideDialog();
+            }
+
+            var indexCopy = angular.extend({},self.index);
+            var promise = $http({
+                url: "/proxy/v1/metadata/debug/jcr-index/register",
+                method: "POST",
+                data: angular.toJson(indexCopy),
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                }
+            }).then(successFn, errorFn);
+        }
+
+        this.unregisterIndex = function(indexName){
+
+            if(angular.isDefined(indexName)) {
+                var successFn = function (response) {
+                    if (response.data) {
+                        getIndexes();
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Removed the index '+indexName)
+                                .hideDelay(3000)
+                        );
+                    }
+                }
+                var errorFn = function (err) {
+
+                }
+
+                var promise = $http({
+                    url: "/proxy/v1/metadata/debug/jcr-index/" + indexName + "/unregister",
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    }
+                }).then(successFn, errorFn);
+            }
+        }
+
+        this.changePreviousQuery = function(){
+            self.sql = self.previousQuery;
+        }
+
+        function showDialog(title,message){
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .parent(angular.element(document.body))
+                    .clickOutsideToClose(false)
+                    .title(title)
+                    .textContent(message)
+                    .ariaLabel(title)
+            );
+        }
+
+        function hideDialog(){
+            $mdDialog.hide();
+        }
+
+        this.reindex = function(){
+                showDialog("Reindexing", "Reindexing. Please wait...");
+
+
+
+                var successFn = function (response) {
+                    hideDialog();
+                    if (response.data) {
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Successfully reindexed')
+                                .hideDelay(3000)
+                        );
+                    }
+                }
+                var errorFn = function (err) {
+                    hideDialog();
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Error reindexing ')
+                            .hideDelay(3000)
+                    );
+                }
+
+                var promise = $http({
+                    url: "/proxy/v1/metadata/debug/jcr-index/reindex",
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    }
+                }).then(successFn, errorFn);
+        }
+
+        function query() {
             self.loading = true;
             self.errorMessage = null;
+            self.explainPlan = null;
+            var sql = self.sql;
             var successFn = function(response) {
+                if(_.indexOf(self.previousQueries,sql) == -1) {
+                    self.previousQueries.push(sql);
+                }
                 self.loading = false;
-                self.results = transformResults(response.data);
+                transformResults(response.data);
             };
             var errorFn = function(err) {
+                self.resultSize = 0;
                 self.loading = false;
-                self.results = [];
-                slef.errorMessage = 'Error performing query '+err
+                if(err && err.data && err.data.developerMessage){
+                    self.errorMessage = err.data.developerMessage;
+                }
+                else {
+                    self.errorMessage = 'Error performing query ';
+                }
+
             };
             var promise = $http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:self.sql}});
             promise.then(successFn, errorFn);
             return promise;
         }
 
+        function getIndexes(){
+            var successFn = function(response) {
+                self.indexes = response.data;
+            };
+            var errorFn = function(err) {
+                self.indexes = [];
+                self.indexesErrorMessage = 'Error getting indexes '+err
+            };
+            var promise = $http.get('/proxy/v1/metadata/debug/jcr-index');
+            promise.then(successFn, errorFn);
+            return promise;
+        }
+
 
         function transformResults(result) {
+
             var data = {};
             var rows = [];
             var columns = [];
            self.queryTime = result.queryTime;
+           self.explainPlan = result.explainPlan;
 
 
             angular.forEach(result.columns,function(col,i){
@@ -105,6 +259,8 @@ define(["angular", "admin/module-name"], function (angular, moduleName) {
             data.rows = rows;
             self.gridOptions.columnDefs = columns;
             self.gridOptions.data = rows;
+            self.resultSize = data.rows.length;
+            return data;
         };
 
 
@@ -113,5 +269,5 @@ define(["angular", "admin/module-name"], function (angular, moduleName) {
 
     };
 
-    angular.module(moduleName).controller("JcrQueryController", ["$scope", "$http","AccessControlService",JcrQueryController]);
+    angular.module(moduleName).controller("JcrQueryController", ["$scope", "$http","$mdDialog", "$mdToast","AccessControlService",JcrQueryController]);
 });

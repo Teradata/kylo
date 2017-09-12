@@ -297,7 +297,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
         Category category = categoryProvider.findById(categoryId);
-        return ensureFeed(category.getName(), feedSystemName);
+        return ensureFeed(category.getSystemName(), feedSystemName);
     }
 
     /**
@@ -511,11 +511,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
 
     @Override
-    public List<Feed> find(String query) {
-       return super.find(query).stream().filter(f -> JcrUtil.hasNode(((JcrFeed)f).getNode(),JcrFeed.SUMMARY)).collect(Collectors.toList());
-    }
-
-    @Override
     public List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId) {
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(FeedDetails.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();
@@ -696,7 +691,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Map<String, Object> merged = feed.mergeProperties(properties);
 
         PropertyChange change = new PropertyChange(feed.getId().getIdValue(),
-                                                   feed.getCategory().getName(),
+                                                   feed.getCategory().getSystemName(),
                                                    feed.getSystemName(),
                                                    securityGroupNames,
                                                    feed.getProperties(),
@@ -742,11 +737,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     protected void appendJoins(StringBuilder bldr, String filter) {
         if (!Strings.isNullOrEmpty(filter)) {
+            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
+            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
             bldr.append("JOIN [tba:feedDetails] AS fdetail ON ISCHILDNODE(fdetail, fs) ");
             bldr.append("JOIN [tba:feedData] AS fdata ON ISCHILDNODE(fdata, e) ");
-            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
-            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
         }
     }
 
@@ -917,7 +912,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.name != null && !name.equals(input.getName())) {
                 return false;
             }
-            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())) {
+            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getSystemName())) {
                 return false;
             }
             if (!this.destIds.isEmpty()) {

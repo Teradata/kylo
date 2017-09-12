@@ -509,7 +509,7 @@ public class InMemoryFeedProvider implements FeedProvider {
                 return false;
             }
 
-            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())) {
+            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getSystemName())) {
                 return false;
             }
 

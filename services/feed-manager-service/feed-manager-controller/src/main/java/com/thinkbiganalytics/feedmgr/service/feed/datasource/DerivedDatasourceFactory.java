@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition;
@@ -74,6 +75,9 @@ public class DerivedDatasourceFactory {
     @Inject
     MetadataAccess metadataAccess;
 
+    @Inject
+    RegisteredTemplateCache registeredTemplateCache;
+
     public void populateDatasources(FeedMetadata feedMetadata, RegisteredTemplate template, Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources,
                                     Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> dest) {
 
@@ -103,7 +107,14 @@ public class DerivedDatasourceFactory {
             }
 
         }
-        List<RegisteredTemplate.Processor> processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
+        //see if its in the cache first
+        List<RegisteredTemplate.Processor> processors = registeredTemplateCache.getProcessors(feedMetadata.getTemplateId());
+        //if not add it
+        if (processors == null) {
+            processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
+            registeredTemplateCache.putProcessors(feedMetadata.getTemplateId(), processors);
+        }
+
         List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream()).collect(Collectors.toList());
 
         template.getRegisteredDatasourceDefinitions().stream().forEach(definition -> {

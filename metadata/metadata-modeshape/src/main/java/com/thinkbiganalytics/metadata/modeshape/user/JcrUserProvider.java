@@ -72,7 +72,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<User> findUserBySystemName(@Nonnull final String systemName) {
-        String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = $systemName ";
+        String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE LOCALNAME() = $systemName ";
         query = applyFindAllFilter(query,EntityUtil.pathForUsers());
         final Map<String, String> bindParams = Collections.singletonMap("systemName", encodeUserName(systemName));
         return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
@@ -196,7 +196,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<UserGroup> findGroupByName(@Nonnull final String groupName) {
-        String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = $groupName ";
+        String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE LOCALNAME() = $groupName ";
         query = applyFindAllFilter(query,EntityUtil.pathForGroups());
         final Map<String, String> bindParams = Collections.singletonMap("groupName", encodeGroupName(groupName));
         return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrUserGroup.class));
