@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.jcr.AccessDeniedException;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -157,13 +158,18 @@ public class JcrVersionUtil {
      * @return the created version
      */
     public static Version checkin(Node node) throws RepositoryException {
-        // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
-        // if it is null on check-in in as the node.isCheckedOut() method does.  This can be null
-        // when the node being checked-in has not been saved after being just made versionable; which 
-        // can occur during upgrades.
-        if (node.getSession().isLive() && node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
-            return getVersionManager(node.getSession()).checkin(node.getPath());
-        } else {
+        try {
+            // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
+            // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
+            // when the node being checked-in has not been saved after being just made versionable; which 
+            // can occur during upgrade to 0.8.4.
+            if (node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
+                return getVersionManager(node.getSession()).checkin(node.getPath());
+            } else {
+                return null;
+            }
+        } catch (ItemNotFoundException e) {
+            // Ignore if the node being checked in represents a deleted node.
             return null;
         }
     }

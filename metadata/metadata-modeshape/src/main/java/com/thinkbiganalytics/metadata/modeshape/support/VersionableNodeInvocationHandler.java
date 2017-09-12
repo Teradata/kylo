@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
  */
 public class VersionableNodeInvocationHandler implements InvocationHandler {
     
-    private static final Set<String> CHILD_NODE = Sets.newHashSet("getParent", "addNode", "getNode");
+    private static final Set<String> PARENT_CHILD = Sets.newHashSet("getParent", "addNode", "getNode");
     private static final Set<String> NODE_ITERATOR = Sets.newHashSet("getNodes", "merge", "getSharedSet");
 
     private final Node versionable;
@@ -61,7 +61,11 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         try {
             String methodName = method.getName();
             
-            if (CHILD_NODE.contains(methodName)) {
+            if (methodName.startsWith("set") || methodName.startsWith("add") || methodName.equals("remove")) {
+                ensureCheckout();
+            }
+            
+            if (PARENT_CHILD.contains(methodName)) {
                 return JcrVersionUtil.createAutoCheckoutProxy((Node) method.invoke(this.versionable, args));
             } else if (NODE_ITERATOR.contains(methodName)) {
                 return createNodeIterator((NodeIterator) method.invoke(this.versionable, args));
@@ -69,11 +73,9 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
                 return createPropertyIterator((PropertyIterator) method.invoke(this.versionable, args));
             } else if (methodName.equals("getProperty")) {
                 return createProperty((Property) method.invoke(this.versionable, args));
-            } else if (methodName.startsWith("set") || methodName.equals("addMixin")) {
-                ensureCheckout();
+            } else {
+                return method.invoke(this.versionable, args);
             }
-            
-            return method.invoke(this.versionable, args);
         } catch (InvocationTargetException e) {
             throw e.getCause();
         }
