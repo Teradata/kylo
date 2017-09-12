@@ -34,20 +34,29 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.jcr.JcrIndexDefinition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.jcr.api.Workspace;
+import org.modeshape.jcr.api.index.IndexDefinition;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -82,7 +91,7 @@ public class DebugController {
 
     @Inject
     private MetadataEventService eventService;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -103,7 +112,7 @@ public class DebugController {
                                                @QueryParam("status") @DefaultValue("") String status) {
         // TODO: Is this a feed ops permission?
         this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-        
+
         FeedOperation.ID opId = null;
         FeedOperation.State state = FeedOperation.State.valueOf(stateStr.toUpperCase());
         OperationStatus opStatus = new OperationStatus(feedName, opId, state, status);
@@ -175,7 +184,7 @@ public class DebugController {
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteJcrTree(@PathParam("abspath") final String abspath) {
         this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-        
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
@@ -202,10 +211,10 @@ public class DebugController {
      */
     @GET
     @Path("jcr/{abspath: .*}")
-    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
     public String printJcrTree(@PathParam("abspath") final String abspath) {
         this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-        
+
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -224,6 +233,64 @@ public class DebugController {
         });
     }
 
+    @GET
+    @Path("jcr-index")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<JcrIndexDefinition> getIndexes() {
+        return metadata.read(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                Map<String, IndexDefinition> indexDefinitionMap = workspace.getIndexManager().getIndexDefinitions();
+                if (indexDefinitionMap != null) {
+                    return indexDefinitionMap.entrySet().stream().map((Map.Entry<String, IndexDefinition> e) -> {
+                        JcrIndexDefinition indexDefinition = new JcrIndexDefinition();
+                        StringBuffer names = new StringBuffer();
+                        StringBuffer types = new StringBuffer();
+                        for (int i = 0; i < e.getValue().size(); i++) {
+                            if (i > 0) {
+                                names.append(",");
+                                types.append(",");
+                            }
+                            int columnType = e.getValue().getColumnDefinition(i).getColumnType();
+                            String propertyName = e.getValue().getColumnDefinition(i).getPropertyName();
+                            names.append(propertyName);
+                            types.append(PropertyType.nameFromValue(columnType));
+                        }
+                        indexDefinition.setIndexKind(e.getValue().getKind().name());
+                        indexDefinition.setIndexName(e.getKey());
+                        indexDefinition.setNodeType(e.getValue().getNodeTypeName());
+                        indexDefinition.setPropertyName(names.toString());
+                        indexDefinition.setPropertyTypes(types.toString());
+
+                        return indexDefinition;
+                    }).collect(Collectors.toList());
+                } else {
+                    return Collections.emptyList();
+                }
+
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @POST
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus unregisterIndex() {
+        return metadata.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                workspace.reindex();
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
 
     /**
      * Prints the subgraph of the node in JCR with the specified ID.
@@ -233,10 +300,10 @@ public class DebugController {
      */
     @GET
     @Path("jcr")
-    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
     public String printJcrId(@QueryParam("id") final String jcrId) {
         this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-        
+
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -256,7 +323,7 @@ public class DebugController {
             return sw.toString();
         });
     }
-    
+
     /**
      * Prints the subgraph of the node in JCR
      *
@@ -270,7 +337,7 @@ public class DebugController {
         return metadata.commit(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            
+
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Node node = session.getNodeByIdentifier(jcrId);
