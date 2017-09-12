@@ -87,6 +87,8 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
             CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
+                CategoriesService.update(response.data);
+
                 EntityAccessControlService.mergeRoleAssignments(self.model, EntityAccessControlService.entityTypes.CATEGORY)
                 CategoriesService.reload();
                 $mdToast.show(

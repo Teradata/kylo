@@ -132,7 +132,45 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                         return self.categories = categories;
                     }, function (err) {
                     });
+                },
+                /**
+                 * Adds/updates the category back to the cached list.
+                 * returns true if successful, false if not
+                 * @param savedCategory
+                 * @return {boolean}
+                 */
+                update:function(savedCategory){
+                    var self = this;
+                    if(angular.isDefined(savedCategory.id)) {
+                        var category = _.find(self.categories, function (category) {
+                            return category.id == savedCategory.id;
+                        });
+                        savedCategory._lowername = savedCategory.name.toLowerCase();
+                        savedCategory.createFeed = false;
+                        //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
+                        //if the user doesnt have this permission they cannot create feeds under this category
+                        if (AccessControlService.isEntityAccessControlled()) {
+                            if (AccessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
+                                savedCategory.createFeed = true;
+                            }
+                        }
+                        else {
+                            savedCategory.createFeed = true;
+                        }
 
+                        if(angular.isDefined(category)) {
+                          var idx = _.indexOf(self.categories, category);
+                            self.categories[idx] = savedCategory;
+                        }
+                        else {
+                            self.categories.push(savedCategory);
+                        }
+                        return true;
+                    }
+                    else {
+                        self.reload();
+                    }
+                    return false;
                 },
                 delete: function (category) {
                     var promise = $http({
