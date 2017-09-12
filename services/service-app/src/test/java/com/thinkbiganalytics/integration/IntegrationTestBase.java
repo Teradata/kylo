@@ -178,9 +178,9 @@ public class IntegrationTestBase {
         feed.setInputProcessorType("org.apache.nifi.processors.standard.GetFile");
 
         List<NifiProperty> properties = new ArrayList<>();
-        NifiProperty fileFilter = new NifiProperty("b6b20dc3-8489-3770-0000-000000000000", "cffa8f24-d097-3c7a-0000-000000000000", "File Filter", testFile);
+        NifiProperty fileFilter = new NifiProperty("764d053d-015e-1000-b8a2-763cd17080e1", "cffa8f24-d097-3c7a-7d04-26b7feff81ab", "File Filter", testFile);
         fileFilter.setProcessGroupName("NiFi Flow");
-        fileFilter.setProcessorName("Filesystem");
+        fileFilter.setProcessorName("GetFile");
         fileFilter.setProcessorType("org.apache.nifi.processors.standard.GetFile");
         fileFilter.setTemplateValue("mydata\\d{1,3}.csv");
         fileFilter.setInputProperty(true);
