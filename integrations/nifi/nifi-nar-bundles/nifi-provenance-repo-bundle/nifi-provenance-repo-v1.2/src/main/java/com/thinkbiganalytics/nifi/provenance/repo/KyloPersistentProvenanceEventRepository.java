@@ -85,8 +85,8 @@ private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new Ky
 
     @Override
     public synchronized void close() throws IOException {
-        super.close();
         provenanceEventRepositoryUtil.persistFeedEventStatisticsToDisk();
+        super.close();
     }
 
 
