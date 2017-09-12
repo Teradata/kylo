@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-ui-annotation</artifactId>
-    <version>0.8.2.2</version>
+    <version>0.8.2.3-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
