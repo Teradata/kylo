@@ -8,5 +8,10 @@ To use this you need to do the following
 
 * Copy jar from /opt/kylo/setup/plugins/kylo-service-monitor-activemq-<Kylo-Version>.jar to the /opt/kylo/kylo-services/plugin/kylo-service-monitor-activemq-<Kylo-Version>.jar  folder
 * Make sure jar file is owned by Kylo service user.
+* Restart Kylo Services
 
+```
+service kylo-services stop
+service kylo-services start
+```
 
