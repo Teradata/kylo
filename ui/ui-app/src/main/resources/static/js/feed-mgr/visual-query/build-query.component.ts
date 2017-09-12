@@ -145,6 +145,11 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     };
 
     /**
+     * List of native data sources to exclude from the model.
+     */
+    private nativeDataSourceIds: string[] = [];
+
+    /**
      * Constructs a {@code BuildQueryComponent}.
      */
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
@@ -197,6 +202,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         // Get the list of data sources
         Promise.all([self.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
+                self.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
+
                 const supportedDatasources = resultList[0].concat(resultList[1]).filter(self.engine.supportsDataSource);
                 if (supportedDatasources.length > 0) {
                     return supportedDatasources;
@@ -330,13 +337,14 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      * TODO enhance to check if there are any tables without connections
      */
     private validate() {
+        const self = this;
         if (this.advancedMode) {
             let sql = this.advancedModeSql();
             this.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
 
             this.model.$selectedColumnsAndTables = null;
             this.model.chartViewModel = null;
-            this.model.datasourceIds = [this.model.$selectedDatasourceId];
+            this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
         } else if (this.chartViewModel.nodes != null) {
             this.isValid = (this.chartViewModel.nodes.length > 0);
@@ -344,7 +352,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.model.chartViewModel = this.chartViewModel.data;
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-            this.model.datasourceIds = this.selectedDatasourceIds;
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => self.nativeDataSourceIds.indexOf(id) < 0);
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -655,7 +663,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Allow for SQL editing
-        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
+        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null) {
             this.advancedMode = true;
             this.advancedModeText = "Visual Mode";
         } else {

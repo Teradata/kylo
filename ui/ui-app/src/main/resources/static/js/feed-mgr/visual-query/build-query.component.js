@@ -104,6 +104,10 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 querySearch: this.onAutocompleteQuerySearch.bind(this),
                 refreshCache: this.onAutocompleteRefreshCache.bind(this)
             };
+            /**
+             * List of native data sources to exclude from the model.
+             */
+            this.nativeDataSourceIds = [];
             // Setup initializers
             this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
             this.initKeyBindings();
@@ -145,6 +149,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             // Get the list of data sources
             Promise.all([self.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
                 .then(function (resultList) {
+                self.nativeDataSourceIds = resultList[0].map(function (dataSource) { return dataSource.id; });
                 var supportedDatasources = resultList[0].concat(resultList[1]).filter(self.engine.supportsDataSource);
                 if (supportedDatasources.length > 0) {
                     return supportedDatasources;
@@ -267,12 +272,13 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
          * TODO enhance to check if there are any tables without connections
          */
         QueryBuilderComponent.prototype.validate = function () {
+            var self = this;
             if (this.advancedMode) {
                 var sql = this.advancedModeSql();
                 this.isValid = (typeof (sql) !== "undefined" && sql.length > 0);
                 this.model.$selectedColumnsAndTables = null;
                 this.model.chartViewModel = null;
-                this.model.datasourceIds = [this.model.$selectedDatasourceId];
+                this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
                 this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
             }
             else if (this.chartViewModel.nodes != null) {
@@ -280,7 +286,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 this.model.chartViewModel = this.chartViewModel.data;
                 this.model.sql = this.getSQLModel();
                 this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-                this.model.datasourceIds = this.selectedDatasourceIds;
+                this.model.datasourceIds = this.selectedDatasourceIds.filter(function (id) { return self.nativeDataSourceIds.indexOf(id) < 0; });
                 this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
             }
             else {
@@ -570,7 +576,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 this.model.$selectedDatasourceId = this.model.datasourceIds[0];
             }
             // Allow for SQL editing
-            if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined") {
+            if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null) {
                 this.advancedMode = true;
                 this.advancedModeText = "Visual Mode";
             }
