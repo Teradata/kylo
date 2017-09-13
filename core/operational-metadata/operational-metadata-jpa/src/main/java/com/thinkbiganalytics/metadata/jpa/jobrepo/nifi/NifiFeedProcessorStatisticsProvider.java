@@ -225,7 +225,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
 
-            .groupBy(stats.feedName, stats.maxEventTime)
+            .groupBy(stats.feedName, stats.maxEventTime, stats.collectionIntervalSeconds)
             .orderBy(stats.maxEventTime.asc());
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
