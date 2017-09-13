@@ -26,6 +26,7 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 
 import java.util.Optional;
@@ -237,4 +238,12 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     ProcessGroupDTO update(@Nonnull ProcessGroupDTO processGroup);
+
+
+    /**
+     * returns the flow for the group
+     * @param parentGroupId the group to inspect
+     * @return the flow for the group
+     */
+    ProcessGroupFlowDTO flow(@Nonnull final String parentGroupId);
 }
