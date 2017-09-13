@@ -73,8 +73,10 @@ import io.swagger.annotations.ApiResponses;
 
 @Component
 @Api(tags = "Operations Manager - Alerts", produces = "application/json")
-@Path("/v1/alerts")
+@Path(AlertsController.V1_ALERTS)
 public class AlertsController {
+
+    public static final String V1_ALERTS = "/v1/alerts";
 
     @Inject
     private AlertProvider provider;

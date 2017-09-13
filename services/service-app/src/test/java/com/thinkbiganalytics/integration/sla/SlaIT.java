@@ -20,6 +20,8 @@ package com.thinkbiganalytics.integration.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.rest.model.Alert;
+import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
@@ -28,23 +30,22 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment.Result.FAILURE;
 
 
 /**
- * Creates a feed, creates two SLAs for the feed, which are expected to succeed and to fail, triggers SLA assessments, asserts SLA assessment results
+ * Creates a feed, creates two SLAs for the feed, which are expected to succeed and to fail,
+ * triggers SLA assessments, asserts SLA assessment results, asserts SLA failures appear in Alerts
  */
 public class SlaIT extends IntegrationTestBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SlaIT.class);
     private static final String TEST_FILE = "sla-assessment.txt";
 
     @Test
@@ -60,6 +61,9 @@ public class SlaIT extends IntegrationTestBase {
         ServiceLevelAgreementGroup sla = createOneHourAgoFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
         triggerSla(sla.getName());
         assertSLA(sla.getId(), FAILURE);
+        assertFilterByFailuresContains(sla.getId());
+        assertFilterBySuccessContainsNot(sla.getId());
+        assertFailedSlaAppearsInAlerts(sla.getId());
     }
 
     @Override
@@ -69,7 +73,23 @@ public class SlaIT extends IntegrationTestBase {
 
 //    @Test
     public void temp() {
-        assertSLA("ecbad238-e253-464f-9f9d-8b4deb771a83", FAILURE);
+        assertFilterByFailuresContains("696e5bc0-e206-40dc-8be1-72550264a90b");
+    }
+
+    private void assertFailedSlaAppearsInAlerts(String slaId) {
+        AlertRange range = getAlerts();
+        List<Alert> alerts = range.getAlerts();
+        Assert.assertTrue(alerts.stream().anyMatch(alert -> slaId.equals(alert.getEntityId()) && "http://kylo.io/alert/alert/sla/violation".equals(alert.getType().toString())));
+    }
+
+    private void assertFilterBySuccessContainsNot(String slaId) {
+        ServiceLevelAssessment[] array = getServiceLevelAssessments("result%3D%3DSUCCESS");
+        Assert.assertFalse(Arrays.stream(array).anyMatch(assessment -> slaId.equals(assessment.getAgreement().getId())));
+    }
+
+    private void assertFilterByFailuresContains(String slaId) {
+        ServiceLevelAssessment[] array = getServiceLevelAssessments("result%3D%3DFAILURE");
+        Assert.assertTrue(Arrays.stream(array).anyMatch(assessment -> slaId.equals(assessment.getAgreement().getId())));
     }
 
     private void assertSLA(String slaId, ServiceLevelAssessment.Result status) {

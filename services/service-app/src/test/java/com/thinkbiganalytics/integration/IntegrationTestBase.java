@@ -31,6 +31,8 @@ import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+import com.thinkbiganalytics.alerts.rest.controller.AlertsController;
+import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
@@ -169,10 +171,10 @@ public class IntegrationTestBase {
         return response;
     }
 
-    protected FeedMetadata makeCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name, String testFile) {
+    protected FeedMetadata makeCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String feedName, String testFile) {
         FeedMetadata feed = new FeedMetadata();
-        feed.setFeedName(name);
-        feed.setSystemFeedName(name.toLowerCase());
+        feed.setFeedName(feedName);
+        feed.setSystemFeedName(feedName.toLowerCase());
         feed.setCategory(category);
         feed.setTemplateId(template.getTemplateId());
         feed.setTemplateName(template.getTemplateName());
@@ -882,6 +884,8 @@ public class IntegrationTestBase {
     }
 
     protected RestResponseStatus triggerSla(String slaName) {
+        LOG.info("Triggering SLA " + slaName);
+
         ScheduleIdentifier si = new ScheduleIdentifier();
         si.setName(slaName);
         si.setGroup("SLA");
@@ -897,12 +901,12 @@ public class IntegrationTestBase {
     }
 
     protected ServiceLevelAssessment[] getServiceLevelAssessments(String filter) {
-        LOG.info(String.format("Getting SLA Assessments for filter %s", filter));
+        LOG.info(String.format("Getting up to 50 SLA Assessments for filter %s", filter));
 
         Response response = given(ServiceLevelAssessmentsController.BASE)
             .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get("?filter=" + filter + "&limit=5&sort=-createdTime&start=0");
+            .get("?filter=" + filter + "&limit=50&sort=-createdTime&start=0");
 
         response.then().statusCode(HTTP_OK);
 
@@ -911,5 +915,17 @@ public class IntegrationTestBase {
         return result.getData().stream().map(o -> mapper.convertValue(o, ServiceLevelAssessment.class)).toArray(ServiceLevelAssessment[]::new);
     }
 
+    protected AlertRange getAlerts() {
+        LOG.info("Getting up to 10 non-cleared Alerts");
+
+        Response response = given(AlertsController.V1_ALERTS)
+            .when()
+            .get("?cleared=false&limit=10");
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(AlertRange.class);
+
+    }
 
 }
