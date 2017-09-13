@@ -23,7 +23,10 @@ package com.thinkbiganalytics.integration.sla;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
+import com.thinkbiganalytics.metadata.rest.model.sla.ObligationAssessment;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,16 +34,17 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment.Result.FAILURE;
 
 
 /**
- * Creates a feed, creates two SLAs for the feed, which are expected to succeed and to fail,
- * triggers SLA assessments, asserts SLA assessment results
+ * Creates a feed, creates two SLAs for the feed, which are expected to succeed and to fail, triggers SLA assessments, asserts SLA assessment results
  */
 public class SlaIT extends IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(SlaIT.class);
-
     private static final String TEST_FILE = "sla-assessment.txt";
 
     @Test
@@ -55,23 +59,26 @@ public class SlaIT extends IntegrationTestBase {
 
         ServiceLevelAgreementGroup sla = createOneHourAgoFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
         triggerSla(sla.getName());
-        assertSLAs(response);
+        assertSLA(sla.getId(), FAILURE);
     }
 
     @Override
     public void startClean() {
-        super.startClean();
+//        super.startClean();
     }
 
-//    @Test
+    @Test
     public void temp() {
-        triggerSla("Before 12 with cron expression 0 0 12 1/1 * ? *");
+        assertSLA("ecbad238-e253-464f-9f9d-8b4deb771a83", FAILURE);
     }
 
-
-    private void assertSLAs(FeedMetadata response) {
-
+    private void assertSLA(String slaId, ServiceLevelAssessment.Result status) {
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(slaId);
+        for (ServiceLevelAssessment sla : array) {
+            List<ObligationAssessment> list = sla.getObligationAssessments();
+            for (ObligationAssessment assessment : list) {
+                Assert.assertEquals(status, assessment.getResult());
+            }
+        }
     }
-
-
 }
