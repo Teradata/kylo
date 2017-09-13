@@ -42,6 +42,7 @@ import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
+import com.thinkbiganalytics.feedmgr.rest.controller.ServiceLevelAgreementRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.TemplatesRestController;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -57,17 +58,23 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
+import com.thinkbiganalytics.scheduler.rest.controller.SchedulerRestController;
+import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
 import com.thinkbiganalytics.security.rest.controller.AccessControlController;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -92,6 +99,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -838,4 +847,61 @@ public class IntegrationTestBase {
         Object[] result = response.as(Object[].class);
         Assert.assertEquals(invalidRowCount, result.length);
     }
+
+    protected ServiceLevelAgreementGroup createOneHourAgoFeedProcessingDeadlineSla(String feedName, String feedId) {
+        LOG.info("Creating 'one hour ago' feed processing deadline SLA for feed " + feedName);
+
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        int hourOfDay = oneHourAgo.get(ChronoField.HOUR_OF_DAY);
+        int minuteOfHour = oneHourAgo.get(ChronoField.MINUTE_OF_HOUR);
+        String cronExpression = String.format("0 %s %s 1/1 * ? *", minuteOfHour, hourOfDay);
+
+        ServiceLevelAgreementGroup sla = new ServiceLevelAgreementGroup();
+        sla.setName("Before " + hourOfDay + ":" + minuteOfHour + " (cron: " + cronExpression + ")");
+        sla.setDescription("The feed should complete before given date and time");
+        List<ServiceLevelAgreementRule> rules = new ArrayList<>();
+        ServiceLevelAgreementRule rule = new ServiceLevelAgreementRule();
+        rule.setName("Feed Processing deadline");
+        rule.setDisplayName("Feed Processing deadline");
+        rule.setDescription("Ensure a Feed processes data by a specified time");
+        rule.setObjectClassType("com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric");
+        rule.setObjectShortClassType("FeedOnTimeArrivalMetric");
+        rule.setCondition(ObligationGroup.Condition.REQUIRED);
+
+        rule.setProperties(newFieldRuleProperties(
+            newFieldRuleProperty("FeedName", "feedName", feedName),
+            newFieldRuleProperty("ExpectedDeliveryTime", "cronString", cronExpression),
+            newFieldRuleProperty("NoLaterThanTime", "lateTime", "0"),
+            newFieldRuleProperty("NoLaterThanUnits", "lateUnits", "days")
+        ));
+
+        rules.add(rule);
+        sla.setRules(rules);
+
+        Response response = given(ServiceLevelAgreementRestController.V1_FEEDMGR_SLA)
+            .body(sla)
+            .when()
+            .post(String.format("feed/%s", feedId));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(ServiceLevelAgreementGroup.class);
+    }
+
+    protected RestResponseStatus triggerSla(String slaName) {
+        ScheduleIdentifier si = new ScheduleIdentifier();
+        si.setName(slaName);
+        si.setGroup("SLA");
+
+        Response response = given(SchedulerRestController.V1_SCHEDULER)
+            .body(si)
+            .when()
+            .post("/jobs/trigger");
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(RestResponseStatus.class);
+
+    }
+
 }

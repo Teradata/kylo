@@ -21,11 +21,16 @@ package com.thinkbiganalytics.integration.sla;
  */
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 /**
@@ -34,17 +39,22 @@ import java.io.IOException;
  */
 public class SlaIT extends IntegrationTestBase {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SlaIT.class);
+
     private static final String TEST_FILE = "sla-assessment.txt";
-    private static String FEED_NAME = "sla_" + System.currentTimeMillis();
 
     @Test
     public void testSla() throws IOException {
         copyDataToDropzone(TEST_FILE);
 
-        FeedMetadata response = createSimpleFeed(FEED_NAME, TEST_FILE);
+        LocalDateTime now = LocalDateTime.now();
+        String systemName = now.format(DateTimeFormatter.ofPattern("HH_mm_ss_SSS"));
+        FeedMetadata response = createSimpleFeed("sla_" + systemName, TEST_FILE);
 
         waitForFeedToComplete();
 
+        ServiceLevelAgreementGroup sla = createOneHourAgoFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
+        triggerSla(sla.getName());
         assertSLAs(response);
     }
 
@@ -53,8 +63,9 @@ public class SlaIT extends IntegrationTestBase {
         super.startClean();
     }
 
-    //@Test
+//    @Test
     public void temp() {
+        triggerSla("Before 12 with cron expression 0 0 12 1/1 * ? *");
     }
 
 

@@ -67,13 +67,16 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
+import static com.thinkbiganalytics.feedmgr.rest.controller.ServiceLevelAgreementRestController.V1_FEEDMGR_SLA;
+
 @Api(tags = "Feed Manager - SLA", produces = "application/json")
-@Path("/v1/feedmgr/sla")
+@Path(V1_FEEDMGR_SLA)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - SLA", description = "service level agreements"))
 public class ServiceLevelAgreementRestController {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementRestController.class);
+    public static final String V1_FEEDMGR_SLA = "/v1/feedmgr/sla";
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
