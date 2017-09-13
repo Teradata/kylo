@@ -45,7 +45,7 @@ private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>()
 private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
 private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnectionMap = new ConcurrentHashMap<>();
 private Map<String, String> connectionIdCacheNameMap = new ConcurrentHashMap<>();
-private Set<String> reuseableTemplateProcessorIds = new HashSet<>();
+private Set<String> reusableTemplateProcessorIds = new HashSet<>();
 private Set<ConnectionDTO> rootConnections = new HashSet<>();
 private String reusableTemplateProcessGroupId;
 
@@ -54,6 +54,19 @@ private String reusableTemplateProcessGroupId;
 
             this.rootConnections = nifiFlowInspectorManager.getFlowsInspected().values().stream().filter(f -> f.isRoot()).flatMap(f -> f.getProcessGroupFlow().getFlow().getConnections().stream())
                 .map(e -> e.getComponent()).collect(Collectors.toSet());
+
+            this.reusableTemplateProcessGroupId = nifiFlowInspectorManager.getFlowsInspected()
+                .values().stream()
+                .filter(f -> f.getLevel() == 2 && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getProcessGroupName())).findFirst()
+                .map(f -> f.getProcessGroupId()).orElse(null);
+
+
+            reusableTemplateProcessorIds = nifiFlowInspectorManager.getFlowsInspected()
+                .values().stream()
+                .filter(f -> f.getLevel() == 3 && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getParent().getProcessGroupName()))
+                .flatMap(f -> f.getAllProcessors().stream())
+                .map(p -> p.getId())
+                .collect(Collectors.toSet());
 
 
             nifiFlowInspectorManager.getFlowsInspected().values().stream().forEach(inspection -> {
@@ -66,18 +79,7 @@ private String reusableTemplateProcessGroupId;
                     .filter(f -> f.getLevel() == 3 && !TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getParent().getProcessGroupName()))
                     .collect(Collectors.toList());
 
-               this.reusableTemplateProcessGroupId = nifiFlowInspectorManager.getFlowsInspected()
-                    .values().stream()
-                    .filter(f -> f.getLevel() == 2 && TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getProcessGroupName())).findFirst()
-                   .map(f -> f.getProcessGroupId()).orElse(null);
 
-
-                Set<String> reusableTemplateProcessorIds = nifiFlowInspectorManager.getFlowsInspected()
-                    .values().stream()
-                    .filter(f -> f.getLevel() == 3 && !TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getParent().getProcessGroupName()))
-                    .flatMap(f -> f.getAllProcessors().stream())
-                    .map(p -> p.getId())
-                    .collect(Collectors.toSet());
 
                 feedProcessGroupInspections.stream().forEach(f ->
                                                              {
@@ -112,7 +114,7 @@ private String reusableTemplateProcessGroupId;
                 connectionIdCacheNameMap.putAll(connectionIdMap);
                 connectionIdToConnectionMap.putAll(connectionMap);
                 processorIdToProcessorName.putAll(processorIdToNameMap);
-                reusableTemplateProcessorIds.addAll( reusableTemplateProcessorIds);
+
 
             });
 
@@ -139,8 +141,8 @@ private String reusableTemplateProcessGroupId;
         return connectionIdCacheNameMap;
     }
 
-    public Set<String> getReuseableTemplateProcessorIds() {
-        return reuseableTemplateProcessorIds;
+    public Set<String> getReusableTemplateProcessorIds() {
+        return reusableTemplateProcessorIds;
     }
 
     public String getReusableTemplateProcessGroupId() {

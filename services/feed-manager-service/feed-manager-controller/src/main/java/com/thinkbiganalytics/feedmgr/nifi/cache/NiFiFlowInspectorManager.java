@@ -162,7 +162,7 @@ public class NiFiFlowInspectorManager {
     }
 
     private void flowInspectionComplete(NiFiFlowInspection flowInspection) {
-        log.info("Completed inspection of process group: {} in {} ms on thread: {}",flowInspection.getProcessGroupId(), flowInspection.getTime(), flowInspection.getThreadName());
+      //  log.debug("Completed inspection of process group: {} in {} ms on thread: {}",flowInspection.getProcessGroupId(), flowInspection.getTime(), flowInspection.getThreadName());
         if (!flowsInspected.containsKey(flowInspection.getProcessGroupId())) {
             flowInspection.getGroupsToInspect().stream().forEach(processGroupId -> addGroupToInspect(processGroupId, flowInspection.getLevel(), flowInspection));
             flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
