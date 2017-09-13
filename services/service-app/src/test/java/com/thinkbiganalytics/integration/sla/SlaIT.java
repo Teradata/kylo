@@ -73,7 +73,7 @@ public class SlaIT extends IntegrationTestBase {
     }
 
     private void assertSLA(String slaId, ServiceLevelAssessment.Result status) {
-        ServiceLevelAssessment[] array = getServiceLevelAssessments(slaId);
+        ServiceLevelAssessment[] array = getServiceLevelAssessments("slaId%3D%3D" + slaId);
         for (ServiceLevelAssessment sla : array) {
             List<ObligationAssessment> list = sla.getObligationAssessments();
             for (ObligationAssessment assessment : list) {

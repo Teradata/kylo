@@ -896,13 +896,13 @@ public class IntegrationTestBase {
         return response.as(RestResponseStatus.class);
     }
 
-    protected ServiceLevelAssessment[] getServiceLevelAssessments(String slaId) {
-        LOG.info("Getting SLA Assessments for slaId " + slaId);
+    protected ServiceLevelAssessment[] getServiceLevelAssessments(String filter) {
+        LOG.info(String.format("Getting SLA Assessments for filter %s", filter));
 
         Response response = given(ServiceLevelAssessmentsController.BASE)
             .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get("?filter=slaId%3D%3D" + slaId + "&limit=5&sort=-createdTime&start=0");
+            .get("?filter=" + filter + "&limit=5&sort=-createdTime&start=0");
 
         response.then().statusCode(HTTP_OK);
 
