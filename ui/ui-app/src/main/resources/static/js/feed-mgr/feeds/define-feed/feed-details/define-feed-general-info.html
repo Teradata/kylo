@@ -65,10 +65,8 @@
                     <span> {{item.name}} </span>
                   </span>
                   <span class="item-metadata">
-                    <span class="item-metastat"  ng-if="item.createFeed">
-                       <strong>{{item.relatedFeeds}}</strong> Related Feeds
-                    </span>
-                      <span class="item-metastat"  ng-if="!item.createFeed">
+                    <span class="item-metastat hint"  ng-if="item.createFeed">
+                     {{item.description | characters:50}}
                     </span>
                   </span>
                         </md-item-template>

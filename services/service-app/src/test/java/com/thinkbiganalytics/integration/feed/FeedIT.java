@@ -63,11 +63,24 @@ public class FeedIT extends IntegrationTestBase {
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
 
 
+    private String sampleFeedsPath;
+    protected String sampleTemplatesPath;
+    private String usersDataPath;
+
+
     @Override
     protected void configureObjectMapper(ObjectMapper om) {
         SimpleModule m = new SimpleModule();
         m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
         om.registerModule(m);
+    }
+
+    protected void prepare() throws Exception {
+        String path = getClass().getResource(".").toURI().getPath();
+        String basedir = path.substring(0, path.indexOf("services"));
+        sampleFeedsPath = basedir + FEED_SAMPLES_DIR;
+        sampleTemplatesPath = basedir + TEMPLATE_SAMPLES_DIR;
+        usersDataPath = basedir + DATA_SAMPLES_DIR;
     }
 
     @Test

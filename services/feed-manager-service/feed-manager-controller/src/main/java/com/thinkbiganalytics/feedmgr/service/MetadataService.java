@@ -208,6 +208,13 @@ public interface MetadataService {
     Collection<FeedCategory> getCategories();
 
     /**
+     * Returns the categories
+     * @param includeFeedDetails true to return the list of related feeds.  if true this will be a slower call
+     * @return the categories
+     */
+    Collection<FeedCategory> getCategories(boolean includeFeedDetails);
+
+    /**
      * Return a category matching a system name
      *
      * @param name a category system name

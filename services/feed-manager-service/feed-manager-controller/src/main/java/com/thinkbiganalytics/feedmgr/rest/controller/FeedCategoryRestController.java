@@ -148,8 +148,8 @@ public class FeedCategoryRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the list of categories.", response = FeedCategory.class, responseContainer = "List")
     )
-    public Response getCategories() {
-        Collection<FeedCategory> categories = getMetadataService().getCategories();
+    public Response getCategories(@QueryParam("includeFeedDetails") @DefaultValue("false") boolean includeFeedDetails) {
+        Collection<FeedCategory> categories = getMetadataService().getCategories(includeFeedDetails);
         return Response.ok(categories).build();
     }
 

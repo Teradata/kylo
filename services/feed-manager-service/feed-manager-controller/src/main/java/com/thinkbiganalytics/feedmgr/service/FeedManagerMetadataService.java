@@ -103,7 +103,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedModelTransform feedModelTransform;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -121,11 +121,11 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
-    
-    
+
+
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
-            return feedProvider.checkFeedPermission(id, action, more);
+        return feedProvider.checkFeedPermission(id, action, more);
 
     }
 
@@ -324,7 +324,7 @@ public class FeedManagerMetadataService implements MetadataService {
     public Collection<FeedMetadata> getFeeds() {
         return feedProvider.getFeeds();
     }
-    
+
     @Override
     public Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable, String filter) {
         return feedProvider.getFeeds(verbose, pageable, filter);
@@ -363,6 +363,11 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public Collection<FeedCategory> getCategories() {
         return categoryProvider.getCategories();
+    }
+
+    @Override
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
+        return categoryProvider.getCategories(includeFeedDetails);
     }
 
     @Override
