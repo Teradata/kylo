@@ -67,7 +67,7 @@ public class SlaIT extends IntegrationTestBase {
 //        super.startClean();
     }
 
-    @Test
+//    @Test
     public void temp() {
         assertSLA("ecbad238-e253-464f-9f9d-8b4deb771a83", FAILURE);
     }
