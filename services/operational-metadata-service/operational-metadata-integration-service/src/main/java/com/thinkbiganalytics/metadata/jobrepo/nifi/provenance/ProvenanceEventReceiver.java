@@ -310,7 +310,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         if (isNotifyJobFinished(event)) {
             //register the event as being triggered
             String mapKey = triggeredEventsKey(event);
-            completedJobEvents.put(mapKey, mapKey);
+                completedJobEvents.put(mapKey, mapKey);
             lastFeedFinishedNotificationCache.put(event.getFeedName(),DateTime.now());
                 metadataAccess.commit(() -> {
                     BatchJobExecution batchJobExecution = jobExecution;

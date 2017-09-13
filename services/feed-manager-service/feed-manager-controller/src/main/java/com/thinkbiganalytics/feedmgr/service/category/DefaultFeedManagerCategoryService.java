@@ -136,10 +136,10 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void saveCategory(final FeedCategory feedCategory) {
-
+        
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
         boolean isNew = feedCategory.getId() == null;
-
+        
         // If the category exists and it is being renamed, perform the rename in a privileged transaction.
         // This is to get around the ModeShape problem of requiring admin privileges to do type manipulation.
         FeedCategory categoryUpdate = metadataAccess.commit(() -> {
@@ -153,10 +153,10 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
                     }
                 }
             }
-
+            
             return feedCategory;
         }, MetadataAccess.SERVICE);
-
+        
         // Perform the rest of the updates as the current user.
         final Category.ID domainId = metadataAccess.commit(() -> {
 
@@ -228,7 +228,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
         boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
-        if (hasPermission) {
+        if(hasPermission) {
             categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
         }
     }

@@ -476,7 +476,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     if (domainTemplate == null) {
                         throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
                     }
-                    //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
+                  //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
                 });
             }
 
@@ -904,10 +904,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 domainFeed.setState(Feed.State.ENABLED);
                 feedProvider.update(domainFeed);
 
-                if (enabled) {
+            if (enabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
-                    notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
-                }
+                notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
+            }
             }
 
             return enabled;
@@ -926,10 +926,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 domainFeed.setState(Feed.State.DISABLED);
                 feedProvider.update(domainFeed);
 
-                if (disabled) {
+            if (disabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
-                    notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
-                }
+                notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
+            }
             }
 
             return disabled;

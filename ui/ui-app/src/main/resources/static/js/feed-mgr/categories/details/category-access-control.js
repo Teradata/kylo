@@ -30,7 +30,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
         if (CategoriesService.model.roleMemberships == undefined) {
             CategoriesService.model.roleMemberships = this.model.roleMemberships = [];
         }
-
+        
         if (CategoriesService.model.feedRoleMemberships == undefined) {
         	CategoriesService.model.feedRoleMemberships = this.model.feedRoleMemberships = [];
         }
