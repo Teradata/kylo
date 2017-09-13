@@ -374,7 +374,7 @@ public class IntegrationTestBase {
         int existingTemplateNum = getTemplates().length;
 
         //import standard feedTemplate template
-        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templateName);
+        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templatesPath+templateName);
         Assert.assertEquals(templateName, feedTemplate.getFileName());
         Assert.assertTrue(feedTemplate.isSuccess());
 
@@ -595,10 +595,10 @@ public class IntegrationTestBase {
         return post.as(ExportImportFeedService.ImportFeed.class);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importTemplate(String templateName) {
+    protected ExportImportTemplateService.ImportTemplate importTemplate(String templatesPath) {
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
-            .multiPart(new File(templatesPath + templateName))
+            .multiPart(new File(templatesPath ))
             .multiPart("overwrite", true)
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
