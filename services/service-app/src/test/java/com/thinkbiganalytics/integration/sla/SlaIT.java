@@ -64,7 +64,7 @@ public class SlaIT extends IntegrationTestBase {
 
     @Override
     public void startClean() {
-//        super.startClean();
+        super.startClean();
     }
 
 //    @Test
