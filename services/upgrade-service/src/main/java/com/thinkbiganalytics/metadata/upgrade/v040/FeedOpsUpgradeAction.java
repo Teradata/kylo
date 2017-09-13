@@ -44,11 +44,11 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-@Component("upgradeAction040")
+@Component("feedOpspgradeAction040")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class UpgradeAction implements UpgradeState {
+public class FeedOpsUpgradeAction implements UpgradeState {
 
-    private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(FeedOpsUpgradeAction.class);
 
     @Inject
     private FeedProvider feedProvider;
