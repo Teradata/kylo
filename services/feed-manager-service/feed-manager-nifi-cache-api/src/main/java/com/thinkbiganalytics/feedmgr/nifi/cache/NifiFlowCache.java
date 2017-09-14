@@ -56,7 +56,9 @@ public interface NifiFlowCache {
 
     NiFiFlowCacheSync refreshAll(String syncId);
 
+    @Deprecated
     void updateFlow(FeedMetadata feedMetadata, NifiFlowProcessGroup feedProcessGroup);
+
     void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs);
 
     void updateRegisteredTemplate(RegisteredTemplate template, boolean notifyClusterMembers);

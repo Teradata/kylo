@@ -119,6 +119,10 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
         return updateMessage;
     }
 
+    /**
+     * This replaces the updateFeed() callback
+     * starting with 0.8.3.1 cluster manager will callback using this method
+     */
     public NifiFlowCacheClusterUpdateMessage updateFeed2(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors, Collection<ConnectionDTO> connections) {
         NifiFlowCacheSimpleFeedUpdate feedUpdate = new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformProcessors(processors), transformConnections(connections));
         String json = ObjectMapperSerializer.serialize(feedUpdate);

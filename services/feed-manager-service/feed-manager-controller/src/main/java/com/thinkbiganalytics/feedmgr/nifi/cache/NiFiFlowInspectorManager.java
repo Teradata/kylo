@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -93,8 +92,7 @@ public class NiFiFlowInspectorManager {
     public NiFiFlowInspectorManager(String startingProcessGroupId, NiFiFlowInspectionCallback completionCallback, int numOfThreads, boolean wait, NiFiRestClient restClient) {
         this.restClient = restClient;
 
-
-        this.executorService = Executors.newFixedThreadPool(numOfThreads > 0 && numOfThreads < MAX_THREADS ? numOfThreads : DEFAULT_THREADS,flowInspectionThreadFactory);
+        this.executorService = Executors.newFixedThreadPool(numOfThreads > 0 && numOfThreads < MAX_THREADS ? numOfThreads : DEFAULT_THREADS, flowInspectionThreadFactory);
         this.completionCallback = completionCallback;
         this.startingProcessGroupId = StringUtils.isBlank(startingProcessGroupId) ? "root" : startingProcessGroupId;
         this.wait = wait;
@@ -110,32 +108,36 @@ public class NiFiFlowInspectorManager {
         private int threadCount = DEFAULT_THREADS;
         private NiFiRestClient restClient;
 
-        public NiFiFlowInspectorManagerBuilder(NiFiRestClient restClient){
+        public NiFiFlowInspectorManagerBuilder(NiFiRestClient restClient) {
             this.restClient = restClient;
         }
 
         public NiFiFlowInspectorManagerBuilder completionCallback(NiFiFlowInspectionCallback callback) {
-            this.completionCallback =callback;
+            this.completionCallback = callback;
             return this;
         }
 
         public NiFiFlowInspectorManagerBuilder startingProcessGroupId(String startingProcessGroupId) {
-            this.startingProcessGroupId =startingProcessGroupId;
+            this.startingProcessGroupId = startingProcessGroupId;
             return this;
         }
-        public NiFiFlowInspectorManagerBuilder waitUntilComplete(boolean wait){
+
+        public NiFiFlowInspectorManagerBuilder waitUntilComplete(boolean wait) {
             this.wait = wait;
-            return  this;
+            return this;
         }
-        public NiFiFlowInspectorManagerBuilder threads(int threadCount){
+
+        public NiFiFlowInspectorManagerBuilder threads(int threadCount) {
             this.threadCount = threadCount;
             return this;
         }
-        public NiFiFlowInspectorManager build(){
-            return new NiFiFlowInspectorManager(startingProcessGroupId,completionCallback,threadCount,wait,restClient);
+
+        public NiFiFlowInspectorManager build() {
+            return new NiFiFlowInspectorManager(startingProcessGroupId, completionCallback, threadCount, wait, restClient);
         }
-        public NiFiFlowInspectorManager buildAndInspect(){
-            NiFiFlowInspectorManager mgr = new NiFiFlowInspectorManager(startingProcessGroupId,completionCallback,threadCount,wait,restClient);
+
+        public NiFiFlowInspectorManager buildAndInspect() {
+            NiFiFlowInspectorManager mgr = new NiFiFlowInspectorManager(startingProcessGroupId, completionCallback, threadCount, wait, restClient);
             mgr.inspect();
             return mgr;
         }
@@ -149,28 +151,23 @@ public class NiFiFlowInspectorManager {
     }
 
     public void addGroupToInspect(String groupId, int level, NiFiFlowInspection parent) {
-      //  if (!flowsInspected.containsKey(groupId)) {
-            int nextLevel = level + 1;
-            processGroupsToInspect.add(groupId);
-            inspectingCount.incrementAndGet();
-            NiFiFlowInspector processGroupInspector = new NiFiFlowInspector(groupId, nextLevel, parent, restClient);
-            CompletableFuture<NiFiFlowInspection> flowInspection = CompletableFuture.supplyAsync(() -> processGroupInspector.inspect(), executorService);
-            flowInspection.thenAcceptAsync(this::flowInspectionComplete);
-      //  }
-    //    return null;
+        int nextLevel = level + 1;
+        processGroupsToInspect.add(groupId);
+        inspectingCount.incrementAndGet();
+        NiFiFlowInspector processGroupInspector = new NiFiFlowInspector(groupId, nextLevel, parent, restClient);
+        CompletableFuture<NiFiFlowInspection> flowInspection = CompletableFuture.supplyAsync(() -> processGroupInspector.inspect(), executorService);
+        flowInspection.thenAcceptAsync(this::flowInspectionComplete);
+
     }
 
     private void flowInspectionComplete(NiFiFlowInspection flowInspection) {
-       // log.info("Completed inspection of process group: {} in {} ms on thread: {}",flowInspection.getProcessGroupId(), flowInspection.getTime(), flowInspection.getThreadName());
-      //  if (!flowsInspected.containsKey(flowInspection.getProcessGroupId())) {
-            flowInspection.getGroupsToInspect().stream().forEach(processGroupId -> addGroupToInspect(processGroupId, flowInspection.getLevel(), flowInspection));
-            processGroupsToInspect.remove(flowInspection.getProcessGroupId());
-            inspectingCount.decrementAndGet();
-            flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
-
-      //  }
+        flowInspection.getGroupsToInspect().stream().forEach(processGroupId -> addGroupToInspect(processGroupId, flowInspection.getLevel(), flowInspection));
+        processGroupsToInspect.remove(flowInspection.getProcessGroupId());
+        inspectingCount.decrementAndGet();
+        flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
 
         if (isFinished()) {
+            log.info("Completed NiFi inspection of process groups");
             running = false;
             finished = DateTime.now();
             totalTime = finished.getMillis() - started.getMillis();
@@ -180,11 +177,12 @@ public class NiFiFlowInspectorManager {
             if (wait) {
                 latch.countDown();
             }
+            executorService.shutdown();
         }
     }
 
     public boolean isFinished() {
-        return  inspectingCount.get() == 0;
+        return inspectingCount.get() == 0;
     }
 
     /**

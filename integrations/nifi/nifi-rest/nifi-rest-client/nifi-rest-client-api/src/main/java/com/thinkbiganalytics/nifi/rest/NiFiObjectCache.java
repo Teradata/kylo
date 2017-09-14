@@ -78,6 +78,8 @@ public class NiFiObjectCache {
     //Make a evictingQueue  to reduce size??
     private Map<String, Set<ConnectionDTO>> processGroupConnections = new ConcurrentHashMap<>();
 
+    private String reusableTemplateProcessGroupId;
+
 
     public NiFiObjectCache() {
     }
@@ -99,7 +101,15 @@ public class NiFiObjectCache {
      */
     public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
         if (reusableTemplateCategory == null) {
-            reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+            if(reusableTemplateProcessGroupId != null) {
+                reusableTemplateCategory =  restClient.getNiFiRestClient().processGroups().findById("root", false, false).orElse(null);
+            }
+            if(reusableTemplateCategory == null) {
+                reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+                if(reusableTemplateCategory != null) {
+                    reusableTemplateProcessGroupId = reusableTemplateCategory.getId();
+                }
+            }
         }
         return reusableTemplateCategory;
     }
@@ -219,8 +229,10 @@ public class NiFiObjectCache {
         if(!processGroupConnections.containsKey(processGroupId)){
             processGroupConnections.put(processGroupId, new HashSet<>());
         }
-        processGroupConnections.get(processGroupId).add(connectionDTO);
+            processGroupConnections.get(processGroupId).add(connectionDTO);
+
     }
+
 
     public void addProcessGroupConnections(Set<ConnectionDTO> connections) {
         connections.stream().forEach(c -> addConnection(c.getParentGroupId(), c));
@@ -249,5 +261,13 @@ public class NiFiObjectCache {
         if(cacheCategoryGroups){
            categoryProcessGroup.put(processGroupDTO.getName(),processGroupDTO);
         }
+    }
+
+    public String getReusableTemplateProcessGroupId() {
+        return reusableTemplateProcessGroupId;
+    }
+
+    public void setReusableTemplateProcessGroupId(String reusableTemplateProcessGroupId) {
+        this.reusableTemplateProcessGroupId = reusableTemplateProcessGroupId;
     }
 }
