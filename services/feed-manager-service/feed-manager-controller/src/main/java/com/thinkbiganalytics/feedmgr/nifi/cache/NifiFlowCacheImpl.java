@@ -359,8 +359,8 @@ public class NifiFlowCacheImpl implements NifiConnectionListener, PostMetadataCo
         reuseableTemplateProcessorIds.addAll(completionCallback.getReusableTemplateProcessorIds());
         reusableTemplateProcessGroupId = completionCallback.getReusableTemplateProcessGroupId();
 
-        log.info("NiFi Flow Inspection took {} ms with {} threads for {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
-                 processorIdToProcessorName.size(), connectionIdCacheNameMap.size());
+        log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
+                 completionCallback.getFeedNames().size(),processorIdToProcessorName.size(), connectionIdCacheNameMap.size());
         if (completionCallback.getRootConnections() != null) {
             log.info("Adding {} Root Connections to the createFeedBuilderCache ", completionCallback.getRootConnections().size());
             createFeedBuilderCache.addProcessGroupConnections(completionCallback.getRootConnections());
