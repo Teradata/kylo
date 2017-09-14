@@ -27,6 +27,8 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
  * Created by sr186054 on 9/13/17.
  */
 public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCallback {
+    private static final Logger log = LoggerFactory.getLogger(DefaultNiFiFlowCompletionCallback.class);
 
 private Map<String, String> processorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
 private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>();
@@ -48,6 +51,7 @@ private Map<String, String> connectionIdCacheNameMap = new ConcurrentHashMap<>()
 private Set<String> reusableTemplateProcessorIds = new HashSet<>();
 private Set<ConnectionDTO> rootConnections = new HashSet<>();
 private String reusableTemplateProcessGroupId;
+private Set<String> feedNames = new HashSet<>();
 
         @Override
         public void execute(NiFiFlowInspectorManager nifiFlowInspectorManager) {
@@ -68,34 +72,33 @@ private String reusableTemplateProcessGroupId;
                 .map(p -> p.getId())
                 .collect(Collectors.toSet());
 
+            List<NiFiFlowInspection> feedProcessGroupInspections = nifiFlowInspectorManager.getFlowsInspected()
+                .values().stream()
+                .filter(f -> f.getLevel() == 3 && !TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getParent().getProcessGroupName()))
+                .collect(Collectors.toList());
+
+
+
+            feedProcessGroupInspections.stream().forEach(f ->
+                                                         {
+
+                                                             String feedName = FeedNameUtil.fullName(f.getParent().getProcessGroupName(), f.getProcessGroupName());
+                                                             feedNames.add(feedName);
+                                                            // log.info("process feed {} ",feedName);
+                                                             List<ProcessorDTO> feedChildren = f.getAllProcessors();
+                                                             Map<String, String> feedNameMap = feedChildren.stream()
+                                                                 .collect(Collectors.toMap(x -> x.getId(), x ->feedName));
+                                                             processorIdToFeedNameMap.putAll(feedNameMap);
+
+                                                             Map<String, String> processGroupIdMap =
+                                                                 feedChildren.stream()
+                                                                     .collect(Collectors.toMap(p -> p.getId(), p -> f.getProcessGroupId()));
+                                                             processorIdToFeedProcessGroupId.putAll(processGroupIdMap);
+
+                                                         });
 
             nifiFlowInspectorManager.getFlowsInspected().values().stream().forEach(inspection -> {
 
-
-
-
-                List<NiFiFlowInspection> feedProcessGroupInspections = nifiFlowInspectorManager.getFlowsInspected()
-                    .values().stream()
-                    .filter(f -> f.getLevel() == 3 && !TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(f.getParent().getProcessGroupName()))
-                    .collect(Collectors.toList());
-
-
-
-                feedProcessGroupInspections.stream().forEach(f ->
-                                                             {
-
-                                                                 String feedName = FeedNameUtil.fullName(f.getParent().getProcessGroupName(), f.getProcessGroupName());
-                                                                 List<ProcessorDTO> feedChildren = f.getAllProcessors();
-                                                                 Map<String, String> feedNameMap = feedChildren.stream()
-                                                                         .collect(Collectors.toMap(x -> x.getId(), x ->feedName));
-                                                                 processorIdToFeedNameMap.putAll(feedNameMap);
-
-                                                                 Map<String, String> processGroupIdMap =
-                                                                     feedChildren.stream()
-                                                                         .collect(Collectors.toMap(p -> p.getId(), p -> f.getProcessGroupId()));
-                                                                 processorIdToFeedProcessGroupId.putAll(processGroupIdMap);
-
-                                                             });
                 Map<String, String>
                     processorIdToNameMap =
                     inspection.getProcessGroupFlow().getFlow().getProcessors().stream().map(e -> e.getComponent()).collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
@@ -151,5 +154,9 @@ private String reusableTemplateProcessGroupId;
 
     public Set<ConnectionDTO> getRootConnections() {
         return rootConnections;
+    }
+
+    public Set<String> getFeedNames() {
+        return feedNames;
     }
 }

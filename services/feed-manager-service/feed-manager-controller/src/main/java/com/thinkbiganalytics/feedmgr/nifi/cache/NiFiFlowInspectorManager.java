@@ -148,27 +148,27 @@ public class NiFiFlowInspectorManager {
         processGroupsToInspect.clear();
     }
 
-    public Future<NiFiFlowInspection> addGroupToInspect(String groupId, int level, NiFiFlowInspection parent) {
-        if (!flowsInspected.containsKey(groupId)) {
+    public void addGroupToInspect(String groupId, int level, NiFiFlowInspection parent) {
+      //  if (!flowsInspected.containsKey(groupId)) {
             int nextLevel = level + 1;
             processGroupsToInspect.add(groupId);
             inspectingCount.incrementAndGet();
             NiFiFlowInspector processGroupInspector = new NiFiFlowInspector(groupId, nextLevel, parent, restClient);
             CompletableFuture<NiFiFlowInspection> flowInspection = CompletableFuture.supplyAsync(() -> processGroupInspector.inspect(), executorService);
             flowInspection.thenAcceptAsync(this::flowInspectionComplete);
-
-        }
-        return null;
+      //  }
+    //    return null;
     }
 
     private void flowInspectionComplete(NiFiFlowInspection flowInspection) {
-      //  log.debug("Completed inspection of process group: {} in {} ms on thread: {}",flowInspection.getProcessGroupId(), flowInspection.getTime(), flowInspection.getThreadName());
-        if (!flowsInspected.containsKey(flowInspection.getProcessGroupId())) {
+       // log.info("Completed inspection of process group: {} in {} ms on thread: {}",flowInspection.getProcessGroupId(), flowInspection.getTime(), flowInspection.getThreadName());
+      //  if (!flowsInspected.containsKey(flowInspection.getProcessGroupId())) {
             flowInspection.getGroupsToInspect().stream().forEach(processGroupId -> addGroupToInspect(processGroupId, flowInspection.getLevel(), flowInspection));
-            flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
-            inspectingCount.decrementAndGet();
             processGroupsToInspect.remove(flowInspection.getProcessGroupId());
-        }
+            inspectingCount.decrementAndGet();
+            flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
+
+      //  }
 
         if (isFinished()) {
             running = false;
@@ -184,7 +184,7 @@ public class NiFiFlowInspectorManager {
     }
 
     public boolean isFinished() {
-        return processGroupsToInspect.isEmpty() && inspectingCount.get() == 0;
+        return  inspectingCount.get() == 0;
     }
 
     /**
