@@ -153,11 +153,10 @@ public class NiFiFlowInspection {
         List<NiFiFlowInspection> allChildren = getThisAndAllChildren();
 
         List<ProcessorDTO> processors = allChildren.stream()
-            .flatMap(c -> c.getProcessGroupFlow().getFlow().getProcessGroups().stream())
+            .flatMap(c -> c.getProcessGroupFlow().getFlow().getProcessors().stream())
             .map(e -> e.getComponent())
-            .flatMap(g -> g.getContents().getProcessors().stream())
             .collect(Collectors.toList());
-        processors.addAll(getProcessGroupFlow().getFlow().getProcessors().stream().map(c -> c.getComponent()).collect(Collectors.toSet()));
+        //processors.addAll(getProcessGroupFlow().getFlow().getProcessors().stream().map(c -> c.getComponent()).collect(Collectors.toSet()));
         return processors;
 
     }
