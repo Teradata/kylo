@@ -71,6 +71,8 @@ public class SlaIT extends IntegrationTestBase {
         assertFilterByFailuresContainsNot(oneHourAheadSla.getId());
         assertFilterBySuccessContains(oneHourAheadSla.getId());
         assertSuccessfulSlaAppearsNotInAlerts(oneHourAheadSla.getId());
+
+        deleteExistingSla();
     }
 
     @Override
@@ -80,7 +82,7 @@ public class SlaIT extends IntegrationTestBase {
 
 //    @Test
     public void temp() {
-        assertFilterByFailuresContains("696e5bc0-e206-40dc-8be1-72550264a90b");
+        deleteExistingSla();
     }
 
     private void assertFailedSlaAppearsInAlerts(String slaId) {

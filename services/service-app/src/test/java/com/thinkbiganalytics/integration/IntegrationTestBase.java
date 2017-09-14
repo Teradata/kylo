@@ -62,6 +62,7 @@ import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -337,12 +338,25 @@ public class IntegrationTestBase {
     }
 
     protected void cleanup() {
+        deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
+    }
+
+    protected void deleteExistingSla() {
+        LOG.info("Deleting existing SLAs");
+
+        ServiceLevelAgreement[] agreements = getSla();
+        for (ServiceLevelAgreement agreement : agreements) {
+            deleteSla(agreement.getId());
+        }
+        agreements = getSla();
+        Assert.assertTrue(agreements.length == 0);
+
     }
 
     protected void disableExistingFeeds() {
@@ -926,6 +940,28 @@ public class IntegrationTestBase {
         SearchResult result = response.as(SearchResultImpl.class);
         final ObjectMapper mapper = new ObjectMapper();
         return result.getData().stream().map(o -> mapper.convertValue(o, ServiceLevelAssessment.class)).toArray(ServiceLevelAssessment[]::new);
+    }
+
+    protected ServiceLevelAgreement[] getSla() {
+        LOG.info("Getting SLAs");
+
+        Response response = given(ServiceLevelAgreementRestController.V1_FEEDMGR_SLA)
+            .when()
+            .get();
+
+        response.then().statusCode(HTTP_OK);
+        return response.as(ServiceLevelAgreement[].class);
+
+    }
+
+    protected void deleteSla(String slaId) {
+        LOG.info("Deleting SLA " + slaId);
+
+        Response response = given(ServiceLevelAgreementRestController.V1_FEEDMGR_SLA)
+            .when()
+            .delete(String.format("/%s", slaId));
+
+        response.then().statusCode(HTTP_OK);
     }
 
     protected AlertRange getAlerts() {
