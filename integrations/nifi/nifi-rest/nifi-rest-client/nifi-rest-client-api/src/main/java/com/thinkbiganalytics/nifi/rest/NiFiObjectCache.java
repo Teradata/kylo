@@ -216,7 +216,10 @@ public class NiFiObjectCache {
     }
 
     public void addConnection(String processGroupId, ConnectionDTO connectionDTO) {
-        processGroupConnections.putIfAbsent(processGroupId, new HashSet<>()).add(connectionDTO);
+        if(!processGroupConnections.containsKey(processGroupId)){
+            processGroupConnections.put(processGroupId, new HashSet<>());
+        }
+        processGroupConnections.get(processGroupId).add(connectionDTO);
     }
 
     public void addProcessGroupConnections(Set<ConnectionDTO> connections) {

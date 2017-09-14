@@ -107,6 +107,11 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
     }
 
     @Override
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
+        return categories.values();
+    }
+
+    @Override
     public FeedCategory getCategoryBySystemName(final String name) {
         return Iterables.tryFind(categories.values(), new Predicate<FeedCategory>() {
             @Override

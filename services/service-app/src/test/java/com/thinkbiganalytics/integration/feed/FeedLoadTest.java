@@ -64,12 +64,12 @@ public class FeedLoadTest extends FeedIT {
    // @Ignore
     public void loadSimpleFeed() throws Exception {
         // the num of categories to use
-        int categories = 1;
+        int categories = 50;
         //the num of feeds to create in each category. feeds are labled cat_#_feed_#.  it start creating feeds after the last feed in the category
         int maxFeedsInCategory = 20;
 
         //the category id to start.   categories are created as cat_#
-        int startingCategoryId = 62;
+        int startingCategoryId = 3;
         prepare();
         String templatePath = getClass().getClassLoader().getResource("com/thinkbiganalytics/integration/simple_template.template.zip").toURI().getPath();
         loadTest(templatePath, "simple_feed", categories, maxFeedsInCategory, startingCategoryId);
@@ -119,5 +119,11 @@ public class FeedLoadTest extends FeedIT {
     public void startClean() {
         int i = 0;
         //   super.startClean();
+    }
+
+    @Override
+    public void cleanup() {
+        //noop
+        int i = 0;
     }
 }

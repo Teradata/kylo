@@ -81,6 +81,10 @@ public class CategoryModelTransform {
         return domainToFeedCategory(domainCategory, categoryProvider.getUserFields());
     }
 
+    public FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, boolean includeFeedDetails) {
+        return domainToFeedCategory(domainCategory, categoryProvider.getUserFields(),includeFeedDetails);
+    }
+
     /**
      * Transforms the specified Metadata categories into Feed Manager categories.
      *
@@ -92,7 +96,14 @@ public class CategoryModelTransform {
         final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
         return domain.stream().map(c -> domainToFeedCategory(c, userFields)).collect(Collectors.toList());
     }
+    public List<FeedCategory> domainToFeedCategory(@Nonnull final Collection<Category> domain, boolean includeFeedDetails) {
+        final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
+        return domain.stream().map(c -> domainToFeedCategory(c, userFields,includeFeedDetails)).collect(Collectors.toList());
+    }
 
+    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        return domainToFeedCategory(domainCategory,userFields,false);
+    }
     /**
      * Transforms the specified Metadata category into a Feed Manager category.
      *
@@ -101,11 +112,11 @@ public class CategoryModelTransform {
      * @return the Feed Manager category
      */
     @Nullable
-    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields, boolean includeFeedDetails) {
         if (domainCategory != null) {
             FeedCategory category = new FeedCategory();
             category.setId(domainCategory.getId().toString());
-            if (domainCategory.getFeeds() != null) {
+            if (includeFeedDetails && domainCategory.getFeeds() != null) {
                 List<FeedSummary> summaries = feedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
                 category.setFeeds(summaries);
                 category.setRelatedFeeds(summaries.size());
