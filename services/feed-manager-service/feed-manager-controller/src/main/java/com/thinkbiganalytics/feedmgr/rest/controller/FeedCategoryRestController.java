@@ -349,7 +349,7 @@ public class FeedCategoryRestController {
                   })
     public Response postRoleMembershipChange(@PathParam("categoryId") String categoryIdStr,
                                              RoleMembershipChange changes) {
-        return this.securityService.changeCategoryFeedRoleMemberships(categoryIdStr, changes)
+        return this.securityService.changeCategoryRoleMemberships(categoryIdStr, changes)
                         .map(m -> Response.ok(m).build())
                         .orElseThrow(() -> new WebApplicationException("Either a category with the ID \"" + categoryIdStr
                                                                        + "\" does not exist or it does not have a role the named \"" 
