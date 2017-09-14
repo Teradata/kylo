@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
+import com.thinkbiganalytics.feedmgr.service.MetadataModelTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -103,6 +104,11 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedManagerTemplateService feedManagerTemplateService() {
         return new DefaultFeedManagerTemplateService();
+    }
+
+    @Bean(name = "metadataModelTransform")
+    public MetadataModelTransform metadataTransform() {
+        return new MetadataModelTransform();
     }
 
     @Bean

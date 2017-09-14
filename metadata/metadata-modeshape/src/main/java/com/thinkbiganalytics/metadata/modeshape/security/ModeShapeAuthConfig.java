@@ -87,16 +87,4 @@ public class ModeShapeAuthConfig {
     public PostMetadataConfigAction checkEntityAccessControl() {
         return new CheckEntityAccessControlAction();
     }
-
-    @Bean
-    @Order(PostMetadataConfigAction.LATE_ORDER - 10)
-    public PostMetadataConfigAction servicesAllowedActionsSetup() {
-        // This action copies the prototype services actions to the single instance set of actions for all services access control. 
-        return () -> metadata.commit(() -> {
-            Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-            Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
-
-            allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
-        }, MetadataAccess.SERVICE);
-    }
 }

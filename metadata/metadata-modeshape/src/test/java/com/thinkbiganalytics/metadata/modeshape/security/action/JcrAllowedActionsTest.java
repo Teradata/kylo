@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
@@ -35,6 +36,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.security.AccessControlException;
+import java.security.Principal;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -43,7 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class})
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
-
+    
     @Inject
     private JcrMetadataAccess metadata;
 
@@ -66,7 +68,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void testAdminGetAvailable() throws Exception {
-        this.metadata.read(new AdminCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAvailableActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
@@ -74,23 +76,23 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             AllowedActions actions = option.get(); // Throws exception on failure
 
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.ADMIN);
     }
 
     @Test
     public void testTestGetAvailable() throws Exception {
-        this.metadata.read(new TestCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAvailableActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); // Throws exception on failure
-        });
+        }, TestSecurityConfig.TEST);
     }
 
     @Test(dependsOnMethods = "testAdminGetAvailable")
     public void testAdminGetAllowed() throws Exception {
-        this.metadata.read(new AdminCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
@@ -98,79 +100,79 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             AllowedActions actions = option.get(); // Throws exception on failure
 
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.ADMIN);
     }
 
     @Test(dependsOnMethods = "testTestGetAvailable", expectedExceptions = AccessControlException.class)
     public void testTestGetAllowed() throws Exception {
-        this.metadata.read(new TestCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.TEST);
     }
 
     @Test(dependsOnMethods = {"testAdminGetAllowed", "testTestGetAllowed"})
     public void testEnableExport() {
-        boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
+        boolean changed = this.metadata.commit(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             return option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
 
-        boolean passed = this.metadata.read(new TestCredentials(), () -> {
+        boolean passed = this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             return true;
-        });
+        }, TestSecurityConfig.TEST);
 
         assertThat(passed).isTrue();
     }
 
     @Test(dependsOnMethods = "testEnableExport", expectedExceptions = AccessControlException.class)
     public void testDisableExport() {
-        boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
+        boolean changed = this.metadata.commit(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             return option.get().disable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
 
-        this.metadata.read(new TestCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.TEST);
     }
 
     @Test(dependsOnMethods = "testDisableExport", expectedExceptions = AccessControlException.class)
     public void testEnableOnlyCreate() {
-        boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
+        boolean changed = this.metadata.commit(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
 
             option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
             return option.get().enableOnly(new TestUserPrincipal(), TestSecurityConfig.CREATE_FEEDS);
-        });
+        }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
 
-        this.metadata.read(new TestCredentials(), () -> {
+        this.metadata.read(() -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
 
             assertThat(option.isPresent()).isTrue();
@@ -182,6 +184,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             }
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        });
+        }, TestSecurityConfig.TEST);
     }
 }

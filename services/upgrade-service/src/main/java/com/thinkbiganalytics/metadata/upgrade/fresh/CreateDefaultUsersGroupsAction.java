@@ -26,22 +26,29 @@ import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
+import com.thinkbiganalytics.server.upgrade.UpgradeException;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
+import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.jcr.RepositoryException;
 
-@Component("upgradeActionFreshInstall")
+@Component("UsersGroupsUpgradeActionFreshInstall")
+@Order(Ordered.LOWEST_PRECEDENCE)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class CreateDefaultUsersGroupsAction implements UpgradeState {
 
@@ -64,7 +71,7 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
      */
     @Override
     public void upgradeTo(KyloVersion startingVersion) {
-        log.info("Upgrading from version: " + startingVersion);
+        log.info("Creating default users/groups for version: " + startingVersion);
         
         User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", "thinkbig");
         User analyst = createDefaultUser("analyst", "Analyst", "analyst");
@@ -126,6 +133,15 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
                                FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS,
                                FeedServicesAccessControl.ACCESS_GLOBAL_SEARCH);
             });
+        
+        try {
+            Workspace workspace = (Workspace) JcrMetadataAccess.getActiveSession().getWorkspace();
+            workspace.reindex("/users");
+            workspace.reindex("/groups");
+        } catch (RepositoryException e) {
+            log.error("Failed to re-index metadata", e);
+            throw new UpgradeException("Failed to re-index metadata", e);
+        }
     }
     
     protected User createDefaultUser(String username, String displayName, String password) {

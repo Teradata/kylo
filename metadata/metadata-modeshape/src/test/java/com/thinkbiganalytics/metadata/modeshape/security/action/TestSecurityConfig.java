@@ -25,6 +25,10 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
@@ -32,7 +36,10 @@ import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.security.Principal;
+
 import javax.inject.Inject;
+import javax.jcr.Node;
 
 /**
  *
@@ -56,6 +63,9 @@ public class TestSecurityConfig {
     public static final Action CREATE_TEMPLATESS = ACCESS_TEMPLATES.subAction("adminTemplates");
     public static final Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminCategories");
 
+    public static final Principal ADMIN = new GroupPrincipal("admin");
+    public static final Principal TEST = new GroupPrincipal("test");
+
     @Inject
     private MetadataAccess metadata;
 
@@ -71,32 +81,36 @@ public class TestSecurityConfig {
     @Bean
     public PostMetadataConfigAction configAuthorization() {
         return () -> metadata.commit(() -> {
-            //@formatter:off
-
             // JcrTool tool = new JcrTool(true);
             // tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
-            return builder
-                            .module(AllowedActions.SERVICES)
-                                .action(MANAGE_AUTH)
-                                .action(MANAGE_OPS)
-                                .action(ADMIN_OPS)
-                                .action(FEED_SUPPORT)
-                                .action(ACCESS_CATEGORIES)
-                                .action(CREATE_CATEGORIES)
-                                .action(ADMIN_CATEGORIES)
-                                .action(ACCESS_FEEDS)
-                                .action(CREATE_FEEDS)
-                                .action(ADMIN_FEEDS)
-                                .action(IMPORT_FEEDS)
-                                .action(EXPORT_FEEDS)
-                                .action(ACCESS_TEMPLATES)
-                                .action(CREATE_TEMPLATESS)
-                                .action(ADMIN_TEMPLATES)
-                                .add()
-                            .build();
-
+            //@formatter:off
+            builder
+                .module(AllowedActions.SERVICES)
+                    .action(MANAGE_AUTH)
+                    .action(MANAGE_OPS)
+                    .action(ADMIN_OPS)
+                    .action(FEED_SUPPORT)
+                    .action(ACCESS_CATEGORIES)
+                    .action(CREATE_CATEGORIES)
+                    .action(ADMIN_CATEGORIES)
+                    .action(ACCESS_FEEDS)
+                    .action(CREATE_FEEDS)
+                    .action(ADMIN_FEEDS)
+                    .action(IMPORT_FEEDS)
+                    .action(EXPORT_FEEDS)
+                    .action(ACCESS_TEMPLATES)
+                    .action(CREATE_TEMPLATESS)
+                    .action(ADMIN_TEMPLATES)
+                    .add()
+                .build();
             //@formatter:on
+            
+            Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
+            Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
+
+            allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
+
         }, MetadataAccess.SERVICE);
     }
 }

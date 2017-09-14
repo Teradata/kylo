@@ -32,6 +32,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
@@ -71,6 +72,12 @@ public class FeedManagerSecurityUpgradeAction implements UpgradeState {
 
         //@formatter:off
         builder
+            .module(AllowedActions.SERVICES)
+                .action(FeedServicesAccessControl.ACCESS_TABLES)
+                .action(FeedServicesAccessControl.ACCESS_VISUAL_QUERY)
+                .action(FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS)
+                .action(FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS)
+                .add()
             .module(AllowedActions.FEED)
                 .action(FeedAccessControl.ACCESS_FEED)
                 .action(FeedAccessControl.EDIT_SUMMARY)
