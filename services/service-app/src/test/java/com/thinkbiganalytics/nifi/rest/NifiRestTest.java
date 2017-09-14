@@ -45,6 +45,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,8 @@ public class NifiRestTest {
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
         NifiRestClientConfig clientConfig = new NifiRestClientConfig();
-        clientConfig.setHost("localhost");
+        //clientConfig.setHost("localhost");
+        clientConfig.setHost("34.208.236.190");
         clientConfig.setPort(8079);
         NiFiRestClient c = new NiFiRestClientV1(clientConfig);
         restClient.setClient(c);
@@ -184,17 +186,17 @@ public class NifiRestTest {
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
-    // @Test
+    //@Test
     public void testInspection() {
         DefaultNiFiFlowCompletionCallback completionCallback = new DefaultNiFiFlowCompletionCallback();
         NiFiFlowInspectorManager flowInspectorManager = new NiFiFlowInspectorManager.NiFiFlowInspectorManagerBuilder(restClient.getNiFiRestClient())
             .startingProcessGroupId("root")
             .completionCallback(completionCallback)
-            .threads(10)
+            .threads(50)
             .waitUntilComplete(true)
             .buildAndInspect();
 
-        log.info("NiFi Flow Inspection took {} ms with {} threads for {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
+        log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),completionCallback.getFeedNames().size(),
                  completionCallback.getProcessorIdToProcessorName().size(), completionCallback.getConnectionIdCacheNameMap().size());
 
         int i = 0;
