@@ -27,7 +27,7 @@ describe('svg_class', function () {
 
     });
 
-    it('removeClassSVG returns true and removes the class when the element does have the class', function () {
+    xit('removeClassSVG returns true and removes the class when the element does have the class', function () {
 
         var testClass = 'foo';
 

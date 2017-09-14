@@ -1,29 +1,11 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-"use strict";
-
-define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/module", "feed-mgr/visual-query/module-require"], function (mocks, moduleName) {
-    describe("VisualQueryColumnDelegate", function () {
+define(["require", "exports", "./column-delegate", "feed-mgr/visual-query/module", "feed-mgr/visual-query/module-require"], function (require, exports, column_delegate_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var mocks = require("angular-mocks");
+    var moduleName = require("feed-mgr/visual-query/module-name");
+    describe("Class: ColumnDelegate", function () {
         // Include dependencies
         beforeEach(mocks.module("kylo", "kylo.feedmgr", moduleName));
-
         // hideColumn
         it("should hide a column", function (done) {
             var controller = {
@@ -46,16 +28,18 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                         }
                     }
                 },
+                onColumnsChange: function () {
+                },
                 queueGridRefresh: function () {
+                },
+                refresh: function () {
                 }
             };
-
-            mocks.inject(function (VisualQueryColumnDelegate) {
-                var delegate = new VisualQueryColumnDelegate("string", controller);
-                delegate.hideColumn({colDef: {}, displayName: "col1", field: "col1"}, grid);
+            mocks.inject(function (uiGridConstants) {
+                var delegate = new column_delegate_1.ColumnDelegate("string", controller, null, uiGridConstants);
+                delegate.hideColumn({ colDef: {}, displayName: "col1", field: "col1" }, grid);
             });
         });
-
         // renameColumn
         it("should rename a column", function (done) {
             // Mock dialog
@@ -66,11 +50,10 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
                     return deferred.promise;
                 };
             });
-
             // Test rename column
-            var column = {displayName: "col1", field: "col1"};
+            var column = { displayName: "col1", field: "col1" };
             var controller = {
-                pushFormula: function (formula, context) {
+                addFunction: function (formula, context) {
                     expect(formula).toBe("select(username, col1.as(\"ticketprice\"), eventname)");
                     expect(context.formula).toBe("select(username, col1.as(\"ticketprice\"), eventname)");
                     expect(context.icon).toBe("mode_edit");
@@ -80,25 +63,22 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
             };
             var grid = {
                 columns: [
-                    {field: "username", visible: true},
-                    {field: "col1", visible: true},
-                    {field: "eventname", visible: true}
+                    { field: "username", visible: true },
+                    { field: "col1", visible: true },
+                    { field: "eventname", visible: true }
                 ]
             };
-
-            mocks.inject(function ($rootScope, VisualQueryColumnDelegate) {
-                var delegate = new VisualQueryColumnDelegate("double", controller);
+            mocks.inject(function ($rootScope, $mdDialog, uiGridConstants) {
+                var delegate = new column_delegate_1.ColumnDelegate("double", controller, $mdDialog, uiGridConstants);
                 delegate.renameColumn(column, grid);
-
                 // Complete deferred
                 deferred.resolve("ticketprice");
                 $rootScope.$digest();
             });
         });
-
         // transformColumn
         it("should transform a column", function (done) {
-            var column = {displayName: "col1", field: "col1"};
+            var column = { displayName: "col1", field: "col1" };
             var controller = {
                 addFunction: function (formula, context) {
                     expect(formula).toBe("select(username, upper(col1).as(\"col1\"), eventname)");
@@ -110,17 +90,16 @@ define(["angularMocks", "feed-mgr/visual-query/module-name", "feed-mgr/visual-qu
             };
             var grid = {
                 columns: [
-                    {field: "username", visible: true},
-                    {field: "col1", visible: true},
-                    {field: "eventname", visible: true}
+                    { field: "username", visible: true },
+                    { field: "col1", visible: true },
+                    { field: "eventname", visible: true }
                 ]
             };
-
-            mocks.inject(function (VisualQueryColumnDelegate) {
-                var delegate = new VisualQueryColumnDelegate("string", controller);
-                delegate.transformColumn({description: "Uppercase", icon: "arrow_upward", name: "Upper Case", operation: "upper"},
-                    column, grid);
+            mocks.inject(function (uiGridConstants) {
+                var delegate = new column_delegate_1.ColumnDelegate("string", controller, null, uiGridConstants);
+                delegate.transformColumn({ description: "Uppercase", icon: "arrow_upward", name: "Upper Case", operation: "upper" }, column, grid);
             });
         });
     });
 });
+//# sourceMappingURL=column-delegate.spec.js.map

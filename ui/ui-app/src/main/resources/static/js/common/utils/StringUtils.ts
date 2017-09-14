@@ -33,8 +33,8 @@ var StringUtils: any = (function() {
      * @param escapeChar - the escape char for the SQL dialect
      * @returns the identifier with backticks escaped
      */
-    (StringUtils as any).quoteSql = function(str: string, quoteChar: string = "`", escapeChar: string = "\\"): string {
-        return str.replace(`/${quoteChar}/g`, `${escapeChar}${quoteChar}`);
+    (StringUtils as any).quoteSql = function(str: string, quoteChar: string = "`", escapeChar: string = "`"): string {
+        return str.replace(RegExp(quoteChar, "g"), `${escapeChar}${quoteChar}`);
     };
 
     /**

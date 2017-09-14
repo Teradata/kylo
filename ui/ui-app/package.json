@@ -4,9 +4,11 @@
   "private": true,
   "description": "kylo",
   "scripts": {
-    "build": "tsc -p src/main/resources/static",
-    "start": "tsc -p src/main/resources/static && concurrently \"tsc -p src/main/resources/static -w\" \"lite-server -c src/main/resources/static/bs-config.js\"",
-    "reinstall": "rm -rf node_modules tmp deploy dist && npm i"
+    "build": "tsc -p src/main/resources/static/tsconfig.app.json",
+    "start": "tsc -p src/main/resources/static/tsconfig.app.json && concurrently \"tsc -p src/main/resources/static -w\" \"lite-server -c src/main/resources/static/bs-config.js\"",
+    "reinstall": "rm -rf node_modules tmp deploy dist && npm i",
+    "test": "karma start karma.conf.js",
+    "test:watch": "tsc -p src/main/resources/static/tsconfig.app.json && concurrently \"tsc -p src/main/resources/static/tsconfig.spec.json -w\" \"karma start karma.conf.js\""
   },
   "engines": {
     "node": ">4.4 < 7",
@@ -35,13 +37,22 @@
     "@types/angular": "^1.6.28",
     "@types/angular-cookies": "^1.4.4",
     "@types/angular-material": "^1.1.52",
+    "@types/angular-mocks": "^1.5.11",
     "@types/angular-sanitize": "^1.3.5",
     "@types/angular-ui-router": "^1.1.37",
+    "@types/hammerjs": "2.0.30",
+    "@types/jasmine": "2.5.38",
     "@types/jquery": "^2.0.48",
     "@types/requirejs": "^2.1.30",
     "@types/underscore": "^1.8.1",
+    "angular-mocks": "^1.6.2",
     "concurrently": "^3.5.0",
     "http-proxy-middleware": "^0.17.4",
+    "jasmine-core": "~2.5.2",
+    "karma": "~1.4.1",
+    "karma-chrome-launcher": "~2.0.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-jasmine-html-reporter": "^0.2.2",
     "lite-server": "^2.3.0",
     "typescript": "~2.3.3"
   }

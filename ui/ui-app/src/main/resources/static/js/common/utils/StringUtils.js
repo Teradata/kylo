@@ -32,8 +32,8 @@ var StringUtils = (function () {
      */
     StringUtils.quoteSql = function (str, quoteChar, escapeChar) {
         if (quoteChar === void 0) { quoteChar = "`"; }
-        if (escapeChar === void 0) { escapeChar = "\\"; }
-        return str.replace("/" + quoteChar + "/g", "" + escapeChar + quoteChar);
+        if (escapeChar === void 0) { escapeChar = "`"; }
+        return str.replace(RegExp(quoteChar, "g"), "" + escapeChar + quoteChar);
     };
     /**
      * Indicates if the specified string is blank.

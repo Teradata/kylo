@@ -53,7 +53,7 @@ describe('flowchart-viewmodel', function () {
  		return dataModel;
 	};
 
-	it('compute input connector pos', function () {
+	xit('compute input connector pos', function () {
 
 		var mockNode = {
 			x: function () { return 10 },
@@ -65,7 +65,7 @@ describe('flowchart-viewmodel', function () {
 		flowchart.computeConnectorPos(mockNode, 2, true);
 	});
 
-	it('compute output connector pos', function () {
+	xit('compute output connector pos', function () {
 
 		var mockNode = {
 			x: function () { return 10 },
@@ -101,7 +101,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.parentNode()).toBe(mockParentNodeViewModel);
 	});
 
-		it('construct NodeViewModel with no connectors', function () {
+		xit('construct NodeViewModel with no connectors', function () {
 
 		var mockDataModel = {
 			x: 10,
@@ -112,7 +112,7 @@ describe('flowchart-viewmodel', function () {
 		new flowchart.NodeViewModel(mockDataModel);
 	});
 
-	it('construct NodeViewModel with empty connectors', function () {
+	xit('construct NodeViewModel with empty connectors', function () {
 
 		var mockDataModel = {
 			x: 10,
@@ -125,7 +125,7 @@ describe('flowchart-viewmodel', function () {
 		new flowchart.NodeViewModel(mockDataModel);
 	});
 
-	it('construct NodeViewModel with connectors', function () {
+	xit('construct NodeViewModel with connectors', function () {
 
 		var mockInputConnector = {
 			name: "Input",
@@ -150,7 +150,7 @@ describe('flowchart-viewmodel', function () {
 		new flowchart.NodeViewModel(mockDataModel);
 	});
 
-	it('test name of NodeViewModel', function () {
+	xit('test name of NodeViewModel', function () {
 
 		var mockDataModel = {
 			name: "Woot",
@@ -161,7 +161,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.name()).toBe(mockDataModel.name);
 	});
 
-	it('test name of NodeViewModel defaults to empty string', function () {
+	xit('test name of NodeViewModel defaults to empty string', function () {
 
 		var mockDataModel = {};
 
@@ -170,7 +170,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.name()).toBe("");
 	});
 
-	it('test node is deselected by default', function () {
+	xit('test node is deselected by default', function () {
 
 		var mockDataModel = {};
 
@@ -179,7 +179,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.selected()).toBe(false);
 	});
 
-	it('test node width is set by default', function () {
+	xit('test node width is set by default', function () {
 
 		var mockDataModel = {};
 
@@ -188,7 +188,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.width() === flowchart.defaultNodeWidth).toBe(true);
 	});
 
-	it('test node width is used', function () {
+	xit('test node width is used', function () {
 
 		var mockDataModel = {"width": 900 };
 
@@ -197,7 +197,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.width()).toBe(900);
 	});
 
-	it('test computeConnectorPos uses node width', function () {
+	xit('test computeConnectorPos uses node width', function () {
 
 		var mockDataModel = {
 			x: function () {
@@ -216,7 +216,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.x).toBe(910);
 	});
 
-	it('test computeConnectorPos uses default node width', function () {
+	xit('test computeConnectorPos uses default node width', function () {
 
 		var mockDataModel = {
 			x: function () {
@@ -232,7 +232,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.x).toBe(flowchart.defaultNodeWidth + 10);
 	});
 
-	it('test node can be selected', function () {
+	xit('test node can be selected', function () {
 
 		var mockDataModel = {};
 
@@ -243,7 +243,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.selected()).toBe(true);
 	});
 
-	it('test node can be deselected', function () {
+	xit('test node can be deselected', function () {
 
 		var mockDataModel = {};
 
@@ -256,7 +256,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.selected()).toBe(false);
 	});
 
-	it('test node can be selection can be toggled', function () {
+	xit('test node can be selection can be toggled', function () {
 
 		var mockDataModel = {};
 
@@ -271,7 +271,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.selected()).toBe(false);
 	});
 
-	it('test can add input connector to node', function () {
+	xit('test can add input connector to node', function () {
 
 		var mockDataModel = {};
 
@@ -297,7 +297,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.data.inputConnectors[1]).toBe(data2);
 	});
 
-	it('test can add output connector to node', function () {
+	xit('test can add output connector to node', function () {
 
 		var mockDataModel = {};
 
@@ -457,7 +457,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.selected()).toBe(false);
 	});
 
-	it('construct ChartViewModel with a node', function () {
+	xit('construct ChartViewModel with a node', function () {
 
 		var mockDataModel = createMockDataModel([1]);
 
@@ -467,7 +467,7 @@ describe('flowchart-viewmodel', function () {
 
 	});
 
-	it('data model with existing connection creates a connection view model', function () {
+	xit('data model with existing connection creates a connection view model', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 5, 12 ],
@@ -484,7 +484,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections[0].dest.data).toBe(mockDataModel.nodes[1].inputConnectors[1]);
 	});
 
-	it('test can add new node', function () {
+	xit('test can add new node', function () {
 
 		var mockDataModel = createMockDataModel();
 
@@ -500,7 +500,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.data.nodes[0]).toBe(nodeDataModel);
 	});
 
-	it('test can select all', function () {
+	xit('test can select all', function () {
 
 		var mockDataModel = createMockDataModel([1, 2], [[[1, 0], [2, 1]]]);
 
@@ -517,7 +517,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connection.selected()).toBe(true);
 	});
 
-	it('test can deselect all nodes', function () {
+	xit('test can deselect all nodes', function () {
 
 		var mockDataModel = createMockDataModel([1, 2]);
 
@@ -535,7 +535,7 @@ describe('flowchart-viewmodel', function () {
 		expect(node2.selected()).toBe(false);
 	});
 
-	it('test can deselect all connections', function () {
+	xit('test can deselect all connections', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 5, 12 ],
@@ -559,7 +559,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connection2.selected()).toBe(false);
 	});
 
-	it('test mouse down deselects nodes other than the one clicked', function () {
+	xit('test mouse down deselects nodes other than the one clicked', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2, 3 ]);
 
@@ -581,7 +581,7 @@ describe('flowchart-viewmodel', function () {
 		expect(node3.selected()).toBe(false);
 	});
 
-	it('test mouse down selects the clicked node', function () {
+	xit('test mouse down selects the clicked node', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2, 3 ]);
 
@@ -598,7 +598,7 @@ describe('flowchart-viewmodel', function () {
 		expect(node3.selected()).toBe(true);
 	});
 
-	it('test mouse down brings node to front', function () {
+	xit('test mouse down brings node to front', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2 ]);
 
@@ -613,7 +613,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.nodes[1]).toBe(node1);
 	});
 
-	it('test control + mouse down toggles node selection', function () {
+	xit('test control + mouse down toggles node selection', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2, 3 ]);
 
@@ -644,7 +644,7 @@ describe('flowchart-viewmodel', function () {
 		expect(node3.selected()).toBe(false); // This node remains unselected.
 	});
 
-	it('test mouse down deselects connections other than the one clicked', function () {
+	xit('test mouse down deselects connections other than the one clicked', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -673,7 +673,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connection3.selected()).toBe(false);
 	});
 
-	it('test node mouse down selects the clicked connection', function () {
+	xit('test node mouse down selects the clicked connection', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -697,7 +697,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connection3.selected()).toBe(true);
 	});	
 
-	it('test control + mouse down toggles connection selection', function () {
+	xit('test control + mouse down toggles connection selection', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -735,7 +735,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connection3.selected()).toBe(false); // This connection remains unselected.
 	});
 
- 	it('test data-model is wrapped in view-model', function () {
+ 	xit('test data-model is wrapped in view-model', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2 ], [[[1, 0], [2, 0]]]);
 		var mockNode = mockDataModel.nodes[0];
@@ -774,7 +774,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections[0].dest).toBe(testObject.nodes[1].inputConnectors[0]);
  	});
 
-	it('test can delete 1st selected node', function () {
+	xit('test can delete 1st selected node', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2 ]);
 
@@ -793,7 +793,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.nodes[0].data).toBe(mockNode2);
 	});
 
-	it('test can delete 2nd selected nodes', function () {
+	xit('test can delete 2nd selected nodes', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2 ]);
 
@@ -812,7 +812,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.nodes[0].data).toBe(mockNode1);
 	});
 
-	it('test can delete multiple selected nodes', function () {
+	xit('test can delete multiple selected nodes', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2, 3, 4 ]);
 
@@ -834,7 +834,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.nodes[1].data).toBe(mockNode4);
 	});
 	
-	it('deleting a node also deletes its connections', function () {
+	xit('deleting a node also deletes its connections', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -856,7 +856,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections.length).toBe(0);
 	});
 
-	it('deleting a node doesnt delete other connections', function () {
+	xit('deleting a node doesnt delete other connections', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -877,7 +877,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections.length).toBe(1);
 	});
 
-	it('test can delete 1st selected connection', function () {
+	xit('test can delete 1st selected connection', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2 ],
@@ -902,7 +902,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections[0].data).toBe(mockRemainingConnectionDataModel);
 	});
 
-	it('test can delete 2nd selected connection', function () {
+	xit('test can delete 2nd selected connection', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2 ],
@@ -928,7 +928,7 @@ describe('flowchart-viewmodel', function () {
 	});
 
 
-	it('test can delete multiple selected connections', function () {
+	xit('test can delete multiple selected connections', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
@@ -958,7 +958,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections[1].data).toBe(mockRemainingConnectionDataModel2);
 	});
 
-	it('can select nodes via selection rect', function () {
+	xit('can select nodes via selection rect', function () {
 
 		var mockDataModel = createMockDataModel([ 1, 2, 3 ]);
 		mockDataModel.nodes[0].x = 0;
@@ -979,7 +979,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.nodes[2].selected()).toBe(false);
 	});
 
-	it('can select connections via selection rect', function () {
+	xit('can select connections via selection rect', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3, 4 ],
@@ -1009,7 +1009,7 @@ describe('flowchart-viewmodel', function () {
 		expect(testObject.connections[2].selected()).toBe(false);
 	});
 
-	it('test update selected nodes location', function () {
+	xit('test update selected nodes location', function () {
 		var mockDataModel = createMockDataModel([1]);
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 
 
@@ -1025,7 +1025,7 @@ describe('flowchart-viewmodel', function () {
 		expect(node.y()).toBe(yInc);
 	});
 
-	it('test update selected nodes location, ignores unselected nodes', function () {
+	xit('test update selected nodes location, ignores unselected nodes', function () {
 		var mockDataModel = createMockDataModel([1]);
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 
 
@@ -1048,7 +1048,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findNode(150); }).toThrow();
 	});
 
-	it('test find node throws when node is not found', function () {
+	xit('test find node throws when node is not found', function () {
 		var mockDataModel = createMockDataModel([5, 25, 15, 30]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1056,7 +1056,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findNode(150); }).toThrow();
 	});
 
-	it('test find node retreives correct node', function () {
+	xit('test find node retreives correct node', function () {
 		var mockDataModel = createMockDataModel([5, 25, 15, 30]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1072,7 +1072,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findInputConnector(150, 1); }).toThrow();
 	});
 
-	it('test find input connector throws when the node is not found', function () {
+	xit('test find input connector throws when the node is not found', function () {
 		var mockDataModel = createMockDataModel([ 1, 2, 3]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1080,7 +1080,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findInputConnector(150, 1); }).toThrow();
 	});
 
-	it('test find input connector throws when there are no connectors', function () {
+	xit('test find input connector throws when there are no connectors', function () {
 		var mockDataModel = createMockDataModel([ 1 ]);
 
 		mockDataModel.nodes[0].inputConnectors = [];
@@ -1090,7 +1090,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findInputConnector(1, 1); }).toThrow();
 	});
 
-	it('test find input connector throws when connector is not found', function () {
+	xit('test find input connector throws when connector is not found', function () {
 		var mockDataModel = createMockDataModel([5]);
 
 		mockDataModel.nodes[0].inputConnectors = [ 
@@ -1102,7 +1102,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findInputConnector(5, 1); }).toThrow();
 	});
 
-	it('test find input connector retreives correct connector', function () {
+	xit('test find input connector retreives correct connector', function () {
 		var mockDataModel = createMockDataModel([5, 25, 15, 30]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1118,7 +1118,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findOutputConnector(150, 1); }).toThrow();
 	});
 
-	it('test find output connector throws when the node is not found', function () {
+	xit('test find output connector throws when the node is not found', function () {
 		var mockDataModel = createMockDataModel([ 1, 2, 3]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1126,7 +1126,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findOutputConnector(150, 1); }).toThrow();
 	});
 
-	it('test find output connector throws when there are no connectors', function () {
+	xit('test find output connector throws when there are no connectors', function () {
 		var mockDataModel = createMockDataModel([ 1 ]);
 
 		mockDataModel.nodes[0].outputConnectors = [];
@@ -1136,7 +1136,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findOutputConnector(1, 1); }).toThrow();
 	});
 
-	it('test find output connector throws when connector is not found', function () {
+	xit('test find output connector throws when connector is not found', function () {
 		var mockDataModel = createMockDataModel([5]);
 
 		mockDataModel.nodes[0].outputConnectors = [ 
@@ -1148,7 +1148,7 @@ describe('flowchart-viewmodel', function () {
 		expect(function () { testObject.findOutputConnector(5, 1); }).toThrow();
 	});
 
-	it('test find output connector retreives correct connector', function () {
+	xit('test find output connector retreives correct connector', function () {
 		var mockDataModel = createMockDataModel([5, 25, 15, 30]);
 
 		var testObject = new flowchart.ChartViewModel(mockDataModel); 		
@@ -1157,7 +1157,7 @@ describe('flowchart-viewmodel', function () {
 	});
 
 
-	it('test create new connection', function () {
+	xit('test create new connection', function () {
 
 		var mockDataModel = createMockDataModel([5, 25]);
 
@@ -1183,7 +1183,7 @@ describe('flowchart-viewmodel', function () {
 		expect(connectionData.dest.connectorIndex).toBe(1);
 	});
 
-	it('test create new connection from input to output', function () {
+	xit('test create new connection from input to output', function () {
 
 		var mockDataModel = createMockDataModel([5, 25]);
 
@@ -1220,7 +1220,7 @@ describe('flowchart-viewmodel', function () {
 		expect(selectedNodes.length).toBe(0);
 	});
 
-	it('test get selected nodes results in empty array when none selected', function () {
+	xit('test get selected nodes results in empty array when none selected', function () {
 
 		var mockDataModel = createMockDataModel([1, 2, 3, 4]);
 
@@ -1231,7 +1231,7 @@ describe('flowchart-viewmodel', function () {
 		expect(selectedNodes.length).toBe(0);
 	});
 
-	it('test can get selected nodes', function () {
+	xit('test can get selected nodes', function () {
 
 		var mockDataModel = createMockDataModel([1, 2, 3, 4]);
 
@@ -1252,7 +1252,7 @@ describe('flowchart-viewmodel', function () {
 		expect(selectedNodes[1]).toBe(node3);	
 	});
 
-	it('test can get selected connections', function () {
+	xit('test can get selected connections', function () {
 
 		var mockDataModel = createMockDataModel(
 			[ 1, 2, 3 ],
