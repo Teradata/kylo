@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.KyloVersion;
@@ -21,6 +22,7 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
  * Adds the services-level permissions for the feed manager.
  */
 @Component("feedManagerSecurityUpgradeAction070")
+@Order(700)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class FeedManagerSecurityUpgradeAction implements UpgradeState {
 
@@ -33,6 +35,11 @@ public class FeedManagerSecurityUpgradeAction implements UpgradeState {
     @Override
     public boolean isTargetVersion(KyloVersion version) {
         return version.matches("0.7", "0", "");
+    }
+    
+    @Override
+    public boolean isTargetFreshInstall() {
+        return true;
     }
 
     @Override
