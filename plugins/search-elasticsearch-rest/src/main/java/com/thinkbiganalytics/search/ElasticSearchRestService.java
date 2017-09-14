@@ -78,14 +78,27 @@ public class ElasticSearchRestService implements Search {
     }
 
     @Override
-    public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id) {
+    public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull String schema, @Nonnull String table) {
         buildRestClient();
         try {
+            //Delete schema
             restClient.performRequest(
                 DELETE_METHOD,
                 getIndexDeleteEndPoint(indexName, typeName, id)
             );
-            log.debug("Deleted document for index={}, type={}, id={}", indexName, typeName, id);
+            log.info("Deleted schema document for index={}, type={}, id={}", indexName, typeName, id);
+
+            final String dataIndexName = "kylo-data";
+            final String dataIndexType = "hive-data";
+
+            //Delete data
+            restClient.performRequest(
+                POST_METHOD,
+                getDataDeleteEndPoint(dataIndexName, dataIndexType),
+                new HashMap<>(),
+                getDataDeleteRequestBodyDsl(schema, table)
+            );
+            log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
             log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
             responseException.printStackTrace();
@@ -156,6 +169,10 @@ public class ElasticSearchRestService implements Search {
 
     private String getIndexRefreshEndPoint(String indexName) {
         return "/" + indexName + "/_refresh";
+    }
+
+    private String getDataDeleteEndPoint(@Nonnull String dataIndexName, @Nonnull String dataIndexType) {
+        return "/" + dataIndexName + "/" + dataIndexType + "/_delete_by_query";
     }
 
     @Override
@@ -398,6 +415,44 @@ public class ElasticSearchRestService implements Search {
 
         } catch (JSONException jsonException) {
             log.warn("Could not construct request body query dsl for query: {}, start: {}, size: {}", query, start, size);
+            jsonException.printStackTrace();
+        }
+
+        return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
+    }
+
+    private HttpEntity getDataDeleteRequestBodyDsl(@Nonnull String schema, @Nonnull String table) {
+        String jsonBodyString = new JSONObject().toString();
+        try {
+            JSONObject schemaMatchObject = new JSONObject()
+                .put("kylo_schema", schema);
+
+            JSONObject tableMatchObject = new JSONObject()
+                .put("kylo_table", table);
+
+            JSONObject firstMatchObject = new JSONObject()
+                .put("match", schemaMatchObject);
+
+            JSONObject secondMatchObject = new JSONObject()
+                .put("match", tableMatchObject);
+
+            JSONArray shouldArray = new JSONArray()
+                .put(firstMatchObject)
+                .put(secondMatchObject);
+
+            JSONObject shouldObject = new JSONObject()
+                .put("should", shouldArray);
+
+            JSONObject boolObject = new JSONObject()
+                .put("bool", shouldObject);
+
+            JSONObject queryObject = new JSONObject()
+                .put("query", boolObject);
+
+            jsonBodyString = queryObject.toString();
+
+        } catch (JSONException jsonException) {
+            log.warn("Could not construct data deletion request body query dsl for schema {}, table {}", schema, table);
             jsonException.printStackTrace();
         }
 

@@ -39,8 +39,10 @@ public interface Search extends Serializable {
      * @param indexName the name of the index
      * @param typeName  the type of object
      * @param id        the unique identifier for the object
+     * @param schema    the kylo schema related to the object
+     * @param table     the kylo table related to the object
      */
-    void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id);
+    void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull String schema, @Nonnull String table);
 
     /**
      * Commits any changes made to the specified index.

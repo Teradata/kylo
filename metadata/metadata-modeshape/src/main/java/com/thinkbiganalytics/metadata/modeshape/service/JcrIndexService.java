@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -185,9 +187,17 @@ public class JcrIndexService implements EventListener {
         boolean commit = false;
 
         if (event.getType() == Event.NODE_REMOVED) {
-            if (event.getPath().matches("^/metadata/datasources/derived/HiveDatasource-[^/]+$")) {
-                search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, event.getIdentifier());
-                commit = true;
+            Pattern nodePattern = Pattern.compile("^/metadata/datasources/derived/HiveDatasource-([^/.]+)\\.([^/.]+)$");
+            Matcher nodeMatcher = nodePattern.matcher(event.getPath());
+
+            if (nodeMatcher.matches()) {
+                if (nodeMatcher.groupCount() != 2) {
+                    log.warn("Schema and table information not received for deletion event (id = {}). Deletion should be handled separately.", event.getIdentifier());
+                }
+                else {
+                    search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, event.getIdentifier(), nodeMatcher.group(1), nodeMatcher.group(2));
+                    commit = true;
+                }
             }
         } else {
             commit = metadataAccess.read(() -> {
