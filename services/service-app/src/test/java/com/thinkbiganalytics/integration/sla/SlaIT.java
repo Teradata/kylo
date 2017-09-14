@@ -47,6 +47,7 @@ import static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessme
 public class SlaIT extends IntegrationTestBase {
 
     private static final String TEST_FILE = "sla-assessment.txt";
+    private static final String HTTP_KYLO_IO_ALERT_ALERT_SLA_VIOLATION = "http://kylo.io/alert/alert/sla/violation";
 
     @Test
     public void testSla() throws IOException {
@@ -58,12 +59,18 @@ public class SlaIT extends IntegrationTestBase {
 
         waitForFeedToComplete();
 
-        ServiceLevelAgreementGroup sla = createOneHourAgoFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
-        triggerSla(sla.getName());
-        assertSLA(sla.getId(), FAILURE);
-        assertFilterByFailuresContains(sla.getId());
-        assertFilterBySuccessContainsNot(sla.getId());
-        assertFailedSlaAppearsInAlerts(sla.getId());
+        ServiceLevelAgreementGroup oneHourAgoSla = createOneHourAgoFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
+        triggerSla(oneHourAgoSla.getName());
+        assertSLA(oneHourAgoSla.getId(), FAILURE);
+        assertFilterByFailuresContains(oneHourAgoSla.getId());
+        assertFilterBySuccessContainsNot(oneHourAgoSla.getId());
+        assertFailedSlaAppearsInAlerts(oneHourAgoSla.getId());
+
+        ServiceLevelAgreementGroup oneHourAheadSla = createOneHourAheadFeedProcessingDeadlineSla(response.getCategoryAndFeedName(), response.getFeedId());
+        triggerSla(oneHourAheadSla.getName());
+        assertFilterByFailuresContainsNot(oneHourAheadSla.getId());
+        assertFilterBySuccessContains(oneHourAheadSla.getId());
+        assertSuccessfulSlaAppearsNotInAlerts(oneHourAheadSla.getId());
     }
 
     @Override
@@ -79,21 +86,45 @@ public class SlaIT extends IntegrationTestBase {
     private void assertFailedSlaAppearsInAlerts(String slaId) {
         AlertRange range = getAlerts();
         List<Alert> alerts = range.getAlerts();
-        Assert.assertTrue(alerts.stream().anyMatch(alert -> slaId.equals(alert.getEntityId()) && "http://kylo.io/alert/alert/sla/violation".equals(alert.getType().toString())));
+        Assert.assertTrue(anyAlertMatch(slaId, alerts));
+    }
+
+    private void assertSuccessfulSlaAppearsNotInAlerts(String slaId) {
+        AlertRange range = getAlerts();
+        List<Alert> alerts = range.getAlerts();
+        Assert.assertFalse(anyAlertMatch(slaId, alerts));
+    }
+
+    private boolean anyAlertMatch(String slaId, List<Alert> alerts) {
+        return alerts.stream().anyMatch(alert -> slaId.equals(alert.getEntityId()) && HTTP_KYLO_IO_ALERT_ALERT_SLA_VIOLATION.equals(alert.getType().toString()));
     }
 
     private void assertFilterBySuccessContainsNot(String slaId) {
-        ServiceLevelAssessment[] array = getServiceLevelAssessments("result%3D%3DSUCCESS");
-        Assert.assertFalse(Arrays.stream(array).anyMatch(assessment -> slaId.equals(assessment.getAgreement().getId())));
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(FILTER_BY_SUCCESS);
+        Assert.assertFalse(anySlaMatch(slaId, array));
+    }
+
+    private void assertFilterBySuccessContains(String slaId) {
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(FILTER_BY_SUCCESS);
+        Assert.assertTrue(anySlaMatch(slaId, array));
     }
 
     private void assertFilterByFailuresContains(String slaId) {
-        ServiceLevelAssessment[] array = getServiceLevelAssessments("result%3D%3DFAILURE");
-        Assert.assertTrue(Arrays.stream(array).anyMatch(assessment -> slaId.equals(assessment.getAgreement().getId())));
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(FILTER_BY_FAILURE);
+        Assert.assertTrue(anySlaMatch(slaId, array));
+    }
+
+    private void assertFilterByFailuresContainsNot(String slaId) {
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(FILTER_BY_FAILURE);
+        Assert.assertFalse(anySlaMatch(slaId, array));
+    }
+
+    private boolean anySlaMatch(String slaId, ServiceLevelAssessment[] array) {
+        return Arrays.stream(array).anyMatch(assessment -> slaId.equals(assessment.getAgreement().getId()));
     }
 
     private void assertSLA(String slaId, ServiceLevelAssessment.Result status) {
-        ServiceLevelAssessment[] array = getServiceLevelAssessments("slaId%3D%3D" + slaId);
+        ServiceLevelAssessment[] array = getServiceLevelAssessments(FILTER_BY_SLA_ID + slaId);
         for (ServiceLevelAssessment sla : array) {
             List<ObligationAssessment> list = sla.getObligationAssessments();
             for (ObligationAssessment assessment : list) {

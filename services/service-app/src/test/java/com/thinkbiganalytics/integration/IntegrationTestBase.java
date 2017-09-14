@@ -95,6 +95,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,6 +124,10 @@ public class IntegrationTestBase {
     private static final int PROCESSOR_STOP_WAIT_DELAY = 10;
     private static final String GET_FILE_LOG_ATTRIBUTE_TEMPLATE_ZIP = "get-file-log-attribute.template.zip";
     private static final String FUNCTIONAL_TESTS = "Functional Tests";
+
+    protected static final String FILTER_BY_SUCCESS = "result%3D%3DSUCCESS";
+    protected static final String FILTER_BY_FAILURE = "result%3D%3DFAILURE";
+    protected static final String FILTER_BY_SLA_ID = "slaId%3D%3D";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
@@ -845,14 +850,22 @@ public class IntegrationTestBase {
 
     protected ServiceLevelAgreementGroup createOneHourAgoFeedProcessingDeadlineSla(String feedName, String feedId) {
         LOG.info("Creating 'one hour ago' feed processing deadline SLA for feed " + feedName);
+        return createFeedProcessingDeadlineSla(feedName, feedId, LocalDateTime.now().minusHours(1), "0");
+    }
 
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-        int hourOfDay = oneHourAgo.get(ChronoField.HOUR_OF_DAY);
-        int minuteOfHour = oneHourAgo.get(ChronoField.MINUTE_OF_HOUR);
+    protected ServiceLevelAgreementGroup createOneHourAheadFeedProcessingDeadlineSla(String feedName, String feedId) {
+        LOG.info("Creating 'one hour ahead' feed processing deadline SLA for feed " + feedName);
+        return createFeedProcessingDeadlineSla(feedName, feedId, LocalDateTime.now().plusHours(1), "24");
+    }
+
+    private ServiceLevelAgreementGroup createFeedProcessingDeadlineSla(String feedName, String feedId, LocalDateTime deadline, String noLaterThanHours) {
+        int hourOfDay = deadline.get(ChronoField.HOUR_OF_DAY);
+        int minuteOfHour = deadline.get(ChronoField.MINUTE_OF_HOUR);
         String cronExpression = String.format("0 %s %s 1/1 * ? *", minuteOfHour, hourOfDay);
 
         ServiceLevelAgreementGroup sla = new ServiceLevelAgreementGroup();
-        sla.setName("Before " + hourOfDay + ":" + minuteOfHour + " (cron: " + cronExpression + ")");
+        String time = deadline.format(DateTimeFormatter.ofPattern("HH:mm"));
+        sla.setName("Before " + time + " (cron: " + cronExpression + ")");
         sla.setDescription("The feed should complete before given date and time");
         List<ServiceLevelAgreementRule> rules = new ArrayList<>();
         ServiceLevelAgreementRule rule = new ServiceLevelAgreementRule();
@@ -866,8 +879,8 @@ public class IntegrationTestBase {
         rule.setProperties(newFieldRuleProperties(
             newFieldRuleProperty("FeedName", "feedName", feedName),
             newFieldRuleProperty("ExpectedDeliveryTime", "cronString", cronExpression),
-            newFieldRuleProperty("NoLaterThanTime", "lateTime", "0"),
-            newFieldRuleProperty("NoLaterThanUnits", "lateUnits", "days")
+            newFieldRuleProperty("NoLaterThanTime", "lateTime", noLaterThanHours),
+            newFieldRuleProperty("NoLaterThanUnits", "lateUnits", "hrs")
         ));
 
         rules.add(rule);
