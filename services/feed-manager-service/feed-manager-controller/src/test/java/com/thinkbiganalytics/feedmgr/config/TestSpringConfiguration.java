@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
+import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
@@ -488,6 +489,11 @@ public class TestSpringConfiguration {
     @Bean
     public RegisteredTemplateCache registeredTemplateCache() {
         return new RegisteredTemplateCache();
+    }
+
+    @Bean
+    public ServicesApplicationStartup servicesApplicationStartup(){
+        return Mockito.mock(ServicesApplicationStartup.class);
     }
 
 }
