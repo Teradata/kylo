@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.3-SNAPSHOT</version>
+    <version>0.8.2.3</version>
   </parent>
 
   <artifactId>kylo-commons-spark-shell-v1</artifactId>
