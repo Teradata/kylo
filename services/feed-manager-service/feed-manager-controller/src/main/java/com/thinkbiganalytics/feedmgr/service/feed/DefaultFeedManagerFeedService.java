@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -194,6 +195,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     PropertyExpressionResolver propertyExpressionResolver;
     @Inject
     NifiFlowCache nifiFlowCache;
+
+    @Inject
+    private NiFiTemplateCache niFiTemplateCache;
+
     @Inject
     private LegacyNifiRestClient nifiRestClient;
 
@@ -567,7 +572,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
-                .autoAlign(nifiAutoFeedsAlignAfterSave);
+                .autoAlign(nifiAutoFeedsAlignAfterSave)
+                .withNiFiTemplateCache(niFiTemplateCache);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);
