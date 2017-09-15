@@ -427,6 +427,9 @@ public class TemplateCreationHelper {
     }
 
 
+    public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors) {
+        return updateControllerServiceReferences(processors, null,null);
+    }
 
     /**
      * Fix references to the controller services on the processor properties
