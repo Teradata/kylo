@@ -353,7 +353,7 @@ public class TemplateCreationHelper {
 
     private List<ProcessorDTO> reassignControllerServiceIds(List<ProcessorDTO> processors, TemplateInstance instance) {
 
-        List<ProcessorDTO> updatedProcessors = new ArrayList<>();
+        Set<ProcessorDTO> updatedProcessors = new HashSet<>();
         if (processors != null) {
             processors.stream().forEach(processorDTO -> {
                 Map<String, String> updatedProcessorProperties = new HashMap<>();
@@ -393,7 +393,7 @@ public class TemplateCreationHelper {
                             ControllerServiceDTO controllerServiceDTO = instance.findMatchingControllerServoce(value);
                             if(controllerServiceDTO != null) {
                                     updatedProcessorProperties.put(k, controllerServiceDTO.getId());
-                                }
+                            }
                         }
                     }
 
@@ -406,7 +406,7 @@ public class TemplateCreationHelper {
                     //update the processor
 
                     ProcessorDTO updated = restClient.updateProcessor(updatedProcessor);
-                   updatedProcessors.add(updated);
+                    updatedProcessors.add(updated);
                 }
 
             });
