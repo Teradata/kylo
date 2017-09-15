@@ -43,10 +43,7 @@ import javax.jms.ConnectionFactory;
  */
 @Profile("jms-activemq")
 @Configuration
-@PropertySources({
-                     @PropertySource(value = "classpath:activemq.properties", ignoreResourceNotFound = true),
-                     @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true)
-                 })
+@PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true)
 public class ActiveMqConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ActiveMqConfig.class);
@@ -66,7 +63,7 @@ public class ActiveMqConfig {
         factory.setRedeliveryPolicy(new RedeliveryPolicy());
         factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
         factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
-        factory.getRedeliveryPolicy().setInitialRedeliveryDelay(env.getProperty("jms.initialRedeliveryDelay",Long.class,1000L));
+        factory.getRedeliveryPolicy().setInitialRedeliveryDelay(env.getProperty("jms.initialRedeliveryDelay", Long.class, 1000L));
         factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
         factory.getRedeliveryPolicy().setBackOffMultiplier(env.getProperty("jms.backOffMultiplier", Double.class, 5d));
         factory.getRedeliveryPolicy().setUseExponentialBackOff(env.getProperty("jms.useExponentialBackOff", Boolean.class, false));

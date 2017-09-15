@@ -32,15 +32,15 @@ import org.springframework.core.io.ClassPathResource;
  */
 // Ignore due to dependency on MySQL
 @Ignore
-@Configuration
-@ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@PropertySource("classpath:config.properties")
+//@Configuration
+//@ComponentScan(basePackages = {"com.thinkbiganalytics"})
+//@PropertySource("classpath:config.properties")
 public class TestConfig {
 
-    @Autowired
+    //@Autowired
     private Environment env;
 
-    @Bean
+    //@Bean
     public PropertyPlaceholderConfigurer propConfig() {
         PropertyPlaceholderConfigurer placeholderConfigurer = new PropertyPlaceholderConfigurer();
         placeholderConfigurer.setLocation(new ClassPathResource("config.properties"));
