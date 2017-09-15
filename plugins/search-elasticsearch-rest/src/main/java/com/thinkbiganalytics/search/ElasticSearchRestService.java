@@ -68,6 +68,7 @@ public class ElasticSearchRestService implements Search {
     private final static String PUT_METHOD = "PUT";
     private final static String DELETE_METHOD = "DELETE";
     private final static String SEARCH_ENDPOINT = "_search";
+    private final static String VERSION_TWO = "2";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
     private RestClient restClient;
@@ -92,12 +93,24 @@ public class ElasticSearchRestService implements Search {
             final String dataIndexType = "hive-data";
 
             //Delete data
-            restClient.performRequest(
-                POST_METHOD,
-                getDataDeleteEndPoint(dataIndexName, dataIndexType),
-                new HashMap<>(),
-                getDataDeleteRequestBodyDsl(schema, table)
-            );
+            if ((restClientConfig.getEsversion() != null) && (restClientConfig.getEsversion().equals(VERSION_TWO))) {
+                log.debug("Elasticsearch v2");
+                restClient.performRequest(
+                    DELETE_METHOD,
+                    getDataDeleteEndPointEsV2(dataIndexName, dataIndexType),
+                    new HashMap<>(),
+                    getDataDeleteRequestBodyDslEsV2(schema, table)
+                );
+            }
+            else {
+                log.debug("Elasticsearch v5 or above");
+                restClient.performRequest(
+                    POST_METHOD,
+                    getDataDeleteEndPoint(dataIndexName, dataIndexType),
+                    new HashMap<>(),
+                    getDataDeleteRequestBodyDsl(schema, table)
+                );
+            }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
             log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
@@ -173,6 +186,10 @@ public class ElasticSearchRestService implements Search {
 
     private String getDataDeleteEndPoint(@Nonnull String dataIndexName, @Nonnull String dataIndexType) {
         return "/" + dataIndexName + "/" + dataIndexType + "/_delete_by_query";
+    }
+
+    private String getDataDeleteEndPointEsV2(@Nonnull String dataIndexName, @Nonnull String dataIndexType) {
+        return "/" + dataIndexName + "/" + dataIndexType + "/_query";
     }
 
     @Override
@@ -457,6 +474,10 @@ public class ElasticSearchRestService implements Search {
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
+    }
+
+    private HttpEntity getDataDeleteRequestBodyDslEsV2(@Nonnull String schema, @Nonnull String table) {
+        return getDataDeleteRequestBodyDsl(schema, table);
     }
 
     private String rewriteQuery(String query) {

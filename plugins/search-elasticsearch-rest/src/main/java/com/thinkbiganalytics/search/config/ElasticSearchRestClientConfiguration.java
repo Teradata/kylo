@@ -29,6 +29,7 @@ public class ElasticSearchRestClientConfiguration implements Serializable {
 
     private String host;
     private Integer port;
+    private String esversion;
 
     public String getHost() {
         return host;
@@ -44,5 +45,13 @@ public class ElasticSearchRestClientConfiguration implements Serializable {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getEsversion() {
+        return esversion;
+    }
+
+    public void setEsversion(String esversion) {
+        this.esversion = esversion;
     }
 }
