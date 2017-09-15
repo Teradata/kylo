@@ -39,11 +39,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -147,6 +149,74 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             return new TypeBuilder(typeNode.getName(), typeNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to retrieve extensible type: " + id, e);
+        }
+    }
+
+    public void ensureTypeDescriptors() {
+        try {
+            Session session = JcrMetadataAccess.getActiveSession();
+            Node typesNode = session.getRootNode().getNode(ExtensionsConstants.TYPES);
+            NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
+            NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
+            NodeType extensionsType = typeMgr.getNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE);
+
+            while (typeItr.hasNext()) {
+                NodeType type = (NodeType) typeItr.next();
+
+                if (type.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) &&
+                    !type.equals(extensionsType) &&
+                    !typesNode.hasNode(type.getName())) {
+                    Node descrNode = typesNode.addNode(type.getName(), ExtensionsConstants.TYPE_DESCRIPTOR_TYPE);
+
+                    descrNode.setProperty("jcr:title", simpleName(type.getName()));
+                    descrNode.setProperty("jcr:description", "");
+
+                    PropertyDefinition[] defs = type.getPropertyDefinitions();
+
+                    for (PropertyDefinition def : defs) {
+                        String fieldName = def.getName();
+                        String prefix = namePrefix(fieldName);
+
+                        if (!ExtensionsConstants.STD_PREFIXES.contains(prefix) && !descrNode.hasNode(fieldName)) {
+                            Node propNode = descrNode.addNode(def.getName(), ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
+                            propNode.setProperty("jcr:title", def.getName().replace("^.*:", ""));
+                            propNode.setProperty("jcr:description", "");
+                        }
+                    }
+                }
+            }
+
+            NodeIterator nodeItr = typesNode.getNodes();
+
+            while (nodeItr.hasNext()) {
+                Node typeNode = (Node) nodeItr.next();
+
+                if (!typeMgr.hasNodeType(typeNode.getName())) {
+                    typeNode.remove();
+                }
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to ensure extensible type metadata", e);
+        }
+    }
+
+    private String namePrefix(String name) {
+        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
+
+        if (m.matches()) {
+            return m.group(1);
+        } else {
+            return null;
+        }
+    }
+
+    private String simpleName(String name) {
+        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
+
+        if (m.matches()) {
+            return m.group(2);
+        } else {
+            return null;
         }
     }
 

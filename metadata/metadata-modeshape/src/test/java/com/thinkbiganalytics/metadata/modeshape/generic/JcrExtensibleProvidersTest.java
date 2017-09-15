@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -28,10 +30,13 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -46,13 +51,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
-    private ExtensibleTypeProvider typeProvider;
+    private JcrExtensibleTypeProvider typeProvider;
 
     @Inject
     private ExtensibleEntityProvider entityProvider;
 
     @Inject
     private JcrMetadataAccess metadata;
+    
+    @BeforeClass
+    public void ensureExtensibleTypes() {
+        metadata.commit(() -> {
+            typeProvider.ensureTypeDescriptors();
+        }, MetadataAccess.SERVICE);
+    }
 
 
     @Test

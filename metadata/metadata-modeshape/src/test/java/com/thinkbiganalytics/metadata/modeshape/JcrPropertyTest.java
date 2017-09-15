@@ -25,21 +25,22 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -76,14 +77,15 @@ public class JcrPropertyTest {
     @Inject
     TagProvider tagProvider;
     @Inject
-    private ExtensibleTypeProvider provider;
+    private JcrExtensibleTypeProvider provider;
     @Inject
     private JcrMetadataAccess metadata;
-
 
     @Test
     public void testGetPropertyTypes() throws RepositoryException {
         Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(() -> {
+            provider.ensureTypeDescriptors();
+            
             ExtensibleType feedType = provider.getType("tba:feed");
             Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
             Map<String, FieldDescriptor.Type> map = new HashMap<>();

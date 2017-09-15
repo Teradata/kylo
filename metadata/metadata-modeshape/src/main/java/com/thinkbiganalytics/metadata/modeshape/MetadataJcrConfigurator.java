@@ -89,7 +89,6 @@ public class MetadataJcrConfigurator {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 ensureLayout(session);
-                ensureTypes(session);
                 ensureAccessControl(session);
                 ensureIndexes(session);
             } catch (RepositoryException e) {
@@ -97,118 +96,8 @@ public class MetadataJcrConfigurator {
             }
         }, MetadataAccess.SERVICE);
 
-//        this.metadataAccess.commit(() -> {
-//            try {
-//                Session session = JcrMetadataAccess.getActiveSession();
-//                removeVersionableFeedType(session);
-//            } catch (RepositoryException e) {
-//                throw new MetadataRepositoryException("Could remove versioning from feeds", e);
-//            }
-//        }, MetadataAccess.SERVICE);
-
         this.configured.set(true);
         firePostConfigActions();
-    }
-
-    private void removeVersionableFeedType(Session session) throws RepositoryException {
-        Node feedsNode = session.getRootNode().getNode("metadata/feeds");
-
-        NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
-        NodeType currentFeedType = typeMgr.getNodeType("tba:feed");
-        List<String> currentSupertypes = Arrays.asList(currentFeedType.getDeclaredSupertypeNames());
-
-        if (currentSupertypes.contains("mix:versionable")) {
-            log.info("Removing versionable feed type {} ", currentFeedType);
-            // Remove feed version history
-            for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
-                for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
-                    log.debug("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
-                    if (JcrVersionUtil.isVersionable(feedNode)) {
-                        VersionManager versionManager = session.getWorkspace().getVersionManager();
-                        VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath());
-                        VersionIterator vIt = versionHistory.getAllVersions();
-                        int count = 0;
-                        String last = "";
-
-                        while (vIt.hasNext()) {
-                            Version version = vIt.nextVersion();
-                            String versionName = version.getName();
-                            String baseVersion = "";
-                            if (!"jcr:rootVersion".equals(versionName)) {
-                                //baseVersion requires actual versionable node to get the base version name
-                                baseVersion = JcrVersionUtil.getBaseVersion(feedNode).getName();
-                            }
-                            if (!"jcr:rootVersion".equals(versionName) && !versionName.equalsIgnoreCase(baseVersion)) {
-                                last = version.getName();
-                                // removeVersion writes directly to workspace, no session.save is necessary
-                                versionHistory.removeVersion(version.getName());
-                                count++;
-                            }
-                        }
-
-                        if (count > 0) {
-                            log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
-                        } else {
-                            log.debug("Feed {} had no versions", feedNode.getName());
-                        }
-                    }
-                }
-            }
-
-            // Redefine the NodeType of tba:feed to remove versionable but retain the versionable properties with weaker constraints
-            // Retaining the properties seems to override some residual properties on feed nodes that causes a failure later.
-            // In particular, jcr:predecessors was accessed later but redefining all mix:versionable properties to be safe.
-            NodeTypeTemplate template = typeMgr.createNodeTypeTemplate(currentFeedType);
-            List<String> newSupertypes = currentSupertypes.stream().filter(type -> !type.equals("mix:versionable")).collect(Collectors.toList());
-
-            template.setDeclaredSuperTypeNames(newSupertypes.toArray(new String[newSupertypes.size()]));
-
-            @SuppressWarnings("unchecked")
-            List<PropertyDefinitionTemplate> propTemplates = template.getPropertyDefinitionTemplates();
-            PropertyDefinitionTemplate prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:versionHistory");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            propTemplates.add(prop);
-            prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:baseVersion");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            propTemplates.add(prop);
-            prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:predecessors");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            prop.setMultiple(true);
-            propTemplates.add(prop);
-            prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:mergeFailed");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            propTemplates.add(prop);
-            prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:activity");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            propTemplates.add(prop);
-            prop = typeMgr.createPropertyDefinitionTemplate();
-            prop.setName("jcr:configuration");
-            prop.setRequiredType(PropertyType.WEAKREFERENCE);
-            propTemplates.add(prop);
-
-            log.info("Replacing the versionable feed type '{}' with a non-versionable type", currentFeedType);
-            NodeType newType = typeMgr.registerNodeType(template, true);
-            log.info("Replaced with new feed type '{}' with a non-versionable type", newType);
-
-            // This step may not be necessary.
-            for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
-                for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
-                    feedNode.setPrimaryType(newType.getName());
-                    // log.info("Replaced type of node {}", feedNode);
-
-                    if (feedNode.hasProperty("jcr:predecessors")) {
-                        feedNode.getProperty("jcr:predecessors").setValue(new Value[0]);
-                        ;
-                        feedNode.getProperty("jcr:predecessors").remove();
-                    }
-                }
-            }
-        }
     }
 
     private void firePostConfigActions() {
@@ -264,49 +153,6 @@ public class MetadataJcrConfigurator {
     }
 
 
-    protected void ensureTypes(Session session) throws RepositoryException {
-        Node typesNode = session.getRootNode().getNode(ExtensionsConstants.TYPES);
-        NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
-        NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
-        NodeType extensionsType = typeMgr.getNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE);
-
-        while (typeItr.hasNext()) {
-            NodeType type = (NodeType) typeItr.next();
-
-            if (type.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) &&
-                !type.equals(extensionsType) &&
-                !typesNode.hasNode(type.getName())) {
-                Node descrNode = typesNode.addNode(type.getName(), ExtensionsConstants.TYPE_DESCRIPTOR_TYPE);
-
-                descrNode.setProperty("jcr:title", simpleName(type.getName()));
-                descrNode.setProperty("jcr:description", "");
-
-                PropertyDefinition[] defs = type.getPropertyDefinitions();
-
-                for (PropertyDefinition def : defs) {
-                    String fieldName = def.getName();
-                    String prefix = namePrefix(fieldName);
-
-                    if (!ExtensionsConstants.STD_PREFIXES.contains(prefix) && !descrNode.hasNode(fieldName)) {
-                        Node propNode = descrNode.addNode(def.getName(), ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
-                        propNode.setProperty("jcr:title", def.getName().replace("^.*:", ""));
-                        propNode.setProperty("jcr:description", "");
-                    }
-                }
-            }
-        }
-
-        NodeIterator nodeItr = typesNode.getNodes();
-
-        while (nodeItr.hasNext()) {
-            Node typeNode = (Node) nodeItr.next();
-
-            if (!typeMgr.hasNodeType(typeNode.getName())) {
-                typeNode.remove();
-            }
-        }
-    }
-
     protected void ensureLayout(Session session) throws RepositoryException {
         if (!session.getRootNode().hasNode("metadata")) {
             session.getRootNode().addNode("metadata", "tba:metadataFolder");
@@ -318,11 +164,6 @@ public class MetadataJcrConfigurator {
 
         if (!session.getRootNode().hasNode("groups")) {
             session.getRootNode().addNode("groups", "tba:groupsFolder");
-        }
-
-        // TODO Temporary to cleanup schemas which had the category folder auto-created.
-        if (session.getRootNode().hasNode("metadata/feeds/category")) {
-            session.getRootNode().getNode("metadata/feeds/category").remove();
         }
 
         if (!session.getRootNode().hasNode("metadata/hadoopSecurityGroups")) {
@@ -366,26 +207,6 @@ public class MetadataJcrConfigurator {
             if (!session.getRootNode().hasNode(entityPath)) {
                 session.getRootNode().addNode(entityPath, "tba:rolesFolder");
             }
-        }
-    }
-
-    private String namePrefix(String name) {
-        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
-
-        if (m.matches()) {
-            return m.group(1);
-        } else {
-            return null;
-        }
-    }
-
-    private String simpleName(String name) {
-        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
-
-        if (m.matches()) {
-            return m.group(2);
-        } else {
-            return null;
         }
     }
 
