@@ -124,6 +124,11 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
                     }
                     else {
+                        if (rejection.config.acceptStatus === rejection.status) {
+                            //sometimes 404 response is a valid response for which we don't want to show error message with NotificationService
+                            return $q.when(rejection);
+                        }
+
                         if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
                             var message = "An unexpected error occurred ";
                             var rejectionMessage = rejection.data['message'];

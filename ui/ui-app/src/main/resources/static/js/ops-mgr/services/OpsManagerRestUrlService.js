@@ -5,6 +5,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
         this.ROOT = "";
 
+        this.SLA_BASE_URL = "/proxy/v1/feedmgr/sla";
         this.FEEDS_BASE = "/proxy/v1/feeds";
         this.JOBS_BASE = "/proxy/v1/jobs";
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
@@ -116,6 +117,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
         this.GET_SLA_ASSESSMENT_URL = function(assessmentId){
             return "/proxy/v1/sla/assessments/"+assessmentId;
+        };
+
+        this.GET_SLA_BY_ID_URL = function (slaId) {
+            return self.SLA_BASE_URL + "/"+slaId;
         }
 
     });
