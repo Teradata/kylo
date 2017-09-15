@@ -26,43 +26,35 @@ define(["require", "exports", "../column-delegate"], function (require, exports,
          * @param grid - the grid with the column
          */
         TeradataColumnDelegate.prototype.hideColumn = function (column, grid) {
+            var self = this;
             column.visible = false;
+            var columnField = this.getColumnFieldName(column);
             var formula = "";
             grid.columns.forEach(function (item) {
                 if (item.visible) {
-                    formula += (formula.length == 0) ? "select(" : ", ";
-                    formula += (item.field === column.field) ? "" : item.field;
+                    var itemField = self.getColumnFieldName(item);
+                    if (itemField !== columnField) {
+                        formula += (formula.length == 0) ? "select(" : ", ";
+                        formula += itemField;
+                    }
                 }
             });
             formula += ")";
-            this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + column.displayName });
+            this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + column.field });
             grid.onColumnsChange();
             grid.refresh();
         };
         /**
-         * Displays a dialog prompt to rename the specified column.
-         *
-         * @param {ui.grid.GridColumn} column the column to be renamed
-         * @param {ui.grid.Grid} grid the grid with the column
+         * Gets the human-readable name of the specified column.
          */
-        TeradataColumnDelegate.prototype.renameColumn = function (column, grid) {
-            var self = this;
-            var prompt = this.$mdDialog.prompt({
-                title: "Rename Column",
-                textContent: "Enter a new name for the " + column.displayName + " column:",
-                placeholder: "Column name",
-                ok: "OK",
-                cancel: "Cancel"
-            });
-            this.$mdDialog.show(prompt).then(function (name) {
-                var script = column.displayName + ".as(\"" + StringUtils.quote(name) + "\")";
-                var formula = self.toFormula(script, column, grid);
-                self.controller.pushFormula(formula, {
-                    formula: formula, icon: "mode_edit",
-                    name: "Rename " + column.field + " to " + name
-                });
-                column.displayName = name;
-            });
+        TeradataColumnDelegate.prototype.getColumnDisplayName = function (column) {
+            return column.field;
+        };
+        /**
+         * Gets the SQL identifier for the specified column.
+         */
+        TeradataColumnDelegate.prototype.getColumnFieldName = function (column) {
+            return column.displayName;
         };
         /**
          * Gets the transformations for a column based on category.

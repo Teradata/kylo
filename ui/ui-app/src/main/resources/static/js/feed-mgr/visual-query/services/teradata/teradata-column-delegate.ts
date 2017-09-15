@@ -1,5 +1,7 @@
 import {ColumnDelegate, DataCategory} from "../column-delegate";
 
+declare const angular: angular.IAngularStatic;
+
 /**
  * Handles operations on columns from Teradata.
  */
@@ -11,48 +13,40 @@ export class TeradataColumnDelegate extends ColumnDelegate {
      * @param column - the column to be hidden
      * @param grid - the grid with the column
      */
-    hideColumn(column: any, grid: any): any {
+     hideColumn(column: any, grid: any): any {
+        const self = this;
         column.visible = false;
 
+        const columnField = this.getColumnFieldName(column);
         let formula = "";
         grid.columns.forEach(function (item: any) {
             if (item.visible) {
-                formula += (formula.length == 0) ? "select(" : ", ";
-                formula += (item.field === column.field) ? "" : item.field;
+                const itemField = self.getColumnFieldName(item);
+                if (itemField !== columnField) {
+                    formula += (formula.length == 0) ? "select(" : ", ";
+                    formula += itemField;
+                }
             }
         });
         formula += ")";
-        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + column.displayName});
+        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + column.field});
 
         grid.onColumnsChange();
         grid.refresh();
     }
 
     /**
-     * Displays a dialog prompt to rename the specified column.
-     *
-     * @param {ui.grid.GridColumn} column the column to be renamed
-     * @param {ui.grid.Grid} grid the grid with the column
+     * Gets the human-readable name of the specified column.
      */
-    renameColumn(column: any, grid: any) {
-        const self = this;
-        const prompt = (this.$mdDialog as any).prompt({
-            title: "Rename Column",
-            textContent: "Enter a new name for the " + column.displayName + " column:",
-            placeholder: "Column name",
-            ok: "OK",
-            cancel: "Cancel"
-        });
-        this.$mdDialog.show(prompt).then(function (name) {
-            const script = column.displayName + ".as(\"" + StringUtils.quote(name) + "\")";
-            const formula = self.toFormula(script, column, grid);
-            self.controller.pushFormula(formula, {
-                formula: formula, icon: "mode_edit",
-                name: "Rename " + column.field + " to " + name
-            });
+    protected getColumnDisplayName(column: any): string {
+        return column.field;
+    }
 
-            column.displayName = name;
-        });
+    /**
+     * Gets the SQL identifier for the specified column.
+     */
+    protected getColumnFieldName(column: any): string {
+        return column.displayName;
     }
 
     /**

@@ -72,8 +72,8 @@ define(["require", "exports"], function (require, exports) {
          */
         ColumnDelegate.prototype.hideColumn = function (column, grid) {
             column.visible = false;
-            var formula = "drop(\"" + StringUtils.quote(column.field) + "\")";
-            this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + column.displayName });
+            var formula = "drop(\"" + StringUtils.quote(this.getColumnFieldName(column)) + "\")";
+            this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column) });
             grid.onColumnsChange();
             grid.refresh();
         };
@@ -97,19 +97,18 @@ define(["require", "exports"], function (require, exports) {
             var self = this;
             var prompt = this.$mdDialog.prompt({
                 title: "Rename Column",
-                textContent: "Enter a new name for the " + column.displayName + " column:",
+                textContent: "Enter a new name for the " + this.getColumnDisplayName(column) + " column:",
                 placeholder: "Column name",
                 ok: "OK",
                 cancel: "Cancel"
             });
             this.$mdDialog.show(prompt).then(function (name) {
-                var script = column.field + ".as(\"" + StringUtils.quote(name) + "\")";
+                var script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.quote(name) + "\")";
                 var formula = self.toFormula(script, column, grid);
-                self.controller.pushFormula(formula, {
+                self.controller.addFunction(formula, {
                     formula: formula, icon: "mode_edit",
-                    name: "Rename " + column.displayName + " to " + name
+                    name: "Rename " + self.getColumnDisplayName(column) + " to " + name
                 });
-                column.displayName = name;
             });
         };
         /**
@@ -131,9 +130,10 @@ define(["require", "exports"], function (require, exports) {
          * @param {ui.grid.Grid} grid the grid with the column
          */
         ColumnDelegate.prototype.transformColumn = function (transform, column, grid) {
-            var script = transform.operation + "(" + column.field + ").as(\"" + StringUtils.quote(column.field) + "\")";
+            var fieldName = this.getColumnFieldName(column);
+            var script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.quote(fieldName) + "\")";
             var formula = this.toFormula(script, column, grid);
-            var name = (transform.description ? transform.description : transform.name) + " " + column.displayName;
+            var name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
             this.controller.addFunction(formula, { formula: formula, icon: transform.icon, name: name });
         };
         /**
@@ -151,26 +151,6 @@ define(["require", "exports"], function (require, exports) {
             }
             table.onRowsChange();
             table.refreshRows();
-        };
-        /**
-         * Creates a formula that replaces the specified column with the specified script.
-         *
-         * @private
-         * @param {string} script the expression for the column
-         * @param {ui.grid.GridColumn} column the column to be replaced
-         * @param {ui.grid.Grid} grid the grid with the column
-         * @returns {string} a formula that replaces the column
-         */
-        ColumnDelegate.prototype.toFormula = function (script, column, grid) {
-            var formula = "";
-            angular.forEach(grid.columns, function (item) {
-                if (item.visible) {
-                    formula += (formula.length == 0) ? "select(" : ", ";
-                    formula += (item.field === column.field) ? script : item.field;
-                }
-            });
-            formula += ")";
-            return formula;
         };
         /**
          * Converts from the specified data type to a category.
@@ -208,6 +188,18 @@ define(["require", "exports"], function (require, exports) {
                 case DataType.UNION:
                     return DataCategory.UNION;
             }
+        };
+        /**
+         * Gets the human-readable name of the specified column.
+         */
+        ColumnDelegate.prototype.getColumnDisplayName = function (column) {
+            return column.displayName;
+        };
+        /**
+         * Gets the SQL identifier for the specified column.
+         */
+        ColumnDelegate.prototype.getColumnFieldName = function (column) {
+            return column.field;
         };
         /**
          * Gets the filters for a column based on category.
@@ -261,6 +253,28 @@ define(["require", "exports"], function (require, exports) {
                 transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' });
             }
             return transforms;
+        };
+        /**
+         * Creates a formula that replaces the specified column with the specified script.
+         *
+         * @param {string} script the expression for the column
+         * @param {ui.grid.GridColumn} column the column to be replaced
+         * @param {ui.grid.Grid} grid the grid with the column
+         * @returns {string} a formula that replaces the column
+         */
+        ColumnDelegate.prototype.toFormula = function (script, column, grid) {
+            var columnFieldName = this.getColumnFieldName(column);
+            var formula = "";
+            var self = this;
+            angular.forEach(grid.columns, function (item) {
+                if (item.visible) {
+                    var itemFieldName = self.getColumnFieldName(item);
+                    formula += (formula.length == 0) ? "select(" : ", ";
+                    formula += (itemFieldName === columnFieldName) ? script : itemFieldName;
+                }
+            });
+            formula += ")";
+            return formula;
         };
         return ColumnDelegate;
     }());

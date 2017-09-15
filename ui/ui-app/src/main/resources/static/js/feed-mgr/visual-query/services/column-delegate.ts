@@ -92,8 +92,8 @@ export class ColumnDelegate {
     hideColumn(column: any, grid: any) {
         column.visible = false;
 
-        const formula = "drop(\"" + StringUtils.quote(column.field) + "\")";
-        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + column.displayName});
+        const formula = "drop(\"" + StringUtils.quote(this.getColumnFieldName(column)) + "\")";
+        this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column)});
 
         grid.onColumnsChange();
         grid.refresh();
@@ -120,20 +120,18 @@ export class ColumnDelegate {
         const self = this;
         const prompt = (this.$mdDialog as any).prompt({
             title: "Rename Column",
-            textContent: "Enter a new name for the " + column.displayName + " column:",
+            textContent: "Enter a new name for the " + this.getColumnDisplayName(column) + " column:",
             placeholder: "Column name",
             ok: "OK",
             cancel: "Cancel"
         });
         this.$mdDialog.show(prompt).then(function (name) {
-            const script = column.field + ".as(\"" + StringUtils.quote(name) + "\")";
+            const script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.quote(name) + "\")";
             const formula = self.toFormula(script, column, grid);
-            self.controller.pushFormula(formula, {
+            self.controller.addFunction(formula, {
                 formula: formula, icon: "mode_edit",
-                name: "Rename " + column.displayName + " to " + name
+                name: "Rename " + self.getColumnDisplayName(column) + " to " + name
             });
-
-            column.displayName = name;
         });
     }
 
@@ -157,9 +155,10 @@ export class ColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      */
     transformColumn(transform: any, column: any, grid: any) {
-        const script = transform.operation + "(" + column.field + ").as(\"" + StringUtils.quote(column.field) + "\")";
+        const fieldName = this.getColumnFieldName(column);
+        const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.quote(fieldName) + "\")";
         const formula = this.toFormula(script, column, grid);
-        const name = (transform.description ? transform.description : transform.name) + " " + column.displayName;
+        const name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
         this.controller.addFunction(formula, {formula: formula, icon: transform.icon, name: name});
     }
 
@@ -177,29 +176,6 @@ export class ColumnDelegate {
         }
         table.onRowsChange();
         table.refreshRows();
-    }
-
-    /**
-     * Creates a formula that replaces the specified column with the specified script.
-     *
-     * @private
-     * @param {string} script the expression for the column
-     * @param {ui.grid.GridColumn} column the column to be replaced
-     * @param {ui.grid.Grid} grid the grid with the column
-     * @returns {string} a formula that replaces the column
-     */
-    toFormula(script: any, column: any, grid: any) {
-        let formula = "";
-
-        angular.forEach(grid.columns, function (item) {
-            if (item.visible) {
-                formula += (formula.length == 0) ? "select(" : ", ";
-                formula += (item.field === column.field) ? script : item.field;
-            }
-        });
-
-        formula += ")";
-        return formula;
     }
 
     /**
@@ -246,6 +222,20 @@ export class ColumnDelegate {
             case DataType.UNION:
                 return DataCategory.UNION;
         }
+    }
+
+    /**
+     * Gets the human-readable name of the specified column.
+     */
+    protected getColumnDisplayName(column: any): string {
+        return column.displayName;
+    }
+
+    /**
+     * Gets the SQL identifier for the specified column.
+     */
+    protected getColumnFieldName(column: any): string {
+        return column.field;
     }
 
     /**
@@ -329,5 +319,30 @@ export class ColumnDelegate {
         }
 
         return transforms;
+    }
+
+    /**
+     * Creates a formula that replaces the specified column with the specified script.
+     *
+     * @param {string} script the expression for the column
+     * @param {ui.grid.GridColumn} column the column to be replaced
+     * @param {ui.grid.Grid} grid the grid with the column
+     * @returns {string} a formula that replaces the column
+     */
+    private toFormula(script: string, column: any, grid: any): string {
+        const columnFieldName = this.getColumnFieldName(column);
+        let formula = "";
+        const self = this;
+
+        angular.forEach(grid.columns, function (item) {
+            if (item.visible) {
+                const itemFieldName = self.getColumnFieldName(item);
+                formula += (formula.length == 0) ? "select(" : ", ";
+                formula += (itemFieldName === columnFieldName) ? script : itemFieldName;
+            }
+        });
+
+        formula += ")";
+        return formula;
     }
 }
