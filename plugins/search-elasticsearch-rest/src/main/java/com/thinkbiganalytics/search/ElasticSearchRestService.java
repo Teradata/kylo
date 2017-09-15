@@ -441,7 +441,7 @@ public class ElasticSearchRestService implements Search {
                 .put(secondMatchObject);
 
             JSONObject shouldObject = new JSONObject()
-                .put("should", shouldArray);
+                .put("must", shouldArray);
 
             JSONObject boolObject = new JSONObject()
                 .put("bool", shouldObject);
