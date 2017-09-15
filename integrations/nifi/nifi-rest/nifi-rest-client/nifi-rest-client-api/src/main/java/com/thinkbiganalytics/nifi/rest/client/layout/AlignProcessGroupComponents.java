@@ -157,7 +157,7 @@ public class AlignProcessGroupComponents {
      */
     private void arrangeProcessGroup(LayoutGroup layoutGroup) {
 
-        log.info("Arrange Group {}", layoutGroup.getClass().getSimpleName());
+        log.debug("Arrange Group {}", layoutGroup.getClass().getSimpleName());
         //set the starting Y coords for this group
         Double start = lastPositionedGroup == null ? 0.0d : lastPositionedGroup.getBottomY() + alignmentConfig.getGroupPadding();
         layoutGroup.setTopAndBottom(start, new Double(layoutGroup.getHeight() + start));
@@ -245,7 +245,7 @@ public class AlignProcessGroupComponents {
             PositionDTO newPosition = renderer.getNextPosition(lastPosition);
             positionPort.setPosition(newPosition);
             niFiRestClient.ports().updateOutputPort(parentProcessGroupId, positionPort);
-            log.info("Aligned Port {} at {},{}", port.getName(), positionPort.getPosition().getX(), positionPort.getPosition().getY());
+            log.debug("Aligned Port {} at {},{}", port.getName(), positionPort.getPosition().getX(), positionPort.getPosition().getY());
         });
     }
 
@@ -257,7 +257,7 @@ public class AlignProcessGroupComponents {
             PositionDTO newPosition = renderer.getNextPosition(lastPosition);
             positionPort.setPosition(newPosition);
             niFiRestClient.ports().updateInputPort(parentProcessGroupId, positionPort);
-            log.info("Aligned Port {} at {},{}", port.getName(), positionPort.getPosition().getX(), positionPort.getPosition().getY());
+            log.debug("Aligned Port {} at {},{}", port.getName(), positionPort.getPosition().getX(), positionPort.getPosition().getY());
         });
     }
 
@@ -270,7 +270,7 @@ public class AlignProcessGroupComponents {
             PositionDTO newPosition = renderer.getNextPosition(lastPosition);
             positionProcessGroup.setPosition(newPosition);
             niFiRestClient.processGroups().update(positionProcessGroup);
-            log.info("Aligned ProcessGroup {} at {},{}", processGroupDTO.getName(), positionProcessGroup.getPosition().getX(), positionProcessGroup.getPosition().getY());
+            log.debug("Aligned ProcessGroup {} at {},{}", processGroupDTO.getName(), positionProcessGroup.getPosition().getX(), positionProcessGroup.getPosition().getY());
         });
     }
 
