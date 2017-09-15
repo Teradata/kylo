@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-nifi</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.3</version>
+    <version>0.8.2.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
