@@ -24,6 +24,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
@@ -79,6 +80,7 @@ public class CreateFeedBuilder {
     private static final Logger log = LoggerFactory.getLogger(CreateFeedBuilder.class);
 
     LegacyNifiRestClient restClient;
+    NiFiTemplateCache niFiTemplateCache;
     TemplateCreationHelper templateCreationHelper;
     private NiFiObjectCache niFiObjectCache;
     private NifiFlowCache nifiFlowCache;
@@ -204,6 +206,20 @@ public class CreateFeedBuilder {
         return elapsedTime;
     }
 
+    public CreateFeedBuilder withNiFiTemplateCache(NiFiTemplateCache niFiTemplateCache){
+        this.niFiTemplateCache = niFiTemplateCache;
+        return this;
+    }
+
+    private TemplateDTO getTemplate(){
+        if(niFiTemplateCache != null){
+            return niFiTemplateCache.geTemplate(templateId,null);
+        }
+        else {
+           return restClient.getTemplateById(templateId);
+        }
+    }
+
     /**
      * Build the NiFi flow instance
      *
@@ -215,7 +231,8 @@ public class CreateFeedBuilder {
             newProcessGroup = null;
             Stopwatch totalTime = Stopwatch.createStarted();
             Stopwatch eventTime = Stopwatch.createStarted();
-            TemplateDTO template = restClient.getTemplateById(templateId);
+
+            TemplateDTO template = getTemplate();
             log.debug("Time to get Template {}.  ElapsedTime: {} ms", template.getName(), eventTime(eventTime));
             if (template != null) {
 
