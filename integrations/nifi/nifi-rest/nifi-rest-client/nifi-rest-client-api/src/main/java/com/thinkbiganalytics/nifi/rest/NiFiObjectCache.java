@@ -78,6 +78,8 @@ public class NiFiObjectCache {
     //Make a evictingQueue  to reduce size??
     private Map<String, Set<ConnectionDTO>> processGroupConnections = new ConcurrentHashMap<>();
 
+    private String reusableTemplateProcessGroupId;
+
 
     public NiFiObjectCache() {
     }
@@ -99,7 +101,15 @@ public class NiFiObjectCache {
      */
     public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
         if (reusableTemplateCategory == null) {
-            reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+            if(reusableTemplateProcessGroupId != null) {
+                reusableTemplateCategory =  restClient.getNiFiRestClient().processGroups().findById(reusableTemplateProcessGroupId, false, false).orElse(null);
+            }
+            if(reusableTemplateCategory == null) {
+                reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+                if(reusableTemplateCategory != null) {
+                    reusableTemplateProcessGroupId = reusableTemplateCategory.getId();
+                }
+            }
         }
         return reusableTemplateCategory;
     }
@@ -136,7 +146,8 @@ public class NiFiObjectCache {
             ProcessGroupDTO reusableTemplateCategoryGroupId = getReusableTemplateCategoryProcessGroup();
             Set<PortDTO> inputPortsEntity = restClient.getNiFiRestClient().processGroups().getInputPorts(reusableTemplateCategoryGroupId.getId());
             if (inputPortsEntity != null) {
-                inputPortsEntity.stream().forEach(inputPort -> reusableTemplateCategoryInputPortsByName.putIfAbsent(inputPort.getName(), inputPort));
+                inputPortsEntity.stream().forEach(inputPort -> reusableTemplateCategoryInputPortsByName.put(inputPort.getName(),inputPort)
+                );
                 PortDTO inputPort = NifiConnectionUtil.findPortMatchingName(inputPortsEntity, inputPortName);
                 return inputPort;
             }
@@ -159,7 +170,7 @@ public class NiFiObjectCache {
         if (outputPort == null) {
             Set<PortDTO> outputPorts = restClient.getNiFiRestClient().processGroups().getOutputPorts(categoryProcessGroupId);
             if (outputPorts != null) {
-                outputPorts.stream().forEach(port -> categoryProcessGroupIdToOutputPortByName.get(categoryProcessGroupId).putIfAbsent(port.getName(), port));
+                outputPorts.stream().forEach(port -> categoryProcessGroupIdToOutputPortByName.get(categoryProcessGroupId).put(port.getName(), port));
                 outputPort =
                     NifiConnectionUtil.findPortMatchingName(outputPorts, outputPortName);
             }
@@ -168,7 +179,10 @@ public class NiFiObjectCache {
     }
 
     public void addCategoryOutputPort(String categoryProcessGroupId, PortDTO portDTO) {
-        categoryProcessGroupIdToOutputPortByName.putIfAbsent(categoryProcessGroupId, new ConcurrentHashMap<>()).put(portDTO.getName(), portDTO);
+        if(!categoryProcessGroupIdToOutputPortByName.containsKey(categoryProcessGroupId)) {
+            categoryProcessGroupIdToOutputPortByName.put(categoryProcessGroupId, new ConcurrentHashMap<>());
+        }
+        categoryProcessGroupIdToOutputPortByName.get(categoryProcessGroupId).put(portDTO.getName(), portDTO);
     }
 
     public Set<ConnectionDTO> getConnections(String processGroupId){
@@ -216,8 +230,13 @@ public class NiFiObjectCache {
     }
 
     public void addConnection(String processGroupId, ConnectionDTO connectionDTO) {
-        processGroupConnections.putIfAbsent(processGroupId, new HashSet<>()).add(connectionDTO);
+        if(!processGroupConnections.containsKey(processGroupId)){
+            processGroupConnections.put(processGroupId, new HashSet<>());
+        }
+            processGroupConnections.get(processGroupId).add(connectionDTO);
+
     }
+
 
     public void addProcessGroupConnections(Set<ConnectionDTO> connections) {
         connections.stream().forEach(c -> addConnection(c.getParentGroupId(), c));
@@ -246,5 +265,13 @@ public class NiFiObjectCache {
         if(cacheCategoryGroups){
            categoryProcessGroup.put(processGroupDTO.getName(),processGroupDTO);
         }
+    }
+
+    public String getReusableTemplateProcessGroupId() {
+        return reusableTemplateProcessGroupId;
+    }
+
+    public void setReusableTemplateProcessGroupId(String reusableTemplateProcessGroupId) {
+        this.reusableTemplateProcessGroupId = reusableTemplateProcessGroupId;
     }
 }
