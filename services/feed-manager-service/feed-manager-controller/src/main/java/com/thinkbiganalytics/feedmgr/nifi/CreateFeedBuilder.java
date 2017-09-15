@@ -273,12 +273,12 @@ public class CreateFeedBuilder {
                     List<NifiProperty> updatedControllerServiceProperties = new ArrayList<>();
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
-                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input)));
+                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input), instance));
                     }
                     if (cleanupProcessor != null) {
-                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor)));
+                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor),instance));
                     }
-                    updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(nonInputProcessors));
+                    updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, instance));
                     log.debug("Time to updatedControllerServiceProperties.  ElapsedTime: {} ms", eventTime(eventTime));
 
                     eventTime.start();

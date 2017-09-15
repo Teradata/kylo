@@ -386,7 +386,8 @@ public class TemplateCreationHelper {
                                 }
                             }
                         }
-                        else  if( !idsMatch && instance != null){
+                        //if we havent made a match attempt to see if the cs was removed
+                        if(!updatedProcessorProperties.containsKey(k) && !idsMatch && instance != null) {
                             String value = processorDTO.getConfig().getProperties().get(k);
                             //find the correct reference from that was removed due to a matching service
                             ControllerServiceDTO controllerServiceDTO = instance.findMatchingControllerServoce(value);
@@ -420,8 +421,9 @@ public class TemplateCreationHelper {
 
     }
 
-    public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors) {
-        return updateControllerServiceReferences(processors, null,null);
+
+    public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors, TemplateInstance templateInstance) {
+        return updateControllerServiceReferences(processors, null,templateInstance);
     }
 
 
