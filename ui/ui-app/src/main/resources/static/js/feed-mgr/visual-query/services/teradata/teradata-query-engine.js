@@ -44,7 +44,9 @@ define(["require", "exports", "../query-engine", "rxjs/Subject", "./teradata-scr
              */
             get: function () {
                 return [
-                    { name: "Group By", formula: "select(COLUMNS).groupBy(COLUMNS)" }
+                    { name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))" },
+                    { name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)" },
+                    { name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))" }
                 ];
             },
             enumerable: true,

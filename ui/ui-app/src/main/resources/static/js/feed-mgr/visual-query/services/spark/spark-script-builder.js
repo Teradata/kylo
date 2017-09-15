@@ -50,6 +50,12 @@ define(["require", "exports", "../script-builder", "./spark-expression", "./spar
             return spark_expression_1.SparkExpression.fromDefinition.apply(spark_expression_1.SparkExpression, [definition, node].concat(var_args));
         };
         /**
+         * Indicates if the specified function definition can be converted to a script expression.
+         */
+        SparkScriptBuilder.prototype.hasScriptExpression = function (definition) {
+            return definition[spark_expression_1.SparkExpression.SPARK_DIRECTIVE] != null;
+        };
+        /**
          * Indicates if the specified expression type is an object.
          */
         SparkScriptBuilder.prototype.isObject = function (sparkType) {

@@ -155,6 +155,8 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
                     return this.createScriptExpression(literal.raw, script_expression_type_1.ScriptExpressionType.LITERAL, literal.start, literal.end);
                 case "LogicalExpression":
                     return this.parseLogicalExpression(expression);
+                case "MemberExpression":
+                    return this.parseMemberExpression(expression);
                 case "UnaryExpression":
                     return this.parseUnaryExpression(expression);
                 default:
@@ -188,6 +190,32 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
             var left = this.parseExpression(node.left);
             var right = this.parseExpression(node.right);
             return this.createScriptExpressionFromDefinition(def, node, left, right);
+        };
+        /**
+         * Converts the specified member expression to a script expression object.
+         *
+         * @param node - the abstract syntax tree
+         * @returns the script expression
+         * @throws {Error} if a function definition is not valid
+         * @throws {ParseException} if the node is not valid
+         */
+        ScriptBuilder.prototype.parseMemberExpression = function (node) {
+            // Check object type
+            if (node.object.type !== "Identifier") {
+                throw new parse_exception_1.ParseException("Unexpected object type for member expression: " + node.object.type);
+            }
+            // Create child expression
+            var parentDef = this.functions[node.object.name];
+            var childDef = parentDef[node.property.name];
+            var expression = this.createScriptExpressionFromDefinition(childDef, node);
+            // Check for parent expression
+            if (this.hasScriptExpression(parentDef)) {
+                var parent_1 = this.createScriptExpressionFromDefinition(parentDef, node);
+                return this.appendChildExpression(parent_1, expression);
+            }
+            else {
+                return expression;
+            }
         };
         /**
          * Converts the specified statement to a script expression object.

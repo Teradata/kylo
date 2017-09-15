@@ -42,6 +42,13 @@ export class SparkScriptBuilder extends ScriptBuilder<SparkExpression, string> {
     }
 
     /**
+     * Indicates if the specified function definition can be converted to a script expression.
+     */
+    protected hasScriptExpression(definition: any): boolean {
+        return definition[SparkExpression.SPARK_DIRECTIVE] != null;
+    }
+
+    /**
      * Indicates if the specified expression type is an object.
      */
     protected isObject(sparkType: SparkExpressionType): boolean {

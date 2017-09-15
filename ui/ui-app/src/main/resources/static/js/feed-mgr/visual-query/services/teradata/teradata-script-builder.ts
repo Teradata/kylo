@@ -24,7 +24,7 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
      * Creates a script expression with the specified child expression appended to the parent expression.
      */
     protected appendChildExpression(parent: TeradataExpression, child: TeradataExpression): TeradataExpression {
-        if (!TeradataExpressionType.SELECT.equals(parent.type) && parent.type.equals(child.type)) {
+        if (!TeradataExpressionType.isScriptProperty(parent.type) && !TeradataExpressionType.isScriptProperty(child.type)) {
             return new TeradataExpression((parent.source as string) + (child.source as string), child.type, child.start, child.end);
         } else {
             const parentSource = (typeof parent.source === "string") ? this.prepareScript(parent) : parent.source;
@@ -55,6 +55,13 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
     }
 
     /**
+     * Indicates if the specified function definition can be converted to a script expression.
+     */
+    protected hasScriptExpression(definition: any): boolean {
+        return definition[TeradataExpression.TERADATA_DIRECTIVE] != null;
+    }
+
+    /**
      * Indicates if the specified expression type is an object.
      */
     protected isObject(type: TeradataExpressionType): boolean {
@@ -66,7 +73,7 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
      */
     protected parseIdentifier(node: Identifier & acorn.Node): TeradataExpression {
         let label = StringUtils.quote(this.queryEngine.getColumnLabel(node.name));
-        return new TeradataExpression("\"" + label + "\"", TeradataExpressionType.COLUMN, node.start, node.end);
+        return new TeradataExpression("\"" + StringUtils.quoteSql(label, "\"", "\"") + "\"", TeradataExpressionType.COLUMN, node.start, node.end);
     }
 
     /**

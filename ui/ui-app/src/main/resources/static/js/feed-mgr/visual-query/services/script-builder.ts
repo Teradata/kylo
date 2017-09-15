@@ -1,4 +1,4 @@
-import {ArrayExpression, BinaryExpression, CallExpression, Expression, Identifier, Literal, LogicalExpression, Program, Statement, UnaryExpression} from "estree";
+import {ArrayExpression, BinaryExpression, CallExpression, Expression, Identifier, Literal, LogicalExpression, MemberExpression, Program, Statement, UnaryExpression} from "estree";
 import {QueryEngineConstants} from "./query-engine-constants";
 import {ParseException} from "./parse-exception";
 import {ScriptExpression} from "./script-expression";
@@ -53,6 +53,11 @@ export abstract class ScriptBuilder<E extends ScriptExpression, T> {
      * Creates a script expression from a function definition and AST node.
      */
     protected abstract createScriptExpressionFromDefinition(definition: any, node: acorn.Node, ...var_args: E[]): E;
+
+    /**
+     * Indicates if the specified function definition can be converted to a script expression.
+     */
+    protected abstract hasScriptExpression(definition: any): boolean;
 
     /**
      * Indicates if the specified expression type is an object.
@@ -224,6 +229,9 @@ export abstract class ScriptBuilder<E extends ScriptExpression, T> {
             case "LogicalExpression":
                 return this.parseLogicalExpression(expression as LogicalExpression & acorn.Node);
 
+            case "MemberExpression":
+                return this.parseMemberExpression(expression as MemberExpression & acorn.Node);
+
             case "UnaryExpression":
                 return this.parseUnaryExpression(expression as UnaryExpression & acorn.Node);
 
@@ -264,6 +272,34 @@ export abstract class ScriptBuilder<E extends ScriptExpression, T> {
         const left = this.parseExpression(node.left);
         const right = this.parseExpression(node.right);
         return this.createScriptExpressionFromDefinition(def, node, left, right);
+    }
+
+    /**
+     * Converts the specified member expression to a script expression object.
+     *
+     * @param node - the abstract syntax tree
+     * @returns the script expression
+     * @throws {Error} if a function definition is not valid
+     * @throws {ParseException} if the node is not valid
+     */
+    private parseMemberExpression(node: MemberExpression & acorn.Node): E {
+        // Check object type
+        if (node.object.type !== "Identifier") {
+            throw new ParseException("Unexpected object type for member expression: " + node.object.type);
+        }
+
+        // Create child expression
+        const parentDef = this.functions[node.object.name];
+        const childDef = parentDef[(node.property as Identifier).name];
+        const expression = this.createScriptExpressionFromDefinition(childDef, node);
+
+        // Check for parent expression
+        if (this.hasScriptExpression(parentDef)) {
+            const parent = this.createScriptExpressionFromDefinition(parentDef, node);
+            return this.appendChildExpression(parent, expression);
+        } else {
+            return expression;
+        }
     }
 
     /**

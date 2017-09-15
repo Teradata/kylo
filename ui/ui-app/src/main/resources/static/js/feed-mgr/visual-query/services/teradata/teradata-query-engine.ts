@@ -59,7 +59,9 @@ export class TeradataQueryEngine extends QueryEngine<TeradataScript> {
      */
     get sampleFormulas(): { name: string; formula: string }[] {
         return [
-            {name: "Group By", formula: "select(COLUMNS).groupBy(COLUMNS)"}
+            {name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))"},
+            {name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)"},
+            {name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))"}
         ];
     }
 

@@ -327,6 +327,12 @@
     "!sql": "ABS(%c)",
     "!sqlType": "Column"
   },
+  "case_n": {
+    "!type": "fn(conditional_expression_varargs) -> Column",
+    "!doc": "Evaluates a list of conditions and returns the position of the first condition that evaluates to TRUE, provided that no prior condition in the list evaluates to UNKNOWN.",
+    "!sql": "CASE_N(%*c)",
+    "!sqlType": "Column"
+  },
   "ceiling": {
     "!type": "fn(arg: Column) -> Column",
     "!doc": "Returns the smallest integer value that is not less than the input argument.",
@@ -373,6 +379,12 @@
     "!type": "fn(lower_bound: Column, upper_bound: Column) -> Column",
     "!doc": "Returns a random integer number for each row of the results table.",
     "!sql": "RANDOM(%c, %c)",
+    "!sqlType": "Column"
+  },
+  "range_n": {
+    "!type": "fn(test_expression: Column, start_expression: Column, end_expression: Column) -> Column",
+    "!doc": "Evaluates an expression and maps the result into one of a list of specified ranges and returns the position of the range in the list.",
+    "!sql": "RANGE_N(%c BETWEEN %c AND %c)",
     "!sqlType": "Column"
   },
   "round": {
@@ -1202,10 +1214,100 @@
 
   "!CHAPTER_23": "Ordered Analytical/Window Aggregate Functions",
 
+  "csum": {
+    "!type": "fn(value_expression: Column, sort_expression: Column, sort_expression_varargs: Column) -> Column",
+    "!doc": "Returns the cumulative (or running) sum of a value expression for each row in a partition, assuming the rows in the partition are sorted by the sort_expression list.",
+    "!sql": "CSUM(%c, %*c)",
+    "!sqlType": "Column"
+  },
+  "cume_dist": {
+    "!type": "fn() -> Column",
+    "!doc": "Calculates the cumulative distribution of a value in a group of values.",
+    "!sql": "CUME_DIST()",
+    "!sqlType": "Column"
+  },
+  "dense_rank": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns an ordered ranking of rows based on the value_expression in the ORDER BY clause.",
+    "!sql": "DENSE_RANK()",
+    "!sqlType": "Column"
+  },
+  "first_value": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the first value in an ordered set of values.",
+    "!sql": "FIRST_VALUE(%c)",
+    "!sqlType": "Column"
+  },
+  "last_value": {
+    "!type": "fn(value_expression: Column) -> Column",
+    "!doc": "Returns the last value in an ordered set of values.",
+    "!sql": "LAST_VALUE(%c)",
+    "!sqlType": "Column"
+  },
+  "mavg": {
+    "!type": "fn(value_expression: Column, width: number, opt_sort_expression: Column) -> Column",
+    "!doc": "Computes the moving average of a value expression for each row in a partition using the specified value expression for the current row and the preceding width-1 rows.",
+    "!sql": "MAVG(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "mdiff": {
+    "!type": "fn(value_expression: Column, width: number, opt_sort_expression: Column) -> Column",
+    "!doc": "Returns the moving difference between the specified value expression for the current row and the preceding width rows for each row in the partition.",
+    "!sql": "MDIFF(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
   "median": {
     "!type": "fn(value_expression: Column) -> Column",
     "!doc": "Takes a numeric or datetime value and returns the middle value or an interpolated value that would be the middle value after the values are sorted.",
     "!sql": "MEDIAN(%c)",
+    "!sqlType": "Column"
+  },
+  "mlinreg": {
+    "!type": "fn(value_expression: Column, width: number, opt_sort_expression: Column) -> Column",
+    "!doc": "Returns a predicted value for an expression based on a least squares moving linear regression of the previous width -1 (based on sort_expression) column values.",
+    "!sql": "MLINREG(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "msum": {
+    "!type": "fn(value_expression: Column, width: number, opt_sort_expression: Column) -> Column",
+    "!doc": "Computes the moving sum specified by a value expression for the current row and the preceding n-1 rows.",
+    "!sql": "MSUM(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "percent_rank": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns the relative rank of rows for a value_expression.",
+    "!sql": "PERCENT_RANK()",
+    "!sqlType": "Column"
+  },
+  "percentile_cont": {
+    "!type": "fn(value_expression_1: Column, value_expression_2: Column, value_expression_2_varargs: Column) -> Column",
+    "!doc": "Returns an interpolated value that falls within its value_expression with respect to its sort specification.",
+    "!sql": "PERCENTILE_CONT(%c) WITHIN GROUP (ORDER BY %c%,*c)",
+    "!sqlType": "Column"
+  },
+  "percentile_disc": {
+    "!type": "fn(value_expression_1: Column, value_expression_2: Column, value_expression_2_varargs: Column) -> Column",
+    "!doc": "Returns an interpolated value that falls within its value_expression with respect to its sort specification.",
+    "!sql": "PERCENTILE_DISC(%c) WITHIN GROUP (ORDER BY %*c%,*c)",
+    "!sqlType": "Column"
+  },
+  "quantile": {
+    "!type": "fn(quantile_literal: Column, sort_expression: Column, sort_expression_varargs: Column) -> Column",
+    "!doc": "Computes the quantile scores for the values in a group.",
+    "!sql": "QUANTILE(%c, %c%,*c)",
+    "!sqlType": "Column"
+  },
+  "rank": {
+    "!type": "fn(sort_expression_varargs: Column) -> Column",
+    "!doc": "Returns an ordered ranking of rows based on the value_expression in the ORDER BY clause.",
+    "!sql": "RANK(%*c)",
+    "!sqlType": "Column"
+  },
+  "row_number": {
+    "!type": "fn() -> Column",
+    "!doc": "Returns the sequential row number, where the first row is number one, of the row within its window partition according to the window ordering of the window.",
+    "!sql": "ROW_NUMBER()",
     "!sqlType": "Column"
   },
 
@@ -1217,10 +1319,46 @@
     "!sql": "BEGIN(%c)",
     "!sqlType": "Column"
   },
+  "contains": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Evaluates two Period expressions, or derived periods, or DateTime expressions to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c CONTAINS %c",
+    "!sqlType": "Column"
+  },
   "end": {
     "!type": "fn(period_expression_or_derived_period: Column) -> Column",
     "!doc": "Returns the ending bound of the period argument.",
     "!sql": "END(%c)",
+    "!sqlType": "Column"
+  },
+  "equals": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Evaluates two period expressions or derived periods to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c EQUALS %c",
+    "!sqlType": "Column"
+  },
+  "is_until_changed": {
+    "!type": "fn(period_expression: Column) -> Column",
+    "!doc": "Tests whether the ending bound value of a Period expression or a derived period IS UNTIL_CHANGED.",
+    "!sql": "END %c IS UNTIL_CHANGED",
+    "!sqlType": "Column"
+  },
+  "is_until_closed": {
+    "!type": "fn(period_expression: Column) -> Column",
+    "!doc": "Tests the ending bound value of a temporal table system-time or transaction-time column to see whether the row is open.",
+    "!sql": "END %c IS UNTIL_CLOSED",
+    "!sqlType": "Column"
+  },
+  "immediately precedes": {
+    "!type": "fn(period_expression_1: Column, period_expression_1: Column) -> Column",
+    "!doc": "Evaluates two Period expressions or derived periods.",
+    "!sql": "%c IMMEDIATELY PRECEDES %c",
+    "!sqlType": "Column"
+  },
+  "immediately_succeeds": {
+    "!type": "fn(period_expression_1: Column, period_expression_2: Column) -> Column",
+    "!doc": "Evaluates two Period expressions or derived periods to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c IMMEDIATELY SUCCEEDS %c",
     "!sqlType": "Column"
   },
   "last": {
@@ -1229,16 +1367,58 @@
     "!sql": "LAST(%c)",
     "!sqlType": "Column"
   },
+  "meets": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Evaluates two period expressions, or derived periods, or DateTime expressions and evaluates to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c MEETS %c",
+    "!sqlType": "Column"
+  },
   "next": {
     "!type": "fn(datetime_expression: Column) -> Column",
     "!doc": "Returns the succeeding value of the argument so that there is one granule of the argument type between the argument and the returned value.",
     "!sql": "NEXT(%c)",
     "!sqlType": "Column"
   },
+  "overlaps": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Tests whether two time periods overlap each another.",
+    "!sql": "%c OVERLAPS %c",
+    "!sqlType": "Column"
+  },
+  "p_intersect": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Returns the portion of the Period expression that is common to the Period expressions if they overlap.",
+    "!sql": "%c P_INTERSECT %c",
+    "!sqlType": "Column"
+  },
+  "precedes": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Evaluates two Period expressions or derived periods, or DateTime expressions to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c PRECEDES %c",
+    "!sqlType": "Column"
+  },
   "prior": {
     "!type": "fn(datetime_expression: Column) -> Column",
     "!doc": "Returns the preceding value of the argument so that there is one granule of the argument type between the returned value and the argument.",
     "!sql": "PRIOR(%c)",
+    "!sqlType": "Column"
+  },
+  "ldiff": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Returns the portion of the first Period expression that exists before the beginning of the second Period expression when the Period expressions overlap.",
+    "!sql": "%c LDIFF %c",
+    "!sqlType": "Column"
+  },
+  "rdiff": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Returns the portion of the first Period expression that exists from the end of the second Period expression when the Period expressions overlap.",
+    "!sql": "%c RDIFF %c",
+    "!sqlType": "Column"
+  },
+  "succeeds": {
+    "!type": "fn(period_expression: Column, period_expression: Column) -> Column",
+    "!doc": "Evaluates two period expressions, or derived periods, or DateTime expressions to TRUE, FALSE, or UNKNOWN.",
+    "!sql": "%c SUCCEEDS %c",
     "!sqlType": "Column"
   },
 
@@ -1367,6 +1547,12 @@
     "!type": "fn(source_string: Column, from_string: Column, to_string: Column) -> Column",
     "!doc": "Returns source_string with every occurrence of each character in from_string replaced with the corresponding character in to_string.",
     "!sql": "OTRANSLATE(%c, %c, %c)",
+    "!sqlType": "Column"
+  },
+  "position": {
+    "!type": "fn(string_expression_1: Column, string_expression_2: Column) -> Column",
+    "!doc": "Returns the position in string_expression_2 where string_expression_1 starts.",
+    "!sql": "POSITION(%c IN %c)",
     "!sqlType": "Column"
   },
   "reverse": {

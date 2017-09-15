@@ -31,7 +31,7 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
          * Creates a script expression with the specified child expression appended to the parent expression.
          */
         TeradataScriptBuilder.prototype.appendChildExpression = function (parent, child) {
-            if (!teradata_expression_type_1.TeradataExpressionType.SELECT.equals(parent.type) && parent.type.equals(child.type)) {
+            if (!teradata_expression_type_1.TeradataExpressionType.isScriptProperty(parent.type) && !teradata_expression_type_1.TeradataExpressionType.isScriptProperty(child.type)) {
                 return new teradata_expression_1.TeradataExpression(parent.source + child.source, child.type, child.start, child.end);
             }
             else {
@@ -64,6 +64,12 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
             return teradata_expression_1.TeradataExpression.fromDefinition.apply(teradata_expression_1.TeradataExpression, [definition, node].concat(var_args));
         };
         /**
+         * Indicates if the specified function definition can be converted to a script expression.
+         */
+        TeradataScriptBuilder.prototype.hasScriptExpression = function (definition) {
+            return definition[teradata_expression_1.TeradataExpression.TERADATA_DIRECTIVE] != null;
+        };
+        /**
          * Indicates if the specified expression type is an object.
          */
         TeradataScriptBuilder.prototype.isObject = function (type) {
@@ -74,7 +80,7 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
          */
         TeradataScriptBuilder.prototype.parseIdentifier = function (node) {
             var label = StringUtils.quote(this.queryEngine.getColumnLabel(node.name));
-            return new teradata_expression_1.TeradataExpression("\"" + label + "\"", teradata_expression_type_1.TeradataExpressionType.COLUMN, node.start, node.end);
+            return new teradata_expression_1.TeradataExpression("\"" + StringUtils.quoteSql(label, "\"", "\"") + "\"", teradata_expression_type_1.TeradataExpressionType.COLUMN, node.start, node.end);
         };
         /**
          * Parses an identifier into a script expression.

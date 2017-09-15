@@ -36,7 +36,7 @@ type SourceType = string | TeradataScript;
 export class TeradataExpression {
 
     /** Regular expression for conversion strings */
-    static FORMAT_REGEX = /%([?*,@]*)([cs])/g;
+    static FORMAT_REGEX = /%([?*,@]*)([cos])/g;
 
     /** TernJS directive for the Teradata code */
     static TERADATA_DIRECTIVE = "!sql";
@@ -183,6 +183,10 @@ export class TeradataExpression {
                     result += TeradataExpression.toColumn(arg, context.requireAlias);
                     break;
 
+                case "o":
+                    result += TeradataExpression.toObject(arg);
+                    break;
+
                 case "s":
                     result += TeradataExpression.toString(arg);
                     break;
@@ -212,6 +216,27 @@ export class TeradataExpression {
             }
         }
         throw new ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
+    }
+
+    /**
+     * Converts the specified Spark expression to an object.
+     *
+     * @param expression - the Spark expression
+     * @returns the Spark code for the object
+     * @throws {ParseException} if the expression cannot be converted to an object
+     */
+    private static toObject(expression: TeradataExpression): SourceType {
+        if (TeradataExpressionType.isObject(expression.type.toString())) {
+            return expression.source;
+        } else if (TeradataExpressionType.LITERAL.equals(expression.type)) {
+            if ((expression.source as string).charAt(0) === "\"" || (expression.source as string).charAt(0) === "'") {
+                return TeradataExpression.toString(expression);
+            } else {
+                return expression.source;
+            }
+        } else {
+            throw new ParseException("Expression cannot be converted to an object: " + expression.type, expression.start);
+        }
     }
 
     /**

@@ -139,6 +139,9 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
                     case "c":
                         result += TeradataExpression.toColumn(arg, context.requireAlias);
                         break;
+                    case "o":
+                        result += TeradataExpression.toObject(arg);
+                        break;
                     case "s":
                         result += TeradataExpression.toString(arg);
                         break;
@@ -168,6 +171,29 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
             throw new parse_exception_1.ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
         };
         /**
+         * Converts the specified Spark expression to an object.
+         *
+         * @param expression - the Spark expression
+         * @returns the Spark code for the object
+         * @throws {ParseException} if the expression cannot be converted to an object
+         */
+        TeradataExpression.toObject = function (expression) {
+            if (teradata_expression_type_1.TeradataExpressionType.isObject(expression.type.toString())) {
+                return expression.source;
+            }
+            else if (teradata_expression_type_1.TeradataExpressionType.LITERAL.equals(expression.type)) {
+                if (expression.source.charAt(0) === "\"" || expression.source.charAt(0) === "'") {
+                    return TeradataExpression.toString(expression);
+                }
+                else {
+                    return expression.source;
+                }
+            }
+            else {
+                throw new parse_exception_1.ParseException("Expression cannot be converted to an object: " + expression.type, expression.start);
+            }
+        };
+        /**
          * Converts the specified Teradata expression to a string literal.
          *
          * @param expression - the Teradata expression
@@ -189,7 +215,7 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
         return TeradataExpression;
     }());
     /** Regular expression for conversion strings */
-    TeradataExpression.FORMAT_REGEX = /%([?*,@]*)([cs])/g;
+    TeradataExpression.FORMAT_REGEX = /%([?*,@]*)([cos])/g;
     /** TernJS directive for the Teradata code */
     TeradataExpression.TERADATA_DIRECTIVE = "!sql";
     /** TernJS directive for the return type */

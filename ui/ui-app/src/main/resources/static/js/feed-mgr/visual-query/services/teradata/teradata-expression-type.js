@@ -29,6 +29,16 @@ define(["require", "exports", "../script-expression-type", "../query-engine-cons
             return (teradataType !== TeradataExpressionType.ARRAY.toString() && teradataType !== TeradataExpressionType.LITERAL.toString());
         };
         /**
+         * Indicates if the specified type is a {@link TeradataScript} property.
+         *
+         * @param type - The Teradata type
+         * @returns true if the type is a property, or false otherwise
+         */
+        TeradataExpressionType.isScriptProperty = function (type) {
+            return TeradataExpressionType.GROUP_BY.equals(type) && TeradataExpressionType.HAVING.equals(type) && TeradataExpressionType.KEYWORD.equals(type) && TeradataExpressionType.SELECT.equals(type)
+                && TeradataExpressionType.WHERE.equals(type);
+        };
+        /**
          * Gets the TernJS definition name for the specified type.
          *
          * @param teradataType - the Teradata type
