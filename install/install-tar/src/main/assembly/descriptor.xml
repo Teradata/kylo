@@ -446,7 +446,7 @@
 
     <!-- setup files -->
     <file>
-      <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo/src/main/resources/config.properties</source>
+      <source>${project.parent.parent.basedir}/integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo/src/main/resources/ext-config/config.properties</source>
       <outputDirectory>setup/nifi</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>

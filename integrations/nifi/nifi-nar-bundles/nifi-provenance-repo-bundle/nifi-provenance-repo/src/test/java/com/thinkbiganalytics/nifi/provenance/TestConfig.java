@@ -32,9 +32,9 @@ import org.springframework.core.io.ClassPathResource;
  */
 // Ignore due to dependency on MySQL
 @Ignore
-@Configuration
+//@Configuration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@PropertySource("classpath:config.properties")
+@PropertySource("classpath:ext-config/config.properties")
 public class TestConfig {
 
     @Autowired
@@ -43,7 +43,7 @@ public class TestConfig {
     @Bean
     public PropertyPlaceholderConfigurer propConfig() {
         PropertyPlaceholderConfigurer placeholderConfigurer = new PropertyPlaceholderConfigurer();
-        placeholderConfigurer.setLocation(new ClassPathResource("config.properties"));
+        placeholderConfigurer.setLocation(new ClassPathResource("ext-config/config.properties"));
         return placeholderConfigurer;
     }
 

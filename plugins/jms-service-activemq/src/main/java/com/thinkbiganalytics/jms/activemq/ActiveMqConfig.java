@@ -44,7 +44,6 @@ import javax.jms.ConnectionFactory;
 @Profile("jms-activemq")
 @Configuration
 @PropertySources({
-                     @PropertySource(value = "classpath:activemq.properties", ignoreResourceNotFound = true),
                      @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true)
                  })
 public class ActiveMqConfig {
