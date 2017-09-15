@@ -105,10 +105,14 @@ public class NiFiTemplateCache {
                 nifiTemplate = findSummaryByName(templateName);
             }
             if(nifiTemplate != null) {
+                if(StringUtils.isBlank(templateName)){
+                    templateName = nifiTemplate.getName();
+                }
                 if(needsUpdate(nifiTemplate,templateDTO)){
                     log.info("Fetching NiFi template from NiFi {}, {}",nifiTemplateId,templateName);
                     templateDTO = getPopulatedTemplate(nifiTemplateId,templateName);
                     if(templateDTO != null){
+                        log.info("Caching NiFi template {}, {}",nifiTemplateId,templateName);
                         if(StringUtils.isNotBlank(nifiTemplateId)){
                             templateByIdCache.put(nifiTemplateId,templateDTO);
                         }
