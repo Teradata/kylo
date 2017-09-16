@@ -231,4 +231,17 @@ public interface FeedManagerFeedService {
      */
     @Nonnull
     Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId);
+
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId the id of the feed rest model to update
+     */
+    void updateFeedDatasources(String feedId);
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    void updateAllFeedsDatasources();
 }

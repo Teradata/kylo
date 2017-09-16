@@ -241,6 +241,12 @@ public class BaseFeed implements Feed {
     }
 
     @Override
+    public void clearSourcesAndDestinations() {
+        this.sources.clear();
+        this.destinations.clear();
+    }
+
+    @Override
     public FeedPrecondition getPrecondition() {
         return this.precondition;
     }

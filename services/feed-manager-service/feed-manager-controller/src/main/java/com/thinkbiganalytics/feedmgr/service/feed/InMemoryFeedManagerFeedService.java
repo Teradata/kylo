@@ -354,4 +354,14 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         nifiFeed.setSuccess(true);
         return nifiFeed;
     }
+
+    @Override
+    public void updateFeedDatasources(String feedId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateAllFeedsDatasources() {
+        throw new UnsupportedOperationException();
+    }
 }
