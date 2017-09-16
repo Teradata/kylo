@@ -510,4 +510,20 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
     }
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId of the feed rest model to update
+     */
+    public void updateFeedDatasources(String feedId) {
+        feedProvider.updateFeedDatasources(feedId);
+    }
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    public void updateAllFeedsDatasources(){
+        feedProvider.updateAllFeedsDatasources();
+    }
 }

@@ -25,8 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
-import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
-import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -43,6 +41,7 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -77,6 +76,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
+import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -791,6 +791,49 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
     }
 
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     *
+     * @param feedId the id of the feed rest model to update
+     */
+    public void updateFeedDatasources(String feedId) {
+        metadataAccess.commit(() -> {
+            feedProvider.removeFeedDestinations(feedProvider.resolveId(feedId));
+            feedProvider.removeFeedSources(feedProvider.resolveId(feedId));
+        });
+
+        metadataAccess.commit(() -> {
+            Feed domainFeed = feedProvider.findById(feedProvider.resolveId(feedId));
+            FeedMetadata feed = feedModelTransform.domainToFeedMetadata(domainFeed);
+            assignFeedDatasources(feed, domainFeed);
+        });
+    }
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call
+     */
+    public void updateAllFeedsDatasources() {
+        metadataAccess.commit(() -> {
+            feedProvider.findAll().stream().forEach(domainFeed -> {
+                domainFeed.clearSourcesAndDestinations();
+            });
+        });
+
+        metadataAccess.commit(() -> {
+            feedProvider.findAll().stream().forEach(domainFeed -> {
+                FeedMetadata feed = feedModelTransform.domainToFeedMetadata(domainFeed);
+                assignFeedDatasources(feed, domainFeed);
+            });
+        });
+    }
+
+    /**
+     * Assign the feed sources/destinations
+     *
+     * @param feed       the feed rest model
+     * @param domainFeed the domain feed
+     */
     private void assignFeedDatasources(FeedMetadata feed, Feed domainFeed) {
         final Feed.ID domainFeedId = domainFeed.getId();
         Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources = new HashSet<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID>();
@@ -821,7 +864,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
         sources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
         destinations.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
-        //TODO deal with inputs changing sources?
 
     }
 

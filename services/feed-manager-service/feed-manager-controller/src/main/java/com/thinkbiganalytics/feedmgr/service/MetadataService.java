@@ -275,4 +275,19 @@ public interface MetadataService {
      * @param userFields the new user-defined fields
      */
     void setUserFields(@Nonnull UserFieldCollection userFields);
+
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId the id of the feed rest model to update
+     */
+    void updateFeedDatasources(String feedId);
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    void updateAllFeedsDatasources();
+
+
 }
