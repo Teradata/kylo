@@ -114,8 +114,9 @@ public class DerivedDatasourceFactory {
             processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
             registeredTemplateCache.putProcessors(feedMetadata.getTemplateId(), processors);
         }
-
-        List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream()).collect(Collectors.toList());
+        //COPY the properties since they will be replaced when evaluated
+        List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream())
+            .map(property -> new NifiProperty(property)).collect(Collectors.toList());
 
         template.getRegisteredDatasourceDefinitions().stream().forEach(definition -> {
             Datasource.ID id = ensureDatasource(definition, feedMetadata, allProperties);
