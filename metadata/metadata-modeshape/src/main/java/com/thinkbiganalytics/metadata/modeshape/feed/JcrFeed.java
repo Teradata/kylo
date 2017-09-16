@@ -529,6 +529,11 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         return getFeedDetails().map(d -> d.createNewPrecondition()).orElse(null);
     }
 
+    public void clearSourcesAndDestinations(){
+        removeFeedSources();
+        removeFeedDestinations();
+    }
+
     public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
 
         public FeedId(Serializable ser) {

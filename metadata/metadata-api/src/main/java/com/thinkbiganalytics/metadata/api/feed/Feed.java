@@ -172,6 +172,8 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void setVersionName(String version);
 
+    void clearSourcesAndDestinations();
+
     enum State {ENABLED, DISABLED, DELETED}
 
     interface ID extends Serializable {
