@@ -216,8 +216,8 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                  * @param name
                  * @param nifiFeed
                  */
-                buildErrorData: function (name, nifiFeed) {
-                    FeedCreationErrorService.buildErrorData(name, nifiFeed);
+                buildErrorData: function (name, response) {
+                    FeedCreationErrorService.buildErrorData(name, response);
                 },
                 /**
                  * Check to see if there are any errors added to the Error Dialog

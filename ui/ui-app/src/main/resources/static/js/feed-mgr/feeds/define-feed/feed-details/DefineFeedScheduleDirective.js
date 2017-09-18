@@ -391,7 +391,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }, function(response) {
                 self.savingFeed = false;
                 self.createdFeed = response.data;
-                FeedCreationErrorService.buildErrorData(self.model.feedName, self.createdFeed);
+                FeedCreationErrorService.buildErrorData(self.model.feedName, response);
                 hideProgress();
                 FeedCreationErrorService.showErrorDialog();
             });
