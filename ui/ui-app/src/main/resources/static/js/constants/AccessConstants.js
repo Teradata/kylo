@@ -210,6 +210,8 @@ define([], function () {
          */
         this.GLOBAL_SEARCH_ACCESS = "accessSearch";
 
+        this.ADMIN_METADATA= "adminMetadata";
+
         this.ENTITY_ACCESS = {
             CATEGORY: {
                 //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
@@ -267,6 +269,7 @@ define([], function () {
             REGISTER_TEMPLATE_COMPLETE: {state: "register-template-complete", permissions: [this.TEMPLATES_EDIT]},
             IMPORT_TEMPLATE: {state: "import-template", permissions: [this.TEMPLATES_IMPORT]},
             SEARCH: {state: "search", permissions: []},
+            JCR_ADMIN:{state:"jcr-query",permissions:[this.ADMIN_METADATA]},
             //Ops Manager
             ALERTS: {state: "alerts", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             ALERT_DETAILS: {state: "alert-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
