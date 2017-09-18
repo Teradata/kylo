@@ -45,6 +45,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                      */
                     self.toggleSections = []
 
+
                     /**
                      * Initially open those sections that are set to be expanded
                      */
@@ -67,6 +68,14 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                     }
 
                     setToggleSections();
+
+                    $scope.$watchCollection(
+                        function(){ return self.menu},
+                        function( newValue, oldValue ) {
+                         setToggleSections();
+                        }
+                    );
+
 
 
                     self.focusSection = function () {
