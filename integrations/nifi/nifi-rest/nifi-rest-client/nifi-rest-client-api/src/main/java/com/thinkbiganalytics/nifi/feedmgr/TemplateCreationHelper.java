@@ -459,6 +459,9 @@ public class TemplateCreationHelper {
             // Pick properties that reference a controller service
             .filter(property -> StringUtils.isNotBlank(property.getPropertyDescriptor().getIdentifiesControllerService()))
 
+            // Pick properties that have a value set
+            .filter(property -> StringUtils.isNotBlank(property.getValue()))
+
             // Pick properties that reference a disabled or unknown controller service
             .filter(property -> !enabledServices.containsKey(property.getValue()))
 
