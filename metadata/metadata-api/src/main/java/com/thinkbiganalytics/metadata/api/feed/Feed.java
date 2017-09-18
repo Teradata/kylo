@@ -174,7 +174,7 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void clearSourcesAndDestinations();
 
-    enum State {ENABLED, DISABLED, DELETED}
+    enum State {NEW, ENABLED, DISABLED, DELETED}
 
     interface ID extends Serializable {
 

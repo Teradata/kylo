@@ -67,6 +67,7 @@ import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.User;
 
 /**
  * Transforms feeds between Feed Manager and Metadata formats.
@@ -207,8 +208,6 @@ public class FeedModelTransform {
         RegisteredTemplate template = feedMetadata.getRegisteredTemplate();
         prepareForSave(feedMetadata);
 
-        domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
-
         feedMetadata.setRegisteredTemplate(template);
         if (domain.getTemplate() == null) {
             FeedManagerTemplate.ID templateId = templateProvider.resolveId(feedMetadata.getTemplateId());
@@ -235,13 +234,42 @@ public class FeedModelTransform {
 
         }
         domain.setSecurityGroups(securityGroups);
+        domain.setVersionName(domain.getVersionName());
+        
+        if (feedMetadata.getTags() != null) {
+            domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+        }
 
-        domain.setVersionName(feedMetadata.getVersionName());
-        domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
+        // Create a new feed metadata stripped of any excess data that does 
+        // not need to be serialized and stored in the feed domain entity.
+        FeedMetadata stripped = stripMetadata(feedMetadata);
+        domain.setJson(ObjectMapperSerializer.serialize(stripped));
         return domain;
     }
     
     
+    /**
+     * Clean out any excess or redundant data that should not be serialized and stored
+     * with the feed domain entity as JSON.
+     * @param source the source metadata
+     * @return a new metadata instance without the excess data
+     */
+    private FeedMetadata stripMetadata(FeedMetadata source) {
+        FeedMetadata result = new FeedMetadata();
+        
+        result.setDataTransformation(source.getDataTransformation());
+        result.setHadoopAuthorizationType(source.getHadoopAuthorizationType());
+        result.setInputProcessorType(source.getInputProcessorType());
+        result.setIsReusableFeed(source.isReusableFeed());
+        result.setNifiProcessGroupId(source.getNifiProcessGroupId());
+        result.setOptions(source.getOptions());
+        result.setProperties(source.getProperties());
+        result.setSchedule(source.getSchedule());
+        result.setTable(source.getTable());
+        result.setTableOption(source.getTableOption());
+        return result;
+    }
+
     /**
      * Transforms the specified domain feed versions to a FeedVersions.
      *
@@ -291,10 +319,20 @@ public class FeedModelTransform {
     public FeedMetadata deserializeFeedMetadata(Feed domain, boolean clearSensitiveProperties) {
         String json = domain.getJson();
         FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+        
+        populate(feedMetadata, domain);
+        
         if (clearSensitiveProperties) {
             clearSensitivePropertyValues(feedMetadata);
         }
         return feedMetadata;
+    }
+
+    /**
+     * @param feedMetadata
+     * @param domain
+     */
+    private void populate(FeedMetadata feedMetadata, Feed domain) {
     }
 
     public FeedMetadata deserializeFeedMetadata(Feed domain) {
@@ -315,7 +353,11 @@ public class FeedModelTransform {
         FeedMetadata feed = deserializeFeedMetadata(domain, false);
         feed.setId(domain.getId().toString());
         feed.setFeedId(domain.getId().toString());
-        feed.setTemplateId(domain.getTemplate().getId().toString());
+        feed.setFeedName(domain.getDisplayName());
+        feed.setSystemFeedName(domain.getName());
+        feed.setDescription(domain.getDescription());
+        feed.setOwner(domain.getOwner() != null ? new User(domain.getOwner().getName()) : null);
+        
         if (domain.getCreatedTime() != null) {
             feed.setCreateDate(domain.getCreatedTime().toDate());
         }
@@ -328,6 +370,7 @@ public class FeedModelTransform {
             RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
             feed.setRegisteredTemplate(registeredTemplate);
             feed.setTemplateId(registeredTemplate.getId());
+            feed.setTemplateName(registeredTemplate.getTemplateName());
         }
         Category category = domain.getCategory();
         if (category != null) {

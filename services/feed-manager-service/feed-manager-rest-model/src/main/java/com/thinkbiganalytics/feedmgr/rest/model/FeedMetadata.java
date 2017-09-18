@@ -22,7 +22,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
 /**
  * The specification for a feed and how it should interact with various components.
  */
+@JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
@@ -354,32 +357,32 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     @Override
     public String getCategoryName() {
-        return this.category.getName();
+        return this.category != null ? this.category.getName() : null;
     }
 
     @Override
     public String getCategoryId() {
-        return this.category.getId();
+        return this.category != null ? this.category.getId() : null;
     }
 
     @Override
     public String getCategoryAndFeedDisplayName() {
-        return this.category.getName() + "." + this.getFeedName();
+        return this.category != null ? this.category.getName() + "." + this.getFeedName() : null;
     }
 
     @Override
     public String getSystemCategoryName() {
-        return category.getSystemName();
+        return this.category != null ? this.category.getSystemName() : null;
     }
 
     @Override
     public String getCategoryIcon() {
-        return this.category.getIcon();
+        return this.category != null ? this.category.getIcon() : null;
     }
 
     @Override
     public String getCategoryIconColor() {
-        return this.category.getIconColor();
+        return this.category != null ? this.category.getIconColor() : null;
     }
 
     public String getNifiProcessGroupId() {

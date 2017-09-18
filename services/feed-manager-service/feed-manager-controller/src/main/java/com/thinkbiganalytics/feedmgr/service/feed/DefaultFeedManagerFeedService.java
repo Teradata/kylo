@@ -743,15 +743,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             stopwatch.stop();
             log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
-
-            // Return result
-            return feed;
         }, (e) -> {
             if (feed.isNew() && StringUtils.isNotBlank(feed.getId())) {
                 //Rollback ops Manager insert if it is newly created
                 metadataAccess.commit(() -> {
                     opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feed.getId()));
-                    return null;
                 });
             }
         });
@@ -922,15 +918,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return metadataAccess.commit(() -> {
             boolean enabled = feedProvider.enableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
-            FeedMetadata feedMetadata = null;
+            
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
-                feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
-                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                domainFeed.setState(Feed.State.ENABLED);
                 feedProvider.update(domainFeed);
-            }
-            if (enabled) {
-                notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
+                
+                if (enabled) {
+                    FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
+                    feedMetadata.setState(Feed.State.ENABLED.name());
+                    notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
+                }
             }
 
             return enabled;
@@ -942,18 +939,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-
             boolean disabled = feedProvider.disableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
-            FeedMetadata feedMetadata = null;
+
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, false);
-                feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
-                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                domainFeed.setState(Feed.State.DISABLED);
                 feedProvider.update(domainFeed);
-            }
-            if (disabled) {
-                notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
+                
+                if (disabled) {
+                    FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
+                    feedMetadata.setState(Feed.State.DISABLED.name());
+                    notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
+                }
             }
 
             return disabled;
