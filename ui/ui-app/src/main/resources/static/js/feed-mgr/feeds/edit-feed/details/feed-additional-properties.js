@@ -109,7 +109,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 self.model.securityGroups = self.editModel.securityGroups;
             }, function(response) {
                 FeedService.hideFeedSavingDialog();
-                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.buildErrorData(self.model.feedName, response);
                 FeedService.showFeedErrorsDialog();
                 //make it editable
                 self.editableSection = true;
