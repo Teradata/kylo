@@ -44,7 +44,10 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
             if (angular.isString($transition$.params().categoryId)) {
                 self.model = CategoriesService.model = CategoriesService.findCategory($transition$.params().categoryId);
                 if(angular.isDefined(CategoriesService.model)) {
-                    CategoriesService.getRelatedFeeds(CategoriesService.model);
+                    CategoriesService.model.loadingRelatedFeeds = true;
+                    CategoriesService.populateRelatedFeeds(CategoriesService.model).then(function(category){
+                        category.loadingRelatedFeeds = false;
+                    });
                 }
                 self.loadingCategory = false;
             } else {
@@ -55,6 +58,10 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
                         self.loadingCategory = false;
                     });
             }
+        };
+
+        self.getIconColorStyle = function(iconColor) {
+            return {'fill':iconColor};
         };
 
         // Load the list of categories

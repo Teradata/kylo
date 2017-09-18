@@ -208,6 +208,9 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
                 });
         };
 
+        self.getIconColorStyle = function(iconColor) {
+            return  {'fill': iconColor};
+        };
 
         function checkAccessPermissions() {
             //Apply the entity access permissions
@@ -222,12 +225,15 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
         checkAccessPermissions();
 
-        // Fetch the existing categories
-        CategoriesService.reload().then(function (response) {
+        function init() {
+
             if (self.editModel) {
                 self.onNameChange(self.editModel.name);
             }
-        });
+
+        }
+
+        init();
 
         // Watch for changes to name
         $scope.$watch(
