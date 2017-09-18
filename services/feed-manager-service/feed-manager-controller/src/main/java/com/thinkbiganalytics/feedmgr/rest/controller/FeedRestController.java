@@ -45,6 +45,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
+import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
@@ -732,6 +733,34 @@ public class FeedRestController {
         }
         return Response.ok(sla).build();
     }
+
+    @POST
+    @Path("/update-all-datasources")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates ALL  sources/destinations used for the feed lineage for ALL feeds.  WARNING: This will be an expensive call if you have lots of feeds.  This will remove all existing sources/destinations and revaluate the feed and its template for sources/destinations")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "All the feed datasources were updated", response = RestResponseStatus.class),
+                  })
+    public Response updateAllFeedDataSources() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        getMetadataService().updateAllFeedsDatasources();
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+    }
+
+
+    @POST
+    @Path("/{feedId}/update-datasources")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feeds sources/destinations used for the FeedLineage.  This will remove all existing sources/destinations and revaluate the feed and its template for sources/destinations")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "the datasources were updated", response = RestResponseStatus.class),
+                  })
+    public Response updateFeedDatasources(@PathParam("feedId") String feedId) {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        getMetadataService().updateFeedDatasources(feedId);
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+    }
+
 
     @POST
     @Path("/update-feed-lineage-styles")

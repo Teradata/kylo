@@ -148,8 +148,8 @@ public class FeedCategoryRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the list of categories.", response = FeedCategory.class, responseContainer = "List")
     )
-    public Response getCategories() {
-        Collection<FeedCategory> categories = getMetadataService().getCategories();
+    public Response getCategories(@QueryParam("includeFeedDetails") @DefaultValue("false") boolean includeFeedDetails) {
+        Collection<FeedCategory> categories = getMetadataService().getCategories(includeFeedDetails);
         return Response.ok(categories).build();
     }
 
@@ -349,7 +349,7 @@ public class FeedCategoryRestController {
                   })
     public Response postRoleMembershipChange(@PathParam("categoryId") String categoryIdStr,
                                              RoleMembershipChange changes) {
-        return this.securityService.changeCategoryFeedRoleMemberships(categoryIdStr, changes)
+        return this.securityService.changeCategoryRoleMemberships(categoryIdStr, changes)
                         .map(m -> Response.ok(m).build())
                         .orElseThrow(() -> new WebApplicationException("Either a category with the ID \"" + categoryIdStr
                                                                        + "\" does not exist or it does not have a role the named \"" 

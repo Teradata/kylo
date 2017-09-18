@@ -22,6 +22,8 @@ package com.thinkbiganalytics.nifi.rest;
 
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.cache.DefaultNiFiFlowCompletionCallback;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NiFiFlowInspectorManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -33,31 +35,32 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ReportingTaskDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  */
 public class NifiRestTest {
 
-
+    private static final Logger log = LoggerFactory.getLogger(NifiRestTest.class);
+    private NiFiObjectCache createFeedBuilderCache;
     private LegacyNifiRestClient restClient;
     private NifiFlowCache nifiFlowCache;
     private NiFiPropertyDescriptorTransformV1 propertyDescriptorTransform;
@@ -66,12 +69,15 @@ public class NifiRestTest {
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
         NifiRestClientConfig clientConfig = new NifiRestClientConfig();
-        clientConfig.setHost("localhost");
+        //clientConfig.setHost("localhost");
+        clientConfig.setHost("34.208.236.190");
         clientConfig.setPort(8079);
         NiFiRestClient c = new NiFiRestClientV1(clientConfig);
         restClient.setClient(c);
         nifiFlowCache = new NifiFlowCacheImpl();
         propertyDescriptorTransform = new NiFiPropertyDescriptorTransformV1();
+        createFeedBuilderCache = new NiFiObjectCache();
+        createFeedBuilderCache.setRestClient(restClient);
 
     }
 
@@ -93,7 +99,8 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform, createFeedBuilderCache)
+            .inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
@@ -120,7 +127,7 @@ public class NifiRestTest {
         try {
             TemplateDTO template = restClient.getTemplateByName(templateName);
 
-            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId(),true);
+            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId(), true);
             NifiProperty inputDirectory = NifiPropertyUtil
                 .getProperty(GET_FILE_PROCESSOR_NAME, INPUT_DIRECTORY_PROPERTY, propertyList);
             NifiProperty entity = NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, SOURCE_PROPERTY, propertyList);
@@ -146,7 +153,8 @@ public class NifiRestTest {
                 feedMetadata.getCategory().setSystemName(processGroupName);
                 feedMetadata.setSystemFeedName("feedPrefix + i");
 
-                CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, template.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+                CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, template.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform, createFeedBuilderCache)
+                    .inputProcessorType(inputType)
                     .feedSchedule(schedule).properties(instanceProperties).build();
 
             }
@@ -173,28 +181,54 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform, createFeedBuilderCache)
+            .inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
+    //@Test
+    public void testInspection() {
+        DefaultNiFiFlowCompletionCallback completionCallback = new DefaultNiFiFlowCompletionCallback();
+        NiFiFlowInspectorManager flowInspectorManager = new NiFiFlowInspectorManager.NiFiFlowInspectorManagerBuilder(restClient.getNiFiRestClient())
+            .startingProcessGroupId("root")
+            .completionCallback(completionCallback)
+            .threads(50)
+            .waitUntilComplete(true)
+            .buildAndInspect();
 
-    //   @Test
+        log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),completionCallback.getFeedNames().size(),
+                 completionCallback.getProcessorIdToProcessorName().size(), completionCallback.getConnectionIdCacheNameMap().size());
+
+        int i = 0;
+    }
+
+    // @Test
     public void testOrder() throws Exception {
 
-      /*  NifiVisitableProcessGroup g = restClient.getFlowOrder("27ab143a-0159-1000-4f6a-30f3746a341e", null);
+        NifiVisitableProcessGroup g = restClient.getFlowOrder("63de0732-015e-1000-f198-dcd76ac2942e", null);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
-        NifiFlowProcessGroup flow2 = restClient.getFeedFlow("27ab143a-0159-1000-4f6a-30f3746a341e");
+        // NifiFlowProcessGroup flow2 = restClient.getFeedFlow("27ab143a-0159-1000-4f6a-30f3746a341e");
 
-        List<String> feeds = Lists.newArrayList();
-        feeds.add("sample.new_feed_three");
-        List<NifiFlowProcessGroup> flows3 = restClient.getNiFiRestClient().flows().getFeedFlows(feeds);
-*/
-        List<NifiFlowProcessGroup> feedFlows = restClient.getFeedFlows();
+        // List<String> feeds = Lists.newArrayList();
+        //   feeds.add("sample.new_feed_three");
+        //   List<NifiFlowProcessGroup> flows3 = restClient.getNiFiRestClient().flows().getFeedFlows(feeds);
+
+//        List<NifiFlowProcessGroup> feedFlows = restClient.getFeedFlows();
         int i = 0;
 
     }
 
+    //  @Test
+    public void findFeedProcessGroup() throws Exception {
+        String feedName = "cat_62_feed_282";
+        String categoryGroupId = "66e65266-015e-1000-703b-cb619274da55";
+        long start = System.currentTimeMillis();
+        ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(categoryGroupId, feedName);
+        long stop = System.currentTimeMillis();
+        long time = stop - start;
+        int i = 0;
+    }
 
 
     // @Test

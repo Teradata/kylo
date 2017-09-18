@@ -85,11 +85,15 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public Collection<FeedCategory> getCategories() {
+       return getCategories(false);
+    }
+
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
         return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             List<Category> domainCategories = categoryProvider.findAll();
-            return categoryModelTransform.domainToFeedCategory(domainCategories);
+            return categoryModelTransform.domainToFeedCategory(domainCategories,includeFeedDetails);
         });
     }
 
@@ -100,7 +104,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             final Category.ID domainId = categoryProvider.resolveId(id);
             final Category domainCategory = categoryProvider.findById(domainId);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory,true);
         });
     }
 
@@ -110,7 +114,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             final Category domainCategory = categoryProvider.findBySystemName(name);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory,true);
         });
     }
 

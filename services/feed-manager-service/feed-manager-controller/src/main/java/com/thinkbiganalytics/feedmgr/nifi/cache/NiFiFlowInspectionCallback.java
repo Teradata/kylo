@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.cluster;
+package com.thinkbiganalytics.feedmgr.nifi.cache;
 
 /*-
  * #%L
- * kylo-cluster-manager-api
+ * thinkbig-feed-manager-controller
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,9 +21,9 @@ package com.thinkbiganalytics.cluster;
  */
 
 /**
- * Types of items that should by synchronized across Kylo clustered nodes
+ * Callback to do something with the NiFi flow inspection results
  */
-public enum NiFiFlowCacheUpdateType {
+public interface NiFiFlowInspectionCallback {
 
-    CONNECTION,PROCESSOR,FEED,FEED2,TEMPLATE
+    void execute(NiFiFlowInspectorManager nifiFlowInspectorManager);
 }

@@ -99,6 +99,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -111,12 +112,12 @@ public class IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestBase.class);
 
-    private static final String SAMPLES_DIR = "/samples";
-    private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
-    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
-    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
+    protected static final String SAMPLES_DIR = "/samples";
+    protected static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
+    protected static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
+    protected static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final int PROCESSOR_STOP_WAIT_DELAY = 10;
-    private static final String DATA_INGEST_ZIP = "data_ingest.zip";
+    protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
 
@@ -189,7 +190,7 @@ public class IntegrationTestBase {
         cleanup();
     }
 
-    private void startClean() {
+    protected void startClean() {
         cleanup();
     }
 
@@ -373,7 +374,7 @@ public class IntegrationTestBase {
         int existingTemplateNum = getTemplates().length;
 
         //import standard feedTemplate template
-        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templateName);
+        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templatesPath+templateName);
         Assert.assertEquals(templateName, feedTemplate.getFileName());
         Assert.assertTrue(feedTemplate.isSuccess());
 
@@ -530,6 +531,24 @@ public class IntegrationTestBase {
         return response;
     }
 
+    protected FeedCategory getorCreateCategoryByName(String name) {
+        Response response = getCategoryByName(name);
+        if(response.statusCode() == HTTP_BAD_REQUEST){
+            return createCategory(name);
+        }
+        else {
+            return response.as(FeedCategory.class);
+        }
+    }
+
+    protected Response getCategoryByName(String categoryName) {
+        String url = String.format("/by-name/%s", categoryName);
+        Response response = given(FeedCategoryRestController.BASE)
+            .when()
+            .get(url);
+        return response;
+    }
+
     protected void deleteCategory(String id) {
         LOG.info("Deleting category {}", id);
 
@@ -576,10 +595,10 @@ public class IntegrationTestBase {
         return post.as(ExportImportFeedService.ImportFeed.class);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importTemplate(String templateName) {
+    protected ExportImportTemplateService.ImportTemplate importTemplate(String templatesPath) {
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
-            .multiPart(new File(templatesPath + templateName))
+            .multiPart(new File(templatesPath ))
             .multiPart("overwrite", true)
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)

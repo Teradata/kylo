@@ -165,7 +165,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
             model.securityGroups = self.editModel.securityGroups;
 
             CategoriesService.save(model).then(function (response) {
-                CategoriesService.reload();
+                CategoriesService.update(response.data);
                 self.model = CategoriesService.model = response.data;
                 $mdToast.show(
                     $mdToast.simple()
@@ -225,12 +225,15 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
         checkAccessPermissions();
 
-        // Fetch the existing categories
-        CategoriesService.reload().then(function (response) {
+        function init() {
+
             if (self.editModel) {
                 self.onNameChange(self.editModel.name);
             }
-        });
+
+        }
+
+        init();
 
         // Watch for changes to name
         $scope.$watch(

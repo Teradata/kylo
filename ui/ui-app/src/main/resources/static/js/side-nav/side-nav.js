@@ -16,6 +16,12 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
 
                 $scope.menuTitle = '';
 
+                /**
+                 * The menu
+                 * @type {Array}
+                 */
+                $scope.menu = [];
+
 
                 /**
                  * The selected menu item
@@ -272,7 +278,12 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                         return item.type == 'toggle';
                     });
 
-                    $scope.menu = menu;
+                    //clear the binding
+                    $scope.menu.length = 0;
+                    //readd in the values
+                    _.each(menu,function(item){
+                        $scope.menu.push(item);
+                    })
                 }
 
                 function buildMenuStateMap(menu){
