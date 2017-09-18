@@ -210,6 +210,8 @@ define([], function () {
          */
         this.GLOBAL_SEARCH_ACCESS = "accessSearch";
 
+        this.ADMIN_METADATA= "adminMetadata";
+
         this.ENTITY_ACCESS = {
             CATEGORY: {
                 //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
@@ -269,6 +271,7 @@ define([], function () {
             SEARCH: {state: "search", permissions: []},
             DOMAIN_TYPES: {state: "domain-types", permissions: [this.FEEDS_ADMIN]},
             DOMAIN_TYPE_DETAILS: {state: "domain-type-details", permissions: [this.FEEDS_ADMIN]},
+            JCR_ADMIN:{state:"jcr-query",permissions:[this.ADMIN_METADATA]},
             //Ops Manager
             ALERTS: {state: "alerts", permissions: [this.OPERATIONS_MANAGER_ACCESS]},
             ALERT_DETAILS: {state: "alert-details", permissions: [this.OPERATIONS_MANAGER_ACCESS]},

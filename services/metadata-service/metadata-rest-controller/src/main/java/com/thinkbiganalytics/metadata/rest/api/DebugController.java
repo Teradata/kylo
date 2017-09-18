@@ -254,6 +254,7 @@ public class DebugController {
     @Path("jcr-index")
     @Produces(MediaType.APPLICATION_JSON)
     public List<JcrIndexDefinition> getIndexes(){
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
       return  metadata.read(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -292,10 +293,8 @@ public class DebugController {
         });
     }
 
-    @POST
-    @Path("jcr-index/reindex")
-    @Produces(MediaType.APPLICATION_JSON)
-    public RestResponseStatus unregisterIndex(){
+  private RestResponseStatus reindex() {
+
         return  metadata.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -313,6 +312,7 @@ public class DebugController {
     @Path("jcr-index/{indexName}/unregister")
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus unregisterIndex(@PathParam("indexName") String indexName){
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
        return  metadata.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -335,6 +335,7 @@ public class DebugController {
         @ApiResponse(code = 200, message = "registers an index with modeshape", response = String.class)
     )
     public RestResponseStatus registerIndex(JcrIndexDefinition indexDefinition){
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
        return  metadata.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -358,7 +359,7 @@ public class DebugController {
     @Path("jcr-sql")
     @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
-    //    this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
 
         return metadata.read(() -> {
             List<List<String>> rows = new ArrayList<>();
@@ -427,7 +428,21 @@ public class DebugController {
         });
     }
 
+    @POST
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus postReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+      return  reindex();
+    }
 
+    @GET
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus getReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        return reindex();
+    }
 
     /**
      * Prints the subgraph of the node in JCR with the specified ID.

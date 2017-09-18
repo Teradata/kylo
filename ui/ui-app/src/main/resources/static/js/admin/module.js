@@ -1,4 +1,4 @@
-define(['angular', 'admin/module-name','kylo-utils/LazyLoadUtil','codemirror-require/module','constants/AccessConstants','kylo-common', 'kylo-services','jquery'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular', 'admin/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','codemirror-require/module','kylo-common', 'kylo-services','jquery'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, []);
 
     /**
@@ -21,7 +21,7 @@ define(['angular', 'admin/module-name','kylo-utils/LazyLoadUtil','codemirror-req
                 breadcrumbRoot:false,
                 displayName:'JCR Admin',
                 module:moduleName,
-                permissions:[]
+                permissions:AccessConstants.UI_STATES.JCR_ADMIN.permissions
             }
         })
 
