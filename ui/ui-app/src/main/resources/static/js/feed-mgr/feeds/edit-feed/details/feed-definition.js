@@ -77,7 +77,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 self.model.templateId = self.editModel.templateId;
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
-                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.buildErrorData(self.model.feedName, response);
                 FeedService.showFeedErrorsDialog();
                 //make it editable
                 self.editableSection = true;

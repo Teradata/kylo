@@ -60,7 +60,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         function buildErrorMapAndSummaryMessage() {
             var count = 0;
             var errorMap = {"FATAL": [], "WARN": []};
-            if (data.feedError.nifiFeed != null) {
+            if (data.feedError.nifiFeed != null && data.feedError.response.status < 500) {
 
                 count = parseNifiFeedForErrors(data.feedError.nifiFeed, errorMap);
                 data.feedError.feedErrorsData = errorMap;
@@ -75,7 +75,15 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     data.feedError.isValid = true;
                 }
             }
-            else {
+            else if (data.feedError.response.status === 502) {
+                data.feedError.message = 'Error creating feed, bad gateway'
+            } else if (data.feedError.response.status === 503) {
+                data.feedError.message = 'Error creating feed, service unavailable'
+            } else if (data.feedError.response.status === 504) {
+                data.feedError.message = 'Error creating feed, gateway timeout'
+            } else if (data.feedError.response.status === 504) {
+                data.feedError.message = 'Error creating feed, HTTP version not supported'
+            } else {
                 data.feedError.message = 'Error creating feed.'
             }
 
@@ -103,9 +111,10 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 feedErrorsData: {},
                 feedErrorsCount: 0
             },
-            buildErrorData: function (feedName, nifiFeed) {
+            buildErrorData: function (feedName, response) {
                 this.feedError.feedName = feedName;
-                this.feedError.nifiFeed = nifiFeed;
+                this.feedError.nifiFeed = response.data;
+                this.feedError.response = response;
                 buildErrorMapAndSummaryMessage();
                 this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
             },

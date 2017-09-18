@@ -243,7 +243,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
                 console.log('ERRORS were found ', response)
-                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.buildErrorData(self.model.feedName, response);
                 FeedService.showFeedErrorsDialog();
                 //make it editable
                 self.editableSection = true;
