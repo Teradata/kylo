@@ -1,0 +1,141 @@
+
+<md-content class="md-padding">
+  <md-tabs md-dynamic-height md-border-bottom>
+    <md-tab id="jcr-query">
+      <md-tab-label>Jcr Query</md-tab-label>
+      <md-tab-body>
+        <div layout-padding>
+          <div layout="row" layout-align="space-between">
+            <span class="md-title">Execute Query</span>
+            <div>
+              <md-input-container ng-if="vm.previousQueries.length >0">
+                <label>Previous Queries</label>
+                <md-select ng-model="vm.previousQuery" ng-change="vm.changePreviousQuery()" >
+                <md-option ng-repeat="q in vm.previousQueries" ng-value="q">
+                    {{q | characters:50}}
+                  </md-option>
+                </md-select>
+              </md-input-container>
+            </div>
+          </div>
+        <div ng-if="vm.errorMessage != null" class="error">{{vm.errorMessage}}</div>
+        <div class="jcr-sql-editor" ui-codemirror ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
+        </div>
+        <md-button class="md-primary md-raised" ng-disabled="vm.loading" ng-click="vm.executeQuery()">
+          Execute Query
+        </md-button>
+        <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+        <div class="browse-results" ng-if="vm.loading == false ">
+          <span ng-if="vm.queryTime != null" class="md-subhead">The query returned {{vm.resultSize}} rows and took: {{vm.queryTime | timeWithMillis }} </span>
+          <div ui-grid-auto-resize  style="width:100%;height:500px;" ui-grid="vm.gridOptions"></div>
+        </div>
+          <div layout="column" ng-if="vm.explainPlan != null">
+            <div class="md-subhead">Explain Plan</div>
+            <div style="white-space: pre-wrap;">{{vm.explainPlan}}</div>
+          </div>
+        </div>
+      </md-tab-body>
+    </md-tab>
+    <md-tab id="jcr-indexes" >
+      <md-tab-label>Jcr indexes</md-tab-label>
+      <md-tab-body>
+
+        <div layout="column" layout-padding>
+          <div layout="row" layout-align="space-between">
+            <div class="md-title">{{vm.indexes.length}} Existing Indexes</div>
+            <md-button class="md-primary md-raised"  ng-click="vm.reindex()">
+              Re-index
+            </md-button>
+          </div>
+
+
+          <md-table-container>
+            <table md-table md-progress="vm.deferred.promise">
+              <thead md-head md-order="vm.indexTable.sort">
+              <tr md-row>
+                <th md-column name="Name" md-order-by="indexName">Name</th>
+                <th md-column name="Kind" md-order-by="indexKind">Kind</th>
+                <th md-column name="Node Type" md-order-by="nodeType">Node Type</th>
+                <th md-column name="Property Name(s)" md-order-by="propertyName">Property Name</th>
+                <th md-column name="Property Type" md-order-by="propertyTypes">Property Types</th>
+              </tr>
+              </thead>
+              <tbody md-body>
+              <tr md-row
+                  ng-repeat="idx in vm.indexes | orderBy: vm.indexTable.sort| limitTo: vm.indexTable.rowsPerPage: (vm.indexTable.currentPage - 1) * vm.indexTable.rowsPerPage">
+                <td md-cell>{{idx.indexName}}</td>
+                <td md-cell>{{idx.indexKind}}</td>
+                <td md-cell>{{idx.nodeType}}</td>
+                <td md-cell>{{idx.propertyName}}</td>
+                <td md-cell>{{idx.propertyTypes}}</td>
+                <td md-cell>
+                  <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.unregisterIndex(idx.indexName)">
+                    <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
+                  </md-button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </md-table-container>
+
+          <md-table-pagination md-limit="vm.indexTable.rowsPerPage" md-page="vm.indexTable.currentPage" md-total="{{vm.indexes.length}}"
+                               md-limit-options="[5,10,20,50]"></md-table-pagination>
+
+
+        </div>
+
+        <div layout="column">
+          <form name="indexForm" layout="column">
+          <span class="md-title">Add a new Index</span>
+          <md-input-container>
+            <label>Index Name</label>
+            <input ng-model="vm.index.indexName" required>
+          </md-input-container>
+
+            <md-input-container>
+              <label>Kind</label>
+              <md-select ng-model="vm.index.indexKind">
+                <md-option ng-repeat="kind in vm.indexKinds" ng-value="kind">
+                  {{kind}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+
+          <md-input-container>
+            <label>Index Node Type</label>
+            <input ng-model="vm.index.nodeType" required>
+          </md-input-container>
+
+          <md-input-container>
+            <label>Property Name</label>
+            <input ng-model="vm.index.propertyName" required>
+          </md-input-container>
+
+            <md-input-container>
+              <label>Property Type</label>
+              <md-select ng-model="vm.index.propertyType">
+                 <md-option ng-repeat="type in vm.propertyTypes" ng-value="type.value">
+                  {{type.name}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+            <div flex="50">
+              <md-button class="md-primary md-raised" ng-disabled="vm.loading" ng-click="vm.registerIndex() ">
+                Register Index
+              </md-button>
+            </div>
+          </form>
+
+
+        </div>
+
+
+
+      </md-tab-body>
+    </md-tab>
+
+  </md-tabs>
+</md-content>
+
+
+

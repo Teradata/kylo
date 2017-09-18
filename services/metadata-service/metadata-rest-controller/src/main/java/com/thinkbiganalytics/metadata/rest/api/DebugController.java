@@ -292,10 +292,7 @@ public class DebugController {
         });
     }
 
-    @POST
-    @Path("jcr-index/reindex")
-    @Produces(MediaType.APPLICATION_JSON)
-    public RestResponseStatus unregisterIndex(){
+  private RestResponseStatus reindex() {
         return  metadata.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -358,7 +355,7 @@ public class DebugController {
     @Path("jcr-sql")
     @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
-    //    this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
 
         return metadata.read(() -> {
             List<List<String>> rows = new ArrayList<>();
