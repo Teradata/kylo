@@ -246,6 +246,10 @@ public class FeedModelTransform {
         return domain.stream().map(f -> domainToFeedMetadata(f, userFieldMap)).collect(Collectors.toList());
     }
 
+    public List<FeedSummary> domainToFeedSummaryList(@Nonnull final Collection<? extends Feed> domain) {
+        return domain.stream().map(f -> domainToFeedSummary(f)).collect(Collectors.toList());
+    }
+
     public FeedMetadata deserializeFeedMetadata(Feed domain, boolean clearSensitiveProperties) {
         String json = domain.getJson();
         FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
@@ -335,6 +339,8 @@ public class FeedModelTransform {
 
         return feed;
     }
+
+
 
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed summary.
