@@ -585,7 +585,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
                 stopwatch.stop();
-                log.debug("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                log.info("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 stopwatch.reset();
                 stopwatch.start();
                 feedBuilder.checkAndRemoveVersionedProcessGroup();
