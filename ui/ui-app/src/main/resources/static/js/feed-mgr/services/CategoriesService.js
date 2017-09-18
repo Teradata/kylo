@@ -194,11 +194,18 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                     });
                     return promise;
                 },
-                getRelatedFeeds: function (category) {
-                    var promise = $http.get(RestUrlService.CATEGORIES_URL + "/" + category.id + "/feeds").then(function (response) {
+                populateRelatedFeeds: function (category) {
+                    var deferred = $q.defer();
+                    this.getRelatedFeeds(category).then(function(response) {
                         category.relatedFeedSummaries = response.data || [];
-                    });
-                    return promise;
+                        deferred.resolve(category);
+                    }, function(){
+                        deferred.reject();
+                    })
+                    return deferred.promise;
+                },
+                getRelatedFeeds: function (category) {
+                    return $http.get(RestUrlService.CATEGORIES_URL + "/" + category.id + "/feeds");
                 },
                 findCategory: function (id) {
 

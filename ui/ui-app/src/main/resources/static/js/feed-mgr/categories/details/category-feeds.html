@@ -30,7 +30,11 @@
                 </div>
             </md-list-item>
         </md-list>
-        <div ng-if="vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length === 0">
+        <div ng-if="vm.model.loadingRelatedFeeds">
+            Loading ...<br/>
+            <md-progress-circular md-mode="indeterminate"  md-diameter="25px"></md-progress-circular>
+        </div>
+        <div ng-if="!vm.model.loadingRelatedFeeds && (vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length === 0)">
             There are no feeds associated with this category
         </div>
     </readonly-section>
