@@ -924,8 +924,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 feedProvider.update(domainFeed);
                 
                 if (enabled) {
-                    FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
-                    feedMetadata.setState(Feed.State.ENABLED.name());
+                    FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
                 }
             }
@@ -947,8 +946,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 feedProvider.update(domainFeed);
                 
                 if (disabled) {
-                    FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed, true);
-                    feedMetadata.setState(Feed.State.DISABLED.name());
+                    FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
                 }
             }

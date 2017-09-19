@@ -322,22 +322,22 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     @JsonIgnore
     public String getProfileTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_profile";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_profile" : null;
     }
 
     @JsonIgnore
     public String getInvalidTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_invalid";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_invalid" : null;
     }
 
     @JsonIgnore
     public String getValidTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_valid";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_valid" : null;
     }
 
     @JsonIgnore
     public String getCategoryAndFeedName() {
-        return FeedNameUtil.fullName(this.category.getSystemName(), this.getSystemFeedName());
+        return getSystemCategoryName() != null ? FeedNameUtil.fullName(getSystemCategoryName(), this.getSystemFeedName()) : null;
     }
 
     public String getFeedId() {
