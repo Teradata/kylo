@@ -399,9 +399,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.createdFeed = null;
 
                 FeedService.saveFeedModel(self.model).then(function (response) {
-
                     self.createdFeed = response.data;
-                    CategoriesService.reload();
                     self.savingFeed = false;
                     StateService.FeedManager().Feed().navigateToDefineFeedComplete(self.createdFeed, null);
 
