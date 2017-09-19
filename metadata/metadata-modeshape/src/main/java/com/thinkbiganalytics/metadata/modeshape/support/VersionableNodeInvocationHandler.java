@@ -23,18 +23,26 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessControlException;
+import java.util.Arrays;
 import java.util.Set;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 
 /**
  *
@@ -61,7 +69,15 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         try {
             String methodName = method.getName();
             
-            if (methodName.startsWith("set") || methodName.startsWith("add") || methodName.equals("remove")) {
+            if (methodName.startsWith("set")) {
+                if (isValueChange(methodName, args)) {
+                    // If the setter value has changed then ensure checkout.
+                    ensureCheckout();
+                } else {
+                    // If the setter value has not changed then do nothing and return immediately.
+                    return null;
+                }
+            } else if (methodName.startsWith("add") || methodName.equals("remove")) {
                 ensureCheckout();
             }
             
@@ -81,6 +97,29 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         }
     }
     
+    private boolean isValueChange(String methodName, Object[] args) throws RepositoryException {
+        if (methodName.equals("setProperty")) {
+            Property prop = this.versionable.getProperty((String) args[0]);
+            if (prop.isMultiple()) {
+                Value[] values = prop.getValues();
+                Object[] propValues = Arrays.stream(values).map(v -> {
+                        try {
+                            return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
+                        } catch (AccessDeniedException e) {
+                            throw new AccessControlException("Unauthorized to access property: " + args[0]);
+                        }
+                    }).toArray();
+                Object[] argValues = (Object[]) args[1];
+                return ! Arrays.equals(argValues, propValues);
+            } else {
+                Object value = JcrPropertyUtil.asValue(prop);
+                return ! args[1].equals(value);
+            }
+        } else {
+            return true;
+        }
+    }
+
     private void ensureCheckout() {
         JcrVersionUtil.ensureCheckoutNode(this.versionable);
     }
