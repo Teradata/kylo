@@ -177,6 +177,10 @@ md-sidenav .collapse-btn {
   padding-bottom: 25px;
 }
 
+#content, #content .main-content {
+  height: 100%;
+}
+
 .layout-padding-left-right, .layout-padding-left-right-gt-sm, .layout-padding-left-right-gt-sm > *, .layout-padding-left-right-md, .layout-padding-left-right-md > *, .layout-padding-left-right > *, .layout-padding-left-right > .flex, .layout-padding-left-right > .flex-gt-sm, .layout-padding-left-right > .flex-md {
   padding-left: 8px;
   padding-right: 8px;
