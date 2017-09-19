@@ -1,22 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -39,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -68,6 +52,23 @@ import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.User;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Transforms feeds between Feed Manager and Metadata formats.
@@ -406,6 +407,8 @@ public class FeedModelTransform {
             }
         }
         feed.setSecurityGroups(restSecurityGroups);
+        
+        feed.setTags(domain.getTags().stream().map(name -> new DefaultTag(name)).collect(Collectors.toList()));
 
         if (domain.getUsedByFeeds() != null) {
             final List<FeedSummary> usedByFeeds = domain.getUsedByFeeds().stream()

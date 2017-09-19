@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -530,4 +531,92 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     public void setTableOption(Map<String, Object> tableOption) {
         this.tableOption = tableOption;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+            active,
+            category,
+            createDate,
+            dataOwner,
+            dataTransformation,
+            description,
+            feedId,
+            feedName,
+            hadoopAuthorizationType,
+            hadoopSecurityGroups,
+            id,
+            inputProcessorType,
+            isNew,
+            isReusableFeed,
+            nifiProcessGroupId,
+            options,
+            properties,
+            registeredTemplate,
+            schedule,
+            securityGroups,
+            state,
+            systemFeedName,
+            table,
+            tableOption,
+            tags,
+            templateId,
+            templateName,
+            updateDate,
+            usedByFeeds,
+            userDatasources,
+            userProperties,
+            version,
+            versionName
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        
+        FeedMetadata other = (FeedMetadata) obj;
+        
+        return 
+                Objects.equals(active, other.active) &&
+                Objects.equals(category, other.category) &&
+                Objects.equals(createDate, other.createDate) &&
+                Objects.equals(dataOwner, other.dataOwner) &&
+                Objects.equals(dataTransformation, other.dataTransformation) &&
+                Objects.equals(description, other.description) &&
+                Objects.equals(feedId, other.feedId) &&
+                Objects.equals(feedName, other.feedName) &&
+                Objects.equals(hadoopAuthorizationType, other.hadoopAuthorizationType) &&
+                Objects.equals(hadoopSecurityGroups, other.hadoopSecurityGroups) &&
+                Objects.equals(id, other.id) &&
+                Objects.equals(inputProcessorType, other.inputProcessorType) &&
+                Objects.equals(isNew, other.isNew) &&
+                Objects.equals(isReusableFeed, other.isReusableFeed) &&
+                Objects.equals(nifiProcessGroupId, other.nifiProcessGroupId) &&
+                Objects.equals(options, other.options) &&
+                Objects.equals(properties, other.properties) &&
+                Objects.equals(registeredTemplate, other.registeredTemplate) &&
+                Objects.equals(schedule, other.schedule) &&
+                Objects.equals(securityGroups, other.securityGroups) &&
+                Objects.equals(state, other.state) &&
+                Objects.equals(systemFeedName, other.systemFeedName) &&
+                Objects.equals(table, other.table) &&
+                Objects.equals(tableOption, other.tableOption) &&
+                Objects.equals(tags, other.tags) &&
+                Objects.equals(templateId, other.templateId) &&
+                Objects.equals(templateName, other.templateName) &&
+                Objects.equals(updateDate, other.updateDate) &&
+                Objects.equals(usedByFeeds, other.usedByFeeds) &&
+                Objects.equals(userDatasources, other.userDatasources) &&
+                Objects.equals(userProperties, other.userProperties) &&
+                Objects.equals(version, other.version) &&
+                Objects.equals(versionName, other.versionName);
+    }
+
+    
 }

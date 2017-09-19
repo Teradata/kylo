@@ -151,6 +151,8 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
      */
     void setWaterMarkValue(String waterMarkName, String value);
 
+    Set<String> getTags();
+    
     /**
      * Sets the tags for this feed.
      *

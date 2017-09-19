@@ -41,6 +41,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -341,6 +342,14 @@ public class BaseFeed implements Feed {
     @Override
     public void setWaterMarkValue(String waterMarkName, String value) {
         this.waterMarkValues.put(waterMarkName, waterMarkName);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getTags()
+     */
+    @Override
+    public Set<String> getTags() {
+        return Collections.emptySet();
     }
 
     @Override
