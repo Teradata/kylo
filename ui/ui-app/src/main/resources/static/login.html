@@ -21,7 +21,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <base href="/" />
     <title>Kylo Login</title>
   <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
@@ -85,6 +85,7 @@
                     <md-button type="submit" class="md-raised md-primary" ng-disabled="form.$invalid || vm.dataLoading" >Login</md-button>
                 </div>
             </div>
+          <input type="hidden" name="targetUrl" value="{{vm.targetUrl}}">
         </form>
             </md-card-content>
         </md-card>

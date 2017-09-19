@@ -64,6 +64,9 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     private AuthenticationProvider uiAuthenticationProvider;
 
     @Inject
+    private KyloTargetUrlLoginSuccessHandler kyloTargetUrlLoginSuccessHandler;
+
+    @Inject
     private JwtRememberMeServices rememberMeServices;
 
     @Override
@@ -91,6 +94,7 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .loginPage("/login.html")
                 .loginProcessingUrl("/login")
                 .failureUrl("/login.html?error=true").permitAll()
+               .successHandler(kyloTargetUrlLoginSuccessHandler)
                 .and()
             .logout() 
                 .permitAll()
@@ -108,4 +112,7 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(uiAuthenticationProvider);
     }
+
+
+
 }
