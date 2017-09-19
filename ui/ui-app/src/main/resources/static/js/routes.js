@@ -44,15 +44,19 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading feeds ", err);
                     return err;
                 });
-                ;
             }
         }).state({
             name: 'define-feed.**',
-            url: '/define-feed',
+            url: '/define-feed?templateId&templateName&feedDescriptor',
+            params: {
+                templateId: null,
+                templateName:null,
+                feedDescriptor:null
+            },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('define-feed')
+                    $stateProvider.stateService.go('define-feed',transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading define-feed ", err);
