@@ -344,12 +344,17 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
 
 
-
         /**
          * The URL for retrieving the list of templates for custom rendering with nifi processors
          * @type {string}
          */
         this.UI_PROCESSOR_TEMPLATES = this.UI_BASE_URL + "/processor-templates";
+
+        /**
+         * return a list of the categorySystemName.feedSystemName
+         * @type {string}
+         */
+        this.OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
 
     });
 });
