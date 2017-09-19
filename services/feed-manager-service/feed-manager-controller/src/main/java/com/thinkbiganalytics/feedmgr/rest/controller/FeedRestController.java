@@ -141,6 +141,7 @@ public class FeedRestController {
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.FeedMessages");
     private static final int MAX_LIMIT = 1000;
     private static final String NAMES = "/names";
+    private static final String SUMMARY = "/feed-summary";
 
     @Inject
     private MetadataService metadataService;
@@ -316,14 +317,28 @@ public class FeedRestController {
         return Response.ok(feed).build();
     }
 
+
     @GET
+    @Deprecated
     @Path(NAMES)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of feed summaries." )
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedSummary.class, responseContainer = "List")
+    )
+    public Response getFeedNames() {
+        Collection<FeedSummary> feeds = getMetadataService().getFeedSummaryData();
+        return Response.ok(feeds).build();
+    }
+
+    @GET
+    @Path(SUMMARY)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of feed summaries.")
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedSummary.class, responseContainer = "List")
     )
-    public Response getFeedNames() {
+    public Response getFeedSummaries() {
         Collection<FeedSummary> feeds = getMetadataService().getFeedSummaryData();
         return Response.ok(feeds).build();
     }

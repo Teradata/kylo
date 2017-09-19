@@ -665,7 +665,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                  * Call the server to return a list of Feed Names
                  * @returns {HttpPromise}
                  */
-                getFeedNames: function () {
+                getFeedSummary: function () {
 
                     var successFn = function (response) {
                         return response.data;
@@ -676,7 +676,22 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     var promise = $http.get(RestUrlService.GET_FEED_NAMES_URL);
                     promise.then(successFn, errorFn);
                     return promise;
+                },
+                /**
+                 * Call the server to return a list of Feed Names
+                 * @returns {HttpPromise}
+                 */
+                getFeedNames: function () {
 
+                    var successFn = function (response) {
+                        return response.data;
+                    }
+                    var errorFn = function (err) {
+
+                    }
+                    var promise = $http.get(RestUrlService.OPS_MANAGER_FEED_NAMES);
+                    promise.then(successFn, errorFn);
+                    return promise;
                 },
                 /**
                  * Call the server to get a list of all the available Preconditions that can be used when saving/scheduling the feed
