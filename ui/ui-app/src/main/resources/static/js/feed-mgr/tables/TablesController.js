@@ -13,6 +13,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         this.cardTitle = "Tables";
         this.pageName = 'Tables';
         self.filterInternal = true;
+        this.filterTables = ["_valid", "_invalid", "_profile", "_feed"]
 
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'tables';
@@ -89,7 +90,12 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
                 }
                 self.tables = arr;
                 self.selectedTables = _.filter(arr,function(t) {
-                    return !(Utils.endsWith(t.tableName, "_valid") || Utils.endsWith(t.tableName,"_invalid") || Utils.endsWith(t.tableName, "_profile") || Utils.endsWith(t.tableName,"_feed"))});
+                    var filterTableEndingIndex = _.findIndex(self.filterTables, function(filterTableEnding) { return Utils.endsWith(t.tableName, filterTableEnding) });
+                    if(filterTableEndingIndex > -1) {
+                       return _.findIndex(arr, function(tt) { return tt.tableName === t.tableName + self.filterTables[filterTableEndingIndex] }) > -1
+                    }
+                    return true;
+                });
                 self.loading = false;
 
             }
