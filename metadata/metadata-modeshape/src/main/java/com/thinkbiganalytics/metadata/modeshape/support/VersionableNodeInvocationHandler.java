@@ -99,21 +99,25 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
     
     private boolean isValueChange(String methodName, Object[] args) throws RepositoryException {
         if (methodName.equals("setProperty")) {
-            Property prop = this.versionable.getProperty((String) args[0]);
-            if (prop.isMultiple()) {
-                Value[] values = prop.getValues();
-                Object[] propValues = Arrays.stream(values).map(v -> {
-                        try {
-                            return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
-                        } catch (AccessDeniedException e) {
-                            throw new AccessControlException("Unauthorized to access property: " + args[0]);
-                        }
-                    }).toArray();
-                Object[] argValues = (Object[]) args[1];
-                return ! Arrays.equals(argValues, propValues);
+            if (this.versionable.hasProperty((String) args[0])) {
+                Property prop = this.versionable.getProperty((String) args[0]);
+                if (prop.isMultiple()) {
+                    Value[] values = prop.getValues();
+                    Object[] propValues = Arrays.stream(values).map(v -> {
+                            try {
+                                return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
+                            } catch (AccessDeniedException e) {
+                                throw new AccessControlException("Unauthorized to access property: " + args[0]);
+                            }
+                        }).toArray();
+                    Object[] argValues = (Object[]) args[1];
+                    return ! Arrays.equals(argValues, propValues);
+                } else {
+                    Object value = JcrPropertyUtil.asValue(prop);
+                    return ! args[1].equals(value);
+                }
             } else {
-                Object value = JcrPropertyUtil.asValue(prop);
-                return ! args[1].equals(value);
+                return true;
             }
         } else {
             return true;

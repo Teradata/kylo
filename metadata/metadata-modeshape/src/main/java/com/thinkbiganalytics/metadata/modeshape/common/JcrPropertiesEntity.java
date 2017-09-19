@@ -123,10 +123,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     public Map<String, Object> getAllProperties() {
 
         //first get the other extra mixin properties
-        Map<String, Object> properties = getProperties();
-        if (properties == null) {
-            properties = new HashMap<>();
-        }
+        Map<String, Object> properties = new HashMap<>(getProperties());
         //merge in this nodes properties
         Map<String, Object> thisProperties = super.getProperties();
         if (thisProperties != null) {
