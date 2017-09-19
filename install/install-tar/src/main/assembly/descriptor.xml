@@ -20,7 +20,6 @@
   -->
 
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
   <id>dependencies</id>
   <formats>
@@ -222,6 +221,56 @@
         <include>kylo-service-monitor-cloudera-service-${project.version}.jar</include>
       </includes>
     </fileSet>
+
+    <!-- sla email plugin -->
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-email/target</directory>
+      <outputDirectory>setup/plugins/sla-email</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-sla-email-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-email/src/main/resources/conf</directory>
+      <outputDirectory>setup/plugins/sla-email</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>sla.email.properties</include>
+      </includes>
+    </fileSet>
+
+    <!-- end sla email plugin -->
+
+    <!-- jira plugin -->
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-jira/target</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-sla-jira-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-jira/src/main/resources/conf</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>jira.properties</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/integrations/jira/jira-rest-client/target</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-jira-rest-client-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+    <!-- end jira plugin -->
 
     <fileSet>
       <outputDirectory>kylo-services/lib</outputDirectory>
