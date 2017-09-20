@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-core</artifactId>
-    <version>0.8.3.1</version>
+    <version>0.8.3.2-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
