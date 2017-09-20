@@ -53,6 +53,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -306,6 +307,11 @@ public class GetTableDataTest {
         final Statement statement = Mockito.mock(Statement.class);
 
         /**
+         * Database metadata
+         */
+        final DatabaseMetaData databaseMetaData = Mockito.mock(DatabaseMetaData.class);
+
+        /**
          * Constructs a {@code MockDBCPService}.
          */
         MockDBCPService() throws Exception {
@@ -315,6 +321,9 @@ public class GetTableDataTest {
 
             Mockito.when(statement.executeQuery("SELECT tbl.id,tbl.email FROM empty tbl")).then(invocation -> getEmptyResults());
             Mockito.when(statement.executeQuery("SELECT tbl.id,tbl.first_name,tbl.last_name,tbl.email,tbl.last_updated FROM mytable tbl")).then(invocation -> getSimpleResults());
+
+            Mockito.when(connection.getMetaData()).thenReturn(databaseMetaData);
+            Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("");
         }
 
         @Override

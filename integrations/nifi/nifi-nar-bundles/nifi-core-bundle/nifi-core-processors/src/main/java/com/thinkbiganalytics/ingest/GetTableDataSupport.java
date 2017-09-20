@@ -20,6 +20,8 @@ package com.thinkbiganalytics.ingest;
  * #L%
  */
 
+import com.thinkbiganalytics.jdbc.util.DatabaseUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
@@ -32,8 +34,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Provides support for incremental
@@ -70,7 +73,13 @@ public class GetTableDataSupport {
     }
 
     private String selectStatement(String[] selectFields, String tableAlias) {
-        return StringUtils.join(Arrays.stream(selectFields).map(field -> tableAlias + "." + field).toArray(), ",");
+        String dbIdentifierQuoteString = DatabaseUtils.getDatabaseIdentifierQuoteString(conn);
+        List<String> list = new ArrayList<>();
+        for (String field : selectFields) {
+            String s = tableAlias + "." + dbIdentifierQuoteString + field + dbIdentifierQuoteString;
+            list.add(s);
+        }
+        return StringUtils.join(list.toArray(), ",");
     }
 
     /**
