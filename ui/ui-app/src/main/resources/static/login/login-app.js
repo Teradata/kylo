@@ -44,6 +44,10 @@ define([
         this.error = '';
         var self = this;
         this.targetUrl = "/#"+$location.hash();
+        var url = $location.url();
+        if("/login.html?logout" == url) {
+            LoginService.resetCookieValue();
+        }
 
         if(!LoginService.isValidTarget(self.targetUrl)){
               var previousTarget= LoginService.getTargetUrl();
@@ -93,6 +97,9 @@ define([
         }
         this.isValidTarget = function(targetUrl){
             return targetUrl != null && targetUrl != "" && targetUrl != "/#";
+        }
+        this.resetCookieValue = function(){
+            $cookies.remove('kyloTargetUrl');
         }
 
 
