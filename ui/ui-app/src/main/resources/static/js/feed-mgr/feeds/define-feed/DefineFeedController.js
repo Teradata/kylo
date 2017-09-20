@@ -28,11 +28,15 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
          */
         self.model = FeedService.createFeedModel;
 
-        /**
-         * the number of steps for the selected feed/template
-         * @type {null}
-         */
+        if(angular.isUndefined(self.model)){
+            FeedService.resetFeed();
+        }
         self.model.totalSteps = null;
+
+        var requestedTemplate = $transition$.params().templateName || '';
+        var requestedTemplateId = $transition$.params().templateId || '';
+        var feedDescriptor = $transition$.params().feedDescriptor || '';
+        self.model.feedDescriptor = feedDescriptor;
 
         /**
          * All the templates available
@@ -198,7 +202,18 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
             var cloneFeedName = $transition$.params().bcExclude_cloneFeedName;
             self.cloning = angular.isUndefined(isCloning) ? false : isCloning;
 
-            getRegisteredTemplates();
+            getRegisteredTemplates().then(function(response) {
+                if(angular.isDefined(requestedTemplate) && requestedTemplate != ''){
+                    var match = _.find(self.allTemplates,function(template) {
+                        return template.templateName == requestedTemplate || template.id == requestedTemplateId;
+                    });
+                    if(angular.isDefined(match)) {
+                        FeedService.resetFeed();
+                        self.selectTemplate(match);
+                    }
+                }
+            });
+
             if (self.cloning) {
                 showCloningDialog(cloneFeedName);
             }

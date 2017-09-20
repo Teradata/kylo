@@ -11,9 +11,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         $compileProvider.preAssignBindingsEnabled(true);
 
         $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
-            url: '/define-feed',
+            url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
                 templateId: null,
+                templateName:null,
+                feedDescriptor:null,
                 bcExclude_cloning:null,
                 bcExclude_cloneFeedName:null
             },

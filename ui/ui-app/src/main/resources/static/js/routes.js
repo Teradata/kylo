@@ -44,16 +44,17 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading feeds ", err);
                     return err;
                 });
-                ;
             }
         }).state({
             name: 'define-feed.**',
+            url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
                 templateId:null,
+                templateName:null,
+                feedDescriptor:null,
                 bcExclude_cloning:null,
                 bcExclude_cloneFeedName:null
             },
-            url: '/define-feed',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/define-feed/module').then(function success(args) {
                     //upon success go back to the state
@@ -63,7 +64,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading define-feed ", err);
                     return err;
                 });
-                ;
             }
         }).state({
             name: 'feed-details.**',
@@ -81,7 +81,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading feed-details ", err);
                     return err;
                 });
-                ;
             }
         }).state({
             name: 'edit-feed.**',
@@ -98,7 +97,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading edit-feed", err);
                     return err;
                 });
-                ;
             }
         })
 
@@ -114,7 +112,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading categories ", err);
                     return err;
                 });
-                ;
             }
         }).state('category-details.**', {
             url: '/category-details/{categoryId}',
@@ -130,7 +127,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading categories ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -145,7 +141,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading registered-templates ", err);
                     return err;
                 });
-                ;
             }
         })
 
@@ -160,7 +155,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading register-template ", err);
                     return err;
                 });
-                ;
             }
         })
 
@@ -179,7 +173,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading service-level-agreements ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -213,7 +206,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading table ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -245,7 +237,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading groups ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -263,7 +254,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading search ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -279,7 +269,6 @@ define(['angular', 'kylo-common', 'kylo-services',
                     console.log("Error loading business-metadata ", err);
                     return err;
                 });
-                ;
             }
         });
 
