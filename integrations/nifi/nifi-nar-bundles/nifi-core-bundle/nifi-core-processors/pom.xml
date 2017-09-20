@@ -56,12 +56,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-jdbc</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-api</artifactId>
     </dependency>
