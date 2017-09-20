@@ -47,6 +47,12 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-provenance-repo-v1.2-nar</artifactId>
+      <version>0.8.4-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-v1-nar</artifactId>
       <version>0.8.4-SNAPSHOT</version>
       <type>nar</type>
