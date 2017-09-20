@@ -252,7 +252,6 @@ public class DebugController {
     @Path("jcr-index/reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus getReindex() {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
         return reindex();
     }
 
