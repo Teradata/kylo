@@ -628,12 +628,15 @@ public class Validator implements Serializable {
                 //only apply the standardized result value if the routine is valid
                 fieldValue = result.isValid() ? standardizationAndValidationResult.getFieldValue() : fieldValue;
 
+                //reevaluate the isEmpty flag
+                isEmpty = ((fieldValue == null) || (StringUtils.isEmpty(fieldValue.toString())));
+
                 //if the field is a binary type, but cant be converted set it to null.
                 //hive will auto convert byte[] or String fields to a target binary type.
                 if (result.isValid() && isBinaryType && !(fieldValue instanceof byte[]) && !(fieldValue instanceof String)) {
                     //set it to null
                     fieldValue = null;
-                } else if ((dataType.isNumeric() || isBinaryType) && isEmpty) {
+                } else if ((dataType.isNumeric() || isBinaryType) && isEmpty ) {
                     //if its a numeric column and the field is empty then set it to null as well
                     fieldValue = null;
                 }
