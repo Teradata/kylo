@@ -313,11 +313,43 @@ public class TemplateCreationHelper {
 
         List<ControllerServiceDTO> unmatchedServices = newlyCreatedControllerServices.stream().filter(matchingServiceFilter.negate()).collect(Collectors.toList());
 
+        //if the service has additional propertyDescriptors that identify other services we need to fetch the service by its id.
         if (unmatchedServices != null && !unmatchedServices.isEmpty()) {
-            for (ControllerServiceDTO serviceToAdd : unmatchedServices) {
-                map.put(serviceToAdd.getId(), serviceToAdd);
-            }
+          Map<String,ControllerServiceDTO> updatedServices =unmatchedServices.stream().map(serviceToAdd -> {
+              //if the service has additional propertyDescriptors that identify other services we need to fetch the service by its id
+                if(serviceToAdd.getDescriptors() != null && serviceToAdd.getDescriptors().values().stream().anyMatch(propertyDescriptorDTO -> StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService()))) {
+                    try {
+                        Optional<ControllerServiceDTO> cs = restClient.getNiFiRestClient().controllerServices().findById(serviceToAdd.getId());
+                        if(cs.isPresent()){
+                            return cs.get();
+                        }
+                        else {
+                            return serviceToAdd;
+                        }
+                    }
+                    catch(Exception e){
+                        return serviceToAdd;
+                    }
+                }
+                else {
+                    return serviceToAdd;
+                }
+
+
+        }).collect(Collectors.toMap(service -> service.getId(), service -> service));
+                map.putAll(updatedServices);
+             //update the core item
+            newlyCreatedControllerServices = newlyCreatedControllerServices.stream().map(controllerServiceDTO -> {
+                if(map.containsKey(controllerServiceDTO.getId())){
+                    return updatedServices.get(controllerServiceDTO.getId());
+                }
+                else {
+                    return controllerServiceDTO;
+                }
+            }).collect(Collectors.toSet());
+
         }
+
         //if match existing services, then delete the new ones
         if (matchingControllerServices != null && !matchingControllerServices.isEmpty()) {
             for (ControllerServiceDTO serviceToDelete : matchingControllerServices) {
@@ -335,6 +367,8 @@ public class TemplateCreationHelper {
         }
 
         mergedControllerServices = map;
+
+        //validate
         //Create a map of the Controller Service Name to list of matching services
 
         this.serviceNameMap =mergedControllerServices.values().stream()
