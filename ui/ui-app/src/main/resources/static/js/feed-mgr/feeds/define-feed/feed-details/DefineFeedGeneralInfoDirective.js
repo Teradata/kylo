@@ -65,6 +65,12 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         self.categorySearchTextChanged = searchTextChange;
         self.categoriesService = CategoriesService;
 
+        /**
+         * are we populating the feed name list for validation
+         * @type {boolean}
+         */
+        self.populatingExsitngFeedNames = false;
+
         function searchTextChange(text) {
          //   $log.info('Text changed to ' + text);
         }
@@ -85,7 +91,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.category.name = null;
                 self.model.category.id = null;
                 self.model.category.systemName = null;
-                self.existingFeedNames = {};
                 if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
                     self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
                 }
@@ -103,8 +108,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         }
 
-        function existingFeedNameKey(categoryId, feedName) {
-            return categoryId + "-" + feedName;
+        function existingFeedNameKey(categoryName, feedName) {
+            return categoryName + "." + feedName;
         }
 
         populateExistingFeedNames();
@@ -114,21 +119,30 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @returns {promise}
          */
         function populateExistingFeedNames() {
-            return $http.get(RestUrlService.GET_FEEDS_URL).then(function (response) {
-                self.existingFeedNames = {};
-                if(response.data != null && response.data.data != null) {
-                    angular.forEach(response.data.data, function (feed) {
-                        self.existingFeedNames[existingFeedNameKey(feed.categoryId, feed.systemFeedName)] = feed.systemFeedName;
-                    });
-                }
-            });
+            if(!self.populatingExsitngFeedNames) {
+                self.populatingExsitngFeedNames = true;
+                FeedService.getFeedNames().then()
+                return $http.get(RestUrlService.OPS_MANAGER_FEED_NAMES).then(function (response) {
+                    self.existingFeedNames = {};
+                    if (response.data != null && response.data != null) {
+                        angular.forEach(response.data, function (categoryAndFeed) {
+                            var categoryName = categoryAndFeed.substr(0, categoryAndFeed.indexOf('.'));
+                            var feedName = categoryAndFeed.substr(categoryAndFeed.indexOf('.')+1)
+                            self.existingFeedNames[categoryAndFeed] = feedName;
+                        });
+                        self.populatingExsitngFeedNames = false;
+                    }
+                }, function () {
+                    self.populatingExsitngFeedNames = false;
+                });
+            }
         }
 
         function validateUniqueFeedName() {
 
             function _validate() {
                 //validate to ensure the name is unique in this category
-                if (self.model && self.model.category && self.existingFeedNames[existingFeedNameKey(self.model.category.id, self.model.systemFeedName)]) {
+                if (self.model && self.model.category && self.existingFeedNames[existingFeedNameKey(self.model.category.systemName, self.model.systemFeedName)]) {
                     if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
                         self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', false);
                     }
@@ -143,9 +157,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.model && self.model.id && self.model.id.length > 0) {
                 self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
             } else if (_.isEmpty(self.existingFeedNames)) {
-                populateExistingFeedNames().then(function () {
-                    _validate();
-                });
+                if(!self.populatingExsitngFeedNames) {
+                    populateExistingFeedNames().then(function () {
+                        _validate();
+                    });
+                }
             } else {
                 _validate();
             }
