@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
+import org.modeshape.jcr.api.Workspace;
 import org.modeshape.jcr.api.nodetype.NodeTypeManager;
 import org.modeshape.jcr.security.SimplePrincipal;
 import org.slf4j.Logger;
@@ -90,6 +91,7 @@ public class MetadataJcrConfigurator {
                 ensureLayout(session);
                 ensureTypes(session);
                 ensureAccessControl(session);
+                ensureIndexes(session);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
             }
@@ -219,6 +221,15 @@ public class MetadataJcrConfigurator {
 
     public boolean isConfigured() {
         return this.configured.get();
+    }
+    
+    private void ensureIndexes(Session session) throws RepositoryException {
+        Workspace workspace = (Workspace) session.getWorkspace();
+        log.info("Indexing users and groups");
+        workspace.reindex("/users");
+        log.info("Finished indexing users");
+        workspace.reindex("/groups");
+        log.info("Finished indexing groups");
     }
 
     private void ensureAccessControl(Session session) throws RepositoryException {
