@@ -36,7 +36,7 @@
                         <input required ng-model="vm.model.feedName" name="feedName" ng-disabled="vm.model.id != null"/>
                         <div ng-messages="vm.defineFeedGeneralForm.feedName.$error"  md-auto-hide="false">
                             <div ng-message="required">Required.</div>
-                          <div ng-message="notUnique">A feed with this name already exists.</div>
+                          <div ng-message="notUnique">A feed with this name already exists in the selected category.</div>
                        </div>
                     </md-input-container>
                     <div flex="10"></div>
