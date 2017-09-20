@@ -35,9 +35,11 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.modeshape.jcr.api.JcrTools;
+import org.modeshape.jcr.api.Workspace;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
@@ -48,6 +50,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -223,7 +226,35 @@ public class DebugController {
             return sw.toString();
         });
     }
+    private RestResponseStatus reindex() {
 
+        return  metadata.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Workspace workspace = (Workspace) session.getWorkspace();
+                workspace.reindex();
+                return RestResponseStatus.SUCCESS;
+            } catch (RepositoryException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @POST
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus postReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        return  reindex();
+    }
+
+    @GET
+    @Path("jcr-index/reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus getReindex() {
+        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+        return reindex();
+    }
 
     /**
      * Prints the subgraph of the node in JCR with the specified ID.
