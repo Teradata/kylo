@@ -53,7 +53,7 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
 
     public Object convertRawValue(Object value) {
         if (accepts(value)) {
-            if (value == null || value instanceof String && StringUtils.isEmpty((String)value)) {
+            if (value == null ||(value instanceof String && StringUtils.isEmpty((String)value))) {
                 return String.valueOf(defaultStr);
             }
             else {
