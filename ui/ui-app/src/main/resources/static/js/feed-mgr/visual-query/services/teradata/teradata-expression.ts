@@ -1,8 +1,10 @@
-import {TeradataExpressionType} from "./teradata-expression-type";
-import {ParseException} from "../parse-exception";
-import {TeradataScript} from "./teradata-script";
+import {IAngularStatic} from "angular";
 
-declare const angular: angular.IAngularStatic;
+import {TeradataExpressionType} from "./teradata-expression-type";
+import {TeradataScript} from "./teradata-script";
+import {ParseException} from "../parse-exception";
+
+declare const angular: IAngularStatic;
 
 /**
  * Context for formatting a Teradata conversion string.
@@ -35,10 +37,16 @@ type SourceType = string | TeradataScript;
  */
 export class TeradataExpression {
 
+    /** Regular expression for matching the column alias */
+    static COLUMN_ALIAS_REGEXP = /^"([^"]+)"$| AS "([^"]+)"$/;
+
+    /** TernJS directive for the expression template */
+    static EXPRESSION_DIRECTIVE = "!sqlExpr";
+
     /** Regular expression for conversion strings */
     static FORMAT_REGEX = /%([?*,@]*)([cos])/g;
 
-    /** TernJS directive for the Teradata code */
+    /** TernJS directive for the string format template */
     static TERADATA_DIRECTIVE = "!sql";
 
     /** TernJS directive for the return type */
@@ -94,17 +102,31 @@ export class TeradataExpression {
      *
      * @param definition - the function definition
      * @param node - the source abstract syntax tree
+     * @param $interpolate - interpolation service
      * @param var_args - the format parameters
      * @returns the Teradata expression
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a format parameter cannot be converted to the required type
      */
-    static fromDefinition(definition: any, node: acorn.Node, ...var_args: TeradataExpression[]): TeradataExpression {
-        // Convert Spark string to code
-        const args = [definition[TeradataExpression.TERADATA_DIRECTIVE], definition[TeradataExpression.TYPE_DIRECTIVE] === "Select"];
-        Array.prototype.push.apply(args, Array.prototype.slice.call(arguments, 2));
+    static fromDefinition(definition: any, node: acorn.Node, $interpolate: angular.IInterpolateService, ...var_args: TeradataExpression[]): TeradataExpression {
+        const parseFunction: (template: string, requireAlias: boolean) => string = definition[TeradataExpression.EXPRESSION_DIRECTIVE]
+            ? (template: string, requireAlias: boolean) => TeradataExpression.parseExpressionString(template, requireAlias, $interpolate, var_args)
+            : (template: string, requireAlias: boolean) => TeradataExpression.format(template, requireAlias, ...var_args);
+        let source: SourceType;
+        const template = definition[TeradataExpression.EXPRESSION_DIRECTIVE] ? definition[TeradataExpression.EXPRESSION_DIRECTIVE] : definition[TeradataExpression.TERADATA_DIRECTIVE];
 
-        const source = TeradataExpression.format.apply(TeradataExpression, args);
+        // Parse template
+        if (typeof template === "string") {
+            source = parseFunction(template, definition[TeradataExpression.TYPE_DIRECTIVE] === "Select");
+        } else {
+            source = {
+                groupBy: template.groupBy ? parseFunction(template.groupBy, false) : null,
+                having: template.having ? parseFunction(template.having, false) : null,
+                keywordList: template.keywordList ? parseFunction(template.keywordList, false) : null,
+                selectList: template.selectList ? parseFunction(template.selectList, true) : null,
+                where: template.where ? parseFunction(template.where, false) : null
+            };
+        }
 
         // Return expression
         return new TeradataExpression(source, TeradataExpressionType.valueOf(definition[TeradataExpression.TYPE_DIRECTIVE]), node.start, node.end);
@@ -114,7 +136,32 @@ export class TeradataExpression {
      * Indicates if the expression does not have a column alias.
      */
     static needsColumnAlias(expression: string): boolean {
-        return !expression.match(/^"[^"]+"$| AS "[^"]+"$/);
+        return !TeradataExpression.COLUMN_ALIAS_REGEXP.test(expression);
+    }
+
+    /**
+     * Gets the column alias for the specified expression.
+     */
+    private static getColumnAlias(expression: TeradataExpression): string {
+        const match = TeradataExpression.COLUMN_ALIAS_REGEXP.exec(expression.source as string);
+        if (match) {
+            return "\"" + match.find((value, index) => index !== 0 && value != null) + "\"";
+        } else {
+            return "\"" + (expression.source as string).replace(/"/g, "") + "\"";
+        }
+    }
+
+    /**
+     * Evaluates the specified expression template.
+     */
+    private static parseExpressionString(template: string, requireAlias: boolean, $interpolate: angular.IInterpolateService, args: TeradataExpression[]): string {
+        return $interpolate(template)({
+            args: args,
+            getColumnAlias: TeradataExpression.getColumnAlias,
+            toColumn: (expr: TeradataExpression) => TeradataExpression.toColumn(expr, requireAlias),
+            toObject: TeradataExpression.toObject,
+            toString: TeradataExpression.toString
+        });
     }
 
     /**

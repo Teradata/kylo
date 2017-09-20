@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../script-builder", "./teradata-expression", "./teradata-expression-type"], function (require, exports, script_builder_1, teradata_expression_1, teradata_expression_type_1) {
+define(["require", "exports", "./teradata-expression", "./teradata-expression-type", "../script-builder"], function (require, exports, teradata_expression_1, teradata_expression_type_1, script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -22,8 +22,9 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
          * @param functions - ternjs functions
          * @param queryEngine - Teradata query engine
          */
-        function TeradataScriptBuilder(functions, queryEngine) {
+        function TeradataScriptBuilder(functions, $interpolate, queryEngine) {
             var _this = _super.call(this, functions) || this;
+            _this.$interpolate = $interpolate;
             _this.queryEngine = queryEngine;
             return _this;
         }
@@ -41,7 +42,7 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
                     groupBy: childSource.groupBy ? childSource.groupBy : parentSource.groupBy,
                     having: childSource.having ? childSource.having : parentSource.having,
                     keywordList: childSource.keywordList ? childSource.keywordList : parentSource.keywordList,
-                    selectList: childSource.selectList ? childSource.selectList : parentSource.selectList,
+                    selectList: childSource.selectList ? (parentSource.selectList ? parentSource.selectList + ", " : "") + childSource.selectList : parentSource.selectList,
                     where: childSource.where ? childSource.where : parentSource.where
                 };
                 return new teradata_expression_1.TeradataExpression(newSource, teradata_expression_type_1.TeradataExpressionType.SELECT, child.start, child.end);
@@ -61,7 +62,7 @@ define(["require", "exports", "../script-builder", "./teradata-expression", "./t
             for (var _i = 2; _i < arguments.length; _i++) {
                 var_args[_i - 2] = arguments[_i];
             }
-            return teradata_expression_1.TeradataExpression.fromDefinition.apply(teradata_expression_1.TeradataExpression, [definition, node].concat(var_args));
+            return teradata_expression_1.TeradataExpression.fromDefinition.apply(teradata_expression_1.TeradataExpression, [definition, node, this.$interpolate].concat(var_args));
         };
         /**
          * Indicates if the specified function definition can be converted to a script expression.

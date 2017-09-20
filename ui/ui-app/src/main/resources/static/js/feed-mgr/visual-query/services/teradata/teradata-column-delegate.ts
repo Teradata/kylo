@@ -75,6 +75,7 @@ export class TeradataColumnDelegate extends ColumnDelegate {
         }
         if (dataCategory === DataCategory.STRING) {
             transforms.push({description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower'},
+                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
                 {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'});
         }
 

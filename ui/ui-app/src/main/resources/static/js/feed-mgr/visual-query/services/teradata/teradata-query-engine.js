@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../query-engine", "rxjs/Subject", "./teradata-script-builder", "./teradata-query-parser", "../../../services/VisualQueryService", "./teradata-column-delegate", "../query-engine-constants"], function (require, exports, query_engine_1, Subject_1, teradata_script_builder_1, teradata_query_parser_1, VisualQueryService_1, teradata_column_delegate_1, query_engine_constants_1) {
+define(["require", "exports", "rxjs/Subject", "./teradata-column-delegate", "./teradata-query-parser", "./teradata-script-builder", "../query-engine", "../query-engine-constants", "../../../services/VisualQueryService"], function (require, exports, Subject_1, teradata_column_delegate_1, teradata_query_parser_1, teradata_script_builder_1, query_engine_1, query_engine_constants_1, VisualQueryService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -19,9 +19,10 @@ define(["require", "exports", "../query-engine", "rxjs/Subject", "./teradata-scr
         /**
          * Constructs a {@code TeradataQueryEngine}.
          */
-        function TeradataQueryEngine($http, $mdDialog, DatasourcesService, RestUrlService, uiGridConstants, VisualQueryService) {
+        function TeradataQueryEngine($http, $interpolate, $mdDialog, DatasourcesService, RestUrlService, uiGridConstants, VisualQueryService) {
             var _this = _super.call(this, $mdDialog, DatasourcesService, uiGridConstants) || this;
             _this.$http = $http;
+            _this.$interpolate = $interpolate;
             _this.VisualQueryService = VisualQueryService;
             // Initialize properties
             _this.functionsUrl = RestUrlService.UI_BASE_URL + "/teradata-functions";
@@ -233,7 +234,7 @@ define(["require", "exports", "../query-engine", "rxjs/Subject", "./teradata-scr
                 }
                 else {
                     state.columns = response.data.columns.map(function (column) {
-                        if (!column.displayName.match(/^[A-Za-z0-9]+$/)) {
+                        if (!column.displayName.match(/^[A-Za-z$_][A-Za-z$_0-9]*$/)) {
                             var index_1 = 0;
                             var newName = "";
                             while (newName.length === 0 || response.data.columnDisplayNameMap[newName]) {
@@ -298,7 +299,7 @@ define(["require", "exports", "../query-engine", "rxjs/Subject", "./teradata-scr
          * Parses the specified tree into a script for the current state.
          */
         TeradataQueryEngine.prototype.parseAcornTree = function (tree) {
-            return new teradata_script_builder_1.TeradataScriptBuilder(this.defs_, this).toScript(tree);
+            return new teradata_script_builder_1.TeradataScriptBuilder(this.defs_, this.$interpolate, this).toScript(tree);
         };
         /**
          * Parses the specified source into a script for the initial state.

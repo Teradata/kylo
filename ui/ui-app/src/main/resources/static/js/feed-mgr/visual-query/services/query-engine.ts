@@ -433,7 +433,9 @@ export abstract class QueryEngine<T> {
      */
     setQuery(query: string | object, datasources: UserDatasource[] = []): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
+        this.redo_ = [];
         this.source_ = this.parseQuery(query);
+        this.states_ = [this.newState()];
     }
 
     /**

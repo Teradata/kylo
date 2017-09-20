@@ -1,9 +1,13 @@
-import {ScriptBuilder} from "../script-builder";
+import {IAngularStatic} from "angular";
+import {Identifier} from "estree";
+
 import {TeradataExpression} from "./teradata-expression";
 import {TeradataExpressionType} from "./teradata-expression-type";
-import {Identifier} from "estree";
-import {TeradataScript} from "./teradata-script";
 import {TeradataQueryEngine} from "./teradata-query-engine";
+import {TeradataScript} from "./teradata-script";
+import {ScriptBuilder} from "../script-builder";
+
+declare const angular: IAngularStatic;
 
 /**
  * Parses an abstract syntax tree into a Teradata script.
@@ -16,7 +20,7 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
      * @param functions - ternjs functions
      * @param queryEngine - Teradata query engine
      */
-    constructor(functions: any, private queryEngine: TeradataQueryEngine) {
+    constructor(functions: any, private $interpolate: angular.IInterpolateService, private queryEngine: TeradataQueryEngine) {
         super(functions);
     }
 
@@ -33,7 +37,7 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
                 groupBy: childSource.groupBy ? childSource.groupBy : parentSource.groupBy,
                 having: childSource.having ? childSource.having : parentSource.having,
                 keywordList: childSource.keywordList ? childSource.keywordList : parentSource.keywordList,
-                selectList: childSource.selectList ? childSource.selectList : parentSource.selectList,
+                selectList: childSource.selectList ? (parentSource.selectList ? parentSource.selectList + ", " : "") + childSource.selectList : parentSource.selectList,
                 where: childSource.where ? childSource.where : parentSource.where
             };
             return new TeradataExpression(newSource, TeradataExpressionType.SELECT, child.start, child.end);
@@ -51,7 +55,7 @@ export class TeradataScriptBuilder extends ScriptBuilder<TeradataExpression, Ter
      * Creates a script expression from a function definition and AST node.
      */
     protected createScriptExpressionFromDefinition(definition: any, node: acorn.Node, ...var_args: TeradataExpression[]): TeradataExpression {
-        return TeradataExpression.fromDefinition(definition, node, ...var_args);
+        return TeradataExpression.fromDefinition(definition, node, this.$interpolate, ...var_args);
     }
 
     /**

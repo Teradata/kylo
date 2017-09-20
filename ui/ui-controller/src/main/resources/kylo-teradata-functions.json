@@ -37,9 +37,9 @@
         "!sqlType": "Select"
       },
       "avg": {
-        "!type": "fn(expression: Column)",
+        "!type": "fn(expression_varargs: Column)",
         "!doc": "Compute the mean value for the numeric column for each group.",
-        "!sql": "AVG(%c)",
+        "!sqlExpr": "AVG({{args.map(toColumn).join('), AVG(')}})",
         "!sqlType": "Select"
       },
       "count": {
@@ -51,25 +51,25 @@
       "max": {
         "!type": "fn(expression: Column)",
         "!doc": "Compute the max value for the numeric column for each group.",
-        "!sql": "MAX(%c)",
+        "!sqlExpr": "MAX({{args.map(toColumn).join('), MAX(')}})",
         "!sqlType": "Select"
       },
       "mean": {
         "!type": "fn(expression: Column)",
         "!doc": "Compute the average value for the numeric column for each group.",
-        "!sql": "AVG(%c)",
+        "!sqlExpr": "AVG({{args.map(toColumn).join('), AVG(')}})",
         "!sqlType": "Select"
       },
       "min": {
         "!type": "fn(expression: Column)",
         "!doc": "Compute the min value for the numeric column for each group.",
-        "!sql": "MIN(%c)",
+        "!sqlExpr": "MIN({{args.map(toColumn).join('), MIN(')}})",
         "!sqlType": "Select"
       },
       "sum": {
         "!type": "fn(expression: Column)",
         "!doc": "Compute the sum for the numeric column for each group.",
-        "!sql": "SUM(%s)",
+        "!sqlExpr": "SUM({{args.map(toColumn).join('), SUM(')}})",
         "!sqlType": "Select"
       }
     },
@@ -100,6 +100,18 @@
     "!sql": "%c ASC",
     "!sqlType": "column"
   },
+  "concat": {
+    "!type": "fn(expression_varargs: Column) -> Column",
+    "!doc": "Concatenates multiple input string columns together into a single string column.",
+    "!sqlExpr": "{{args.map(toColumn).join(' || ')}}",
+    "!sqlType": "Column"
+  },
+  "countDistinct": {
+    "!type": "fn(expr: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of distinct items in a group.",
+    "!sql": "COUNT(DISTINCT %c)",
+    "!sqlType": "column"
+  },
   "desc": {
     "!type": "fn(expression: Column) -> Column",
     "!doc": "Returns a sort expression based on descending order of the column.",
@@ -109,7 +121,10 @@
   "groupBy": {
     "!type": "fn(col1: Column, cols_varargs: Column) -> GroupBy",
     "!doc": "Groups result rows by the values in one or more columns.",
-    "!sql": "%*c",
+    "!sqlExpr": {
+      "groupBy": "{{args.map(getColumnAlias).join(', ')}}",
+      "selectList": "{{args.map(toColumn).join(', ')}}"
+    },
     "!sqlType": "GroupBy"
   },
   "lag": {

@@ -345,7 +345,9 @@ define(["require", "exports", "./query-engine-constants", "./column-delegate"], 
         QueryEngine.prototype.setQuery = function (query, datasources) {
             if (datasources === void 0) { datasources = []; }
             this.datasources_ = (datasources.length > 0) ? datasources : null;
+            this.redo_ = [];
             this.source_ = this.parseQuery(query);
+            this.states_ = [this.newState()];
         };
         /**
          * Indicates if the limiting should be done before sampling.

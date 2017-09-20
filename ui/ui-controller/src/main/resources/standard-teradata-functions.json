@@ -1313,6 +1313,12 @@
 
   "!CHAPTER_24": "Period Functions and Operators",
 
+  "period": {
+    "!type": "fn(datetime_expression: Column, opt_datetime_expression: Column) -> Column",
+    "!doc": "Initializes an instance of a Period data type.",
+    "!sql": "PERIOD(%c%,?c)",
+    "!sqlType": "Column"
+  },
   "begin": {
     "!type": "fn(period_expression_or_derived_period: Column) -> Column",
     "!doc": "Returns the beginning bound of a Period expression or a derived period.",

@@ -1,24 +1,26 @@
-import {QueryEngine} from "../query-engine";
-import {UserDatasource} from "../../../model/user-datasource";
+import {IAngularStatic} from "angular";
+import {Program} from "@types/estree";
 import {Observable} from "rxjs/Observable";
-import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {Subject} from "rxjs/Subject";
 import {UnderscoreStatic} from "underscore";
+
+import {TeradataColumnDelegate} from "./teradata-column-delegate";
+import {TeradataQueryParser} from "./teradata-query-parser";
 import {TeradataScript} from "./teradata-script";
 import {TeradataScriptBuilder} from "./teradata-script-builder";
-import {Program} from "@types/estree";
+import {ColumnDelegate} from "../column-delegate";
+import {QueryEngine} from "../query-engine";
+import {QueryEngineConstants} from "../query-engine-constants";
+import {TransformDataComponent} from "../../transform-data.component";
 import {JdbcDatasource} from "../../../model/jdbc-datasource";
-import {TeradataQueryParser} from "./teradata-query-parser";
-import {SqlDialect} from "../../../services/VisualQueryService";
 import {ProfileOutputRow} from "../../../model/profile-output-row";
 import {QueryResultColumn} from "../../../model/query-result-column";
-import {TransformDataComponent} from "../../transform-data.component";
-import {ColumnDelegate} from "../column-delegate";
-import {TeradataColumnDelegate} from "./teradata-column-delegate";
-import {QueryEngineConstants} from "../query-engine-constants";
+import {UserDatasource} from "../../../model/user-datasource";
+import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
+import {SqlDialect} from "../../../services/VisualQueryService";
 
 declare const _: UnderscoreStatic;
-declare const angular: angular.IAngularStatic;
+declare const angular: IAngularStatic;
 
 /**
  * Generates a SQL query to be executed by a Teradata database.
@@ -38,8 +40,8 @@ export class TeradataQueryEngine extends QueryEngine<TeradataScript> {
     /**
      * Constructs a {@code TeradataQueryEngine}.
      */
-    constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, DatasourcesService: DatasourcesServiceStatic.DatasourcesService, RestUrlService: any,
-                uiGridConstants: any, private VisualQueryService: any) {
+    constructor(private $http: angular.IHttpService, private $interpolate: angular.IInterpolateService, $mdDialog: angular.material.IDialogService,
+                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, RestUrlService: any, uiGridConstants: any, private VisualQueryService: any) {
         super($mdDialog, DatasourcesService, uiGridConstants);
 
         // Initialize properties
@@ -257,7 +259,7 @@ export class TeradataQueryEngine extends QueryEngine<TeradataScript> {
                 deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
             } else {
                 state.columns = response.data.columns.map((column: QueryResultColumn): QueryResultColumn => {
-                    if (!column.displayName.match(/^[A-Za-z0-9]+$/)) {
+                    if (!column.displayName.match(/^[A-Za-z$_][A-Za-z$_0-9]*$/)) {
                         let index = 0;
                         let newName = "";
                         while (newName.length === 0 || response.data.columnDisplayNameMap[newName]) {
@@ -327,7 +329,7 @@ export class TeradataQueryEngine extends QueryEngine<TeradataScript> {
      * Parses the specified tree into a script for the current state.
      */
     protected parseAcornTree(tree: any): TeradataScript {
-        return new TeradataScriptBuilder(this.defs_, this).toScript(tree as Program) as any;
+        return new TeradataScriptBuilder(this.defs_, this.$interpolate, this).toScript(tree as Program) as any;
     }
 
     /**

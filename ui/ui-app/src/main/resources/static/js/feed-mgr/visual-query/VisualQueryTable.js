@@ -273,12 +273,16 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             }
 
             // Set contents
-            if (cell !== null) {
-                cellDiv.textContent = cell.value;
-                cellDiv.title = cell.value;
-            } else {
+            if (cell === null) {
                 cellDiv.textContent = "";
                 cellDiv.title = "";
+            } else if (cell.value.sqltypeName && cell.value.sqltypeName.startsWith("PERIOD")) {
+                var value = "(" + cell.value.attributes.join(", ") + ")";
+                cellDiv.textContent = value;
+                cellDiv.title = value;
+            } else {
+                cellDiv.textContent = cell.value;
+                cellDiv.title = cell.value;
             }
         },
 
@@ -606,7 +610,7 @@ define(["angular", "feed-mgr/visual-query/module-name", "fattable"], function (a
             });
 
             // Sort rows
-            if (angular.isNumber(this.sortIndex_)) {
+            if (angular.isNumber(this.sortIndex_) && this.sortIndex_ < this.columns_.length) {
                 var field = this.columns_[this.sortIndex_].name;
                 var lessThan = (this.sortDirection_ === VisualQueryTable.ASC) ? -1 : 1;
                 var greaterThan = -lessThan;

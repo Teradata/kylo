@@ -60,20 +60,35 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
          *
          * @param definition - the function definition
          * @param node - the source abstract syntax tree
+         * @param $interpolate - interpolation service
          * @param var_args - the format parameters
          * @returns the Teradata expression
          * @throws {Error} if the function definition is not valid
          * @throws {ParseException} if a format parameter cannot be converted to the required type
          */
-        TeradataExpression.fromDefinition = function (definition, node) {
+        TeradataExpression.fromDefinition = function (definition, node, $interpolate) {
             var var_args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                var_args[_i - 2] = arguments[_i];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                var_args[_i - 3] = arguments[_i];
             }
-            // Convert Spark string to code
-            var args = [definition[TeradataExpression.TERADATA_DIRECTIVE], definition[TeradataExpression.TYPE_DIRECTIVE] === "Select"];
-            Array.prototype.push.apply(args, Array.prototype.slice.call(arguments, 2));
-            var source = TeradataExpression.format.apply(TeradataExpression, args);
+            var parseFunction = definition[TeradataExpression.EXPRESSION_DIRECTIVE]
+                ? function (template, requireAlias) { return TeradataExpression.parseExpressionString(template, requireAlias, $interpolate, var_args); }
+                : function (template, requireAlias) { return TeradataExpression.format.apply(TeradataExpression, [template, requireAlias].concat(var_args)); };
+            var source;
+            var template = definition[TeradataExpression.EXPRESSION_DIRECTIVE] ? definition[TeradataExpression.EXPRESSION_DIRECTIVE] : definition[TeradataExpression.TERADATA_DIRECTIVE];
+            // Parse template
+            if (typeof template === "string") {
+                source = parseFunction(template, definition[TeradataExpression.TYPE_DIRECTIVE] === "Select");
+            }
+            else {
+                source = {
+                    groupBy: template.groupBy ? parseFunction(template.groupBy, false) : null,
+                    having: template.having ? parseFunction(template.having, false) : null,
+                    keywordList: template.keywordList ? parseFunction(template.keywordList, false) : null,
+                    selectList: template.selectList ? parseFunction(template.selectList, true) : null,
+                    where: template.where ? parseFunction(template.where, false) : null
+                };
+            }
             // Return expression
             return new TeradataExpression(source, teradata_expression_type_1.TeradataExpressionType.valueOf(definition[TeradataExpression.TYPE_DIRECTIVE]), node.start, node.end);
         };
@@ -81,7 +96,31 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
          * Indicates if the expression does not have a column alias.
          */
         TeradataExpression.needsColumnAlias = function (expression) {
-            return !expression.match(/^"[^"]+"$| AS "[^"]+"$/);
+            return !TeradataExpression.COLUMN_ALIAS_REGEXP.test(expression);
+        };
+        /**
+         * Gets the column alias for the specified expression.
+         */
+        TeradataExpression.getColumnAlias = function (expression) {
+            var match = TeradataExpression.COLUMN_ALIAS_REGEXP.exec(expression.source);
+            if (match) {
+                return "\"" + match.find(function (value, index) { return index !== 0 && value != null; }) + "\"";
+            }
+            else {
+                return "\"" + expression.source.replace(/"/g, "") + "\"";
+            }
+        };
+        /**
+         * Evaluates the specified expression template.
+         */
+        TeradataExpression.parseExpressionString = function (template, requireAlias, $interpolate, args) {
+            return $interpolate(template)({
+                args: args,
+                getColumnAlias: TeradataExpression.getColumnAlias,
+                toColumn: function (expr) { return TeradataExpression.toColumn(expr, requireAlias); },
+                toObject: TeradataExpression.toObject,
+                toString: TeradataExpression.toString
+            });
         };
         /**
          * Converts the next argument to the specified type for a Teradata conversion string.
@@ -214,9 +253,13 @@ define(["require", "exports", "./teradata-expression-type", "../parse-exception"
         };
         return TeradataExpression;
     }());
+    /** Regular expression for matching the column alias */
+    TeradataExpression.COLUMN_ALIAS_REGEXP = /^"([^"]+)"$| AS "([^"]+)"$/;
+    /** TernJS directive for the expression template */
+    TeradataExpression.EXPRESSION_DIRECTIVE = "!sqlExpr";
     /** Regular expression for conversion strings */
     TeradataExpression.FORMAT_REGEX = /%([?*,@]*)([cos])/g;
-    /** TernJS directive for the Teradata code */
+    /** TernJS directive for the string format template */
     TeradataExpression.TERADATA_DIRECTIVE = "!sql";
     /** TernJS directive for the return type */
     TeradataExpression.TYPE_DIRECTIVE = "!sqlType";

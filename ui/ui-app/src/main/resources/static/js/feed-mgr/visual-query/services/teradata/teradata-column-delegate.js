@@ -71,7 +71,7 @@ define(["require", "exports", "../column-delegate"], function (require, exports,
                 transforms.push({ description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceiling' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'degrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'radians' });
             }
             if (dataCategory === column_delegate_1.DataCategory.STRING) {
-                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' });
+                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' });
             }
             return transforms;
         };

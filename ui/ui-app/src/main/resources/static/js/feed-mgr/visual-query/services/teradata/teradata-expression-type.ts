@@ -48,8 +48,8 @@ export class TeradataExpressionType extends ScriptExpressionType {
      * @returns true if the type is a property, or false otherwise
      */
     static isScriptProperty(type: TeradataExpressionType): boolean {
-        return TeradataExpressionType.GROUP_BY.equals(type) && TeradataExpressionType.HAVING.equals(type) && TeradataExpressionType.KEYWORD.equals(type) && TeradataExpressionType.SELECT.equals(type)
-            && TeradataExpressionType.WHERE.equals(type);
+        return TeradataExpressionType.GROUP_BY.equals(type) || TeradataExpressionType.HAVING.equals(type) || TeradataExpressionType.KEYWORD.equals(type) || TeradataExpressionType.SELECT.equals(type)
+            || TeradataExpressionType.WHERE.equals(type);
     }
 
     /**

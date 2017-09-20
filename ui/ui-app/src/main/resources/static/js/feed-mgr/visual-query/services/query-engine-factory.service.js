@@ -9,8 +9,9 @@ define(["require", "exports", "./spark/spark-query-engine", "./teradata/teradata
         /**
          * Constructs a {@code QueryEngineFactory}.
          */
-        function QueryEngineFactory($http, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService) {
+        function QueryEngineFactory($http, $interpolate, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService) {
             this.$http = $http;
+            this.$interpolate = $interpolate;
             this.$mdDialog = $mdDialog;
             this.$timeout = $timeout;
             this.DatasourcesService = DatasourcesService;
@@ -31,7 +32,7 @@ define(["require", "exports", "./spark/spark-query-engine", "./teradata/teradata
                 return new spark_query_engine_1.SparkQueryEngine(this.$http, this.$mdDialog, this.$timeout, this.DatasourcesService, this.HiveService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
             }
             else if (standardName === "teradata") {
-                return new teradata_query_engine_1.TeradataQueryEngine(this.$http, this.$mdDialog, this.DatasourcesService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
+                return new teradata_query_engine_1.TeradataQueryEngine(this.$http, this.$interpolate, this.$mdDialog, this.DatasourcesService, this.RestUrlService, this.uiGridConstants, this.VisualQueryService);
             }
             else {
                 throw new Error("Unsupported query engine: " + name);
@@ -40,7 +41,7 @@ define(["require", "exports", "./spark/spark-query-engine", "./teradata/teradata
         return QueryEngineFactory;
     }());
     exports.QueryEngineFactory = QueryEngineFactory;
-    angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants",
+    angular.module(moduleName).service("VisualQueryEngineFactory", ["$http", "$interpolate", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants",
         "VisualQueryService", QueryEngineFactory]);
 });
 //# sourceMappingURL=query-engine-factory.service.js.map
