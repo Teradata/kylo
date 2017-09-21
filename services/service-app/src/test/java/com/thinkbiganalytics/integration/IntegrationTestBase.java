@@ -59,6 +59,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
+import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -494,6 +495,38 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
 
         return JsonPath.from(response.asString()).getObject("data", DefaultExecutedJob[].class);
+    }
+
+    protected DefaultExecutedJob[] getJobs(String filter) {
+        Response response = given(JobsRestController.BASE)
+            .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
+            .when()
+            .get("?filter=" + filter + "&limit=50&sort=-createdTime&start=0");
+
+        response.then().statusCode(HTTP_OK);
+
+        return JsonPath.from(response.asString()).getObject("data", DefaultExecutedJob[].class);
+    }
+
+    protected DefaultExecutedJob failJob(DefaultExecutedJob job) {
+        Response response = given(JobsRestController.BASE)
+            .body(new JobAction())
+            .when()
+            .post(String.format("/%s/fail", job.getInstanceId()));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(DefaultExecutedJob.class);
+    }
+
+    protected void abandonAllJobs(String categoryAndFeedName) {
+        LOG.info("Abandon all jobs");
+
+        Response response = given(JobsRestController.BASE)
+            .when()
+            .post(String.format("/abandon-all/%s", categoryAndFeedName));
+
+        response.then().statusCode(HTTP_NO_CONTENT);
     }
 
     protected NifiFeed createFeed(FeedMetadata feed) {

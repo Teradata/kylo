@@ -56,7 +56,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -122,7 +121,6 @@ public class FeedIT extends IntegrationTestBase {
         //create new category
         FeedCategory category = createCategory("Functional Tests");
 
-        //TODO replace import via AdminController with AdminControllerV2
         ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
@@ -134,11 +132,9 @@ public class FeedIT extends IntegrationTestBase {
 
         assertExecutedJobs(response);
 
-        //TODO edit the feed / re-run / re-assert
+        failJobs(response.getCategoryAndFeedName());
+        abandonAllJobs(response.getCategoryAndFeedName());
     }
-
-
-
 
     @Override
     public void startClean() {
@@ -147,8 +143,7 @@ public class FeedIT extends IntegrationTestBase {
 
 //    @Test
     public void temp() {
-//        FEED_NAME = "users_1504528826443";
-//        assertHiveData();
+//        failJobs("system.index_text_service");
     }
 
     protected void prepare() throws Exception {
@@ -268,6 +263,13 @@ public class FeedIT extends IntegrationTestBase {
     protected void waitForFeedToComplete() {
         //wait for feed completion by waiting for certain amount of time and then
         waitFor(FEED_COMPLETION_WAIT_DELAY, TimeUnit.SECONDS, "for feed to complete");
+    }
+
+    protected void failJobs(String categoryAndFeedName) {
+        LOG.info("Failing jobs");
+
+        DefaultExecutedJob[] jobs = getJobs("jobInstance.feed.name%3D%3D" + categoryAndFeedName + "&limit=5&sort=-startTime&start=0");
+        Arrays.stream(jobs).map(this::failJob).forEach(job -> Assert.assertEquals(ExecutionStatus.FAILED, job.getStatus()));
     }
 
     public void assertExecutedJobs(FeedMetadata feed) throws IOException {
