@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>kylo-service-monitor-activemq</artifactId>
+
+	<parent>
+		<groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+		<artifactId>kylo-plugins</artifactId>
+		<version>0.8.4-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
+	</properties>
+
+	<groupId>com.thinkbiganalytics.service.activemq</groupId>
+
+	<name>service-monitor-activemq</name>
+
+	<dependencies>
+
+		<!-- Define Kylo Dependency -->
+		<dependency>
+			<groupId>com.thinkbiganalytics.kylo</groupId>
+			<artifactId>kylo-service-monitor-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Define Activemq Dependency -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
+
+		<!-- Define poolable connection dependency -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+</project>

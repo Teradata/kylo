@@ -386,6 +386,16 @@
         <include>kylo-service-monitor-ambari-${project.version}.jar</include>
       </includes>
     </fileSet>
+   
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/service-monitor-activemq/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-service-monitor-activemq-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/service-monitor-kylo-cluster/target</directory>
       <outputDirectory>setup/plugins</outputDirectory>
@@ -394,6 +404,7 @@
         <include>kylo-service-monitor-kylo-cluster-${project.version}.jar</include>
       </includes>
     </fileSet>
+
 
     <fileSet>
       <directory>${project.parent.basedir}/setup</directory>

@@ -44,50 +44,53 @@ import javax.jms.ConnectionFactory;
 @Profile("jms-activemq")
 @Configuration
 @PropertySources({
+
                      @PropertySource(value = "classpath:activemq.properties", ignoreResourceNotFound = true),
                      @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true)
                  })
+
 public class ActiveMqConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(ActiveMqConfig.class);
+	private static final Logger log = LoggerFactory.getLogger(ActiveMqConfig.class);
 
-    @Autowired
-    private Environment env;
+	@Autowired
+	private Environment env;
 
-    @Bean
-    public JmsService activeMqJmsService() {
-        return new ActiveMqJmsService();
-    }
+	@Bean
+	public JmsService activeMqJmsService() {
+		return new ActiveMqJmsService();
 
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
-        factory.setTrustAllPackages(true);
-        factory.setRedeliveryPolicy(new RedeliveryPolicy());
-        factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
-        factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
-        factory.getRedeliveryPolicy().setInitialRedeliveryDelay(env.getProperty("jms.initialRedeliveryDelay",Long.class,1000L));
-        factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
-        factory.getRedeliveryPolicy().setBackOffMultiplier(env.getProperty("jms.backOffMultiplier", Double.class, 5d));
-        factory.getRedeliveryPolicy().setUseExponentialBackOff(env.getProperty("jms.useExponentialBackOff", Boolean.class, false));
-        PooledConnectionFactory pool = new PooledConnectionFactory();
-        pool.setIdleTimeout(0);
-        pool.setConnectionFactory(getCredentialsAdapter(factory));
+	}
 
-        log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
-        return pool;
-    }
+	@Bean (name = "activemqConnectionPool")
+	public ConnectionFactory connectionFactory() {
+		ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
+		factory.setTrustAllPackages(true);
+		factory.setRedeliveryPolicy(new RedeliveryPolicy());
+		factory.getRedeliveryPolicy().setMaximumRedeliveries(env.getProperty("jms.maximumRedeliveries", Integer.class, 100));
+		factory.getRedeliveryPolicy().setRedeliveryDelay(env.getProperty("jms.redeliveryDelay", Long.class, 1000L));
+		factory.getRedeliveryPolicy().setInitialRedeliveryDelay(env.getProperty("jms.initialRedeliveryDelay",Long.class,1000L));
+		factory.getRedeliveryPolicy().setMaximumRedeliveryDelay(env.getProperty("jms.maximumRedeliveryDelay", Long.class, 600000L));  // try for 10 min
+		factory.getRedeliveryPolicy().setBackOffMultiplier(env.getProperty("jms.backOffMultiplier", Double.class, 5d));
+		factory.getRedeliveryPolicy().setUseExponentialBackOff(env.getProperty("jms.useExponentialBackOff", Boolean.class, false));
+		PooledConnectionFactory pool = new PooledConnectionFactory();
+		pool.setIdleTimeout(0);
+		pool.setConnectionFactory(getCredentialsAdapter(factory));
 
-    private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory) {
-        UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
-        adapter.setTargetConnectionFactory(connectionFactory);
-        String username = env.getProperty("jms.activemq.broker.username");
-        String password = env.getProperty("jms.activemq.broker.password");
-        adapter.setUsername(username);
-        adapter.setPassword(password);
+		log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
+		return pool;
+	}
 
-        log.info("Connecting to ActiveMQ {} ", username != null ? "as " + username : "anonymously");
+	private UserCredentialsConnectionFactoryAdapter getCredentialsAdapter(ConnectionFactory connectionFactory) {
+		UserCredentialsConnectionFactoryAdapter adapter = new UserCredentialsConnectionFactoryAdapter();
+		adapter.setTargetConnectionFactory(connectionFactory);
+		String username = env.getProperty("jms.activemq.broker.username");
+		String password = env.getProperty("jms.activemq.broker.password");
+		adapter.setUsername(username);
+		adapter.setPassword(password);
 
-        return adapter;
-    }
+		log.info("Connecting to ActiveMQ {} ", username != null ? "as " + username : "anonymously");
+
+		return adapter;
+	}
 }

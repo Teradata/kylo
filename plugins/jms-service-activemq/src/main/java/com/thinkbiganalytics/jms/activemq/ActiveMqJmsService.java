@@ -33,19 +33,19 @@ import javax.jms.Queue;
  */
 public class ActiveMqJmsService implements JmsService {
 
-    @Override
-    public Queue getQueue(String queueName) {
-        return new ActiveMQQueue(queueName);
-    }
+	@Override
+	public Queue getQueue(String queueName) {
+		return new ActiveMQQueue(queueName);
+	}
 
-    @Override
-    public void configureContainerFactory(DefaultJmsListenerContainerFactory factory) {
-        factory.setSessionTransacted(true);
-    }
+	@Override
+	public void configureContainerFactory(DefaultJmsListenerContainerFactory factory) {
+		factory.setSessionTransacted(true);
+	}
 
-    @Override
-    public void configureJmsMessagingTemplate(JmsMessagingTemplate template) {
-        //nothing to do here
-    }
+	@Override
+	public void configureJmsMessagingTemplate(JmsMessagingTemplate template) {
+		//nothing to do here
+	}
 
 }
