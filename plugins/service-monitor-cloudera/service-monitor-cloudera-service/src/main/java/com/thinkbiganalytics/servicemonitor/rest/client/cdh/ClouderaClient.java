@@ -24,6 +24,7 @@ import com.cloudera.api.ApiRootResource;
 import com.cloudera.api.ClouderaManagerClientBuilder;
 import com.thinkbiganalytics.servicemonitor.rest.client.RestClientConfig;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,10 +76,12 @@ public class ClouderaClient {
         Integer port = new Integer(portString);
         String username = clientConfig.getUsername();
         String password = clientConfig.getPassword();
-        LOG.info("Created New Cloudera Client for Host [" + host + ":" + port + "], user: [" + username + "]");
-        this.clouderaManagerClientBuilder =
-            new ClouderaManagerClientBuilder().withHost(host).withPort(port).withUsernamePassword(username, password);
 
+        LOG.info("Created New Cloudera Client for Host [" + host + ":" + port + "], user: [" + username + "]");
+        clouderaManagerClientBuilder = new ClouderaManagerClientBuilder().withHost(host).withPort(port).withUsernamePassword(username, password);
+        if (BooleanUtils.isTrue(clientConfig.getEnableTLS())) {
+            clouderaManagerClientBuilder.enableTLS();
+        }
     }
 
 
@@ -103,5 +106,9 @@ public class ClouderaClient {
             creatingResource.set(false);
         }
         return clouderaRootResource;
+    }
+
+    public ClouderaManagerClientBuilder getClouderaManagerClientBuilder() {
+        return clouderaManagerClientBuilder;
     }
 }
