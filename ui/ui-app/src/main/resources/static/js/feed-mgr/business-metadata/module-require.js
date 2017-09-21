@@ -1,3 +1,3 @@
-define(['angular','angular-ui-router'], function (angular) {
+define(['angular','@uirouter/angularjs'], function (angular) {
 
 });

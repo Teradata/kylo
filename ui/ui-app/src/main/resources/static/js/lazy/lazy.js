@@ -1,4 +1,4 @@
-define(['angular','angular-ui-router'], function (angular) {
+define(['angular','@uirouter/angularjs'], function (angular) {
     var  lazyModule = angular.module('lazy', ['ui.router']);
 
 

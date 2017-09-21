@@ -1,4 +1,4 @@
-define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil",'constants/AccessConstants', "angular-ui-router"], function(angular, moduleName, lazyLoadUtil,AccessConstants) {
+define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil",'constants/AccessConstants', "@uirouter/angularjs"], function(angular, moduleName, lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, []);
 
     module.config(["$stateProvider", "$compileProvider", function($stateProvider, $compileProvider) {

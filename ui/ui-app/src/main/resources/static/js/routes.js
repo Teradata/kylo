@@ -1,7 +1,7 @@
-define(['angular', 'kylo-common', 'kylo-services',
+define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
         'main/IndexController',
         'main/HomeController',
-        'main/AccessDeniedController'], function (angular, app, lazyLoadUtil) {
+        'main/AccessDeniedController'], function (angular, app, uirouter) {
     'use strict';
     app.config(["$ocLazyLoadProvider", "$stateProvider", "$urlRouterProvider", function ($ocLazyLoadProvider, $stateProvider, $urlRouterProvider) {
 
