@@ -30,6 +30,11 @@
       <artifactId>nifi-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-volatile-provenance-repository</artifactId>
+      <version>${nifi.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.nifi</groupId>
