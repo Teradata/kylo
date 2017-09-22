@@ -520,7 +520,7 @@ public class TableMergeSyncSupport implements Serializable {
                " union all " +
                " select " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) +
-               ") x group by " + groupBySQL + " having min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
+               ") x group by " + groupBySQL + " having count(processing_dttm) = 1 and min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
     }
 
     /**
