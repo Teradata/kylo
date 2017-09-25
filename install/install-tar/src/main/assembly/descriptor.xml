@@ -466,6 +466,12 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/scripts/es/delete-kylo-indexes-es.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.parent.basedir}/ui/ui-app/target/kylo-ui-app-${project.version}.jar</source>
       <outputDirectory>kylo-ui/lib</outputDirectory>
       <fileMode>755</fileMode>
