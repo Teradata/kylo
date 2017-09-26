@@ -113,43 +113,45 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} template the template with properties
          */
         function initializeProperties(template) {
-            RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
-            self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
-            self.model.allowPreconditions = template.allowPreconditions;
-            //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
-            //    return self.model.inputProcessorType == processor.type;
-            // });
-            self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
+                RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
+                self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+                self.model.allowPreconditions = template.allowPreconditions;
+                //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
+                //    return self.model.inputProcessorType == processor.type;
+                // });
+                self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
-            if(angular.isDefined(self.model.inputProcessor)){
-                var match = matchInputProcessor(self.model.inputProcessor,self.inputProcessors);
-                if(angular.isDefined(match)){
-                    self.inputProcessor = match;
-                    self.inputProcessorId = match.id;
+                if(angular.isDefined(self.model.inputProcessor)){
+                    var match = matchInputProcessor(self.model.inputProcessor,self.inputProcessors);
+                    if(angular.isDefined(match)){
+                        self.inputProcessor = match;
+                        self.inputProcessorId = match.id;
+                    }
                 }
-            }
 
-            if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
-                self.inputProcessorId = self.inputProcessors[0].id;
-            }
-            // Skip this step if it's empty
-            if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
+                if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
+                    self.inputProcessorId = self.inputProcessors[0].id;
+                }
+                // Skip this step if it's empty
+                if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
                         return processor.userEditable
                     })) {
-             var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
-             if(step != null) {
-                 step.skip = true;
-             }
-            }
+                    var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+                    if(step != null) {
+                        step.skip = true;
+                    }
+                }
 
-            // Find controller services
-            _.chain(template.inputProcessors.concat(template.nonInputProcessors))
+                // Find controller services
+                _.chain(template.inputProcessors.concat(template.nonInputProcessors))
                     .pluck("properties")
                     .flatten(true)
                     .filter(function(property) {
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
+            }
             self.loading = false;
             validate();
         }
