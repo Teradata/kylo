@@ -23,7 +23,7 @@ else
 	exit 1
 fi
 
-kylo_indexes=kylo-data,kylo-datasources,kylo-categories-metadata,kylo-categories-default,kylo-feeds-metadata,kylo-feeds-default
+kylo_indexes=kylo-datasources,kylo-categories-metadata,kylo-categories-default,kylo-feeds-metadata,kylo-feeds-default
 
 BODY="{
 		\"settings\" : {
@@ -38,5 +38,18 @@ for KYLO_INDEX in $(echo $kylo_indexes | sed "s/,/ /g")
 do
 	curl -XPUT $ELASTIC_SEARCH_HOST:$ELASTIC_SEARCH_REST_PORT/$KYLO_INDEX?pretty -H 'Content-Type: application/json' -d"$BODY"
 done
+
+BODY_KYLO_DATA="{
+  \"mappings\": {
+    \"feed-category\": {},
+    \"feed-metadata\": {
+      \"_parent\": {
+        \"type\": \"feed-category\"
+      }
+    }
+  }
+}"
+
+curl -XPUT $ELASTIC_SEARCH_HOST:$ELASTIC_SEARCH_REST_PORT/kylo-data?pretty -H 'Content-Type: application/json' -d"$BODY_KYLO_DATA"
 
 echo "Done"
