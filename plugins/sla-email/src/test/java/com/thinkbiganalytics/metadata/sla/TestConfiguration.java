@@ -63,8 +63,8 @@ public class TestConfiguration {
         emailConfiguration.setPort(587);
         //Note Google accounts will not allow overriding the from address due to security reasons.  Other accounts will.
         emailConfiguration.setFrom("some addresss");
-        emailConfiguration.setSmtpAuth(true);
-        emailConfiguration.setStarttls(true);
+        emailConfiguration.setSmtpAuth("true");
+        emailConfiguration.setStarttls("true");
         emailConfiguration.setPassword("someuser@gmail.com password");
         emailConfiguration.setUsername("someuser@gmail.com email address");
         return emailConfiguration;
@@ -74,8 +74,8 @@ public class TestConfiguration {
     public JavaMailSender javaMailSender(@Qualifier("slaEmailConfiguration") EmailConfiguration emailConfiguration) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
-        mailProperties.put("mail.smtp.auth", emailConfiguration.isSmtpAuth());
-        mailProperties.put("mail.smtp.starttls.enable", emailConfiguration.isStarttls());
+        mailProperties.put("mail.smtp.auth", emailConfiguration.getSmtpAuth());
+        mailProperties.put("mail.smtp.starttls.enable", emailConfiguration.getStarttls());
         if (StringUtils.isNotBlank(emailConfiguration.getSmptAuthNtmlDomain())) {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }

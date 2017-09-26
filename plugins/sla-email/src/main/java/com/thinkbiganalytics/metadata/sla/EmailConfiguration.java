@@ -34,14 +34,82 @@ public class EmailConfiguration {
     private String protocol;
     private String host;
     private int port;
-    private boolean smtpAuth;
-    private boolean starttls;
+    private String smtpAuth;
+    private String starttls;
+    private String starttlsRequired;
     private String from;
     private String username;
     private String password;
     private String smptAuthNtmlDomain;
-    private boolean sslEnable;
-    private boolean debug;
+    private String sslEnable;
+    private String debug;
+    private String smtpConnectionTimeout;
+    private String smtpTimeout;
+    private String smtpWriteTimeout;
+
+    public String getSmtpAuth() {
+        return smtpAuth;
+    }
+
+    public void setSmtpAuth(String smtpAuth) {
+        this.smtpAuth = smtpAuth;
+    }
+
+    public String getStarttls() {
+        return starttls;
+    }
+
+    public void setStarttls(String starttls) {
+        this.starttls = starttls;
+    }
+
+    public String getStarttlsRequired() {
+        return starttlsRequired;
+    }
+
+    public void setStarttlsRequired(String starttlsRequired) {
+        this.starttlsRequired = starttlsRequired;
+    }
+
+    public String getSslEnable() {
+        return sslEnable;
+    }
+
+    public void setSslEnable(String sslEnable) {
+        this.sslEnable = sslEnable;
+    }
+
+    public String getDebug() {
+        return debug;
+    }
+
+    public void setDebug(String debug) {
+        this.debug = debug;
+    }
+
+    public String getSmtpConnectionTimeout() {
+        return smtpConnectionTimeout;
+    }
+
+    public void setSmtpConnectionTimeout(String smtpConnectionTimeout) {
+        this.smtpConnectionTimeout = smtpConnectionTimeout;
+    }
+
+    public String getSmtpTimeout() {
+        return smtpTimeout;
+    }
+
+    public void setSmtpTimeout(String smtpTimeout) {
+        this.smtpTimeout = smtpTimeout;
+    }
+
+    public String getSmtpWriteTimeout() {
+        return smtpWriteTimeout;
+    }
+
+    public void setSmtpWriteTimeout(String smtpWriteTimeout) {
+        this.smtpWriteTimeout = smtpWriteTimeout;
+    }
 
     public String getProtocol() {
         return protocol;
@@ -65,22 +133,6 @@ public class EmailConfiguration {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public boolean isSmtpAuth() {
-        return smtpAuth;
-    }
-
-    public void setSmtpAuth(boolean smtpAuth) {
-        this.smtpAuth = smtpAuth;
-    }
-
-    public boolean isStarttls() {
-        return starttls;
-    }
-
-    public void setStarttls(boolean starttls) {
-        this.starttls = starttls;
     }
 
     public String getFrom() {
@@ -115,23 +167,8 @@ public class EmailConfiguration {
         this.smptAuthNtmlDomain = smptAuthNtmlDomain;
     }
 
-    public boolean isSslEnable() {
-        return sslEnable;
-    }
-
-    public void setSslEnable(boolean sslEnable) {
-        this.sslEnable = sslEnable;
-    }
-
     public boolean isConfigured() {
-        return StringUtils.isNotBlank(getHost()) && StringUtils.isNotBlank(getProtocol());
+        return StringUtils.isNotBlank(getHost()) && (getPort() > 0);
     }
 
-    public boolean isDebug() {
-        return debug;
-    }
-
-    public void setDebug(boolean debug) {
-        this.debug = debug;
-    }
 }

@@ -20,24 +20,27 @@ package com.thinkbiganalytics.metadata.sla;
  * #L%
  */
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
-import java.util.Properties;
-
 import javax.inject.Inject;
+import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * Spring service that is used to send emails based upon the defined "slaEmailConfiguratoin" bean that is defined in the {@link com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration}
  */
 public class SlaEmailService {
-
+    private static final Logger log = LoggerFactory.getLogger(SlaEmailService.class);
     @Inject
     @Qualifier("slaEmailSender")
-    private MailSender mailSender;
+    private JavaMailSender mailSender;
 
     @Inject
     @Qualifier("slaEmailConfiguration")
@@ -51,12 +54,23 @@ public class SlaEmailService {
      * @param body    the email body
      */
     public void sendMail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(emailConfiguration.getFrom());
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
+
+        try {
+            if(testConnection()) {
+                MimeMessage message = mailSender.createMimeMessage();
+                String fromAddress = StringUtils.defaultIfBlank(emailConfiguration.getFrom(),emailConfiguration.getUsername());
+                message.setFrom(new InternetAddress(fromAddress));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+                message.setSubject(subject);
+                message.setText(body);
+                mailSender.send(message);
+                log.debug("Email send to " + to);
+            }
+        } catch (MessagingException ex) {
+            log.error("Exception while sending mail :" + ex.getMessage());
+            throw new RuntimeException(ex);
+
+        }
     }
 
     /**
@@ -65,7 +79,6 @@ public class SlaEmailService {
      * @return {@code true} if valid, {@code false} if not valid
      */
     public boolean testConnection() throws MessagingException {
-        Properties props = ((JavaMailSenderImpl) mailSender).getSession().getProperties();
         ((JavaMailSenderImpl) mailSender).testConnection();
         return true;
     }
