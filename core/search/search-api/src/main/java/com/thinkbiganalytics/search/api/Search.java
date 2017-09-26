@@ -63,6 +63,9 @@ public interface Search extends Serializable {
      */
     void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields);
 
+    void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields, String parentId);
+
+
     /**
      * Execute a search
      *

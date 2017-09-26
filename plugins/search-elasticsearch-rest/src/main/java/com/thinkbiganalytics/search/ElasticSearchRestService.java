@@ -30,6 +30,7 @@ import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchHit;
 import com.thinkbiganalytics.search.rest.model.es.ElasticSearchRestSearchResponse;
 import com.thinkbiganalytics.search.transform.ElasticSearchRestSearchResultTransform;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
@@ -87,9 +88,7 @@ public class ElasticSearchRestService implements Search {
                 DELETE_METHOD,
                 getIndexDeleteEndPoint(indexName, typeName, id)
             );
-            log.info("Deleted schema document for index={}, type={}, id={}", indexName, typeName, id);
-
-            final String dataIndexName = "kylo-data";
+            log.info("Deleted schemadocument for index={}, type={}, id={}", indexName, typeName, id);final String dataIndexName = "kylo-data";
             final String dataIndexType = "hive-data";
 
             //Delete data
@@ -149,13 +148,18 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields) {
+        index(indexName, typeName, id, fields, null);
+    }
+
+    @Override
+    public void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields, String parentId) {
         buildRestClient();
         try {
             JSONObject jsonContent = new JSONObject(fields);
             HttpEntity httpEntity = new NStringEntity(jsonContent.toString(), ContentType.APPLICATION_JSON);
             restClient.performRequest(
                 PUT_METHOD,
-                getIndexWriteEndPoint(indexName, typeName, id),
+                getIndexWriteEndPoint(indexName, typeName, id, parentId),
                 Collections.emptyMap(),
                 httpEntity);
             log.debug("Wrote to index with name {}", indexName);
@@ -172,8 +176,8 @@ public class ElasticSearchRestService implements Search {
         }
     }
 
-    private String getIndexWriteEndPoint(String indexName, String typeName, String id) {
-        return "/" + indexName + "/" + typeName + "/" + id;
+    private String getIndexWriteEndPoint(String indexName, String typeName, String id, String parentId) {
+        return "/" + indexName + "/" + typeName + "/" + id + (StringUtils.isNotBlank(parentId) ? "?parent=" + parentId : "");
     }
 
     private String getIndexDeleteEndPoint(String indexName, String typeName, String id) {
