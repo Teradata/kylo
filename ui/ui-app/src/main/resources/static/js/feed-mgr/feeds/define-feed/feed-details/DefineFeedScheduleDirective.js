@@ -206,17 +206,24 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         function setDefaultScheduleStrategy() {
-            if (self.model.inputProcessorType != '' && (self.model.schedule.schedulingStrategyTouched == false || self.model.schedule.schedulingStrategyTouched == undefined)) {
-                if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
-                    setTimerDriven();
+            if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
+                if (self.model.inputProcessorType != '' && (self.model.schedule.schedulingStrategyTouched == false || self.model.schedule.schedulingStrategyTouched == undefined)) {
+                    if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
+                        setTimerDriven();
+                    }
+                    else if (self.model.inputProcessorType.indexOf("GetTableData") >= 0) {
+                        setCronDriven();
+                    }
+                    else if (self.model.inputProcessorType.indexOf("TriggerFeed") >= 0) {
+                        setTriggerDriven();
+                    }
+                    self.model.schedule.schedulingStrategyTouched = true;
                 }
-                else if (self.model.inputProcessorType.indexOf("GetTableData") >= 0) {
-                    setCronDriven();
-                }
-                else if (self.model.inputProcessorType.indexOf("TriggerFeed") >= 0) {
-                    setTriggerDriven();
-                }
-                self.model.schedule.schedulingStrategyTouched = true;
+            } else {
+                var split = self.model.schedule.schedulingPeriod.split(' ');
+                self.timerAmount = split[0];
+                self.timerUnits = split[1];
+
             }
         }
 
