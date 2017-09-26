@@ -20,12 +20,19 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
+
+import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by ru186002 on 21/07/2017.
  */
 public class KyloProvenanceEventRepositoryUtilTest {
+
+    private static final Logger log = LoggerFactory.getLogger(KyloProvenanceEventRepositoryUtilTest.class);
 
     @Test
     public void testLoadDynamicSpringProfile() {
@@ -33,4 +40,17 @@ public class KyloProvenanceEventRepositoryUtilTest {
 //        util.loadSpring();
     }
 
+
+    @Test
+    public void testLoadNifiExternalConfiguration() {
+        String configFilePath = getClass().getClassLoader().getResource("ext-config/config.properties").getPath();
+        System.setProperty("kylo.nifi.configPath", configFilePath.substring(0, configFilePath.indexOf("config.properties") - 1));
+
+        KyloProvenanceEventRepositoryUtil util = new KyloProvenanceEventRepositoryUtil();
+        util.loadSpring();
+
+        String jmsActivemqBrokerUrl = SpringApplicationContext.getInstance().getApplicationContext().getEnvironment().getProperty("jms.activemq.broker.url");
+
+        Assert.assertEquals("tcp://external:61616", jmsActivemqBrokerUrl);
+    }
 }
