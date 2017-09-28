@@ -59,26 +59,35 @@ public class EmailServiceLevelAgreementSpringConfiguration {
     @Bean(name = "slaEmailSender")
     public JavaMailSender javaMailSender(@Qualifier("slaEmailConfiguration") EmailConfiguration emailConfiguration) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        Properties mailProperties = new Properties();
-        mailProperties.put("mail.smtp.auth", emailConfiguration.isSmtpAuth());
-        mailProperties.put("mail.smtp.starttls.enable", emailConfiguration.isStarttls());
+
+        Properties mailProperties = mailSender.getJavaMailProperties();
+        mailProperties.put("mail.smtp.auth", StringUtils.defaultIfBlank(emailConfiguration.getSmtpAuth(),"true"));
+        mailProperties.put("mail.smtp.starttls.enable", StringUtils.defaultIfBlank(emailConfiguration.getStarttls(),"true"));
+
+        if (StringUtils.isNotBlank(emailConfiguration.getStarttlsRequired())) {
+            mailProperties.put("mail.smtp.starttls.required", emailConfiguration.getStarttlsRequired());
+        }
         if (StringUtils.isNotBlank(emailConfiguration.getSmptAuthNtmlDomain())) {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }
-        mailProperties.put("mail.smtp.connectiontimeout ", "5000");
-        mailProperties.put("mail.smtp.timeout", "5000");
-        mailProperties.put("mail.smtp.writetimeout", "5000");
-        if (emailConfiguration.isSslEnable()) {
-            mailProperties.put("mail.smtp.ssl.enable", "true");
-        }
-        mailProperties.put("mail.debug", emailConfiguration.isDebug());
 
-        mailSender.setJavaMailProperties(mailProperties);
+        mailProperties.put("mail.smtp.connectiontimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpConnectionTimeout(),"5000"));
+        mailProperties.put("mail.smtp.timeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpTimeout(),"5000"));
+        mailProperties.put("mail.smtp.writetimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpWriteTimeout(),"5000"));
+
+        if (StringUtils.isNotBlank(emailConfiguration.getSslEnable())) {
+            mailProperties.put("mail.smtp.ssl.enable", emailConfiguration.getSslEnable());
+        }
+        if (StringUtils.isNotBlank(emailConfiguration.getDebug())) {
+            mailProperties.put("mail.debug", emailConfiguration.getDebug());
+        }
+
         mailSender.setHost(emailConfiguration.getHost());
         mailSender.setPort(emailConfiguration.getPort());
         mailSender.setProtocol(emailConfiguration.getProtocol());
         mailSender.setUsername(emailConfiguration.getUsername());
         mailSender.setPassword(emailConfiguration.getPassword());
+
         return mailSender;
     }
 
