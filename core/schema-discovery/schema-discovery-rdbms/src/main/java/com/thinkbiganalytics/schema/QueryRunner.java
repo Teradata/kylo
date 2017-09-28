@@ -129,6 +129,7 @@ public class QueryRunner {
 
             column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
             column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
+            column.setNativeDataType(rsMetaData.getColumnTypeName(i));
             columns.add(column);
         }
 

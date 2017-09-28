@@ -1,22 +1,22 @@
+import * as angular from "angular";
+import * as mocks from "angular-mocks";
+import * as _ from "underscore";
+
 import "feed-mgr/visual-query/module";
 import "feed-mgr/visual-query/module-require";
-import {QueryEngineFactory} from "./services/query-engine-factory.service";
-import {UnderscoreStatic} from "underscore";
+import {QueryEngineFactory} from "../services/query-engine-factory.service";
 
-declare const _: UnderscoreStatic;
-
-const mocks: angular.IMockStatic = require("angular-mocks");
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
 describe("Component: BuildQueryComponent", function () {
     // Include dependencies
-    beforeEach(mocks.module("kylo", "kylo.feedmgr", moduleName));
+    beforeEach((mocks as angular.IMockStatic).module("kylo", "kylo.feedmgr", moduleName));
 
     // Setup tests
-    beforeEach(inject(function ($injector: angular.auto.IInjectorService) {
+    beforeEach((mocks as angular.IMockStatic).inject(function ($injector: angular.auto.IInjectorService) {
         const $scope = $injector.get("$rootScope").$new(false);
         const engine = ($injector.get("VisualQueryEngineFactory") as QueryEngineFactory).getEngine("spark");
-        this.controller = $injector.get("$controller")("VisualQueryBuilderController", {$scope: $scope}, {engine: engine, model: {}});
+        this.controller = ($injector.get("$componentController") as angular.IComponentControllerService)("thinkbigVisualQueryBuilder", {$scope: $scope}, {engine: engine, model: {}});
         this.controller.setupFlowChartModel();
 
         this.$http = $injector.get("$httpBackend");

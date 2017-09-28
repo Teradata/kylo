@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "./services/query-engine", "@angular/core"], function (require, exports, query_engine_1, core_1) {
+define(["require", "exports", "@angular/core", "angular", "underscore", "../services/query-engine"], function (require, exports, core_1, angular, _, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -41,9 +41,8 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
         /**
          * Constructs a {@code BuildQueryComponent}.
          */
-        function QueryBuilderComponent($scope, $http, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService, DatasourcesService) {
+        function QueryBuilderComponent($scope, $element, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService, DatasourcesService) {
             this.$scope = $scope;
-            this.$http = $http;
             this.$mdToast = $mdToast;
             this.$mdDialog = $mdDialog;
             this.$document = $document;
@@ -68,6 +67,10 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
              * @type {boolean} true if there was an error or false otherwise
              */
             this.databaseConnectionError = false;
+            /**
+             * Height offset from the top of the page.
+             */
+            this.heightOffset = "0";
             /**
              * Indicates if the model is valid.
              */
@@ -112,9 +115,8 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
             this.initKeyBindings();
             // Setup environment
+            this.heightOffset = $element.attr("height-offset");
             this.SideNavService.hideSideNav();
-            // AngularJS: data-bound properties initialized
-            this.ngOnInit();
         }
         /**
          * Get or set the SQL for the advanced mode.
@@ -132,6 +134,12 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
          */
         QueryBuilderComponent.prototype.canChangeDatasource = function () {
             return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
+        };
+        /**
+         * Gets the browser height offset for the element with the specified offset from the top of this component.
+         */
+        QueryBuilderComponent.prototype.getBrowserHeightOffset = function (elementOffset) {
+            return parseInt(this.heightOffset) + elementOffset;
         };
         /**
          * Adds the table to the flowchart.
@@ -436,6 +444,9 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
                 var coord = self.getNewXYCoord();
                 angular.forEach(schemaData.fields, function (attr) {
                     attr.selected = true;
+                    if (self.engine.useNativeDataType) {
+                        attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();
+                    }
                 });
                 var newNodeDataModel = {
                     name: nodeName,
@@ -534,7 +545,7 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             this.chartViewModel.deselectAll();
             this.$mdDialog.show({
                 controller: 'ConnectionDialog',
-                templateUrl: 'js/feed-mgr/visual-query/components/connection-dialog.template.html',
+                templateUrl: 'js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
@@ -591,6 +602,12 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
             // Validate when the page loads
             this.validate();
         };
+        /**
+         * Finish initializing after data-bound properties are initialized.
+         */
+        QueryBuilderComponent.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
         // ----------------------
         // Autocomplete Callbacks
         // ----------------------
@@ -633,26 +650,20 @@ define(["require", "exports", "./services/query-engine", "@angular/core"], funct
         __metadata("design:type", Object)
     ], QueryBuilderComponent.prototype, "model", void 0);
     exports.QueryBuilderComponent = QueryBuilderComponent;
-    angular.module(moduleName)
-        .controller("VisualQueryBuilderController", ["$scope", "$http", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService",
-        "StateService", "VisualQueryService", "FeedService", "DatasourcesService", QueryBuilderComponent])
-        .directive("thinkbigVisualQueryBuilder", function () {
-        return {
-            bindToController: {
-                engine: "=",
-                model: "=",
-                stepIndex: "@"
-            },
-            controller: "VisualQueryBuilderController",
-            controllerAs: "$bq",
-            require: ["thinkbigVisualQueryBuilder", "^thinkbigStepper"],
-            restrict: "E",
-            templateUrl: "js/feed-mgr/visual-query/build-query.template.html",
-            link: function ($scope, element, attrs, controllers) {
-                var thisController = controllers[0];
-                thisController.stepperController = controllers[1];
-            }
-        };
+    angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
+        bindings: {
+            engine: "=",
+            heightOffset: "@",
+            model: "=",
+            stepIndex: "@"
+        },
+        controller: ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
+            "DatasourcesService", QueryBuilderComponent],
+        controllerAs: "$bq",
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        templateUrl: "js/feed-mgr/visual-query/build-query/build-query.component.html"
     });
 });
 //# sourceMappingURL=build-query.component.js.map

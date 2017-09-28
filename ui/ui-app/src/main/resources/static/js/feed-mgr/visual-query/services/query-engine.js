@@ -1,4 +1,4 @@
-define(["require", "exports", "./query-engine-constants", "./column-delegate"], function (require, exports, query_engine_constants_1, column_delegate_1) {
+define(["require", "exports", "./column-delegate", "./query-engine-constants"], function (require, exports, column_delegate_1, query_engine_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -43,6 +43,16 @@ define(["require", "exports", "./query-engine-constants", "./column-delegate"], 
              */
             get: function () {
                 return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(QueryEngine.prototype, "useNativeDataType", {
+            /**
+             * Indicates that the native data type should be used instead of the Hive data type.
+             */
+            get: function () {
+                return true;
             },
             enumerable: true,
             configurable: true

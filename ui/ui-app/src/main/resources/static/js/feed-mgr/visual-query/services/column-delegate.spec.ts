@@ -1,7 +1,7 @@
 import "feed-mgr/visual-query/module"
 import "feed-mgr/visual-query/module-require";
+import {TransformDataComponent} from "../transform-data/transform-data.component";
 import {ColumnDelegate} from "./column-delegate";
-import {TransformDataComponent} from "../transform-data.component";
 
 const mocks: angular.IMockStatic = require("angular-mocks");
 const moduleName: string = require("feed-mgr/visual-query/module-name");

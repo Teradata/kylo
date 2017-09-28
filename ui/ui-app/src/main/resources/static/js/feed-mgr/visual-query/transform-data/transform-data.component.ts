@@ -1,11 +1,11 @@
-import "feed-mgr/visual-query/VisualQueryTable";
-import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {Input, OnInit} from "@angular/core";
-import {QueryEngine} from "./services/query-engine";
+import * as angular from "angular";
+import * as $ from "jquery";
+import * as _ from "underscore";
 
-declare const _: any;
-declare const $: any;
-declare const angular: angular.IAngularStatic;
+import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {QueryEngine} from "../services/query-engine";
+
 declare const CodeMirror: any;
 declare const StringUtils: any;
 
@@ -88,7 +88,7 @@ export class TransformDataComponent implements OnInit {
         onLoad: this.codemirrorLoaded.bind(this)
     };
     codemirrorOptions: object = {
-        lineWrapping: false,
+        lineWrapping: true,
         indentWithTabs: false,
         smartIndent: false,
         lineNumbers: false,
@@ -115,9 +115,14 @@ export class TransformDataComponent implements OnInit {
     sampleFormulas: { name: string, formula: string }[] = [];
 
     /**
+     * Height offset from the top of the page.
+     */
+    heightOffset: string = "0";
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any,
+    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any,
                 SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any, StepperService: any, WindowUnloadService: any) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
@@ -127,6 +132,9 @@ export class TransformDataComponent implements OnInit {
 
         // Display prompt on window unload
         WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
+
+        // Get height offset attribute
+        this.heightOffset = $element.attr("height-offset");
 
         // Invalidate when SQL changes
         const self = this;
@@ -141,7 +149,9 @@ export class TransformDataComponent implements OnInit {
                 }
             }
         );
+    }
 
+    $onInit(): void {
         this.ngOnInit();
     }
 
@@ -163,9 +173,10 @@ export class TransformDataComponent implements OnInit {
                     .map(_.property("nodeAttributes"))
                     .map(_.property("attributes"))
                     .flatten(true)
-                    .filter(function (attr: any) {
+                    .some(function (attr: any) {
                         return (attr.selected && attr.description !== null);
-                    });
+                    })
+                    .value();
             }
         }
 
@@ -188,11 +199,17 @@ export class TransformDataComponent implements OnInit {
     }
 
     /**
+     * Gets the browser height offset for the element with the specified offset from the top of this component.
+     */
+    getBrowserHeightOffset(elementOffset: number): number {
+        return parseInt(this.heightOffset) + elementOffset;
+    }
+
+    /**
      * Show and hide the Function History
      */
     toggleFunctionHistory() {
         this.isShowFunctionHistory = !this.isShowFunctionHistory;
-        this.isShowSampleMenu = false;
     };
 
     /**
@@ -200,7 +217,6 @@ export class TransformDataComponent implements OnInit {
      */
     toggleSampleMenu() {
         this.isShowSampleMenu = !this.isShowSampleMenu;
-        this.isShowFunctionHistory = false;
     };
 
     /**
@@ -216,7 +232,7 @@ export class TransformDataComponent implements OnInit {
                 profile: self.engine.getProfile()
             },
             parent: angular.element(document.body),
-            templateUrl: "js/feed-mgr/visual-query/profile-stats-dialog.html"
+            templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
         });
     };
 
@@ -226,7 +242,9 @@ export class TransformDataComponent implements OnInit {
         //assign the editor to a variable on this object for future reference
         this.codemirrorEditor = _editor;
         //Set the width,height of the editor. Code mirror needs an explicit width/height
-        _editor.setSize(700, 25);
+        _editor.setSize(625, 25);
+        _editor.on("focus", () => _editor.setSize(625, "auto"));
+        _editor.on("blur", () => _editor.setSize(625, 25));
 
         //disable users ability to add new lines.  The Formula bar is only 1 line
         _editor.on("beforeChange", function (instance: any, change: any) {
@@ -440,6 +458,7 @@ export class TransformDataComponent implements OnInit {
             });
 
             columns.push({
+                dataType: col.dataType,
                 delegate: delegate,
                 displayName: col.displayName,
                 filters: delegate.filters,
@@ -696,26 +715,18 @@ export class TransformDataComponent implements OnInit {
     }
 }
 
-angular.module(moduleName)
-    .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService",
-        "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
-    .directive('thinkbigVisualQueryTransform', function () {
-        return {
-            bindToController: {
-                engine: "=",
-                model: "=",
-                stepIndex: "@"
-            },
-            controller: "VisualQueryTransformController",
-            controllerAs: "$td",
-            require: ["thinkbigVisualQueryTransform", "^thinkbigStepper"],
-            restrict: "E",
-            templateUrl: "js/feed-mgr/visual-query/transform-data.template.html",
-            link: function ($scope: object, element: Element, attrs: object, controllers: any[]) {
-                let thisController = controllers[0];
-                //store a reference to the stepper if needed
-                thisController.stepperController = controllers[1];
-            }
-
-        };
-    });
+angular.module(moduleName).component("thinkbigVisualQueryTransform", {
+    bindings: {
+        engine: "=",
+        heightOffset: "@",
+        model: "=",
+        stepIndex: "@"
+    },
+    controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
+        TransformDataComponent],
+    controllerAs: "$td",
+    require: {
+        stepperController: "^thinkbigStepper"
+    },
+    templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
+});

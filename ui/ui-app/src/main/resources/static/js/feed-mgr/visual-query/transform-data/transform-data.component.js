@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "./services/query-engine", "feed-mgr/visual-query/VisualQueryTable"], function (require, exports, core_1, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../services/query-engine"], function (require, exports, core_1, angular, $, _, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -18,9 +18,8 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $http, $q, $mdDialog, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
             this.$scope = $scope;
-            this.$http = $http;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
             this.RestUrlService = RestUrlService;
@@ -72,7 +71,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                 onLoad: this.codemirrorLoaded.bind(this)
             };
             this.codemirrorOptions = {
-                lineWrapping: false,
+                lineWrapping: true,
                 indentWithTabs: false,
                 smartIndent: false,
                 lineNumbers: false,
@@ -91,6 +90,10 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
              */
             this.sampleFormulas = [];
             /**
+             * Height offset from the top of the page.
+             */
+            this.heightOffset = "0";
+            /**
              * Called when the user clicks Add on the function bar
              */
             this.onAddFunction = function () {
@@ -102,6 +105,8 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             SideNavService.hideSideNav();
             // Display prompt on window unload
             WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
+            // Get height offset attribute
+            this.heightOffset = $element.attr("height-offset");
             // Invalidate when SQL changes
             var self = this;
             $scope.$watch(function () {
@@ -112,8 +117,10 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                     self.sql = null;
                 }
             });
-            this.ngOnInit();
         }
+        TransformDataComponent.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
         TransformDataComponent.prototype.ngOnInit = function () {
             this.sql = this.model.sql;
             this.sqlModel = this.model.chartViewModel;
@@ -131,9 +138,10 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                         .map(_.property("nodeAttributes"))
                         .map(_.property("attributes"))
                         .flatten(true)
-                        .filter(function (attr) {
+                        .some(function (attr) {
                         return (attr.selected && attr.description !== null);
-                    });
+                    })
+                        .value();
                 }
             }
             var source = useSqlModel ? this.sqlModel : this.sql;
@@ -153,11 +161,16 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             this.query();
         };
         /**
+         * Gets the browser height offset for the element with the specified offset from the top of this component.
+         */
+        TransformDataComponent.prototype.getBrowserHeightOffset = function (elementOffset) {
+            return parseInt(this.heightOffset) + elementOffset;
+        };
+        /**
          * Show and hide the Function History
          */
         TransformDataComponent.prototype.toggleFunctionHistory = function () {
             this.isShowFunctionHistory = !this.isShowFunctionHistory;
-            this.isShowSampleMenu = false;
         };
         ;
         /**
@@ -165,7 +178,6 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
          */
         TransformDataComponent.prototype.toggleSampleMenu = function () {
             this.isShowSampleMenu = !this.isShowSampleMenu;
-            this.isShowFunctionHistory = false;
         };
         ;
         /**
@@ -181,7 +193,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                     profile: self.engine.getProfile()
                 },
                 parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/visual-query/profile-stats-dialog.html"
+                templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
             });
         };
         ;
@@ -191,7 +203,9 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
             //assign the editor to a variable on this object for future reference
             this.codemirrorEditor = _editor;
             //Set the width,height of the editor. Code mirror needs an explicit width/height
-            _editor.setSize(700, 25);
+            _editor.setSize(625, 25);
+            _editor.on("focus", function () { return _editor.setSize(625, "auto"); });
+            _editor.on("blur", function () { return _editor.setSize(625, 25); });
             //disable users ability to add new lines.  The Formula bar is only 1 line
             _editor.on("beforeChange", function (instance, change) {
                 var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
@@ -383,6 +397,7 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"));
                 });
                 columns.push({
+                    dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
                     filters: delegate.filters,
@@ -627,27 +642,20 @@ define(["require", "exports", "@angular/core", "./services/query-engine", "feed-
         __metadata("design:type", Object)
     ], TransformDataComponent.prototype, "model", void 0);
     exports.TransformDataComponent = TransformDataComponent;
-    angular.module(moduleName)
-        .controller('VisualQueryTransformController', ["$scope", "$http", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService",
-        "BroadcastService", "StepperService", "WindowUnloadService", TransformDataComponent])
-        .directive('thinkbigVisualQueryTransform', function () {
-        return {
-            bindToController: {
-                engine: "=",
-                model: "=",
-                stepIndex: "@"
-            },
-            controller: "VisualQueryTransformController",
-            controllerAs: "$td",
-            require: ["thinkbigVisualQueryTransform", "^thinkbigStepper"],
-            restrict: "E",
-            templateUrl: "js/feed-mgr/visual-query/transform-data.template.html",
-            link: function ($scope, element, attrs, controllers) {
-                var thisController = controllers[0];
-                //store a reference to the stepper if needed
-                thisController.stepperController = controllers[1];
-            }
-        };
+    angular.module(moduleName).component("thinkbigVisualQueryTransform", {
+        bindings: {
+            engine: "=",
+            heightOffset: "@",
+            model: "=",
+            stepIndex: "@"
+        },
+        controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
+            TransformDataComponent],
+        controllerAs: "$td",
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        templateUrl: "js/feed-mgr/visual-query/transform-data/transform-data.component.html"
     });
 });
 //# sourceMappingURL=transform-data.component.js.map

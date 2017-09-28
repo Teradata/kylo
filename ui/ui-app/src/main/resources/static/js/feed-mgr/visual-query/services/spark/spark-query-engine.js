@@ -77,6 +77,16 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(SparkQueryEngine.prototype, "useNativeDataType", {
+            /**
+             * Indicates that the Hive data type should be used.
+             */
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Gets the field name for the specified column.
          */

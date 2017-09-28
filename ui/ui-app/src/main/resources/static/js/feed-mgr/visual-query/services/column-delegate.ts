@@ -1,4 +1,4 @@
-import {TransformDataComponent} from "../transform-data.component";
+import {TransformDataComponent} from "../transform-data/transform-data.component";
 
 declare const angular: angular.IAngularStatic;
 
@@ -92,7 +92,7 @@ export class ColumnDelegate {
     hideColumn(column: any, grid: any) {
         column.visible = false;
 
-        const formula = "drop(\"" + StringUtils.quote(this.getColumnFieldName(column)) + "\")";
+        const formula = "drop(\"" + StringUtils.quote(column.headerTooltip) + "\")";
         this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column)});
 
         grid.onColumnsChange();

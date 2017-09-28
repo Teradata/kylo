@@ -200,7 +200,14 @@ define(["require", "exports", "../parse-exception", "./spark-constants", "./spar
                 return expression.source;
             }
             if (spark_expression_type_1.SparkExpressionType.LITERAL.equals(expression.type)) {
-                return "functions.lit(" + expression.source + ")";
+                var literal = void 0;
+                if (expression.source.charAt(0) === "\"" || expression.source.charAt(0) === "'") {
+                    literal = SparkExpression.toString(expression);
+                }
+                else {
+                    literal = expression.source;
+                }
+                return "functions.lit(" + literal + ")";
             }
             throw new parse_exception_1.ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
         };

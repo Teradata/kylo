@@ -72,7 +72,7 @@ define(["require", "exports"], function (require, exports) {
          */
         ColumnDelegate.prototype.hideColumn = function (column, grid) {
             column.visible = false;
-            var formula = "drop(\"" + StringUtils.quote(this.getColumnFieldName(column)) + "\")";
+            var formula = "drop(\"" + StringUtils.quote(column.headerTooltip) + "\")";
             this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column) });
             grid.onColumnsChange();
             grid.refresh();

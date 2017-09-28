@@ -1,16 +1,15 @@
-define(["require", "exports", "feed-mgr/visual-query/module", "feed-mgr/visual-query/module-require"], function (require, exports) {
+define(["require", "exports", "angular-mocks", "underscore", "feed-mgr/visual-query/module", "feed-mgr/visual-query/module-require"], function (require, exports, mocks, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var mocks = require("angular-mocks");
     var moduleName = require("feed-mgr/visual-query/module-name");
     describe("Component: BuildQueryComponent", function () {
         // Include dependencies
         beforeEach(mocks.module("kylo", "kylo.feedmgr", moduleName));
         // Setup tests
-        beforeEach(inject(function ($injector) {
+        beforeEach(mocks.inject(function ($injector) {
             var $scope = $injector.get("$rootScope").$new(false);
             var engine = $injector.get("VisualQueryEngineFactory").getEngine("spark");
-            this.controller = $injector.get("$controller")("VisualQueryBuilderController", { $scope: $scope }, { engine: engine, model: {} });
+            this.controller = $injector.get("$componentController")("thinkbigVisualQueryBuilder", { $scope: $scope }, { engine: engine, model: {} });
             this.controller.setupFlowChartModel();
             this.$http = $injector.get("$httpBackend");
         }));

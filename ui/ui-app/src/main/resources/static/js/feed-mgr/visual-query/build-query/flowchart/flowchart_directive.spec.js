@@ -1,4 +1,5 @@
 var mocks = require("angular-mocks");
+require("./flowchart_directive");
 
 describe('flowchart-directive', function () {
 

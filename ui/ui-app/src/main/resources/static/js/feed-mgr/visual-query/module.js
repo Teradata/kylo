@@ -1,15 +1,11 @@
 define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil", "constants/AccessConstants", "kylo-common", "kylo-services", "kylo-feedmgr", "jquery",
-        "feed-mgr/visual-query/flowchart/flowchart_directive"], function (angular, moduleName, lazyLoadUtil, AccessConstants) {
+        "feed-mgr/visual-query/build-query/flowchart/flowchart_directive"], function (angular, moduleName, lazyLoadUtil, AccessConstants) {
     var module = angular.module(moduleName, ["flowChart"]);
 
     /**
      * LAZY loaded in from /app.js
      */
     module.config(["$stateProvider", "$compileProvider", function ($stateProvider, $compileProvider) {
-        //pre-assign modules until directives are rewritten to use the $onInit method.
-        //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
-        $compileProvider.preAssignBindingsEnabled(true);
-
         $stateProvider.state(AccessConstants.UI_STATES.VISUAL_QUERY.state, {
             url: "/visual-query/{engine}",
             params: {
@@ -17,12 +13,23 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
             },
             views: {
                 "content": {
-                    templateUrl: "js/feed-mgr/visual-query/visual-query.template.html",
-                    controller: "VisualQueryComponent",
-                    controllerAs: "vm"
+                    component: "visualQuery"
                 }
             },
             resolve: {
+                engine: function ($injector, $ocLazyLoad, $transition$) {
+                    var engineName = (function (name) {
+                        if (name === null) {
+                            return "spark";
+                        } else {
+                            return name;
+                        }
+                    })($transition$.params().engine);
+                    return $ocLazyLoad.load("feed-mgr/visual-query/services/query-engine-factory.service")
+                        .then(function () {
+                            return $injector.get("VisualQueryEngineFactory").getEngine(engineName);
+                        });
+                },
                 loadMyCtrl: lazyLoadController(["feed-mgr/visual-query/visual-query.component"])
             },
             data: {
@@ -42,7 +49,8 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
         $ocLazyLoad.load({
             name: 'kylo', files: ["bower_components/fattable/fattable.css",
                                   "js/feed-mgr/visual-query/visual-query.component.css",
-                                  "js/feed-mgr/visual-query/flowchart/flowchart.css"
+                                  "js/feed-mgr/visual-query/build-query/flowchart/flowchart.css",
+                                  "js/feed-mgr/visual-query/transform-data/transform-data.component.css"
             ]
         })
     }]);

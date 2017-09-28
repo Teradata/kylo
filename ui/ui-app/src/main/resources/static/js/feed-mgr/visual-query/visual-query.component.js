@@ -1,4 +1,13 @@
-define(["require", "exports", "./services/query-engine-factory.service"], function (require, exports) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+define(["require", "exports", "@angular/core", "./services/query-engine"], function (require, exports, core_1, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -9,12 +18,9 @@ define(["require", "exports", "./services/query-engine-factory.service"], functi
         /**
          * Constructs a {@code VisualQueryComponent}.
          */
-        function VisualQueryComponent($scope, $transition$, queryEngineFactory, SideNavService, StateService) {
+        function VisualQueryComponent($scope, SideNavService, StateService) {
             this.SideNavService = SideNavService;
             this.StateService = StateService;
-            // Create the query engine and data model
-            var engine = this.createEngine($transition$.params().engine, queryEngineFactory);
-            this.dataModel = { engine: engine, model: {} };
             // Manage the sidebar navigation
             SideNavService.hideSideNav();
             $scope.$on("$destroy", this.ngOnDestroy.bind(this));
@@ -31,26 +37,25 @@ define(["require", "exports", "./services/query-engine-factory.service"], functi
         VisualQueryComponent.prototype.ngOnDestroy = function () {
             this.SideNavService.showSideNav();
         };
-        /**
-         * Creates a new query engine from the specified factory.
-         *
-         * @param name - the path parameter or name of the engine
-         * @param factory - the query engine factory
-         * @returns the query engine
-         */
-        VisualQueryComponent.prototype.createEngine = function (name, factory) {
-            var engineName = (function (name) {
-                if (name === null) {
-                    return "spark";
-                }
-                else {
-                    return name;
-                }
-            })(name);
-            return factory.getEngine(engineName);
+        VisualQueryComponent.prototype.ngOnInit = function () {
+            this.dataModel = { engine: this.engine, model: {} };
+        };
+        VisualQueryComponent.prototype.$onInit = function () {
+            this.ngOnInit();
         };
         return VisualQueryComponent;
     }());
-    angular.module(moduleName).controller("VisualQueryComponent", ["$scope", "$transition$", "VisualQueryEngineFactory", "SideNavService", "StateService", VisualQueryComponent]);
+    __decorate([
+        core_1.Input(),
+        __metadata("design:type", query_engine_1.QueryEngine)
+    ], VisualQueryComponent.prototype, "engine", void 0);
+    angular.module(moduleName).component('visualQuery', {
+        bindings: {
+            engine: "<"
+        },
+        controller: ["$scope", "SideNavService", "StateService", VisualQueryComponent],
+        controllerAs: "vm",
+        templateUrl: "js/feed-mgr/visual-query/visual-query.component.html"
+    });
 });
 //# sourceMappingURL=visual-query.component.js.map

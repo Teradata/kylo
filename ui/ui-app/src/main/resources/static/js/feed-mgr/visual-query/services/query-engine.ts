@@ -1,15 +1,16 @@
-import {UserDatasource} from "../../model/user-datasource";
-import {ScriptState} from "../model/script-state";
+import {Observable} from "rxjs/Observable";
+
+import {ProfileOutputRow} from "../../model/profile-output-row";
 import {QueryResultColumn} from "../../model/query-result-column";
 import {SchemaField} from "../../model/schema-field";
-import {ProfileOutputRow} from "../../model/profile-output-row";
-import {QueryEngineConstants} from "./query-engine-constants";
-import {Observable} from "rxjs/Observable";
 import {TableSchema} from "../../model/table-schema";
+import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../services/VisualQueryService";
+import {ScriptState} from "../model/script-state";
+import {TransformDataComponent} from "../transform-data/transform-data.component";
 import {ColumnDelegate} from "./column-delegate";
-import {TransformDataComponent} from "../transform-data.component";
+import {QueryEngineConstants} from "./query-engine-constants";
 
 /**
  * Provides the ability to query and transform data.
@@ -77,12 +78,19 @@ export abstract class QueryEngine<T> {
     /**
      * Gets the sample formulas.
      */
-    abstract get sampleFormulas(): {name: string, formula: string}[];
+    abstract get sampleFormulas(): { name: string, formula: string }[];
 
     /**
      * Gets the SQL dialect used by this engine.
      */
     abstract get sqlDialect(): SqlDialect;
+
+    /**
+     * Indicates that the native data type should be used instead of the Hive data type.
+     */
+    get useNativeDataType(): boolean {
+        return true;
+    }
 
     /**
      * Indicates if a previously undone transformation can be redone.

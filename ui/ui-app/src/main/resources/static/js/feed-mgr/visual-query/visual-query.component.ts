@@ -1,31 +1,33 @@
-import {OnDestroy} from "@angular/core";
-import {QueryEngineFactory} from "./services/query-engine-factory.service";
-import {QueryEngine} from "./services/query-engine";
-import "./services/query-engine-factory.service";
-import {FeedDataTransformation} from "../model/feed-data-transformation";
+import {Input, OnDestroy, OnInit} from "@angular/core";
+import {IAngularStatic} from "angular";
 
-declare const angular: angular.IAngularStatic;
+import {FeedDataTransformation} from "../model/feed-data-transformation";
+import {QueryEngine} from "./services/query-engine";
+
+declare const angular: IAngularStatic;
 
 const moduleName = require("feed-mgr/visual-query/module-name");
 
 /**
  * Displays the Visual Query page.
  */
-class VisualQueryComponent implements OnDestroy {
+class VisualQueryComponent implements OnInit, OnDestroy {
 
     /**
      * Query engine and data transformation model
      */
-    dataModel: {engine: QueryEngine<any>, model: FeedDataTransformation};
+    dataModel: { engine: QueryEngine<any>, model: FeedDataTransformation };
+
+    /**
+     * Query engine for the data model
+     */
+    @Input()
+    engine: QueryEngine<any>;
 
     /**
      * Constructs a {@code VisualQueryComponent}.
      */
-    constructor($scope: angular.IScope, $transition$: any, queryEngineFactory: QueryEngineFactory, private SideNavService: any, private StateService: any) {
-        // Create the query engine and data model
-        let engine = this.createEngine($transition$.params().engine, queryEngineFactory);
-        this.dataModel = {engine: engine, model: {} as FeedDataTransformation};
-
+    constructor($scope: angular.IScope, private SideNavService: any, private StateService: any) {
         // Manage the sidebar navigation
         SideNavService.hideSideNav();
         $scope.$on("$destroy", this.ngOnDestroy.bind(this));
@@ -45,23 +47,20 @@ class VisualQueryComponent implements OnDestroy {
         this.SideNavService.showSideNav();
     }
 
-    /**
-     * Creates a new query engine from the specified factory.
-     *
-     * @param name - the path parameter or name of the engine
-     * @param factory - the query engine factory
-     * @returns the query engine
-     */
-    private createEngine(name: string, factory: QueryEngineFactory): QueryEngine<any> {
-        const engineName = (function (name) {
-            if (name === null) {
-                return "spark";
-            } else {
-                return name;
-            }
-        })(name);
-        return factory.getEngine(engineName);
+    ngOnInit(): void {
+        this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
+    }
+
+    $onInit(): void {
+        this.ngOnInit();
     }
 }
 
-angular.module(moduleName).controller("VisualQueryComponent", ["$scope", "$transition$", "VisualQueryEngineFactory", "SideNavService", "StateService", VisualQueryComponent]);
+angular.module(moduleName).component('visualQuery', {
+    bindings: {
+        engine: "<"
+    },
+    controller: ["$scope", "SideNavService", "StateService", VisualQueryComponent],
+    controllerAs: "vm",
+    templateUrl: "js/feed-mgr/visual-query/visual-query.component.html"
+});

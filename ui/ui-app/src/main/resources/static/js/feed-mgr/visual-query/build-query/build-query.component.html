@@ -1,4 +1,5 @@
 <div layout="column" flex ng-class="{'visual-query-auto-complete-centered':$bq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$bq.chartViewModel.data.nodes.length >0}">
+  <td-message label="Error!" sublabel="You did something wrong!" color="warn" icon="error"></td-message>
   <div ng-if="$bq.error != null" style="color:#e53935;background-color:rgba(229,57,53,.15);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
     <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
     <div layout="column" flex>
@@ -76,7 +77,7 @@
 </div>
 
 <div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$bq.chartViewModel.data.nodes.length == 0 || $bq.advancedMode == true">
-  <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" browser-height-offset="300">
+  <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" browser-height-offset="{{$bq.getBrowserHeightOffset(112)}}">
     <flow-chart class="flowchart" id="visual-query-canvas"
                 chart="$bq.chartViewModel"
                 on-create-connection-callback="$bq.onCreateConnectionCallback.bind($bq)"

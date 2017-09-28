@@ -1,17 +1,14 @@
-/*
-table.md-table.visual-query-table {
-    position: relative;
+visual-query {
+  // Hide tab labels
+  md-tabs.visual-query-tabs {
+    > md-tabs-wrapper {
+      display: none;
+    }
+    > md-tabs-content-wrapper {
+      top: 0;
+    }
+  }
 }
-
-.visual-query-table tbody.md-body.md-virtual-repeat-container {
-    display: table-row-group;
-}
-
-.visual-query-table .md-virtual-repeat-scroller {
-    top: initial;
-    bottom: initial;
-}
-*/
 
 /* Loading elements */
 .visual-query-loading-wrapper {
@@ -54,57 +51,6 @@ table.md-table.visual-query-table {
 
 .autocomplete-hive-table-template .item-metadata .highlight, .autocomplete-hive-table-template .item-title .highlight {
   color: #3483BA;
-}
-
-/* Function history */
-.visual-query-function-history {
-  background-color: white;
-  border: 1px solid grey;
-  /*height: 100%;*/
-  left: 10px;
-  max-width: 400px;
-  min-width: 300px;
-  padding: 0 16px 12px 16px;
-  position: absolute;
-  top: 90px;
-  transition: all linear 0.2s;
-  z-index: 9999;
-}
-
-.visual-query-function-history.ng-hide {
-  opacity: 0;
-}
-
-.visual-query-function-history md-list-item > md-icon:first-child {
-  margin-right: 16px;
-}
-
-.visual-query-function-history md-list-item > p {
-  /*margin-right: 40px;*/
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.visual-query-function-history md-list-item > button.md-button.md-secondary-container.md-icon-button {
-  margin-right: -22px;
-}
-
-/* Sample menu */
-.visual-query-sample-menu {
-  background-color: white;
-  border: 1px solid grey;
-  left: 114px;
-  min-width: 300px;
-  padding: 0 16px 12px 16px;
-  position: absolute;
-  top: 90px;
-  transition: all linear 0.2s;
-  z-index: 9999;
-}
-
-.visual-query-sample-menu.ng-hide {
-  opacity: 0;
 }
 
 /* Column headers */
@@ -199,26 +145,4 @@ md-menu-item > .md-menu > .md-button span {
 /** Column menu text inputs */
 md-menu-item > div > md-input-container {
   margin: 0;
-}
-
-/** Visual Query Table */
-visual-query-table .fattable-viewport > div {
-  border-bottom: 1px solid rgba(0, 0, 0, .24);
-  padding: 0 28px;
-  vertical-align: middle;
-}
-
-visual-query-table .fattable-header-container .fattable-viewport > div {
-  color: rgba(0, 0, 0, .54);
-  letter-spacing: .02em;
-  white-space: nowrap;
-}
-
-visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
-  padding-left: 24px;
-  padding-right: 0;
-}
-
-visual-query-table .fattable-body-container .fattable-viewport > div {
-  letter-spacing: .01em;
 }

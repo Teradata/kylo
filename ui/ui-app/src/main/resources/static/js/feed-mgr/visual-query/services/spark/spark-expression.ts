@@ -242,7 +242,13 @@ export class SparkExpression {
             return expression.source as string;
         }
         if (SparkExpressionType.LITERAL.equals(expression.type)) {
-            return "functions.lit(" + expression.source + ")";
+            let literal;
+            if ((expression.source as string).charAt(0) === "\"" || (expression.source as string).charAt(0) === "'") {
+                literal = SparkExpression.toString(expression);
+            } else {
+                literal = expression.source;
+            }
+            return "functions.lit(" + literal + ")";
         }
         throw new ParseException("Expression cannot be converted to a column: " + expression.type, expression.start);
     }

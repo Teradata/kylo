@@ -8,7 +8,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             },
             scope: {},
             controllerAs: 'vm',
-            templateUrl: 'js/feed-mgr/visual-query/visual-query-store.html',
+            templateUrl: 'js/feed-mgr/visual-query/store/visual-query-store.html',
             controller: "VisualQueryStoreController",
             link: function ($scope, element, attrs, controllers) {
 

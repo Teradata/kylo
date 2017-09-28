@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "rxjs/Subject", "./teradata-column-delegate", "./teradata-query-parser", "./teradata-script-builder", "../query-engine", "../query-engine-constants", "../../../services/VisualQueryService"], function (require, exports, Subject_1, teradata_column_delegate_1, teradata_query_parser_1, teradata_script_builder_1, query_engine_1, query_engine_constants_1, VisualQueryService_1) {
+define(["require", "exports", "rxjs/Subject", "../../../services/VisualQueryService", "../query-engine", "../query-engine-constants", "./teradata-column-delegate", "./teradata-query-parser", "./teradata-script-builder"], function (require, exports, Subject_1, VisualQueryService_1, query_engine_1, query_engine_constants_1, teradata_column_delegate_1, teradata_query_parser_1, teradata_script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -245,11 +245,12 @@ define(["require", "exports", "rxjs/Subject", "./teradata-column-delegate", "./t
                             return {
                                 comment: column.comment,
                                 databaseName: column.databaseName,
-                                dataType: column.dataType,
+                                dataType: column.nativeDataType.toLowerCase(),
                                 displayName: newName,
                                 field: column.displayName,
                                 hiveColumnLabel: column.displayName,
                                 index: column.index,
+                                nativeDataType: column.nativeDataType,
                                 tableName: column.tableName
                             };
                         }
@@ -257,11 +258,12 @@ define(["require", "exports", "rxjs/Subject", "./teradata-column-delegate", "./t
                             return {
                                 comment: column.comment,
                                 databaseName: column.databaseName,
-                                dataType: column.dataType,
+                                dataType: column.nativeDataType.toLowerCase(),
                                 displayName: column.displayName,
                                 field: column.displayName,
                                 hiveColumnLabel: column.displayName,
                                 index: column.index,
+                                nativeDataType: column.nativeDataType,
                                 tableName: column.tableName
                             };
                         }

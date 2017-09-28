@@ -65,21 +65,35 @@ System.config({
     // Assume npm: is set in `paths` in systemjs.config
     // Map the angular testing umd bundles
     map: {
-        '@angular/core': 'npm:@angular/core/bundles/core.umd.min.js',
-        '@angular/core/testing': 'npm:@angular/core/bundles/core-testing.umd.js',
-        '@angular/common': 'npm:@angular/common/bundles/common.umd.min.js',
+        '@angular/animations': 'npm:@angular/animations/bundles/animations.umd.min',
+        '@angular/animations/browser': 'npm:@angular/animations/bundles/animations-browser.umd.min',
+        '@angular/common': 'npm:@angular/common/bundles/common.umd.min',
         '@angular/common/testing': 'npm:@angular/common/bundles/common-testing.umd.js',
-        '@angular/compiler': 'npm:@angular/compiler/bundles/compiler.umd.min.js',
+        '@angular/compiler': 'npm:@angular/compiler/bundles/compiler.umd.min',
         '@angular/compiler/testing': 'npm:@angular/compiler/bundles/compiler-testing.umd.js',
-        '@angular/platform-browser': 'npm:@angular/platform-browser/bundles/platform-browser.umd.min.js',
-        '@angular/platform-browser/testing': 'npm:@angular/platform-browser/bundles/platform-browser-testing.umd.js',
-        '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.min.js',
-        '@angular/platform-browser-dynamic/testing': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic-testing.umd.js',
-        '@angular/http': 'npm:@angular/http/bundles/http.umd.min.js',
-        '@angular/http/testing': 'npm:@angular/http/bundles/http-testing.umd.js',
-        '@angular/router': 'npm:@angular/router/bundles/router.umd.min.js',
-        '@angular/router/testing': 'npm:@angular/router/bundles/router-testing.umd.js',
+        '@angular/core': 'npm:@angular/core/bundles/core.umd.min',
+        '@angular/core/testing': 'npm:@angular/core/bundles/core-testing.umd.js',
+        '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.min',
         '@angular/forms/testing': 'npm:@angular/forms/bundles/forms-testing.umd.js',
+        '@angular/http': 'npm:@angular/http/bundles/http.umd.min',
+        '@angular/http/testing': 'npm:@angular/http/bundles/http-testing.umd.js',
+        '@angular/material': 'npm:@angular/material/bundles/material.umd.min',
+        '@angular/platform-browser': 'npm:@angular/platform-browser/bundles/platform-browser.umd.min',
+        '@angular/platform-browser/animations': 'npm:@angular/platform-browser/bundles/platform-browser-animations.umd.min',
+        '@angular/platform-browser/testing': 'npm:@angular/platform-browser/bundles/platform-browser-testing.umd.js',
+        '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.min',
+        '@angular/platform-browser-dynamic/testing': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic-testing.umd.js',
+        '@angular/router': 'npm:@angular/router/bundles/router.umd.min',
+        '@angular/router/testing': 'npm:@angular/router/bundles/router-testing.umd.js',
+        '@angular/router/upgrade': 'npm:@angular/router/bundles/router-upgrade.umd.min',
+        '@angular/upgrade': 'npm:@angular/upgrade/bundles/upgrade.umd',
+        '@angular/upgrade/static': 'npm:@angular/upgrade/bundles/upgrade-static.umd',
+        '@covalent/core': 'npm:@covalent/core/core.umd',
+        '@uirouter/angular': 'npm:@uirouter/angular/_bundles/ui-router-ng2',
+        '@uirouter/angular-hybrid': 'npm:@uirouter/angular-hybrid/_bundles/ui-router-angular-hybrid',
+        '@uirouter/angularjs': 'npm:@uirouter/angularjs/release/angular-ui-router',
+        '@uirouter/core': 'npm:@uirouter/core/_bundles/ui-router-core',
+        '@uirouter/rx': 'npm:@uirouter/rx/_bundles/ui-router-rx',
         'angular': 'bower:angular/angular.min',
         "angular-drag-and-drop-lists":"bower:angular-drag-and-drop-lists/angular-drag-and-drop-lists.min",
         "angular-material-data-table":"bower:angular-material-data-table/dist/md-data-table.min",
@@ -179,13 +193,20 @@ initTestBed().then(initTesting);
 function initTestBed(){
     return Promise.all([
         System.import('@angular/core/testing'),
-        System.import('@angular/platform-browser-dynamic/testing')
+        System.import('@angular/platform-browser-dynamic/testing'),
+        System.import('@uirouter/angular-hybrid'),
+        System.import('@uirouter/core')
     ])
 
         .then(function (providers) {
             const coreTesting    = providers[0];
             const browserTesting = providers[1];
+            const uiRouter       = providers[3];
 
+            // Fix @uirouter/core unable to load
+            uiRouter.servicesPlugin(null);
+
+            // Load test environment
             coreTesting.TestBed.initTestEnvironment(
                 browserTesting.BrowserDynamicTestingModule,
                 browserTesting.platformBrowserDynamicTesting());

@@ -39,6 +39,11 @@ export interface QueryResultColumn {
     index: number;
 
     /**
+     * Database-specific type name.
+     */
+    nativeDataType: string;
+
+    /**
      * Name of the source table.
      */
     tableName: string;

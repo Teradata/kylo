@@ -1,12 +1,12 @@
-import {UserDatasource} from "../model/user-datasource";
-import {QueryEngine} from "./services/query-engine";
 import {Input, OnDestroy, OnInit} from "@angular/core";
-import {FeedDataTransformation} from "../model/feed-data-transformation";
-import {UnderscoreStatic} from "underscore";
-import {TableSchema} from "../model/table-schema";
+import * as angular from "angular";
+import * as _ from "underscore";
 
-declare const _: UnderscoreStatic;
-declare const angular: angular.IAngularStatic;
+import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {TableSchema} from "../../model/table-schema";
+import {UserDatasource} from "../../model/user-datasource";
+import {QueryEngine} from "../services/query-engine";
+
 declare const flowchart: any;
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
@@ -81,6 +81,11 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     error: string;
 
     /**
+     * Height offset from the top of the page.
+     */
+    heightOffset: string = "0";
+
+    /**
      * Indicates if the model is valid.
      */
     isValid: boolean = false;
@@ -152,7 +157,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     /**
      * Constructs a {@code BuildQueryComponent}.
      */
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
+    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
                 private $document: angular.IDocumentService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
                 private VisualQueryService: any, private FeedService: any, private DatasourcesService: any) {
         // Setup initializers
@@ -160,10 +165,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         this.initKeyBindings();
 
         // Setup environment
+        this.heightOffset = $element.attr("height-offset");
         this.SideNavService.hideSideNav();
-
-        // AngularJS: data-bound properties initialized
-        this.ngOnInit();
     }
 
     /**
@@ -182,6 +185,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     canChangeDatasource(): boolean {
         return (this.error == null && (this.engine.allowMultipleDataSources || this.selectedDatasourceIds.length === 0));
+    }
+
+    /**
+     * Gets the browser height offset for the element with the specified offset from the top of this component.
+     */
+    getBrowserHeightOffset(elementOffset: number): number {
+        return parseInt(this.heightOffset) + elementOffset;
     }
 
     /**
@@ -513,6 +523,9 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
 
             angular.forEach(schemaData.fields, function (attr: any) {
                 attr.selected = true;
+                if (self.engine.useNativeDataType) {
+                    attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();
+                }
             });
             const newNodeDataModel: any = {
                 name: nodeName,
@@ -617,7 +630,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         this.chartViewModel.deselectAll();
         this.$mdDialog.show({
             controller: 'ConnectionDialog',
-            templateUrl: 'js/feed-mgr/visual-query/components/connection-dialog.template.html',
+            templateUrl: 'js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -681,6 +694,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         this.validate();
     }
 
+    /**
+     * Finish initializing after data-bound properties are initialized.
+     */
+    $onInit(): void {
+        this.ngOnInit();
+    }
+
     // ----------------------
     // Autocomplete Callbacks
     // ----------------------
@@ -716,24 +736,18 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     }
 }
 
-angular.module(moduleName)
-    .controller("VisualQueryBuilderController", ["$scope", "$http", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService",
-        "StateService", "VisualQueryService", "FeedService", "DatasourcesService", QueryBuilderComponent])
-    .directive("thinkbigVisualQueryBuilder", function () {
-        return {
-            bindToController: {
-                engine: "=",
-                model: "=",
-                stepIndex: "@"
-            },
-            controller: "VisualQueryBuilderController",
-            controllerAs: "$bq",
-            require: ["thinkbigVisualQueryBuilder", "^thinkbigStepper"],
-            restrict: "E",
-            templateUrl: "js/feed-mgr/visual-query/build-query.template.html",
-            link: function ($scope: object, element: Element, attrs: object, controllers: any[]) {
-                let thisController = controllers[0];
-                thisController.stepperController = controllers[1];
-            }
-        };
-    });
+angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
+    bindings: {
+        engine: "=",
+        heightOffset: "@",
+        model: "=",
+        stepIndex: "@"
+    },
+    controller: ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
+        "DatasourcesService", QueryBuilderComponent],
+    controllerAs: "$bq",
+    require: {
+        stepperController: "^thinkbigStepper"
+    },
+    templateUrl: "js/feed-mgr/visual-query/build-query/build-query.component.html"
+});

@@ -1,5 +1,5 @@
 
-define(['angular', 'feed-mgr/visual-query/flowchart/flowchart_viewmodel','feed-mgr/visual-query/flowchart/mouse_capture_service','feed-mgr/visual-query/flowchart/svg_class','feed-mgr/visual-query/flowchart/dragging_service'], function (angular) {
+define(['angular', 'feed-mgr/visual-query/build-query/flowchart/flowchart_viewmodel','feed-mgr/visual-query/build-query/flowchart/mouse_capture_service','feed-mgr/visual-query/build-query/flowchart/svg_class','feed-mgr/visual-query/build-query/flowchart/dragging_service'], function (angular) {
 
 //
 // Flowchart module.
@@ -12,7 +12,7 @@ define(['angular', 'feed-mgr/visual-query/flowchart/flowchart_viewmodel','feed-m
         .directive('flowChart', function () {
             return {
                 restrict: 'E',
-                templateUrl: "js/feed-mgr/visual-query/flowchart/flowchart_table_template.html",
+                templateUrl: "js/feed-mgr/visual-query/build-query/flowchart/flowchart_table_template.html",
                 replace: true,
                 scope: {
                     chart: "=chart",

@@ -73,6 +73,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 
     /**
+     * Indicates that the Hive data type should be used.
+     */
+    get useNativeDataType(): boolean {
+        return false;
+    }
+
+    /**
      * Gets the field name for the specified column.
      */
     getColumnName(column: QueryResultColumn): string {

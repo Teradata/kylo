@@ -1,23 +1,23 @@
-import {IAngularStatic} from "angular";
 import {Program} from "@types/estree";
+import {IAngularStatic} from "angular";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {UnderscoreStatic} from "underscore";
 
-import {TeradataColumnDelegate} from "./teradata-column-delegate";
-import {TeradataQueryParser} from "./teradata-query-parser";
-import {TeradataScript} from "./teradata-script";
-import {TeradataScriptBuilder} from "./teradata-script-builder";
-import {ColumnDelegate} from "../column-delegate";
-import {QueryEngine} from "../query-engine";
-import {QueryEngineConstants} from "../query-engine-constants";
-import {TransformDataComponent} from "../../transform-data.component";
 import {JdbcDatasource} from "../../../model/jdbc-datasource";
 import {ProfileOutputRow} from "../../../model/profile-output-row";
 import {QueryResultColumn} from "../../../model/query-result-column";
 import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
+import {TransformDataComponent} from "../../transform-data/transform-data.component";
+import {ColumnDelegate} from "../column-delegate";
+import {QueryEngine} from "../query-engine";
+import {QueryEngineConstants} from "../query-engine-constants";
+import {TeradataColumnDelegate} from "./teradata-column-delegate";
+import {TeradataQueryParser} from "./teradata-query-parser";
+import {TeradataScript} from "./teradata-script";
+import {TeradataScriptBuilder} from "./teradata-script-builder";
 
 declare const _: UnderscoreStatic;
 declare const angular: IAngularStatic;
@@ -272,22 +272,24 @@ export class TeradataQueryEngine extends QueryEngine<TeradataScript> {
                         return {
                             comment: column.comment,
                             databaseName: column.databaseName,
-                            dataType: column.dataType,
+                            dataType: column.nativeDataType.toLowerCase(),
                             displayName: newName,
                             field: column.displayName,
                             hiveColumnLabel: column.displayName,
                             index: column.index,
+                            nativeDataType: column.nativeDataType,
                             tableName: column.tableName
                         };
                     } else {
                         return {
                             comment: column.comment,
                             databaseName: column.databaseName,
-                            dataType: column.dataType,
+                            dataType: column.nativeDataType.toLowerCase(),
                             displayName: column.displayName,
                             field: column.displayName,
                             hiveColumnLabel: column.displayName,
                             index: column.index,
+                            nativeDataType: column.nativeDataType,
                             tableName: column.tableName
                         };
                     }
