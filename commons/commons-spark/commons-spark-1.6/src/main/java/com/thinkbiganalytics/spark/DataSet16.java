@@ -93,4 +93,9 @@ public class DataSet16 implements DataSet {
     public List<Row> collectAsList() {
         return dataframe.collectAsList();
     }
+
+    @Override
+    public DataSet repartition(int numPartitions) {
+        return new DataSet16(dataframe.repartition(numPartitions));
+    }
 }

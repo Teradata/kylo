@@ -22,15 +22,18 @@ package com.thinkbiganalytics.spark.datavalidator;
 
 import org.apache.spark.api.java.JavaRDD;
 
+import java.io.Serializable;
+
 /**
  * Validator Strategy interface (to enable support for Spark 1 and 2)
  */
-public interface IValidatorStrategy {
+public interface IValidatorStrategy extends Serializable {
 
     /**
      * Get count of invalid columns, and total valid and invalid rows on cleansed rows
+     *
      * @param cleansedRowResultJavaRDD RDD containing result of cleaning rows of type {@link CleansedRowResult}
-     * @param schemaLength number of columns in schema
+     * @param schemaLength             number of columns in schema
      * @return RDD containing counts of invalid columns, and total valid and invalid rows
      */
     JavaRDD<long[]> getCleansedRowResultPartitionCounts(JavaRDD<CleansedRowResult> cleansedRowResultJavaRDD, int schemaLength);

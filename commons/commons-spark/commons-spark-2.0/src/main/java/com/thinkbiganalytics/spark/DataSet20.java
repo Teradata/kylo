@@ -94,4 +94,9 @@ public class DataSet20 implements DataSet {
     public void writeToTable(String partitionColumn, String fqnTable) {
         dataset.write().mode(SaveMode.Append).insertInto(fqnTable);
     }
+
+    @Override
+    public DataSet repartition(int numPartitions) {
+        return new DataSet20(dataset.repartition(numPartitions));
+    }
 }

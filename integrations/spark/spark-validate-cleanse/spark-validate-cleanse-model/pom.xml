@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <version>0.8.4-SNAPSHOT</version>
   </parent>
+
+  <artifactId>kylo-spark-validate-cleanse-model</artifactId>
+
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
   </properties>
 
-  <artifactId>kylo-spark-validate-cleanse-api</artifactId>
-
   <dependencies>
-
     <!-- Kylo Dependencies -->
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-spark-api</artifactId>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-field-policy-default</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -28,24 +28,11 @@
       <artifactId>kylo-field-policy-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-spark-validate-cleanse-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
-    <!-- Apache Spark Dependencies -->
+    <!-- Spark Dependencies -->
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${scala.binary.version}</artifactId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
     </dependency>
-
-    <!-- Spring Dependencies -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-    </dependency>
-
   </dependencies>
-
 </project>

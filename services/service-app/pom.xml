@@ -25,6 +25,11 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-search-elasticsearch</artifactId>
+      <version>0.8.4-SNAPSHOT</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>

@@ -35,13 +35,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Performs validation of a string value to ensure it is convertible to the give Hive column type. The class ensures the
- * precision, range, and data type are compatible.
+ * Performs validation of a string value to ensure it is convertible to the give Hive column type. The class ensures the precision, range, and data type are compatible.
  */
 public class HCatDataType implements Cloneable, Serializable {
 
-    private static HCatDataType UNCHECKED_TYPE = new HCatDataType();
-    private static Map<String, HCatDataType> dataTypes = new HashMap();
+    private static final HCatDataType UNCHECKED_TYPE = new HCatDataType();
+    private static final Map<String, HCatDataType> dataTypes = new HashMap<>();
 
     // Build static rules around the various column types
     static {
@@ -180,7 +179,7 @@ public class HCatDataType implements Cloneable, Serializable {
         Long strLen = null;
         String dataType = columnType.toLowerCase();
         // Extract precision and scale portion as in Decimal(8,2) or varchar(255)
-        int idx = columnType.indexOf("(");
+        int idx = columnType.indexOf('(');
         if (idx > -1) {
             dataType = columnType.substring(0, idx);
             String precisionPart = columnType.substring(idx + 1, columnType.length() - 1);
@@ -221,7 +220,7 @@ public class HCatDataType implements Cloneable, Serializable {
             return "";
         }
 
-        StringBuffer retVal = new StringBuffer();
+        StringBuilder retVal = new StringBuilder();
 
         for (int i = 0; i < repeatTimes; i++) {
             retVal.append(repeatChar);
@@ -235,12 +234,8 @@ public class HCatDataType implements Cloneable, Serializable {
 
     private int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {
         String string = bigDecimal.stripTrailingZeros().toPlainString();
-        int index = string.indexOf(".");
+        int index = string.indexOf('.');
         return index < 0 ? 0 : string.length() - index - 1;
-    }
-
-    private int getNumberOfDecimalPlaces(Double dbl) {
-        return getNumberOfDecimalPlaces(new BigDecimal(dbl));
     }
 
     public Class getConvertibleType() {
@@ -276,16 +271,12 @@ public class HCatDataType implements Cloneable, Serializable {
      * @return whether passes validation
      */
     private boolean validatePrecision(Comparable val) {
-        if (convertibleType == BigDecimal.class) {
-            if (getNumberOfDecimalPlaces((BigDecimal) val) > digits) {
-                return false;
-            }
-        }
-        return true;
+        return convertibleType != BigDecimal.class || getNumberOfDecimalPlaces((BigDecimal) val) <= digits;
     }
 
     /**
      * Returns true if Hive is able to convert a string value to the correct convertible type.
+     *
      * @param strVal the string value
      * @return true if the string value will be ok, false if explicit conversion is needed.
      */
@@ -306,8 +297,7 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     /**
-     * Tests whether the string value can be converted to the hive data type defined by this class. If it is not convertible then
-     * hive will not be able to show the value
+     * Tests whether the string value can be converted to the hive data type defined by this class. If it is not convertible then hive will not be able to show the value
      *
      * @param val the value
      * @return whether value is valid
@@ -339,22 +329,16 @@ public class HCatDataType implements Cloneable, Serializable {
                         if (max != null && max.compareTo(nativeValue) < 0) {
                             return false;
                         }
-                        if (digits != null && !(!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
+                        if (digits != null && !(!enforcePrecision || validatePrecision(nativeValue))) {
                             return false;
                         }
 
-                    } else if (isstring) {
-                        if (strVal.length() > maxlength) {
-                            return false;
-                        }
+                    } else if (isstring && strVal.length() > maxlength) {
+                        return false;
                     }
                 }
             } else {
-                if (val == null || val != null && val.getClass() == convertibleType || (val instanceof Number && Number.class.isAssignableFrom(convertibleType))) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return val == null || val.getClass() == convertibleType || val instanceof Number && Number.class.isAssignableFrom(convertibleType);
             }
 
         } catch (InvalidFormatException | ClassCastException | IllegalArgumentException e) {

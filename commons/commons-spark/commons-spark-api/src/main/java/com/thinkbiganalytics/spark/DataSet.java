@@ -104,4 +104,9 @@ public interface DataSet {
      * @param fqnTable        the name for the table
      */
     void writeToTable(String partitionColumn, String fqnTable);
+
+    /**
+     * Returns a new DataSet that has exactly numPartitions partitions.
+     */
+    DataSet repartition(int numPartitions);
 }

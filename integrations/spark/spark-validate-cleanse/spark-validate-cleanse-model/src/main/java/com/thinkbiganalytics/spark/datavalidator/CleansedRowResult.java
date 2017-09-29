@@ -21,15 +21,40 @@ package com.thinkbiganalytics.spark.datavalidator;
  */
 
 import org.apache.spark.sql.Row;
+
 import java.io.Serializable;
+
+import javax.annotation.Nonnull;
 
 /*
  * Wrapper class to contain our cleansed row and its column validation results
  */
 public class CleansedRowResult implements Serializable {
 
-    public Row row;
-    public boolean[] columnsValid;
-    public boolean rowIsValid;
+    @Nonnull
+    private final Row row;
 
+    @Nonnull
+    private final boolean[] columnsValid;
+
+    private final boolean rowIsValid;
+
+    public CleansedRowResult(@Nonnull Row row, @Nonnull boolean[] columnsValid, boolean rowIsValid) {
+        this.row = row;
+        this.columnsValid = columnsValid;
+        this.rowIsValid = rowIsValid;
+    }
+
+    @Nonnull
+    public Row getRow() {
+        return row;
+    }
+
+    public boolean isColumnValid(final int index) {
+        return columnsValid[index];
+    }
+
+    public boolean isRowValid() {
+        return rowIsValid;
+    }
 }

@@ -20,10 +20,14 @@ package com.thinkbiganalytics.spark.datavalidator;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.SparkContextService;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Row;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,18 +38,9 @@ public class ValidatorV1Test {
 
     @Test
     public void testCleansedRowResultsValidationCountsV1() {
-        CleansedRowResult cleansedRowResult1 = new CleansedRowResult();
-        cleansedRowResult1.rowIsValid = true;
-        cleansedRowResult1.columnsValid = new boolean[]{true, true, true, true, true};
-
-        CleansedRowResult cleansedRowResult2 = new CleansedRowResult();
-        cleansedRowResult2.rowIsValid = false;
-        cleansedRowResult2.columnsValid = new boolean[]{true, false, true, true, false};
-
-        CleansedRowResult cleansedRowResult3 = new CleansedRowResult();
-        cleansedRowResult3.rowIsValid = false;
-        cleansedRowResult3.columnsValid = new boolean[]{false, false, true, true, false};
-
+        CleansedRowResult cleansedRowResult1 = new CleansedRowResult(Mockito.mock(Row.class), new boolean[]{true, true, true, true, true}, true);
+        CleansedRowResult cleansedRowResult2 = new CleansedRowResult(Mockito.mock(Row.class), new boolean[]{true, false, true, true, false}, false);
+        CleansedRowResult cleansedRowResult3 = new CleansedRowResult(Mockito.mock(Row.class), new boolean[]{false, false, true, true, false}, false);
         List<CleansedRowResult> cleansedRowResultsList = Arrays.asList(cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
                                                                        cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
                                                                        cleansedRowResult1, cleansedRowResult2, cleansedRowResult3);
@@ -56,8 +51,7 @@ public class ValidatorV1Test {
         JavaSparkContext sc = new JavaSparkContext(conf);
         JavaRDD<CleansedRowResult> inputRDD = sc.parallelize(cleansedRowResultsList, 4);
 
-        Validator validator = new Validator();
-        validator.setValidatorStrategy(new ValidatorStrategyV1());
+        StandardDataValidator validator = new StandardDataValidator(new ValidatorStrategyV1(), Mockito.mock(SparkContextService.class));
 
         long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 5);
         long[] expectedOutput = {1L, 2L, 0L, 0L, 2L, 7L, 2L};

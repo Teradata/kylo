@@ -40,13 +40,13 @@ public class StandardizationAndValidationResult {
 
 
     public ValidationResult getFinalValidationResult(){
-        ValidationResult finalResult = Validator.VALID_RESULT;
+        ValidationResult finalResult = StandardDataValidator.VALID_RESULT;
         if(validationResults == null || validationResults.isEmpty()){
-            finalResult = Validator.VALID_RESULT;
+            finalResult = StandardDataValidator.VALID_RESULT;
         }
         else {
             for(ValidationResult r : validationResults) {
-                if(r != Validator.VALID_RESULT){
+                if(r != StandardDataValidator.VALID_RESULT){
                     finalResult = r;
                     break;
                 }
