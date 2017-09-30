@@ -61,8 +61,8 @@ public class EmailServiceLevelAgreementSpringConfiguration {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 
         Properties mailProperties = mailSender.getJavaMailProperties();
-        mailProperties.put("mail.smtp.auth", StringUtils.defaultIfBlank(emailConfiguration.getSmtpAuth(),"true"));
-        mailProperties.put("mail.smtp.starttls.enable", StringUtils.defaultIfBlank(emailConfiguration.getStarttls(),"true"));
+        mailProperties.put("mail.smtp.auth", StringUtils.defaultIfBlank(emailConfiguration.getSmtpAuth(), "false"));
+        mailProperties.put("mail.smtp.starttls.enable", StringUtils.defaultIfBlank(emailConfiguration.getStarttls(), "false"));
 
         if (StringUtils.isNotBlank(emailConfiguration.getStarttlsRequired())) {
             mailProperties.put("mail.smtp.starttls.required", emailConfiguration.getStarttlsRequired());
@@ -71,9 +71,9 @@ public class EmailServiceLevelAgreementSpringConfiguration {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }
 
-        mailProperties.put("mail.smtp.connectiontimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpConnectionTimeout(),"5000"));
-        mailProperties.put("mail.smtp.timeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpTimeout(),"5000"));
-        mailProperties.put("mail.smtp.writetimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpWriteTimeout(),"5000"));
+        mailProperties.put("mail.smtp.connectiontimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpConnectionTimeout(), "5000"));
+        mailProperties.put("mail.smtp.timeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpTimeout(), "5000"));
+        mailProperties.put("mail.smtp.writetimeout", StringUtils.defaultIfBlank(emailConfiguration.getSmtpWriteTimeout(), "5000"));
 
         if (StringUtils.isNotBlank(emailConfiguration.getSslEnable())) {
             mailProperties.put("mail.smtp.ssl.enable", emailConfiguration.getSslEnable());

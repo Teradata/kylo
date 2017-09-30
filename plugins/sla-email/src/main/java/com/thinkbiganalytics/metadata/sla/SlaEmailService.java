@@ -24,19 +24,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import com.google.common.base.Throwables;
 
 import javax.inject.Inject;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * Spring service that is used to send emails based upon the defined "slaEmailConfiguration" bean that is defined in the {@link com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration}
  */
 public class SlaEmailService {
+
     private static final Logger log = LoggerFactory.getLogger(SlaEmailService.class);
     @Inject
     @Qualifier("slaEmailSender")
@@ -56,9 +58,9 @@ public class SlaEmailService {
     public void sendMail(String to, String subject, String body) {
 
         try {
-            if(testConnection()) {
+            if (testConnection()) {
                 MimeMessage message = mailSender.createMimeMessage();
-                String fromAddress = StringUtils.defaultIfBlank(emailConfiguration.getFrom(),emailConfiguration.getUsername());
+                String fromAddress = StringUtils.defaultIfBlank(emailConfiguration.getFrom(), emailConfiguration.getUsername());
                 message.setFrom(new InternetAddress(fromAddress));
                 message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
                 message.setSubject(subject);
@@ -68,7 +70,7 @@ public class SlaEmailService {
             }
         } catch (MessagingException ex) {
             log.error("Exception while sending mail : {}", ex.getMessage());
-            throw new RuntimeException(ex);
+            Throwables.propagate(ex);
 
         }
     }
