@@ -115,6 +115,7 @@ public class ActiveDirectoryAuthConfig {
 
         private URI uri;
         private String domain;
+        private String searchFilter = null;
         private boolean enableGroups = false;
         private String serviceUser = null;
         private String servicePassword = null;
@@ -158,6 +159,7 @@ public class ActiveDirectoryAuthConfig {
                                                                                                        this.servicePassword);
             provider.setConvertSubErrorCodesToExceptions(true);
             provider.setUserDetailsContextMapper(this.mapper);
+            if (this.searchFilter != null) provider.setSearchFilter(this.searchFilter);
             return provider;
         }
     }
