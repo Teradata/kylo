@@ -109,7 +109,7 @@ public class ProvenanceEventFeedUtil {
         setProcessorFlowType(event);
 
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(feedName);
             if (feed != null && !OpsManagerFeed.NULL_FEED.equals(feed)) {
                 event.setStream(feed.isStream());
             }
@@ -119,7 +119,7 @@ public class ProvenanceEventFeedUtil {
 
     public OpsManagerFeed getFeed(String feedName) {
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(feedName);
             if (feed != null && !OpsManagerFeed.NULL_FEED.equals(feed)) {
                 return feed;
             }
@@ -188,7 +188,7 @@ public class ProvenanceEventFeedUtil {
 
         String feedName = event.getFeedName();
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(feedName);
             if (feed == null || OpsManagerFeed.NULL_FEED.equals(feed)) {
                 log.debug("Not processing operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
                 // opsManagerFeedCache.invalidateFeed(feedName);

@@ -67,9 +67,6 @@ public class CacheService {
     FeedAclCache feedAclCache;
 
     @Inject
-    OpsFeedManagerFeedProvider opsFeedManagerFeedProvider;
-
-    @Inject
     ServiceStatusCache serviceStatusCache;
 
     @Inject
@@ -137,12 +134,5 @@ public class CacheService {
         return alertsCache.getUserAlertSummaryForFeedName(feedName);
     }
 
-    public List<? extends OpsManagerFeed> getOpsManagerFeeds() {
-        return opsFeedManagerFeedProvider.findAll();
-    }
-
-    public OpsManagerFeed getOpsManagerFeed(String feedName) {
-        return opsFeedManagerFeedProvider.findByName(feedName);
-    }
 
 }
