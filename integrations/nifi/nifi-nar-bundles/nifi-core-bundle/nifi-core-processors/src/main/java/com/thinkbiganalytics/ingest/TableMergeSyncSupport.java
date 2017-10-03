@@ -599,7 +599,7 @@ public class TableMergeSyncSupport implements Serializable {
                "  from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " a" +
                "  where " +
                "  a.processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) +
-               " union " +
+               " union all" +
                "  select " + selectSQLWithAlias +
                "  from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " a left outer join (" + sbSourceQuery + ") b " +
                "  on (" + joinOnClause + ")" +
