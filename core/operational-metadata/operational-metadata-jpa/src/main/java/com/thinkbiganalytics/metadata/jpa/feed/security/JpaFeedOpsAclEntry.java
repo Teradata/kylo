@@ -39,8 +39,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
 /**
@@ -48,9 +51,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
  */
 @Entity
 @Table(name = "FEED_ACL_INDEX")
-public class JpaFeedOpsAclEntry {
-    
-    public enum PrincipalType { USER, GROUP }
+public class JpaFeedOpsAclEntry implements FeedOpsAclEntry {
 
     @EmbeddedId
     private EntryId id;
@@ -63,7 +64,8 @@ public class JpaFeedOpsAclEntry {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "principal_type", insertable = false, updatable = false)
-    private PrincipalType principalType;
+    @QueryType(PropertyType.ENUM)
+    private com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType principalType =  com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType.USER;
 
     @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "FEED_ID", nullable = true, insertable = false, updatable = false)
@@ -82,18 +84,22 @@ public class JpaFeedOpsAclEntry {
     }
     
     
+    @Override
     public UUID getFeedId() {
-        return this.feedId;
+        return this.feedId != null ? this.feedId : (this.getId() != null ? this.getId().getUuid() : null);
     }
 
+    @Override
     public String getPrincipalName() {
-        return this.principalName;
+        return this.principalName != null ? this.principalName : (this.getId() != null ? this.getId().getPrincipalName() : null);
     }
 
-    public PrincipalType getPrincipalType() {
-        return this.principalType;
+    @Override
+    public com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType getPrincipalType() {
+       return this.getId() != null && this.getId().getPrincipalType() != null ? this.getId().getPrincipalType() : this.principalType;
     }
 
+    @Override
     public OpsManagerFeed getFeed() {
         return feed;
     }
@@ -102,23 +108,30 @@ public class JpaFeedOpsAclEntry {
         this.feed = feed;
     }
 
-    public static class EntryId implements Serializable {
+
+    @Override
+    public EntryId getId() {
+        return id;
+    }
+
+    public static class EntryId implements ID {
 
         private static final long serialVersionUID = 1L;
 
         @Column(name = "feed_id", unique = false, nullable = false)
         private UUID uuid;
-        
+
         @Column(name = "principal", length = 255, unique = false, nullable = false)
         private String principalName;
-        
+
         @Enumerated(EnumType.STRING)
         @Column(name = "principal_type", length = 10, unique = false, nullable = false)
-        private PrincipalType principalType;
+        @QueryType(PropertyType.ENUM)
+        private com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType principalType;
 
         public EntryId() {
         }
-        
+
         public EntryId(UUID uuid, String principalName, PrincipalType type) {
             super();
             this.uuid = uuid;
@@ -142,6 +155,14 @@ public class JpaFeedOpsAclEntry {
             this.principalName = principalName;
         }
 
+        public PrincipalType getPrincipalType() {
+            return principalType;
+        }
+
+        public void setPrincipalType(PrincipalType principalType) {
+            this.principalType = principalType;
+        }
+
         @Override
         public int hashCode() {
             return Objects.hash(getUuid(), getPrincipalName());
@@ -161,4 +182,5 @@ public class JpaFeedOpsAclEntry {
 
 
     }
+
 }

@@ -161,6 +161,12 @@ public class DefaultAlertCriteria extends BaseAlertCriteria {
         if (getBeforeTime() != null) {
             preds.add(alert.createdTime.lt(getBeforeTime()));
         }
+        if (getAfterTime() != null) {
+            preds.add(alert.createdTime.gt(getAfterTime()));
+        }
+        if (getBeforeTime() != null) {
+            preds.add(alert.createdTime.lt(getBeforeTime()));
+        }
         if (!isIncludeCleared()) {
             preds.add(alert.cleared.isFalse());
         }
@@ -178,8 +184,6 @@ public class DefaultAlertCriteria extends BaseAlertCriteria {
         }
         return preds;
     }
-
-
 
 
 }

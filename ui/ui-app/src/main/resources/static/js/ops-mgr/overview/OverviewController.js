@@ -8,7 +8,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
      * @param {AccessControlService} AccessControlService the access control service
      * @param HttpService
      */
-    function OverviewController($scope, $mdDialog, AccessControlService, HttpService,ServicesStatusData,OpsManagerFeedService) {
+    function OverviewController($scope, $mdDialog,$interval, AccessControlService, HttpService,OpsManagerDashboardService) {
         var self = this;
         /**
          * Indicates that the user is allowed to access the Operations Manager.
@@ -28,11 +28,15 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         self.refreshInterval = 5000;
 
+        var interval = null;
+
         // Stop polling on destroy
         $scope.$on("$destroy", function() {
             HttpService.cancelPendingHttpRequests();
-            ServicesStatusData.stopFetchServiceTimeout();
-            OpsManagerFeedService.stopFetchFeedHealthTimeout();
+            if(interval != null){
+                $interval.cancel(interval);
+                interval = null;
+            }
         });
 
         // Fetch allowed permissions
@@ -52,9 +56,15 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     }
                     self.loading = false;
                 });
-        ServicesStatusData.fetchServiceStatus();
-      //  OpsManagerFeedService.fetchFeedHealth();
+
+        function init(){
+            OpsManagerDashboardService.fetchDashboard();
+            interval = $interval(OpsManagerDashboardService.fetchDashboard,self.refreshInterval);
+        }
+
+        init();
+
     }
 
-    angular.module(moduleName).controller("OverviewController", ["$scope","$mdDialog","AccessControlService","HttpService","ServicesStatusData","OpsManagerFeedService",OverviewController]);
+    angular.module(moduleName).controller("OverviewController", ["$scope","$mdDialog","$interval","AccessControlService","HttpService","OpsManagerDashboardService",OverviewController]);
 });

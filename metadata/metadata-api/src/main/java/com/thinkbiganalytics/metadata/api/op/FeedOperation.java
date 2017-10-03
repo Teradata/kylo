@@ -47,7 +47,9 @@ public interface FeedOperation extends Serializable {
 
     Map<String, Object> getResults();
 
-    enum State {STARTED, SUCCESS, FAILURE, CANCELED}
+    enum State {STARTED, RUNNING,  SUCCESS, FAILURE, CANCELED, ABANDONED}
+
+    enum FeedType {CHECK,FEED}
 
     interface ID extends Serializable {
 

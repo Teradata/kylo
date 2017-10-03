@@ -87,6 +87,22 @@ public interface AlertCriteria {
      * @param time the minimum time
      * @return the updated criteria
      */
+    AlertCriteria modifiedBefore(DateTime time);
+
+    /**
+     * Filters alerts to retrieve only those newer than the specified time.
+     *
+     * @param time the maximum time
+     * @return the updated criteria
+     */
+    AlertCriteria modifiedAfter(DateTime time);
+
+    /**
+     * Filters alerts to retrieve only those older than the specified time.
+     *
+     * @param time the minimum time
+     * @return the updated criteria
+     */
     AlertCriteria before(DateTime time);
 
     /**
@@ -105,5 +121,14 @@ public interface AlertCriteria {
     AlertCriteria asServiceAccount(boolean serviceAccount);
 
     boolean isAsServiceAccount();
+
+    /**
+     * if set to true the Manager querying alerts will only query if the manager has changed/updated/created alerts
+     * false will always query
+     * @return
+     */
+    AlertCriteria onlyIfChangesDetected(boolean onlyIfChangesDetected);
+
+    boolean isOnlyIfChangesDetected();
 
 }

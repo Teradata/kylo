@@ -40,6 +40,11 @@ public interface JobStatusCount {
      */
     void setCount(Long count);
 
+    String getFeedId();
+
+
+    void setFeedId(String feedId);
+
     /**
      * Return the feed name
      *

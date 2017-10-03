@@ -27,6 +27,7 @@ import org.joda.time.ReadablePeriod;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,29 +45,47 @@ public interface OpsManagerFeedProvider {
 
     /**
      * Find a feed by its feed name {@link OpsManagerFeed#getName()}
-     *
+     *NOTE: This is Access Controlled and will show only those feeds a user has access to
      * @return the feed
      */
     OpsManagerFeed findByName(String name);
 
+
+    /**
+     * Find a feed by its feed name {@link OpsManagerFeed#getName()}
+     *NOTE: This is NOT Access Controlled and will show any feed that matches
+     * @return the feed
+     */
+    OpsManagerFeed findByNameWithoutAcl(String name);
+
     /**
      * Find a feed by its unique id
-     *
+     * NOTE: This is Access Controlled and will show only those feeds a user has access to
      * @return the feed
      */
     OpsManagerFeed findById(OpsManagerFeed.ID id);
 
     /**
      * Find all feeds matching a list of feed ids
-     *
+     *NOTE: This is Access Controlled and will show only those feeds a user has access to
      * @return the feeds matching the list of ids
      */
     List<? extends OpsManagerFeed> findByFeedIds(List<OpsManagerFeed.ID> ids);
 
     /**
-     * Returns a list of all the feed names
+     *  Returns a list of all the feed categorySystemName.feedSystemName
+     * NOTE: This is Access Controlled and will show only those feeds a user has access to
+     * @return Returns a list of all the feed categorySystemName.feedSystemName
      */
     List<String> getFeedNames();
+
+
+    /**
+     * Get a Map of the category system name to list of feeds
+     * NOTE: This is Access Controlled and will show only those feeds a user has access to
+     * @return a Map of the category system name to list of feeds
+     */
+    public Map<String,List<OpsManagerFeed>> getFeedsGroupedByCategory();
 
     /**
      * Save a feed
@@ -145,17 +164,6 @@ public interface OpsManagerFeedProvider {
      */
     void abandonFeedJobs(String feedName);
 
+    List<? extends FeedSummary> findFeedSummary();
 
-    /**
-     * subscribe to feed deletion events
-     *
-     * @param listener a delete feed listener
-     */
-    void subscribeFeedDeletion(DeleteFeedListener listener);
-
-    /**
-     * listen when feed changes
-     * @param listener
-     */
-    void subscribe(OpsManagerFeedChangedListener listener);
 }

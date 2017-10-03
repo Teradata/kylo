@@ -4,8 +4,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         return {
             restrict: "EA",
             bindToController: {
-                cardTitle: "@",
-                refreshIntervalTime:"=?"
+                cardTitle: "@"
             },
             controllerAs: 'vm',
             scope: true,
@@ -17,13 +16,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         };
     };
 
-    var controller = function ($scope,$rootScope,$http,$interval, OpsManagerFeedService, TableOptionsService,PaginationDataService, TabService,AlertsService, StateService,EventService) {
+    var controller = function ($scope,$rootScope,$http,$interval, OpsManagerFeedService, OpsManagerDashboardService,TableOptionsService,PaginationDataService, TabService,AlertsService, StateService,BroadcastService) {
         var self = this;
         this.pageName="feed-health";
-
-        //Refresh Intervals
-        this.setRefreshInterval = setRefreshInterval;
-        this.clearRefreshInterval = clearRefreshInterval;
 
 
         //Pagination and view Type (list or table)
@@ -41,9 +36,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         this.filter = PaginationDataService.filter(self.pageName);
 
-        //Load the Feeds
-        loadTabData();
-
 
         this.paginationId = function(tab){
             return PaginationDataService.paginationId(self.pageName,tab.title);
@@ -51,8 +43,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         this.currentPage = function(tab){
             return PaginationDataService.currentPage(self.pageName,tab.title);
         }
-
-        this.setRefreshInterval();
 
         this.onTabSelected = function(tab) {
             TabService.selectedTab(self.pageName,tab);
@@ -119,37 +109,10 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
         function loadTabData() {
-            if(!self.refreshing) {
-                self.refreshing = true;
-                var successFn = function (response) {
-                    var feeds = [];
-                    if (response.data) {
-                        //transform the data for UI
-                        self.feeds = response.data.feedSummary;
-                        groupFeedsIntoTabs(response.data.feedSummary);
-
-                        if (self.loading) {
-                            self.loading = false;
-                        }
-                        self.feeds = feeds;
-                    }
-                    self.refreshing = false;
-                    finishedRequest();
-
-                }
-                var errorFn = function (err) {
-                    finishedRequest();
-                }
-                OpsManagerFeedService.fetchFeedSummaryData().then( successFn, errorFn);
-            }
+            self.feeds = OpsManagerDashboardService.feedSummaryData
+            //?? copy objects
+             groupFeedsIntoTabs(self.feeds);
         }
-
-        function finishedRequest() {
-            self.refreshing = false;
-            self.showProgress = false;
-            EventService.broadcastFeedHealthCardRendered();
-        }
-
 
 
         function groupFeedsIntoTabs(feeds){
@@ -199,19 +162,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
 
-        function clearRefreshInterval() {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-            }
-        }
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
+                loadTabData();
+            });
 
-        function setRefreshInterval() {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(loadTabData, self.refreshIntervalTime);
-
-            }
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.FEED_SUMMARY_UPDATED,function(feedSummary){
+                loadTabData();
+            });
         }
         //Util Functions
         function capitalize(string) {
@@ -219,15 +177,21 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
         $scope.$on('$destroy', function(){
-            clearRefreshInterval();
+            //cleanup
         });
+
+        function init() {
+            watchDashboard();
+        }
+
+        init();
 
 
 
     };
 
 
-    angular.module(moduleName).controller('FeedHealthTableCardController', ["$scope","$rootScope","$http","$interval","OpsManagerFeedService","TableOptionsService","PaginationDataService","TabService","AlertsService","StateService","EventService",controller]);
+    angular.module(moduleName).controller('FeedHealthTableCardController', ["$scope","$rootScope","$http","$interval","OpsManagerFeedService","OpsManagerDashboardService","TableOptionsService","PaginationDataService","TabService","AlertsService","StateService","BroadcastService",controller]);
 
     angular.module(moduleName)
         .directive('tbaFeedHealthTableCard', directive);

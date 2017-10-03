@@ -30,6 +30,8 @@ import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.EntityAlert;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
+import com.thinkbiganalytics.jpa.AuditTimestampListener;
+import com.thinkbiganalytics.jpa.AuditedEntity;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 
@@ -51,6 +53,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
@@ -63,7 +66,8 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(name = "KYLO_ALERT")
-public class JpaAlert implements EntityAlert {
+@EntityListeners(AuditTimestampListener.class)
+public class JpaAlert implements EntityAlert, AuditedEntity {
 
     @EmbeddedId
     private AlertId id;
@@ -78,6 +82,13 @@ public class JpaAlert implements EntityAlert {
     @Column(name = "CREATE_TIME")
     @QueryType(PropertyType.COMPARABLE)
     private DateTime createdTime;
+
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
+    @Column(name = "modified_time")
+    private DateTime modifiedTime;
+
+    @Column(name = "modified_time", insertable = false,updatable = false)
+    private Long modifiedTimeMillis;
 
     @Column(name = "CREATE_TIME", insertable = false, updatable = false)
     private Long createdTimeMillis;
@@ -300,6 +311,23 @@ public class JpaAlert implements EntityAlert {
 
     public void setEntityId(AlertEntityId entityId) {
         this.entityId = entityId;
+    }
+
+    public void setCreatedTime(DateTime createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public DateTime getModifiedTime() {
+        return modifiedTime;
+    }
+
+
+    public void setModifiedTime(DateTime modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
+    public Long getModifiedTimeMillis() {
+        return modifiedTimeMillis;
     }
 
     public void addEvent(JpaAlertChangeEvent event) {

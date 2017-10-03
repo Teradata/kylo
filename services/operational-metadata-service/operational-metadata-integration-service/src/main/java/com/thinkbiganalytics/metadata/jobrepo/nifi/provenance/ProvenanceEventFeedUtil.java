@@ -20,14 +20,9 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedChangedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
@@ -45,7 +40,7 @@ import javax.inject.Inject;
 /**
  *
  */
-public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, DeleteFeedListener {
+public class ProvenanceEventFeedUtil {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventFeedUtil.class);
 
@@ -64,74 +59,12 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
     @PostConstruct
     private void init() {
-        opsManagerFeedProvider.subscribe(this);
-        opsManagerFeedProvider.subscribeFeedDeletion(this);
+
     }
-
-    /**
-     * Empty feed object for Loading Cache
-     */
-    public static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
-        @Override
-        public ID getId() {
-            return null;
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
-
-        @Override
-        protected Object clone() throws CloneNotSupportedException {
-            return super.clone();
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public FeedType getFeedType() {
-            return null;
-        }
-
-        @Override
-        public boolean isStream() {
-            return false;
-        }
-
-        @Override
-        public Long getTimeBetweenBatchJobs() {
-            return 0L;
-        }
-    };
-
-    /**
-     * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
-     */
-    LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
 
 
     public ProvenanceEventFeedUtil() {
 
-        // create the loading Cache to get the Feed Manager Feeds.  If its not in the cache, query the JCR store for the Feed object otherwise return the NULL_FEED object
-        opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
-                                                                  @Override
-                                                                  public OpsManagerFeed load(String feedName) throws Exception {
-                                                                      OpsManagerFeed feed = null;
-                                                                      try {
-                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName),
-                                                                                                       MetadataAccess.SERVICE);
-                                                                      } catch (Exception e) {
-
-                                                                      }
-                                                                      return feed == null ? NULL_FEED : feed;
-                                                                  }
-
-                                                              }
-        );
     }
 
     /**
@@ -142,35 +75,32 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
      */
     public boolean validateNiFiFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
-        if(StringUtils.isBlank(feedName)) {
+        if (StringUtils.isBlank(feedName)) {
             feedName = event.getFeedName();
         }
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
-        if(StringUtils.isBlank(processGroupId)){
+        if (StringUtils.isBlank(processGroupId)) {
             processGroupId = event.getFeedProcessGroupId();
         }
         String processorName = getProcessorName(event.getComponentId());
-        if(StringUtils.isBlank(processorName)){
+        if (StringUtils.isBlank(processorName)) {
             processorName = event.getComponentName();
         }
         return StringUtils.isNotBlank(feedName) && StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(processorName);
     }
 
-    public void updateFeed(OpsManagerFeed feed) {
-        opsManagerFeedCache.put(feed.getName(), feed);
-    }
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
-        if(StringUtils.isBlank(feedName)) {
+        if (StringUtils.isBlank(feedName)) {
             feedName = event.getFeedName();
         }
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
-        if(StringUtils.isBlank(processGroupId)){
+        if (StringUtils.isBlank(processGroupId)) {
             processGroupId = event.getFeedProcessGroupId();
         }
         String processorName = getProcessorName(event.getComponentId());
-        if(StringUtils.isBlank(processorName)){
+        if (StringUtils.isBlank(processorName)) {
             processorName = event.getComponentName();
         }
         event.setFeedName(feedName);
@@ -179,8 +109,8 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         setProcessorFlowType(event);
 
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
-            if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            if (feed != null && !OpsManagerFeed.NULL_FEED.equals(feed)) {
                 event.setStream(feed.isStream());
             }
         }
@@ -189,8 +119,8 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
     public OpsManagerFeed getFeed(String feedName) {
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
-            if (feed != null && !ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            if (feed != null && !OpsManagerFeed.NULL_FEED.equals(feed)) {
                 return feed;
             }
         }
@@ -243,7 +173,7 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         return KyloProcessorFlowType.NORMAL_FLOW;
     }
 
-    public boolean isReusableFlowProcessor(String processorId){
+    public boolean isReusableFlowProcessor(String processorId) {
         return getFlowCache().getReusableTemplateProcessorIds().contains(processorId);
     }
 
@@ -258,20 +188,16 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
 
         String feedName = event.getFeedName();
         if (StringUtils.isNotBlank(feedName)) {
-            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
-            if (feed == null || ProvenanceEventFeedUtil.NULL_FEED.equals(feed)) {
+            OpsManagerFeed feed = opsManagerFeedProvider.findByName(feedName);
+            if (feed == null || OpsManagerFeed.NULL_FEED.equals(feed)) {
                 log.debug("Not processing operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
-                opsManagerFeedCache.invalidate(feedName);
+                // opsManagerFeedCache.invalidateFeed(feedName);
                 return false;
             } else {
                 return true;
             }
         }
         return false;
-    }
-
-    public void deletedFeed(String feedName) {
-        opsManagerFeedCache.invalidate(feedName);
     }
 
 
@@ -296,22 +222,6 @@ public class ProvenanceEventFeedUtil implements OpsManagerFeedChangedListener, D
         return nifiFlowCache.getLatest();
     }
 
-
-    @Override
-    public void onFeedChange(OpsManagerFeed newFeed) {
-        updateFeed(newFeed);
-    }
-
-    /**
-     * When a feed is deleted remove it from the cache of feed names
-     *
-     * @param feed a delete feed
-     */
-    @Override
-    public void onFeedDelete(OpsManagerFeed feed) {
-        log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
-        deletedFeed(feed.getName());
-    }
 
     public boolean isNifiFlowCacheAvailable() {
         return nifiFlowCache.isAvailable();

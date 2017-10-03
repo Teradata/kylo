@@ -237,6 +237,20 @@ public interface ExecutedJob {
      */
     void setFeedName(String feedName);
 
+
+
+    /**
+     * Return the feed id associated with this job
+     *
+     * @return the feedId associated with this job
+     */
+    String getFeedId();
+
+    /**
+     * set the feed id associated with this job
+     */
+    void setFeedId(String feedId);
+
     /**
      * Return a user friendly status of this job
      *

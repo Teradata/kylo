@@ -49,17 +49,10 @@ import javax.inject.Inject;
 /**
  * Transforms categories between Feed Manager and Metadata formats.
  */
-public class CategoryModelTransform {
+public class CategoryModelTransform  extends SimpleCategoryModelTransform{
 
     @Inject
     private SecurityModelTransform securityTransform;
-
-
-    /**
-     * Provider for categories
-     */
-    @Inject
-    CategoryProvider categoryProvider;
 
     /**
      * Transform functions for feeds
@@ -67,8 +60,6 @@ public class CategoryModelTransform {
     @Inject
     FeedModelTransform feedModelTransform;
 
-    @Inject
-    private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
 
     /**
      * Transforms the specified Metadata category to a Feed Manager category.
@@ -163,20 +154,7 @@ public class CategoryModelTransform {
      */
     @Nullable
     public FeedCategory domainToFeedCategorySimple(@Nullable final Category domainCategory) {
-        if (domainCategory != null) {
-            FeedCategory category = new FeedCategory();
-            category.setId(domainCategory.getId().toString());
-            category.setIconColor(domainCategory.getIconColor());
-            category.setIcon(domainCategory.getIcon());
-            category.setName(domainCategory.getDisplayName());
-            category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
-            category.setDescription(domainCategory.getDescription());
-            category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
-            category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
-            return category;
-        } else {
-            return null;
-        }
+       return super.domainToFeedCategorySimple(domainCategory,false,false);
     }
 
     /**
@@ -187,7 +165,7 @@ public class CategoryModelTransform {
      */
     @Nonnull
     public List<FeedCategory> domainToFeedCategorySimple(@Nonnull final Collection<Category> domain) {
-        return domain.stream().map(this::domainToFeedCategorySimple).collect(Collectors.toList());
+        return super.domainToFeedCategorySimple(domain,false,false);
     }
 
     /**

@@ -34,8 +34,8 @@ public class DefaultExecutedFeed implements Serializable, ExecutedFeed {
 
     private static final long serialVersionUID = 2227858119326404976L;
     private String name;
-    private long feedInstanceId;
-    private long feedExecutionId;
+    private Long feedInstanceId;
+    private Long feedExecutionId;
     private DateTime endTime;
     private String exitCode;
     private String exitStatus;
@@ -77,22 +77,22 @@ public class DefaultExecutedFeed implements Serializable, ExecutedFeed {
     }
 
     @Override
-    public long getFeedInstanceId() {
+    public Long getFeedInstanceId() {
         return feedInstanceId;
     }
 
     @Override
-    public void setFeedInstanceId(long feedInstanceId) {
+    public void setFeedInstanceId(Long feedInstanceId) {
         this.feedInstanceId = feedInstanceId;
     }
 
     @Override
-    public long getFeedExecutionId() {
+    public Long getFeedExecutionId() {
         return feedExecutionId;
     }
 
     @Override
-    public void setFeedExecutionId(long feedExecutionId) {
+    public void setFeedExecutionId(Long feedExecutionId) {
         this.feedExecutionId = feedExecutionId;
     }
 

@@ -76,6 +76,15 @@ public interface Alert {
     DateTime getCreatedTime();
 
     /**
+     * Gets the time when this alert was modified/updated.
+     * This usually is the same as the latest change event.
+     * Note if AlertChanges occur that dont modify the state of the Alert this may not reflect the latest change event.
+     *
+     * @return the time this alert was modified.
+     */
+    DateTime getModifiedTime();
+
+    /**
      * @return the alert source that produced this alert
      */
     AlertSource getSource();

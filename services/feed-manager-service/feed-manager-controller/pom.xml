@@ -123,12 +123,13 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!--
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-operational-metadata-integration-service</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+-->
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>

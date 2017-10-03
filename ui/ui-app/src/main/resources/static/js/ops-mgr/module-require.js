@@ -12,7 +12,8 @@ define(['angular',
         'ops-mgr/services/OpsManagerRestUrlService',
         'ops-mgr/services/ProvenanceEventStatsService',
         'ops-mgr/services/ServicesStatusService',
-        'ops-mgr/services/TabService'
+        'ops-mgr/services/TabService',
+        'ops-mgr/services/OpsManagerDashboardService'
        ],function() {
 
 });

@@ -46,6 +46,8 @@ public interface JpaAlertRepository extends JpaRepository<JpaAlert, JpaAlert.ID>
     @Query("select distinct alert.typeString from JpaAlert as alert")
     Set<String> findAlertTypes();
 
+    @Query("select max(alert.modifiedTimeMillis) from JpaAlert as alert")
+    Long findMaxUpdatedTime();
 
 
 }

@@ -13,7 +13,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          data.fetchFeedHealthInterval = null;
          data.feedHealth = {};
 
-         data.SPECIFIC_FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
+        // data.SPECIFIC_FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
 
          data.SPECIFIC_FEED_HEALTH_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
 

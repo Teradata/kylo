@@ -2,7 +2,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * thinkbig-feed-manager-core
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%

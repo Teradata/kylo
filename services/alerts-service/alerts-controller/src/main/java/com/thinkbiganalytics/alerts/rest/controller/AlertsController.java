@@ -54,6 +54,7 @@ import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider;
+import com.thinkbiganalytics.alerts.api.core.AlertCriteriaInput;
 import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
@@ -255,7 +256,9 @@ public class AlertsController {
 
     private AlertCriteria createCriteria(Integer limit, String type, String subtype,String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
+        new AlertCriteriaInput.Builder().limit(limit).type(type).subtype(subtype).state(stateStr).level(levelStr).before(before).after(after).cleared(cleared).applyToCriteria(criteria);
 
+        /*
         if (limit != null) {
             criteria.limit(limit);
         }
@@ -300,7 +303,7 @@ public class AlertsController {
         if (cleared != null) {
             criteria.includedCleared(Boolean.parseBoolean(cleared));
         }
-
+*/
         return criteria;
     }
 

@@ -378,6 +378,7 @@ public class AggregatingAlertProviderTest {
         private AlertSource source;
         private boolean actionable;
         private DateTime createdTime;
+        private DateTime modifiedTime;
         private boolean cleared = false;
 
         public TestAlert(AlertSource src) {
@@ -396,6 +397,7 @@ public class AggregatingAlertProviderTest {
             this.source = src;
             this.actionable = actionable;
             this.createdTime = created;
+            this.modifiedTime = created;
         }
 
         @Override
@@ -453,6 +455,12 @@ public class AggregatingAlertProviderTest {
             return Collections.singletonList(new TestChangeEvent(this));
         }
 
+
+        @Override
+        public DateTime getModifiedTime() {
+            return modifiedTime;
+        }
+
         @Override
         @SuppressWarnings("unchecked")
         public <C extends Serializable> C getContent() {
@@ -474,6 +482,7 @@ public class AggregatingAlertProviderTest {
         public DateTime getChangeTime() {
             return this.time;
         }
+
 
         @Override
         public String getDescription() {

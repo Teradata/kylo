@@ -83,7 +83,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     protected static FeedOperation.State asOperationState(ExecutionStatus status) {
         switch (status) {
             case ABANDONED:
-                return State.CANCELED;
+                return State.ABANDONED;
             case COMPLETED:
                 return State.SUCCESS;
             case FAILED:
@@ -106,7 +106,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     protected static FeedOperation.State asOperationState(BatchJobExecution.JobStatus status) {
         switch (status) {
             case ABANDONED:
-                return State.CANCELED;
+                return State.ABANDONED;
             case COMPLETED:
                 return State.SUCCESS;
             case FAILED:

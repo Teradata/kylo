@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedId;
 
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
@@ -35,11 +36,14 @@ import org.joda.time.ReadablePeriod;
  */
 public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
 
+    private OpsManagerFeedId opsManagerFeedId;
     private String feedName;
+    private String feedId;
     private String jobName;
     private String status;
     private DateTime date;
     private Long count;
+
 
     public JpaBatchJobExecutionStatusCounts() {
 
@@ -126,5 +130,29 @@ public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
         this.date = date;
     }
 
+    @Override
+    public String getFeedId() {
+        if (feedId == null && opsManagerFeedId != null) {
+            feedId = opsManagerFeedId.toString();
 
+        }
+        return feedId;
+    }
+
+    @Override
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
+
+
+    public OpsManagerFeedId getOpsManagerFeedId() {
+        return opsManagerFeedId;
+    }
+
+    public void setOpsManagerFeedId(OpsManagerFeedId opsManagerFeedId) {
+        this.opsManagerFeedId = opsManagerFeedId;
+        if (feedId == null && opsManagerFeedId != null) {
+            this.feedId = opsManagerFeedId.toString();
+        }
+    }
 }

@@ -30,5 +30,6 @@
   <include file="latest_feed_job_vw.xml" relativeToChangelogFile="true"/>
   <include file="latest_finished_feed_job_vw.xml" relativeToChangelogFile="true"/>
   <include file="feed_health_vw.xml" relativeToChangelogFile="true"/>
+  <include file="feed_summary_vw.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

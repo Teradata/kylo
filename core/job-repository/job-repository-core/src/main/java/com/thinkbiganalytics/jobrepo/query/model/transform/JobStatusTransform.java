@@ -42,6 +42,7 @@ public class JobStatusTransform {
             count.setDate(domain.getDate().toDate());
         }
         count.setFeedName(domain.getFeedName());
+        count.setFeedId(domain.getFeedId());
         count.setStatus(domain.getStatus());
         return count;
     }

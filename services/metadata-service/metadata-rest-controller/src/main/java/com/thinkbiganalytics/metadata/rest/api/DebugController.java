@@ -137,7 +137,7 @@ public class DebugController {
         
         FeedOperation.ID opId = null;
         FeedOperation.State state = FeedOperation.State.valueOf(stateStr.toUpperCase());
-        OperationStatus opStatus = new OperationStatus(feedName, opId, state, status);
+        OperationStatus opStatus = new OperationStatus(null,feedName,null, opId, state, status);
         FeedOperationStatusEvent event = new FeedOperationStatusEvent(opStatus);
 
         this.eventService.notify(event);

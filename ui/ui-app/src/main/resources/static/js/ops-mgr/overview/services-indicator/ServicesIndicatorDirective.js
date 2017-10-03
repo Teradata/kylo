@@ -5,8 +5,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             restrict: "EA",
             scope: {},
             bindToController: {
-                panelTitle: "@",
-                refreshIntervalTime: "=?"
+                panelTitle: "@"
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/services-indicator/services-indicator-template.html',
@@ -20,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http,$mdDialog,$mdPanel, $interval, $timeout,ServicesStatusData) {
+    var controller = function ($scope, $element, $http,$mdDialog,$mdPanel, $interval, $timeout,ServicesStatusData,OpsManagerDashboardService,BroadcastService) {
         var self = this;
         this.dataLoaded = false;
 
@@ -73,9 +72,19 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         this.chartData.push({key: "UNHEALTHY", value: 0})
         this.chartData.push({key: "WARNING", value: 0})
 
-        this.refreshIntervalTime = angular.isUndefined(self.refreshIntervalTime) ? 5000 : self.refreshIntervalTime;
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
 
-        ServicesStatusData.setFetchTimeout(this.refreshIntervalTime);
+                ServicesStatusData.transformServicesResponse(OpsManagerDashboardService.dashboard.serviceStatus);
+                var services = ServicesStatusData.services;
+                var servicesArr = [];
+                for(var k in services) {
+                    servicesArr.push(services[k]);
+                }
+                self.indicator.addServices(servicesArr);
+                self.dataLoaded = true;
+            });
+        }
 
 
         this.openDetailsDialog = function(key){
@@ -230,41 +239,16 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-
-        $scope.$watch(
-            function () {
-                return ServicesStatusData.services;
-            },
-            function (newVal) {
-                var servicesArr = [];
-                for(var k in newVal) {
-                    servicesArr.push(newVal[k]);
-                }
-                self.indicator.addServices(servicesArr);
-                self.dataLoaded = true;
-            },true
-        );
-
-
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-            }
-        }
-
-        this.setRefreshInterval = function () {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(self.getIndicatorMetrics, self.refreshIntervalTime);
-
-            }
-        }
-
-
         $scope.$on('$destroy', function () {
-           self.clearRefreshInterval();
+            //cleanup
         });
+
+
+        function init(){
+            watchDashboard();
+        }
+        init();
+
     };
 
 
@@ -307,7 +291,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$mdDialog","$mdPanel","$interval","$timeout","ServicesStatusData",controller]);
+    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$mdDialog","$mdPanel","$interval","$timeout","ServicesStatusData","OpsManagerDashboardService","BroadcastService",controller]);
 
 
     angular.module(moduleName)

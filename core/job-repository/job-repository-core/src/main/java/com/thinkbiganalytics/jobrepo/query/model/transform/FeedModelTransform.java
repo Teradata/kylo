@@ -28,8 +28,10 @@ import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
+import com.thinkbiganalytics.metadata.api.feed.FeedSummary;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 
 import java.util.Collections;
@@ -124,6 +126,38 @@ public class FeedModelTransform {
     }
 
     /**
+     * Transform the FeedHealth object into an Executed feed
+     *
+     * @return the ExecutedFeed from the FeedHealth object
+     */
+    public static ExecutedFeed executedFeed(FeedSummary feedSummary) {
+
+        DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
+        executedFeed.setFeedExecutionId(feedSummary.getJobExecutionId());
+        executedFeed.setStartTime(feedSummary.getStartTime());
+        executedFeed.setEndTime(feedSummary.getEndTime());
+        if(feedSummary.getExitCode() != null) {
+            executedFeed.setExitCode(feedSummary.getExitCode().name());
+        }
+        else {
+            executedFeed.setExitCode(ExecutionConstants.ExitCode.UNKNOWN.name());
+        }
+        executedFeed.setExitStatus(feedSummary.getExitMessage());
+        if(feedSummary.getStatus() != null) {
+            executedFeed.setStatus(ExecutionStatus.valueOf(feedSummary.getStatus().name()));
+        }
+        else {
+            executedFeed.setStatus(ExecutionStatus.UNKNOWN);
+        }
+        executedFeed.setName(feedSummary.getFeedName());
+        executedFeed.setRunTime(ModelUtils.runTime(feedSummary.getStartTime(), feedSummary.getEndTime()));
+        executedFeed.setTimeSinceEndTime(ModelUtils.timeSince(feedSummary.getStartTime(), feedSummary.getEndTime()));
+        executedFeed.setFeedInstanceId(feedSummary.getJobInstanceId());
+        return executedFeed;
+
+    }
+
+    /**
      * Transforms the FeedHealth domain object to the Rest model object
      */
     public static List<FeedHealth> feedHealth(List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> domain) {
@@ -149,6 +183,25 @@ public class FeedModelTransform {
         feedHealth.setRunningCount(domain.getRunningCount());
         return feedHealth;
     }
+
+
+    /**
+     * Transform the FeedHealth domain object to the REST friendly FeedHealth object
+     *
+     * @return the transformed FeedHealth object
+     */
+    public static FeedHealth feedHealth(FeedSummary domain) {
+        FeedHealth feedHealth = new DefaultFeedHealth();
+        feedHealth.setUnhealthyCount(domain.getFailedCount());
+        feedHealth.setHealthyCount(domain.getCompletedCount());
+        feedHealth.setFeed(domain.getFeedName());
+        feedHealth.setFeedId(domain.getFeedId() != null ? domain.getFeedId().toString() : null);
+        feedHealth.setLastOpFeed(executedFeed(domain));
+        feedHealth.setStream(domain.isStream());
+        feedHealth.setRunningCount(domain.getRunningCount());
+        return feedHealth;
+    }
+
 
     /**
      * Transforms the feed object to the REST friendly FeedHealth object, assuming the feed has not yet executed.

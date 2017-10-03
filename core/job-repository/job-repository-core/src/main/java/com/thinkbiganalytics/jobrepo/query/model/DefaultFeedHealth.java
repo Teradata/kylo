@@ -130,25 +130,7 @@ public class DefaultFeedHealth implements FeedHealth {
      */
     @Override
     public boolean isHealthy() {
-
-        if (true) {
-            return getUnhealthyCount() == 0L;
-        }
-        boolean healthy = true;
-        ExecutionStatus lastOpFeedStatus = null;
-        if (lastOpFeed != null) {
-            lastOpFeedStatus = lastOpFeed.getStatus();
-            healthy =
-                !ExecutionStatus.FAILED.equals(lastOpFeedStatus) && !ExecutionStatus.UNKNOWN.equals(lastOpFeedStatus)
-                && !ExecutionStatus.ABANDONED.equals(lastOpFeedStatus);
-            //If the Feed fully completed, but it did so with a Failed Exit Code then markt his as unhealthy.
-            if (ExecutionStatus.COMPLETED.equals(lastOpFeedStatus) && ExitStatus.FAILED.getExitCode()
-                .equalsIgnoreCase(lastOpFeed.getExitCode())) {
-                healthy = false;
-            }
-
-        }
-        return healthy;
+     return getUnhealthyCount() == 0L;
     }
 
     @Override

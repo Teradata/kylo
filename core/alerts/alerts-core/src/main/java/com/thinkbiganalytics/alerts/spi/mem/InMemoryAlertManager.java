@@ -88,6 +88,8 @@ public class InMemoryAlertManager implements AlertManager {
 
     private AlertManagerId id = new AlertManagerId();
 
+    private DateTime lastUpdated;
+
     @Override
     public ID getId() {
         return id;
@@ -300,6 +302,7 @@ public class InMemoryAlertManager implements AlertManager {
         }
 
         LOG.info("Alert added - pending notifications: {}", count);
+        lastUpdated = DateTime.now();
 
         if (count > 0) {
             signalReceivers();
@@ -326,6 +329,11 @@ public class InMemoryAlertManager implements AlertManager {
 
             InMemoryAlertManager.this.changeCount.getAndAdd(-count);
         });
+    }
+
+    @Override
+    public Long getLastUpdatedTime() {
+        return lastUpdated != null ? lastUpdated.getMillis() : null;
     }
 
     private static class AlertID implements Alert.ID {
@@ -637,6 +645,11 @@ public class InMemoryAlertManager implements AlertManager {
         @Override
         public DateTime getCreatedTime() {
             return this.events.get(this.events.size() - 1).getChangeTime();
+        }
+
+        @Override
+        public DateTime getModifiedTime() {
+            return this.events.get(0).getChangeTime();
         }
 
         @Override

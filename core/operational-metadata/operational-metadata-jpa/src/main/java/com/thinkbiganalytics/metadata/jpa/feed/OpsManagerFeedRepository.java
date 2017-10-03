@@ -40,6 +40,20 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
     JpaOpsManagerFeed findByName(String name);
 
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where feed.name = :feedName"
+           + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    JpaOpsManagerFeed findByNameWithAcl(@Param("feedName") String feedName);
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where feed.id = :id"
+           + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    JpaOpsManagerFeed findByIdWithAcl(@Param("id") OpsManagerFeed.ID id);
+
+
     @Query("select distinct feed from JpaOpsManagerFeed as feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + " where feed.id in(:ids)"
@@ -48,7 +62,7 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
 
     @Query("select distinct feed from JpaOpsManagerFeed as feed "
            + " where feed.id in(:ids)")
-    List<JpaOpsManagerFeed> findByFeedIdsWitouthAcl(@Param("ids") List<OpsManagerFeed.ID> ids);
+    List<JpaOpsManagerFeed> findByFeedIdsWithoutAcl(@Param("ids") List<OpsManagerFeed.ID> ids);
 
     @Query("SELECT distinct feed.name FROM JpaOpsManagerFeed AS feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
@@ -69,10 +83,19 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
            + " where feed.name in(:feedNames)"
            + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
-    List<JpaOpsManagerFeed> findByNameWithAcl(@Param("feedNames") Set<String> feedName);
+    List<JpaOpsManagerFeed> findByNamesWithAcl(@Param("feedNames") Set<String> feedName);
 
 
     @Query("select feed from JpaOpsManagerFeed as feed "
            + " where feed.name in(:feedNames)")
-    List<JpaOpsManagerFeed> findByNameWithoutAcl(@Param("feedNames") Set<String> feedName);
+    List<JpaOpsManagerFeed> findByNamesWithoutAcl(@Param("feedNames") Set<String> feedName);
+
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    List<JpaOpsManagerFeed> findAllWithAcl();
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed ")
+    List<JpaOpsManagerFeed> findAllWithoutAcl();
 }

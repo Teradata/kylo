@@ -23,37 +23,82 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
+import com.thinkbiganalytics.metadata.jpa.cache.AbstractCacheBackedProvider;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
-import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry.PrincipalType;
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
  */
-public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProvider {
-    
+public class JpaFeedOpsAccessControlProvider extends AbstractCacheBackedProvider<JpaFeedOpsAclEntry, JpaFeedOpsAclEntry.EntryId> implements FeedOpsAccessControlProvider {
+
     @Inject
+    private MetadataEventService eventService;
+
     private FeedOpsAccessControlRepository repository;
 
+    @Inject
+    private FeedAclCache feedAclCache;
+
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    @Autowired
+    public JpaFeedOpsAccessControlProvider(FeedOpsAccessControlRepository feedOpsAccessControlRepository){
+        super(feedOpsAccessControlRepository);
+        this.repository = feedOpsAccessControlRepository;
+    }
+
+    @PostConstruct
+    private void init(){
+        subscribeListener(feedAclCache);
+        //initially populate
+        metadataAccess.read(() ->populateCache(), MetadataAccess.SERVICE );
+    }
+
+    @Override
+    public JpaFeedOpsAclEntry.EntryId getId(JpaFeedOpsAclEntry value) {
+        return  value.getId();
+    }
+
+    @Override
+    public String getClusterMessageKey() {
+        return "FEED_ACL_CACHE_UPDATED";
+    }
+
+    public String getProviderName() {
+        return this.getClass().getName();
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider#grantAccess(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.security.Principal, java.security.Principal[])
-     */
+         * @see com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider#grantAccess(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.security.Principal, java.security.Principal[])
+         */
     @Override
     public void grantAccess(ID feedId, Principal principal, Principal... more) {
         Set<JpaFeedOpsAclEntry> entries = createEntries(feedId, Stream.concat(Stream.of(principal), Arrays.stream(more)));
-        this.repository.save(entries);
+        this.saveList(entries);
+     //   feedAclCache.add(entries);
+      //  notifyChange(feedId, FeedAclChange.FeedAclChangeType.GRANTED,entries);
     }
 
     /* (non-Javadoc)
@@ -71,7 +116,9 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
     @Override
     public void grantAccess(ID feedId, Set<Principal> principals) {
         Set<JpaFeedOpsAclEntry> entries = createEntries(feedId, principals.stream());
-        this.repository.save(entries);
+        this.saveList(entries);
+      //  feedAclCache.add(entries);
+       // notifyChange(feedId, FeedAclChange.FeedAclChangeType.GRANTED,entries);
     }
 
     /* (non-Javadoc)
@@ -89,7 +136,9 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
     @Override
     public void revokeAccess(ID feedId, Principal principal, Principal... more) {
         Set<JpaFeedOpsAclEntry> entries = createEntries(feedId, Stream.concat(Stream.of(principal), Arrays.stream(more)));
-        this.repository.delete(entries);
+        this.delete(entries);
+        //feedAclCache.remove(feedId.toString());
+       // notifyChange(feedId, FeedAclChange.FeedAclChangeType.REVOKED,entries);
     }
     
     /* (non-Javadoc)
@@ -98,7 +147,10 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
     @Override
     public void revokeAccess(ID feedId, Set<Principal> principals) {
         Set<JpaFeedOpsAclEntry> entries = createEntries(feedId, principals.stream());
-        this.repository.delete(entries);
+        this.delete(entries);
+      //  this.repository.delete(entries);
+       // this.feedAclCache.remove(feedId.toString());
+       // notifyChange(feedId, FeedAclChange.FeedAclChangeType.REVOKED,entries);
     }
 
     /* (non-Javadoc)
@@ -106,10 +158,16 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
      */
     @Override
     public void revokeAllAccess(Principal principal, Principal... more) {
+
         Set<String> principalNames = Stream.concat(Stream.of(principal), Arrays.stream(more))
                         .map(Principal::getName)
                         .collect(Collectors.toSet());
-        this.repository.deleteForPrincipals(principalNames);
+        Set<JpaFeedOpsAclEntry> entries = this.repository.findForPrincipals(principalNames);
+        this.delete(entries);
+
+        //Set<UUID>feedIds = this.repository.findFeedIdsForPrincipals(principalNames);
+        //this.repository.deleteForPrincipals(principalNames);
+        //this.notifyChange(feedIds, FeedAclChange.FeedAclChangeType.REVOKED);
     }
 
     /* (non-Javadoc)
@@ -120,7 +178,11 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
         Set<String> principalNames = principals.stream()
                         .map(Principal::getName)
                         .collect(Collectors.toSet());
-        this.repository.deleteForPrincipals(principalNames);
+        Set<JpaFeedOpsAclEntry> entries = this.repository.findForPrincipals(principalNames);
+        this.delete(entries);
+       // Set<UUID>feedIds = this.repository.findFeedIdsForPrincipals(principalNames);
+       // this.repository.deleteForPrincipals(principalNames);
+       // this.notifyChange(feedIds, FeedAclChange.FeedAclChangeType.REVOKED);
     }
 
     /* (non-Javadoc)
@@ -128,7 +190,11 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
      */
     @Override
     public void revokeAllAccess(ID feedId) {
-        this.repository.deleteForFeed(UUID.fromString(feedId.toString()));
+        List<JpaFeedOpsAclEntry> entries = this.repository.findForFeed(UUID.fromString(feedId.toString()));
+        this.delete(entries);
+     //   this.repository.deleteForFeed(UUID.fromString(feedId.toString()));
+      //  this.feedAclCache.remove(feedId.toString());
+      //  notifyChange(feedId, FeedAclChange.FeedAclChangeType.REVOKED,null);
     }
 
     /* (non-Javadoc)
@@ -136,12 +202,12 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
      */
     @Override
     public Set<Principal> getPrincipals(ID feedId) {
-        List<JpaFeedOpsAclEntry> entries = this.repository.findForFeed(UUID.fromString(feedId.toString()));
+        List<JpaFeedOpsAclEntry> entries = findForFeed(feedId.toString());
         return entries.stream().map(e -> asPrincipal(e)).collect(Collectors.toSet());
     }
     
     protected Principal asPrincipal(JpaFeedOpsAclEntry entry) {
-        return entry.getPrincipalType() == PrincipalType.GROUP 
+        return entry.getPrincipalType() == FeedOpsAclEntry.PrincipalType.GROUP
                         ? new GroupPrincipal(entry.getPrincipalName())
                         : new UsernamePrincipal(entry.getPrincipalName());
     }
@@ -149,5 +215,15 @@ public class JpaFeedOpsAccessControlProvider implements FeedOpsAccessControlProv
     protected Set<JpaFeedOpsAclEntry> createEntries(ID feedId, Stream<Principal> stream) {
         return stream.map(p -> new JpaFeedOpsAclEntry(feedId, p)).collect(Collectors.toSet());
     }
+
+    public List<JpaFeedOpsAclEntry> findAll(){
+        return repository.findAll();
+    }
+
+    public List<JpaFeedOpsAclEntry> findForFeed(String feedId) {
+         return this.repository.findForFeed(UUID.fromString(feedId));
+    }
+
+
 
 }

@@ -1,0 +1,28 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>kylo-service-monitor-service-api</artifactId>
+
+  <parent>
+    <artifactId>kylo-service-monitor-service</artifactId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <version>0.8.4-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-service-monitor-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+  </dependencies>
+
+</project>

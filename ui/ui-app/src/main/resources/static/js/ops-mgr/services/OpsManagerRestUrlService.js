@@ -9,16 +9,19 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.FEEDS_BASE = "/proxy/v1/feeds";
         this.JOBS_BASE = "/proxy/v1/jobs";
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
+        this.DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
+
         this.FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
         this.FEED_NAMES_URL = this.FEEDS_BASE + "/names";
         this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";
 
-        this.SPECIFIC_FEED_HEALTH_COUNT_URL = function (feedName) {
+        /*this.SPECIFIC_FEED_HEALTH_COUNT_URL = function (feedName) {
             return self.FEED_HEALTH_COUNT_URL + '/' + feedName + '/';
         }
+        */
 
         this.SPECIFIC_FEED_HEALTH_URL = function (feedName) {
-            return self.FEED_HEALTH_URL + '/' + feedName + '/';
+            return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
         }
         this.FEED_DAILY_STATUS_COUNT_URL = function (feedName) {
             return self.FEEDS_BASE + "/" + feedName + "/daily-status-count";
@@ -39,9 +42,11 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
         this.DAILY_STATUS_COUNT_URL = self.JOBS_BASE + "/daily-status-count/";
 
-        this.RUNNING_OR_FAILED_COUNTS_URL = this.JOBS_BASE + '/running-failed-counts';
+        //this.RUNNING_OR_FAILED_COUNTS_URL = this.JOBS_BASE + '/running-failed-counts';
 
-        this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
+        this.RUNNING_JOB_COUNTS_URL = '/proxy/v1/dashboard/running-jobs';
+
+       // this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
 
         this.RESTART_JOB_URL = function (executionId) {
             return self.JOBS_BASE + "/" + executionId + "/restart";
@@ -104,12 +109,12 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
         this.ALERTS_URL = "/proxy/v1/alerts";
 
-        this.ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/alerts/summary/unhandled";
+        this.ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/dashboard/alerts";
 
         this.ALERT_TYPES = "/proxy/v1/alerts/alert-types";
 
         this.FEED_ALERTS_URL = function(feedName) {
-            return self.FEEDS_BASE +"/"+feedName+"/alerts";
+            return "/proxy/v1/dashboard/alerts/feed-name/"+feedName;
         }
 
         //assessments

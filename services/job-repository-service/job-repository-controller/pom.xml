@@ -45,6 +45,13 @@
     </dependency>
 
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-service-monitor-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>

@@ -5,8 +5,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             restrict: "EA",
             scope: true,
             bindToController: {
-                panelTitle: "@",
-                refreshIntervalTime: "=?"
+                panelTitle: "@"
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html',
@@ -20,9 +19,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService) {
+    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService) {
         var self = this;
-        this.refreshInterval = null;
         this.refreshing = false;
         this.dataLoaded = false;
 
@@ -113,8 +111,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         this.getDataConfidenceSummary = function () {
             if (self.refreshing == false) {
                 self.refreshing = true;
-                var successFn = function (response) {
-                    var data = response.data;
+                    var data = OpsManagerDashboardService.dashboard.dataConfidenceSummary;
                     self.allData = data;
                     if (self.dataLoaded == false) {
                         self.dataLoaded = true;
@@ -123,44 +120,25 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     self.dataMap.Unhealthy.count = data.failedCount;
                     self.updateChart();
                 }
-                var errorFn = function (err) {
-                    self.chartOptions.chart.title = "N/A";
-                    self.dataMap.Healthy.count = 0;
-                    self.dataMap.Unhealthy.count = 0;
-                }
-                var finallyFn = function () {
-                    self.refreshing = false;
-                }
-                $http.get(OpsManagerJobService.DATA_CONFIDENCE_URL).then(successFn).catch(errorFn).finally(finallyFn);
-            }
+                 self.refreshing = false;
         }
 
-
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-            }
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
+                self.getDataConfidenceSummary();
+            });
         }
 
-        this.setRefreshInterval = function () {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(self.getDataConfidenceSummary, self.refreshIntervalTime);
-
-            }
-        }
 
         this.init = function () {
             initializePieChart();
-            self.getDataConfidenceSummary();
-          self.setRefreshInterval();
+           watchDashboard();
         }
 
         this.init();
 
         $scope.$on('$destroy', function () {
-            self.clearRefreshInterval();
+            //cleanup
         });
     };
 
@@ -204,7 +182,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService", controller]);
+    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", controller]);
 
 
     angular.module(moduleName)

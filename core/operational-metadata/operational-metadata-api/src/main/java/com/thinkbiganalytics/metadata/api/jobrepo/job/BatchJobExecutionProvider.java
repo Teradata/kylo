@@ -200,6 +200,9 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     List<JobStatusCount> getJobStatusCount(String filter);
 
+
+    List<BatchAndStreamingJobStatusCount> getBatchAndStreamingJobCounts(String filter);
+
     /**
      * Find all flowFiles that are related to the supplied flow file
      *
@@ -208,8 +211,11 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     List<String> findRelatedFlowFiles(String flowFileId);
 
-
     void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream,String status);
+
+    void notifyFailure(BatchJobExecution jobExecution, OpsManagerFeed feed, boolean isStream, String status);
+
+    void notifyStopped(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
 
     void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status);
 

@@ -46,7 +46,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -167,9 +166,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
     public ID resolve(ID id, AlertSource source) {
         if (id instanceof SourceAlertID) {
             return id;
-        }
-        else {
-         return new SourceAlertID(id,source);
+        } else {
+            return new SourceAlertID(id, source);
         }
     }
 
@@ -239,7 +237,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertSource src = getSource(alertId.sourceId);
 
         if (src != null) {
-            return getAlert(alertId.alertId, src,false);
+            return getAlert(alertId.alertId, src, false);
         } else {
             return null;
         }
@@ -250,12 +248,11 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertSource src = getSource(alertId.sourceId);
 
         if (src != null) {
-            return getAlert(alertId.alertId, src,true);
+            return getAlert(alertId.alertId, src, true);
         } else {
             return null;
         }
     }
-
 
 
     /* (non-Javadoc)
@@ -278,6 +275,12 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      */
     @Override
     public Iterator<? extends Alert> getAlertsAfter(DateTime time) {
+        return getAlerts(criteria().after(time));
+    }
+
+
+    @Override
+    public Iterator<? extends Alert> getAlertsModifiedAfter(DateTime time) {
         return getAlerts(criteria().after(time));
     }
 
@@ -346,10 +349,9 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
     }
 
     public Optional<Alert> getAlert(Alert.ID id, AlertSource src, boolean asServiceAccount) {
-        if(asServiceAccount) {
+        if (asServiceAccount) {
             return src.getAlertAsServiceAccount(id).map(alert -> wrapAlert(alert, src));
-        }
-        else {
+        } else {
             return src.getAlert(id).map(alert -> wrapAlert(alert, src));
         }
     }
@@ -381,7 +383,6 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             })
             .flatMap(s -> s);
     }
-
 
 
     private void notifyChanged(Alert alert) {
@@ -465,7 +466,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertManager mgr = this.managers.get(srcId.sourceId);
 
         if (mgr != null) {
-            return getAlert(srcId.alertId, mgr,true)
+            return getAlert(srcId.alertId, mgr, true)
                 .filter(alert -> alert.isActionable())
                 .map(alert -> new SimpleEntry<>(unwrapAlert(alert), mgr))
                 .orElse(null);
@@ -662,7 +663,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
 
         @Override
         public <C extends Serializable> Alert updateAlertChange(String description, C content) {
-            return delegate.updateAlertChange(description,content);
+            return delegate.updateAlertChange(description, content);
         }
 
         @Override

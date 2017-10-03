@@ -1,5 +1,4 @@
-package com.thinkbiganalytics.metadata.api.feed;
-
+package com.thinkbiganalytics.metadata.api.event.job;
 /*-
  * #%L
  * thinkbig-operational-metadata-api
@@ -19,12 +18,21 @@ package com.thinkbiganalytics.metadata.api.feed;
  * limitations under the License.
  * #L%
  */
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+
+import java.io.Serializable;
 
 /**
- * Called after Ops Manager updates a Feed
+ * Created by sr186054 on 9/28/17.
  */
-public interface OpsManagerFeedChangedListener {
+public class DataConfidenceJobDetected extends OperationStatus implements Serializable {
 
-    void onFeedChange(OpsManagerFeed newFeed);
+    public DataConfidenceJobDetected(Feed.ID id, String feedName, FeedOperation.FeedType feedType,
+                                     FeedOperation.ID opId, FeedOperation.State state, String status) {
+        super(id, feedName, feedType, opId, state, status);
+    }
+
 
 }
