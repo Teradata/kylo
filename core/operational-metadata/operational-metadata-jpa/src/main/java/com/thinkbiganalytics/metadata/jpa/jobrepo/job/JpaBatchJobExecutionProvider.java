@@ -121,9 +121,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     private BatchJobParametersRepository jobParametersRepository;
 
-
     private OpsManagerFeedRepository opsManagerFeedRepository;
-
 
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
@@ -148,9 +146,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private AlertProvider provider;
-
-    @Inject
-    private OpsManagerFeedProvider opsManagerFeedProvider;
 
     @Inject
     private JobExecutionChangedNotifier jobExecutionChangedNotifier;
@@ -220,9 +215,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param event the provenance event indicating it is the start of a job
      * @return the job execution
      */
-    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         BatchJobInstance jobInstance = createJobInstance(event);
-        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event);
+        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event, feed);
 
         return jobExecution;
     }
@@ -235,7 +230,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param event       the event that started this job execution
      * @return the job execution
      */
-    private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
 
         JpaBatchJobExecution jobExecution = new JpaBatchJobExecution();
         jobExecution.setJobInstance(jobInstance);
@@ -259,7 +254,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         jobExecution.setNifiEventJobExecution(eventJobExecution);
         jobExecution = (JpaBatchJobExecution) save(jobExecution);
 
-        OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(event.getFeedName());
         jobExecutionChangedNotifier.notifyStarted(jobExecution, feed, null);
         //bootstrap the feed parameters
         jobParameters.put(FeedConstants.PARAM__FEED_NAME, event.getFeedName());
@@ -395,7 +389,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
             if (event.isStartOfJob() || event.isFinalJobEvent()) {
-                return getOrCreateStreamJobExecution(event);
+                return getOrCreateStreamJobExecution(event, feed);
             } else {
                 return null;
             }
@@ -404,7 +398,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                 feed = opsManagerFeedRepository.findByName(event.getFeedName());
             }
             if (isProcessBatchEvent(event, feed)) {
-                return getOrCreateBatchJobExecution(event);
+                return getOrCreateBatchJobExecution(event, feed);
             } else {
                 return null;
             }
@@ -476,13 +470,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-    private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
             jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
             if (jobExecution == null) {
-                jobExecution = createNewJobExecution(event);
+                jobExecution = createNewJobExecution(event, feed);
                 isNew = true;
             }
         } catch (OptimisticLockException e) {
@@ -522,9 +516,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
             if (updatedJobType) {
                 //notify operations status
-                //find the feed
-                OpsManagerFeed feed = jobExecution.getJobInstance().getFeed();
-
                 jobExecutionChangedNotifier.notifyDataConfidenceJob(jobExecution, feed, "Data Confidence Job detected ");
             }
 
@@ -533,7 +524,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-    private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
@@ -551,7 +542,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     save(latestJobExecution);
                 }
 
-                jobExecution = createNewJobExecution(event);
+                jobExecution = createNewJobExecution(event, feed);
                 jobExecution.setStream(true);
                 log.info("Created new Streaming Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
             } else {
@@ -591,8 +582,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @return the saved job execution
      */
     @Override
-    public BatchJobExecution save(ProvenanceEventRecordDTO event) {
-        OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(event.getFeedName());
+    public BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event, feed);
         if (jobExecution != null) {
             return save(jobExecution, event);
@@ -918,9 +908,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             msg += abandonMessage;
             execution.setExitMessage(msg);
             //also stop any running steps??
-            save(execution);
             //find the feed associated with the job
             OpsManagerFeed feed = execution.getJobInstance().getFeed();
+
+            save(execution);
+
             jobExecutionChangedNotifier.notifyAbandoned(execution, feed, null);
 
             //clear the associated alert
@@ -934,13 +926,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     public void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream, String status) {
-        OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(feedName);
+        OpsManagerFeed feed = jobExecution.getJobInstance().getFeed();
         notifyFailure(jobExecution, feed, isStream, status);
     }
 
     @Override
-    public void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status) {
-        jobExecutionChangedNotifier.notifySuccess(jobExecution, feedName, isStream, status);
+    public void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status) {
+        jobExecutionChangedNotifier.notifySuccess(jobExecution,feed, status);
     }
 
     @Override

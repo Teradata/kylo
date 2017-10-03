@@ -44,8 +44,6 @@ public class JobExecutionChangedNotifier {
     @Inject
     private MetadataEventService eventService;
 
-    @Inject
-    private OpsManagerFeedProvider opsManagerFeedProvider;
 
 
     protected static FeedOperation.State asOperationState(BatchJobExecution.JobStatus status) {
@@ -71,18 +69,6 @@ public class JobExecutionChangedNotifier {
         }
     }
 
-
-    public void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status) {
-        OpsManagerFeed feed = null;
-        if (feedName != null) {
-            feed = opsManagerFeedProvider.findByNameWithoutAcl(feedName);
-        }
-        if (feed == null) {
-            feed = jobExecution.getJobInstance().getFeed();
-        }
-        notifySuccess(jobExecution, feed, status);
-
-    }
 
     public void notifyStopped(BatchJobExecution jobExecution, OpsManagerFeed feed, String status) {
 
