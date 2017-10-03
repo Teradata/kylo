@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.metadata.api.category;
+package com.thinkbiganalytics.metadata.api.event.category;
 
 /*-
  * #%L
@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.api.category;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import org.apache.commons.lang3.StringUtils;
 

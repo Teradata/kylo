@@ -91,8 +91,6 @@ public class CacheService {
             tasks.add(() -> dataConfidenceJobsCache.getCache(time));
             tasks.add(() -> alertsCache.getCache(time));
             tasks.add(() -> serviceStatusCache.getCache(time));
-            //consider moving the acl list updates to a cluster service listener along with a listener on when the acl was updated
-            // tasks.add(() -> feedAclCache.populateFeedAclCache());
             ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
             try {
                 List<Future<Object>> results = pool.invokeAll(tasks);
