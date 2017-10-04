@@ -42,6 +42,10 @@ public interface NifiFlowCache {
 
     boolean isKyloClustered();
 
+    boolean needsUpdateFromCluster();
+
+    void applyClusterUpdates();
+
     boolean isConnectedToNiFi();
 
     NifiFlowCacheSnapshot getLatest();

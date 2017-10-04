@@ -437,10 +437,14 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         }
     }
 
+    public boolean needsUpdateFromCluster(){
+        return isKyloClustered() && nifiFlowCacheClusterManager.needsUpdate();
+    }
+
     /**
      * if Kylo is clustered it needs to sync any updates from the other Kylo instances before proceeding
      */
-    private void applyClusterUpdates() {
+    public void applyClusterUpdates() {
         List<NifiFlowCacheClusterUpdateMessage> updates = nifiFlowCacheClusterManager.findUpdates();
         Set<String> templateUpdates = new HashSet<>();
         boolean needsUpdates = !updates.isEmpty();

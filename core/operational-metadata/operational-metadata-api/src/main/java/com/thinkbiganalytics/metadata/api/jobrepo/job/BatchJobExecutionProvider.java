@@ -78,7 +78,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      *
      * @return the job execution
      */
-    BatchJobExecution save(ProvenanceEventRecordDTO event);
+    BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
 
     /**
      * save the Provenance event and return the associated job execution
@@ -217,6 +217,6 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
 
     void notifyStopped(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
 
-    void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status);
+    void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
 
 }

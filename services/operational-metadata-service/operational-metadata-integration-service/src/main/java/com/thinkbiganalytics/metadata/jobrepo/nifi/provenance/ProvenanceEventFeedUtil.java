@@ -92,9 +92,23 @@ public class ProvenanceEventFeedUtil {
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
         String feedName = getFeedName(event.getFirstEventProcessorId());
-        if (StringUtils.isBlank(feedName)) {
+        if (StringUtils.isBlank(feedName) && StringUtils.isNotBlank(event.getFeedName())) {
             feedName = event.getFeedName();
         }
+        //if we cant get the feed name check to see if the NiFi flow cache is updated... and wait for it to be updated before processing
+        if(StringUtils.isBlank(feedName) && needsUpdateFromCluster()){
+            log.info("Unable to find the feed for processorId: {}.  Changes were detected from the cluster.  Refreshing the cache ...",event.getFirstEventProcessorId());
+            nifiFlowCache.applyClusterUpdates();
+            feedName = getFeedName(event.getFirstEventProcessorId());
+            if (StringUtils.isNotBlank(feedName)) {
+                log.info("Cache Refreshed.  Found the feed: {} ",feedName);
+            }
+            else {
+                log.info("Cache Refreshed, but still unable to find the feed.  This event {} will not be processed ",event);
+            }
+        }
+
+
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());
         if (StringUtils.isBlank(processGroupId)) {
             processGroupId = event.getFeedProcessGroupId();
@@ -114,6 +128,7 @@ public class ProvenanceEventFeedUtil {
                 event.setStream(feed.isStream());
             }
         }
+
         return event;
     }
 
@@ -217,6 +232,9 @@ public class ProvenanceEventFeedUtil {
         return processorId != null ? getFlowCache().getProcessorIdToProcessorName().get(processorId) : null;
     }
 
+    public boolean needsUpdateFromCluster(){
+        return nifiFlowCache.needsUpdateFromCluster();
+    }
 
     private NifiFlowCacheSnapshot getFlowCache() {
         return nifiFlowCache.getLatest();
