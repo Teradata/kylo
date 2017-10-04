@@ -34,6 +34,7 @@
               <goal>jdeb</goal>
             </goals>
             <configuration>
+              <skip>${skipDebian}</skip>
               <deb>${project.build.directory}/deb/kylo-${project.version}.deb</deb>
               <controlDir>${project.build.directory}/kylo-install-debian-${project.version}-dependencies/deb-control</controlDir>
               <dataSet>

@@ -24,6 +24,7 @@
     <skipTests>false</skipTests>
     <skipITs>${skipTests}</skipITs>
     <skipUTs>${skipTests}</skipUTs>
+    <skipDebian>false</skipDebian>
     <!-- child poms should provide a value to tell where the parent is, using plugin.license.parentRelative property.
          to explicitly override the plugin config data use plugin.license.configDir. -->
     <plugin.license.parentRelative/>
