@@ -144,6 +144,7 @@ public class MetadataModelTransform {
             feedCategory.setSystemName(category.getSystemName());
             feedCategory.setDisplayName(category.getDisplayName());
             feedCategory.setDescription(category.getDescription());
+            feedCategory.setUserProperties(category.getUserProperties());
             return feedCategory;
         };
     }
@@ -159,6 +160,7 @@ public class MetadataModelTransform {
             feed.setSystemName(domain.getName());
             feed.setDisplayName(domain.getDisplayName());
             feed.setDescription(domain.getDescription());
+            feed.setUserProperties(domain.getUserProperties());
             if (domain.getState() != null) feed.setState(Feed.State.valueOf(domain.getState().name()));
             if (domain.getCreatedTime() != null) feed.setCreatedTime(domain.getCreatedTime());
             if (domain.getCurrentInitStatus() != null) feed.setCurrentInitStatus(domainToInitStatus().apply(domain.getCurrentInitStatus()));
