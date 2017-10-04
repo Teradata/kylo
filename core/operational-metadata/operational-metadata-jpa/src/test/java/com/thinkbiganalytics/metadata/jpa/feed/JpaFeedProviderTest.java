@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
@@ -30,6 +31,8 @@ import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 import com.thinkbiganalytics.test.security.WithMockJaasUser;
 
@@ -54,7 +57,7 @@ import javax.inject.Inject;
 public class JpaFeedProviderTest {
 
     @Inject
-    private FeedOpsAccessControlRepository aclRepo;
+    private FeedOpsAccessControlProvider aclProvider;
 
     @Inject
     private OpsFeedManagerFeedProvider feedProvider;
@@ -87,8 +90,7 @@ public class JpaFeedProviderTest {
         final BaseFeed.FeedId feedId = new BaseFeed.FeedId(id);
         final JpaFeedOpsAclEntry userAcl = new JpaFeedOpsAclEntry(feedId, "dladmin", JpaFeedOpsAclEntry.PrincipalType.USER);
         final JpaFeedOpsAclEntry adminAcl = new JpaFeedOpsAclEntry(feedId, "admin", JpaFeedOpsAclEntry.PrincipalType.GROUP);
-        aclRepo.save(userAcl);
-        aclRepo.save(adminAcl);
+        aclProvider.grantAccess(feedId,new UsernamePrincipal("dladmin"), new GroupPrincipal("admin"));
 
         // Verify access to feeds
         metadataAccess.read(() -> {
