@@ -31,7 +31,7 @@
 
   <changeSet id="populate_KYLO_ALERT_modified_time" author="sr186054" >
     <sql  >
-    UPDATE KYLO_ALERT
+      UPDATE KYLO_ALERT
       SET MODIFIED_TIME = CREATE_TIME
       WHERE MODIFIED_TIME IS NULL;
     </sql>
