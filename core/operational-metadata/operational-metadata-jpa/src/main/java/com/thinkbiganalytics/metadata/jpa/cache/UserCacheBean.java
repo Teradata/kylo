@@ -81,7 +81,6 @@ public abstract class UserCacheBean<K, V, T, ID extends Serializable> extends Ca
 
     private List<V> findAll(boolean addAcl) {
         if (feedAclCache.isUserCacheAvailable() && !cache.asMap().isEmpty()) {
-            RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
             return cache.asMap().values().stream().filter(item -> isVaildUserFeed(item, addAcl)).collect(Collectors.toList());
         } else {
             if (addAcl && accessController.isEntityAccessControlled()) {
@@ -94,7 +93,6 @@ public abstract class UserCacheBean<K, V, T, ID extends Serializable> extends Ca
 
     private V findById(K cacheKey, boolean addAcl) {
         if (feedAclCache.isUserCacheAvailable() && !cache.asMap().isEmpty()) {
-            RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
             V value = cache.getIfPresent(cacheKey);
             if (isVaildUserFeed(value, addAcl)) {
                 return value;
