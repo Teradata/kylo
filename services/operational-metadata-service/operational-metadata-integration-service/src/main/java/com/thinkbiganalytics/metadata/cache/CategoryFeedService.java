@@ -1,4 +1,5 @@
 package com.thinkbiganalytics.metadata.cache;
+
 /*-
  * #%L
  * thinkbig-job-repository-controller
@@ -18,6 +19,7 @@ package com.thinkbiganalytics.metadata.cache;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.service.category.SimpleCategoryCache;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
