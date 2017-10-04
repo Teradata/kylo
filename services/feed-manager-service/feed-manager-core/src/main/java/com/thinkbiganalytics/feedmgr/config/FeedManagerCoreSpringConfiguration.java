@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 public class FeedManagerCoreSpringConfiguration {
 
     @Bean
-    public SimpleCategoryModelTransform categoryModelTransform() {
+    public SimpleCategoryModelTransform simpleCategoryModelTransform() {
         return new SimpleCategoryModelTransform();
     }
 
