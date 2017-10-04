@@ -26,7 +26,7 @@
     <createView replaceIfExists="true" viewName="FEED_SUMMARY_VIEW">
       <![CDATA[
     SELECT
-    CONCAT(f.name, COALESCE(e.JOB_EXECUTION_ID,'')) as ID,
+    CONCAT(f.name, COALESCE(e.JOB_EXECUTION_ID,-99)) as ID,
     f.id AS FEED_ID,
     f.name AS FEED_NAME,
     f.FEED_TYPE AS FEED_TYPE,
@@ -68,7 +68,7 @@
     WHERE
     ISNULL(e.END_TIME)
     UNION SELECT
-    CONCAT(v.FEED_NAME, COALESCE(e.JOB_EXECUTION_ID,'')) as ID,
+    CONCAT(v.FEED_NAME, COALESCE(e.JOB_EXECUTION_ID,-99)) as ID,
     v.FEED_ID AS FEED_ID,
     v.FEED_NAME AS FEED_NAME,
     v.FEED_TYPE AS FEED_TYPE,
