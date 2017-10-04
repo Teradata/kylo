@@ -23,6 +23,7 @@ import com.thinkbiganalytics.jms.JmsService;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.servicemonitor.ServiceMonitorRepository;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -70,6 +71,10 @@ public class SpringOperationalMetadataTestConfiguration {
     }
 
 
+    @Bean
+    public ServiceMonitorRepository serviceMonitorRepository() {
+        return Mockito.mock(ServiceMonitorRepository.class);
+    }
 
 
 
