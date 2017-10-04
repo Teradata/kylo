@@ -36,7 +36,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
         this.pageName = "feeds";
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'feeds';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
         this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();

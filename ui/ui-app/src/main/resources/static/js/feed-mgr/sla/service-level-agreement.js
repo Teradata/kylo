@@ -211,7 +211,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         this.pageName = "service-level-agreements";
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'service-level-agreements';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
         this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();

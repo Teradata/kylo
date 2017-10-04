@@ -43,7 +43,7 @@ define(['angular','ops-mgr/service-health/module-name'], function (angular,modul
 
         //Pagination and view Type (list or table)
         this.paginationData = PaginationDataService.paginationData(this.pageName);
-        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50','All']);
+        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.currentPage =PaginationDataService.currentPage(self.pageName)||1;
         this.filter = PaginationDataService.filter(self.pageName);

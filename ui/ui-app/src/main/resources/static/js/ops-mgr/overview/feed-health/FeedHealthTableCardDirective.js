@@ -23,7 +23,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         //Pagination and view Type (list or table)
         this.paginationData = PaginationDataService.paginationData(this.pageName);
-        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50','All']);
+        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
         this.viewType = PaginationDataService.viewType(this.pageName);
 
 
