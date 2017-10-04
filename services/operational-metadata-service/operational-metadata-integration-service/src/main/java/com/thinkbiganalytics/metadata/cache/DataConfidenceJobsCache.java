@@ -117,10 +117,10 @@ public class DataConfidenceJobsCache implements TimeBasedCache<CheckDataJob> {
             } else {
                 needsRefresh.set(false);
             }
-            log.info("Loaded Data Confidence Summary from the database");
+            log.debug("Loaded Data Confidence Summary from the database");
             return latestCache;
         } else {
-            log.info("Returning Cached Data Confidence Summary");
+            log.debug("Returning Cached Data Confidence Summary");
             return latestCache;
         }
     }

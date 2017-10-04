@@ -216,10 +216,10 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             principal = new Principal[0];
         }
         if(criteria.isOnlyIfChangesDetected() && !hasAlertsSummaryChanged(criteria)) {
-            log.info("Returning cached Alerts Summary data");
+            log.debug("Returning cached Alerts Summary data");
             return new ArrayList(latestAlertsSummary.get(criteria.toString()).getAlertSummaryList()).iterator();
         }
-        log.info("Query for Alerts Summary data");
+        log.debug("Query for Alerts Summary data");
         List<AlertSummary> latest = this.metadataAccess.read(() -> {
             DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createSummaryQuery().fetch().stream()
