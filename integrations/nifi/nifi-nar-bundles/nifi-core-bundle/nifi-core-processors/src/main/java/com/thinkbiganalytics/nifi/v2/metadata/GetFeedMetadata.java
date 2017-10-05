@@ -53,7 +53,13 @@ import javax.annotation.Nonnull;
 /**
  * Adds feed metadata as {@link FlowFile} attributes.
  */
-@CapabilityDescription("Adds feed metadata as flow file attributes")
+@CapabilityDescription("Adds feed metadata json as 'feedJson' flow file attribute. "
+                       + "It is then possible to create new Nifi attributes which refer to "
+                       + "feed metadata fields using Nifi's json expressions, "
+                       + "e.g. ${feedJson:jsonPath('$.category.systemName')}. "
+                       + "This processor will cache feed metadata for configurable duration "
+                       + "to avoid making unnecessary calls to remote Metadata service if "
+                       + "this processor is scheduled to run continuously")
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "metadata", "thinkbig"})
