@@ -62,7 +62,7 @@ public class JpaFeedProviderTest {
         String name = "testCategory.testFeed";
         metadataAccess.commit(() -> {
             OpsManagerFeed.ID id = feedProvider.resolveId(UUID.randomUUID().toString());
-            return feedProvider.save(id, name);
+            return feedProvider.save(id, name,false,1000L);
         });
 
         metadataAccess.read(() -> {
