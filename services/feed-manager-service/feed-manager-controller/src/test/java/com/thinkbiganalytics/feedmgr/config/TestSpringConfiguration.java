@@ -21,9 +21,10 @@ package com.thinkbiganalytics.feedmgr.config;
  */
 
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
-import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.InMemoryFeedManagerCategoryService;
@@ -107,7 +108,7 @@ public class TestSpringConfiguration {
 
     @Bean
     public NifiFlowCache nifiFlowCache() {
-        return new NifiFlowCache();
+        return new NifiFlowCacheImpl();
     }
 
     @Bean
