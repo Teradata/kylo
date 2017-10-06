@@ -62,7 +62,7 @@ public class OpsManagerFeedCacheById extends UserCacheBean<OpsManagerFeed.ID, Op
 
     @Override
     public JpaOpsManagerFeed fetchById(OpsManagerFeed.ID cacheKey) {
-        return repository.findOne(cacheKey);
+        return repository.findByIdWithoutAcl(cacheKey);
     }
 
     @Override
