@@ -54,9 +54,11 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     private Set<Alert.Level> levels = new HashSet<>();
     private DateTime afterTime;
     private DateTime beforeTime;
+    private DateTime modifiedAfterTime;
+    private DateTime modifiedBeforeTime;
     private boolean includeCleared = false;
     private boolean asServiceAccount = false;
-
+    private boolean onlyIfChangesDetected = false;
     private String orFilter;
 
 
@@ -68,6 +70,8 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         updated.set(updated.get().limit(this.limit));
         updated.set(updated.get().after(this.afterTime));
         updated.set(updated.get().before(this.beforeTime));
+        updated.set(updated.get().modifiedAfter(this.modifiedAfterTime));
+        updated.set(updated.get().modifiedBefore(this.modifiedBeforeTime));
         updated.set(updated.get().includedCleared(this.isIncludeCleared()));
         this.types.forEach((t) -> updated.set(updated.get().type(t)));
         this.subtypes.forEach((t) -> updated.set(updated.get().subtype(t)));
@@ -75,6 +79,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         this.levels.forEach((l) -> updated.set(updated.get().level(l)));
         updated.set(updated.get().orFilter(orFilter));
         updated.set(updated.get().asServiceAccount(this.asServiceAccount));
+        updated.set(updated.get().onlyIfChangesDetected(this.onlyIfChangesDetected));
         return updated.get();
     }
 
@@ -96,6 +101,12 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
             return false;
         }
         if (this.beforeTime != null && !testBeforeTime(alert)) {
+            return false;
+        }
+        if (this.modifiedAfterTime != null && !testModifiedAfterTime(alert)) {
+            return false;
+        }
+        if (this.modifiedBeforeTime != null && !testModifiedBeforeTime(alert)) {
             return false;
         }
         if (!this.testCleared(alert)) {
@@ -165,12 +176,15 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         }
         return this;
     }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertCriteria#after(org.joda.time.DateTime)
      */
     @Override
     public AlertCriteria after(DateTime time) {
-        this.afterTime = time;
+        if (time != null) {
+            this.afterTime = time;
+        }
         return this;
     }
 
@@ -179,7 +193,25 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
      */
     @Override
     public AlertCriteria before(DateTime time) {
-        this.beforeTime = time;
+        if (time != null) {
+            this.beforeTime = time;
+        }
+        return this;
+    }
+
+    @Override
+    public AlertCriteria modifiedBefore(DateTime time) {
+        if (time != null) {
+            this.modifiedBeforeTime = time;
+        }
+        return this;
+    }
+
+    @Override
+    public AlertCriteria modifiedAfter(DateTime time) {
+        if (time != null) {
+            this.modifiedAfterTime = time;
+        }
         return this;
     }
 
@@ -198,8 +230,13 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return this;
     }
 
-    public  AlertCriteria asServiceAccount(boolean serviceAccount) {
+    public AlertCriteria asServiceAccount(boolean serviceAccount) {
         this.asServiceAccount = serviceAccount;
+        return this;
+    }
+
+    public AlertCriteria onlyIfChangesDetected(boolean onlyIfChangesDetected) {
+        this.onlyIfChangesDetected = onlyIfChangesDetected;
         return this;
     }
 
@@ -230,6 +267,16 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return alert.getCreatedTime().isBefore(this.beforeTime);
     }
 
+    protected boolean testModifiedAfterTime(Alert alert) {
+        return alert.getModifiedTime().isAfter(this.modifiedAfterTime);
+    }
+
+
+    protected boolean testModifiedBeforeTime(Alert alert) {
+        return alert.getModifiedTime().isBefore(this.modifiedBeforeTime);
+    }
+
+
     protected boolean testCleared(Alert alert) {
         return !alert.isCleared() || this.includeCleared;
     }
@@ -259,6 +306,14 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return beforeTime;
     }
 
+    protected DateTime getModifiedAfterTime() {
+        return modifiedAfterTime;
+    }
+
+    protected DateTime getModifiedBeforeTime() {
+        return modifiedBeforeTime;
+    }
+
     protected boolean isIncludeCleared() {
         return includeCleared;
     }
@@ -273,5 +328,29 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     public boolean isAsServiceAccount() {
         return asServiceAccount;
+    }
+
+    public boolean isOnlyIfChangesDetected() {
+        return onlyIfChangesDetected;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("BaseAlertCriteria{");
+        sb.append("limit=").append(limit);
+        sb.append(", types=").append(types);
+        sb.append(", subtypes=").append(subtypes);
+        sb.append(", states=").append(states);
+        sb.append(", levels=").append(levels);
+        sb.append(", afterTime=").append(afterTime);
+        sb.append(", beforeTime=").append(beforeTime);
+        sb.append(", modifiedAfterTime=").append(modifiedAfterTime);
+        sb.append(", modifiedBeforeTime=").append(modifiedBeforeTime);
+        sb.append(", includeCleared=").append(includeCleared);
+        sb.append(", asServiceAccount=").append(asServiceAccount);
+        sb.append(", onlyIfChangesDetected=").append(onlyIfChangesDetected);
+        sb.append(", orFilter='").append(orFilter).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

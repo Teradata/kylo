@@ -60,6 +60,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -221,16 +222,17 @@ public class JobsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Abandons all jobs for the specified feed.")
     @ApiResponses(
-        @ApiResponse(code = 200, message = "Returns the feed health.", response = FeedHealth.class)
+        @ApiResponse(code = 204, message = "Return no content", response = Void.class)
     )
-    public FeedHealth abandonAllJobs(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
+    public Response abandonAllJobs(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
 
-        return metadataAccess.commit(() -> {
+        metadataAccess.commit(() -> {
             opsFeedManagerFeedProvider.abandonFeedJobs(feedName);
-            return null;
         });
+
+        return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     /**

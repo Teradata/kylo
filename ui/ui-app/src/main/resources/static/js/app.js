@@ -8,7 +8,7 @@ define([
     'angularAnimate',
     'angularAria',
     'angularMessages',
-    'angular-ui-router',
+    '@uirouter/angularjs',
     'angular-material-expansion-panel',
     'angular-material-icons',
     'angular-material-data-table',
@@ -29,13 +29,14 @@ define([
         window.moment = moment;
     }
 
-     var module = angular.module("kylo", ['ui.router', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons','angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate','ngSanitize','ngTextTruncate',    'ui.grid',
+     var module = angular.module("kylo", ['ui.router', 'ui.router.upgrade', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons',
+                                          'angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate','ngSanitize','ngTextTruncate', 'ui.grid',
                                           'ui.grid.resizeColumns',
                                           'ui.grid.autoResize',
                                           'ui.grid.moveColumns',
                                           'ui.grid.pagination', 'ngMessages']);
 
-    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider',function($mdAriaProvider,$mdThemingProvider, $mdIconProvider){
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider',function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService){
        //disable the aria-label warnings in the console
         $mdAriaProvider.disableWarnings();
 
@@ -60,6 +61,8 @@ define([
 
         $mdThemingProvider.setDefaultTheme('kylo');
 
+        // Tell UI-Router to wait to synchronize the URL (until all bootstrapping is complete)e
+        $urlService.deferIntercept();
     }]);
 
 

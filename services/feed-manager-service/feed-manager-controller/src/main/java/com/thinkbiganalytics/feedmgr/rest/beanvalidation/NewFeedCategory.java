@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.beanvalidation;
  */
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,7 +49,7 @@ public @interface NewFeedCategory {
 
     Class<? extends Payload>[] payload() default {};
 
-    public class Validator implements ConstraintValidator<NewFeedCategory, FeedCategory> {
+    class Validator implements ConstraintValidator<NewFeedCategory, FeedCategory> {
 
         @Override
         public void initialize(final NewFeedCategory newFeedCategory) {
@@ -56,7 +57,15 @@ public @interface NewFeedCategory {
 
         @Override
         public boolean isValid(final FeedCategory feedCategory, final ConstraintValidatorContext constraintValidatorContext) {
-            return feedCategory != null && !StringUtils.isEmpty(feedCategory.getName());
+            if (feedCategory == null)
+                return false;
+            if (StringUtils.isEmpty(feedCategory.getName()))
+                return false;
+            if (StringUtils.isEmpty(feedCategory.getSystemName()))
+                return false;
+
+            //we must be receiving a valid system name
+            return feedCategory.getSystemName().equals(SystemNamingService.generateSystemName(feedCategory.getSystemName()));
         }
 
     }

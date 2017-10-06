@@ -30,6 +30,8 @@ import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.spark.SparkConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +54,8 @@ import scala.tools.nsc.interpreter.NamedParamClass;
 @Component
 public class App {
 
+    private static final Logger log = LoggerFactory.getLogger(App.class);
+
     /**
      * Evaluates a Scala file.
      *
@@ -67,7 +71,17 @@ public class App {
 
         // Load environment
         final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
-        final String script = Files.toString(new File(args[0]), Charsets.UTF_8);
+
+        File scriptFile = new File(args[0]);
+        if (scriptFile.exists() && scriptFile.isFile()) {
+            log.info("Loading script file at {} ", args[0]);
+        } else {
+            log.info("Couldn't find script file at {} will check classpath.", args[0]);
+            String fileName = scriptFile.getName();
+            scriptFile = new File("./" + fileName);
+        }
+
+        final String script = Files.toString(scriptFile, Charsets.UTF_8);
 
         // Prepare bindings
         final List<NamedParam> bindings = new ArrayList<>();

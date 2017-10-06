@@ -207,35 +207,37 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
 
     @Override
     public void sendMessageToOther(final String other, final String type, final Serializable message) {
-        clusterEnabled();
-        try {
-            final Optional<Address> address = getOtherMembers().stream()
-                .filter(member -> other.equalsIgnoreCase(member.toString()))
-                .findFirst();
-            if (address.isPresent()) {
-                log.info("Sending message to {} from {}", address, channel.getAddressAsString());
-                channel.send(address.get(), new StandardClusterMessage(type, message));
-            } else {
-                throw new IllegalArgumentException("Cluster node does not exist: " + other);
+        if(isClustered()) {
+            try {
+                final Optional<Address> address = getOtherMembers().stream()
+                    .filter(member -> other.equalsIgnoreCase(member.toString()))
+                    .findFirst();
+                if (address.isPresent()) {
+                    log.info("Sending message to {} from {}", address, channel.getAddressAsString());
+                    channel.send(address.get(), new StandardClusterMessage(type, message));
+                } else {
+                    throw new IllegalArgumentException("Cluster node does not exist: " + other);
+                }
+            } catch (final Exception e) {
+                e.printStackTrace();
+                //throw send exception
             }
-        } catch (final Exception e) {
-            e.printStackTrace();
-            //throw send exception
         }
     }
 
     @Override
     public void sendMessageToOthers(String type, Serializable message) {
-        clusterEnabled();
-        try {
-            for (Address address : getOtherMembers()) {
-                log.info("Sending message to {} from {} ", address, this.channel.getAddressAsString());
-                ClusterMessage msg = new StandardClusterMessage(type, message);
-                channel.send(address, msg);
+        if(isClustered()) {
+            try {
+                for (Address address : getOtherMembers()) {
+                    log.info("Sending message to {} from {} ", address, this.channel.getAddressAsString());
+                    ClusterMessage msg = new StandardClusterMessage(type, message);
+                    channel.send(address, msg);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                //throw send exception
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            //throw send exception
         }
     }
 

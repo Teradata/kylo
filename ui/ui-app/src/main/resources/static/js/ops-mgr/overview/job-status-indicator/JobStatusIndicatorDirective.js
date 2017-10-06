@@ -7,7 +7,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             controllerAs:'vm',
             bindToController: {
                 panelTitle: "@",
-                refreshIntervalTime:"@"
+                refreshIntervalTime:"=?"
             },
             templateUrl: 'js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html',
             controller: "JobStatusIndicatorController",
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope,$element,$http, $q,$interval,OpsManagerJobService, HttpService,ChartJobStatusService) {
+    var controller = function ($scope,$element,$http, $q,$interval,StateService,OpsManagerJobService,OpsManagerDashboardService, HttpService,ChartJobStatusService,BroadcastService) {
         var self = this;
         this.refreshInterval = null;
         this.dataLoaded = false;
@@ -67,6 +67,13 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 showLegend:false,
                 showXAxis:false,
                 showYAxis:true,
+                lines: {
+                    dispatch: {
+                        'elementClick':function(e){
+                            self.chartClick();
+                        }
+                    }
+                },
                 dispatch: {
 
                 }
@@ -78,6 +85,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             }
         }
 
+        this.chartClick = function(){
+            StateService.OpsManager().Job().navigateToJobs("Running",null);
+        }
         function getRunningFailedCounts() {
                 var successFn = function (response) {
                     if(response){
@@ -100,7 +110,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-                $http.get(OpsManagerJobService.RUNNING_OR_FAILED_COUNTS_URL).then( successFn, errorFn);
+                $http.get(OpsManagerJobService.RUNNING_JOB_COUNTS_URL).then( successFn, errorFn);
 
         };
 
@@ -113,7 +123,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             self.running =0;
             self.failed = 0;
             if(responseData){
-
                 angular.forEach(responseData,function(statusCount,i){
                     if(statusCount.status == 'RUNNING'){
                         self.running = statusCount.count;
@@ -121,7 +130,50 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     else if(statusCount.status =='FAILED'){
                         self.failed = statusCount.count;
                     }
-                })
+                });
+                ensureFeedSummaryMatches(responseData);
+            }
+        }
+
+        /**
+         * Job Status Counts run every second.
+         * Feed Healh/Running data runs every 5 seconds.
+         * if the Job Status changes, update the summary data and notify the Feed Health Card
+         * @param jobStatus the list of Job Status counts by feed
+         */
+        function ensureFeedSummaryMatches(jobStatus) {
+            var summaryData = OpsManagerDashboardService.feedSummaryData;
+            var feedSummaryUpdated = [];
+            var runningFeedNames = [];
+            _.each(jobStatus, function (feedJobStatusCounts) {
+                var feedSummary = summaryData[feedJobStatusCounts.feedName];
+                if (angular.isDefined(feedSummary)) {
+                    var summaryState = feedSummary.state;
+                    if (feedJobStatusCounts.status == "RUNNING") {
+                        runningFeedNames.push(feedJobStatusCounts.feedName);
+                    }
+                    if (feedJobStatusCounts.status == "RUNNING" && summaryState != "RUNNING") {
+                        //set it
+                        feedSummary.state = "RUNNING"
+                        feedSummary.runningCount = summaryData.count
+                        //trigger update of feed summary
+                        feedSummaryUpdated.push(feedSummary);
+                    }
+                }
+            });
+            //any of those that are not in the runningFeedNames are not running anymore
+            var notRunning = _.difference(Object.keys(summaryData), runningFeedNames);
+            _.each(notRunning, function (feedName) {
+                var summary = summaryData[feedName];
+                if (summary && summary.state == "RUNNING") {
+                    summary.state = "WAITING";
+                    summary.runningCount = 0;
+                    feedSummaryUpdated.push(summary);
+                }
+            })
+
+            if (feedSummaryUpdated.length > 0) {
+                BroadcastService.notify(OpsManagerDashboardService.FEED_SUMMARY_UPDATED, feedSummaryUpdated);
             }
         }
 
@@ -187,8 +239,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         this.init = function () {
             refresh();
-       //     self.getJobCountByStatus();
-            self.setRefreshInterval();
+          self.setRefreshInterval();
         }
 
         this.init();
@@ -198,7 +249,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
     };
 
-    angular.module(moduleName).controller('JobStatusIndicatorController', ["$scope","$element","$http","$q","$interval","OpsManagerJobService","HttpService","ChartJobStatusService",controller]);
+    angular.module(moduleName).controller('JobStatusIndicatorController', ["$scope","$element","$http","$q","$interval","StateService","OpsManagerJobService","OpsManagerDashboardService","HttpService","ChartJobStatusService","BroadcastService",controller]);
 
 
     angular.module(moduleName)

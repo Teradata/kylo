@@ -51,6 +51,9 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
     OpsManagerFeed feed;
 
 
+    @Column(name = "FEED_ID", insertable = false, updatable = false)
+    String feedId;
+
     @Column(name = "FEED_NAME", insertable = false, updatable = false)
     String feedName;
 
@@ -205,5 +208,15 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
     public void setStream(boolean stream) {
         isStream = stream;
+    }
+
+
+    @Override
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
     }
 }

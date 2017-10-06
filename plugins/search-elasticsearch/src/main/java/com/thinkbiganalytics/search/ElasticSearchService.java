@@ -63,7 +63,7 @@ public class ElasticSearchService implements Search {
     }
 
     @Override
-    public void delete(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id) {
+    public void delete(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final String schema, @Nonnull final String table) {
         buildTransportClient();
         client.prepareDelete(indexName, typeName, id).execute()
             .addListener(new ActionListener<DeleteResponse>() {

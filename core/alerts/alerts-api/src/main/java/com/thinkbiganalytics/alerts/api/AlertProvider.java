@@ -126,6 +126,14 @@ public interface AlertProvider {
      * Retrieves all alerts that may have been created after the given time.
      *
      * @param time the time from which newer alerts should be returned
+     * @return an iterator on all alerts modified after the specified time
+     */
+     Iterator<? extends Alert> getAlertsModifiedAfter(DateTime time);
+
+    /**
+     * Retrieves all alerts that may have been created after the given time.
+     *
+     * @param time the time from which newer alerts should be returned
      * @return an iterator on all alerts created after the specified time
      */
     Iterator<? extends Alert> getAlertsBefore(DateTime time);

@@ -21,14 +21,17 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.action.Action;
@@ -208,6 +211,13 @@ public interface MetadataService {
     Collection<FeedCategory> getCategories();
 
     /**
+     * Returns the categories
+     * @param includeFeedDetails true to return the list of related feeds.  if true this will be a slower call
+     * @return the categories
+     */
+    Collection<FeedCategory> getCategories(boolean includeFeedDetails);
+
+    /**
      * Return a category matching a system name
      *
      * @param name a category system name
@@ -255,6 +265,28 @@ public interface MetadataService {
     Optional<Set<UserProperty>> getFeedUserFields(@Nonnull String categoryId);
 
     /**
+     * Get all versions of the feed with the specified ID.  The results will
+     * have at least one version: the current feed version.  The results may
+     * also contain the state of the version of each feed itself.
+     * @param feedId the feed's ID
+     * @param includeContent indicates whether the feed content should be included in the results
+     * @return the feed versions
+     */
+    FeedVersions getFeedVersions(String feedId, boolean includeContent);
+
+    /**
+     * Get a version for the given feed and version ID.  The returned 
+     * optional will be empty if no feed exists with the given ID.  A
+     * VersionNotFoundException will 
+     * @param feedId the feed ID
+     * @param versionId the version ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     * @throws VersionNotFoundException if no version exists with the given ID
+     */
+    Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
      * Gets the user-defined fields for all categories and feeds.
      *
      * @return the user-defined fields
@@ -268,4 +300,19 @@ public interface MetadataService {
      * @param userFields the new user-defined fields
      */
     void setUserFields(@Nonnull UserFieldCollection userFields);
+
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId the id of the feed rest model to update
+     */
+    void updateFeedDatasources(String feedId);
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    void updateAllFeedsDatasources();
+
+
 }

@@ -25,8 +25,10 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.Collection;
@@ -39,6 +41,10 @@ public interface NifiFlowCache {
     boolean isAvailable();
 
     boolean isKyloClustered();
+
+    boolean needsUpdateFromCluster();
+
+    void applyClusterUpdates();
 
     boolean isConnectedToNiFi();
 
@@ -54,7 +60,10 @@ public interface NifiFlowCache {
 
     NiFiFlowCacheSync refreshAll(String syncId);
 
+    @Deprecated
     void updateFlow(FeedMetadata feedMetadata, NifiFlowProcessGroup feedProcessGroup);
+
+    void updateFlowForFeed(FeedMetadata feed, String feedProcessGroupId, Collection<ProcessorDTO> processorDTOs, Collection<ConnectionDTO> connectionDTOs);
 
     void updateRegisteredTemplate(RegisteredTemplate template, boolean notifyClusterMembers);
 
@@ -63,4 +72,8 @@ public interface NifiFlowCache {
     void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections);
 
     void subscribe(NiFiFlowCacheListener listener);
+
+
+    void addConnectionToCache(ConnectionDTO connectionDTO);
+
 }

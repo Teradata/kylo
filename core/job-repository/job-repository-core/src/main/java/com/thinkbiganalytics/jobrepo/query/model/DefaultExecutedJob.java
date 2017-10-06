@@ -56,6 +56,7 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
     private Long timeSinceEndTime;
     private String jobType;
     private String feedName;
+    private String feedId;
     private boolean isStream;
 
     public DefaultExecutedJob() {
@@ -80,6 +81,7 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
         this.timeSinceEndTime = job.getTimeSinceEndTime();
         this.jobType = job.getJobType();
         this.feedName = job.getFeedName();
+        this.feedId = job.getFeedId();
     }
 
     @Override
@@ -252,6 +254,14 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
     @Override
     public void setFeedName(String feedName) {
         this.feedName = feedName;
+    }
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
     }
 
     @Override

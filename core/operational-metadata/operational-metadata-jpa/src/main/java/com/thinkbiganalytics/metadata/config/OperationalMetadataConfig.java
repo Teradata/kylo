@@ -22,6 +22,10 @@ package com.thinkbiganalytics.metadata.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.jpa.feed.AugmentableQueryRepositoryFactoryBean;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheById;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JobExecutionChangedNotifier;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
@@ -51,7 +55,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-    basePackages = {"com.thinkbiganalytics.metadata.jpa"},
+    basePackages = {"com.thinkbiganalytics.metadata.jpa", "com.thinkbiganalytics.metadata.jpa.feed.security"},
     transactionManagerRef = "operationalMetadataTransactionManager",
     entityManagerFactoryRef = "operationalMetadataEntityManagerFactory",
     repositoryFactoryBeanClass = AugmentableQueryRepositoryFactoryBean.class)
@@ -152,5 +156,26 @@ public class OperationalMetadataConfig {
     public EvaluationContextExtension securityExtension() {
         return new RoleSetExposingSecurityEvaluationContextExtension();
     }
+
+    @Bean
+    public JobExecutionChangedNotifier jobExecutionChangedNotifier(){
+        return new JobExecutionChangedNotifier();
+    }
+
+    @Bean
+    public OpsManagerFeedCacheByName opsManagerFeedCacheByName() {
+        return new OpsManagerFeedCacheByName();
+    }
+
+    @Bean
+    public OpsManagerFeedCacheById opsManagerFeedCacheById() {
+        return new OpsManagerFeedCacheById();
+    }
+
+    @Bean
+    public FeedAclCache feedAclCache(){
+        return new FeedAclCache();
+    }
+
 
 }

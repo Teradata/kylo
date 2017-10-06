@@ -26,7 +26,7 @@ import java.io.Serializable;
 /**
  * Represents a feed in the operational store.
  */
-public interface OpsManagerFeed {
+public interface OpsManagerFeed extends  Serializable{
 
     /**
      * @return the unique ID of this Feed
@@ -59,7 +59,7 @@ public interface OpsManagerFeed {
     /**
      * The ID for the Feed
      */
-    interface ID extends Serializable {
+    interface ID extends Serializable, Feed.ID {
 
     }
 
@@ -78,6 +78,43 @@ public interface OpsManagerFeed {
      * @return time in millis between start of Job creation.  Set to 0L or -1L to always create a job for every starting event
      */
      Long getTimeBetweenBatchJobs();
+
+     OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
+        @Override
+        public OpsManagerFeed.ID getId() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        public FeedType getFeedType() {
+            return null;
+        }
+
+        @Override
+        public boolean isStream() {
+            return false;
+        }
+
+        @Override
+        public Long getTimeBetweenBatchJobs() {
+            return 0L;
+        }
+    };
 
 
 }

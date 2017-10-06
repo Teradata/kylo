@@ -21,6 +21,13 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.metadata.cache.AlertsCache;
+import com.thinkbiganalytics.metadata.cache.CacheService;
+import com.thinkbiganalytics.metadata.cache.CategoryFeedService;
+import com.thinkbiganalytics.metadata.cache.DataConfidenceJobsCache;
+import com.thinkbiganalytics.metadata.cache.FeedHealthSummaryCache;
+import com.thinkbiganalytics.metadata.cache.RunningJobsCache;
+import com.thinkbiganalytics.metadata.cache.ServiceStatusCache;
 import com.thinkbiganalytics.metadata.jobrepo.StreamingFeedService;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiBulletinExceptionExtractor;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
@@ -83,6 +90,36 @@ public class OperationlMetadataServiceSpringConfiguration {
     @Bean
     public ProvenanceEventReceiver provenanceEventReceiver(){
         return new ProvenanceEventReceiver();
+    }
+
+    @Bean
+    public CacheService cacheService(){
+        return new CacheService();
+    }
+    @Bean
+    public AlertsCache alertsCache(){
+        return new AlertsCache();
+    }
+    @Bean
+    public DataConfidenceJobsCache dataConfidenceJobsCache(){
+        return new DataConfidenceJobsCache();
+    }
+    @Bean
+    public FeedHealthSummaryCache feedHealthSummaryCache(){
+        return new FeedHealthSummaryCache();
+    }
+    @Bean
+    public RunningJobsCache runningJobsCache(){
+        return new RunningJobsCache();
+    }
+    @Bean
+    public ServiceStatusCache serviceStatusCache(){
+        return new ServiceStatusCache();
+    }
+
+    @Bean
+    public CategoryFeedService categoryFeedService() {
+        return new CategoryFeedService();
     }
 
 }

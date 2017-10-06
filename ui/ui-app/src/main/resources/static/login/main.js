@@ -10,6 +10,7 @@ require.config({
         "angularLocalStorage": "../bower_components/angularLocalStorage/dist/angularLocalStorage.min",
         "angularMaterial":"../bower_components/angular-material/angular-material",
         "angularMessages":"../bower_components/angular-messages/angular-messages",
+        "angularCookies": "../bower_components/angular-cookies/angular-cookies",
         "login-app":"login-app",
         "jquery":"../bower_components/jquery/dist/jquery",
         "lz-string": "../bower_components/lz-string/libs/lz-string.min",

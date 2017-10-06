@@ -13,10 +13,12 @@ angular.module(moduleName).factory('ServicesStatusData',
 
             ServicesStatusData.fetchServiceStatusErrorCount = 0;
 
-            ServicesStatusData.fetchServiceStatus = function (successCallback, errorCallback) {
+            ServicesStatusData.setFetchTimeout = function(timeout){
+                ServicesStatusData.FETCH_INTERVAL = timeout;
+            }
 
-                var successFn = function (response) {
-                    var data = response.data;
+            ServicesStatusData.transformServicesResponse = function(services) {
+                    var data = services;
                     ServicesStatusData.fetchServiceStatusErrorCount = 0;
                     angular.forEach(data, function (service, i) {
                         service.componentsCount = service.components.length;
@@ -65,17 +67,18 @@ angular.module(moduleName).factory('ServicesStatusData',
                         else {
                             ServicesStatusData.services[service.serviceName] = service;
                         }
-                        if (service.state == 'DOWN' || service.state == 'WARNING') {
-                   //         AlertsService.addServiceAlert(service);
-                        }
-                        if (service.state == 'UP') {
-                 //           AlertsService.removeServiceAlert(service);
-                        }
                     });
+
+            }
+
+            ServicesStatusData.fetchServiceStatus = function (successCallback, errorCallback) {
+
+                var successFn = function (response) {
+                    var data = response.data;
+                    ServicesStatusData.transformServicesResponse(data);
                     if (successCallback) {
                         successCallback(data);
                     }
-                    ServicesStatusData.fetchServiceTimeout();
                 }
                 var errorFn = function (err) {
                     ServicesStatusData.fetchServiceStatusErrorCount++;
@@ -86,37 +89,12 @@ angular.module(moduleName).factory('ServicesStatusData',
                     if (ServicesStatusData.fetchServiceStatusErrorCount >= 10) {
                         ServicesStatusData.FETCH_INTERVAL = 20000;
                     }
-                    ServicesStatusData.fetchServiceTimeout();
 
                 }
 
                 return $http.get(ServicesStatusData.SERVICES_URL).then(successFn,errorFn);
 
             }
-            ServicesStatusData.startFetchServiceInterval = function () {
-                if (ServicesStatusData.fetchServiceInterval == null) {
-                    ServicesStatusData.fetchServiceStatus();
-
-                    ServicesStatusData.fetchServiceInterval = $interval(function () {
-                        ServicesStatusData.fetchServiceStatus();
-                    }, ServicesStatusData.FETCH_INTERVAL)
-                }
-            }
-
-            ServicesStatusData.fetchServiceTimeout = function () {
-                ServicesStatusData.stopFetchServiceTimeout();
-
-                ServicesStatusData.fetchServiceInterval = $timeout(function () {
-                    ServicesStatusData.fetchServiceStatus();
-                }, ServicesStatusData.FETCH_INTERVAL)
-            }
-
-            ServicesStatusData.stopFetchServiceTimeout = function () {
-                if (ServicesStatusData.fetchServiceInterval != null) {
-                    $timeout.cancel(ServicesStatusData.fetchServiceInterval);
-                }
-            }
-
                 return ServicesStatusData;
         }]);
 });

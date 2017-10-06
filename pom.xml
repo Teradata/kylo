@@ -10,6 +10,7 @@
   <name>kylo</name>
   <description>Kylo</description>
   <inceptionYear>2017</inceptionYear>
+  <url>https://kylo.io</url>
   <organization>
     <name>ThinkBig Analytics</name>
     <url>https://www.thinkbiganalytics.com</url>
@@ -20,6 +21,10 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <skipTests>false</skipTests>
+    <skipITs>${skipTests}</skipITs>
+    <skipUTs>${skipTests}</skipUTs>
+    <skipDebian>false</skipDebian>
     <!-- child poms should provide a value to tell where the parent is, using plugin.license.parentRelative property.
          to explicitly override the plugin config data use plugin.license.configDir. -->
     <plugin.license.parentRelative/>
@@ -71,6 +76,7 @@
     <!-- The maria db driver version is references in the post-install.sh file. Manually update it there if you change it here.  -->
     <mariadb.version>1.5.7</mariadb.version>
     <nifi.version>1.0.0</nifi.version>
+    <nifi.version.override>1.2.0</nifi.version.override>
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
@@ -1011,41 +1017,42 @@
     </pluginManagement>
   </build>
 
+
   <profiles>
     <profile>
       <!--* Run Integration Tests (*IT.java) by selecting `integration-tests` Maven profile-->
       <!--* Integration Tests are not run if profile is not selected-->
-      <!--mvn clean -Pintegration-tests verify-->
+      <!--mvn clean -Pintegration-tests -DskipUTs=true verify-->
 
       <id>integration-tests</id>
       <build>
         <plugins>
           <plugin>
-            <!-- Runs JUnit integration tests -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.19.1</version>
+            <configuration>
+              <skipTests>${skipUTs}</skipTests>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.19.1</version>
             <executions>
               <execution>
-                <id>integration-test</id>
+                <id>run-integration-tests</id>
                 <phase>integration-test</phase>
-                <configuration>
-                  <includes>
-                    <include>**/*IT.class</include>
-                  </includes>
-                </configuration>
                 <goals>
                   <goal>integration-test</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>verify</id>
-                <phase>verify</phase>
-                <goals>
-                  <!-- Will fail the build if there are junit test failures -->
                   <goal>verify</goal>
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <skipTests>${skipTests}</skipTests>
+              <skipITs>${skipITs}</skipITs>
+            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -1166,6 +1173,15 @@
           </plugins>
         </reporting>
       </profile>
+    <profile>
+      <id>nifi.version.override</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <nifi.version>${nifi.version.override}</nifi.version>
+      </properties>
+    </profile>
   </profiles>
 
 </project>

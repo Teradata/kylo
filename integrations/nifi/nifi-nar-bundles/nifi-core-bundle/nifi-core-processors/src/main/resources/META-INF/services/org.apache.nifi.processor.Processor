@@ -8,6 +8,7 @@ com.thinkbiganalytics.nifi.v2.ingest.UpdateRegistration
 com.thinkbiganalytics.nifi.v2.ingest.RouteOnRegistration
 com.thinkbiganalytics.nifi.v2.ingest.DropFeedTables
 com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed
+com.thinkbiganalytics.nifi.v2.metadata.GetFeedMetadata
 #com.thinkbiganalytics.nifi.v2.metadata.BeginFeed
 #com.thinkbiganalytics.nifi.v2.metadata.TerminateDirectoryFeed
 #com.thinkbiganalytics.nifi.v2.metadata.TerminateHiveTableFeed

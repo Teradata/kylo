@@ -89,4 +89,12 @@ public interface AlertManager extends AlertSource {
      * @return the alert that was removed
      */
     Alert remove(Alert.ID id);
+
+    /**
+     * Returns the latest timestamp for when this manager created/updated an alert
+     * @return millis as to when the manager created/updated alerts
+     */
+    Long getLastUpdatedTime();
+
+
 }

@@ -127,6 +127,17 @@ public class JcrPropertyUtil {
         throw new UnsupportedOperationException();
     }
 
+    public static String getIdentifier(Node node) {
+        try {
+            return node.getIdentifier();
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access identifier property of node: " + node, e);
+        }
+    }
+
     public static String getName(Node node) {
         try {
             return node.getName();
@@ -337,7 +348,7 @@ public class JcrPropertyUtil {
             factory = session.getValueFactory();
 
             if (props != null) {
-                JcrMetadataAccess.ensureCheckoutNode(entNode);
+//                JcrVersionUtil.ensureCheckoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     if (entry.getValue() instanceof JcrExtensiblePropertyCollection) {
                         JcrExtensiblePropertyCollection propertyCollection = ((JcrExtensiblePropertyCollection) entry.getValue());
@@ -519,7 +530,7 @@ public class JcrPropertyUtil {
     public static void setWeakReferenceProperty(Node node, String name, Node ref) {
         try {
             //ensure checked out
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -543,7 +554,7 @@ public class JcrPropertyUtil {
     public static void setProperty(Node node, String name, Object value) {
         try {
             //ensure checked out
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -616,7 +627,7 @@ public class JcrPropertyUtil {
             }
 
             final Session session = node.getSession();
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node.hasProperty(propName)) {
                 return Arrays.stream(node.getProperty(propName).getValues())
@@ -647,7 +658,7 @@ public class JcrPropertyUtil {
 
     public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -698,7 +709,7 @@ public class JcrPropertyUtil {
 
     public static boolean removeAllFromSetProperty(Node node, String name) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
@@ -725,7 +736,7 @@ public class JcrPropertyUtil {
 
     public static boolean removeFromSetProperty(Node node, String name, Object value, boolean weakRef) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
+//            JcrVersionUtil.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
@@ -796,8 +807,8 @@ public class JcrPropertyUtil {
             } else if (value instanceof Value) {
                 return (Value) value;
             } else if (value instanceof Node) {
-                return factory.createValue((Node) value, weakRef);
-//                return factory.createValue(((Node) value).getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
+//                return factory.createValue((Node) value, weakRef);
+                return factory.createValue(((Node) value).getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Binary) {
                 return factory.createValue((Binary) value);
             } else if (value instanceof Calendar) {

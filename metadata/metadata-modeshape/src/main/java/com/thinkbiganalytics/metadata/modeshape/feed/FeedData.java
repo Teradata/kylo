@@ -104,7 +104,7 @@ public class FeedData extends JcrPropertiesEntity {
 
     public void updateInitStatus(InitializationStatus status) {
         try {
-            Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION, true);
+            Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION);
             Node statusNode = initNode.addNode(INIT_HISTORY, INIT_STATUS_TYPE);
             statusNode.setProperty(INIT_STATE, status.getState().toString());
             initNode.setProperty(CURRENT_INIT_STATUS, statusNode);

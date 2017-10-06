@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','angular-ui-router','kylo-feedmgr','feed-mgr/visual-query/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','feed-mgr/feeds/module','@uirouter/angularjs','kylo-feedmgr','feed-mgr/visual-query/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
     module.config(["$compileProvider",function($compileProvider) {
@@ -11,9 +11,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
         $compileProvider.preAssignBindingsEnabled(true);
 
         $stateProvider.state(AccessConstants.UI_STATES.DEFINE_FEED.state, {
-            url: '/define-feed',
+            url: '/define-feed?templateId&templateName&feedDescriptor',
             params: {
-                templateId: null
+                templateId: null,
+                templateName:null,
+                feedDescriptor:null,
+                bcExclude_cloning:null,
+                bcExclude_cloneFeedName:null
             },
             views: {
                 'content': {

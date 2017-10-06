@@ -23,33 +23,24 @@ package com.thinkbiganalytics.hive.service;
 
 import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
+import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
-import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
-import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 import com.thinkbiganalytics.schema.DBSchemaParser;
+import com.thinkbiganalytics.schema.QueryRunner;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -143,72 +134,11 @@ public class HiveService {
 
     }
 
-    // TODO: Temporary until we determine how we want to ensure DDL isn't sent through
-    private String safeQuery(String query) {
-        return "SELECT kylo_.* FROM (" + query + ") kylo_ LIMIT 1000";
-    }
-
-    private boolean validateQuery(String query) {
-        String[] validSql = new String[]{"show", "select", "desc", "describe"};
-        String testQuery = StringUtils.trimToEmpty(query).toLowerCase();
-        if (StringUtils.isNotEmpty(testQuery) && Arrays.stream(validSql).anyMatch(start -> testQuery.startsWith(start))) {
-            return true;
-        }
-        return false;
-    }
-
     public QueryResult query(String query) throws DataAccessException {
-        final DefaultQueryResult queryResult = new DefaultQueryResult(query);
-        final List<QueryResultColumn> columns = new ArrayList<>();
-        final Map<String, Integer> displayNameMap = new HashMap<>();
-        if (!validateQuery(query)) {
-            throw new DataRetrievalFailureException("Invalid Query: " + query);
-        }
         return KerberosUtil.runWithOrWithoutKerberos(() -> {
-            try {
-                //  Setting in order to query complex formats like parquet
-                jdbcTemplate.execute("set hive.optimize.index.filter=false");
-                jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
-                    @Override
-                    public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        if (columns.isEmpty()) {
-                            ResultSetMetaData rsMetaData = rs.getMetaData();
-                            for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
-                                String colName = rsMetaData.getColumnName(i);
-                                DefaultQueryResultColumn column = new DefaultQueryResultColumn();
-                                column.setField(rsMetaData.getColumnName(i));
-                                String displayName = rsMetaData.getColumnLabel(i);
-                                column.setHiveColumnLabel(displayName);
-                                //remove the table name if it exists
-                                displayName = StringUtils.contains(displayName, ".") ? StringUtils.substringAfterLast(displayName, ".") : displayName;
-                                Integer count = 0;
-                                if (displayNameMap.containsKey(displayName)) {
-                                    count = displayNameMap.get(displayName);
-                                    count++;
-                                }
-                                displayNameMap.put(displayName, count);
-                                column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
-
-                                column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
-                                column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
-                                columns.add(column);
-                            }
-                            queryResult.setColumns(columns);
-                        }
-                        Map<String, Object> row = new LinkedHashMap<>();
-                        for (QueryResultColumn column : columns) {
-                            row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
-                        }
-                        queryResult.addRow(row);
-                        return row;
-                    }
-                });
-
-            } catch (DataAccessException dae) {
-                dae.printStackTrace();
-                throw dae;
-            }
-            return queryResult;
+            //  Setting in order to query complex formats like parquet
+            jdbcTemplate.execute("set hive.optimize.index.filter=false");
+            return new QueryRunner(jdbcTemplate).query(query);
         }, kerberosHiveConfiguration);
     }
 

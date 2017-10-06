@@ -203,6 +203,15 @@ public interface MetadataProvider {
     Properties getFeedProperties(@Nonnull final String id);
 
     /**
+     * Gets the feed for given category and feed names
+     *
+     * @param category category system name
+     * @param feed feed system name
+     * @return the feed definition
+     */
+    Feed getFeed(@Nonnull final String category, @Nonnull final String feed);
+
+    /**
      * Merges the specified properties into the feed's properties.
      *
      * @param id    the feed id

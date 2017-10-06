@@ -22,7 +22,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
@@ -43,12 +45,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * The specification for a feed and how it should interact with various components.
  */
+@JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
@@ -318,22 +322,22 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     @JsonIgnore
     public String getProfileTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_profile";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_profile" : null;
     }
 
     @JsonIgnore
     public String getInvalidTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_invalid";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_invalid" : null;
     }
 
     @JsonIgnore
     public String getValidTableName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_valid";
+        return getSystemCategoryName() != null ? getSystemCategoryName() + "." + this.getSystemFeedName() + "_valid" : null;
     }
 
     @JsonIgnore
     public String getCategoryAndFeedName() {
-        return FeedNameUtil.fullName(this.category.getSystemName(), this.getSystemFeedName());
+        return getSystemCategoryName() != null ? FeedNameUtil.fullName(getSystemCategoryName(), this.getSystemFeedName()) : null;
     }
 
     public String getFeedId() {
@@ -354,32 +358,32 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     @Override
     public String getCategoryName() {
-        return this.category.getName();
+        return this.category != null ? this.category.getName() : null;
     }
 
     @Override
     public String getCategoryId() {
-        return this.category.getId();
+        return this.category != null ? this.category.getId() : null;
     }
 
     @Override
     public String getCategoryAndFeedDisplayName() {
-        return this.category.getName() + "." + this.getFeedName();
+        return this.category != null ? this.category.getName() + "." + this.getFeedName() : null;
     }
 
     @Override
     public String getSystemCategoryName() {
-        return category.getSystemName();
+        return this.category != null ? this.category.getSystemName() : null;
     }
 
     @Override
     public String getCategoryIcon() {
-        return this.category.getIcon();
+        return this.category != null ? this.category.getIcon() : null;
     }
 
     @Override
     public String getCategoryIconColor() {
-        return this.category.getIconColor();
+        return this.category != null ? this.category.getIconColor() : null;
     }
 
     public String getNifiProcessGroupId() {
@@ -527,4 +531,92 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
     public void setTableOption(Map<String, Object> tableOption) {
         this.tableOption = tableOption;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+            active,
+            category,
+            createDate,
+            dataOwner,
+            dataTransformation,
+            description,
+            feedId,
+            feedName,
+            hadoopAuthorizationType,
+            hadoopSecurityGroups,
+            id,
+            inputProcessorType,
+            isNew,
+            isReusableFeed,
+            nifiProcessGroupId,
+            options,
+            properties,
+            registeredTemplate,
+            schedule,
+            securityGroups,
+            state,
+            systemFeedName,
+            table,
+            tableOption,
+            tags,
+            templateId,
+            templateName,
+            updateDate,
+            usedByFeeds,
+            userDatasources,
+            userProperties,
+            version,
+            versionName
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        
+        FeedMetadata other = (FeedMetadata) obj;
+        
+        return 
+                Objects.equals(active, other.active) &&
+                Objects.equals(category, other.category) &&
+                Objects.equals(createDate, other.createDate) &&
+                Objects.equals(dataOwner, other.dataOwner) &&
+                Objects.equals(dataTransformation, other.dataTransformation) &&
+                Objects.equals(description, other.description) &&
+                Objects.equals(feedId, other.feedId) &&
+                Objects.equals(feedName, other.feedName) &&
+                Objects.equals(hadoopAuthorizationType, other.hadoopAuthorizationType) &&
+                Objects.equals(hadoopSecurityGroups, other.hadoopSecurityGroups) &&
+                Objects.equals(id, other.id) &&
+                Objects.equals(inputProcessorType, other.inputProcessorType) &&
+                Objects.equals(isNew, other.isNew) &&
+                Objects.equals(isReusableFeed, other.isReusableFeed) &&
+                Objects.equals(nifiProcessGroupId, other.nifiProcessGroupId) &&
+                Objects.equals(options, other.options) &&
+                Objects.equals(properties, other.properties) &&
+                Objects.equals(registeredTemplate, other.registeredTemplate) &&
+                Objects.equals(schedule, other.schedule) &&
+                Objects.equals(securityGroups, other.securityGroups) &&
+                Objects.equals(state, other.state) &&
+                Objects.equals(systemFeedName, other.systemFeedName) &&
+                Objects.equals(table, other.table) &&
+                Objects.equals(tableOption, other.tableOption) &&
+                Objects.equals(tags, other.tags) &&
+                Objects.equals(templateId, other.templateId) &&
+                Objects.equals(templateName, other.templateName) &&
+                Objects.equals(updateDate, other.updateDate) &&
+                Objects.equals(usedByFeeds, other.usedByFeeds) &&
+                Objects.equals(userDatasources, other.userDatasources) &&
+                Objects.equals(userProperties, other.userProperties) &&
+                Objects.equals(version, other.version) &&
+                Objects.equals(versionName, other.versionName);
+    }
+
+    
 }

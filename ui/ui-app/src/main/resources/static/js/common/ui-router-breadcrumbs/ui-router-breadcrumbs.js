@@ -1,4 +1,4 @@
-define(['angular','common/module-name','angular-ui-router'], function (angular,moduleName) {
+define(['angular','common/module-name','@uirouter/angularjs'], function (angular,moduleName) {
 
     /**
      * Config

@@ -1,4 +1,4 @@
-define(['angular','angular-ui-router','kylo-feedmgr',
+define(['angular','@uirouter/angularjs','kylo-feedmgr',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedAccessControlDirective',
         'feed-mgr/feeds/define-feed/feed-details/DefineFeedDataProcessingDirective',

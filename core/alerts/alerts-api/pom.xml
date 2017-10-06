@@ -22,5 +22,10 @@
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-util</artifactId>
+      <version>0.8.4-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>

@@ -70,7 +70,7 @@ import javax.jcr.ItemNotFoundException;
 /**
  * This action is upgraded both on upgrade to v0.8.1 and during a fresh install.
  */
-@Component("upgradeAction081")
+@Component("ensureTemplateFeedRelationshipsUpgradeAction081")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeState {
 

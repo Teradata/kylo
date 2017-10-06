@@ -34,7 +34,6 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
     @PolicyProperty(name = "Default Value", hint = "If the value is null it will use this supplied value", required = true)
     private String defaultStr;
 
-
     public DefaultValueStandardizer(@PolicyPropertyRef(name = "Default Value") String defaultStr) {
         this.defaultStr = defaultStr;
     }
@@ -54,7 +53,7 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
 
     public Object convertRawValue(Object value) {
         if (accepts(value)) {
-            if (value == null) {
+            if (value == null ||(value instanceof String && StringUtils.isEmpty((String)value))) {
                 return String.valueOf(defaultStr);
             }
             else {

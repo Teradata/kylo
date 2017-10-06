@@ -62,12 +62,19 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     public Optional<JcrProperties> getPropertiesObject() {
         try {
-            return Optional.ofNullable(JcrUtil.getOrCreateNode(this.node, PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class));
+            return Optional.ofNullable(JcrUtil.getJcrObject(this.node, PROPERTIES_NAME, JcrProperties.class));
         } catch (AccessControlException e) {
             return Optional.empty();
         }
     }
-
+    
+    public Optional<JcrProperties> ensurePropertiesObject() {
+        try {
+            return Optional.of(JcrUtil.getOrCreateNode(this.node, PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class));
+        } catch (AccessControlException e) {
+            return Optional.empty();
+        }
+    }
     public void clearAdditionalProperties() {
         getPropertiesObject().ifPresent(propsObj -> {
             try {
@@ -116,10 +123,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     public Map<String, Object> getAllProperties() {
 
         //first get the other extra mixin properties
-        Map<String, Object> properties = getProperties();
-        if (properties == null) {
-            properties = new HashMap<>();
-        }
+        Map<String, Object> properties = new HashMap<>(getProperties());
         //merge in this nodes properties
         Map<String, Object> thisProperties = super.getProperties();
         if (thisProperties != null) {
@@ -202,7 +206,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
             if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
                 super.setProperty(name, value);
             } else {
-                getPropertiesObject().ifPresent(obj -> obj.setProperty(name, value));
+                ensurePropertiesObject().ifPresent(obj -> obj.setProperty(name, value));
             }
         } catch (AccessControlException e) {
             throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
@@ -228,7 +232,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
             newProps.putAll(props);
         }
         
-        Optional<JcrProperties> propsObj = getPropertiesObject();
+        Optional<JcrProperties> propsObj = ensurePropertiesObject();
         
         if (propsObj.isPresent()) {
             for (Map.Entry<String, Object> entry : newProps.entrySet()) {

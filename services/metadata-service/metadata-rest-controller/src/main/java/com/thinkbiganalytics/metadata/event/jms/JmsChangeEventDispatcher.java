@@ -117,7 +117,7 @@ public class JmsChangeEventDispatcher {
             metadata.read(() -> {
                 Feed feed = feedProvider.getFeed(metadataEvent.getData());
                 jmsEvent.setFeedName(feed.getName());
-                jmsEvent.setCategoryName(feed.getCategory().getName());
+                jmsEvent.setCategoryName(feed.getCategory().getSystemName());
                 return jmsEvent;
             }, MetadataAccess.SERVICE);
 
@@ -137,7 +137,7 @@ public class JmsChangeEventDispatcher {
             metadata.read(() -> {
                 Feed feed = feedProvider.getFeed(event.getData());
                 triggerEv.setFeedName(feed.getName());
-                triggerEv.setCategory(feed.getCategory().getName());
+                triggerEv.setCategory(feed.getCategory().getSystemName());
                 return triggerEv;
             }, MetadataAccess.SERVICE);
 

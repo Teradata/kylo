@@ -151,6 +151,8 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
      */
     void setWaterMarkValue(String waterMarkName, String value);
 
+    Set<String> getTags();
+    
     /**
      * Sets the tags for this feed.
      *
@@ -172,7 +174,9 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void setVersionName(String version);
 
-    enum State {ENABLED, DISABLED, DELETED}
+    void clearSourcesAndDestinations();
+
+    enum State {NEW, ENABLED, DISABLED, DELETED}
 
     interface ID extends Serializable {
 

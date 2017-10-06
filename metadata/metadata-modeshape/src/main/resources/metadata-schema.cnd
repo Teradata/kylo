@@ -247,7 +247,7 @@
     + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
     + tba:data (tba:feedData) = tba:feedData autocreated mandatory
 
-[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable   //, mix:versionable
+[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable
     - tba:systemName (STRING) mandatory
     - tba:category (REFERENCE) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory

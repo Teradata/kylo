@@ -20,10 +20,15 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.jpa.feed.FeedHealthSecuringRepository;
+import com.thinkbiganalytics.metadata.jpa.feed.RepositoryType;
+
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
@@ -60,6 +65,12 @@ public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOps
     @Query("select entry from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
     List<JpaFeedOpsAclEntry> findForFeed(@Param("id") UUID feedId);
 
+   // @Query("select distinct entry.feedId from JpaFeedOpsAclEntry as entry where entry.principalName in (:names)")
+  //  Set<UUID> findFeedIdsForPrincipals(@Param("names") Set<String> principalNames);
+
+    @Query("select entry from JpaFeedOpsAclEntry as entry where entry.principalName in (:names)")
+    Set<JpaFeedOpsAclEntry> findForPrincipals(@Param("names") Set<String> principalNames);
+
     @Modifying
     @Query("delete from JpaFeedOpsAclEntry as entry where entry.principalName in (:names)")
     int deleteForPrincipals(@Param("names") Set<String> principalNames);
@@ -67,4 +78,6 @@ public interface FeedOpsAccessControlRepository extends JpaRepository<JpaFeedOps
     @Modifying
     @Query("delete from JpaFeedOpsAclEntry as entry where entry.feedId = :id")
     int deleteForFeed(@Param("id") UUID feedId);
+
+
 }

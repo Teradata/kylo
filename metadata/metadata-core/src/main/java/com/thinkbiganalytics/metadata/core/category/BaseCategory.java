@@ -51,7 +51,7 @@ public class BaseCategory implements Category {
 
     private String displayName;
 
-    private String name;
+    private String systemName;
 
     private String description;
 
@@ -98,12 +98,13 @@ public class BaseCategory implements Category {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getSystemName() {
+        return systemName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public void setSystemName(String systemName) {
+        this.systemName = systemName;
     }
 
     @Override

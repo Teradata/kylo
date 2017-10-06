@@ -3,12 +3,20 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*-
  * #%L
@@ -19,9 +27,9 @@ import org.joda.time.DateTime;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,11 +37,6 @@ import org.joda.time.DateTime;
  * limitations under the License.
  * #L%
  */
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 /**
  *
@@ -73,11 +76,19 @@ public class Feed implements Serializable {
      * Last modified time
      */
     private DateTime modifiedTime;
+    private Map<String, String> userProperties;
 
     public Feed() {
         super();
     }
-    
+
+    @JsonProperty
+    public String getCollectedUserProperties() {
+        return userProperties != null ? userProperties.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(",")) : "";
+    }
+
     public ActionGroup getAllowedActions() {
         return allowedActions;
     }
@@ -264,6 +275,14 @@ public class Feed implements Serializable {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (systemName != null ? systemName.hashCode() : 0);
         return result;
+    }
+
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
+
+    public void setUserProperties(Map<String, String> userProperties) {
+        this.userProperties = userProperties;
     }
 
     public enum State {ENABLED, DISABLED, DELETED}

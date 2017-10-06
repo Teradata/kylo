@@ -1,4 +1,4 @@
-define(['angular','angular-ui-router','kylo-feedmgr',
+define(['angular','@uirouter/angularjs','kylo-feedmgr',
         'feed-mgr/categories/details/category-definition',
         'feed-mgr/categories/details/category-feed-properties',
         'feed-mgr/categories/details/category-properties',

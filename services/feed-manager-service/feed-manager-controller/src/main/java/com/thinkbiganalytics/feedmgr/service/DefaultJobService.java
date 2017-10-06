@@ -27,6 +27,7 @@ import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
@@ -116,8 +117,9 @@ public class DefaultJobService implements JobService {
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
                 msg += "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone();
                 execution.setExitMessage(msg);
+                OpsManagerFeed feed = execution.getJobInstance().getFeed();
                 this.jobExecutionProvider.save(execution);
-                this.jobExecutionProvider.notifyFailure(execution,null,false,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+                this.jobExecutionProvider.notifyFailure(execution,feed,false,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
 
             }
             return execution;

@@ -35,7 +35,7 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProv
 public class FeedOpsAccessControlConfig {
 
     @Bean
-    public FeedOpsAccessControlProvider feedOpsAccessControlProvider() {
-        return new JpaFeedOpsAccessControlProvider();
+    public FeedOpsAccessControlProvider feedOpsAccessControlProvider(FeedOpsAccessControlRepository feedOpsAccessControlRepository) {
+        return new JpaFeedOpsAccessControlProvider(feedOpsAccessControlRepository);
     }
 }

@@ -20,7 +20,6 @@
   -->
 
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
   <id>dependencies</id>
   <formats>
@@ -223,6 +222,56 @@
       </includes>
     </fileSet>
 
+    <!-- sla email plugin -->
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-email/target</directory>
+      <outputDirectory>setup/plugins/sla-email</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-sla-email-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-email/src/main/resources/conf</directory>
+      <outputDirectory>setup/plugins/sla-email</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>sla.email.properties</include>
+      </includes>
+    </fileSet>
+
+    <!-- end sla email plugin -->
+
+    <!-- jira plugin -->
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-jira/target</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-sla-jira-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/sla-jira/src/main/resources/conf</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>jira.properties</include>
+      </includes>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/integrations/jira/jira-rest-client/target</directory>
+      <outputDirectory>setup/plugins/sla-jira</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-jira-rest-client-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+    <!-- end jira plugin -->
+
     <fileSet>
       <outputDirectory>kylo-services/lib</outputDirectory>
       <directory>${project.parent.parent.basedir}/services/service-app/target/kylo-service-app-${project.version}-distribution/kylo-service-app-${project.version}/lib</directory>
@@ -337,6 +386,16 @@
         <include>kylo-service-monitor-ambari-${project.version}.jar</include>
       </includes>
     </fileSet>
+   
+    <fileSet>
+      <directory>${project.parent.parent.basedir}/plugins/service-monitor-activemq/target</directory>
+      <outputDirectory>setup/plugins</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>kylo-service-monitor-activemq-${project.version}.jar</include>
+      </includes>
+    </fileSet>
+
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/service-monitor-kylo-cluster/target</directory>
       <outputDirectory>setup/plugins</outputDirectory>
@@ -345,6 +404,7 @@
         <include>kylo-service-monitor-kylo-cluster-${project.version}.jar</include>
       </includes>
     </fileSet>
+
 
     <fileSet>
       <directory>${project.parent.basedir}/setup</directory>
@@ -401,6 +461,12 @@
     </file>
     <file>
       <source>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/scripts/es/create-kylo-indexes-es.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/scripts/es/delete-kylo-indexes-es.sh</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>

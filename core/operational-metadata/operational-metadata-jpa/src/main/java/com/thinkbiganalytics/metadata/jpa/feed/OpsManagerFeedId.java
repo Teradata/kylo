@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 import com.thinkbiganalytics.jpa.BaseJpaId;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 
 import java.io.Serializable;
@@ -33,7 +34,7 @@ import javax.persistence.Embeddable;
  * The primary key for a {@link OpsManagerFeed}
  */
 @Embeddable
-public class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsManagerFeed.ID {
+public class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsManagerFeed.ID, Feed.ID {
 
     private static final long serialVersionUID = 6017751710414995750L;
 

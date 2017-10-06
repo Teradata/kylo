@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,8 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
         this.servicesHealth = new ArrayList<>();
 
     }
+
+    private Map<String,ServiceStatusResponse.STATE> previousServiceStatus;
 
 
     @Override
@@ -164,15 +167,29 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
         if(responses != null){
             responses.stream().forEach(serviceStatusResponse ->  {
 
-                if (ServiceStatusResponse.STATE.DOWN.equals(serviceStatusResponse.getState())) {
-                    notifyServiceDown(serviceStatusResponse);
-                } else if (ServiceStatusResponse.STATE.UP.equals(serviceStatusResponse.getState())) {
-                    notifyServiceUp(serviceStatusResponse);
+                if(hasChanged(serviceStatusResponse)) {
+                    if (ServiceStatusResponse.STATE.DOWN.equals(serviceStatusResponse.getState())) {
+                        notifyServiceDown(serviceStatusResponse);
+                    } else if (ServiceStatusResponse.STATE.UP.equals(serviceStatusResponse.getState())) {
+                        notifyServiceUp(serviceStatusResponse);
+                    }
                 }
-
+                if(previousServiceStatus == null) {
+                    previousServiceStatus = new HashMap<>();
+                }
+                previousServiceStatus.put(serviceStatusResponse.getServiceName(),serviceStatusResponse.getState());
             });
         }
 
+    }
+
+    private boolean hasChanged(ServiceStatusResponse response){
+        if(previousServiceStatus == null || !previousServiceStatus.containsKey(response.getServiceName())) {
+            return true;
+        }
+        else {
+            return previousServiceStatus.get(response.getServiceName()) != response.getState();
+        }
     }
 
 

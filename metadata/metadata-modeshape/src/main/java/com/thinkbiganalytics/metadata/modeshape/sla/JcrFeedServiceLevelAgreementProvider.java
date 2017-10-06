@@ -264,37 +264,18 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     @Override
     public boolean removeFeedRelationships(ServiceLevelAgreement.ID id) {
-        try {
-            Session session = getSession();
-            JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
-            if (extensibleEntity != null) {
-                JcrMetadataAccess.ensureCheckoutNode(extensibleEntity.getNode());
-                for (final Feed feed : extensibleEntity.getFeeds()) {
-                    if (feed != null) {
-                        final JcrFeed jcrFeed = (JcrFeed) feed;
-                        JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
-                    }
-                }
-                return extensibleEntity.removeFeedRelationships(id);
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("unable to remove Feed SLA relationships for SLA " + id, e);
+        JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
+        if (extensibleEntity != null) {
+            return extensibleEntity.removeFeedRelationships(id);
+        } else {
+            return false;
         }
-        return false;
     }
 
     public boolean removeAllRelationships(ServiceLevelAgreement.ID id) {
         try {
-            Session session = getSession();
             JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
             if (extensibleEntity != null) {
-                JcrMetadataAccess.ensureCheckoutNode(extensibleEntity.getNode());
-                for (final Feed feed : extensibleEntity.getFeeds()) {
-                    if (feed != null) {
-                        final JcrFeed jcrFeed = (JcrFeed) feed;
-                        JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
-                    }
-                }
                 extensibleEntity.removeFeedRelationships(id);
                 extensibleEntity.getNode().remove();
             }

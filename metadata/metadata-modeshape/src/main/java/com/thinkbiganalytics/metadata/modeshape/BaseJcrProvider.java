@@ -397,11 +397,10 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             appendJoins(bldr, pageable, filter);
             appendFilter(bldr, filter);
             appendSort(bldr, pageable);
-//            appendOffset(bldr, pageable);
+            appendOffset(bldr, pageable);
 
             String query = bldr.toString();
-            List<T> fullList = find(query);
-            List<T> list = fullList.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList());
+            List<T> list = find(query);
             return new PageImpl<>(list, pageable, count);
         } else {
             return new PageImpl<T>(Collections.emptyList());

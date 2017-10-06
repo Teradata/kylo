@@ -85,6 +85,7 @@ public class JobModelTransform {
         job.setStream(jobExecution.isStream());
         if (jobExecution.getJobInstance() != null && jobExecution.getJobInstance().getFeed() != null) {
             job.setFeedName(jobExecution.getJobInstance().getFeed().getName());
+            job.setFeedId(jobExecution.getJobInstance().getFeed().getId().toString());
         }
         return job;
     }
@@ -128,6 +129,8 @@ public class JobModelTransform {
         executedJob.setTimeSinceEndTime(ModelUtils.timeSince(jobExecution.getStartTime(), jobExecution.getEndTime()));
         executedJob.setInstanceId(jobExecution.getJobInstanceId());
         executedJob.setStream(jobExecution.isStream());
+        executedJob.setFeedId(jobExecution.getFeedId());
+        executedJob.setFeedName(jobExecution.getFeedName());
         return executedJob;
 
     }

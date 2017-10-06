@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.api.feed.security;
  */
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Set;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -107,4 +108,9 @@ public interface FeedOpsAccessControlProvider {
      * @return all principals with access
      */
     Set<Principal> getPrincipals(Feed.ID feedId);
+
+    List<? extends FeedOpsAclEntry> findAll();
+
+    List<? extends FeedOpsAclEntry> findForFeed(String feedId);
+
 }

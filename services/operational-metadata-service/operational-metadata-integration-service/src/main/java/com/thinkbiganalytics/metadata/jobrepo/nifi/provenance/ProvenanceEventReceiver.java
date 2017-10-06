@@ -230,7 +230,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
                 /// TRIGGER JOB COMPLETE!!!
                 metadataAccess.commit(() -> {
                     BatchJobExecution batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
-                    if (event.isFailure()) {
+                    if (batchJobExecution.isFailed()) {
                         failedJob(batchJobExecution, event);
                     } else {
                         successfulJob(batchJobExecution, event);
@@ -255,7 +255,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             queryForNiFiErrorBulletins(event);
         }
         log.debug("Failed JOB for Event {} ", event);
-        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(),event.isStream(), null);
+        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(), event.isStream(), null);
     }
 
     /**
@@ -269,7 +269,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     private void successfulJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         log.debug("Success JOB for Event {} ", event);
-        batchJobExecutionProvider.notifySuccess(jobExecution, event.getFeedName(),event.isStream(), null);
+        batchJobExecutionProvider.notifySuccess(jobExecution,jobExecution.getJobInstance().getFeed(), null);
     }
 
     /**

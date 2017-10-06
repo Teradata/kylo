@@ -65,9 +65,10 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
     private static final String FEED_EDIT_FORBIDDEN = "Error saving Feed Not authorized to perform the action: Edit Feeds";
     private static final String FEED_NOT_FOUND = "Error saving Feed Feed not found for id";
+    private static final String TEST_FILE = "access.txt";
 
     private FeedCategory category;
-    private ExportImportTemplateService.ImportTemplate ingestTemplate;
+    private ExportImportTemplateService.ImportTemplate template;
     private FeedMetadata feed;
 
     @Test
@@ -155,12 +156,6 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         assertAnalystCantAccessCategories();
         assertAnalystCantAccessTemplates();
         assertAnalystCantAccessFeeds();
-    }
-
-    @Override
-    public void teardown() {
-        LOG.debug("EntityLevelAccessIT.teardown");
-        super.teardown();
     }
 
     @Override
@@ -278,7 +273,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     }
 
     private FeedMetadata getEditFeedRequest() {
-        FeedMetadata editFeedRequest = getCreateFeedRequest(category, ingestTemplate, feed.getFeedName());
+        FeedMetadata editFeedRequest = makeCreateFeedRequest(category, template, feed.getFeedName(), TEST_FILE);
         editFeedRequest.setId(feed.getId());
         editFeedRequest.setFeedId(feed.getFeedId());
         editFeedRequest.setDescription("New Description");
@@ -303,7 +298,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void createFeedWithAdmin() {
         LOG.debug("EntityLevelAccessIT.createFeedWithAdmin");
         runAs(ADMIN);
-        FeedMetadata feedRequest = getCreateFeedRequest(category, ingestTemplate, "Feed A");
+        FeedMetadata feedRequest = makeCreateFeedRequest(category, template, "Feed A", TEST_FILE);
         feed = createFeed(feedRequest).getFeedMetadata();
     }
 
@@ -317,7 +312,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private void createTemplateWithAdmin() {
         LOG.debug("EntityLevelAccessIT.createTemplateWithAdmin");
         runAs(ADMIN);
-        ingestTemplate = importDataIngestTemplate();
+        template = importSimpleTemplate();
     }
 
     private void assertAnalystCanAccessCategoriesButCantSeeCategory() {

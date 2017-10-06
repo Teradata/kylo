@@ -26,6 +26,10 @@ package com.thinkbiganalytics.metadata.rest.model.feed;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -38,6 +42,14 @@ public class FeedCategory {
     private String systemName;
     private String displayName;
     private String description;
+    private Map<String, String> userProperties;
+
+    @JsonProperty
+    public String getCollectedUserProperties() {
+        return userProperties != null ? userProperties.entrySet().stream()
+            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(Collectors.joining(",")) : "";
+    }
 
     public String getId() {
         return id;
@@ -71,4 +83,11 @@ public class FeedCategory {
         this.description = description;
     }
 
+    public void setUserProperties(Map<String, String> userProperties) {
+        this.userProperties = userProperties;
+    }
+
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
 }

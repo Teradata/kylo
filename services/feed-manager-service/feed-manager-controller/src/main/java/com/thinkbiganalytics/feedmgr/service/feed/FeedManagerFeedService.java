@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -22,11 +24,13 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -84,6 +88,27 @@ public interface FeedManagerFeedService {
      */
     FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema);
 
+    /**
+     * Get all versions of the feed with the specified ID.  The results will
+     * have at least one version: the current feed version.  The results may
+     * also contain the state of the version of each feed itself.
+     * @param feedId the feed's ID
+     * @param includeFeeds 
+     * @return the feed versions
+     */
+    FeedVersions getFeedVersions(String feedId, boolean includeFeeds);
+
+    /**
+     * Get a version for the given feed and version ID.  The returned 
+     * optional will be empty if no feed exists with the given ID.  A
+     * VersionNotFoundException will 
+     * @param feedId the feed ID
+     * @param versionId the version ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     * @throws VersionNotFoundException if no version exists with the given ID
+     */
+    Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent);
 
     /**
      * @return a list of all the feeds in the system
@@ -206,4 +231,17 @@ public interface FeedManagerFeedService {
      */
     @Nonnull
     Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId);
+
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId the id of the feed rest model to update
+     */
+    void updateFeedDatasources(String feedId);
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    void updateAllFeedsDatasources();
 }

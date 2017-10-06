@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -115,7 +116,10 @@ public class GetTableDataSupportTest {
     public void testSelectFullLoad() throws Exception {
         Statement st = Mockito.mock(Statement.class);
         ResultSet rs = Mockito.mock(ResultSet.class);
+        DatabaseMetaData databaseMetaData = Mockito.mock(DatabaseMetaData.class);
         Mockito.when(conn.createStatement()).thenReturn(st);
+        Mockito.when(conn.getMetaData()).thenReturn(databaseMetaData);
+        Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("");
         Mockito.when(st.executeQuery("select col1, col2 from testTable")).thenReturn(rs);
         tableDataSupport.selectFullLoad("testTable", new String[]{"col1", "col2"});
     }
@@ -174,9 +178,12 @@ public class GetTableDataSupportTest {
     public void testSelectIncremental() throws Exception {
         Statement st = Mockito.mock(Statement.class);
         ResultSet rs = Mockito.mock(ResultSet.class);
+        DatabaseMetaData databaseMetaData = Mockito.mock(DatabaseMetaData.class);
         Mockito.when(conn.createStatement()).thenReturn(st);
         Mockito.when(st.executeQuery("select col1, col2 from testTable")).thenReturn(rs);
         Mockito.when(conn.prepareStatement(Mockito.anyString())).thenReturn(Mockito.mock(PreparedStatement.class));
+        Mockito.when(conn.getMetaData()).thenReturn(databaseMetaData);
+        Mockito.when(databaseMetaData.getIdentifierQuoteString()).thenReturn("");
         int overlapTime = 0;
         Date lastLoadDate = new Date(1458872629591L);
         int backoffTime = 0;

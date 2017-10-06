@@ -1,0 +1,20 @@
+<div>
+  <form name="visualQueryForm">
+    <md-tabs md-dynamic-height md-selected="vm.selectedStepIndex" md-no-ink-bar="true" md-no-ink="true" class="visual-query-tabs">
+      <md-tab ng-disabled="vm.steps[0].disabled">
+        <md-tab-body>
+          <thinkbig-visual-query-builder engine="vm.coreDataModel.engine" height-offset="64" model="vm.coreDataModel.model" step-index="0"
+                                         ng-if="vm.selectedStepIndex == 0">
+          </thinkbig-visual-query-builder>
+        </md-tab-body>
+      </md-tab>
+      <md-tab ng-disabled="vm.steps[1].disabled">
+        <md-tab-body>
+          <thinkbig-visual-query-transform engine="vm.coreDataModel.engine" height-offset="64" model="vm.coreDataModel.model" step-index="1"
+                                           ng-if="vm.selectedStepIndex == 1">
+          </thinkbig-visual-query-transform>
+        </md-tab-body>
+      </md-tab>
+    </md-tabs>
+  </form>
+</div>

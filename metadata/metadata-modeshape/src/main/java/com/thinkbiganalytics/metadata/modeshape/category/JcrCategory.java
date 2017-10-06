@@ -194,18 +194,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         setTitle(displayName);
     }
 
-    @Override
-    public String getName() {
-        return getSystemName();
-    }
-
-    @Override
-    public void setName(String name) {
-        if (!getName().equals(name)) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     public String getDescription() {
         return super.getProperty(DESCRIPTION, String.class);
     }

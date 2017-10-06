@@ -9,13 +9,19 @@ define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','consta
 
         $stateProvider.state(AccessConstants.UI_STATES.JOBS.state,{
             url:'/jobs',
+            params: {
+                filter: null,
+                tab:null
+            },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/jobs/jobs.html'
+                    templateUrl: 'js/ops-mgr/jobs/jobs.html',
+                    controller:"JobsPageController",
+                    controllerAs:"vm"
                 }
             },
             resolve: {
-                loadPage: lazyLoad()
+                loadMyCtrl: lazyLoadController(['ops-mgr/jobs/JobsPageController'])
             },
             data:{
                 breadcrumbRoot:false,

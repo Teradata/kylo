@@ -49,17 +49,10 @@ import javax.inject.Inject;
 /**
  * Transforms categories between Feed Manager and Metadata formats.
  */
-public class CategoryModelTransform {
+public class CategoryModelTransform  extends SimpleCategoryModelTransform{
 
     @Inject
     private SecurityModelTransform securityTransform;
-
-
-    /**
-     * Provider for categories
-     */
-    @Inject
-    CategoryProvider categoryProvider;
 
     /**
      * Transform functions for feeds
@@ -67,8 +60,6 @@ public class CategoryModelTransform {
     @Inject
     FeedModelTransform feedModelTransform;
 
-    @Inject
-    private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
 
     /**
      * Transforms the specified Metadata category to a Feed Manager category.
@@ -79,6 +70,10 @@ public class CategoryModelTransform {
     @Nullable
     public FeedCategory domainToFeedCategory(@Nullable final Category domainCategory) {
         return domainToFeedCategory(domainCategory, categoryProvider.getUserFields());
+    }
+
+    public FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, boolean includeFeedDetails) {
+        return domainToFeedCategory(domainCategory, categoryProvider.getUserFields(),includeFeedDetails);
     }
 
     /**
@@ -92,7 +87,14 @@ public class CategoryModelTransform {
         final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
         return domain.stream().map(c -> domainToFeedCategory(c, userFields)).collect(Collectors.toList());
     }
+    public List<FeedCategory> domainToFeedCategory(@Nonnull final Collection<Category> domain, boolean includeFeedDetails) {
+        final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
+        return domain.stream().map(c -> domainToFeedCategory(c, userFields,includeFeedDetails)).collect(Collectors.toList());
+    }
 
+    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        return domainToFeedCategory(domainCategory,userFields,false);
+    }
     /**
      * Transforms the specified Metadata category into a Feed Manager category.
      *
@@ -101,11 +103,11 @@ public class CategoryModelTransform {
      * @return the Feed Manager category
      */
     @Nullable
-    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields, boolean includeFeedDetails) {
         if (domainCategory != null) {
             FeedCategory category = new FeedCategory();
             category.setId(domainCategory.getId().toString());
-            if (domainCategory.getFeeds() != null) {
+            if (includeFeedDetails && domainCategory.getFeeds() != null) {
                 List<FeedSummary> summaries = feedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
                 category.setFeeds(summaries);
                 category.setRelatedFeeds(summaries.size());
@@ -113,7 +115,7 @@ public class CategoryModelTransform {
             category.setIconColor(domainCategory.getIconColor());
             category.setIcon(domainCategory.getIcon());
             category.setName(domainCategory.getDisplayName());
-            category.setSystemName(domainCategory.getName());
+            category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
             category.setDescription(domainCategory.getDescription());
             category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
@@ -152,20 +154,7 @@ public class CategoryModelTransform {
      */
     @Nullable
     public FeedCategory domainToFeedCategorySimple(@Nullable final Category domainCategory) {
-        if (domainCategory != null) {
-            FeedCategory category = new FeedCategory();
-            category.setId(domainCategory.getId().toString());
-            category.setIconColor(domainCategory.getIconColor());
-            category.setIcon(domainCategory.getIcon());
-            category.setName(domainCategory.getDisplayName());
-            category.setSystemName(domainCategory.getName());
-            category.setDescription(domainCategory.getDescription());
-            category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
-            category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
-            return category;
-        } else {
-            return null;
-        }
+       return super.domainToFeedCategorySimple(domainCategory,false,false);
     }
 
     /**
@@ -176,7 +165,7 @@ public class CategoryModelTransform {
      */
     @Nonnull
     public List<FeedCategory> domainToFeedCategorySimple(@Nonnull final Collection<Category> domain) {
-        return domain.stream().map(this::domainToFeedCategorySimple).collect(Collectors.toList());
+        return super.domainToFeedCategorySimple(domain,false,false);
     }
 
     /**
@@ -226,6 +215,7 @@ public class CategoryModelTransform {
         domainId = category.getId();
         feedCategory.setId(domainId.toString());
         category.setDisplayName(feedCategory.getName());
+        category.setSystemName(feedCategory.getSystemName());
         category.setDescription(feedCategory.getDescription());
         category.setIcon(feedCategory.getIcon());
         category.setIconColor(feedCategory.getIconColor());

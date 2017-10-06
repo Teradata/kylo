@@ -11,7 +11,7 @@
       </kylo-define-feed-step>
 
       <kylo-table-options-stepper ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE'" selected-step-index="vm.selectedStepIndex" steps="vm.steps" step-index="2"
-                                  type="{{vm.coreDataModel.templateTableOption}}"></kylo-table-options-stepper>
+                                  type="{{vm.coreDataModel.templateTableOption}}" core-data-model="vm.coreDataModel"></kylo-table-options-stepper>
 
       <kylo-define-feed-step title="Properties" step="vm.steps[vm.coreDataModel.totalSteps - 3]">
         <thinkbig-define-feed-properties step-index="{{vm.coreDataModel.totalSteps - 3}}"></thinkbig-define-feed-properties>

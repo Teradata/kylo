@@ -6,7 +6,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope: true,
             bindToController: {
                 panelTitle: "@",
-                feedName:'@'
+                feedName:'@',
+                refreshIntervalTime:'=?'
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/alerts/alerts-template.html',
@@ -20,7 +21,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $interval, AlertsService, StateService) {
+    var controller = function ($scope, $element, $interval, AlertsService, StateService,OpsManagerDashboardService,BroadcastService) {
         var self = this;
         this.alertsService = AlertsService;
         this.alerts = [];
@@ -31,19 +32,19 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         this.feedRefresh = null;
 
+        this.refreshIntervalTime = angular.isUndefined(self.refreshIntervalTime) ? 5000 : self.refreshIntervalTime;
 
+
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
+                var alerts = OpsManagerDashboardService.dashboard.alerts;
+                AlertsService.transformAlerts(alerts);
+                self.alerts = alerts;
+            });
+        }
 
         if(this.feedName == undefined || this.feedName == ''){
-            this.alerts = AlertsService.alertsSummary.data;
-            $scope.$watchCollection(
-                function () {
-                    return AlertsService.alertsSummary.data;
-                },
-                function (newVal) {
-                    self.alerts = newVal;
-                }
-            );
-            AlertsService.startRefreshingAlerts();
+            watchDashboard();
         }
         else {
             self.alerts = [];
@@ -82,12 +83,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         $scope.$on('$destroy', function () {
             stopFeedRefresh();
-            AlertsService.stopRefreshingAlerts();
         });
 
     };
 
-    angular.module(moduleName).controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService",controller]);
+    angular.module(moduleName).controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService","OpsManagerDashboardService","BroadcastService",controller]);
 
 
     angular.module(moduleName)

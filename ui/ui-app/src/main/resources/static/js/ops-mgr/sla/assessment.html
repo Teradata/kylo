@@ -121,7 +121,8 @@
           <md-list-item>
             <div layout="column" class="item-column md-list-item-text ">
                                                <span class="item-title" >
-                                                  <a href ng-click="vm.serviceLevelAgreement()">Service Level Agreement</a>
+                                                  <span ng-if="vm.agreementNotFound">Service Level Agreement not found</span>
+                                                  <a href ng-if="!vm.agreementNotFound" ng-click="vm.serviceLevelAgreement()">Service Level Agreement</a>
                                                </span>
             </div>
           </md-list-item>

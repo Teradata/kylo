@@ -128,6 +128,9 @@ public class ExportImportTemplateService {
     @Inject
     private UploadProgressService uploadProgressService;
 
+    @Inject
+    private RegisteredTemplateCache registeredTemplateCache;
+
     //Export Methods
 
     /**
@@ -930,6 +933,9 @@ public class ExportImportTemplateService {
                     if (createReusableFlow) {
                         importStatusMessage.update("Finished creating reusable flow instance for " + templateName, true);
                         importReusableTemplateSuccess(importTemplate);
+
+                            registeredTemplateCache.invalidateAllProcessors();
+
                     } else {
                         importStatusMessage.update("Validated " + templateName, true);
                     }

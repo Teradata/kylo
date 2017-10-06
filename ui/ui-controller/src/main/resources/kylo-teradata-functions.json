@@ -1,0 +1,166 @@
+{
+  "!name": "kylo-teradata-functions",
+  "!define": {
+    "Column": {
+      "over": {
+        "!type": "fn(window: WindowSpec) -> Column",
+        "!doc": "Define a windowing column.",
+        "!sql": " OVER (%o)",
+        "!sqlType": "column"
+      }
+    },
+    "ConditionChain": {
+      "end": {
+        "!type": "fn() -> Column",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!sql": " END",
+        "!sqlType": "Column"
+      },
+      "otherwise": {
+        "!type": "fn(scalar_expression: Column) -> Column",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!sql": " ELSE %c END",
+        "!sqlType": "Column"
+      },
+      "when": {
+        "!type": "fn(search_condition: Column, scalar_expression: Column) -> ConditionChain",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!sql": " WHEN %c THEN %c",
+        "!sqlType": "ConditionChain"
+      }
+    },
+    "GroupBy": {
+      "agg": {
+        "!type": "fn(expression_1: Column, expression_varargs: Column)",
+        "!doc": "Compute aggregates by specifying a series of aggregate columns.",
+        "!sql": "%c%,*c",
+        "!sqlType": "Select"
+      },
+      "avg": {
+        "!type": "fn(expression_varargs: Column)",
+        "!doc": "Compute the mean value for the numeric column for each group.",
+        "!sqlExpr": "AVG({{args.map(toColumn).join('), AVG(')}})",
+        "!sqlType": "Select"
+      },
+      "count": {
+        "!type": "fn()",
+        "!doc": "Count the number of rows for each group.",
+        "!sql": "COUNT(1)",
+        "!sqlType": "Select"
+      },
+      "max": {
+        "!type": "fn(expression: Column)",
+        "!doc": "Compute the max value for the numeric column for each group.",
+        "!sqlExpr": "MAX({{args.map(toColumn).join('), MAX(')}})",
+        "!sqlType": "Select"
+      },
+      "mean": {
+        "!type": "fn(expression: Column)",
+        "!doc": "Compute the average value for the numeric column for each group.",
+        "!sqlExpr": "AVG({{args.map(toColumn).join('), AVG(')}})",
+        "!sqlType": "Select"
+      },
+      "min": {
+        "!type": "fn(expression: Column)",
+        "!doc": "Compute the min value for the numeric column for each group.",
+        "!sqlExpr": "MIN({{args.map(toColumn).join('), MIN(')}})",
+        "!sqlType": "Select"
+      },
+      "sum": {
+        "!type": "fn(expression: Column)",
+        "!doc": "Compute the sum for the numeric column for each group.",
+        "!sqlExpr": "SUM({{args.map(toColumn).join('), SUM(')}})",
+        "!sqlType": "Select"
+      }
+    },
+    "WindowSpec": {
+      "orderBy": {
+        "!type": "fn(cols_varargs: Column) -> WindowSpec",
+        "!doc": "Defines the ordering columns in a WindowSpec.",
+        "!sql": " ORDER BY %*c",
+        "!sqlType": "WindowSpec"
+      },
+      "partitionBy": {
+        "!type": "fn(cols_varargs: Column) -> WindowSpec",
+        "!doc": "Defines the partitioning columns in a WindowSpec.",
+        "!sql": " PARTITION BY %*c",
+        "!sqlType": "WindowSpec"
+      },
+      "rowsBetween": {
+        "!type": "fn(start: number, end: number) -> WindowSpec",
+        "!doc": "Defines the frame boundaries, from start (inclusive) to end (inclusive).",
+        "!sql": " ROWS BETWEEN %c PRECEDING AND %c FOLLOWING",
+        "!sqlType": "WindowSpec"
+      }
+    }
+  },
+  "asc": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column.",
+    "!sql": "%c ASC",
+    "!sqlType": "column"
+  },
+  "concat": {
+    "!type": "fn(expression_varargs: Column) -> Column",
+    "!doc": "Concatenates multiple input string columns together into a single string column.",
+    "!sqlExpr": "{{args.map(toColumn).join(' || ')}}",
+    "!sqlType": "Column"
+  },
+  "countDistinct": {
+    "!type": "fn(expr: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of distinct items in a group.",
+    "!sql": "COUNT(DISTINCT %c)",
+    "!sqlType": "column"
+  },
+  "desc": {
+    "!type": "fn(expression: Column) -> Column",
+    "!doc": "Returns a sort expression based on descending order of the column.",
+    "!sql": "%c DESC",
+    "!sqlType": "column"
+  },
+  "groupBy": {
+    "!type": "fn(col1: Column, cols_varargs: Column) -> GroupBy",
+    "!doc": "Groups result rows by the values in one or more columns.",
+    "!sqlExpr": {
+      "groupBy": "{{args.map(getColumnAlias).join(', ')}}",
+      "selectList": "{{args.map(toColumn).join(', ')}}"
+    },
+    "!sqlType": "GroupBy"
+  },
+  "lag": {
+    "!type": "fn(value_expression: Column, offset_value: Column, opt_default_value_expression: Column) -> Column",
+    "!doc": "Ordered analytic functions calculate an aggregate or non-aggregate value on a window of rows within a group of rows.",
+    "!sql": "LAG(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "lead": {
+    "!type": "fn(value_expression: Column, offset_value: Column, opt_default_value_expression: Column) -> Column",
+    "!doc": "Ordered analytic functions calculate an aggregate or non-aggregate value on a window of rows within a group of rows.",
+    "!sql": "LEAD(%c, %c%,?c)",
+    "!sqlType": "Column"
+  },
+  "orderBy": {
+    "!type": "fn(cols_varargs: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the ordering defined.",
+    "!sql": "ORDER BY %*c",
+    "!sqlType": "WindowSpec"
+  },
+  "partitionBy": {
+    "!type": "fn(cols_varargs: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the partitioning defined.",
+    "!sql": "PARTITION BY %*c",
+    "!sqlType": "WindowSpec"
+  },
+  "trim": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Trim the spaces from both ends for the specified string column.",
+    "!sql": "TRIM(BOTH FROM %c)",
+    "!sqlType": "Column"
+  },
+  "when": {
+    "!type": "fn(search_expression: Column, scalar_expression: Column) -> ConditionChain",
+    "!doc": "Evaluates a list of conditions and returns one of multiple values.",
+    "!sql": "CASE WHEN %c THEN %c",
+    "!sqlType": "ConditionChain"
+  }
+}

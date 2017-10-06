@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','angular-ui-router','kylo-common', 'kylo-services','kylo-feedmgr','ment-io','jquery','angular-drag-and-drop-lists'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','@uirouter/angularjs','kylo-common', 'kylo-services','kylo-feedmgr','ment-io','jquery','angular-drag-and-drop-lists'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     var module = angular.module(moduleName, ['mentio','dndLists']);
 
     module.config(["$compileProvider",function($compileProvider) {
@@ -67,7 +67,7 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','c
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/templates/template-stepper/RegisterTemplateController','angular-ui-router'])
+                loadMyCtrl: lazyLoadController(['feed-mgr/templates/template-stepper/RegisterTemplateController','@uirouter/angularjs'])
             },
             data:{
                 breadcrumbRoot:false,

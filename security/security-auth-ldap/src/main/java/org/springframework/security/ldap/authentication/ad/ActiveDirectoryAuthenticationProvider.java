@@ -319,7 +319,7 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
                                                                            searchControls, 
                                                                            searchRoot, 
                                                                            searchFilter,
-                                                                           new Object[] { bindPrincipal });
+                                                                           new Object[] { bindPrincipal, username });
         } catch (IncorrectResultSizeDataAccessException incorrectResults) {
             // Search should never return multiple results if properly configured - just rethrow
             if (incorrectResults.getActualSize() != 0) {
@@ -384,9 +384,12 @@ public class ActiveDirectoryAuthenticationProvider extends AbstractLdapAuthentic
     
     /**
      * The LDAP filter string to search for the user being authenticated. Occurrences of
-     * {0} are replaced with the {@code username@domain}.
+     * {0} are replaced with the bind principal (user@domain), and {1} replaced with the username.
      * <p>
-     * Defaults to: {@code (&(objectClass=user)(userPrincipalName= 0}))}
+     * Defaults to: {@code (&(objectClass=user)(userPrincipalName={0}))}
+     * </p>
+     * <p>
+     * Common alternative: {@code (&(objectClass=user)(sAMAccountName={1}))}
      * </p>
      *
      * @param searchFilter the filter string

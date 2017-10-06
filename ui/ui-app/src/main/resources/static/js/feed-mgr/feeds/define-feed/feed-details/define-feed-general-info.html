@@ -60,15 +60,13 @@
                             md-menu-class="autocomplete-categories-template">
                         <md-item-template>
                   <span class="item-title" ng-class="item.createFeed ? '' : 'disabled'">
-                       <ng-md-icon icon="{{item.icon}}" ng-style="{'fill':item.iconColor}" ng-if="item.createFeed"></ng-md-icon>
+                       <ng-md-icon icon="{{item.icon}}" style="fill:{{item.iconColor}}" ng-if="item.createFeed"></ng-md-icon>
                     <ng-md-icon icon="block" class="disabled" ng-if="!item.createFeed"></ng-md-icon>
                     <span> {{item.name}} </span>
                   </span>
                   <span class="item-metadata">
-                    <span class="item-metastat"  ng-if="item.createFeed">
-                       <strong>{{item.relatedFeeds}}</strong> Related Feeds
-                    </span>
-                      <span class="item-metastat"  ng-if="!item.createFeed">
+                    <span class="item-metastat hint"  ng-if="item.createFeed">
+                     {{item.description | characters:50}}
                     </span>
                   </span>
                         </md-item-template>

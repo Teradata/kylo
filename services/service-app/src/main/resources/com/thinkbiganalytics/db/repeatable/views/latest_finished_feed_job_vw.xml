@@ -40,7 +40,8 @@
               END AS STATUS,
              e.EXIT_CODE,
              e.EXIT_MESSAGE,
-             e.IS_STREAM as IS_STREAM
+             e.IS_STREAM as IS_STREAM,
+             feedStats.RUNNING_FEED_FLOWS
       FROM   BATCH_JOB_EXECUTION e
       INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
       INNER JOIN FEED f on f.ID = i.FEED_ID

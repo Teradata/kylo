@@ -6,8 +6,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             scope:true,
             controllerAs:'vm',
             bindToController: {
-                panelTitle: "@",
-                refreshIntervalTime: "@"
+                panelTitle: "@"
             },
             templateUrl: 'js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html',
             controller: "FeedStatusIndicatorController",
@@ -18,42 +17,29 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout, OpsManagerFeedService) {
+    var controller = function ($scope, $element, $http, $interval, $timeout, OpsManagerFeedService,OpsManagerDashboardService,BroadcastService) {
         var self = this;
         this.chartApi = {};
         this.dataLoaded = false;
         this.feedSummaryData = null;
         this.chartData = [];
         this.dataMap = {'Healthy':{count:0, color:'#009933'},'Unhealthy':{count:0,color:'#FF0000'}};
-        initializePieChart();
 
 
-        $scope.$watch(
-            function () {
-                return OpsManagerFeedService.feedUnhealthyCount
-            },
-            function (newVal) {
-                self.dataMap.Unhealthy.count = newVal;
+
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
+                self.dataMap.Unhealthy.count = OpsManagerDashboardService.feedUnhealthyCount;
+
+                self.dataMap.Healthy.count = OpsManagerDashboardService.feedHealthyCount;
+                self.feedSummaryData = OpsManagerDashboardService.feedSummaryData;
                 updateChartData();
-                }
-        );
-        $scope.$watch(
-            function () {
-                return OpsManagerFeedService.feedHealthyCount
-            },
-            function (newVal) {
-                self.dataMap.Healthy.count = newVal;
-                updateChartData();
-            }
-        );
-        $scope.$watch(
-            function () {
-                return OpsManagerFeedService.feedSummaryData
-            },
-            function (newVal) {
-                self.feedSummaryData = newVal;
-                  }
-        );
+            });
+        }
+
+        function onChartElementClick(key){
+        //    OpsManagerFeedService.setFeedHealthCardTab(key);
+        }
 
         function updateChartData(){
             angular.forEach(self.chartData,function(row,i){
@@ -95,6 +81,13 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 valueFormat: function(d){
                     return parseInt(d);
                 },
+                pie: {
+                    dispatch: {
+                        'elementClick': function(e){
+                           onChartElementClick(e.data.key);
+                        }
+                    }
+                },
                 dispatch: {
 
                 }
@@ -106,6 +99,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 self.chartData.push({key: "Unhealthy", value: 0})
         }
 
+        function init(){
+            initializePieChart();
+            watchDashboard();
+        }
+
+        init();
 
 
         $scope.$on('$destroy', function () {
@@ -113,7 +112,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         });
     };
 
-    angular.module(moduleName).controller('FeedStatusIndicatorController', ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService",controller]);
+    angular.module(moduleName).controller('FeedStatusIndicatorController', ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService",controller]);
 
 
     angular.module(moduleName)

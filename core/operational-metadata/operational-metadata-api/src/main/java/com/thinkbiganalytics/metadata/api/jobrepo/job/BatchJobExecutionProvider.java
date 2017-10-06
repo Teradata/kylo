@@ -78,7 +78,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      *
      * @return the job execution
      */
-    BatchJobExecution save(ProvenanceEventRecordDTO event);
+    BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
 
     /**
      * save the Provenance event and return the associated job execution
@@ -200,6 +200,9 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     List<JobStatusCount> getJobStatusCount(String filter);
 
+
+    List<BatchAndStreamingJobStatusCount> getBatchAndStreamingJobCounts(String filter);
+
     /**
      * Find all flowFiles that are related to the supplied flow file
      *
@@ -208,9 +211,12 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     List<String> findRelatedFlowFiles(String flowFileId);
 
-
     void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream,String status);
 
-    void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream, String status);
+    void notifyFailure(BatchJobExecution jobExecution, OpsManagerFeed feed, boolean isStream, String status);
+
+    void notifyStopped(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
+
+    void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
 
 }

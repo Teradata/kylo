@@ -28,6 +28,7 @@
 
   <dependencies>
 
+
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-alerts-api</artifactId>
@@ -37,6 +38,12 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-service-monitor-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-service-monitor-service-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

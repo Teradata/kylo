@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.service.category;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
@@ -30,12 +31,20 @@ import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.event.category.CategoryChange;
+import com.thinkbiganalytics.metadata.api.event.category.CategoryChangeEvent;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +73,13 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private MetadataEventService metadataEventService;
+
+    @Inject
+    private ClusterService clusterService;
+
+
     @Override
     public boolean checkCategoryPermission(final String id, final Action action, final Action... more) {
         if (accessController.isEntityAccessControlled()) {
@@ -85,11 +101,15 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public Collection<FeedCategory> getCategories() {
+        return getCategories(false);
+    }
+
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
         return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             List<Category> domainCategories = categoryProvider.findAll();
-            return categoryModelTransform.domainToFeedCategory(domainCategories);
+            return categoryModelTransform.domainToFeedCategory(domainCategories, includeFeedDetails);
         });
     }
 
@@ -100,7 +120,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             final Category.ID domainId = categoryProvider.resolveId(id);
             final Category domainCategory = categoryProvider.findById(domainId);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory, true);
         });
     }
 
@@ -110,37 +130,33 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_CATEGORIES);
 
             final Category domainCategory = categoryProvider.findBySystemName(name);
-            return categoryModelTransform.domainToFeedCategory(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory, true);
         });
     }
 
     @Override
     public void saveCategory(final FeedCategory feedCategory) {
-        
+
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
-        
+        boolean isNew = feedCategory.getId() == null;
+
         // If the category exists and it is being renamed, perform the rename in a privileged transaction.
         // This is to get around the ModeShape problem of requiring admin privileges to do type manipulation.
         FeedCategory categoryUpdate = metadataAccess.commit(() -> {
-            // Determine the system name
-            if (feedCategory.getId() == null) {
-                feedCategory.generateSystemName();
-            } else {
+            if (feedCategory.getId() != null) {
                 final FeedCategory oldCategory = getCategoryById(feedCategory.getId());
-                if (oldCategory != null && !oldCategory.getName().equalsIgnoreCase(feedCategory.getName())) {
-                    //names have changed
-                    //only regenerate the system name if there are no related feeds
+                if (oldCategory != null && !oldCategory.getSystemName().equalsIgnoreCase(feedCategory.getSystemName())) {
+                    //system names have changed, only regenerate the system name if there are no related feeds
                     if (oldCategory.getRelatedFeeds() == 0) {
                         Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
-                        feedCategory.generateSystemName();
-                        categoryProvider.rename(domainId, feedCategory.getSystemName());
+                        categoryProvider.renameSystemName(domainId, feedCategory.getSystemName());
                     }
                 }
             }
-            
+
             return feedCategory;
         }, MetadataAccess.SERVICE);
-        
+
         // Perform the rest of the updates as the current user.
         final Category.ID domainId = metadataAccess.commit(() -> {
 
@@ -154,7 +170,8 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             //TODO only do this when modifying the access control
             if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
                 categoryUpdate.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
-                categoryUpdate.toFeedRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryFeedRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
+                categoryUpdate.toFeedRoleMembershipChangeList().stream()
+                    .forEach(roleMembershipChange -> securityService.changeCategoryFeedRoleMemberships(categoryUpdate.getId(), roleMembershipChange));
             }
 
             return domainCategory.getId();
@@ -163,13 +180,14 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         // Update user-defined fields (must be outside metadataAccess)
         final Set<UserFieldDescriptor> userFields = (categoryUpdate.getUserFields() != null) ? UserPropertyTransform.toUserFieldDescriptors(categoryUpdate.getUserFields()) : Collections.emptySet();
         categoryProvider.setFeedUserFields(domainId, userFields);
+        notifyCategoryChange(domainId, categoryUpdate.getSystemName(), isNew ? MetadataChange.ChangeType.CREATE : MetadataChange.ChangeType.UPDATE);
     }
 
     @Override
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_CATEGORIES);
 
-        Category.ID domainId = metadataAccess.read(() -> {
+        SimpleCategory simpleCategory = metadataAccess.read(() -> {
             Category.ID id = categoryProvider.resolveId(categoryId);
             final Category category = categoryProvider.findById(id);
 
@@ -179,7 +197,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
                     //this check should throw a runtime exception
                     category.getAllowedActions().checkPermission(CategoryAccessControl.DELETE);
                 }
-                return id;
+                return new SimpleCategory(id, category.getSystemName());
             } else {
                 //unable to read the category
                 return null;
@@ -187,10 +205,11 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
 
         });
-        if (domainId != null) {
+        if (simpleCategory != null) {
             metadataAccess.commit(() -> {
-                categoryProvider.deleteById(domainId);
+                categoryProvider.deleteById(simpleCategory.getCategoryId());
             }, MetadataAccess.SERVICE);
+            notifyCategoryChange(simpleCategory.getCategoryId(), simpleCategory.getCategoryName(), MetadataChange.ChangeType.DELETE);
             return true;
         } else {
             return false;
@@ -209,7 +228,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
         boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
-        if(hasPermission) {
+        if (hasPermission) {
             categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
         }
     }
@@ -222,5 +241,41 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             return UserPropertyTransform.toUserProperties(Collections.emptyMap(), categoryProvider.getUserFields());
         });
+    }
+
+    private class SimpleCategory {
+
+        private Category.ID categoryId;
+        private String categoryName;
+
+        public SimpleCategory(Category.ID categoryId, String categoryName) {
+            this.categoryId = categoryId;
+            this.categoryName = categoryName;
+        }
+
+        public Category.ID getCategoryId() {
+            return categoryId;
+        }
+
+        public String getCategoryName() {
+            return categoryName;
+        }
+    }
+
+    /**
+     * update the audit information for feed state changes
+     *
+     * @param categoryId   the category id
+     * @param categoryName the categoryName
+     * @param changeType   the event type
+     */
+    private void notifyCategoryChange(Category.ID categoryId, String categoryName, MetadataChange.ChangeType changeType) {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
+        CategoryChange change = new CategoryChange(changeType, categoryName, categoryId);
+        CategoryChangeEvent event = new CategoryChangeEvent(change, DateTime.now(), principal);
+        metadataEventService.notify(event);
+        clusterService.sendMessageToOthers(CategoryChange.CLUSTER_EVENT_TYPE, change);
     }
 }

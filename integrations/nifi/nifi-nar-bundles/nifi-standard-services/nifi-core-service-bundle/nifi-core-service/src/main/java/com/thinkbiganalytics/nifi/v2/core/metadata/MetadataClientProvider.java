@@ -87,12 +87,18 @@ public class MetadataClientProvider implements MetadataProvider {
 
     @Override
     public String getFeedId(String category, String feedName) {
+        Feed feed = getFeed(category, feedName);
+        return feed == null ? null : feed.getId();
+    }
+
+    @Override
+    public Feed getFeed(@Nonnull String category, @Nonnull String feedName) {
         List<Feed> feeds = this.client.getFeeds(this.client.feedCriteria().category(category).name(feedName));
 
         if (feeds.isEmpty()) {
             return null;
         } else {
-            return feeds.get(0).getId();
+            return feeds.get(0);
         }
     }
 

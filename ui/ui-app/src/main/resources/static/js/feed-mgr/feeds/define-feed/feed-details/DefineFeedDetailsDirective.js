@@ -90,41 +90,68 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FeedService.findControllerServicesForProperty(property);
         }
 
+        function matchInputProcessor(inputProcessor, inputProcessors){
+
+            if (inputProcessor == null) {
+                //input processor is null when feed is being created
+                return undefined;
+            }
+
+           var matchingInput = _.find(inputProcessors,function(input) {
+                if(input.id == inputProcessor.id){
+                    return true;
+                }
+               return (input.type == inputProcessor.type && input.name == inputProcessor.name);
+            });
+
+           return matchingInput;
+        }
+
         /**
          * Prepares the processor properties of the specified template for display.
          *
          * @param {Object} template the template with properties
          */
         function initializeProperties(template) {
-            RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
-            self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
-            self.model.allowPreconditions = template.allowPreconditions;
-            //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
-            //    return self.model.inputProcessorType == processor.type;
-            // });
-            self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
+                RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
+                self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+                self.model.allowPreconditions = template.allowPreconditions;
+                //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
+                //    return self.model.inputProcessorType == processor.type;
+                // });
+                self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
-            if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
-                self.inputProcessorId = self.inputProcessors[0].id;
-            }
-            // Skip this step if it's empty
-            if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
+                if(angular.isDefined(self.model.inputProcessor)){
+                    var match = matchInputProcessor(self.model.inputProcessor,self.inputProcessors);
+                    if(angular.isDefined(match)){
+                        self.inputProcessor = match;
+                        self.inputProcessorId = match.id;
+                    }
+                }
+
+                if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
+                    self.inputProcessorId = self.inputProcessors[0].id;
+                }
+                // Skip this step if it's empty
+                if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
                         return processor.userEditable
                     })) {
-             var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
-             if(step != null) {
-                 step.skip = true;
-             }
-            }
+                    var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+                    if(step != null) {
+                        step.skip = true;
+                    }
+                }
 
-            // Find controller services
-            _.chain(template.inputProcessors.concat(template.nonInputProcessors))
+                // Find controller services
+                _.chain(template.inputProcessors.concat(template.nonInputProcessors))
                     .pluck("properties")
                     .flatten(true)
                     .filter(function(property) {
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
+            }
             self.loading = false;
             validate();
         }
@@ -195,15 +222,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
           
-            if (renderGetTableData) {
-                self.model.table.method = 'EXISTING_TABLE';
-                self.model.options.skipHeader = true;
-                self.model.allowSkipHeaderOption = true;
+          if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
+              if (renderGetTableData) {
+                  self.model.table.method = 'EXISTING_TABLE';
+                  self.model.options.skipHeader = true;
+                  self.model.allowSkipHeaderOption = true;
 
-            } else {
-                self.model.table.method = 'SAMPLE_FILE';
-                self.model.table.tableSchema.fields = [];
-            }
+              } else {
+                  self.model.table.method = 'SAMPLE_FILE';
+                  self.model.table.tableSchema.fields = [];
+              }
+          }
 
             // Update model
             self.model.inputProcessor = processor;

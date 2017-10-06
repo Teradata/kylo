@@ -68,6 +68,7 @@ public class ElasticSearchRestService implements Search {
     private final static String PUT_METHOD = "PUT";
     private final static String DELETE_METHOD = "DELETE";
     private final static String SEARCH_ENDPOINT = "_search";
+    private final static String VERSION_TWO = "2";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
     private RestClient restClient;
@@ -78,14 +79,39 @@ public class ElasticSearchRestService implements Search {
     }
 
     @Override
-    public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id) {
+    public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull String schema, @Nonnull String table) {
         buildRestClient();
         try {
+            //Delete schema
             restClient.performRequest(
                 DELETE_METHOD,
                 getIndexDeleteEndPoint(indexName, typeName, id)
             );
-            log.debug("Deleted document for index={}, type={}, id={}", indexName, typeName, id);
+            log.info("Deleted schema document for index={}, type={}, id={}", indexName, typeName, id);
+
+            final String dataIndexName = "kylo-data";
+            final String dataIndexType = "hive-data";
+
+            //Delete data
+            if ((restClientConfig.getEsversion() != null) && (restClientConfig.getEsversion().equals(VERSION_TWO))) {
+                log.debug("Elasticsearch v2");
+                restClient.performRequest(
+                    DELETE_METHOD,
+                    getDataDeleteEndPointEsV2(dataIndexName, dataIndexType),
+                    new HashMap<>(),
+                    getDataDeleteRequestBodyDslEsV2(schema, table)
+                );
+            }
+            else {
+                log.debug("Elasticsearch v5 or above");
+                restClient.performRequest(
+                    POST_METHOD,
+                    getDataDeleteEndPoint(dataIndexName, dataIndexType),
+                    new HashMap<>(),
+                    getDataDeleteRequestBodyDsl(schema, table)
+                );
+            }
+            log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
             log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
             responseException.printStackTrace();
@@ -156,6 +182,14 @@ public class ElasticSearchRestService implements Search {
 
     private String getIndexRefreshEndPoint(String indexName) {
         return "/" + indexName + "/_refresh";
+    }
+
+    private String getDataDeleteEndPoint(@Nonnull String dataIndexName, @Nonnull String dataIndexType) {
+        return "/" + dataIndexName + "/" + dataIndexType + "/_delete_by_query";
+    }
+
+    private String getDataDeleteEndPointEsV2(@Nonnull String dataIndexName, @Nonnull String dataIndexType) {
+        return "/" + dataIndexName + "/" + dataIndexType + "/_query";
     }
 
     @Override
@@ -402,6 +436,48 @@ public class ElasticSearchRestService implements Search {
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
+    }
+
+    private HttpEntity getDataDeleteRequestBodyDsl(@Nonnull String schema, @Nonnull String table) {
+        String jsonBodyString = new JSONObject().toString();
+        try {
+            JSONObject schemaMatchObject = new JSONObject()
+                .put("kylo_schema", schema);
+
+            JSONObject tableMatchObject = new JSONObject()
+                .put("kylo_table", table);
+
+            JSONObject firstMatchObject = new JSONObject()
+                .put("match", schemaMatchObject);
+
+            JSONObject secondMatchObject = new JSONObject()
+                .put("match", tableMatchObject);
+
+            JSONArray shouldArray = new JSONArray()
+                .put(firstMatchObject)
+                .put(secondMatchObject);
+
+            JSONObject shouldObject = new JSONObject()
+                .put("must", shouldArray);
+
+            JSONObject boolObject = new JSONObject()
+                .put("bool", shouldObject);
+
+            JSONObject queryObject = new JSONObject()
+                .put("query", boolObject);
+
+            jsonBodyString = queryObject.toString();
+
+        } catch (JSONException jsonException) {
+            log.warn("Could not construct data deletion request body query dsl for schema {}, table {}", schema, table);
+            jsonException.printStackTrace();
+        }
+
+        return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
+    }
+
+    private HttpEntity getDataDeleteRequestBodyDslEsV2(@Nonnull String schema, @Nonnull String table) {
+        return getDataDeleteRequestBodyDsl(schema, table);
     }
 
     private String rewriteQuery(String query) {

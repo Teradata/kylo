@@ -10,9 +10,11 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             data.JOB_NAMES_URL = OpsManagerRestUrlService.JOB_NAMES_URL;
             data.DAILY_STATUS_COUNT_URL = OpsManagerRestUrlService.DAILY_STATUS_COUNT_URL;
 
-            data.RUNNING_OR_FAILED_COUNTS_URL = OpsManagerRestUrlService.RUNNING_OR_FAILED_COUNTS_URL;
+            //data.RUNNING_OR_FAILED_COUNTS_URL = OpsManagerRestUrlService.RUNNING_OR_FAILED_COUNTS_URL;
 
-            data.DATA_CONFIDENCE_URL = OpsManagerRestUrlService.DATA_CONFIDENCE_URL;
+            data.RUNNING_JOB_COUNTS_URL = OpsManagerRestUrlService.RUNNING_JOB_COUNTS_URL;
+
+          //  data.DATA_CONFIDENCE_URL = OpsManagerRestUrlService.DATA_CONFIDENCE_URL;
 
             data.RESTART_JOB_URL = OpsManagerRestUrlService.RESTART_JOB_URL;
 

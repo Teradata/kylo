@@ -48,7 +48,7 @@ define(["angular", "/example-ui-feed-stepper-plugin-1.0/module-name.js"], functi
                 self.model.tableOption = self.editModel.tableOption;
             }, function(response) {
                 FeedService.hideFeedSavingDialog();
-                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.buildErrorData(self.model.feedName, response);
                 FeedService.showFeedErrorsDialog();
                 //make it editable
                 self.editableSection = true;

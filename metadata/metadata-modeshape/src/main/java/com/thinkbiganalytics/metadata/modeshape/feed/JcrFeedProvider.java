@@ -57,6 +57,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -66,6 +67,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProv
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -93,6 +95,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -108,7 +111,7 @@ import javax.jcr.query.QueryResult;
 /**
  * A JCR provider for {@link Feed} objects.
  */
-public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
+public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider, VersionProviderMixin<Feed, Feed.ID> {
 
     private static final String SORT_FEED_NAME = "feedName";
     private static final String SORT_STATE = "state";
@@ -178,6 +181,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
+    }
+    
+    @Override
+    public Optional<Node> findVersionableNode(ID id) {
+        final JcrFeed feed = (JcrFeed) findById(id);
+        if (feed != null) {
+            return feed.getFeedSummary().map(s -> s.getNode());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Feed asEntity(ID id, Node versionable) {
+        try {
+            // The versionable node argument is the summary node.
+            Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
+            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable, null);
+        } catch (RepositoryException e) {
+            throw new FeedNotFoundExcepton(id);
+        }
     }
 
     /* (non-Javadoc)
@@ -297,7 +321,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
         Category category = categoryProvider.findById(categoryId);
-        return ensureFeed(category.getName(), feedSystemName);
+        return ensureFeed(category.getSystemName(), feedSystemName);
     }
 
     /**
@@ -321,7 +345,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         String feedParentPath = category.getFeedParentPath();
         boolean newFeed = !hasEntityNode(feedParentPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
-        boolean versionable = JcrUtil.isVersionable(feedNode);
+        boolean versionable = JcrVersionUtil.isVersionable(feedNode);
 
         JcrFeed feed = new JcrFeed(feedNode, category, this.opsAccessProvider);
 
@@ -351,12 +375,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     private void addPostFeedChangeAction(Feed feed, ChangeType changeType) {
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
-        String desc = feed.getQualifiedName();
+        String feedName = feed.getQualifiedName();
         final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                FeedChange change = new FeedChange(changeType, desc, id, state);
+                FeedChange change = new FeedChange(changeType, feedName, feedName,id, state);
                 FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
             }
@@ -509,11 +533,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return null;
     }
 
-
-    @Override
-    public List<Feed> find(String query) {
-       return super.find(query).stream().filter(f -> JcrUtil.hasNode(((JcrFeed)f).getNode(),JcrFeed.SUMMARY)).collect(Collectors.toList());
-    }
 
     @Override
     public List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId) {
@@ -696,7 +715,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Map<String, Object> merged = feed.mergeProperties(properties);
 
         PropertyChange change = new PropertyChange(feed.getId().getIdValue(),
-                                                   feed.getCategory().getName(),
+                                                   feed.getCategory().getSystemName(),
                                                    feed.getSystemName(),
                                                    securityGroupNames,
                                                    feed.getProperties(),
@@ -742,11 +761,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     protected void appendJoins(StringBuilder bldr, String filter) {
         if (!Strings.isNullOrEmpty(filter)) {
+            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
+            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
             bldr.append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ");
             bldr.append("JOIN [tba:feedDetails] AS fdetail ON ISCHILDNODE(fdetail, fs) ");
             bldr.append("JOIN [tba:feedData] AS fdata ON ISCHILDNODE(fdata, e) ");
-            bldr.append("JOIN [tba:categoryDetails] AS cd ON ISCHILDNODE(e, cd) ");
-            bldr.append("JOIN [tba:category] AS c ON ISCHILDNODE(cd, c) ");
         }
     }
 
@@ -917,7 +936,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.name != null && !name.equals(input.getName())) {
                 return false;
             }
-            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())) {
+            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getSystemName())) {
                 return false;
             }
             if (!this.destIds.isEmpty()) {

@@ -71,7 +71,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
             CategoriesService.save(model).then(function (response) {
                 self.model = CategoriesService.model = response.data;
-                CategoriesService.reload();
+                CategoriesService.update(response.data);
                 $mdToast.show(
                     $mdToast.simple()
                         .textContent("Saved the Category")

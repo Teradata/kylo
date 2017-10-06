@@ -1,2 +1,2 @@
-define(["angular", "angular-ui-router", "feed-mgr/domain-types/codemirror-regex"], function (angular) {
+define(["angular", "@uirouter/angularjs", "feed-mgr/domain-types/codemirror-regex"], function (angular) {
 });

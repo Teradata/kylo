@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition;
@@ -74,6 +75,9 @@ public class DerivedDatasourceFactory {
     @Inject
     MetadataAccess metadataAccess;
 
+    @Inject
+    RegisteredTemplateCache registeredTemplateCache;
+
     public void populateDatasources(FeedMetadata feedMetadata, RegisteredTemplate template, Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources,
                                     Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> dest) {
 
@@ -103,8 +107,16 @@ public class DerivedDatasourceFactory {
             }
 
         }
-        List<RegisteredTemplate.Processor> processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
-        List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream()).collect(Collectors.toList());
+        //see if its in the cache first
+        List<RegisteredTemplate.Processor> processors = registeredTemplateCache.getProcessors(feedMetadata.getTemplateId());
+        //if not add it
+        if (processors == null) {
+            processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
+            registeredTemplateCache.putProcessors(feedMetadata.getTemplateId(), processors);
+        }
+        //COPY the properties since they will be replaced when evaluated
+        List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream())
+            .map(property -> new NifiProperty(property)).collect(Collectors.toList());
 
         template.getRegisteredDatasourceDefinitions().stream().forEach(definition -> {
             Datasource.ID id = ensureDatasource(definition, feedMetadata, allProperties);
@@ -257,7 +269,7 @@ public class DerivedDatasourceFactory {
     private List<String> getFeedInputProcessorTypes(FeedMetadata feedMetadata) {
         List<String> types = new ArrayList<>();
         types.add(feedMetadata.getInputProcessorType());
-        if (feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")) {
+        if (feedMetadata != null && "com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark".equalsIgnoreCase(feedMetadata.getInputProcessorType())) {
             types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
             types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         }

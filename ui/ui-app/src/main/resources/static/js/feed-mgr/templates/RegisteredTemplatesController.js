@@ -35,7 +35,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.pageName = "registered-templates";
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'registered-templates';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
         this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();

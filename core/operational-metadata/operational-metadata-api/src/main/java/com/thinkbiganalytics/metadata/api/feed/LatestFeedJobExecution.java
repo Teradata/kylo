@@ -39,6 +39,14 @@ public interface LatestFeedJobExecution {
      */
     OpsManagerFeed getFeed();
 
+
+    /**
+     * Return the feed name
+     *
+     * @return the feed name
+     */
+    String getFeedId();
+
     /**
      * Return the feed name
      *

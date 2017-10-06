@@ -53,8 +53,10 @@ import io.swagger.annotations.ApiResponses;
  * Rest Controller for Quartz Scheduler
  */
 @Api(tags = "Operations Manager - Scheduler", produces = "application/json")
-@Path("/v1/scheduler")
+@Path(SchedulerRestController.V1_SCHEDULER)
 public class SchedulerRestController {
+
+    public static final String V1_SCHEDULER = "/v1/scheduler";
 
     @Inject
     private JobScheduler quartzScheduler;

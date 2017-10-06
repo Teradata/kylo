@@ -30,6 +30,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -136,7 +137,8 @@ public class TemplateInstanceCreator {
                     templateCreationHelper.snapshotControllerServiceReferences();
                     log.info("Successfully Snapshot of controller services");
                     //create the flow from the template
-                    templateCreationHelper.instantiateFlowFromTemplate(processGroupId, templateId);
+                    TemplateInstance instance = templateCreationHelper.instantiateFlowFromTemplate(processGroupId, templateId);
+                    FlowSnippetDTO flowSnippetDTO = instance.getFlowSnippetDTO();
                     log.info("Successfully created the temp flow");
 
                     if (this.createReusableFlow) {
@@ -145,7 +147,7 @@ public class TemplateInstanceCreator {
                     }
 
                     //mark the new services that were created as a result of creating the new flow from the template
-                    templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
+                    templateCreationHelper.identifyNewlyCreatedControllerServiceReferences(instance);
 
                     ProcessGroupDTO entity = restClient.getProcessGroup(processGroupId, true, true);
 
@@ -158,6 +160,13 @@ public class TemplateInstanceCreator {
                             boolean replaced = ConfigurationPropertyReplacer.resolveStaticConfigurationProperty(property, staticConfigPropertyMap);
                             if (replaced) {
                                 //update the properties that are replaced
+                                if(property.getPropertyDescriptor() != null && StringUtils.isNotBlank(property.getPropertyDescriptor().getIdentifiesControllerService())){
+                                    //verify the property is a valid cs property
+                                    String value = property.getValue();
+                                    if(templateCreationHelper.getEnabledServiceNameMap().containsKey(value)){
+                                        property.setValue(templateCreationHelper.getEnabledServiceNameMap().get(value).get(0).getId());
+                                    }
+                                }
                                 restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
                                 didReplace = true;
                             }
@@ -185,11 +194,11 @@ public class TemplateInstanceCreator {
                     boolean updatedControllerServices = false;
                     if (input != null) {
                         log.info("attempt to update controllerservices on {} input processor ", input.getName());
-                        List<NifiProperty> updatedProperties = templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(inputProcessors), staticConfigPropertyStringMap);
+                        List<NifiProperty> updatedProperties = templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(inputProcessors), staticConfigPropertyStringMap, instance);
                         updatedControllerServices = !updatedProperties.isEmpty();
                     }
                     log.info("attempt to update controllerservices on {} processors ", (nonInputProcessors != null ? nonInputProcessors.size() : 0));
-                    List<NifiProperty> updatedProperties = templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, staticConfigPropertyStringMap);
+                    List<NifiProperty> updatedProperties = templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, staticConfigPropertyStringMap, instance);
                     if (!updatedControllerServices) {
                         updatedControllerServices = !updatedProperties.isEmpty();
                     }

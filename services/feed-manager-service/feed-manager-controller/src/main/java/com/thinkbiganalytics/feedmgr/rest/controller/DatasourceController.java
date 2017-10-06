@@ -23,7 +23,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
@@ -44,9 +44,7 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
-import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
-import com.thinkbiganalytics.security.rest.model.RoleMemberships;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,7 +56,6 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -126,7 +123,7 @@ public class DatasourceController {
      * Provides table lists and schemas from JDBC connections.
      */
     @Inject
-    private DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
+    private DBCPConnectionPoolService dbcpConnectionPoolTableInfo;
 
     @Inject
     private SecurityService securityService;
@@ -461,8 +458,8 @@ public class DatasourceController {
                   })
     public Response getRoleMemberships(@PathParam("id") final String datasourceIdStr, @QueryParam("verbose") @DefaultValue("false") final boolean verbose) {
         return this.securityService.getDatasourceRoleMemberships(datasourceIdStr)
-                        .map(m -> Response.ok(m).build())
-                        .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("A data source with the given ID does not exist: " + datasourceIdStr, Response.Status.NOT_FOUND));
     }
 
     @POST

@@ -56,12 +56,25 @@ public class SolrSearchService implements Search {
     }
 
     @Override
-    public void delete(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id) {
+    public void delete(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final String schema, @Nonnull final String table) {
         buildRestClient();
+        final String dataCollectionName = "kylo-data";
         try {
+            //deletes the schema
             client.deleteById(indexName, id);
+            client.commit(indexName);
+            log.info("Deleted schema document for index={}, type={}, id={}", indexName, typeName, id);
         } catch (final IOException | SolrServerException e) {
-            log.warn("Failed to delete document in index:{} with id:{}", indexName, id, e);
+            log.warn("Failed to delete document in index:{} with id:{} [{}]", indexName, id, e);
+        }
+
+        try {
+            //delete the data
+            client.deleteByQuery(dataCollectionName,"kylo_schema:" + schema + " AND kylo_table:" + table);
+            client.commit(dataCollectionName);
+            log.info("Deleted data for index={}, schema={}, table={}", dataCollectionName, schema, table);
+        } catch (final IOException | SolrServerException e) {
+            log.warn("Failed to delete data for index={}, schema={}, table={} [{}]", dataCollectionName, schema, table, e);
         }
     }
 

@@ -41,6 +41,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,8 +57,6 @@ import javax.annotation.Nullable;
 
 /**
  * A POJO implementation of {@link Feed}.
- *
- * @param the type of parent category
  */
 public class BaseFeed implements Feed {
 
@@ -174,7 +173,7 @@ public class BaseFeed implements Feed {
 
     @Override
     public String getQualifiedName() {
-        return getCategory().getName() + "." + getName();
+        return getCategory().getSystemName() + "." + getName();
     }
 
     public boolean isInitialized() {
@@ -240,6 +239,12 @@ public class BaseFeed implements Feed {
         }
 
         return null;
+    }
+
+    @Override
+    public void clearSourcesAndDestinations() {
+        this.sources.clear();
+        this.destinations.clear();
     }
 
     @Override
@@ -337,6 +342,14 @@ public class BaseFeed implements Feed {
     @Override
     public void setWaterMarkValue(String waterMarkName, String value) {
         this.waterMarkValues.put(waterMarkName, waterMarkName);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getTags()
+     */
+    @Override
+    public Set<String> getTags() {
+        return Collections.emptySet();
     }
 
     @Override

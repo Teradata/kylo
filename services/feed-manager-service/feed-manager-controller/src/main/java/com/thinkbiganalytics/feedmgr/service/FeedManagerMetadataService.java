@@ -22,9 +22,11 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
@@ -103,7 +105,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedModelTransform feedModelTransform;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -121,11 +123,11 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
-    
-    
+
+
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
-            return feedProvider.checkFeedPermission(id, action, more);
+        return feedProvider.checkFeedPermission(id, action, more);
 
     }
 
@@ -324,7 +326,7 @@ public class FeedManagerMetadataService implements MetadataService {
     public Collection<FeedMetadata> getFeeds() {
         return feedProvider.getFeeds();
     }
-    
+
     @Override
     public Page<UIFeed> getFeedsPage(boolean verbose, Pageable pageable, String filter) {
         return feedProvider.getFeeds(verbose, pageable, filter);
@@ -363,6 +365,11 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public Collection<FeedCategory> getCategories() {
         return categoryProvider.getCategories();
+    }
+
+    @Override
+    public Collection<FeedCategory> getCategories(boolean includeFeedDetails) {
+        return categoryProvider.getCategories(includeFeedDetails);
     }
 
     @Override
@@ -438,6 +445,17 @@ public class FeedManagerMetadataService implements MetadataService {
     public Optional<Set<UserProperty>> getFeedUserFields(@Nonnull final String categoryId) {
         return feedProvider.getUserFields(categoryId);
     }
+    
+    @Nonnull
+    @Override
+    public FeedVersions getFeedVersions(String feedId, boolean includeFeeds) {
+        return feedProvider.getFeedVersions(feedId, includeFeeds);
+    }
+    
+    public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return feedProvider.getFeedVersion(feedId, versionId, includeContent);
+    }
+
 
     @Nonnull
     @Override
@@ -504,5 +522,21 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
+    }
+
+    /**
+     * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     * @param feedId of the feed rest model to update
+     */
+    public void updateFeedDatasources(String feedId) {
+        feedProvider.updateFeedDatasources(feedId);
+    }
+
+    /**
+     * Iterate all of the feeds, clear all sources/destinations and reassign
+     * Note this will be an expensive call if you have a lot of feeds
+     */
+    public void updateAllFeedsDatasources(){
+        feedProvider.updateAllFeedsDatasources();
     }
 }

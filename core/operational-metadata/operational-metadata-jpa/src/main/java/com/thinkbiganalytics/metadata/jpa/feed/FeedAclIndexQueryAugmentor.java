@@ -27,9 +27,9 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
-import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry.PrincipalType;
 import com.thinkbiganalytics.metadata.jpa.feed.security.QJpaFeedOpsAclEntry;
 
 import org.slf4j.Logger;
@@ -85,10 +85,10 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
 
             RoleSetExposingSecurityExpressionRoot userCxt = getUserContext();
             javax.persistence.criteria.Predicate aclPrincipalInGroups = fromAcl.get("principalName").in(userCxt.getGroups());
-            javax.persistence.criteria.Predicate aclPrincipalTypeIsGroup = criteriaBuilder.equal(fromAcl.get("principalType"), PrincipalType.GROUP);
+            javax.persistence.criteria.Predicate aclPrincipalTypeIsGroup = criteriaBuilder.equal(fromAcl.get("principalType"), FeedOpsAclEntry.PrincipalType.GROUP);
             javax.persistence.criteria.Predicate acePrincipalGroupMatch = criteriaBuilder.and(aclPrincipalInGroups, aclPrincipalTypeIsGroup);
             javax.persistence.criteria.Predicate aclPrincipalEqUser = criteriaBuilder.equal(fromAcl.get("principalName"), userCxt.getName());
-            javax.persistence.criteria.Predicate aclPrincipalTypeIsUser = criteriaBuilder.equal(fromAcl.get("principalType"), PrincipalType.USER);
+            javax.persistence.criteria.Predicate aclPrincipalTypeIsUser = criteriaBuilder.equal(fromAcl.get("principalType"), FeedOpsAclEntry.PrincipalType.USER);
             javax.persistence.criteria.Predicate acePrincipalUserMatch = criteriaBuilder.and(aclPrincipalEqUser, aclPrincipalTypeIsUser);
             javax.persistence.criteria.Predicate acePrincipalMatch = criteriaBuilder.or(acePrincipalGroupMatch, acePrincipalUserMatch);
 
@@ -129,8 +129,8 @@ public abstract class FeedAclIndexQueryAugmentor implements QueryAugmentor {
         QJpaFeedOpsAclEntry aclEntry = QJpaFeedOpsAclEntry.jpaFeedOpsAclEntry;
         JPQLQuery<JpaFeedOpsAclEntry> subquery = JPAExpressions.selectFrom(aclEntry)
             .where(aclEntry.feed.id.eq(feedId)
-                       .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(PrincipalType.GROUP))
-                                .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(PrincipalType.USER))))
+                       .and(aclEntry.principalName.in(userCxt.getGroups()).and(aclEntry.principalType.eq(FeedOpsAclEntry.PrincipalType.GROUP))
+                                .or(aclEntry.principalName.eq(userCxt.getName()).and(aclEntry.principalType.eq(FeedOpsAclEntry.PrincipalType.USER))))
         );
         return subquery.exists();
     }

@@ -29,6 +29,7 @@ public class RestClientConfig {
     private String password = "PASSWORD";
     private String serverUrl = "URL";
     private String port = "";
+    private Boolean enableTLS = Boolean.FALSE;
 
     public String getUsername() {
         return username;
@@ -60,5 +61,13 @@ public class RestClientConfig {
 
     public void setPort(String port) {
         this.port = port;
+    }
+
+    public Boolean getEnableTLS() {
+        return enableTLS;
+    }
+
+    public void setEnableTLS(Boolean enableTLS) {
+        this.enableTLS = enableTLS;
     }
 }

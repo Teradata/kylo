@@ -5,8 +5,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             restrict: "EA",
             scope: {},
             bindToController: {
-                panelTitle: "@",
-                refreshIntervalTime: "@"
+                panelTitle: "@"
             },
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/services-indicator/services-indicator-template.html',
@@ -20,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout,ServicesStatusData) {
+    var controller = function ($scope, $element, $http,$mdDialog,$mdPanel, $interval, $timeout,ServicesStatusData,OpsManagerDashboardService,BroadcastService) {
         var self = this;
         this.dataLoaded = false;
 
@@ -44,14 +43,21 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     return parseInt(d);
                 },
                 color:function(d){
-                    if(d.key == 'UP'){
+                    if(d.key == 'HEALTHY'){
                         return '#009933';
                     }
-                    else if( d.key== 'DOWN'){
+                    else if( d.key== 'UNHEALTHY'){
                         return '#FF0000';
                     }
                     else if(d.key == 'WARNING') {
                         return '#FF9901';
+                    }
+                },
+                pie: {
+                    dispatch: {
+                        'elementClick': function(e){
+                         self.openDetailsDialog(e.data.key);
+                        }
                     }
                 },
                 dispatch: {
@@ -62,9 +68,40 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             }
         };
         this.chartData = [];
-        this.chartData.push({key: "UP", value: 0})
-        this.chartData.push({key: "DOWN", value: 0})
+        this.chartData.push({key: "HEALTHY", value: 0})
+        this.chartData.push({key: "UNHEALTHY", value: 0})
         this.chartData.push({key: "WARNING", value: 0})
+
+        function watchDashboard() {
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
+
+                ServicesStatusData.transformServicesResponse(OpsManagerDashboardService.dashboard.serviceStatus);
+                var services = ServicesStatusData.services;
+                var servicesArr = [];
+                for(var k in services) {
+                    servicesArr.push(services[k]);
+                }
+                self.indicator.addServices(servicesArr);
+                self.dataLoaded = true;
+            });
+        }
+
+
+        this.openDetailsDialog = function(key){
+            $mdDialog.show({
+                controller:"ServicesDetailsDialogController",
+                templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                fullscreen: true,
+                locals: {
+                    status: key,
+                    selectedStatusData: self.indicator.grouped[key]
+                }
+            });
+        }
+
+
 
         this.updateChart = function(){
             var title = (self.indicator.counts.allCount)+" Total";
@@ -109,9 +146,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             allServices: [],
             counts: {errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0},
             grouped: {
-                "UP": {label: "Healthy", styleClass: "status-healthy", count: 0, data: []},
+                "HEALTHY": {label: "Healthy", styleClass: "status-healthy", count: 0, data: []},
                 "WARNING": {label: "Warnings", styleClass: "status-warnings", count: 0, data: []},
-                "DOWN": {label: "Down", styleClass: "status-errors", count: 0, data: []}
+                "UNHEALTHY": {label: "UNHEALTHY", styleClass: "status-errors", count: 0, data: []}
             },
             percent: 0,
             dateTime: null,
@@ -127,8 +164,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 })
             },
             addService: function (service) {
-                this.grouped[service.state].data.push(service);
-                this.grouped[service.state].count++;
+                var displayState = service.state == "UP" ? "HEALTHY" : (service.state == "DOWN" ? "UNHEALTHY" : service.state);
+                this.grouped[displayState].data.push(service);
+                this.grouped[displayState].count++;
                 service.latestAlertTimeAgo = null;
                 //update timeAgo text
                 if (service.latestAlertTimestamp != null) {
@@ -169,9 +207,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 }
             },
             updateCounts: function () {
-                this.counts.upCount = this.grouped["UP"].count;
+                this.counts.upCount = this.grouped["HEALTHY"].count;
                 this.counts.allCount = this.allServices.length;
-                this.counts.downCount = this.grouped["DOWN"].count;
+                this.counts.downCount = this.grouped["UNHEALTHY"].count;
                 this.counts.warningCount = this.grouped["WARNING"].count;
                 this.counts.errorCount = this.counts.downCount + this.counts.warningCount;
                 angular.forEach(self.chartData,function(item,i) {
@@ -201,48 +239,59 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-
-        $scope.$watch(
-            function () {
-                return ServicesStatusData.services;
-            },
-            function (newVal) {
-                var servicesArr = [];
-                for(var k in newVal) {
-                    servicesArr.push(newVal[k]);
-                }
-                self.indicator.addServices(servicesArr);
-                self.dataLoaded = true;
-            },true
-        );
-
-
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-            }
-        }
-
-        this.setRefreshInterval = function () {
-            self.clearRefreshInterval();
-            if (self.refreshIntervalTime) {
-                self.refreshInterval = $interval(self.getIndicatorMetrics, self.refreshIntervalTime);
-
-            }
-        }
-
-
         $scope.$on('$destroy', function () {
-           self.clearRefreshInterval();
+            //cleanup
         });
+
+
+        function init(){
+            watchDashboard();
+        }
+        init();
+
     };
 
 
 
 
 
-    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$interval","$timeout","ServicesStatusData",controller]);
+
+    var servicesDetailsDialogController = function ($scope, $mdDialog, $interval,StateService,status,selectedStatusData) {
+        var self = this;
+
+        $scope.css = status == "UNHEALTHY" ? "md-warn" : "";
+        $scope.status = status
+        $scope.services = selectedStatusData.data;
+
+        _.each($scope.services,function(service) {
+            service.componentMessage = null;
+            if(service.components.length ==1){
+                service.componentName = service.components[0].name;
+                service.componentMessage =service.components[0].message;
+            }
+        });
+
+        $scope.hide = function () {
+            $mdDialog.hide();
+
+        };
+
+        $scope.gotoServiceDetails = function(serviceName){
+            $mdDialog.hide();
+            StateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
+        }
+
+        $scope.cancel = function () {
+            $mdDialog.cancel();
+        };
+
+    };
+
+    angular.module(moduleName).controller('ServicesDetailsDialogController', ["$scope","$mdDialog","$interval","StateService","status","selectedStatusData",servicesDetailsDialogController]);
+
+
+
+    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$mdDialog","$mdPanel","$interval","$timeout","ServicesStatusData","OpsManagerDashboardService","BroadcastService",controller]);
 
 
     angular.module(moduleName)

@@ -33,6 +33,7 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     private String hiveColumnLabel;
     private String field;
     private String dataType;
+    private String nativeDataType;
     private String tableName;
     private String databaseName;
     private int index;
@@ -56,6 +57,16 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     @Override
     public void setDataType(String dataType) {
         this.dataType = dataType;
+    }
+
+    @Override
+    public String getNativeDataType() {
+        return nativeDataType;
+    }
+
+    @Override
+    public void setNativeDataType(String nativeDataType) {
+        this.nativeDataType = nativeDataType;
     }
 
     @Override

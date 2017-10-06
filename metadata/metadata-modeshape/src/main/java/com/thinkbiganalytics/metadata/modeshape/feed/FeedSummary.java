@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 import java.util.Optional;
 
@@ -42,7 +43,7 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
     private JcrFeed feed;
 
     public FeedSummary(Node node, JcrFeed feed) {
-        super(node);
+        super(JcrVersionUtil.createAutoCheckoutProxy(node));
         this.feed = feed;
     }
 
@@ -73,7 +74,7 @@ public class FeedSummary extends AbstractJcrAuditableSystemEntity {
         } catch (Exception e) {
             if (category == null) {
                 try {
-                    category = (Category) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
+                    category = (Category) JcrUtil.constructNodeObject(this.feed.getNode().getParent(), categoryClass, null);
                 } catch (Exception e2) {
                     throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
                 }

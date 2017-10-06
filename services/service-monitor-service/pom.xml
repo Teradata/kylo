@@ -13,6 +13,7 @@
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
   <modules>
+    <module>service-monitor-service-api</module>
     <module>service-monitor-controller</module>
   </modules>
 

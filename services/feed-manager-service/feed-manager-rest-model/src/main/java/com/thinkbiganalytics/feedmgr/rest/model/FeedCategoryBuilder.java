@@ -20,6 +20,8 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+
 /**
  */
 public class FeedCategoryBuilder {
@@ -63,7 +65,7 @@ public class FeedCategoryBuilder {
         category.setIconColor(this.iconColor);
         category.setIcon(this.icon);
 
-        category.generateSystemName();
+        category.setSystemName(SystemNamingService.generateSystemName(category.getName()));
         return category;
     }
 

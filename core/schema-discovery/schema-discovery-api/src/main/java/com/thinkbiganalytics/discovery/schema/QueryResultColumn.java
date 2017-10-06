@@ -40,6 +40,16 @@ public interface QueryResultColumn {
     void setDataType(String dataType);
 
     /**
+     * Gets the database-specific type name.
+     */
+    String getNativeDataType();
+
+    /**
+     * Sets the database-specific type name.
+     */
+    void setNativeDataType(String nativeDataType);
+
+    /**
      * Get table name
      *
      * @return table name

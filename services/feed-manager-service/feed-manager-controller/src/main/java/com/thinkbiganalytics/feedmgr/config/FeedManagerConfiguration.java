@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
+import com.thinkbiganalytics.feedmgr.service.MetadataModelTransform;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -50,6 +51,7 @@ import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplate
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -102,6 +104,11 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedManagerTemplateService feedManagerTemplateService() {
         return new DefaultFeedManagerTemplateService();
+    }
+
+    @Bean(name = "metadataModelTransform")
+    public MetadataModelTransform metadataTransform() {
+        return new MetadataModelTransform();
     }
 
     @Bean
@@ -277,5 +284,10 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedHiveTableService feedHiveTableService(@Nonnull final HiveService hiveService) {
         return new FeedHiveTableService(hiveService);
+    }
+
+    @Bean
+    public RegisteredTemplateCache registeredTemplateCache() {
+        return new RegisteredTemplateCache();
     }
 }

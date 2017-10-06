@@ -29,6 +29,7 @@ import java.util.Date;
  */
 public class JobStatusCountResult implements JobStatusCount {
 
+    private String feedId;
     private String feedName;
     private String jobName;
     private String status;
@@ -40,6 +41,7 @@ public class JobStatusCountResult implements JobStatusCount {
     }
 
     public JobStatusCountResult(JobStatusCount jobStatusCount) {
+        this.feedId = jobStatusCount.getFeedId();
         this.feedName = jobStatusCount.getFeedName();
         this.jobName = jobStatusCount.getJobName();
         this.status = jobStatusCount.getStatus();
@@ -97,5 +99,13 @@ public class JobStatusCountResult implements JobStatusCount {
         this.date = date;
     }
 
+    @Override
+    public String getFeedId() {
+        return feedId;
+    }
 
+    @Override
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
 }

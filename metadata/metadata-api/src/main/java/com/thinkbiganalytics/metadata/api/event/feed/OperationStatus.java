@@ -40,24 +40,20 @@ public class OperationStatus implements Serializable {
     private final FeedOperation.ID operationId;
     private final FeedOperation.State state;
     private final String status;
+    private final FeedOperation.FeedType feedType;
 
-    public OperationStatus(String feedName, FeedOperation.ID opId, FeedOperation.State state, String status) {
-        this.feedId = null;
+
+
+    public OperationStatus(Feed.ID id, String feedName, FeedOperation.FeedType feedType,FeedOperation.ID opId, FeedOperation.State state, String status) {
+        this.feedId = id;
         this.feedName = feedName;
         this.operationId = opId;
         this.state = state;
         this.status = status;
+        this.feedType = feedType != null ? feedType : FeedOperation.FeedType.FEED;
     }
 
 
-
-    public OperationStatus(Feed.ID id, FeedOperation.ID opId, FeedOperation.State state, String status) {
-        this.feedId = id;
-        this.feedName = null;
-        this.operationId = opId;
-        this.state = state;
-        this.status = status;
-    }
 
     public Feed.ID getFeedId() {
         return feedId;
@@ -79,5 +75,7 @@ public class OperationStatus implements Serializable {
         return status;
     }
 
-
+    public FeedOperation.FeedType getFeedType() {
+        return feedType;
+    }
 }

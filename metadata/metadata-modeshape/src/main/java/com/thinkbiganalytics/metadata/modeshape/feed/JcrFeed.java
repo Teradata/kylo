@@ -70,6 +70,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
 
+    private Node summaryNode;
     private FeedSummary summary;
     private FeedData data;
 
@@ -79,6 +80,13 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public JcrFeed(Node node) {
         super(node);
+    }
+    
+    public JcrFeed(Node feedNode, Node summaryNode, FeedOpsAccessControlProvider opsAccessProvider) {
+        this(feedNode, opsAccessProvider);
+        // The summary node will be different (not a child of the feed node) if this is a past version,
+        // so it must be supplied at construction.
+        this.summary = JcrUtil.getJcrObject(summaryNode, FeedSummary.class, this);
     }
 
     public JcrFeed(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
@@ -261,7 +269,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     @Override
     public String getQualifiedName() {
-        return getCategory().getName() + "." + getName();
+        return getCategory().getSystemName() + "." + getName();
     }
 
     @Override
@@ -532,6 +540,11 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     protected Node createNewPrecondition() {
         return getFeedDetails().map(d -> d.createNewPrecondition()).orElse(null);
+    }
+
+    public void clearSourcesAndDestinations(){
+        removeFeedSources();
+        removeFeedDestinations();
     }
 
     public static class FeedId extends JcrEntity.EntityId implements Feed.ID {

@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
@@ -39,10 +40,10 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
-import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchAndStreamingJobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
@@ -60,6 +61,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.QOpsManagerFeedId;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.QJpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
@@ -83,7 +85,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -94,7 +95,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -121,9 +121,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     private BatchJobParametersRepository jobParametersRepository;
 
-
     private OpsManagerFeedRepository opsManagerFeedRepository;
-
 
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
@@ -148,6 +146,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Inject
     private AlertProvider provider;
+
+    @Inject
+    private JobExecutionChangedNotifier jobExecutionChangedNotifier;
 
 
     @Inject
@@ -214,9 +215,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param event the provenance event indicating it is the start of a job
      * @return the job execution
      */
-    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         BatchJobInstance jobInstance = createJobInstance(event);
-        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event);
+        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event, feed);
 
         return jobExecution;
     }
@@ -229,7 +230,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param event       the event that started this job execution
      * @return the job execution
      */
-    private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
 
         JpaBatchJobExecution jobExecution = new JpaBatchJobExecution();
         jobExecution.setJobInstance(jobInstance);
@@ -251,7 +252,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //save the params
         JpaNifiEventJobExecution eventJobExecution = new JpaNifiEventJobExecution(jobExecution, event.getEventId(), event.getJobFlowFileId());
         jobExecution.setNifiEventJobExecution(eventJobExecution);
-        jobExecution = this.jobExecutionRepository.save(jobExecution);
+        jobExecution = (JpaBatchJobExecution) save(jobExecution);
+
+        jobExecutionChangedNotifier.notifyStarted(jobExecution, feed, null);
         //bootstrap the feed parameters
         jobParameters.put(FeedConstants.PARAM__FEED_NAME, event.getFeedName());
         jobParameters.put(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_FEED);
@@ -335,7 +338,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             if (event.isFailure()) {  //event.hasFailureEvents
                 jobExecution.failJob();
             } else {
-                jobExecution.completeJob();
+                jobExecution.completeOrFailJob();
             }
         }
 
@@ -386,7 +389,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
             if (event.isStartOfJob() || event.isFinalJobEvent()) {
-                return getOrCreateStreamJobExecution(event);
+                return getOrCreateStreamJobExecution(event, feed);
             } else {
                 return null;
             }
@@ -395,7 +398,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                 feed = opsManagerFeedRepository.findByName(event.getFeedName());
             }
             if (isProcessBatchEvent(event, feed)) {
-                return getOrCreateBatchJobExecution(event);
+                return getOrCreateBatchJobExecution(event, feed);
             } else {
                 return null;
             }
@@ -467,13 +470,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-    private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
             jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
             if (jobExecution == null) {
-                jobExecution = createNewJobExecution(event);
+                jobExecution = createNewJobExecution(event, feed);
                 isNew = true;
             }
         } catch (OptimisticLockException e) {
@@ -483,6 +486,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         //if the attrs coming in change the type to a CHECK job then update the entity
         boolean updatedJobType = updateJobType(jobExecution, event);
+
         boolean save = isNew || updatedJobType;
         if (event.isFinalJobEvent()) {
             finishJob(event, jobExecution);
@@ -505,9 +509,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             save = true;
         }
         if (save) {
-            jobExecution = jobExecutionRepository.save(jobExecution);
+
+            jobExecution = (JpaBatchJobExecution) save(jobExecution);
             if (isNew) {
                 log.info("Created new Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
+            }
+            if (updatedJobType) {
+                //notify operations status
+                jobExecutionChangedNotifier.notifyDataConfidenceJob(jobExecution, feed, "Data Confidence Job detected ");
             }
 
         }
@@ -515,7 +524,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-    private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event) {
+    private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
@@ -530,10 +539,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     tempFailedEvent.setDetails("Failed Running Batch event as this Feed has now become a Stream");
                     finishJob(tempFailedEvent, (JpaBatchJobExecution) latestJobExecution);
                     latestJobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
-                    jobExecutionRepository.save((JpaBatchJobExecution) latestJobExecution);
+                    save(latestJobExecution);
                 }
 
-                jobExecution = createNewJobExecution(event);
+                jobExecution = createNewJobExecution(event, feed);
                 jobExecution.setStream(true);
                 log.info("Created new Streaming Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
             } else {
@@ -552,7 +561,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
 
         if (save) {
-            jobExecutionRepository.save(jobExecution);
+            save(jobExecution);
         }
         return jobExecution;
     }
@@ -573,8 +582,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @return the saved job execution
      */
     @Override
-    public BatchJobExecution save(ProvenanceEventRecordDTO event) {
-        OpsManagerFeed feed = opsManagerFeedRepository.findByName(event.getFeedName());
+    public BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event, feed);
         if (jobExecution != null) {
             return save(jobExecution, event);
@@ -582,15 +590,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return null;
     }
 
-    /**
-     * Save a job execution to the database
-     *
-     * @return the saved job execution
-     */
-    @Override
+
     public BatchJobExecution save(BatchJobExecution jobExecution) {
         return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
     }
+
 
     @Override
     public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
@@ -715,6 +719,47 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
         return findAll(query, pageable);
+    }
+
+
+    /**
+     * Get count of Jobs grouped by Status
+     * Streaming Feeds are given a count of 1 if they are running, regardless of the number of active running flows
+     */
+    public List<BatchAndStreamingJobStatusCount> getBatchAndStreamingJobCounts(String filter) {
+
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
+        QJpaNifiFeedStats feedStats = QJpaNifiFeedStats.jpaNifiFeedStats;
+
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        if (StringUtils.isNotBlank(filter)) {
+            whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
+        }
+
+        Expression<JpaBatchAndStreamingJobStatusCounts> expr =
+            Projections.bean(JpaBatchAndStreamingJobStatusCounts.class,
+                             JobStatusDslQueryExpressionBuilder.jobState().as("status"),
+                             feed.id.as("opsManagerFeedId"),
+                             feed.name.as("feedName"),
+                             feed.isStream.as("isStream"),
+                             feedStats.runningFeedFlows.as("runningFeedFlows"),
+                             jobExecution.jobExecutionId.count().as("count"));
+
+        JPAQuery<?> query = factory.select(expr)
+            .from(feed)
+            .innerJoin(jobInstance).on(jobInstance.feed.id.eq(feed.id))
+            .innerJoin(jobExecution).on(jobExecution.jobInstance.jobInstanceId.eq(jobInstance.jobInstanceId))
+            .leftJoin(feedStats).on(feed.id.uuid.eq(feedStats.feedId.uuid))
+            .where(whereBuilder)
+            .groupBy(jobExecution.status, feed.id, feed.name, feed.isStream, feedStats.runningFeedFlows);
+        List<BatchAndStreamingJobStatusCount> stats = (List<BatchAndStreamingJobStatusCount>) query.fetch();
+        return stats;
+
     }
 
 
@@ -863,7 +908,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             msg += abandonMessage;
             execution.setExitMessage(msg);
             //also stop any running steps??
+            //find the feed associated with the job
+            OpsManagerFeed feed = execution.getJobInstance().getFeed();
+
             save(execution);
+
+            jobExecutionChangedNotifier.notifyAbandoned(execution, feed, null);
 
             //clear the associated alert
             String alertId = execution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
@@ -875,24 +925,32 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return execution;
     }
 
-    public void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream,String status) {
+    public void notifyFailure(BatchJobExecution jobExecution, String feedName, boolean isStream, String status) {
+        OpsManagerFeed feed = jobExecution.getJobInstance().getFeed();
+        notifyFailure(jobExecution, feed, isStream, status);
+    }
 
-        if (feedName == null) {
-            feedName = jobExecution.getJobInstance().getFeed().getName();
-        }
-        if (StringUtils.isBlank(status)) {
-            status = "Failed Job";
-        }
+    @Override
+    public void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status) {
+        jobExecutionChangedNotifier.notifySuccess(jobExecution,feed, status);
+    }
 
-        FeedOperation.State state = FeedOperation.State.FAILURE;
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
+    @Override
+    public void notifyStopped(BatchJobExecution jobExecution, OpsManagerFeed feed, String status) {
+        jobExecutionChangedNotifier.notifySuccess(jobExecution, feed, status);
+    }
+
+    @Override
+    public void notifyFailure(BatchJobExecution jobExecution, OpsManagerFeed feed, boolean isStream, String status) {
+
+        jobExecutionChangedNotifier.notifyOperationStatusEvent(jobExecution, feed, FeedOperation.State.FAILURE, status);
 
         Alert alert = null;
 
         //see if the feed has an unhandled alert already.
         String feedId = jobExecution.getJobInstance().getFeed().getId().toString();
         String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
-        String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feedName;
+        String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feed != null ? feed.getName() : null;
         if (StringUtils.isNotBlank(alertId)) {
             alert = provider.getAlertAsServiceAccount(provider.resolve(alertId)).orElse(null);
         }
@@ -942,7 +1000,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             } else {
                 alertContent = new DefaultAlertChangeEventContent();
                 alertContent.getContent().put("failedCount", 1);
-                if(isStream) {
+                if (isStream) {
                     alertContent.getContent().put("stream", true);
                 }
                 final DefaultAlertChangeEventContent content = alertContent;
@@ -951,19 +1009,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
         }
     }
-
-
-    public void notifySuccess(BatchJobExecution jobExecution, String feedName, boolean isStream,String status) {
-        if (feedName == null) {
-            feedName = jobExecution.getJobInstance().getFeed().getName();
-        }
-        if (StringUtils.isBlank(status)) {
-            status = "Job Succeeded for feed: " + feedName;
-        }
-        FeedOperation.State state = FeedOperation.State.SUCCESS;
-        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(feedName, new OpId(jobExecution.getJobExecutionId()), state, status)));
-    }
-
 
 
 
@@ -980,35 +1025,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
     */
-
-    protected static class OpId implements FeedOperation.ID {
-
-        private final String idValue;
-
-        public OpId(Serializable value) {
-            this.idValue = value.toString();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (getClass().isAssignableFrom(obj.getClass())) {
-                OpId that = (OpId) obj;
-                return Objects.equals(this.idValue, that.idValue);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.idValue);
-        }
-
-        @Override
-        public String toString() {
-            return this.idValue;
-        }
-    }
 
 
 }

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class FieldPolicyRuleBuilder {
+public class FieldPolicyRuleBuilder {
 
     private String fieldName;
     private int seq;
@@ -37,11 +37,11 @@ class FieldPolicyRuleBuilder {
     private boolean profile;
     private boolean index;
 
-    FieldPolicyRuleBuilder(String fieldName) {
+    public FieldPolicyRuleBuilder(String fieldName) {
         this.fieldName = fieldName;
     }
 
-    FieldPolicyRuleBuilder withStandardisation(FieldStandardizationRule... rules) {
+    public FieldPolicyRuleBuilder withStandardisation(FieldStandardizationRule... rules) {
         for (FieldStandardizationRule rule : rules) {
             rule.setSequence(seq++);
             standardisations.add(rule);
@@ -49,7 +49,7 @@ class FieldPolicyRuleBuilder {
         return this;
     }
 
-    FieldPolicyRuleBuilder withValidation(FieldValidationRule... rules) {
+    public FieldPolicyRuleBuilder withValidation(FieldValidationRule... rules) {
         Arrays.stream(rules).forEach(rule -> {
             rule.setSequence(seq++);
             validations.add(rule);
@@ -57,17 +57,17 @@ class FieldPolicyRuleBuilder {
         return this;
     }
 
-    FieldPolicyRuleBuilder withProfile() {
+    public FieldPolicyRuleBuilder withProfile() {
         profile = true;
         return this;
     }
 
-    FieldPolicyRuleBuilder withIndex() {
+    public FieldPolicyRuleBuilder withIndex() {
         index = true;
         return this;
     }
 
-    FieldPolicy toPolicy() {
+    public FieldPolicy toPolicy() {
         FieldPolicy policy = new FieldPolicy();
         policy.setFieldName(fieldName);
         policy.setFeedFieldName(fieldName);

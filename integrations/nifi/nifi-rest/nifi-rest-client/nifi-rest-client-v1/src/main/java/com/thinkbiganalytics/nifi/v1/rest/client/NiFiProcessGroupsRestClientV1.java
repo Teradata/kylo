@@ -35,6 +35,7 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
@@ -181,13 +182,38 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     }
 
     @Nonnull
-    @Override
-    public Set<ProcessGroupDTO> findAll(@Nonnull final String parentGroupId) {
+    //@Override
+    public Set<ProcessGroupDTO> findAllx(@Nonnull final String parentGroupId) {
         try {
             return client.get(BASE_PATH + parentGroupId + "/process-groups", null, ProcessGroupsEntity.class)
                 .getProcessGroups().stream()
                 .map(ProcessGroupEntity::getComponent)
                 .collect(Collectors.toSet());
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public Set<ProcessGroupDTO> findAll(@Nonnull final String parentGroupId) {
+        try {
+            return client.get("/flow"+BASE_PATH + parentGroupId , null, ProcessGroupFlowEntity.class)
+                .getProcessGroupFlow().getFlow()
+                .getProcessGroups().stream()
+                .map(ProcessGroupEntity::getComponent)
+                .collect(Collectors.toSet());
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public ProcessGroupFlowDTO flow(@Nonnull final String parentGroupId) {
+        try {
+            return client.get("/flow"+BASE_PATH + parentGroupId , null, ProcessGroupFlowEntity.class)
+                .getProcessGroupFlow();
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -242,12 +268,29 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     }
 
 
+    /**
+     * This is very slow once you have a lot of process groups
+     * @param processGroupId
+     * @return
+     */
+    @Nonnull
+    public Set<ConnectionDTO> getConnectionsxx(@Nonnull final String processGroupId) {
+        try {
+            return client.get(BASE_PATH + processGroupId + "/connections", null, ConnectionsEntity.class)
+                .getConnections().stream()
+                .map(ConnectionEntity::getComponent)
+                .collect(Collectors.toSet());
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
     @Nonnull
     @Override
     public Set<ConnectionDTO> getConnections(@Nonnull final String processGroupId) {
         try {
-            return client.get(BASE_PATH + processGroupId + "/connections", null, ConnectionsEntity.class)
-                .getConnections().stream()
+            return client.get("/flow"+BASE_PATH + processGroupId , null, ProcessGroupFlowEntity.class)
+                .getProcessGroupFlow().getFlow().getConnections().stream()
                 .map(ConnectionEntity::getComponent)
                 .collect(Collectors.toSet());
         } catch (final NotFoundException e) {

@@ -44,24 +44,24 @@ public interface ExecutedFeed {
      *
      * @return the job instance id for this feed/job execution
      */
-    long getFeedInstanceId();
+    Long getFeedInstanceId();
 
     /**
      * set the feed job instance id
      */
-    void setFeedInstanceId(long feedInstanceId);
+    void setFeedInstanceId(Long feedInstanceId);
 
     /**
      * Return the feed job execution id
      *
      * @return the job execution id
      */
-    long getFeedExecutionId();
+    Long getFeedExecutionId();
 
     /**
      * set the feed job execution id
      */
-    void setFeedExecutionId(long feedExecutionId);
+    void setFeedExecutionId(Long feedExecutionId);
 
 
     /**

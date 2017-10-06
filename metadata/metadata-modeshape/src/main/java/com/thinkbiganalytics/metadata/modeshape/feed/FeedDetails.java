@@ -276,7 +276,6 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     protected void removeFeedSource(JcrFeedSource source) {
         try {
-            JcrVersionUtil.checkout(source.getNode().getParent());
             source.getNode().remove();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("nable to remove feed source for feed " + getParentSummary().getSystemName(), e);
@@ -285,7 +284,6 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     protected void removeFeedDestination(JcrFeedDestination dest) {
         try {
-            JcrVersionUtil.checkout(dest.getNode().getParent());
             dest.getNode().remove();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("nable to remove feed destination for feed " + getParentSummary().getSystemName(), e);
@@ -293,60 +291,50 @@ public class FeedDetails extends JcrPropertiesEntity {
     }
 
     protected void removeFeedSources() {
-        try {
-            List<? extends FeedSource> sources = getSources();
-            if (sources != null && !sources.isEmpty()) {
-                //checkout the feed
-                JcrVersionUtil.checkout(getParentSummary().getNode());
-                sources.stream().forEach(source -> {
-                    try {
-                        Node sourceNode = ((JcrFeedSource) source).getNode();
-                        ((JcrDatasource) ((JcrFeedSource) source).getDatasource()).removeSourceNode(sourceNode);
-                        sourceNode.remove();
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("nable to remove feed sources for feed " + getParentSummary().getSystemName(), e);
+        List<? extends FeedSource> sources = getSources();
+        if (sources != null && !sources.isEmpty()) {
+            //checkout the feed
+            sources.stream().forEach(source -> {
+                try {
+                    Node sourceNode = ((JcrFeedSource) source).getNode();
+                    ((JcrDatasource) ((JcrFeedSource) source).getDatasource()).removeSourceNode(sourceNode);
+                    sourceNode.remove();
+                } catch (RepositoryException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
     protected void removeFeedDestinations() {
-        try {
-            List<? extends FeedDestination> destinations = getDestinations();
-
-            if (destinations != null && !destinations.isEmpty()) {
-                JcrVersionUtil.checkout(getParentSummary().getNode());
-                destinations.stream().forEach(dest -> {
-                    try {
-                        // Remove the connection nodes
-                        Node destNode = ((JcrFeedDestination) dest).getNode();
-                        JcrDatasource datasource = (JcrDatasource) dest.getDatasource();
-                        datasource.removeDestinationNode(destNode);
-                        destNode.remove();
-
-                        // Remove the datasource if there are no referencing feeds
-                        if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
-                            datasource.remove();
-                        }
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
+        List<? extends FeedDestination> destinations = getDestinations();
+        
+        if (destinations != null && !destinations.isEmpty()) {
+            destinations.stream().forEach(dest -> {
+                try {
+                    // Remove the connection nodes
+                    Node destNode = ((JcrFeedDestination) dest).getNode();
+                    JcrDatasource datasource = (JcrDatasource) dest.getDatasource();
+                    datasource.removeDestinationNode(destNode);
+                    destNode.remove();
+                    
+                    // Remove the datasource if there are no referencing feeds
+                    if (datasource.getFeedDestinations().isEmpty() && datasource.getFeedSources().isEmpty()) {
+                        datasource.remove();
                     }
-                });
-
-
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("unable to remove feed destinations for feed " + getParentSummary().getSystemName(), e);
+                } catch (RepositoryException e) {
+                    e.printStackTrace();
+                }
+            });
+            
+            
         }
     }
 
     protected Node createNewPrecondition() {
         try {
             Node feedNode = getNode();
-            Node precondNode = JcrUtil.getOrCreateNode(feedNode, FeedDetails.PRECONDITION, JcrFeed.PRECONDITION_TYPE, true);
+            Node precondNode = JcrUtil.getOrCreateNode(feedNode, FeedDetails.PRECONDITION, JcrFeed.PRECONDITION_TYPE);
 
             if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
                 precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();
