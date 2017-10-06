@@ -30,11 +30,10 @@ public class EmailServiceLevelAgreementActionTest {
         EmailServiceLevelAgreementAction action = new EmailServiceLevelAgreementAction();
         SlaEmailService service = Mockito.mock(SlaEmailService.class);
         action.setEmailService(service);
-        action.sendToAddresses("desc", "sla name", "a@a.com, b@b.com,c@c.com");
+        action.sendToAddresses("a@a.com, b@b.com,c@c.com", "sla name", "desc");
 
-        Mockito.verify(service).sendMail("a@a.com", "SLA Violated: sla name", "desc");
-        Mockito.verify(service).sendMail("b@b.com", "SLA Violated: sla name", "desc");
-        Mockito.verify(service).sendMail("c@c.com", "SLA Violated: sla name", "desc");
+        Mockito.verify(service).sendMail("a@a.com, b@b.com,c@c.com", "SLA Violated: sla name", "desc");
+
     }
 
     @Test
@@ -42,9 +41,10 @@ public class EmailServiceLevelAgreementActionTest {
         EmailServiceLevelAgreementAction action = new EmailServiceLevelAgreementAction();
         SlaEmailService service = Mockito.mock(SlaEmailService.class);
         action.setEmailService(service);
-        action.sendToAddresses("desc", "sla name", "a@a.com");
+        action.sendToAddresses("a@a.com", "sla name", "desc");
 
         Mockito.verify(service).sendMail("a@a.com", "SLA Violated: sla name", "desc");
+
     }
 
 }
