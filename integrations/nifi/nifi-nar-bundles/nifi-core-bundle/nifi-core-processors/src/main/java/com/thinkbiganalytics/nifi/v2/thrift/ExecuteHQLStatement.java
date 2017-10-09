@@ -129,8 +129,8 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
             session.transfer(flowFile, IngestProperties.REL_SUCCESS);
         } catch (final Exception e) {
             logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements, flowFile, e});
+            logger.error(e.getMessage());
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            throw new ProcessException(e);
         }
     }
 
