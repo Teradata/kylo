@@ -139,21 +139,23 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
     read -p "Would you like me to install a local nifi instance? Please enter y/n: " install_nifi
 
     if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
-         read -p "Enter the NiFi home folder location, hit Enter for '/opt/nifi': " nifi_home
+        read -p "Enter Nifi version you wish to install, hit Enter for '1.3.0': " nifi_version
+        if [[ -z "$nifi_version" ]]; then
+            nifi_version=1.3.0
+        fi
 
-         if [[ -z "$nifi_home" ]]; then
+        read -p "Enter the NiFi home folder location, hit Enter for '/opt/nifi': " nifi_home
+        if [[ -z "$nifi_home" ]]; then
             nifi_home=/opt/nifi
         fi
 
         read -p "Enter the user NiFi should run as, hit Enter for 'nifi': " nifi_user
-
-         if [[ -z "$nifi_user" ]]; then
+        if [[ -z "$nifi_user" ]]; then
             nifi_user=nifi
         fi
 
         read -p "Enter the linux group NiFi should run as, hit Enter for 'nifi': " nifi_group
-
-         if [[ -z "$nifi_group" ]]; then
+        if [[ -z "$nifi_group" ]]; then
             nifi_group=nifi
         fi
     fi
@@ -220,9 +222,9 @@ fi
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     if [ $OFFLINE = true ]
     then
-        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group $CURRENT_DIR -O
+        ./nifi/install-nifi.sh $nifi_version $nifi_home $nifi_user $nifi_group $CURRENT_DIR -O
     else
-        ./nifi/install-nifi.sh $nifi_home $nifi_user $nifi_group
+        ./nifi/install-nifi.sh $nifi_version $nifi_home $nifi_user $nifi_group
     fi
 
 

@@ -31,7 +31,7 @@ if [[ $ver == 1.0* ]] || [[ $ver == 1.1* ]] ;
 then
   echo "Using provenance repository for NiFi version $ver"
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
-elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] ;
+elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] || [[ $ver == 1.4* ]] ;
 then
    echo "Using provenance repository for NiFi version $ver"
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1.2-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
