@@ -69,7 +69,7 @@ public class NiFiFlowInspectorManager {
     private DateTime started;
     private DateTime finished;
 
-    private static int DEFAULT_THREADS = 10;
+    private static int DEFAULT_THREADS = 1;
     private static int MAX_THREADS = 100;
 
     private int threadCount = DEFAULT_THREADS;
