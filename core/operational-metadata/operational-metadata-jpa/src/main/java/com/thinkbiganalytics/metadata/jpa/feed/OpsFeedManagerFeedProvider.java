@@ -61,6 +61,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -167,7 +169,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     public OpsManagerFeed findByNameWithoutAcl(String name) {
         OpsManagerFeed feed = opsManagerFeedCacheByName.findByIdWithoutAcl(name);
         if (feed == null) {
-            feed = repository.findByName(name);
+            feed = repository.findByNameWithoutAcl(name);
         }
         return feed;
     }
@@ -181,6 +183,16 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     public List<? extends OpsManagerFeed> findByFeedIds(List<OpsManagerFeed.ID> ids) {
         return opsManagerFeedCacheById.findByIds(ids);
     }
+
+    public List<? extends OpsManagerFeed> findByFeedIdsWithoutAcl(List<OpsManagerFeed.ID> ids) {
+        if(ids != null ) {
+            return opsManagerFeedCacheById.findByIdsWithoutAcl(new HashSet<>(ids));
+        }
+        else {
+            return Collections.emptyList();
+        }
+    }
+
 
     @EntityAccessControlled
     public List<? extends OpsManagerFeed> findByFeedNames(Set<String> feedNames) {
@@ -229,7 +241,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     public boolean isFeedRunning(OpsManagerFeed.ID id) {
         OpsManagerFeed feed = opsManagerFeedCacheById.findByIdWithoutAcl(id);
         if (feed == null) {
-            feed = repository.findOne(id);
+            feed = repository.findByIdWithoutAcl(id);
         }
         if (feed != null) {
             return batchJobExecutionProvider.isFeedRunning(feed.getName());
