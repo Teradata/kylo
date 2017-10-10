@@ -105,8 +105,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     @Inject
     ServicesApplicationStartup startup;
 
-    @Value("${nifi.flow.inspector.threads:10}")
-    private Integer nififlowInspectorThreads = 10;
+    @Value("${nifi.flow.inspector.threads:1}")
+    private Integer nififlowInspectorThreads = 1;
 
     @Deprecated
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedProcessorIdProcessorMap = new ConcurrentHashMap<>();
