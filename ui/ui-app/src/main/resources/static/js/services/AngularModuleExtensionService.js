@@ -9,11 +9,14 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
         * @type {Array}
         */
         var modules = [];
+
        /**
         * Map of the menu group to additional links that pertain to the extension modules
         * @type {{}}
         */
         var menuMap = {};
+
+        var stateNames = [];
 
         function lazyStateName(state){
             return state.state+".**";
@@ -69,6 +72,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
            var lazyStates = [];
            if(angular.isDefined(extensionModule.states)) {
                _.each(extensionModule.states, function(state) {
+                   stateNames.push(state.state);
                    var exists =  $uiRouter.stateRegistry.get(lazyStateName(state));
                    if(exists) {
                        $uiRouter.stateRegistry.deregister(lazyStateName(state))
@@ -95,6 +99,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
            },
            getNavigationMenu:function(){
                return menuMap;
+           },
+           stateExists:function(stateName) {
+             return _.indexOf(stateNames, stateName) > -1;
            },
            /**
             * Registers the state with angular.
