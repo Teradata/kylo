@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-metadata-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.3.2</version>
+    <version>0.8.3.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-metadata-service-api</artifactId>
