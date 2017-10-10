@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.7.2</version>
+    <version>0.7.3-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-docs</artifactId>
   <packaging>pom</packaging>

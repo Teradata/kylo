@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-schema-discovery</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.7.2</version>
+    <version>0.7.3-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
