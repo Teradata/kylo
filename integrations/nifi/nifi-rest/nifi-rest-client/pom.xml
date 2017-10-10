@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-nifi-rest</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.8.3.2-SNAPSHOT</version>
+    <version>0.8.3.2</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>

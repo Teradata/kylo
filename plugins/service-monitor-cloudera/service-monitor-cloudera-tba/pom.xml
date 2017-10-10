@@ -7,11 +7,11 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
     <artifactId>kylo-service-monitor-cloudera</artifactId>
-    <version>0.8.3.2-SNAPSHOT</version>
+    <version>0.8.3.2</version>
   </parent>
 
   <artifactId>kylo-service-monitor-cloudera-tba</artifactId>
-  <version>0.8.3.2-SNAPSHOT</version>
+  <version>0.8.3.2</version>
 
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>

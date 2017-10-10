@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-core-bundle</artifactId>
-    <version>0.8.3.2-SNAPSHOT</version>
+    <version>0.8.3.2</version>
   </parent>
   <packaging>nar</packaging>
   <properties>
