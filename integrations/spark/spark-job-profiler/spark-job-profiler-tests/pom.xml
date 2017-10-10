@@ -5,14 +5,14 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>kylo-spark-job-profiler</artifactId>
-    <version>0.7.2-SNAPSHOT</version>
+    <version>0.7.2</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
   </properties>
 
   <artifactId>kylo-spark-job-profiler-tests</artifactId>
-  <version>0.7.2-SNAPSHOT</version>
+  <version>0.7.2</version>
 
   <dependencies>
     <dependency>
