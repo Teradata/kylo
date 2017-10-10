@@ -31,6 +31,7 @@ define(['angular', 'admin/module-name','kylo-utils/LazyLoadUtil','constants/Acce
 
     }]);
 
+
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
         $ocLazyLoad.load({
             name: 'kylo', files: ['bower_components/angular-ui-grid/ui-grid.css', 'assets/ui-grid-material.css'

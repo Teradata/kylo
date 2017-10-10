@@ -24,6 +24,8 @@
     <module>commons-hive</module>
     <module>commons-test-persistence</module>
     <module>commons-test</module>
+    <module>commons-velocity-api</module>
+    <module>commons-velocity-core</module>
   </modules>
 
 </project>

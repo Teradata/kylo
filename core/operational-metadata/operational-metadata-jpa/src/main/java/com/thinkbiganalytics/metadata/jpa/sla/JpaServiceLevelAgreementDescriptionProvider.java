@@ -20,9 +20,11 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.common.velocity.model.VelocityTemplate;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -51,6 +53,9 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
     @Inject
     private OpsManagerFeedProvider feedProvider;
 
+    @Inject
+    private ServiceLevelAgreementActionTemplateProvider serviceLevelAgreementActionTemplateProvider;
+
 
 
 
@@ -68,7 +73,7 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
      * @param feeds a set of Feed Ids related to this SLA
      */
     @Override
-    public void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds){
+    public void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds, Set<VelocityTemplate.ID> velocityTemplates){
         ServiceLevelAgreementDescriptionId id = null;
         if(!(slaId instanceof  ServiceLevelAgreementDescriptionId)){
             id = new ServiceLevelAgreementDescriptionId(slaId.toString());
@@ -96,6 +101,10 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
         }
 
         serviceLevelAgreementDescriptionRepository.save(serviceLevelAgreementDescription);
+        //save the velocity template relationships
+        serviceLevelAgreementActionTemplateProvider.assignTemplateByIds(serviceLevelAgreementDescription,velocityTemplates);
+
+
 
     }
 

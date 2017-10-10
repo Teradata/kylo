@@ -29,11 +29,11 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.policy.BasePolicyAnnotationTransformer;
+import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +51,11 @@ public class ServiceLevelAgreementActionConfigTransformer
         return instance;
     }
 
+    /**
+     * Cache of the ActionConfiguration items discovered via inspecting the ServiceLevelAgreementActionConfig annotation
+     */
+    private static List<ServiceLevelAgreementActionUiConfigurationItem> actionConfigurationRegistry = null;
+
     public ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, ServiceLevelAgreementActionConfiguration policy,
                                                                        List<FieldRuleProperty> properties) {
         return buildUiModel(annotation, policy.getClass(), properties);
@@ -66,6 +71,7 @@ public class ServiceLevelAgreementActionConfigTransformer
         if (StringUtils.isBlank(shortDesc) && StringUtils.isNotBlank(desc)) {
             shortDesc = desc;
         }
+        String velocityTemplateType = annotation.velocityTemplateType();
 
         ServiceLevelAgreementActionUiConfigurationItem
             rule =
@@ -74,6 +80,7 @@ public class ServiceLevelAgreementActionConfigTransformer
                 .description(
                     desc).shortDescription(shortDesc).addProperties(properties).build();
         rule.setActionClasses(Lists.newArrayList(annotation.actionClasses()));
+        rule.setVelocityTemplateType(velocityTemplateType);
         return rule;
     }
 
@@ -98,21 +105,27 @@ public class ServiceLevelAgreementActionConfigTransformer
 
     }
 
-    public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
-
+    private synchronized void buildActionConfigurationRegistry() {
+        actionConfigurationRegistry = new ArrayList<>();
         List<ServiceLevelAgreementActionUiConfigurationItem> rules = new ArrayList<>();
         Set<Class<?>>
-            items = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementActionConfig.class);
+            items = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(ServiceLevelAgreementActionConfig.class);
         for (Class c : items) {
             List<FieldRuleProperty> properties = getUiProperties(c);
             ServiceLevelAgreementActionConfig policy = (ServiceLevelAgreementActionConfig) c.getAnnotation(ServiceLevelAgreementActionConfig.class);
             ServiceLevelAgreementActionUiConfigurationItem
                 configItem = buildUiModel(policy, c, properties);
             rules.add(configItem);
-
+            actionConfigurationRegistry.add(configItem);
         }
+    }
 
-        return rules;
+    public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
+        if (actionConfigurationRegistry == null) {
+            buildActionConfigurationRegistry();
+        }
+        return actionConfigurationRegistry;
+
     }
 
     @Override

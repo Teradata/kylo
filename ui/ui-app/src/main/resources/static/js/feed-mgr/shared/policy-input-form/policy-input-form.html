@@ -21,7 +21,7 @@
 
   <div ng-repeat="property in group.properties" ng-if="property.hidden == false">
     <md-input-container class="md-block condensed-medium  "
-                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed' ">
+                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed'  || property.type =='velocityTemplate' ">
       <label>{{property.displayName}}</label>
       <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-pattern="property.patternRegExp"
@@ -33,7 +33,7 @@
       <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-pattern="property.patternRegExp"
              ng-required="property.required" ng-disabled="!vm.rule.editable" type="text"/>
-      <md-select ng-model="property.value" ng-if="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' )" ng-required="property.required"
+      <md-select ng-model="property.value" ng-if="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" ng-required="property.required"
                  name="{{property.formKey}}"
                  ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))">
         <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">

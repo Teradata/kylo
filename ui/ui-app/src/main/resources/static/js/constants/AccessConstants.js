@@ -97,6 +97,12 @@ define([], function () {
         this.SLA_EDIT = "editServiceLevelAgreements";
 
         /**
+         * Allows users to create new Service Level agreements
+         * @type {string}
+         */
+        this.SLA_EMAIL_TEMPLATES_ACCESS = null;//"accessSLAEmailTemplates";
+
+        /**
          * Allows access to feed templates.
          * @type {string}
          */
@@ -140,7 +146,7 @@ define([], function () {
 
         /**
          * Allows access to user and group-related functions.
-         * @type {string}
+         * @type {string}TEMPLATES_IMPORT
          */
         this.USERS_GROUPS_ACCESS = "accessUsersGroupsSupport";
 
@@ -259,6 +265,7 @@ define([], function () {
             GROUP_DETAILS: {state: "group-details", permissions: [this.USERS_GROUPS_ACCESS]},
             VISUAL_QUERY: {state: "visual-query", permissions: [this.VISUAL_QUERY_ACCESS]},
             SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [this.SLA_ACCESS]},
+            SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: []},
             TABLES: {state: "tables", permissions: [this.TABLES_ACCESS]},
             TABLE: {state: "table", permissions: [this.TABLES_ACCESS]},
             DATASOURCES: {state: "datasources", permissions: [this.DATASOURCE_ACCESS]},
