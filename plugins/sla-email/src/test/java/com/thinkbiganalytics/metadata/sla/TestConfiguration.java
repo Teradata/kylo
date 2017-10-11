@@ -20,6 +20,9 @@ package com.thinkbiganalytics.metadata.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.common.velocity.service.InMemoryVelocityTemplateProvider;
+import com.thinkbiganalytics.common.velocity.service.VelocityTemplateProvider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -62,11 +65,11 @@ public class TestConfiguration {
         emailConfiguration.setHost("smtp.gmail.com");
         emailConfiguration.setPort(587);
         //Note Google accounts will not allow overriding the from address due to security reasons.  Other accounts will.
-        emailConfiguration.setFrom("some addresss");
+        emailConfiguration.setFrom("sla-violation@thinkbiganalytics.com");
         emailConfiguration.setSmtpAuth("true");
         emailConfiguration.setStarttls("true");
-        emailConfiguration.setPassword("someuser@gmail.com password");
-        emailConfiguration.setUsername("someuser@gmail.com email address");
+        emailConfiguration.setPassword("th1nkb1g2");
+        emailConfiguration.setUsername("thinkbig.tester@gmail.com");
         return emailConfiguration;
     }
 
@@ -95,5 +98,9 @@ public class TestConfiguration {
         return new SlaEmailService();
     }
 
+    @Bean
+    public VelocityTemplateProvider velocityTemplateProvider(){
+        return new InMemoryVelocityTemplateProvider();
+    }
 
 }
