@@ -35,7 +35,6 @@ import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
-import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
@@ -55,7 +54,6 @@ import java.util.concurrent.TimeUnit;
 @CapabilityDescription("Execute provided HIVE or Spark statement. This can be any HQL DML or DDL statement that results in no results."
 )
 public class ExecuteHQLStatement extends AbstractNiFiProcessor {
-
 
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
@@ -96,7 +94,7 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
+    public void onTrigger(final ProcessContext context, final ProcessSession session) {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -129,8 +127,8 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
             session.transfer(flowFile, IngestProperties.REL_SUCCESS);
         } catch (final Exception e) {
             logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements, flowFile, e});
+            logger.error(e.getMessage());
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            throw new ProcessException(e);
         }
     }
 
