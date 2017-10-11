@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-nifi-rest-client</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.5</version>
+    <version>0.8.2.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-nifi-rest-client-v1</artifactId>
