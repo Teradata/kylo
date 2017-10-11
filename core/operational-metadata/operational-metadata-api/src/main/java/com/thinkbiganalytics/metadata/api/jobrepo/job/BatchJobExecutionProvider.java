@@ -219,4 +219,8 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
 
     void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status);
 
+    void notifyBatchToStream(BatchJobExecution jobExecution, OpsManagerFeed feed);
+
+    void notifyStreamToBatch(BatchJobExecution jobExecution, OpsManagerFeed feed);
+
 }

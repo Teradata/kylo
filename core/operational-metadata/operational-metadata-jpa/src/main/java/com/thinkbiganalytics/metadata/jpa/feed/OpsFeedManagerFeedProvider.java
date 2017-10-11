@@ -369,6 +369,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
                         jobExecution.setEndTime(DateTime.now());
                         jobExecution = batchJobExecutionProvider.save(jobExecution);
                         batchJobExecutionProvider.notifyStopped(jobExecution, feed, null);
+                        //notify stream to batch for feed
+                        batchJobExecutionProvider.notifyStreamToBatch(jobExecution,feed);
+
                     }
                 } else if (!feed.isStream() && isStream) {
                     //if we move from a batch to a stream we need to complete any jobs that are running.
@@ -381,6 +384,8 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
                         log.info("Stopping and Abandoning the Job {} for feed {}.  The job was running while the feed/template changed from a batch to a stream", jobExecution.getJobExecutionId(),
                                  feed.getName());
                         batchJobExecutionProvider.notifyFailure(jobExecution, feed, false, null);
+                        //notify batch to stream for feed
+                        batchJobExecutionProvider.notifyBatchToStream(jobExecution,feed);
                     });
                 }
                 feed.setStream(isStream);

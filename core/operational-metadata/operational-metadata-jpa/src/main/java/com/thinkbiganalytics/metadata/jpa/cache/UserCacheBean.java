@@ -170,10 +170,8 @@ public abstract class UserCacheBean<K, V, T, ID extends Serializable> extends Ca
     @EntityAccessControlled
     public abstract T fetchByIdWithAcl(K cacheKey);
 
-    @EntityAccessControlled(enabled = false)
     public abstract T fetchById(K cacheKey);
 
-    @EntityAccessControlled(enabled = false)
     public abstract List<T> fetchForIds(Set<K> cacheKeys);
 
     @EntityAccessControlled
