@@ -1,6 +1,6 @@
 /**
  */
-@com.querydsl.core.annotations.QueryEntities({com.thinkbiganalytics.jpa.AbstractAuditedEntity.class})
+@com.querydsl.core.annotations.QueryEntities({com.thinkbiganalytics.jpa.AbstractAuditedEntity.class, com.thinkbiganalytics.jpa.AbstractAuditedEntityAsMillis.class})
 package com.thinkbiganalytics.metadata;
 
 /*-

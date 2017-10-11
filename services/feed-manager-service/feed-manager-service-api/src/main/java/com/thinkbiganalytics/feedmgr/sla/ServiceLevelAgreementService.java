@@ -23,8 +23,8 @@ package com.thinkbiganalytics.feedmgr.sla;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
-
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementEmailTemplate;
 
 import java.util.List;
 
@@ -65,4 +65,10 @@ public interface ServiceLevelAgreementService {
     ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement);
 
     ServiceLevelAgreement saveAndScheduleFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId);
+
+    List<SimpleServiceLevelAgreementDescription> getSlaReferencesForVelocityTemplate(String velocityTemplateId);
+
+    ServiceLevelAgreementEmailTemplate saveEmailTemplate(ServiceLevelAgreementEmailTemplate emailTemplate);
+
+    List<ServiceLevelAgreementEmailTemplate> getServiceLevelAgreementEmailTemplates();
 }

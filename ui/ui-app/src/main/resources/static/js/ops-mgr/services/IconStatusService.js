@@ -118,8 +118,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                     data.style = "warn";
                     data.color = "#FF9901";
                     break;
-                    ;
                 case "UNKNOWN":
+                case "INITIAL":
                     data.icon = "help";
                     data.style = "unknown";
                     data.color = "#969696";

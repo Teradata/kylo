@@ -34,14 +34,17 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.DefaultAlertChangeEventContent;
+import com.thinkbiganalytics.cluster.ClusterMessage;
+import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationBatchStatusChange;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchAndStreamingJobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -96,7 +99,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.OptimisticLockException;
@@ -154,6 +159,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Inject
     private MetadataAccess metadataAccess;
 
+    private Map<String,BatchJobExecution> latestStreamingJobByFeedName = new ConcurrentHashMap<>();
+
+    @Inject
+    private ClusterService clusterService;
+
+    private BatchStatusChangeReceiver batchStatusChangeReceiver = new BatchStatusChangeReceiver();
+
 
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
@@ -172,6 +184,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
+    @PostConstruct
+    private void init(){
+        clusterService.subscribe(batchStatusChangeReceiver);
+    }
 
     @Override
     public BatchJobInstance createJobInstance(ProvenanceEventRecordDTO event) {
@@ -528,7 +544,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
-            BatchJobExecution latestJobExecution = findLatestJobForFeed(event.getFeedName());
+            BatchJobExecution latestJobExecution = latestStreamingJobByFeedName.get(event.getFeedName());
+            if(latestJobExecution == null) {
+                latestJobExecution = findLatestJobForFeed(event.getFeedName());
+            }
+            else {
+                if(clusterService.isClustered()){
+                    latestJobExecution = jobExecutionRepository.findOne(latestJobExecution.getJobExecutionId());
+                }
+            }
             if (latestJobExecution == null || (latestJobExecution != null && !latestJobExecution.isStream())) {
                 //If the latest Job is not set to be a Stream and its still running we need to fail it and create the new streaming job.
                 if (latestJobExecution != null && !latestJobExecution.isFinished()) {
@@ -544,9 +568,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
                 jobExecution = createNewJobExecution(event, feed);
                 jobExecution.setStream(true);
+                latestStreamingJobByFeedName.put(event.getFeedName(),jobExecution);
                 log.info("Created new Streaming Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
             } else {
                 jobExecution = (JpaBatchJobExecution) latestJobExecution;
+            }
+            if(jobExecution != null){
+                latestStreamingJobByFeedName.put(event.getFeedName(),jobExecution);
             }
         } catch (OptimisticLockException e) {
             //read
@@ -948,7 +976,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         Alert alert = null;
 
         //see if the feed has an unhandled alert already.
-        String feedId = jobExecution.getJobInstance().getFeed().getId().toString();
+        String feedId = feed.getId().toString();
         String alertId = jobExecution.getJobExecutionContextAsMap().get(BatchJobExecutionProvider.KYLO_ALERT_ID_PROPERTY);
         String message = "Failed Job " + jobExecution.getJobExecutionId() + " for feed " + feed != null ? feed.getName() : null;
         if (StringUtils.isNotBlank(alertId)) {
@@ -1027,4 +1055,27 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     */
 
 
+    @Override
+    public void notifyBatchToStream(BatchJobExecution jobExecution, OpsManagerFeed feed) {
+        FeedOperationBatchStatusChange change = new FeedOperationBatchStatusChange(feed.getId(), feed.getName(), jobExecution.getJobExecutionId(), FeedOperationBatchStatusChange.BatchType.STREAM);
+       clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE,change);
+    }
+
+    @Override
+    public void notifyStreamToBatch(BatchJobExecution jobExecution, OpsManagerFeed feed) {
+        FeedOperationBatchStatusChange change = new FeedOperationBatchStatusChange(feed.getId(), feed.getName(), jobExecution.getJobExecutionId(), FeedOperationBatchStatusChange.BatchType.BATCH);
+        clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE,change);
+    }
+
+    private  class BatchStatusChangeReceiver implements ClusterServiceMessageReceiver{
+
+        @Override
+        public void onMessageReceived(String from, ClusterMessage message) {
+            if(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE.equalsIgnoreCase(message.getType())){
+                FeedOperationBatchStatusChange change = (FeedOperationBatchStatusChange)message.getMessage();
+                latestStreamingJobByFeedName.remove(change.getFeedName());
+            }
+
+        }
+    }
 }

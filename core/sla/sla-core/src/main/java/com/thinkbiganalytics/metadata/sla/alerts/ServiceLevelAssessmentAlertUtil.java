@@ -30,6 +30,10 @@ public class ServiceLevelAssessmentAlertUtil {
 
 
     public static String getDescription(ServiceLevelAssessment slaAssmt) {
+        return getDescription(slaAssmt,"\n\n");
+    }
+
+    public static String getDescription(ServiceLevelAssessment slaAssmt, String newlineChar) {
 
         StringBuilder descrBldr = new StringBuilder();
 
@@ -43,10 +47,10 @@ public class ServiceLevelAssessmentAlertUtil {
                         descrBldr
                             .append("Requirement: ")
                             .append(metricAssmnt.getMetricDescription())
-                            .append("\n\n")
+                            .append(newlineChar)
                             .append("Result: ")
                             .append(metricAssmnt.getMessage())
-                            .append("\n\n");
+                            .append(newlineChar);
                     }
                 }
             }

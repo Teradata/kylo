@@ -1,0 +1,105 @@
+
+<div layout="row" layout-align="center start">
+<card-layout class="centered" body-css="md-padding" style="max-width:980px;width:980px;" flex="initial" >
+  <header-section>
+    <div class="card-title" flex>Service Level Agreement Email Templates</div>
+  </header-section>
+
+  <body-section >
+
+    <div class="layout-padding">
+
+
+
+      <div ng-if="vm.template != null" layout="column">
+        <md-input-container>
+          <label>Template Name</label>
+          <input ng-model="vm.template.name" required>
+        </md-input-container>
+
+        <md-input-container>
+          <label>Subject</label>
+          <input ng-model="vm.template.subject" required>
+          <span class="hint"> Supports Velocity and Template Variables (i.e. $sla.name will resolve to the SLA name)</span>
+        </md-input-container>
+
+        <div ng-model="vm.template.template" ui-codemirror="{
+        lineWrapping : true,
+        indentWithTabs: true,
+        smartIndent: true,
+        lineNumbers: true,
+        matchBrackets : true,
+        autofocus: true,
+        mode: 'text/velocity'
+        }">
+        </div>
+<!--
+        <md-input-container ng-if="vm.availableSlaActions.length > 1">
+          <label>Assign to SLA Actions</label>
+          <md-select ng-model="vm.template.actionClasses" multiple >
+            <md-option ng-repeat="t in vm.availableSlaActions" ng-value="t.value">
+              {{t.label}} ({{t.value}})
+            </md-option>
+          </md-select>
+        </md-input-container>
+-->
+
+        <div ng-if="vm.availableSlaActions.length ==0">
+          Warning unable to find any SLA Actions configured.  This template will not be able to be applied
+        </div>
+
+        <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" >
+          <md-checkbox ng-model="vm.template.enabled" aria-label="Enabled" ng-disabled="vm.relatedSlas.length >0" >
+            Active
+          </md-checkbox>
+          <div class="hint">If the template has related SLA's it cannot be disabled.</div>
+        </md-input-container>
+
+        <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+          <md-checkbox ng-model="vm.template.default" aria-label="Default" ng-disabled="vm.isDefault">
+            Default Template
+          </md-checkbox>
+          <div class="hint">The default template will be used for SLA emails when a template has not yet been assigned to the SLA.  There is only one default template.</div>
+        </md-input-container>
+
+        <div layout="row">
+        <md-button ng-click="vm.validate()" md-primary>Preview</md-button>
+        <md-button ng-click="vm.saveTemplate()" md-primary>Save</md-button>
+        </div>
+      </div>
+    </div>
+  </body-section>
+</card-layout>
+
+<card-layout offsetleftfromprevious top="8" card-css="layout-fill" body-css="md-padding"
+             style="max-width:250px;width:250px;min-width:250px;" flex="initial">
+  <header-section>
+    <div class="card-title">Template Variables</div>
+
+  </header-section>
+
+  <body-section>
+    <div layout="column" class="layout-padding-top-bottom">
+      <md-list>
+        <md-list-item class="md-2-line" ng-repeat="item in vm.templateVariables">
+          <div class="md-list-item-text">
+            <h3>{{item.item}}</h3>
+            <span>{{item.desc}}</span>
+          </div>
+        </md-list-item>
+      </md-list>
+    </div>
+    <md-divider></md-divider>
+    <div class="md-subhead">Related Slas</div>
+    <md-list>
+      <md-list-item class="md-2-line" ng-repeat="item in vm.relatedSlas">
+        <div class="md-list-item-text">
+          <h3>{{item.name}}</h3>
+          <span>{{item.description}}</span>
+        </div>
+      </md-list-item>
+    </md-list>
+
+  </body-section>
+</card-layout>
+</div>

@@ -111,6 +111,7 @@ System.config({
         'angular-visjs':['angular','vis'],
         "codemirror-pig": ["codemirror"],
         "codemirror-properties":["codemirror"],
+        "codemirror-velocity":["codemirror"],
         "codemirror-python":["codemirror"],
         "codemirror-xml":["codemirror"],
         "codemirror-shell":["codemirror"],

@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.sla;
 import com.thinkbiganalytics.classnameregistry.ClassNameChange;
 import com.thinkbiganalytics.metadata.sla.alerts.BaseServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementEmailTemplate;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
@@ -33,13 +34,16 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
  * This will be presented to the user as a possible SLA action in the UI since it is annotated with the {@link ServiceLevelAgreementActionConfig}
  */
 @ServiceLevelAgreementActionConfig(
-    name = "Email", description = "Email user(s) when the SLA is violated", actionClasses = {EmailServiceLevelAgreementAction.class}
+    name = "Email", description = "Email user(s) when the SLA is violated", actionClasses = {EmailServiceLevelAgreementAction.class}, velocityTemplateType = ServiceLevelAgreementEmailTemplate.EMAIL_TEMPLATE_TYPE
 )
 @ClassNameChange(classNames = {"com.thinkbiganalytics.metadata.sla.alerts.EmailServiceLevelAgreementActionConfiguration"})
 public class EmailServiceLevelAgreementActionConfiguration extends BaseServiceLevelAgreementActionConfiguration {
 
     @PolicyProperty(name = "EmailAddresses", displayName = "Email addresses", hint = "comma separated email addresses", required = true, type = PolicyPropertyTypes.PROPERTY_TYPE.emails)
     private String emailAddresses;
+
+    @PolicyProperty(name="EmailTemplate",displayName = "Email template",type = PolicyPropertyTypes.PROPERTY_TYPE.velocityTemplate)
+    private String velocityTemplateId;
 
 
     public EmailServiceLevelAgreementActionConfiguration() {
@@ -51,11 +55,25 @@ public class EmailServiceLevelAgreementActionConfiguration extends BaseServiceLe
     }
 
 
+    public EmailServiceLevelAgreementActionConfiguration(@PolicyPropertyRef(name = "EmailAddresses") String emailAddresses, @PolicyPropertyRef(name="EmailTemplate") String velocityTemplateId) {
+        this.emailAddresses = emailAddresses;
+        this.velocityTemplateId = velocityTemplateId;
+    }
+
+
     public String getEmailAddresses() {
         return emailAddresses;
     }
 
     public void setEmailAddresses(String emailAddresses) {
         this.emailAddresses = emailAddresses;
+    }
+
+    public String getVelocityTemplateId() {
+        return velocityTemplateId;
+    }
+
+    public void setVelocityTemplateId(String velocityTemplateId) {
+        this.velocityTemplateId = velocityTemplateId;
     }
 }

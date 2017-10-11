@@ -37,5 +37,8 @@ public @interface ServiceLevelAgreementActionConfig {
 
     String shortDescription() default "";
 
+    String velocityTemplateType() default "";
+
     Class<? extends ServiceLevelAgreementAction>[] actionClasses();
+
 }

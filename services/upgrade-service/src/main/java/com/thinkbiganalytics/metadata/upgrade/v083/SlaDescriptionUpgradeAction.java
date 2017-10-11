@@ -84,7 +84,7 @@ public class SlaDescriptionUpgradeAction implements UpgradeState {
        serviceLevelAgreementService.getServiceLevelAgreements().stream().filter(sla -> !sla.getFeeds().isEmpty())
            .forEach(feedSla -> {
                Set<Feed.ID> feedIds = feedSla.getFeeds().stream().map(feed -> feedProvider.resolveId(feed.getId())).collect(Collectors.toSet());
-               serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(serviceLevelAgreementProvider.resolve(feedSla.getId()), feedSla.getName(),feedSla.getDescription(),feedIds);
+               serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(serviceLevelAgreementProvider.resolve(feedSla.getId()), feedSla.getName(),feedSla.getDescription(),feedIds,null);
             });
     }
 }

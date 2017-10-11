@@ -602,7 +602,39 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         });
 
+        $stateProvider.state('sla-email-templates.**', {
+            url: 'sla-email-templates',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('sla-email-templates',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading sla email templates ", err);
+                    return err;
+                });
+                ;
+            }
+        });
 
+        $stateProvider.state({
+            name: 'sla-email-template.**',
+            url: '/sla-email-template/:emailTemplateId',
+            params: {
+                emailTemplateId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('sla-email-template',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading sla email template ", err);
+                    return err;
+                });
+
+            }
+        });
         $stateProvider.state({
            name:'access-denied',
            url:'/access-denied',

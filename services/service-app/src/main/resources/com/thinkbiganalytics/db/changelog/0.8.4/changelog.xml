@@ -25,5 +25,6 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
   <include file="kylo_alert_add_audit_columns.xml" relativeToChangelogFile="true"/>
+  <include file="sla-email-templates.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

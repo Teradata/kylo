@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.api.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.common.velocity.model.VelocityTemplate;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -41,7 +42,7 @@ public interface ServiceLevelAgreementDescriptionProvider {
      * @param description the SLA Description
      * @param feeds a set of Feed Ids related to this SLA
      */
-    void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds);
+    void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds, Set<VelocityTemplate.ID> velocityTemplates);
 
     ServiceLevelAgreement.ID resolveId(Serializable ser);
 

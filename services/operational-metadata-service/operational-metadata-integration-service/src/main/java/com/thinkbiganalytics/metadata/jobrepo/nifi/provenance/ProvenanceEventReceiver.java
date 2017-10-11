@@ -26,6 +26,7 @@ import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
@@ -228,9 +229,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             if (alreadyTriggered == null) {
                 completedJobEvents.put(mapKey, mapKey);
                 /// TRIGGER JOB COMPLETE!!!
+                //TODO if Stream do we just notify every x sec?
                 metadataAccess.commit(() -> {
-                    BatchJobExecution batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+                    BatchJobExecution batchJobExecution = jobExecution;
                     if (batchJobExecution.isFailed()) {
+                        //requery for failure events as we need to access the map of data for alert generation
+                         batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
                         failedJob(batchJobExecution, event);
                     } else {
                         successfulJob(batchJobExecution, event);
@@ -255,7 +259,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             queryForNiFiErrorBulletins(event);
         }
         log.debug("Failed JOB for Event {} ", event);
-        batchJobExecutionProvider.notifyFailure(jobExecution, event.getFeedName(), event.isStream(), null);
+        OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(event.getFeedName());
+        if(feed == null) {
+            feed = jobExecution.getJobInstance().getFeed();
+        }
+        batchJobExecutionProvider.notifyFailure(jobExecution, feed, event.isStream(), null);
     }
 
     /**
@@ -269,7 +277,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     private void successfulJob(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         log.debug("Success JOB for Event {} ", event);
-        batchJobExecutionProvider.notifySuccess(jobExecution,jobExecution.getJobInstance().getFeed(), null);
+        //get teh feed from the cache first
+        OpsManagerFeed feed = opsManagerFeedProvider.findByNameWithoutAcl(event.getFeedName());
+        if(feed == null) {
+            feed = jobExecution.getJobInstance().getFeed();
+        }
+        batchJobExecutionProvider.notifySuccess(jobExecution,feed, null);
     }
 
     /**
