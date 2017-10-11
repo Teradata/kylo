@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-spark-job-profiler</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.5-SNAPSHOT</version>
+    <version>0.8.2.5</version>
   </parent>
 
   <artifactId>kylo-spark-job-profiler-api</artifactId>

@@ -9,7 +9,7 @@
   <parent>
     <artifactId>kylo-spark</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.5-SNAPSHOT</version>
+    <version>0.8.2.5</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
