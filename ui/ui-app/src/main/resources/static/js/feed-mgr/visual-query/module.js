@@ -18,14 +18,12 @@ define(["angular", "feed-mgr/visual-query/module-name", "kylo-utils/LazyLoadUtil
             },
             resolve: {
                 engine: function ($injector, $ocLazyLoad, $transition$) {
-                    var engineName = (function (name) {
-                        if (name === null) {
-                            return "spark";
-                        } else {
-                            return name;
-                        }
-                    })($transition$.params().engine);
-                    return $ocLazyLoad.load("feed-mgr/visual-query/services/query-engine-factory.service")
+                    var engineName = $transition$.params().engine;
+                    if (engineName === null) {
+                        engineName = "spark";
+                    }
+
+                    return $ocLazyLoad.load("feed-mgr/visual-query/module-require")
                         .then(function () {
                             return $injector.get("VisualQueryEngineFactory").getEngine(engineName);
                         });

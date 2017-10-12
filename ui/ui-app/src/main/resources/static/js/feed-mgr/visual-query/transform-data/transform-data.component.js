@@ -122,10 +122,10 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.ngOnInit();
         };
         TransformDataComponent.prototype.ngOnInit = function () {
+            var _this = this;
             this.sql = this.model.sql;
             this.sqlModel = this.model.chartViewModel;
             this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
-            this.sampleFormulas = this.engine.sampleFormulas;
             // Select source model
             var useSqlModel = false;
             if (angular.isObject(this.sqlModel)) {
@@ -149,16 +149,29 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             if (this.model.$datasources == null || this.model.$datasources.length == 0) {
                 this.model.$datasources = [{ id: "HIVE", name: "Hive" }]; // TODO remove "HIVE"
             }
-            if (angular.isArray(this.model.states) && this.model.states.length > 0) {
-                this.engine.setQuery(source, this.model.$datasources);
-                this.engine.setState(this.model.states);
-                this.functionHistory = this.engine.getHistory();
+            // Wait for query engine to load
+            var onLoad = function () {
+                _this.sampleFormulas = _this.engine.sampleFormulas;
+                if (angular.isArray(_this.model.states) && _this.model.states.length > 0) {
+                    _this.engine.setQuery(source, _this.model.$datasources);
+                    _this.engine.setState(_this.model.states);
+                    _this.functionHistory = _this.engine.getHistory();
+                }
+                else {
+                    _this.engine.setQuery(source, _this.model.$datasources);
+                }
+                // Load table data
+                _this.query();
+            };
+            if (this.engine instanceof Promise) {
+                this.engine.then(function (queryEngine) {
+                    _this.engine = queryEngine;
+                    onLoad();
+                });
             }
             else {
-                this.engine.setQuery(source, this.model.$datasources);
+                onLoad();
             }
-            // Load table data
-            this.query();
         };
         /**
          * Gets the browser height offset for the element with the specified offset from the top of this component.
@@ -557,11 +570,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         };
         ;
         TransformDataComponent.prototype.canUndo = function () {
-            return (typeof this.engine === "object") ? this.engine.canUndo() : false;
+            return (this.engine && this.engine.canUndo) ? this.engine.canUndo() : false;
         };
         ;
         TransformDataComponent.prototype.canRedo = function () {
-            return (typeof this.engine === "object") ? this.engine.canRedo() : false;
+            return (this.engine && this.engine.canRedo) ? this.engine.canRedo() : false;
         };
         ;
         /**

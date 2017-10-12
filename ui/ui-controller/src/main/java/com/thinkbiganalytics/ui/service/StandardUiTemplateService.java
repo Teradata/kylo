@@ -23,6 +23,7 @@ package com.thinkbiganalytics.ui.service;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.spring.FileResourceService;
 import com.thinkbiganalytics.ui.api.module.AngularModule;
+import com.thinkbiganalytics.ui.api.service.UiTemplateService;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.module.DefaultAngularModule;
 import com.thinkbiganalytics.ui.template.ProcessorTemplateDefinition;
@@ -44,9 +45,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UiTemplateService {
+public class StandardUiTemplateService implements UiTemplateService {
 
-    private static Logger log = LoggerFactory.getLogger(UiTemplateService.class);
+    private static Logger log = LoggerFactory.getLogger(StandardUiTemplateService.class);
 
     @Autowired
     private FileResourceService fileResourceService;
@@ -120,20 +121,11 @@ public class UiTemplateService {
     }
 
     /**
-     * Loads and merges the '*teradata-functions.json' files.
-     *
-     * @return the Teradata function definitions
-     */
-    public Map<String, Object> loadTeradataFunctionsDefinitions() {
-        return loadFunctionsDefinitions("teradata-functions", "classpath*:**/*teradata-functions.json");
-    }
-
-    /**
      * Loads and merges function definition files.
      *
      * @return the function definitions
      */
-    private Map<String, Object> loadFunctionsDefinitions(@Nonnull final String name, @Nonnull final String pattern) {
+    public Map<String, Object> loadFunctionsDefinitions(@Nonnull final String name, @Nonnull final String pattern) {
         // Attempt to load resources
         final Resource[] resources;
         try {

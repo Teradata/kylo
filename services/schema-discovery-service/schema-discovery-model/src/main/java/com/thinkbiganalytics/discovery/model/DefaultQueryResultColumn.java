@@ -38,6 +38,7 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     private String databaseName;
     private int index;
     private String comment;
+    private String precisionScale;
 
     @Override
     public String getField() {
@@ -127,5 +128,13 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     @Override
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getPrecisionScale() {
+        return precisionScale;
+    }
+
+    public void setPrecisionScale(String precisionScale) {
+        this.precisionScale = precisionScale;
     }
 }

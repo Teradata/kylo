@@ -581,6 +581,7 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../serv
          * Finish initializing after data-bound properties are initialized.
          */
         QueryBuilderComponent.prototype.ngOnInit = function () {
+            var _this = this;
             // Initialize properties dependent on data-bound properties
             this.stepNumber = this.stepIndex + 1;
             if (this.model.$selectedDatasourceId == null && this.model.datasourceIds && this.model.datasourceIds.length > 0) {
@@ -595,12 +596,24 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../serv
                 this.advancedMode = false;
                 this.advancedModeText = "Advanced Mode";
             }
-            // Initialize state
-            this.init();
-            // Setup the flowchart Model
-            this.setupFlowChartModel();
-            // Validate when the page loads
-            this.validate();
+            // Wait for query engine to load
+            var onLoad = function () {
+                // Initialize state
+                _this.init();
+                // Setup the flowchart Model
+                _this.setupFlowChartModel();
+                // Validate when the page loads
+                _this.validate();
+            };
+            if (this.engine instanceof Promise) {
+                this.engine.then(function (queryEngine) {
+                    _this.engine = queryEngine;
+                    onLoad();
+                });
+            }
+            else {
+                onLoad();
+            }
         };
         /**
          * Finish initializing after data-bound properties are initialized.

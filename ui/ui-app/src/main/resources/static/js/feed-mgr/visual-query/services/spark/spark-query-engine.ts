@@ -11,6 +11,8 @@ import {TableSchema} from "../../../model/table-schema";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
 import {QueryResultColumn} from "../../../model/query-result-column";
+import {registerQueryEngine} from "../query-engine-factory.service";
+import {SchemaField} from "../../../model/schema-field";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
@@ -84,6 +86,43 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     getColumnName(column: QueryResultColumn): string {
         return column.displayName;
+    }
+
+    /**
+     * Gets the schema fields for the the current transformation.
+     *
+     * @returns the schema fields or {@code null} if the transformation has not been applied
+     */
+    getFields(): SchemaField[] | null {
+        // Get list of columns
+        const columns = this.getColumns();
+        if (columns === null) {
+            return null;
+        }
+
+        // Get field list
+        return columns.map(function (col: any) {
+            let dataType;
+            //comment out decimal to double.  Decimals are supported ... will remove after testing
+            if (col.dataType.startsWith("decimal")) {
+                dataType = "decimal";
+            } else if (col.dataType === "smallint") {
+                dataType = "int";
+            } else {
+                dataType = col.dataType;
+            }
+            const colDef = {name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
+            if (dataType === 'decimal') {
+                //parse out the precisionScale
+                let precisionScale = '20,2';
+                if (col.dataType.indexOf("(") > 0) {
+                    precisionScale = col.dataType.substring(col.dataType.indexOf("(") + 1, col.dataType.length - 1);
+                }
+                colDef.precisionScale = precisionScale;
+            }
+            colDef.derivedDataType = dataType;
+            return colDef;
+        });
     }
 
     /**
@@ -319,3 +358,5 @@ export class SparkQueryEngine extends QueryEngine<string> {
         return new SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_);
     }
 }
+
+registerQueryEngine("spark", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", SparkQueryEngine]);

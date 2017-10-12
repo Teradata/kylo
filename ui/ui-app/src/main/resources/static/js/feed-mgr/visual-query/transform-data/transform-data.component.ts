@@ -159,7 +159,6 @@ export class TransformDataComponent implements OnInit {
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
-        this.sampleFormulas = this.engine.sampleFormulas;
 
         // Select source model
         let useSqlModel = false;
@@ -186,16 +185,31 @@ export class TransformDataComponent implements OnInit {
         if (this.model.$datasources == null || this.model.$datasources.length == 0) {
             this.model.$datasources = [{id: "HIVE", name: "Hive"}];  // TODO remove "HIVE"
         }
-        if (angular.isArray(this.model.states) && this.model.states.length > 0) {
-            this.engine.setQuery(source, this.model.$datasources);
-            this.engine.setState(this.model.states);
-            this.functionHistory = this.engine.getHistory();
-        } else {
-            this.engine.setQuery(source, this.model.$datasources);
-        }
 
-        // Load table data
-        this.query();
+        // Wait for query engine to load
+        const onLoad = () => {
+            this.sampleFormulas = this.engine.sampleFormulas;
+
+            if (angular.isArray(this.model.states) && this.model.states.length > 0) {
+                this.engine.setQuery(source, this.model.$datasources);
+                this.engine.setState(this.model.states);
+                this.functionHistory = this.engine.getHistory();
+            } else {
+                this.engine.setQuery(source, this.model.$datasources);
+            }
+
+            // Load table data
+            this.query();
+        };
+
+        if (this.engine instanceof Promise) {
+            this.engine.then(queryEngine => {
+                this.engine = queryEngine;
+                onLoad();
+            });
+        } else {
+            onLoad();
+        }
     }
 
     /**
@@ -634,11 +648,11 @@ export class TransformDataComponent implements OnInit {
     };
 
     canUndo() {
-        return (typeof this.engine === "object") ? this.engine.canUndo() : false;
+        return (this.engine && this.engine.canUndo) ? this.engine.canUndo() : false;
     };
 
     canRedo() {
-        return (typeof this.engine === "object") ? this.engine.canRedo() : false;
+        return (this.engine && this.engine.canRedo) ? this.engine.canRedo() : false;
     };
 
     /**

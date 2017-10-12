@@ -130,6 +130,15 @@ public class QueryRunner {
             column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
             column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
             column.setNativeDataType(rsMetaData.getColumnTypeName(i));
+
+            int precision = rsMetaData.getPrecision(i);
+            int scale = rsMetaData.getScale(i);
+            if (scale != 0) {
+                column.setPrecisionScale(precision + "," + scale);
+            } else if (precision != 0) {
+                column.setPrecisionScale(Integer.toString(precision));
+            }
+
             columns.add(column);
         }
 
