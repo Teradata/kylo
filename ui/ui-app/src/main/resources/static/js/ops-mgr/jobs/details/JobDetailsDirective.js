@@ -19,7 +19,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
 
 
 
-    function JobDetailsDirectiveController($http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService) {
+    function JobDetailsDirectiveController($http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService) {
         var self = this;
 
         /**
@@ -99,6 +99,11 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         function previousTab() {
             self.tabMetadata.selectedIndex = Math.max(self.tabMetadata.selectedIndex - 1, 0);
         };
+
+        function logUiEnabled() {
+            logUiEnabled = AngularModuleExtensionService.stateExists("log-ui");
+            return logUiEnabled;
+        }
 
         function navigateToLogs(){
             $state.go("log-ui", {startTime:self.jobData.startTime, endTime:self.jobData.endTime, showCustom:true});
@@ -498,6 +503,6 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
                 });
     }
 
-    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService",JobDetailsDirectiveController]);
+    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",JobDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaJobDetails", directive);
 });
