@@ -82,6 +82,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         this.relatedJob = null;
         this.changeRelatedJob = changeRelatedJob;
         this.navigateToLogs = navigateToLogs;
+        this.logUiEnabled = false;
 
         this.init = function() {
             var executionId = self.executionId;
@@ -101,9 +102,10 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         };
 
         function logUiEnabled() {
-            logUiEnabled = AngularModuleExtensionService.stateExists("log-ui");
-            return logUiEnabled;
+            self.logUiEnabled = AngularModuleExtensionService.stateExists("log-ui");
         }
+
+        logUiEnabled();
 
         function navigateToLogs(){
             $state.go("log-ui", {startTime:self.jobData.startTime, endTime:self.jobData.endTime, showCustom:true});
