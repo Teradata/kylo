@@ -82,7 +82,7 @@ public class SlaEmailService {
                         helper.setTo(InternetAddress.parse(to));
                         helper.setSubject(subject);
                         helper.setText(body,true);
-                        helper.addInline("kylo-logo",new ClassPathResource("kylo-logo-orange-200.png"));
+                     //   helper.addInline("kylo-logo",new ClassPathResource("kylo-logo-orange-200.png"));
                     }
                 };
                 mailSender.send(mimeMessagePreparator);

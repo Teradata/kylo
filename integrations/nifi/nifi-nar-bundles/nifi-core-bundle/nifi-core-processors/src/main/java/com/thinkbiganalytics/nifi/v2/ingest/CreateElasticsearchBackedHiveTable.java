@@ -209,11 +209,7 @@ public class CreateElasticsearchBackedHiveTable extends ExecuteHQLStatement {
         List<String> hiveStatements = getHQLStatements(columnSpecs, nodes, feedRoot, feedName, categoryName, useWan, autoIndex, idField, jarUrl, indexString);
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
-
-
-
-
-        executeStatements(session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
+        executeStatements(context,session, flowFile, hiveStatements.toArray(new String[hiveStatements.size()]), thriftService);
 
     }
 
