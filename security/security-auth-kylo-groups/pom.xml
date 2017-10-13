@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.thinkbiganalytics.kylo</groupId>
+        <artifactId>kylo-security</artifactId>
+        <version>0.8.4-SNAPSHOT</version>
+    </parent>
+    <artifactId>kylo-security-auth-kylo-groups</artifactId>
+    <properties>
+        <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+    </properties>
+
+    <description>
+        Generally used to limit user groups to those which are present in Kylo.
+        Uses Kylo REST API to fetch groups.
+    </description>
+
+    <dependencies>
+        <!-- Core dependencies -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+
+        <!-- Spring dependencies -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- Think Big dependencies -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-security-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-commons-rest-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-security-rest-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
