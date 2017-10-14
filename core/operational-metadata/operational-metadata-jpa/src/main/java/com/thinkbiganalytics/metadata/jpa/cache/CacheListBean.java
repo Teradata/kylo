@@ -96,5 +96,9 @@ public class CacheListBean<K, V> {
         return populated.get();
     }
 
+    public Long size(){
+        return cache.size();
+    }
+
 
 }

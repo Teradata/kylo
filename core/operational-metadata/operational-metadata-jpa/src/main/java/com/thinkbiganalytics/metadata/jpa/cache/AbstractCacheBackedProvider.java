@@ -65,7 +65,7 @@ public abstract class AbstractCacheBackedProvider<T, ID extends Serializable> im
     private List<CacheBackedProviderListener> cacheListeners = new ArrayList<>();
 
     @Inject
-    private ClusterService clusterService;
+    protected ClusterService clusterService;
 
 
     public void subscribeListener(CacheBackedProviderListener listener) {

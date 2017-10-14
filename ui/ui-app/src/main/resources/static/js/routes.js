@@ -598,12 +598,11 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                     console.log("Error loading admin jcr ", err);
                     return err;
                 });
-                ;
             }
         });
 
         $stateProvider.state('sla-email-templates.**', {
-            url: 'sla-email-templates',
+            url: '/sla-email-templates',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
                     //upon success go back to the state
@@ -613,7 +612,6 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                     console.log("Error loading sla email templates ", err);
                     return err;
                 });
-                ;
             }
         });
 
@@ -635,6 +633,21 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
 
             }
         });
+
+        $stateProvider.state('cluster.**', {
+            url: '/admin/cluster',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('cluster',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading admin cluster ", err);
+                    return err;
+                });
+            }
+        });
+
         $stateProvider.state({
            name:'access-denied',
            url:'/access-denied',
@@ -700,12 +713,16 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                  }
              }
 
+
+
+
+
+
              /**
               * Add a listener to the start of every transition to do Access control on the page
               * and redirect if not authorized
               */
              $transitions.onStart({}, function (trans) {
-
                  if (AngularModuleExtensionService.isInitialized()) {
                      return onStartOfTransition(trans);
                  }

@@ -22,6 +22,7 @@ package com.thinkbiganalytics.cluster.config;
 
 
 import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.cluster.ClusterServiceTester;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
 
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,11 @@ public class ClusterServiceConfig {
     @Bean
    public ClusterService clusterService() {
         return new JGroupsClusterService();
+    }
+
+    @Bean
+    public ClusterServiceTester clusterServiceTester() {
+        return new ClusterServiceTester();
     }
 
 }

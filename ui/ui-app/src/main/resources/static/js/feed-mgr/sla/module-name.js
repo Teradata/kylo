@@ -1,3 +1,3 @@
 define([], function () {
-    return 'kylo.feedmgr.templates';
+    return 'kylo.feedmgr.sla';
 });

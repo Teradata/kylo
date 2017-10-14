@@ -97,4 +97,8 @@ public interface ClusterService {
      * @return Return other member addresses, excluding this address
      */
     List<String> getOtherMembersAsString();
+
+    List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement();
+
+    List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement(Long longerThanMillis);
 }

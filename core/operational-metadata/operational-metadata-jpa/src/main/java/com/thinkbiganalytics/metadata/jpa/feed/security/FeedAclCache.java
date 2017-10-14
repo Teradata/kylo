@@ -18,12 +18,16 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.cache.CacheBackedProviderListener;
 import com.thinkbiganalytics.metadata.jpa.cache.CacheListBean;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -32,56 +36,55 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 9/29/17.
  */
-public class FeedAclCache extends CacheListBean<String,FeedOpsAclEntry> implements CacheBackedProviderListener<JpaFeedOpsAclEntry.EntryId,JpaFeedOpsAclEntry> {
+public class FeedAclCache extends CacheListBean<String, FeedOpsAclEntry> implements CacheBackedProviderListener<JpaFeedOpsAclEntry.EntryId, JpaFeedOpsAclEntry> {
 
+    private static final Logger log = LoggerFactory.getLogger(FeedAclCache.class);
     @Inject
     AccessController accessController;
 
 
-    public boolean isAvailable(){
+    public boolean isAvailable() {
         return isPopulated();
     }
 
-    public boolean hasAccess(RoleSetExposingSecurityExpressionRoot userContext, String feedId){
-        if(!accessController.isEntityAccessControlled()){
+    public boolean hasAccess(RoleSetExposingSecurityExpressionRoot userContext, String feedId) {
+        if (StringUtils.isBlank(feedId) || !accessController.isEntityAccessControlled()) {
             return true;
         }
-        return  get(feedId).stream()
+        return get(feedId).stream()
             .anyMatch(acl -> ((acl.getPrincipalType() == FeedOpsAclEntry.PrincipalType.GROUP && userContext.getGroups().contains(acl.getPrincipalName()))
                               || (acl.getPrincipalType() == FeedOpsAclEntry.PrincipalType.USER && userContext.getName().equals(acl.getPrincipalName()))));
     }
 
 
-
-    public boolean hasAccess(String feedId){
-        return hasAccess(userContext(),feedId);
+    public boolean hasAccess(String feedId) {
+        return hasAccess(userContext(), feedId);
     }
 
 
-    public RoleSetExposingSecurityExpressionRoot userContext()    {
+    public RoleSetExposingSecurityExpressionRoot userContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return new RoleSetExposingSecurityExpressionRoot(authentication);
     }
 
 
-    public boolean isUserCacheAvailable(){
+    public boolean isUserCacheAvailable() {
         return (!accessController.isEntityAccessControlled() || (accessController.isEntityAccessControlled() && isAvailable()));
     }
 
 
-    private String getKey(FeedOpsAclEntry entry)
-    {
+    private String getKey(FeedOpsAclEntry entry) {
         return entry.getFeedId().toString();
     }
 
     @Override
     public void onAddedItem(JpaFeedOpsAclEntry.EntryId key, JpaFeedOpsAclEntry value) {
-        add(key.getUuid().toString(),value);
+        add(key.getUuid().toString(), value);
     }
 
     @Override
     public void onRemovedItem(JpaFeedOpsAclEntry value) {
-        remove(getKey(value),value);
+        remove(getKey(value), value);
     }
 
     @Override
@@ -90,7 +93,8 @@ public class FeedAclCache extends CacheListBean<String,FeedOpsAclEntry> implemen
     }
 
     @Override
-    public void onPopulated(){
+    public void onPopulated() {
+        log.info("FeedAclCache populated.");
         setPopulated(true);
     }
 

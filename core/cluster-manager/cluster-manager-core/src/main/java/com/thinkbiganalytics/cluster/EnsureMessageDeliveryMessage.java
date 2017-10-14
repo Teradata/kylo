@@ -2,16 +2,16 @@ package com.thinkbiganalytics.cluster;
 
 /*-
  * #%L
- * kylo-cluster-manager-api
+ * kylo-cluster-manager-core
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,22 +23,28 @@ package com.thinkbiganalytics.cluster;
 import java.io.Serializable;
 
 /**
- * A wrapper to send messages with a type discriminator to other kylo nodes
+ * Created by sr186054 on 10/13/17.
  */
-public interface ClusterMessage {
+public class EnsureMessageDeliveryMessage implements Serializable{
 
-    String getId();
+    private static final long serialVersionUID = -7627012532184562122L;
 
-    /**
-     * String describing the type of message.
-     * Used when receiving to check if the receiver should process the message
-     * @return the type of message
-     */
-    String getType();
+    private String messageId;
+    enum MESSAGE_ACTION {
+        SENT,RECEIVED;
+    }
+    private MESSAGE_ACTION messageAction;
 
-    /**
-     * The message
-     * @return the message
-     */
-    Serializable getMessage();
+    public EnsureMessageDeliveryMessage(String messageId, MESSAGE_ACTION messageAction) {
+        this.messageId = messageId;
+        this.messageAction = messageAction;
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public MESSAGE_ACTION getMessageAction() {
+        return messageAction;
+    }
 }

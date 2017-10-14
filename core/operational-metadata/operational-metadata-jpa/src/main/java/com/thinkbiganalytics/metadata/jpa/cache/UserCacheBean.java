@@ -24,6 +24,9 @@ import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +41,7 @@ import javax.inject.Inject;
  * If the FeedAclCache is populated it will utilize this, otherwise it will go to the source and query for the data
  */
 public abstract class UserCacheBean<K, V, T, ID extends Serializable> extends CacheBean<K, V> implements CacheBackedProviderListener<ID, T> {
-
+    private static final Logger log = LoggerFactory.getLogger(UserCacheBean.class);
     @Inject
     private FeedAclCache feedAclCache;
 
@@ -182,6 +185,10 @@ public abstract class UserCacheBean<K, V, T, ID extends Serializable> extends Ca
     public abstract String getFeedId(V item);
 
     public abstract V transform(T dbItem);
+
+    public Long size(){
+        return cache.size();
+    }
 
 
 }

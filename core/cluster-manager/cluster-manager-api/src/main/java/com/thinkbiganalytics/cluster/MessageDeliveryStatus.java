@@ -1,5 +1,4 @@
 package com.thinkbiganalytics.cluster;
-
 /*-
  * #%L
  * kylo-cluster-manager-api
@@ -20,25 +19,26 @@ package com.thinkbiganalytics.cluster;
  * #L%
  */
 
-import java.io.Serializable;
+import java.util.Set;
 
 /**
- * A wrapper to send messages with a type discriminator to other kylo nodes
+ * Created by sr186054 on 10/13/17.
  */
-public interface ClusterMessage {
+public interface MessageDeliveryStatus {
 
-    String getId();
+    void sentTo(String to);
 
-    /**
-     * String describing the type of message.
-     * Used when receiving to check if the receiver should process the message
-     * @return the type of message
-     */
-    String getType();
+    void redeliverdTo(String to);
 
-    /**
-     * The message
-     * @return the message
-     */
-    Serializable getMessage();
+    void receivedFrom(String from);
+
+    boolean isComplete();
+
+    Set<String> getNodesAwaitingMessage();
+
+    Long getSentTime();
+
+    boolean isTimeLongerThan(Long millis);
+
+    ClusterMessage getMessage();
 }
