@@ -42,6 +42,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.cache.AbstractCacheBackedProvider;
 import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
@@ -84,6 +86,10 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private static final Logger log = LoggerFactory.getLogger(OpsFeedManagerFeedProvider.class);
     @Inject
     BatchJobExecutionProvider batchJobExecutionProvider;
+
+    @Inject
+    NifiFeedStatisticsProvider nifiFeedStatisticsProvider;
+
     private OpsManagerFeedRepository repository;
     private FeedHealthRepository feedHealthRepository;
     private LatestFeedJobExectionRepository latestFeedJobExectionRepository;
@@ -427,6 +433,24 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     public List<? extends FeedSummary> findFeedSummary() {
         return feedSummaryRepository.findAll();
+    }
+
+    @Override
+    public DateTime getLastActiveTimeStamp(String feedName) {
+        DateTime lastFeedTime = null;
+        OpsManagerFeed feed = this.findByName(feedName);
+        if (feed.isStream()) {
+            NifiFeedStats feedStats = metadataAccess.read(() -> nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName));
+            if (feedStats != null) {
+                lastFeedTime = new DateTime(feedStats.getLastActivityTimestamp());
+            }
+        } else {
+            BatchJobExecution jobExecution = metadataAccess.read(() -> batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName));
+            if (jobExecution != null) {
+                lastFeedTime = jobExecution.getEndTime();
+            }
+        }
+        return lastFeedTime;
     }
 
 

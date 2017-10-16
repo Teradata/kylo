@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 
+import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
 
 import java.io.Serializable;
@@ -166,4 +167,5 @@ public interface OpsManagerFeedProvider {
 
     List<? extends FeedSummary> findFeedSummary();
 
+    DateTime getLastActiveTimeStamp(String feedName);
 }
