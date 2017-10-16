@@ -9,7 +9,7 @@
   <parent>
     <artifactId>kylo-spark</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.8.3.3</version>
+    <version>0.8.3.4-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
