@@ -82,6 +82,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         this.relatedJob = null;
         this.changeRelatedJob = changeRelatedJob;
         this.navigateToLogs = navigateToLogs;
+        this.navigateToLogsForStep = navigateToLogsForStep;
         this.logUiEnabled = false;
 
         this.init = function() {
@@ -107,8 +108,20 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
 
         logUiEnabled();
 
-        function navigateToLogs(){
-            $state.go("log-ui", {startTime:self.jobData.startTime, endTime:self.jobData.endTime, showCustom:true});
+        function navigateToLogs(jobStartTime, jobEndTime){
+            $state.go("log-ui", {startTime:jobStartTime, endTime:jobEndTime, showCustom:true});
+        }
+
+        function navigateToLogsForStep(failedStep){
+            var previousStep = '';
+            for (var title in self.stepData) {
+                var step = self.stepData[title];
+                if(failedStep.title == title) {
+                    break;
+                }
+                previousStep = step;
+            }
+            $state.go("log-ui", {startTime:previousStep.startTime, endTime:failedStep.content.endTime, showCustom:true});
         }
 
         //Tab Functions
