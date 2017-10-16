@@ -25,8 +25,8 @@ import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
@@ -59,13 +59,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DateTime.class, CronExpressionUtil.class})
-public class FeedOnTimeArrivalMetricAssessorTest {
+public class    FeedOnTimeArrivalMetricAssessorTest {
 
     private DateTime lateTime;
     private FeedOnTimeArrivalMetric metric;
 
     @Mock
-    private BatchJobExecutionProvider jobExecutionProvider;
+    private OpsManagerFeedProvider feedProvider;
 
     @Mock
     private MetricAssessmentBuilder builder;
@@ -99,8 +99,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     @Test
     public void testMinuteBeforeLate() throws ParseException {
         DateTime feedEnd = this.lateTime.minusMinutes(1);
-        BatchJobExecution feed = createFeedJobExecution(feedEnd);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(feedEnd);
 
         this.assessor.assess(metric, this.builder);
 
@@ -130,8 +129,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time not within this window
         DateTime lastFeedTime = new DateTime().minusWeeks(2);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
 
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
@@ -162,8 +160,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time within this window
         DateTime lastFeedTime = new DateTime(previousFireTime).plus(lateTimeGracePeriod - 1);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
@@ -193,8 +190,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 4)  - (now -4) + lateTimeGracePeriod)
         //Some Feed End Time to a time outside the window
         DateTime lastFeedTime = new DateTime(previousFireTime).minusHours(lateTimeGracePeriod + 1);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
@@ -207,12 +203,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testMinuteAfterLate() throws ParseException {
         DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
-        BatchJobExecution feed = createFeedJobExecution(feedEnd);
 
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
 
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(feedEnd);
 
         this.assessor.assess(metric, this.builder);
         // data is late by 1 min, but it has a 4 hr grace period
@@ -222,19 +217,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testFeedNotFound() throws ParseException {
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(null);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(null);
         this.assessor.assess(metric, this.builder);
 
         verify(this.builder).result(AssessmentResult.WARNING);
     }
-
-
-    private BatchJobExecution createFeedJobExecution(DateTime endTime) {
-        BatchJobExecution feed = mock(BatchJobExecution.class);
-        when(feed.getEndTime()).thenReturn(endTime);
-        return feed;
-    }
-
 
     public class MockMetadataAccess implements MetadataAccess {
 
