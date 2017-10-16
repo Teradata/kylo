@@ -9,7 +9,7 @@
   <parent>
     <artifactId>kylo-ui</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.6</version>
+    <version>0.8.2.7-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <properties>
