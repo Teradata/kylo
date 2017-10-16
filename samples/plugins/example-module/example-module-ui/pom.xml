@@ -6,13 +6,13 @@
 
   <artifactId>example-module-ui</artifactId>
   <groupId>com.example.kylo.plugin</groupId>
-  <version>0.8.3.3-SNAPSHOT</version>
+  <version>0.8.3.3</version>
   <name>example-module-ui</name>
 
   <parent>
     <groupId>com.example.kylo.plugin</groupId>
     <artifactId>example-module</artifactId>
-    <version>0.8.3.3-SNAPSHOT</version>
+    <version>0.8.3.3</version>
     <relativePath>../</relativePath>
   </parent>
   <properties>
@@ -28,7 +28,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-api</artifactId>
-      <version>0.8.3.3-SNAPSHOT</version>
+      <version>0.8.3.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
