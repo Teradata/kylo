@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-commons</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.8.2.6-SNAPSHOT</version>
+    <version>0.8.2.6</version>
   </parent>
 
   <artifactId>kylo-commons-hive</artifactId>
