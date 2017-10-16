@@ -55,9 +55,6 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     private OpsManagerFeedProvider feedProvider;
 
     @Inject
-    private BatchJobExecutionProvider batchJobExecutionProvider;
-
-    @Inject
     private MetadataAccess metadataAccess;
 
 
@@ -80,21 +77,14 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         builder.metric(metric);
 
         String feedName = metric.getFeedName();
-        BatchJobExecution jobExecution = metadataAccess.read(() -> {
-            return batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName);
-        });
-
-        DateTime lastFeedTime = null;
-        if (jobExecution != null) {
-            lastFeedTime = jobExecution.getEndTime();
-        }
+        DateTime lastFeedTime = feedProvider.getLastActiveTimeStamp(feedName);
 
         Long nowDiff = 0L;
         Period nowDiffPeriod = new Period(nowDiff.longValue());
 
         if(lastFeedTime != null) {
-         nowDiff =   DateTime.now().getMillis() - lastFeedTime.getMillis();
-             nowDiffPeriod = new Period(nowDiff.longValue());
+            nowDiff =   DateTime.now().getMillis() - lastFeedTime.getMillis();
+            nowDiffPeriod = new Period(nowDiff.longValue());
         }
         Long latePeriodMillis = metric.getLatePeriod().toStandardDuration().getMillis();
         Long duration = CronExpressionUtil.getCronInterval(metric.getExpectedExpression());
