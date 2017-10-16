@@ -147,14 +147,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
     public static final PropertyDescriptor SPARK_YARN_DEPLOY_MODE = new PropertyDescriptor.Builder()
-            .name("Spark YARN Deploy Mode")
-            .description("The deploy mode for YARN master (client, cluster). Only applicable for yarn mode. "
-                    + "NOTE: Please ensure that you have not set this in your application.")
-            .required(false)
-            .defaultValue("client")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Spark YARN Deploy Mode")
+        .description("The deploy mode for YARN master (client, cluster). Only applicable for yarn mode. "
+                     + "NOTE: Please ensure that you have not set this in your application.")
+        .required(false)
+        .defaultValue("client")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("How much RAM to allocate to the driver")
@@ -406,7 +406,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
             MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
-
             final List<String> extraJarPaths = getExtraJarPaths(extraJars);
 
             // If all 3 fields are filled out then assume kerberos is enabled, and user should be authenticated
@@ -443,12 +442,13 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 return;
             }
 
-
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
             // Build environment
             final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, metadataService, extraJarPaths);
-            if (env == null) return;
+            if (env == null) {
+                return;
+            }
 
              /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
@@ -515,7 +515,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         }
     }
 
-    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
+    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService,
+                                               List<String> extraJarPaths) throws JsonProcessingException {
         final Map<String, String> env = new HashMap<>();
 
         if (StringUtils.isNotBlank(datasourceIds)) {
@@ -582,36 +583,38 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
         if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
             results.add(new ValidationResult.Builder()
-                    .subject(this.getClass().getSimpleName())
-                    .valid(false)
-                    .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
-                    .build());
+                            .subject(this.getClass().getSimpleName())
+                            .valid(false)
+                            .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
+                            .build());
 
         }
 
         if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
             results.add(new ValidationResult.Builder()
-                    .subject(this.getClass().getSimpleName())
-                    .valid(false)
-                    .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
-                    .build());
+                            .subject(this.getClass().getSimpleName())
+                            .valid(false)
+                            .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
+                            .build());
         }
 
         return results;
     }
 
     private class OptionalSparkConfigurator {
+
         private SparkLauncher launcher;
+
         public OptionalSparkConfigurator(SparkLauncher launcher) {
             this.launcher = launcher;
         }
 
-        public SparkLauncher getLaucnher(){
+        public SparkLauncher getLaucnher() {
             return this.launcher;
         }
 
-        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode){
-            if(sparkMaster.equals("yarn")) {
+        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode) {
+            if (sparkMaster.equals("yarn")) {
                 launcher.setDeployMode(sparkYarnDeployMode);
                 getLog().info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
             }
@@ -666,7 +669,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             }
             return this;
         }
-
 
 
     }
