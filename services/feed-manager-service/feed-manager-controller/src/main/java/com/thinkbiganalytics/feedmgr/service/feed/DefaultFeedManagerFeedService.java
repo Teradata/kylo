@@ -896,10 +896,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public void deleteFeed(@Nonnull final String feedId) {
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-
-            Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
+            Feed feed = feedProvider.getFeed(feedIdentifier);
             //unschedule any SLAs
-            serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
+            //serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
+            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier);
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;

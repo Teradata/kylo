@@ -190,14 +190,27 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
     @Override
     public void unscheduleServiceLevelAgreement(Feed.ID feedId) {
-        metadataAccess.read(() -> {
+        unscheduleServiceLevelAgreement(feedId,false);
+    }
+
+
+    public void unscheduleServiceLevelAgreement(Feed.ID feedId, boolean remove) {
+        metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
             if (agreements != null) {
                 for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
                     serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
+                    if(sla instanceof FeedServiceLevelAgreement && ((FeedServiceLevelAgreement)sla).getFeeds().size() == 1){
+                        feedSlaProvider.removeFeedRelationships(sla.getId());
+                        slaProvider.removeAgreement(sla.getId());
+                    }
                 }
             }
         });
+    }
+
+    public void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId) {
+        unscheduleServiceLevelAgreement(feedId,true);
     }
 
 

@@ -49,6 +49,8 @@ import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescriptionRepository;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.metadata.jpa.support.JobStatusDslQueryExpressionBuilder;
 import com.thinkbiganalytics.security.AccessController;
@@ -94,6 +96,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private FeedHealthRepository feedHealthRepository;
     private LatestFeedJobExectionRepository latestFeedJobExectionRepository;
     private BatchFeedSummaryCountsRepository batchFeedSummaryCountsRepository;
+    private JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository;
 
     @Autowired
     private JPAQueryFactory factory;
@@ -120,7 +123,6 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private MetadataAccess metadataAccess;
 
 
-
     @Override
     public String getClusterMessageKey() {
         return "OPS_MANAGER_FEED_CACHE";
@@ -140,12 +142,14 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     @Autowired
     public OpsFeedManagerFeedProvider(OpsManagerFeedRepository repository, BatchFeedSummaryCountsRepository batchFeedSummaryCountsRepository,
                                       FeedHealthRepository feedHealthRepository,
-                                      LatestFeedJobExectionRepository latestFeedJobExectionRepository) {
+                                      LatestFeedJobExectionRepository latestFeedJobExectionRepository,
+                                      JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
         super(repository);
         this.repository = repository;
         this.batchFeedSummaryCountsRepository = batchFeedSummaryCountsRepository;
         this.feedHealthRepository = feedHealthRepository;
         this.latestFeedJobExectionRepository = latestFeedJobExectionRepository;
+        this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
     }
 
 
@@ -193,10 +197,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<? extends OpsManagerFeed> findByFeedIdsWithoutAcl(List<OpsManagerFeed.ID> ids) {
-        if(ids != null ) {
+        if (ids != null) {
             return opsManagerFeedCacheById.findByIdsWithoutAcl(new HashSet<>(ids));
-        }
-        else {
+        } else {
             return Collections.emptyList();
         }
     }
@@ -241,7 +244,13 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
             log.info("Deleting feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
             //first delete all jobs for this feed
             deleteFeedJobs(FeedNameUtil.category(feed.getName()), FeedNameUtil.feed(feed.getName()));
+            //remove an slas on this feed
+            List<JpaServiceLevelAgreementDescription> slas = serviceLevelAgreementDescriptionRepository.findForFeed(id);
+            if (slas != null && !slas.isEmpty()) {
+                serviceLevelAgreementDescriptionRepository.delete(slas);
+            }
             delete(feed);
+
             log.info("Successfully deleted the feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
         }
     }
@@ -378,7 +387,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
                         jobExecution = batchJobExecutionProvider.save(jobExecution);
                         batchJobExecutionProvider.notifyStopped(jobExecution, feed, null);
                         //notify stream to batch for feed
-                        batchJobExecutionProvider.notifyStreamToBatch(jobExecution,feed);
+                        batchJobExecutionProvider.notifyStreamToBatch(jobExecution, feed);
 
                     }
                 } else if (!feed.isStream() && isStream) {
@@ -393,7 +402,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
                                  feed.getName());
                         batchJobExecutionProvider.notifyFailure(jobExecution, feed, false, null);
                         //notify batch to stream for feed
-                        batchJobExecutionProvider.notifyBatchToStream(jobExecution,feed);
+                        batchJobExecutionProvider.notifyBatchToStream(jobExecution, feed);
                     });
                 }
                 feed.setStream(isStream);

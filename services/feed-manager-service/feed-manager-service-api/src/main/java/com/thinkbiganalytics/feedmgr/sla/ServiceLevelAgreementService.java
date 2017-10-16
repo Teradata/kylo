@@ -54,7 +54,18 @@ public interface ServiceLevelAgreementService {
 
     ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId);
 
+    /**
+     * Remove and unschedule a given sla by its id
+     * @param id
+     * @return
+     */
     boolean removeAndUnscheduleAgreement(String id);
+
+    /**
+     * Remove and Unschedule all SLA's for a feedId
+     * @param feedId the feed id
+     */
+    void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId);
 
     boolean removeAllAgreements();
 
