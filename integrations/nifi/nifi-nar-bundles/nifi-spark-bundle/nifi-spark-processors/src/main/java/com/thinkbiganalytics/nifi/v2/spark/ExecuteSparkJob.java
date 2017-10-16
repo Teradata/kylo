@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -145,6 +146,15 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor SPARK_YARN_DEPLOY_MODE = new PropertyDescriptor.Builder()
+            .name("Spark YARN Deploy Mode")
+            .description("The deploy mode for YARN master (client, cluster). Only applicable for yarn mode. "
+                    + "NOTE: Please ensure that you have not set this in your application.")
+            .required(false)
+            .defaultValue("client")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("How much RAM to allocate to the driver")
@@ -270,31 +280,27 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
      * Validates that one or more files exist, as specified in a single property.
      */
     public static final Validator createMultipleFilesExistValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                final String[] files = input.split(",");
-                for (String filename : files) {
-                    try {
-                        final File file = new File(filename.trim());
-                        if (!file.exists()) {
-                            final String message = "file " + filename + " does not exist";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.isFile()) {
-                            final String message = filename + " is not a file";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.canRead()) {
-                            final String message = "could not read " + filename;
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        }
-                    } catch (SecurityException e) {
-                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+        return (subject, input, context) -> {
+            final String[] files = input.split(",");
+            for (String filename : files) {
+                try {
+                    final File file = new File(filename.trim());
+                    if (!file.exists()) {
+                        final String message = "file " + filename + " does not exist";
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    } else if (!file.isFile()) {
+                        final String message = filename + " is not a file";
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    } else if (!file.canRead()) {
+                        final String message = "could not read " + filename;
                         return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
                     }
+                } catch (SecurityException e) {
+                    final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
                 }
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
             }
-
+            return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
         };
     }
 
@@ -332,6 +338,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         pds.add(MAIN_CLASS);
         pds.add(MAIN_ARGS);
         pds.add(SPARK_MASTER);
+        pds.add(SPARK_YARN_DEPLOY_MODE);
         pds.add(SPARK_HOME);
         pds.add(PROCESS_TIMEOUT);
         pds.add(DRIVER_MEMORY);
@@ -382,6 +389,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
             String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(flowFile).getValue().trim();
+            String sparkYarnDeployMode = context.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions(flowFile).getValue();
             String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String driverMemory = context.getProperty(DRIVER_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
             String executorMemory = context.getProperty(EXECUTOR_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
@@ -398,102 +406,49 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
             MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
-            String[] confs = null;
-            if (!StringUtils.isEmpty(sparkConfs)) {
-                confs = sparkConfs.split("\\|");
-            }
 
-            String[] args = null;
-            if (!StringUtils.isEmpty(appArgs)) {
-                args = appArgs.split(",");
-            }
-
-            final List<String> extraJarPaths = new ArrayList<>();
-            if (!StringUtils.isEmpty(extraJars)) {
-                extraJarPaths.addAll(Arrays.asList(extraJars.split(",")));
-            } else {
-                getLog().info("No extra jars to be added to class path");
-            }
+            final List<String> extraJarPaths = getExtraJarPaths(extraJars);
 
             // If all 3 fields are filled out then assume kerberos is enabled, and user should be authenticated
-            boolean authenticateUser = false;
-            if (!StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources)) {
-                authenticateUser = true;
-            }
+            boolean isAuthenticated = !StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources);
+            try {
+                if (isAuthenticated && isSecurityEnabled(hadoopConfigurationResources)) {
+                    logger.info("Security is enabled");
 
-            if (authenticateUser) {
-                ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                Configuration configuration;
-                try {
-                    getLog().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
-                    configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
-
-                    if (SecurityUtil.isSecurityEnabled(configuration)) {
-                        getLog().info("Security is enabled");
-
-                        if (principal.equals("") && keyTab.equals("")) {
-                            getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster. {} ", new Object[]{flowFile});
-                            session.transfer(flowFile, REL_FAILURE);
-                            return;
-                        }
-
-                        try {
-                            getLog().info("User authentication initiated");
-
-                            boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
-                            if (authenticationStatus) {
-                                getLog().info("User authenticated successfully.");
-                            } else {
-                                getLog().error("User authentication failed.  {} ", new Object[]{flowFile});
-                                session.transfer(flowFile, REL_FAILURE);
-                                return;
-                            }
-
-                        } catch (Exception unknownException) {
-                            getLog().error("Unknown exception occurred while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
-                            session.transfer(flowFile, REL_FAILURE);
-                            return;
-                        }
-
+                    if (principal.equals("") && keyTab.equals("")) {
+                        logger.error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster. {} ", new Object[]{flowFile});
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
                     }
-                } catch (IOException e1) {
-                    getLog().error("Unknown exception occurred while authenticating user : {} and flow file: {}", new Object[]{e1.getMessage(), flowFile});
-                    session.transfer(flowFile, REL_FAILURE);
-                    return;
-                }
-            }
 
-            String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
+                    logger.info("User authentication initiated");
 
-            // Build environment
-            final Map<String, String> env = new HashMap<>();
-
-            if (StringUtils.isNotBlank(datasourceIds)) {
-                final StringBuilder datasources = new StringBuilder(10240);
-                final ObjectMapper objectMapper = new ObjectMapper();
-                final MetadataProvider provider = metadataService.getProvider();
-
-                for (final String id : datasourceIds.split(",")) {
-                    datasources.append((datasources.length() == 0) ? '[' : ',');
-
-                    final Optional<Datasource> datasource = provider.getDatasource(id);
-                    if (datasource.isPresent()) {
-                        if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
-                            final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
-                            extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
-                        }
-                        datasources.append(objectMapper.writeValueAsString(datasource.get()));
+                    boolean authenticationStatus = new ApplySecurityPolicy().validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
+                    if (authenticationStatus) {
+                        logger.info("User authenticated successfully.");
                     } else {
-                        logger.error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
+                        logger.error("User authentication failed.  {} ", new Object[]{flowFile});
                         session.transfer(flowFile, REL_FAILURE);
                         return;
                     }
                 }
+            } catch (IOException e1) {
+                logger.error("Unknown exception occurred while authenticating user : {} and flow file: {}", new Object[]{e1.getMessage(), flowFile});
+                session.transfer(flowFile, REL_FAILURE);
+                return;
 
-                datasources.append(']');
-                env.put("DATASOURCES", datasources.toString());
+            } catch (Exception unknownException) {
+                logger.error("Unknown exception occurred while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
+                session.transfer(flowFile, REL_FAILURE);
+                return;
             }
+
+
+            String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
+
+            // Build environment
+            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, metadataService, extraJarPaths);
+            if (env == null) return;
 
              /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
@@ -508,35 +463,16 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
 
-            if (authenticateUser) {
-                launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
-                launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
-            }
-            if (args != null) {
-                launcher.addAppArgs(args);
-            }
+            OptionalSparkConfigurator optionalSparkConf = new OptionalSparkConfigurator(launcher)
+                .setDeployMode(sparkMaster, sparkYarnDeployMode)
+                .setAuthentication(isAuthenticated, keyTab, principal)
+                .addAppArgs(appArgs)
+                .addSparkArg(sparkConfs)
+                .addExtraJars(extraJarPaths)
+                .setYarnQueue(yarnQueue)
+                .setExtraFiles(extraFiles);
 
-            if (confs != null) {
-                for (String conf : confs) {
-                    getLog().info("Adding sparkconf '" + conf + "'");
-                    launcher.addSparkArg(SPARK_CONFIG_NAME, conf);
-                }
-            }
-
-            if (!extraJarPaths.isEmpty()) {
-                for (String path : extraJarPaths) {
-                    getLog().info("Adding to class path '" + path + "'");
-                    launcher.addJar(path);
-                }
-            }
-            if (StringUtils.isNotEmpty(yarnQueue)) {
-                launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
-            }
-            if (StringUtils.isNotEmpty(extraFiles)) {
-                launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
-            }
-
-            Process spark = launcher.launch();
+            Process spark = optionalSparkConf.getLaucnher().launch();
 
             /* Read/clear the process input stream */
             InputStreamReaderRunnable inputStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getInputStream());
@@ -561,7 +497,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             int exitCode = spark.exitValue();
 
-            flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
+            flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, Integer.toString(exitCode));
             if (exitCode != 0) {
                 logger.error("ExecuteSparkJob for {} and flowfile: {} completed with failed status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed");
@@ -579,9 +515,61 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         }
     }
 
+    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
+        final Map<String, String> env = new HashMap<>();
+
+        if (StringUtils.isNotBlank(datasourceIds)) {
+            final StringBuilder datasources = new StringBuilder(10240);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final MetadataProvider provider = metadataService.getProvider();
+
+            for (final String id : datasourceIds.split(",")) {
+                datasources.append((datasources.length() == 0) ? '[' : ',');
+
+                final Optional<Datasource> datasource = provider.getDatasource(id);
+                if (datasource.isPresent()) {
+                    if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
+                        final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
+                        extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+                    }
+                    datasources.append(objectMapper.writeValueAsString(datasource.get()));
+
+                } else {
+                    getLog().error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                    flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
+                    session.transfer(flowFile, REL_FAILURE);
+                    return null;
+                }
+            }
+
+            datasources.append(']');
+            env.put("DATASOURCES", datasources.toString());
+        }
+        return env;
+    }
+
+    private boolean isSecurityEnabled(String hadoopConfigurationResources) throws IOException {
+        getLog().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
+        Configuration configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
+        return SecurityUtil.isSecurityEnabled(configuration);
+    }
+
+    private List<String> getExtraJarPaths(String extraJars) {
+        final List<String> extraJarPaths = new ArrayList<>();
+        if (!StringUtils.isEmpty(extraJars)) {
+            extraJarPaths.addAll(Arrays.asList(extraJars.split(",")));
+        } else {
+            getLog().info("No extra jars to be added to class path");
+        }
+        return extraJarPaths;
+    }
+
+
     @Override
     protected Collection<ValidationResult> customValidate(@Nonnull final ValidationContext validationContext) {
         final Set<ValidationResult> results = new HashSet<>();
+        final String sparkMaster = validationContext.getProperty(SPARK_MASTER).evaluateAttributeExpressions().getValue().trim().toLowerCase();
+        final String sparkYarnDeployMode = validationContext.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions().getValue();
 
         if (validationContext.getProperty(DATASOURCES).isSet() && !validationContext.getProperty(METADATA_SERVICE).isSet()) {
             results.add(new ValidationResult.Builder()
@@ -592,6 +580,94 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                             .build());
         }
 
+        if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
+            results.add(new ValidationResult.Builder()
+                    .subject(this.getClass().getSimpleName())
+                    .valid(false)
+                    .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
+                    .build());
+
+        }
+
+        if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
+            results.add(new ValidationResult.Builder()
+                    .subject(this.getClass().getSimpleName())
+                    .valid(false)
+                    .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
+                    .build());
+        }
+
         return results;
+    }
+
+    private class OptionalSparkConfigurator {
+        private SparkLauncher launcher;
+        public OptionalSparkConfigurator(SparkLauncher launcher) {
+            this.launcher = launcher;
+        }
+
+        public SparkLauncher getLaucnher(){
+            return this.launcher;
+        }
+
+        private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode){
+            if(sparkMaster.equals("yarn")) {
+                launcher.setDeployMode(sparkYarnDeployMode);
+                getLog().info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setAuthentication(boolean authenticateUser, String keyTab, String principal) {
+            if (authenticateUser) {
+                launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
+                launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addAppArgs(String appArgs) {
+            if (!StringUtils.isEmpty(appArgs)) {
+                launcher.addAppArgs(appArgs.split(","));
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addSparkArg(String sparkConfs) {
+            if (!StringUtils.isEmpty(sparkConfs)) {
+                for (String conf : sparkConfs.split("\\|")) {
+                    getLog().info("Adding sparkconf '" + conf + "'");
+                    launcher.addSparkArg(SPARK_CONFIG_NAME, conf);
+                }
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator addExtraJars(List<String> extraJarPaths) {
+            if (!extraJarPaths.isEmpty()) {
+                for (String path : extraJarPaths) {
+                    getLog().info("Adding to class path '" + path + "'");
+                    launcher.addJar(path);
+                }
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setYarnQueue(String yarnQueue) {
+            if (StringUtils.isNotEmpty(yarnQueue)) {
+                launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
+            }
+            return this;
+        }
+
+        private OptionalSparkConfigurator setExtraFiles(String extraFiles) {
+            if (StringUtils.isNotEmpty(extraFiles)) {
+                launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
+            }
+            return this;
+        }
+
+
+
     }
 }
