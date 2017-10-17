@@ -46,6 +46,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -278,6 +279,9 @@ public class ServiceLevelAgreementModelTransform {
             canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
         }
         slaModel.setCanEdit(canEdit);
+        if(feedServiceLevelAgreement.getFeeds() == null){
+            feedServiceLevelAgreement.setFeeds(new HashSet<>());
+        }
         feedServiceLevelAgreement.setCanEdit(canEdit);
         return feedServiceLevelAgreement;
     }

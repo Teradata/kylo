@@ -29,9 +29,11 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
+import com.thinkbiganalytics.alerts.api.EntityAwareAlertCriteria;
+import com.thinkbiganalytics.alerts.spi.EntityIdentificationAlertContent;
 import com.thinkbiganalytics.metadata.alerts.KyloEntityAwareAlertManager;
-import com.thinkbiganalytics.metadata.api.alerts.EntityAwareAlertSummary;
 import com.thinkbiganalytics.metadata.api.alerts.KyloEntityAwareAlertSummary;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
@@ -43,28 +45,51 @@ import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 
+public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria implements EntityAwareAlertCriteria {
 
-public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
+    private static final Logger log = LoggerFactory.getLogger(KyloEntityAwareAlertCriteria.class);
 
     private AccessController controller;
+
+    private Set<EntityIdentificationAlertContent> entityCriteria = new HashSet<>();
+
 
     public KyloEntityAwareAlertCriteria(JPAQueryFactory queryFactory, AccessController controller) {
         super(queryFactory);
         this.controller = controller;
     }
 
+    public KyloEntityAwareAlertCriteria entityCriteria(EntityIdentificationAlertContent entityIdentificationAlertContent, EntityIdentificationAlertContent... others) {
+        if (entityIdentificationAlertContent != null) {
+            this.entityCriteria.add(entityIdentificationAlertContent);
+        }
+        if (others != null) {
+            Arrays.stream(others).forEach(c -> this.entityCriteria.add(c));
+        }
+        return this;
+    }
 
-
-
+    @Override
+    public AlertCriteria transfer(AlertCriteria criteria) {
+        AlertCriteria c = super.transfer(criteria);
+        AtomicReference<KyloEntityAwareAlertCriteria> updated = new AtomicReference<>((KyloEntityAwareAlertCriteria) c);
+        this.entityCriteria.forEach((t) -> updated.set(updated.get().entityCriteria(t)));
+        return updated.get();
+    }
 
     public JPAQuery<JpaAlert> createQuery() {
         QJpaAlert alert = QJpaAlert.jpaAlert;
@@ -77,7 +102,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
             .from(alert)
             .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
             .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
-            .leftJoin(sla.feeds,slaFeed)
+            .leftJoin(sla.feeds, slaFeed)
             .limit(getLimit());
 
         List<Predicate> preds = filter(alert);
@@ -85,7 +110,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
         preds.add(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, entityAccessControlled))));
         preds.add(slaFeed.isNull().or(slaFeed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(slaFeed.id, entityAccessControlled))));
         BooleanBuilder orFilter = orFilter(alert, feed, sla);
-
+        addEntityFilter(alert, preds);
         // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
         // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
         if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
@@ -93,7 +118,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
         } else {
             query.orderBy(alert.createdTime.desc());
         }
-        return super.addWhere(query,preds,orFilter);
+        return super.addWhere(query, preds, orFilter);
 
     }
 
@@ -119,15 +144,16 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
             .from(alert)
             .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
             .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))
-            .leftJoin(sla.feeds,slaFeed)
-            .groupBy(alert.typeString, alert.subtype, feed.id, feed.name,sla.slaId,sla.name, alert.level);
+            .leftJoin(sla.feeds, slaFeed)
+            .groupBy(alert.typeString, alert.subtype, feed.id, feed.name, sla.slaId, sla.name, alert.level);
         List<Predicate> preds = filter(alert);
         boolean entityAccessControlled = !isAsServiceAccount() && controller.isEntityAccessControlled();
-        preds.add(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id,entityAccessControlled))));
+        preds.add(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, entityAccessControlled))));
         preds.add(slaFeed.isNull().or(slaFeed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(slaFeed.id, entityAccessControlled))));
         BooleanBuilder orFilter = orFilter(alert, feed, sla);
+        addEntityFilter(alert, preds);
 
-        return (JPAQuery<AlertSummary>)  super.addWhere(query, preds, orFilter);
+        return (JPAQuery<AlertSummary>) super.addWhere(query, preds, orFilter);
 
     }
 
@@ -139,17 +165,29 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
         return KyloEntityAwareAlertManager.alertSlaFilters.keySet().stream().map(key -> key + "=~" + keyword).collect(Collectors.joining(","));
     }
 
-    private void addOrFilter(EntityPathBase base, Map<String,String> filterMap, List<Predicate> preds, String filter) {
-       filterMap.keySet().stream().forEach(key -> {
+    private void addOrFilter(EntityPathBase base, Map<String, String> filterMap, List<Predicate> preds, String filter) {
+        filterMap.keySet().stream().forEach(key -> {
             String f = "";
-            if(filter.contains(",")){
-                f = key+"==\""+filter+"\"";
+            if (filter.contains(",")) {
+                f = key + "==\"" + filter + "\"";
+            } else {
+                f = key + "=~" + filter;
             }
-            else {
-                f = key+"=~"+filter;
-            }
-            preds.add(GenericQueryDslFilter.buildOrFilter(base,f));
+            preds.add(GenericQueryDslFilter.buildOrFilter(base, f));
         });
+    }
+
+    private void addEntityFilter(QJpaAlert alert, List<Predicate> preds) {
+        if (entityCriteria != null && !entityCriteria.isEmpty()) {
+            BooleanBuilder booleanBuilder = new BooleanBuilder();
+            List<Predicate> entityPreds = new ArrayList<>();
+            entityCriteria.stream().forEach(c -> {
+                entityPreds.add(alert.entityType.eq(c.getEntityType().name()).and(alert.entityId.value.eq(UUID.fromString(c.getEntityId()))));
+            });
+            BooleanBuilder allEntityPredicates = booleanBuilder.andAnyOf(entityPreds.toArray(new Predicate[entityPreds.size()]));
+            preds.add(allEntityPredicates);
+
+        }
     }
 
     private BooleanBuilder orFilter(QJpaAlert alert, QJpaOpsManagerFeed feed, QJpaServiceLevelAgreementDescription sla) {
@@ -159,10 +197,10 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
                 filter = StringUtils.trim(filter);
                 if (filter != null) {
                     List<String> in = null;
-                    if(filter.contains("||")){
+                    if (filter.contains("||")) {
                         //replace the OR || with commas for IN clause
-                      in =  Arrays.asList(StringUtils.split(filter,"||")).stream().map(f -> StringUtils.trim(f)).collect(Collectors.toList());
-                      filter = in.stream().collect(Collectors.joining(","));
+                        in = Arrays.asList(StringUtils.split(filter, "||")).stream().map(f -> StringUtils.trim(f)).collect(Collectors.toList());
+                        filter = in.stream().collect(Collectors.joining(","));
                     }
                     BooleanBuilder booleanBuilder = new BooleanBuilder();
                     List<Predicate> preds = new ArrayList<>();
@@ -172,23 +210,22 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
                     } catch (IllegalArgumentException e) {
 
                     }
-                    if(in != null) {
+                    if (in != null) {
                         preds.add(alert.description.in(in));
                         preds.add(alert.entityType.in(in));
                         preds.add(alert.typeString.in(in));
                         preds.add(alert.subtype.in(in));
                         //add in joins on the feed or sla name
-                        addOrFilter(feed, CommonFilterTranslations.feedFilters,preds,filter);
-                        addOrFilter(sla, KyloEntityAwareAlertManager.alertSlaFilters,preds,filter);
-                    }
-                    else {
+                        addOrFilter(feed, CommonFilterTranslations.feedFilters, preds, filter);
+                        addOrFilter(sla, KyloEntityAwareAlertManager.alertSlaFilters, preds, filter);
+                    } else {
                         preds.add(alert.description.likeIgnoreCase(filter.concat("%")));
                         preds.add(alert.entityType.likeIgnoreCase(filter.concat("%")));
                         preds.add(alert.typeString.likeIgnoreCase(filter.concat("%")));
                         preds.add(alert.subtype.like(filter.concat("%")));
                         //add in joins on the feed or sla name
-                        addOrFilter(feed, CommonFilterTranslations.feedFilters,preds,filter);
-                        addOrFilter(sla, KyloEntityAwareAlertManager.alertSlaFilters,preds,filter);
+                        addOrFilter(feed, CommonFilterTranslations.feedFilters, preds, filter);
+                        addOrFilter(sla, KyloEntityAwareAlertManager.alertSlaFilters, preds, filter);
 
                     }
 
@@ -202,4 +239,22 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria {
         return globalFilter;
     }
 
+
+    public JPAQuery<JpaAlert> createEntityQuery() {
+        QJpaAlert alert = QJpaAlert.jpaAlert;
+
+        JPAQuery<JpaAlert> query = queryFactory
+            .select(alert)
+            .from(alert)
+            .limit(getLimit());
+
+        List<Predicate> preds = filter(alert);
+        addEntityFilter(alert, preds);
+        if (entityCriteria == null || entityCriteria.isEmpty()) {
+            log.warn("Unable to apply Entity Query.  No Entity Criteria was specified!");
+            preds.add(Expressions.stringTemplate("1").eq(Expressions.stringTemplate("2")));
+        }
+        return super.addWhere(query, preds, new BooleanBuilder());
+
+    }
 }

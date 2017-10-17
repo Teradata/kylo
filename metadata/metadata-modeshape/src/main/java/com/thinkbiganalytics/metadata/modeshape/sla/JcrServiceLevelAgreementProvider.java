@@ -26,8 +26,13 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.sla.ServiceLevelAgreementChange;
+import com.thinkbiganalytics.metadata.api.event.sla.ServiceLevelAgreementEvent;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -51,9 +56,12 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
+import org.joda.time.DateTime;
 import org.modeshape.jcr.api.JcrTools;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -61,6 +69,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
@@ -79,6 +88,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
     @Inject
     private FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
+
+    @Inject
+    private MetadataEventService metadataEventService;
 
     @Override
     public Class<? extends ServiceLevelAgreement> getEntityClass() {
@@ -190,7 +202,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Node slaNode = session.getNodeByIdentifier(slaId.getIdValue());
             if (slaNode != null) {
                 JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
-
+                addPostSlaChangeAction(sla, MetadataChange.ChangeType.DELETE);
                 //remove any other relationships
                 feedServiceLevelAgreementProvider.removeAllRelationships(id);
                 slaNode.remove();
@@ -552,4 +564,20 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     }
 
 
+
+    private void addPostSlaChangeAction(ServiceLevelAgreement sla, MetadataChange.ChangeType changeType) {
+        ServiceLevelAgreement.ID id = sla.getId();
+        String name = sla.getName();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        Consumer<Boolean> action = (success) -> {
+            if (success) {
+                ServiceLevelAgreementChange change = new ServiceLevelAgreementChange(changeType, id,name);
+                ServiceLevelAgreementEvent event = new ServiceLevelAgreementEvent(change, DateTime.now(), principal);
+                metadataEventService.notify(event);
+            }
+        };
+
+        JcrMetadataAccess.addPostTransactionAction(action);
+    }
 }
