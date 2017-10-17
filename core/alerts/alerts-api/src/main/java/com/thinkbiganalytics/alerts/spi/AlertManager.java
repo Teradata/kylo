@@ -24,11 +24,14 @@ package com.thinkbiganalytics.alerts.spi;
  */
 
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.EntityAwareAlertCriteria;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Iterator;
 
 /**
  * A kind of AlertSource that provides alert creation and change management functions.

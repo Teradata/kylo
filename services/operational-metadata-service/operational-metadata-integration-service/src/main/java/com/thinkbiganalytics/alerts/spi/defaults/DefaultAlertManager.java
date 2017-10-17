@@ -53,6 +53,9 @@ import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
@@ -107,7 +110,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     private AlertSource.ID id = new AlertManagerId();
 
-
     private Long lastUpdatedTime;
 
     private Long previousUpdatedTime;
@@ -121,6 +123,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * Map of the latest alerts for a given criteria
      */
     private Map<String,AlertsCache> latestAlerts = new ConcurrentHashMap<>();
+
+
 
     @PostConstruct
     private void init(){
@@ -447,7 +451,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         receivers.forEach(a -> a.alertsAvailable(count));
     }
 
-    private void updateLastUpdatedTime(){
+    protected void updateLastUpdatedTime(){
         previousUpdatedTime = lastUpdatedTime;
         lastUpdatedTime = DateTime.now().getMillis();
         if(previousUpdatedTime == null){
@@ -815,4 +819,9 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             this.lastUpdatedTime = DateTime.now().getMillis();
         }
     }
+
+
+
+
+
 }
