@@ -468,7 +468,9 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
 
     private Set<VelocityTemplate.ID> findVelocityTemplates(ServiceLevelAgreementGroup agreement) {
-
+        if(agreement.getActionConfigurations() == null) {
+            return null;
+        }
         return agreement.getActionConfigurations().stream().flatMap(a -> ServiceLevelAgreementMetricTransformer.instance()
             .findPropertiesForRulesetMatchingRenderTypes(Lists.newArrayList(a), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.velocityTemplate.name()}).stream())
             .filter(r -> StringUtils.isNotBlank(r.getValue())).map(r -> velocityTemplateProvider.resolveId(r.getValue())).collect(Collectors.toSet());
