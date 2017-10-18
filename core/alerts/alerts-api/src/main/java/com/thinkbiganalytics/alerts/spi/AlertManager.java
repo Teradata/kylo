@@ -99,5 +99,12 @@ public interface AlertManager extends AlertSource {
      */
     Long getLastUpdatedTime();
 
+    /**
+     * Update the time to Now to notify others alerts have been updated
+     * Useful if alert data managed by this manager have been updated by an outside source
+     * and others need to get notified of the update
+     */
+    void updateLastUpdatedTime();
+
 
 }

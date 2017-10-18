@@ -30,6 +30,7 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -78,6 +79,7 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Provider allowing access to feeds {@link OpsManagerFeed}
@@ -106,6 +108,10 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Inject
     private AlertProvider alertProvider;
+
+    @Inject
+    @Named("kyloAlertManager")
+    private AlertManager alertManager;
 
     @Inject
     private FeedSummaryRepository feedSummaryRepository;
@@ -348,6 +354,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
      */
     public void deleteFeedJobs(String category, String feed) {
         repository.deleteFeedJobs(category, feed);
+        alertManager.updateLastUpdatedTime();
     }
 
     /**
@@ -365,6 +372,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         Iterator<? extends Alert> alerts = alertProvider.getAlerts(criteria);
         StreamSupport.stream(Spliterators.spliteratorUnknownSize(alerts, Spliterator.ORDERED), false)
             .forEach(alert -> alertProvider.respondTo(alert.getId(), (alert1, response) -> response.handle(exitMessage)));
+        alertManager.updateLastUpdatedTime();
     }
 
     /**

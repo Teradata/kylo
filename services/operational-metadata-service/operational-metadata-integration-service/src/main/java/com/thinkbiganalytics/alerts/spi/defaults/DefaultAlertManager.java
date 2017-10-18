@@ -451,7 +451,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         receivers.forEach(a -> a.alertsAvailable(count));
     }
 
-    protected void updateLastUpdatedTime(){
+    public void updateLastUpdatedTime(){
         previousUpdatedTime = lastUpdatedTime;
         lastUpdatedTime = DateTime.now().getMillis();
         if(previousUpdatedTime == null){
