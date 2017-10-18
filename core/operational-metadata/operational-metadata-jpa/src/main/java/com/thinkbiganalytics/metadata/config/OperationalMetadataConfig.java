@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JobExecutionChangedNotifier;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
+import com.thinkbiganalytics.metadata.jpa.sla.ServiceLevelAgreementDescriptionCache;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
 import org.joda.time.format.DateTimeFormat;
@@ -177,5 +178,9 @@ public class OperationalMetadataConfig {
         return new FeedAclCache();
     }
 
+    @Bean
+    public ServiceLevelAgreementDescriptionCache serviceLevelAgreementDescriptionCache(){
+        return new ServiceLevelAgreementDescriptionCache();
+    }
 
 }

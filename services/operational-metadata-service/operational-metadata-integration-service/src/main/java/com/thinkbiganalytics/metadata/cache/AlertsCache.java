@@ -29,9 +29,12 @@ import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.AlertCriteriaInput;
 import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.cache.util.TimeUtil;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
+import com.thinkbiganalytics.metadata.jpa.sla.CachedServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.jpa.sla.ServiceLevelAgreementDescriptionCache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -62,6 +65,12 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
     private AlertProvider alertProvider;
 
     @Inject
+    private ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider;
+
+    @Inject
+    private ServiceLevelAgreementDescriptionCache serviceLevelAgreementDescriptionCache;
+
+    @Inject
     private AlertsModel alertsModel;
 
 
@@ -82,8 +91,7 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
     }
 
     public List<AlertSummaryGrouped> getUserAlertSummary(Long time) {
-        RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
-        return getAlertSummary(time).stream().filter(alertSummaryGrouped -> feedAclCache.hasAccess(userContext, alertSummaryGrouped.getFeedId())).collect(Collectors.toList());
+        return getUserAlertSummary(time, null, null);
     }
 
     public List<AlertSummaryGrouped> getUserAlertSummaryForFeedId(String feedId) {
@@ -96,10 +104,7 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
         if (StringUtils.isBlank(feedId)) {
             return new ArrayList<>();
         } else {
-            RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
-            return getAlertSummary(time).stream()
-                .filter(alertSummaryGrouped -> feedId.equalsIgnoreCase(alertSummaryGrouped.getFeedId()) && feedAclCache.hasAccess(userContext, alertSummaryGrouped.getFeedId()))
-                .collect(Collectors.toList());
+            return getUserAlertSummary(time, null, feedId);
         }
     }
 
@@ -112,10 +117,7 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
         if (StringUtils.isBlank(feedName)) {
             return new ArrayList<>();
         } else {
-            RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
-            return getAlertSummary(time).stream()
-                .filter(alertSummaryGrouped -> feedName.equalsIgnoreCase(alertSummaryGrouped.getFeedName()) && feedAclCache.hasAccess(userContext, alertSummaryGrouped.getFeedId()))
-                .collect(Collectors.toList());
+            return getUserAlertSummary(time, feedName, null);
         }
     }
 
@@ -150,5 +152,39 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
     @Override
     public boolean isAvailable() {
         return feedAclCache.isUserCacheAvailable();
+    }
+
+
+    private boolean filterSlaAlertForUserAccess(RoleSetExposingSecurityExpressionRoot userContext, AlertSummaryGrouped alertSummary, String feedName) {
+        if (StringUtils.isBlank(alertSummary.getSlaId())) {
+            return true;
+        } else {
+            CachedServiceLevelAgreement slaDescription = serviceLevelAgreementDescriptionCache.getUnchecked(alertSummary.getSlaId());
+            if (slaDescription != null) {
+                return slaDescription.getFeeds().stream().filter(f -> (StringUtils.isNotBlank(feedName) ? f.getName().equalsIgnoreCase(feedName) : true))
+                    .anyMatch(f -> feedAclCache.hasAccess(userContext, f.getId().toString()));
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private boolean hasAccess(RoleSetExposingSecurityExpressionRoot userContext, AlertSummaryGrouped alertSummary, String feedName, String feedId) {
+        if (alertSummary.getFeedId() != null) {
+            return
+                (StringUtils.isNotBlank(feedName) ? alertSummary.getFeedName().equalsIgnoreCase(feedName) : StringUtils.isNotBlank(feedId) ? alertSummary.getFeedId().equalsIgnoreCase(feedId) : true)
+                && feedAclCache.hasAccess(userContext, alertSummary.getFeedId());
+        } else if (alertSummary.getSlaId() != null) {
+            return filterSlaAlertForUserAccess(userContext, alertSummary, feedName);
+        } else {
+            return true;
+        }
+    }
+
+    private List<AlertSummaryGrouped> getUserAlertSummary(Long time, String feedName, String feedId) {
+        RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
+        return getAlertSummary(time).stream()
+            .filter(alertSummaryGrouped -> hasAccess(userContext, alertSummaryGrouped, feedName, feedId))
+            .collect(Collectors.toList());
     }
 }

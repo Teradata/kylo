@@ -47,4 +47,8 @@ public interface ServiceLevelAgreementDescriptionProvider {
     ServiceLevelAgreement.ID resolveId(Serializable ser);
 
     List< ? extends ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId);
+
+    List<ServiceLevelAgreementDescription> findAll();
+
+    ServiceLevelAgreementDescription findOne(ServiceLevelAgreement.ID id);
 }
