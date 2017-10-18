@@ -170,6 +170,15 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             BroadcastService.subscribe($scope,OpsManagerDashboardService.FEED_SUMMARY_UPDATED,function(feedSummary){
                 loadTabData();
             });
+
+            BroadcastService.subscribe($scope,OpsManagerDashboardService.TAB_SELECTED,function(e,selectedTab){
+               var tabData = _.find(self.tabs,function(tab){ return tab.title == selectedTab});
+               if(tabData != undefined) {
+                   var idx = _.indexOf(self.tabs,tabData);
+                   self.tabMetadata.selectedIndex = idx;
+                  // self.onTabSelected(tabData);
+               }
+            });
         }
         //Util Functions
         function capitalize(string) {
