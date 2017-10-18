@@ -721,6 +721,7 @@ public class RegisteredTemplateService {
             updatedTemplate.setUpdated(true);
 
             registeredTemplateCache.invalidateProcessors(updatedTemplate.getId());
+            niFiTemplateCache.updateSelectedProperties(registeredTemplate);
             return updatedTemplate;
         }
     }

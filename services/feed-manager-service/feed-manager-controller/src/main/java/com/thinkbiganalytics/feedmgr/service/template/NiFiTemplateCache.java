@@ -34,7 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -87,44 +89,44 @@ public class NiFiTemplateCache {
 
     /**
      * Gets the populated Template with flow information first looking at the cache and then getting it from NiFi if it is stale
+     *
      * @param nifiTemplateId the nifi template id
-     * @param templateName the name of the template
+     * @param templateName   the name of the template
      * @return the populated template
      */
     public TemplateDTO geTemplate(String nifiTemplateId, String templateName) {
         TemplateDTO templateDTO = null;
         TemplateDTO nifiTemplate = null;
-           if (StringUtils.isNotBlank(nifiTemplateId)) {
-               templateDTO = templateByIdCache.getIfPresent(nifiTemplateId);
-               nifiTemplate = findSummaryById(nifiTemplateId);
-           }
-            if(templateDTO == null && StringUtils.isNotBlank(templateName)){
-                templateDTO = templateByNameCache.getIfPresent(templateName);
+        if (StringUtils.isNotBlank(nifiTemplateId)) {
+            templateDTO = templateByIdCache.getIfPresent(nifiTemplateId);
+            nifiTemplate = findSummaryById(nifiTemplateId);
+        }
+        if (templateDTO == null && StringUtils.isNotBlank(templateName)) {
+            templateDTO = templateByNameCache.getIfPresent(templateName);
+        }
+        if (nifiTemplate == null && StringUtils.isNotBlank(templateName)) {
+            nifiTemplate = findSummaryByName(templateName);
+        }
+        if (nifiTemplate != null) {
+            if (StringUtils.isBlank(templateName)) {
+                templateName = nifiTemplate.getName();
             }
-            if(nifiTemplate == null && StringUtils.isNotBlank(templateName)){
-                nifiTemplate = findSummaryByName(templateName);
-            }
-            if(nifiTemplate != null) {
-                if(StringUtils.isBlank(templateName)){
-                    templateName = nifiTemplate.getName();
-                }
-                if(needsUpdate(nifiTemplate,templateDTO)){
-                    log.info("Fetching NiFi template from NiFi {}, {}",nifiTemplateId,templateName);
-                    templateDTO = getPopulatedTemplate(nifiTemplateId,templateName);
-                    if(templateDTO != null){
-                        log.info("Caching NiFi template {}, {}",nifiTemplateId,templateName);
-                        if(StringUtils.isNotBlank(nifiTemplateId)){
-                            templateByIdCache.put(nifiTemplateId,templateDTO);
-                        }
-                        if(StringUtils.isNotBlank(templateName)) {
-                            templateByNameCache.put(templateName,templateDTO);
-                        }
+            if (needsUpdate(nifiTemplate, templateDTO)) {
+                log.info("Fetching NiFi template from NiFi {}, {}", nifiTemplateId, templateName);
+                templateDTO = getPopulatedTemplate(nifiTemplateId, templateName);
+                if (templateDTO != null) {
+                    log.info("Caching NiFi template {}, {}", nifiTemplateId, templateName);
+                    if (StringUtils.isNotBlank(nifiTemplateId)) {
+                        templateByIdCache.put(nifiTemplateId, templateDTO);
+                    }
+                    if (StringUtils.isNotBlank(templateName)) {
+                        templateByNameCache.put(templateName, templateDTO);
                     }
                 }
-                else {
-                    log.info("Returning Cached NiFi template {}, {}",nifiTemplateId,templateName);
-                }
+            } else {
+                log.info("Returning Cached NiFi template {}, {}", nifiTemplateId, templateName);
             }
+        }
 
         return templateDTO;
 
@@ -165,7 +167,6 @@ public class NiFiTemplateCache {
     }
 
 
-
     /**
      * Return the NiFi {@link TemplateDTO} object fully populated and sets this to the incoming {@link RegisteredTemplate#nifiTemplate}
      * If at first looking at the {@link RegisteredTemplate#nifiTemplateId} it is unable to find the template it will then fallback and attempt to find the template by its name
@@ -175,7 +176,7 @@ public class NiFiTemplateCache {
      */
     public TemplateDTO ensureNifiTemplate(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate.getNifiTemplate() == null) {
-            TemplateDTO templateDTO = geTemplate(registeredTemplate.getNifiTemplateId(),registeredTemplate.getTemplateName());
+            TemplateDTO templateDTO = geTemplate(registeredTemplate.getNifiTemplateId(), registeredTemplate.getTemplateName());
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
                 registeredTemplate.setNifiTemplateId(registeredTemplate.getNifiTemplate().getId());
@@ -186,23 +187,22 @@ public class NiFiTemplateCache {
     }
 
 
-
-
     /**
      * Cache the Template properties.  Return the cached properties if the template hasnt been updated
-     * @param templateDTO the nifi template
+     *
+     * @param templateDTO                the nifi template
      * @param includePropertyDescriptors true to include descriptors, false to not include the descriptors
      * @return a list of properties
      */
-    public List<NifiProperty> getTemplateProperties(TemplateDTO templateDTO, boolean includePropertyDescriptors){
+    public List<NifiProperty> getTemplateProperties(TemplateDTO templateDTO, boolean includePropertyDescriptors) {
 
-        String cacheKey = templateDTO.getName()+includePropertyDescriptors;
+        String cacheKey = templateDTO.getName() + includePropertyDescriptors;
         TemplatePropertiesCache cachedProperties = templatePropertiesCache.getIfPresent(cacheKey);
-        if(cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()){
+        if (cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()) {
             List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateDTO, includePropertyDescriptors);
-            if(cachedProperties == null){
+            if (cachedProperties == null) {
                 cachedProperties = new TemplatePropertiesCache(templateDTO.getId(), includePropertyDescriptors, templateDTO.getTimestamp().getTime());
-                templatePropertiesCache.put(cacheKey,cachedProperties);
+                templatePropertiesCache.put(cacheKey, cachedProperties);
             }
             cachedProperties.setProperties(properties);
             cachedProperties.setLastUpdated(templateDTO.getTimestamp().getTime());
@@ -211,9 +211,17 @@ public class NiFiTemplateCache {
 
     }
 
+    public void updateSelectedProperties(RegisteredTemplate registeredTemplate) {
+        if (registeredTemplate.getNifiTemplate() != null) {
+            Map<String, NifiProperty> selectedProperties = registeredTemplate.getProperties().stream().filter(p -> p.isSelected()).collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
+            List<NifiProperty> cachedProperties = getTemplateProperties(registeredTemplate.getNifiTemplate(), true);
+            cachedProperties.forEach(p -> p.setSelected(selectedProperties.containsKey(p.getProcessorNameTypeKey())));
+        }
+    }
 
 
     public class TemplatePropertiesCache {
+
         private String templateId;
         private boolean includePropertyDescriptors;
         private Long lastUpdated;
