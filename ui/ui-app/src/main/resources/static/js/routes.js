@@ -11,7 +11,40 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             debug: false
         });
 
-        $urlRouterProvider.otherwise("/home");
+        function onOtherwise(AngularModuleExtensionService, $state,url){
+            var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
+            if(stateData.valid) {
+                $state.go(stateData.state,stateData.params);
+            }
+            else {
+                $state.go('home')
+            }
+        }
+
+        $urlRouterProvider.otherwise(function($injector, $location){
+            var $state = $injector.get('$state');
+            var svc = $injector.get('AngularModuleExtensionService');
+            var url = $location.url();
+            if(svc != null) {
+                if (svc.isInitialized()) {
+                    onOtherwise(svc,$state,url)
+                    return true;
+                }
+                else {
+                    $injector.invoke(function ($window, $state,AngularModuleExtensionService) {
+                        AngularModuleExtensionService.registerModules().then(function () {
+                            onOtherwise(AngularModuleExtensionService,$state,url)
+                            return true;
+                        });
+                    });
+                    return true;
+                }
+            }
+            else {
+                $location.url("/home")
+            }
+
+        });
 
         $stateProvider
             .state('home', {
@@ -712,11 +745,6 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                      }
                  }
              }
-
-
-
-
-
 
              /**
               * Add a listener to the start of every transition to do Access control on the page

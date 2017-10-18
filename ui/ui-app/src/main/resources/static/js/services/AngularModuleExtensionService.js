@@ -1,7 +1,7 @@
 define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-services-module'], function (angular, moduleName, AccessConstants) {
 
-    return angular.module(moduleName).factory("AngularModuleExtensionService", ["$http", "$q", "$timeout", "$uiRouter", "CommonRestUrlService","BroadcastService",
-   function ($http, $q, $timeout, $uiRouter, CommonRestUrlService, BroadcastService) {
+    return angular.module(moduleName).factory("AngularModuleExtensionService", ["$http", "$q", "$timeout", "$uiRouter", "CommonRestUrlService","BroadcastService","$urlMatcherFactory",
+   function ($http, $q, $timeout, $uiRouter, CommonRestUrlService, BroadcastService,$urlMatcherFactory) {
 
        var EXTENSION_MODULES_INITIALIZED_EVENT = 'extensionModulesInitialized'
        /**
@@ -17,6 +17,10 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
         var menuMap = {};
 
         var stateNames = [];
+
+        var urlMatchers = [];
+
+        var urlMatcherToStateMap = {};
 
         function lazyStateName(state){
             return state.state+".**";
@@ -73,6 +77,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
            if(angular.isDefined(extensionModule.states)) {
                _.each(extensionModule.states, function(state) {
                    stateNames.push(state.state);
+                   var urlMatcher = $urlMatcherFactory.compile(state.url);
+                   urlMatchers.push(urlMatcher);
+                   urlMatcherToStateMap[urlMatcher] = state.state;
                    var exists =  $uiRouter.stateRegistry.get(lazyStateName(state));
                    if(exists) {
                        $uiRouter.stateRegistry.deregister(lazyStateName(state))
@@ -103,12 +110,45 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
            stateExists:function(stateName) {
              return _.indexOf(stateNames, stateName) > -1;
            },
+           urlExists:function(url) {
+               var urlMatcher = _.find(urlMatchers,function(matcher){
+                   var params = matcher.exec(url);
+                   return angular.isObject(params);
+
+               });
+               return urlMatcher != undefined;
+           },
+           /**
+            * return the state and associated parameters for a url
+            * @param url
+            * @return {{state: null, params: null, url: *, valid: boolean}}
+            */
+           stateAndParamsForUrl:function(url) {
+             var data = {state:null,params:null,url:url,valid:false}
+
+              var urlMatcher = _.find(urlMatchers,function(matcher){
+                   var params = matcher.exec(url);
+                   if(angular.isObject(params)){
+                       data.params=params;
+                       return true;
+                   }
+                   return false;
+               });
+              if(urlMatcher != undefined)
+              {
+                  var state = urlMatcherToStateMap[urlMatcher];
+                  data.state = state;
+                  data.valid = true;
+               }
+              return data;
+           },
            /**
             * Registers the state with angular.
             * Returns the promise
             */
            registerModules:function(){
-              return $http.get(CommonRestUrlService.ANGULAR_EXTENSION_MODULES_URL).then(function (response) {
+              var promise = $http.get(CommonRestUrlService.ANGULAR_EXTENSION_MODULES_URL);
+              promise.then(function (response) {
                    if(response.data){
                        _.each(response.data,function(extensionModule) {
                           registerStates(extensionModule);
@@ -119,7 +159,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
                },function(err){
                   console.log('err',err)
               });
-
+                return promise;
                }
 
        };
