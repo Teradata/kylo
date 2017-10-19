@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -58,7 +60,35 @@ import javax.inject.Inject;
  */
 public class DerivedDatasourceFactory {
 
-    private static String DATA_TRANSFORMATION_DEFINITION = "datatransformation.template";
+    /**
+     * Processor type for a Hive datasource in a data transformation feed.
+     */
+    private static String DATA_TRANSFORMATION_HIVE_DEFINITION = "datatransformation.hive.template";
+
+    /**
+     * Processor type for a JDBC datasource in a data transformation feed.
+     */
+    private static String DATA_TRANSFORMATION_JDBC_DEFINITION = "datatransformation.jdbc.template";
+
+    /**
+     * Property for the table name of a HiveDatasource.
+     */
+    private static String HIVE_TABLE_KEY = "table";
+
+    /**
+     * Property for the schema name of a HiveDatasource.
+     */
+    private static String HIVE_SCHEMA_KEY = "schema";
+
+    /**
+     * Property for the database connection name of a DatabaseDatasource.
+     */
+    private static String JDBC_CONNECTION_KEY = "Database Connection";
+
+    /**
+     * Property for the schema and table name of a DatabaseDatasource.
+     */
+    private static String JDBC_TABLE_KEY = "Table";
 
     @Inject
     DatasourceDefinitionProvider datasourceDefinitionProvider;
@@ -80,33 +110,16 @@ public class DerivedDatasourceFactory {
 
     public void populateDatasources(FeedMetadata feedMetadata, RegisteredTemplate template, Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources,
                                     Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> dest) {
-
+        // Extract source and destination datasources from data transformation feeds
         if (isDataTransformation(feedMetadata)) {
-            Set<Datasource.ID> ids = ensureDataTransformationSourceDatasources(feedMetadata);
-            if (ids != null && !ids.isEmpty()) {
-                sources.addAll(ids);
+            if (noneMatch(template.getRegisteredDatasourceDefinitions(), DatasourceDefinition.ConnectionType.SOURCE)) {
+                sources.addAll(ensureDataTransformationSourceDatasources(feedMetadata));
             }
-            //ensure this feed gets set as a hive table dest
-            DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
-            String identityString = datasourceDefinition.getIdentityString();
-            Map<String, String> props = new HashMap<String, String>();
-            props.put("schema", feedMetadata.getSystemCategoryName());
-            props.put("table", feedMetadata.getSystemFeedName());
-            identityString = propertyExpressionResolver.resolveVariables(identityString, props);
-            String desc = datasourceDefinition.getDescription();
-            if (desc != null) {
-                desc = propertyExpressionResolver.resolveVariables(desc, props);
+            if (noneMatch(template.getRegisteredDatasourceDefinitions(), DatasourceDefinition.ConnectionType.DESTINATION)) {
+                dest.addAll(ensureDataTransformationDestinationDatasources(feedMetadata));
             }
-            String title = identityString;
-            DerivedDatasource
-                derivedDatasource =
-                datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                           new HashMap<String, Object>(props));
-            if (derivedDatasource != null) {
-                dest.add(derivedDatasource.getId());
-            }
-
         }
+
         //see if its in the cache first
         List<RegisteredTemplate.Processor> processors = registeredTemplateCache.getProcessors(feedMetadata.getTemplateId());
         //if not add it
@@ -139,44 +152,89 @@ public class DerivedDatasourceFactory {
     }
 
     /**
+     * Builds the list of destinations for the specified data transformation feed.
+     *
+     * <p>The data source type is determined based on the sources used in the transformation. If only one source is used then it is assumed that the source and destination are the same. Otherwise it
+     * is assumed that the destination is Hive.</p>
+     *
+     * @param feed the feed
+     * @return the list of destinations
+     * @throws NullPointerException if the feed has no data transformation
+     */
+    @Nonnull
+    private Set<Datasource.ID> ensureDataTransformationDestinationDatasources(@Nonnull final FeedMetadata feed) {
+        // Set properties based on data source type
+        final String processorType;
+        final Map<String, String> properties = new HashMap<>();
+
+        if (feed.getDataTransformation().getDatasourceIds() != null && feed.getDataTransformation().getDatasourceIds().size() == 1) {
+            final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(feed.getDataTransformation().getDatasourceIds().get(0)));
+
+            processorType = DATA_TRANSFORMATION_JDBC_DEFINITION;
+            properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+            properties.put(JDBC_TABLE_KEY, feed.getSystemCategoryName() + "." + feed.getSystemFeedName());
+        } else {
+            processorType = DATA_TRANSFORMATION_HIVE_DEFINITION;
+            properties.put(HIVE_SCHEMA_KEY, feed.getSystemCategoryName());
+            properties.put(HIVE_TABLE_KEY, feed.getSystemFeedName());
+        }
+
+        // Create datasource
+        final DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(processorType);
+        final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+        final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+        final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
+
+        final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+        return Collections.singleton(datasource.getId());
+    }
+
+    /**
      * Builds the list of data sources for the specified data transformation feed.
      *
      * @param feed the feed
      * @return the list of data sources
+     * @throws NullPointerException if the feed has no data transformation
      */
     @Nonnull
     private Set<Datasource.ID> ensureDataTransformationSourceDatasources(@Nonnull final FeedMetadata feed) {
-        // Build the data sources from the view model
         final Set<Datasource.ID> datasources = new HashSet<>();
-        final Set<String> tableNames = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getTableNamesFromViewModel).orElse(Collections.emptySet());
 
-        if (!tableNames.isEmpty()) {
-            DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
-            if (datasourceDefinition != null) {
-                tableNames.forEach(hiveTable -> {
-                    String schema = StringUtils.trim(StringUtils.substringBefore(hiveTable, "."));
-                    String table = StringUtils.trim(StringUtils.substringAfterLast(hiveTable, "."));
-                    String identityString = datasourceDefinition.getIdentityString();
-                    Map<String, String> props = new HashMap<String, String>();
-                    props.put("schema", schema);
-                    props.put("table", table);
-                    identityString = propertyExpressionResolver.resolveVariables(identityString, props);
-                    String desc = datasourceDefinition.getDescription();
-                    if (desc != null) {
-                        desc = propertyExpressionResolver.resolveVariables(desc, props);
-                    }
-                    String title = identityString;
+        // Extract nodes in chart view model
+        @SuppressWarnings("unchecked") final Stream<Map<String, Object>> nodes = Optional.ofNullable(feed.getDataTransformation().getChartViewModel())
+            .map(model -> (List<Map<String, Object>>) model.get("nodes"))
+            .map(Collection::stream)
+            .orElse(Stream.empty());
 
-                    DerivedDatasource
-                        derivedDatasource =
-                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                                   new HashMap<String, Object>(props));
-                    if (derivedDatasource != null) {
-                        datasources.add(derivedDatasource.getId());
-                    }
-                });
+        // Create a data source for each node
+        final DatasourceDefinition hiveDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_HIVE_DEFINITION);
+        final DatasourceDefinition jdbcDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_JDBC_DEFINITION);
+
+        nodes.forEach(node -> {
+            // Extract properties from node
+            final DatasourceDefinition datasourceDefinition;
+            final Map<String, String> properties = new HashMap<>();
+
+            if (node.get("datasourceId") == null || node.get("datasourceId").equals("HIVE")) {
+                final String name = (String) node.get("name");
+                datasourceDefinition = hiveDefinition;
+                properties.put(HIVE_SCHEMA_KEY, StringUtils.trim(StringUtils.substringBefore(name, ".")));
+                properties.put(HIVE_TABLE_KEY, StringUtils.trim(StringUtils.substringAfterLast(name, ".")));
+            } else {
+                final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve((String) node.get("datasourceId")));
+                datasourceDefinition = jdbcDefinition;
+                properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+                properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
             }
-        }
+
+            // Create the derived data source
+            final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+            final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+            final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
+
+            final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+            datasources.add(datasource.getId());
+        });
 
         // Build the data sources from the data source ids
         final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
@@ -187,7 +245,10 @@ public class DerivedDatasourceFactory {
         return datasources;
     }
 
-    public boolean isDataTransformation(FeedMetadata feedMetadata) {
+    /**
+     * Indicates if the feed contains a data transformation.
+     */
+    private boolean isDataTransformation(@Nonnull final FeedMetadata feedMetadata) {
         return feedMetadata.getDataTransformation() != null && StringUtils.isNotEmpty(feedMetadata.getDataTransformation().getDataTransformScript());
     }
 
@@ -285,5 +346,13 @@ public class DerivedDatasourceFactory {
                    getFeedInputProcessorTypes(feedMetadata).contains(datasourceDefinition.getProcessorType())));
     }
 
-
+    /**
+     * Indicates if there are no definitions with the specified connection type in the collection.
+     */
+    private boolean noneMatch(@Nonnull final Collection<TemplateProcessorDatasourceDefinition> definitions, @Nonnull final DatasourceDefinition.ConnectionType connectionType) {
+        return definitions.stream()
+            .map(definition -> datasourceDefinitionProvider.findByProcessorType(definition.getProcessorType()))
+            .map(DatasourceDefinition::getConnectionType)
+            .noneMatch(connectionType::equals);
+    }
 }
