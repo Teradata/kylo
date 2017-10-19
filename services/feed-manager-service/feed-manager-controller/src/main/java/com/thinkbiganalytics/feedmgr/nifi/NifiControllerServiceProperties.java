@@ -170,6 +170,14 @@ public class NifiControllerServiceProperties {
         return controllerService;
     }
 
+    public ControllerServiceDTO getControllerService(String serviceId, String serviceName) {
+        ControllerServiceDTO controllerService = getControllerServiceById(serviceId);
+        if (controllerService == null) {
+            controllerService = getControllerServiceByName(serviceName);
+        }
+        return controllerService;
+    }
+
     /**
      * return the property prepended with the prefix used in the .properties file to denote nifi controller service settings.
      * the default prefix is 'nifi.'

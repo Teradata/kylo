@@ -171,7 +171,7 @@
   },
   {
     "processorType":"com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
-    "datasourcePropertyKeys":["Source Table","Source Database Connection"],
+    "datasourcePropertyKeys":["Source Table","Source Database Connection","{Source Database Connection:Database Connection URL}"],
     "datasourceType":"DatabaseDatasource",
     "connectionType":"SOURCE",
     "identityString":"${Source Table} - ${Source Database Connection}",

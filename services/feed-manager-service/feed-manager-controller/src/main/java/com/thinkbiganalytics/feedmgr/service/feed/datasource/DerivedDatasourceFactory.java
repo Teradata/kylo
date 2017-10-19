@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed.datasource;
  */
 
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -38,6 +39,9 @@ import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -59,6 +63,8 @@ import javax.inject.Inject;
  * Create and assign {@link DerivedDatasource} based upon a template or feed
  */
 public class DerivedDatasourceFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(DerivedDatasourceFactory.class);
 
     /**
      * Processor type for a Hive datasource in a data transformation feed.
@@ -107,6 +113,9 @@ public class DerivedDatasourceFactory {
 
     @Inject
     RegisteredTemplateCache registeredTemplateCache;
+
+    @Inject
+    private NifiControllerServiceProperties nifiControllerServiceProperties;
 
     public void populateDatasources(FeedMetadata feedMetadata, RegisteredTemplate template, Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources,
                                     Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> dest) {
@@ -302,10 +311,12 @@ public class DerivedDatasourceFactory {
                 //find any datasource matching this DsName and identity String, if not create one
                 //if it is the Source ensure the feed matches this ds
                 if (isCreateDatasource(datasourceDefinition, feedMetadata)) {
+                    Map<String, String> controllerServiceProperties = parseControllerServiceProperties(datasourceDefinition, feedProperties);
+                    Map<String, Object> properties = new HashMap<String, Object>(identityStringPropertyResolution.getResolvedVariables());
+                    properties.putAll(controllerServiceProperties);
                     DerivedDatasource
                         derivedDatasource =
-                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                                   new HashMap<String, Object>(identityStringPropertyResolution.getResolvedVariables()));
+                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, properties);
                     if (derivedDatasource != null) {
                         if ("HiveDatasource".equals(derivedDatasource.getDatasourceType())
                             && Optional.ofNullable(feedMetadata.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent()) {
@@ -344,6 +355,56 @@ public class DerivedDatasourceFactory {
         return DatasourceDefinition.ConnectionType.DESTINATION.equals(datasourceDefinition.getConnectionType()) ||
                (DatasourceDefinition.ConnectionType.SOURCE.equals(datasourceDefinition.getConnectionType()) && (
                    getFeedInputProcessorTypes(feedMetadata).contains(datasourceDefinition.getProcessorType())));
+    }
+
+    /**
+     * Parse the defintion metadata for the {propertyKey:CS Property Key} objects and pick out the values in the controller service
+     *
+     * @param datasourceDefinition the definition to use
+     * @param feedProperties       the feed properties that match this definition
+     * @return a Map of the Controller Service Property Key, Value
+     */
+    private Map<String, String> parseControllerServiceProperties(DatasourceDefinition datasourceDefinition, List<NifiProperty> feedProperties) {
+        Map<String, String> properties = new HashMap<>();
+        try {
+            //{Source Database Connection:Database Connection URL}
+            List<String> controllerServiceProperties = datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{(.*):(.*)\\}")).collect(Collectors.toList());
+            Map<String, List<String>> serviceProperties = new HashMap<>();
+            controllerServiceProperties.stream().forEach(p -> {
+                String service = p.substring(1, StringUtils.indexOf(p, ":"));
+                String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
+                if (!serviceProperties.containsKey(service)) {
+                    serviceProperties.put(service, new ArrayList<>());
+                }
+                serviceProperties.get(service).add(property);
+            });
+
+            serviceProperties.entrySet().stream().forEach(e -> {
+
+                String service = e.getKey();
+                String controllerServiceId = feedProperties.stream()
+                    .filter(p -> StringUtils.isNotBlank(p.getValue())
+                                 && p.getPropertyDescriptor() != null
+                                 && p.getPropertyDescriptor().getName().equalsIgnoreCase(service)
+                                 && StringUtils.isNotBlank(p.getPropertyDescriptor().getIdentifiesControllerService())).map(p -> p.getValue()).findFirst().orElse(null);
+                if (controllerServiceId != null) {
+                    ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceById(controllerServiceId);
+                    e.getValue().stream().forEach(propertyKey -> {
+                        String value = csDto.getProperties().get(propertyKey);
+                        if (value != null) {
+                            properties.put(propertyKey, value);
+                        }
+                    });
+
+                }
+
+            });
+        } catch (Exception e) {
+            log.warn("An error occurred trying to parse controller service properties when deriving the datasource for {}, {}. {} ", datasourceDefinition.getDatasourceType(),
+                     datasourceDefinition.getConnectionType(), e.getMessage(), e);
+        }
+
+        return properties;
     }
 
     /**

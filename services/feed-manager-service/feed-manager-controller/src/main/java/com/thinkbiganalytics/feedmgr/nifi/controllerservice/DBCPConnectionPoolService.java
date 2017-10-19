@@ -327,11 +327,7 @@ public class DBCPConnectionPoolService {
 
 
     private ControllerServiceDTO getControllerService(String serviceId, String serviceName) {
-        ControllerServiceDTO controllerService = nifiControllerServiceProperties.getControllerServiceById(serviceId);
-        if (controllerService == null) {
-            controllerService = nifiControllerServiceProperties.getControllerServiceByName(serviceName);
-        }
-        return controllerService;
+        return nifiControllerServiceProperties.getControllerService(serviceId,serviceName);
     }
 
 
