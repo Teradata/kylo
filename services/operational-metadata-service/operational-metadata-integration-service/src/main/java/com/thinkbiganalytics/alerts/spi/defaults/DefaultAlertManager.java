@@ -23,13 +23,7 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.support.QueryBase;
-import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
@@ -39,8 +33,6 @@ import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertNotfoundException;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.api.AlertSummary;
-import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
-import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.alerts.service.ServiceStatusAlerts;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
@@ -53,18 +45,12 @@ import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
-import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Criteria;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,23 +103,22 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     /**
      * Map of the latest alerts summary for a given criteria
      */
-    private Map<String,AlertSummaryCache> latestAlertsSummary = new ConcurrentHashMap<>();
+    private Map<String, AlertSummaryCache> latestAlertsSummary = new ConcurrentHashMap<>();
 
     /**
      * Map of the latest alerts for a given criteria
      */
-    private Map<String,AlertsCache> latestAlerts = new ConcurrentHashMap<>();
-
+    private Map<String, AlertsCache> latestAlerts = new ConcurrentHashMap<>();
 
 
     @PostConstruct
-    private void init(){
+    private void init() {
         clusterService.subscribe(this);
     }
 
     @Override
     public AlertSource.ID getId() {
-       return id;
+        return id;
     }
 
     /**
@@ -205,21 +190,20 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }, MetadataAccess.SERVICE);
     }
 
-    protected DefaultAlertCriteria ensureAlertCriteriaType(AlertCriteria criteria){
-      return (DefaultAlertCriteria) (criteria == null ? criteria() : criteria);
+    protected DefaultAlertCriteria ensureAlertCriteriaType(AlertCriteria criteria) {
+        return (DefaultAlertCriteria) (criteria == null ? criteria() : criteria);
     }
 
     public Iterator<AlertSummary> getAlertsSummary(AlertCriteria criteria) {
         Long now = DateTime.now().getMillis();
-        Principal[]principal = null;
-        if(criteria != null && criteria.isAsServiceAccount()){
+        Principal[] principal = null;
+        if (criteria != null && criteria.isAsServiceAccount()) {
             principal = new Principal[1];
             principal[0] = MetadataAccess.SERVICE;
-        }
-        else {
+        } else {
             principal = new Principal[0];
         }
-        if(criteria.isOnlyIfChangesDetected() && !hasAlertsSummaryChanged(criteria)) {
+        if (criteria.isOnlyIfChangesDetected() && !hasAlertsSummaryChanged(criteria)) {
             log.debug("Returning cached Alerts Summary data");
             return new ArrayList(latestAlertsSummary.get(criteria.toString()).getAlertSummaryList()).iterator();
         }
@@ -228,14 +212,13 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createSummaryQuery().fetch().stream()
                 .collect(Collectors.toList());
-        },principal);
-        if(criteria.isOnlyIfChangesDetected()) {
-            latestAlertsSummary.put(criteria.toString(), new AlertSummaryCache(now,latest));
+        }, principal);
+        if (criteria.isOnlyIfChangesDetected()) {
+            latestAlertsSummary.put(criteria.toString(), new AlertSummaryCache(now, latest));
         }
 
         return latest.iterator();
     }
-
 
 
     /* (non-Javadoc)
@@ -244,15 +227,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     @Override
     public Iterator<Alert> getAlerts(AlertCriteria criteria) {
         Long now = DateTime.now().getMillis();
-        Principal[]principal = null;
-        if(criteria != null && criteria.isAsServiceAccount()){
+        Principal[] principal = null;
+        if (criteria != null && criteria.isAsServiceAccount()) {
             principal = new Principal[1];
             principal[0] = MetadataAccess.SERVICE;
-        }
-        else {
+        } else {
             principal = new Principal[0];
         }
-        if(criteria.isOnlyIfChangesDetected() && !hasAlertsChanged(criteria)) {
+        if (criteria.isOnlyIfChangesDetected() && !hasAlertsChanged(criteria)) {
             log.info("Returning cached Alerts data");
             return new ArrayList(latestAlerts.get(criteria.toString()).getAlertList()).iterator();
         }
@@ -262,20 +244,20 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             return critImpl.createQuery().fetch().stream()
                 .map(a -> asValue(a))
                 .collect(Collectors.toList());
-        },principal);
+        }, principal);
 
-        if(criteria.isOnlyIfChangesDetected()) {
-            latestAlerts.put(criteria.toString(), new AlertsCache(now,alerts));
+        if (criteria.isOnlyIfChangesDetected()) {
+            latestAlerts.put(criteria.toString(), new AlertsCache(now, alerts));
         }
         return alerts.iterator();
     }
 
-    public Set<String>  getAlertTypes(){
+    public Set<String> getAlertTypes() {
         Set<String> defaultAlertTypes = Sets.newHashSet(AssessmentAlerts.VIOLATION_ALERT_TYPE.toString(),
                                                         OperationalAlerts.JOB_FALURE_ALERT_TYPE.toString(),
                                                         ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE.toString());
         Set<String> alertTypes = repository.findAlertTypes();
-        if(alertTypes == null) {
+        if (alertTypes == null) {
             alertTypes = new HashSet<>();
         }
         //merge
@@ -322,21 +304,21 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#create(java.net.URI, com.thinkbiganalytics.alerts.api.Alert.Level, java.lang.String, java.io.Serializable)
      */
     @Override
-    public <C extends Serializable> Alert create(URI type, String subtype,Level level, String description, C content) {
+    public <C extends Serializable> Alert create(URI type, String subtype, Level level, String description, C content) {
         final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
                                ? SecurityContextHolder.getContext().getAuthentication()
                                : null;
         //reset the subtype if the content is an Entity
-        if(subtype == null) {
+        if (subtype == null) {
             subtype = "Other";
         }
-        if(content != null && content instanceof EntityIdentificationAlertContent){
+        if (content != null && content instanceof EntityIdentificationAlertContent) {
             subtype = "Entity";
         }
         final String finalSubType = subtype;
 
         Alert created = this.metadataAccess.commit(() -> {
-            JpaAlert alert = new JpaAlert(type, finalSubType,level, user, description, content);
+            JpaAlert alert = new JpaAlert(type, finalSubType, level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -348,7 +330,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     @Override
     public <C extends Serializable> Alert createEntityAlert(URI type, Level level, String description, EntityIdentificationAlertContent<C> content) {
-        return create(type,null,level,description,content);
+        return create(type, null, level, description, content);
     }
 
     /* (non-Javadoc)
@@ -414,11 +396,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         Alert changed = this.metadataAccess.commit(() -> {
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
             List<AlertChangeEvent> events = alert.getEvents();
-            if(events != null && !events.isEmpty()) {
+            if (events != null && !events.isEmpty()) {
                 JpaAlertChangeEvent event = (JpaAlertChangeEvent) events.get(0);
-                    event.setDescription(descr);
-                    event.setContent(content);
-                    event.setChangeTime(DateTime.now());
+                event.setDescription(descr);
+                event.setContent(content);
+                event.setChangeTime(DateTime.now());
             }
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -451,45 +433,44 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         receivers.forEach(a -> a.alertsAvailable(count));
     }
 
-    public void updateLastUpdatedTime(){
+    @Override
+    public void updateLastUpdatedTime() {
         previousUpdatedTime = lastUpdatedTime;
         lastUpdatedTime = DateTime.now().getMillis();
-        if(previousUpdatedTime == null){
+        if (previousUpdatedTime == null) {
             previousUpdatedTime = lastUpdatedTime;
         }
         clusterService.sendMessageToOthers(AlertManagerChangedClusterMessage.TYPE, new AlertManagerChangedClusterMessage(lastUpdatedTime));
     }
 
-    private boolean hasAlertsSummaryChanged(AlertCriteria criteria){
-        if(latestAlertsSummary.containsKey(criteria.toString())){
+    private boolean hasAlertsSummaryChanged(AlertCriteria criteria) {
+        if (latestAlertsSummary.containsKey(criteria.toString())) {
             return latestAlertsSummary.get(criteria.toString()).hasChanged(lastUpdatedTime);
-        }
-        else {
+        } else {
             return true;
         }
     }
 
-    private boolean hasAlertsChanged(AlertCriteria criteria){
-        if(latestAlerts.containsKey(criteria.toString())){
+    private boolean hasAlertsChanged(AlertCriteria criteria) {
+        if (latestAlerts.containsKey(criteria.toString())) {
             return latestAlerts.get(criteria.toString()).hasChanged(lastUpdatedTime);
-        }
-        else {
+        } else {
             return true;
         }
     }
 
-    private void resetChanged(){
-        if(lastUpdatedTime == null){
+    private void resetChanged() {
+        if (lastUpdatedTime == null) {
             lastUpdatedTime = DateTime.now().getMillis();
         }
         previousUpdatedTime = lastUpdatedTime;
     }
 
-    private Long fetchLastUpdatedTime(){
-        return  metadataAccess.read(() -> {
+    private Long fetchLastUpdatedTime() {
+        return metadataAccess.read(() -> {
             Long maxTime = repository.findMaxUpdatedTime();
             //it may be null if no alerts exist
-            if(maxTime == null){
+            if (maxTime == null) {
                 maxTime = DateTime.now().getMillis();
             }
             return maxTime;
@@ -498,11 +479,11 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     @Override
     public Long getLastUpdatedTime() {
-       if(lastUpdatedTime == null) {
-           //fetch it
-           lastUpdatedTime = fetchLastUpdatedTime();
-       }
-       return lastUpdatedTime;
+        if (lastUpdatedTime == null) {
+            //fetch it
+            lastUpdatedTime = fetchLastUpdatedTime();
+        }
+        return lastUpdatedTime;
     }
 
     protected static class ImmutableAlert implements Alert {
@@ -702,7 +683,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
         @Override
         public <C extends Serializable> Alert updateAlertChange(String description, C content) {
-            return updateAlertChangeEntry(this.id,description,content);
+            return updateAlertChangeEntry(this.id, description, content);
         }
 
         /* (non-Javadoc)
@@ -720,8 +701,6 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
 
     }
-
-
 
 
     public static class AlertManagerId implements ID {
@@ -746,7 +725,9 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         }
 
     }
+
     private class AlertSummaryCache {
+
         private Long lastUpdatedTime;
         private List<AlertSummary> alertSummaryList;
 
@@ -754,6 +735,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             this.lastUpdatedTime = lastUpdatedTime;
             this.alertSummaryList = alertSummaryList;
         }
+
         public AlertSummaryCache(List<AlertSummary> alertSummaryList) {
             this.lastUpdatedTime = DateTime.now().getMillis();
             this.alertSummaryList = alertSummaryList;
@@ -767,13 +749,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             return alertSummaryList;
         }
 
-        public boolean hasChanged(Long time){
+        public boolean hasChanged(Long time) {
             return time != null && time > lastUpdatedTime;
         }
     }
 
 
     private class AlertsCache {
+
         private Long lastUpdatedTime;
         private List<Alert> alertList;
 
@@ -790,18 +773,17 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             return alertList;
         }
 
-        public boolean hasChanged(Long time){
+        public boolean hasChanged(Long time) {
             return time != null && time > lastUpdatedTime;
         }
     }
 
     public <C extends Serializable> EntityIdentificationAlertContent createEntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
-        if(content instanceof EntityIdentificationAlertContent){
+        if (content instanceof EntityIdentificationAlertContent) {
             ((EntityIdentificationAlertContent) content).setEntityId(entityId);
             ((EntityIdentificationAlertContent) content).setEntityType(entityType);
             return (EntityIdentificationAlertContent) content;
-        }
-        else {
+        } else {
             EntityIdentificationAlertContent c = new EntityIdentificationAlertContent();
             c.setEntityId(entityId);
             c.setEntityType(entityType);
@@ -813,15 +795,12 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     @Override
     public void onMessageReceived(String from, ClusterMessage message) {
 
-        if(AlertManagerChangedClusterMessage.TYPE.equalsIgnoreCase(message.getType())){
+        if (AlertManagerChangedClusterMessage.TYPE.equalsIgnoreCase(message.getType())) {
             AlertManagerChangedClusterMessage msg = (AlertManagerChangedClusterMessage) message.getMessage();
             //set it equal to now to trigger any updates if needed for queries
             this.lastUpdatedTime = DateTime.now().getMillis();
         }
     }
-
-
-
 
 
 }
