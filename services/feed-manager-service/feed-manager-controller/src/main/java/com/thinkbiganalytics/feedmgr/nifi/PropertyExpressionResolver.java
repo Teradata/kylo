@@ -72,7 +72,7 @@ public class PropertyExpressionResolver {
     /**
      * Prefix for variable-type property replacement
      */
-    public static String configPropertyPrefix = "config.";
+    public static final String configPropertyPrefix = "config.";
 
     /**
      * Prefix for {@link FeedMetadata} property replacement
