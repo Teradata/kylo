@@ -25,6 +25,7 @@ import com.mifmif.common.regex.Generex;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -171,6 +172,9 @@ public class FeedRestController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    PropertyExpressionResolver propertyExpressionResolver;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -865,10 +869,11 @@ public class FeedRestController {
 
         FeedMetadata feed = getMetadataService().getFeedById(feedId, false);
         // Derive path and file
+        feed = registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
+        propertyExpressionResolver.resolvePropertyExpressions(feed);
         List<NifiProperty> properties = feed.getProperties();
         String dropzone = null;
         String regexFileFilter = null;
-
         for (NifiProperty property : properties) {
 
             if (property.getProcessorType().equals("org.apache.nifi.processors.standard.GetFile")) {
