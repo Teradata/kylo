@@ -108,6 +108,7 @@ public class NifiProperty {
         this.processorName = property.getProcessorName();
         this.processorId = property.getProcessorId();
         this.processGroupId = property.getProcessGroupId();
+        this.processorType = property.getProcessorType();
         this.key = property.getKey();
         this.value = property.getValue();
         this.templateValue = property.getTemplateValue();

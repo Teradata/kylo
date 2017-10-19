@@ -20,8 +20,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -35,7 +33,6 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -319,7 +316,7 @@ public class RegisteredTemplateService {
      */
     public RegisteredTemplate getRegisteredTemplateForUpdate(RegisteredTemplateRequest registeredTemplateRequest) {
 
-        if(registeredTemplateRequest.isTemplateEdit()){
+        if (registeredTemplateRequest.isTemplateEdit()) {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
         }
 
@@ -330,18 +327,18 @@ public class RegisteredTemplateService {
         serviceLevelRequest.setFeedEdit(true);
         RegisteredTemplate template = findRegisteredTemplate(serviceLevelRequest);
         boolean canEdit = true;
-        if(template != null && StringUtils.isNotBlank(template.getId()) && registeredTemplateRequest.isTemplateEdit()) {
-          canEdit = checkTemplatePermission(template.getId(),TemplateAccessControl.EDIT_TEMPLATE);
+        if (template != null && StringUtils.isNotBlank(template.getId()) && registeredTemplateRequest.isTemplateEdit()) {
+            canEdit = checkTemplatePermission(template.getId(), TemplateAccessControl.EDIT_TEMPLATE);
         }
-        if(canEdit) {
-             registeredTemplate = template;
+        if (canEdit) {
+            registeredTemplate = template;
             if (registeredTemplate == null) {
                 registeredTemplate = nifiTemplateToRegisteredTemplate(registeredTemplateRequest.getNifiTemplateId());
             }
             if (registeredTemplate == null) {
                 //throw exception
             } else {
-                if(StringUtils.isBlank(registeredTemplate.getId()) && template != null && StringUtils.isNotBlank(template.getId()) ) {
+                if (StringUtils.isBlank(registeredTemplate.getId()) && template != null && StringUtils.isNotBlank(template.getId())) {
                     registeredTemplate.setId(template.getId());
                 }
                 Set<PortDTO> ports = null;
@@ -435,7 +432,7 @@ public class RegisteredTemplateService {
             registeredTemplate = new RegisteredTemplate();
             registeredTemplate.setNifiTemplateId(nifiTemplateId);
 
-            properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true);
+            properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true, null);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
             registeredTemplate.setProperties(properties);
@@ -444,9 +441,6 @@ public class RegisteredTemplateService {
         return registeredTemplate;
 
     }
-
-
-
 
 
     /**
@@ -469,18 +463,18 @@ public class RegisteredTemplateService {
 
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
-                properties = niFiTemplateCache.getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors());
+                properties = niFiTemplateCache.getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors(), registeredTemplate);
                 //first attempt to match the properties by the processorid and processor name
-                NifiPropertyUtil
-                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                //     NifiPropertyUtil
+                //         .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
 
-            if (properties != null) {
+         /*   if (properties != null) {
                 //match the properties to the processors by the processor name
-                //expression ${metdata.} properties will not be reset
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
                                                                     NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
+            */
             if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncNiFiTemplateId(registeredTemplate);
 
@@ -513,12 +507,14 @@ public class RegisteredTemplateService {
         if (registeredTemplate != null) {
             feedMetadata.setTemplateId(registeredTemplate.getId());
 
+            List<NifiProperty> templateProperties = new ArrayList<>(registeredTemplate.getProperties());
             NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
+                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
 
             //detect template properties that dont match the feed.properties from the registeredtemplate
-            ensureFeedPropertiesExistInTemplate(feedMetadata, registeredTemplate);
-            feedMetadata.setProperties(registeredTemplate.getProperties());
+            ensureFeedPropertiesExistInTemplate(feedMetadata, templateProperties);
+            feedMetadata.setProperties(templateProperties);
+            registeredTemplate.setProperties(templateProperties);
             registeredTemplate.initializeProcessors();
             feedMetadata.setRegisteredTemplate(registeredTemplate);
 
@@ -534,19 +530,19 @@ public class RegisteredTemplateService {
      * This will match any feed properties to a whose processor name has changed in
      * the template to the template processor/property based upon the template processor type.
      */
-    private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, RegisteredTemplate registeredTemplate) {
-        Set<String> templateProcessors = registeredTemplate.getProperties().stream().map(property -> property.getProcessorName()).collect(Collectors.toSet());
+    private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, List<NifiProperty> templateProperties) {
+        Set<String> templateProcessors = templateProperties.stream().map(property -> property.getProcessorName()).collect(Collectors.toSet());
 
         //Store the template Properties
         Map<String, String> templateProcessorIdProcessorNameMap = new HashMap<>();
         Map<String, String> templateProcessorTypeProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().filter(property -> !templateProcessorIdProcessorNameMap.containsKey(property.getProcessorId())).forEach(property1 -> {
+        templateProperties.stream().filter(property -> !templateProcessorIdProcessorNameMap.containsKey(property.getProcessorId())).forEach(property1 -> {
             templateProcessorIdProcessorNameMap.put(property1.getProcessorId(), property1.getProcessorName());
             templateProcessorTypeProcessorIdMap.put(property1.getProcessorType(), property1.getProcessorId());
         });
 
         Map<String, Map<String, NifiProperty>> templatePropertiesByProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().forEach(property -> {
+        templateProperties.stream().forEach(property -> {
             templatePropertiesByProcessorIdMap.computeIfAbsent(property.getProcessorId(), key -> new HashMap<String, NifiProperty>()).put(property.getKey(), property);
         });
 
@@ -565,9 +561,13 @@ public class RegisteredTemplateService {
                 if (templateProcessorId != null && templateProcessorIdProcessorNameMap.containsKey(templateProcessorId)) {
                     NifiProperty templateProperty = templatePropertiesByProcessorIdMap.get(templateProcessorId).get(property.getKey());
                     if (templateProperty != null) {
-                        templateProperty.setValue(property.getValue());
-                        templateProperty.setRenderType(property.getRenderType());
-                        templateProperty.setRenderOptions(property.getRenderOptions());
+                        //replace it from the collection with a copy
+                        NifiProperty copy = new NifiProperty(templateProperty);
+                        copy.setValue(property.getValue());
+                        copy.setRenderType(property.getRenderType());
+                        copy.setRenderOptions(property.getRenderOptions());
+                        templateProperties.remove(templateProperty);
+                        templateProperties.add(copy);
                     }
                 }
             }
@@ -631,8 +631,8 @@ public class RegisteredTemplateService {
         if (nifiTemplateId != null && !oldId.equalsIgnoreCase(nifiTemplateId)) {
             template.setNifiTemplateId(nifiTemplateId);
             return metadataAccess.commit(() -> {
-            RegisteredTemplate t = findRegisteredTemplateById(template.getId());
-            t.setNifiTemplateId(nifiTemplateId);
+                RegisteredTemplate t = findRegisteredTemplateById(template.getId());
+                t.setNifiTemplateId(nifiTemplateId);
                 return saveTemplate(t);
             }, MetadataAccess.ADMIN);
         }
@@ -702,7 +702,7 @@ public class RegisteredTemplateService {
             log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());
             return null;
         } else {
-            if(StringUtils.isNotBlank(registeredTemplate.getId())) {
+            if (StringUtils.isNotBlank(registeredTemplate.getId())) {
                 checkTemplatePermission(registeredTemplate.getId(), TemplateAccessControl.EDIT_TEMPLATE);
             }
             log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
@@ -806,8 +806,6 @@ public class RegisteredTemplateService {
         }
         return null;
     }
-
-
 
 
 }

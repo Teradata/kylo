@@ -168,6 +168,9 @@ public class RegisteredTemplate extends EntityAccessControl {
 
 
     public List<NifiProperty> getProperties() {
+        if(properties == null){
+            properties = new ArrayList<>();
+        }
         return properties;
     }
 

@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  */
 
 import com.google.common.base.Stopwatch;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
@@ -47,7 +46,6 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -301,13 +299,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             Feed.ID domainId = feedProvider.resolveId(feedId);
-            
+
             return feedProvider.findVersions(domainId, includeContent)
-                            .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
-                            .orElse((FeedVersions) null);
+                .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
+                .orElse((FeedVersions) null);
         });
     }
-    
+
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return metadataAccess.read(() -> {
@@ -315,12 +313,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
             com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
-            
+
             return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+                .map(version -> feedModelTransform.domainToFeedVersion(version));
         });
     }
-    
+
     @Override
     public Collection<FeedMetadata> getFeeds() {
         return getFeeds(PAGE_ALL, null).getContent();
@@ -504,7 +502,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
 
         //store ref to the originalFeedProperties before resolving and merging with the template
-        List<NifiProperty> orignialFeedProperties = feedMetadata.getProperties();
+        List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -513,37 +511,19 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
                     .build());
 
+        //copy the registered template properties it a new list so it doest get updated
+        List<NifiProperty> templateProperties = new ArrayList<>(registeredTemplate.getProperties());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
 
+        registeredTemplate.setProperties(templateProperties);
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
 
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
-
-        /*
-        //store all input related properties as well
-        List<NifiProperty> inputProperties = NifiPropertyUtil
-            .findInputProperties(registeredTemplate.getProperties());
-
-        ///store only those matched and resolved in the final metadata store
-        Set<NifiProperty> updatedProperties = new HashSet<>();
-        //first get all those selected properties where the value differs from the template value
-
-        List<NifiProperty> modifiedProperties = registeredTemplate.findModifiedDefaultProperties();
-        if (modifiedProperties != null) {
-             propertyExpressionResolver.resolvePropertyExpressions(modifiedProperties,feedMetadata);
-            updatedProperties.addAll(modifiedProperties);
-        }
-        updatedProperties.addAll(matchedProperties);
-        updatedProperties.addAll(resolvedProperties);
-        updatedProperties.addAll(inputProperties);
-        feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
-
-        */
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
@@ -601,7 +581,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feed = new NifiFeed(feedMetadata, entity);
 
         //set the original feedProperties back to the feed
-        feedMetadata.setProperties(orignialFeedProperties);
+        feedMetadata.setProperties(originalFeedProperties);
         //encrypt the metadata properties
         feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
 
@@ -919,11 +899,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return metadataAccess.commit(() -> {
             boolean enabled = feedProvider.enableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
-            
+
             if (domainFeed != null) {
                 domainFeed.setState(Feed.State.ENABLED);
                 feedProvider.update(domainFeed);
-                
+
                 if (enabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
@@ -945,7 +925,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             if (domainFeed != null) {
                 domainFeed.setState(Feed.State.DISABLED);
                 feedProvider.update(domainFeed);
-                
+
                 if (disabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
