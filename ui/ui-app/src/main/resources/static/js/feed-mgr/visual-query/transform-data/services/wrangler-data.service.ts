@@ -1,5 +1,7 @@
 import * as angular from "angular";
 
+import {TransformValidationResult} from "../../model/transform-validation-result";
+
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
 export class WranglerDataService {
@@ -25,6 +27,11 @@ export class WranglerDataService {
     sortIndex_: (number | null) = null;
 
     /**
+     * Validation results for the current data.
+     */
+    validationResults: TransformValidationResult[][];
+
+    /**
      * Gets the value for the specified cell.
      *
      * @param {number} i the row number
@@ -34,9 +41,14 @@ export class WranglerDataService {
     getCellSync(i: number, j: number): any {
         const column: any = this.columns_[j];
         if (i >= 0 && i < this.rows_.length) {
+            const validation = (this.validationResults != null && i < this.validationResults.length && this.validationResults[i] != null)
+                ? this.validationResults[i].filter(result => result.field === column.headerTooltip)
+                : null;
             return {
                 column: j,
+                field: column.name,
                 row: i,
+                validation: (validation !== null && validation.length > 0) ? validation : null,
                 value: this.rows_[i][column.name]
             };
         } else {

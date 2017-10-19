@@ -37,6 +37,7 @@ public interface SparkShellRestClient {
      *
      * @param table the destination table name
      * @return the transformation status if the table exists
+     * @throws SparkShellTransformException if the transformation fails
      */
     @Nonnull
     Optional<TransformResponse> getTable(@Nonnull SparkShellProcess process, @Nonnull String table);
@@ -46,6 +47,7 @@ public interface SparkShellRestClient {
      *
      * @param request the transformation request
      * @return the transformation status
+     * @throws SparkShellTransformException if the transformation fails
      */
     @Nonnull
     TransformResponse transform(@Nonnull SparkShellProcess process, @Nonnull TransformRequest request);

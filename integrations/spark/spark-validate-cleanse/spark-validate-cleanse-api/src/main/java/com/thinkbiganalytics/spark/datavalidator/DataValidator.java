@@ -22,14 +22,21 @@ package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.sql.hive.HiveContext;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
 
 public interface DataValidator {
+
+    /**
+     * Gets the validation profile statistics for the specified result.
+     */
+    List<OutputRow> getProfileStats(@Nonnull DataValidatorResult result);
 
     /**
      * Validates the specified dataset and returns the results.

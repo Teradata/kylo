@@ -26,17 +26,23 @@ import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
 /**
  * Communicates with Spark Shell processes using Jersey REST clients.
  */
 public class JerseySparkShellRestClient implements SparkShellRestClient {
+
+    private static final Logger log = LoggerFactory.getLogger(JerseySparkShellRestClient.class);
 
     /**
      * Map of Spark Shell processes to Jersey REST clients
@@ -55,6 +61,8 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         // Query Spark Shell process
         try {
             return Optional.of(getClient(process).get("/api/v1/spark/shell/transform/" + table, ImmutableMap.of(), TransformResponse.class));
+        } catch (final InternalServerErrorException e) {
+            throw propagate(e);
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
@@ -63,7 +71,11 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     @Nonnull
     @Override
     public TransformResponse transform(@Nonnull final SparkShellProcess process, @Nonnull final TransformRequest request) {
-        return getClient(process).post("/api/v1/spark/shell/transform", request, TransformResponse.class);
+        try {
+            return getClient(process).post("/api/v1/spark/shell/transform", request, TransformResponse.class);
+        } catch (final InternalServerErrorException e) {
+            throw propagate(e);
+        }
     }
 
     /**
@@ -86,5 +98,15 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         }
 
         return client;
+    }
+
+    @Nonnull
+    private SparkShellTransformException propagate(@Nonnull final InternalServerErrorException e) {
+        try {
+            throw new SparkShellTransformException(e.getResponse().readEntity(TransformResponse.class).getMessage());
+        } catch (final Exception decodeEx) {
+            log.debug("Failed to decode transform response: {}", e.getResponse().readEntity(String.class));
+            throw new SparkShellTransformException(decodeEx);
+        }
     }
 }

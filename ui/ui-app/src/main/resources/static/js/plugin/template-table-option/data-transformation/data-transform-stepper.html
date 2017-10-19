@@ -4,7 +4,8 @@
 </kylo-define-feed-step>
 
 <kylo-define-feed-step title="Transform Data" step="getStep(1)">
-  <thinkbig-visual-query-transform engine="queryEngine" height-offset="144" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(1)}}" ng-if="isStepSelected(1) || isStepVisited(1)">
+  <thinkbig-visual-query-transform engine="queryEngine" field-policies="coreDataModel.table.fieldPolicies" height-offset="144" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(1)}}"
+                                   ng-if="isStepSelected(1) || isStepVisited(1)">
   </thinkbig-visual-query-transform>
 </kylo-define-feed-step>
 

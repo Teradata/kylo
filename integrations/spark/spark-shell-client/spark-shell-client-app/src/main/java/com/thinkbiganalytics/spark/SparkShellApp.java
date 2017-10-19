@@ -27,6 +27,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
+import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
@@ -275,10 +276,11 @@ public class SparkShellApp {
      */
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
-                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler) {
+                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator) {
         final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setProfiler(profiler);
+        service.setValidator(validator);
         return service;
     }
 }

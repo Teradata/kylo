@@ -1,17 +1,18 @@
 package com.thinkbiganalytics.spark.metadata
 
 import java.util
+import java.util.Collections
 import java.util.concurrent.Callable
-import java.util.regex.Pattern
 
-import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
-import com.thinkbiganalytics.discovery.schema.{QueryResult, QueryResultColumn}
+import com.thinkbiganalytics.discovery.schema.QueryResultColumn
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy
+import com.thinkbiganalytics.policy.{FieldPoliciesJsonTransformer, FieldPolicyBuilder}
 import com.thinkbiganalytics.spark.DataSet
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow
 import com.thinkbiganalytics.spark.dataprofiler.{Profiler, ProfilerConfiguration}
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
-import com.thinkbiganalytics.spark.util.DataTypeUtils
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters
+import com.thinkbiganalytics.spark.datavalidator.DataValidator
+import com.thinkbiganalytics.spark.rest.model.{TransformQueryResult, TransformResponse}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
@@ -22,7 +23,7 @@ import scala.collection.JavaConverters._
   *
   * @param destination the name of the destination Hive table
   */
-abstract class TransformScript(destination: String, profiler: Profiler) {
+abstract class TransformScript(destination: String, policies: Array[FieldPolicy], validator: DataValidator, profiler: Profiler) {
 
     /** Evaluates the transform script.
       *
@@ -52,6 +53,9 @@ abstract class TransformScript(destination: String, profiler: Profiler) {
         throw new UnsupportedOperationException
     }
 
+    /** Creates a new [[DataSet]] from the specified rows and schema. */
+    protected def toDataSet(rows: RDD[Row], schema: StructType): DataSet
+
     /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
     protected abstract class QueryResultCallable extends Callable[TransformResponse] {
 
@@ -62,24 +66,42 @@ abstract class TransformScript(destination: String, profiler: Profiler) {
           */
         private[metadata] def toResponse(dataset: DataSet) = {
             // Build the result set
-            val result = new DefaultQueryResult("SELECT * FROM " + destination)
+            val result = new TransformQueryResult("SELECT * FROM " + destination)
 
-            val transform = new QueryResultRowTransform(dataset.schema())
+            // Validate rows
+            var profile: util.List[OutputRow] = null
+            val useValidation = policies != null && !policies.isEmpty && validator != null
+            var rows: DataSet = null
+
+            if (useValidation) {
+                val validatorResult = validator.validate(dataset, getPolicyMap(dataset.schema()))
+                profile = validator.getProfileStats(validatorResult)
+                rows = toDataSet(validatorResult.getCleansedRowResultRDD.rdd.map(_.getRow), validatorResult.getSchema)
+            } else {
+                profile = Collections.emptyList()
+                rows = dataset
+            }
+
+            // Add rows to result
+            val transform = if (useValidation) new QueryResultValidatorRowTransform(rows.schema(), destination) else new QueryResultRowTransform(rows.schema(), destination)
             result.setColumns(transform.columns.toSeq)
-            for (row <- dataset.collectAsList()) {
-                result.addRow(transform.apply(row))
+            for (row <- rows.collectAsList()) {
+                transform.addRow(row, result)
             }
 
             // Generate the column statistics
-            val profile: Option[util.List[OutputRow]] = Option(profiler)
-                .flatMap(p => Option(p.profile(dataset, new ProfilerConfiguration)))
+            profile = Option(profiler)
+                .flatMap(p => Option(p.profile(rows, new ProfilerConfiguration)))
                 .map(_.getColumnStatisticsMap.asScala)
                 .map(_.flatMap(_._2.getStatistics))
                 .map(_.toSeq)
+                .map(_ ++ profile)
+                .map(seqAsJavaList)
+                .orNull
 
             // Build the response
             val response = new TransformResponse
-            response.setProfile(profile.orNull)
+            response.setProfile(profile)
             response.setResults(result)
             response.setStatus(TransformResponse.Status.SUCCESS)
             response.setTable(destination)
@@ -87,61 +109,14 @@ abstract class TransformScript(destination: String, profiler: Profiler) {
         }
     }
 
-    /** Transforms a Spark SQL `Row` into a [[QueryResult]] row. */
-    private object QueryResultRowTransform {
-        /** Prefix for display names that are different from the field name */
-        val DISPLAY_NAME_PREFIX = "col"
-
-        /** Pattern for field names */
-        val FIELD_PATTERN: Pattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+    /** Gets the policy map for the specified schema. */
+    private def getPolicyMap(schema: StructType): util.Map[String, com.thinkbiganalytics.policy.FieldPolicy] = {
+        val policyMap = new FieldPoliciesJsonTransformer(util.Arrays.asList(policies: _*)).buildPolicies()
+        schema.fields
+            .map(field => field.name.toLowerCase.trim)
+            .filterNot(name => policyMap.containsKey(name))
+            .map(name => FieldPolicyBuilder.newBuilder().fieldName(name).feedFieldName(name).build())
+            .foreach(policy => policyMap.put(policy.getField, policy))
+        policyMap
     }
-
-    private class QueryResultRowTransform(schema: StructType) extends (Row => util.HashMap[String, Object]) {
-        /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
-        val columns: Array[DefaultQueryResultColumn] = {
-            var index = 1
-            schema.fields.map(field => {
-                val column = new DefaultQueryResultColumn
-                column.setComment(if (field.metadata.contains("comment")) field.metadata.getString("comment") else null)
-                column.setDataType(DataTypeUtils.getHiveObjectInspector(field.dataType).getTypeName)
-                column.setHiveColumnLabel(field.name)
-                column.setTableName(destination)
-
-                if (QueryResultRowTransform.FIELD_PATTERN.matcher(field.name).matches()) {
-                    // Use original name if alphanumeric
-                    column.setDisplayName(field.name)
-                    column.setField(field.name)
-                } else {
-                    // Generate name for non-alphanumeric fields
-                    var name: String = null
-                    do {
-                        name = QueryResultRowTransform.DISPLAY_NAME_PREFIX + index
-                        index += 1
-
-                        try {
-                            schema(name)
-                            name = null
-                        } catch {
-                            case _: IllegalArgumentException => // ignored
-                        }
-                    } while (name == null)
-
-                    column.setDisplayName(name)
-                    column.setField(name)
-                }
-
-                column
-            })
-        }
-
-        /** Array of Spark SQL object to Hive object converters */
-        val converters: Array[ObjectInspectorConverters.Converter] = schema.fields.map(field => DataTypeUtils.getHiveObjectConverter(field.dataType))
-
-        override def apply(row: Row): util.HashMap[String, Object] = {
-            val map = new util.HashMap[String, Object]()
-            columns.indices.foreach(i => map.put(columns(i).getDisplayName, converters(i).convert(row.getAs(i))))
-            map
-        }
-    }
-
 }

@@ -36,6 +36,7 @@ import com.thinkbiganalytics.spark.datavalidator.StandardDataValidator;
 import com.thinkbiganalytics.spark.datavalidator.StandardizationAndValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
+import org.apache.spark.sql.types.StructField;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,7 +74,7 @@ public class CleanseAndValidateRowTest {
 
     @Before
     public void setUp() throws Exception {
-        validator = new CleanseAndValidateRow(new FieldPolicy[0], new HCatDataType[0]);
+        validator = new CleanseAndValidateRow(new FieldPolicy[0], new StructField[0]);
     }
 
     @Test

@@ -4,6 +4,8 @@ import * as $ from "jquery";
 import * as _ from "underscore";
 
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {TransformValidationResult} from "../model/transform-validation-result";
 import {QueryEngine} from "../services/query-engine";
 
 declare const CodeMirror: any;
@@ -115,15 +117,31 @@ export class TransformDataComponent implements OnInit {
     sampleFormulas: { name: string, formula: string }[] = [];
 
     /**
+     * List of available domain types.
+     */
+    domainTypes: DomainType[] = [];
+
+    /**
+     * List of field policies for current transformation.
+     */
+    fieldPolicies: any[];
+
+    /**
      * Height offset from the top of the page.
      */
     heightOffset: string = "0";
 
     /**
+     * Validation results for current transformation.
+     */
+    tableValidation: TransformValidationResult[][];
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any,
-                SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any, StepperService: any, WindowUnloadService: any) {
+    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
+                private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
+                StepperService: any, WindowUnloadService: any) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -197,6 +215,23 @@ export class TransformDataComponent implements OnInit {
             } else {
                 this.engine.setQuery(source, this.model.$datasources);
             }
+
+            // Watch for changes to field policies
+            this.engine.setFieldPolicies(this.fieldPolicies);
+
+            this.$scope.$watch(() => this.fieldPolicies, () => {
+                this.engine.setFieldPolicies(this.fieldPolicies);
+                this.query();
+            }, true);
+
+            // Fetch domain types
+            this.domainTypesService.findAll()
+                .then(domainTypes => {
+                    this.domainTypes = domainTypes;
+
+                    // Load table data
+                    this.query();
+                });
 
             // Load table data
             this.query();
@@ -463,11 +498,13 @@ export class TransformDataComponent implements OnInit {
 
         //transform the result to the agGrid model
         let columns: any = [];
+        let fieldPolicies = this.engine.getFieldPolicies();
         let profile = this.engine.getProfile();
 
         angular.forEach(this.engine.getColumns(), function (col) {
-            let delegate = self.engine.createColumnDelegate(col.dataType, self);
-            let longestValue = _.find(profile, function (row: any) {
+            const delegate = self.engine.createColumnDelegate(col.dataType, self);
+            const fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[col.index] : null;
+            const longestValue = _.find(profile, function (row: any) {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });
 
@@ -475,6 +512,7 @@ export class TransformDataComponent implements OnInit {
                 dataType: col.dataType,
                 delegate: delegate,
                 displayName: col.displayName,
+                domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
                 filters: delegate.filters,
                 headerTooltip: col.hiveColumnLabel,
                 longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
@@ -485,6 +523,7 @@ export class TransformDataComponent implements OnInit {
         //update the ag-grid
         this.tableColumns = columns;
         this.tableRows = this.engine.getRows();
+        this.tableValidation = this.engine.getValidationResults();
 
         this.updateCodeMirrorAutoComplete();
     }
@@ -702,14 +741,15 @@ export class TransformDataComponent implements OnInit {
         let fields = this.engine.getFields();
 
         if (fields !== null) {
-            this.FeedService.setTableFields(fields);
+            this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
+            this.FeedService.syncTableFieldPolicyNames();
             this.engine.save();
             deferred.resolve(true);
         } else {
-            let self = this;
-            this.query().then(function () {
-                self.FeedService.setTableFields(self.engine.getFields());
-                self.engine.save();
+            this.query().then(() => {
+                this.FeedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+                this.FeedService.syncTableFieldPolicyNames();
+                this.engine.save();
                 deferred.resolve(true);
             });
         }
@@ -727,17 +767,47 @@ export class TransformDataComponent implements OnInit {
             this.engine.limit(1000);
         }
     }
+
+    /**
+     * Sets the domain type for the specified field.
+     *
+     * @param columnIndex - the field index
+     * @param domainTypeId - the domain type id
+     */
+    setDomainType(columnIndex: number, domainTypeId: string) {
+        const domainType: any = (domainTypeId != null) ? this.domainTypes.find(domainType => domainType.id === domainTypeId) : {fieldPolicy: {standardization: null, validation: null}};
+        if (domainType) {
+            const fieldPolicies = (this.engine.getFieldPolicies() !== null) ? this.engine.getFieldPolicies() : [];
+            this.fieldPolicies = this.engine.getColumns().map((column, index) => {
+                let fieldPolicy: any;
+                if (index < fieldPolicies.length) {
+                    fieldPolicy = fieldPolicies[index];
+                } else {
+                    fieldPolicy = this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy.fieldName = column.hiveColumnLabel;
+                    fieldPolicy.feedFieldName = column.hiveColumnLabel;
+                }
+
+                if (index === columnIndex) {
+                    this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
+                }
+
+                return fieldPolicy;
+            });
+        }
+    }
 }
 
 angular.module(moduleName).component("thinkbigVisualQueryTransform", {
     bindings: {
         engine: "=",
+        fieldPolicies: "<?",
         heightOffset: "@",
         model: "=",
         stepIndex: "@"
     },
-    controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
-        TransformDataComponent],
+    controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
+        "WindowUnloadService", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"

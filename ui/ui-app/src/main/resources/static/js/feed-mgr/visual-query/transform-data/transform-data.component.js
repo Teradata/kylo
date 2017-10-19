@@ -18,10 +18,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $element, $q, $mdDialog, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
+            this.domainTypesService = domainTypesService;
             this.RestUrlService = RestUrlService;
             this.uiGridConstants = uiGridConstants;
             this.FeedService = FeedService;
@@ -89,6 +90,10 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              * List of sample formulas.
              */
             this.sampleFormulas = [];
+            /**
+             * List of available domain types.
+             */
+            this.domainTypes = [];
             /**
              * Height offset from the top of the page.
              */
@@ -160,6 +165,19 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 else {
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
+                // Watch for changes to field policies
+                _this.engine.setFieldPolicies(_this.fieldPolicies);
+                _this.$scope.$watch(function () { return _this.fieldPolicies; }, function () {
+                    _this.engine.setFieldPolicies(_this.fieldPolicies);
+                    _this.query();
+                }, true);
+                // Fetch domain types
+                _this.domainTypesService.findAll()
+                    .then(function (domainTypes) {
+                    _this.domainTypes = domainTypes;
+                    // Load table data
+                    _this.query();
+                });
                 // Load table data
                 _this.query();
             };
@@ -403,9 +421,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var self = this;
             //transform the result to the agGrid model
             var columns = [];
+            var fieldPolicies = this.engine.getFieldPolicies();
             var profile = this.engine.getProfile();
             angular.forEach(this.engine.getColumns(), function (col) {
                 var delegate = self.engine.createColumnDelegate(col.dataType, self);
+                var fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[col.index] : null;
                 var longestValue = _.find(profile, function (row) {
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"));
                 });
@@ -413,6 +433,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
+                    domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
                     filters: delegate.filters,
                     headerTooltip: col.hiveColumnLabel,
                     longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
@@ -422,6 +443,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             //update the ag-grid
             this.tableColumns = columns;
             this.tableRows = this.engine.getRows();
+            this.tableValidation = this.engine.getValidationResults();
             this.updateCodeMirrorAutoComplete();
         };
         /**
@@ -599,6 +621,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @returns {Promise} signals when the save is complete
          */
         TransformDataComponent.prototype.saveToFeedModel = function () {
+            var _this = this;
             // Add unsaved filters
             this.addFilters();
             // Check if updates are necessary
@@ -619,15 +642,16 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var deferred = this.$q.defer();
             var fields = this.engine.getFields();
             if (fields !== null) {
-                this.FeedService.setTableFields(fields);
+                this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
+                this.FeedService.syncTableFieldPolicyNames();
                 this.engine.save();
                 deferred.resolve(true);
             }
             else {
-                var self_1 = this;
                 this.query().then(function () {
-                    self_1.FeedService.setTableFields(self_1.engine.getFields());
-                    self_1.engine.save();
+                    _this.FeedService.setTableFields(_this.engine.getFields(), _this.engine.getFieldPolicies());
+                    _this.FeedService.syncTableFieldPolicyNames();
+                    _this.engine.save();
                     deferred.resolve(true);
                 });
             }
@@ -644,6 +668,34 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 this.engine.limit(1000);
             }
         };
+        /**
+         * Sets the domain type for the specified field.
+         *
+         * @param columnIndex - the field index
+         * @param domainTypeId - the domain type id
+         */
+        TransformDataComponent.prototype.setDomainType = function (columnIndex, domainTypeId) {
+            var _this = this;
+            var domainType = (domainTypeId != null) ? this.domainTypes.find(function (domainType) { return domainType.id === domainTypeId; }) : { fieldPolicy: { standardization: null, validation: null } };
+            if (domainType) {
+                var fieldPolicies_1 = (this.engine.getFieldPolicies() !== null) ? this.engine.getFieldPolicies() : [];
+                this.fieldPolicies = this.engine.getColumns().map(function (column, index) {
+                    var fieldPolicy;
+                    if (index < fieldPolicies_1.length) {
+                        fieldPolicy = fieldPolicies_1[index];
+                    }
+                    else {
+                        fieldPolicy = _this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                        fieldPolicy.fieldName = column.hiveColumnLabel;
+                        fieldPolicy.feedFieldName = column.hiveColumnLabel;
+                    }
+                    if (index === columnIndex) {
+                        _this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
+                    }
+                    return fieldPolicy;
+                });
+            }
+        };
         return TransformDataComponent;
     }());
     __decorate([
@@ -658,12 +710,13 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
     angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         bindings: {
             engine: "=",
+            fieldPolicies: "<?",
             heightOffset: "@",
             model: "=",
             stepIndex: "@"
         },
-        controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
-            TransformDataComponent],
+        controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
+            "WindowUnloadService", TransformDataComponent],
         controllerAs: "$td",
         require: {
             stepperController: "^thinkbigStepper"

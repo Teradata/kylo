@@ -20,6 +20,9 @@ package com.thinkbiganalytics.spark.datavalidator.functions;
  * #L%
  */
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.policy.BaseFieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
@@ -36,16 +39,23 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.thinkbiganalytics.spark.datavalidator.StandardDataValidator.VALID_RESULT;
 
@@ -54,18 +64,50 @@ import static com.thinkbiganalytics.spark.datavalidator.StandardDataValidator.VA
  */
 public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
 
+    /**
+     * Name of the processing date/time column.
+     */
+    public static final String PROCESSING_DTTM_COL = "processing_dttm";
+
+    /**
+     * Name of the column containing the rejection reason.
+     */
+    public static final String REJECT_REASON_COL = "dlp_reject_reason";
+
     private static final Logger log = LoggerFactory.getLogger(CleanseAndValidateRow.class);
     private static final long serialVersionUID = 5092972811157021179L;
+
+    /**
+     * Target data types
+     */
+    @Nonnull
+    private final HCatDataType[] dataTypes;
+
+    /**
+     * Indicates if the data contains a processing date/time column.
+     */
+    private final boolean hasProcessingDttm;
 
     @Nonnull
     private final FieldPolicy[] policies;
 
+    /**
+     * Schema of output rows
+     */
     @Nonnull
-    private final HCatDataType[] schema;
+    private final StructType schema;
 
-    public CleanseAndValidateRow(@Nonnull final FieldPolicy[] policies, @Nonnull final HCatDataType[] schema) {
+    public CleanseAndValidateRow(@Nonnull final FieldPolicy[] policies, @Nonnull final StructField[] fields) {
         this.policies = policies;
-        this.schema = schema;
+        hasProcessingDttm = Iterables.any(Arrays.asList(fields), new Predicate<StructField>() {
+            @Override
+            public boolean apply(@Nullable StructField input) {
+                return input != null && input.name().equals(PROCESSING_DTTM_COL);
+            }
+        });
+
+        dataTypes = resolveDataTypes(fields);
+        schema = getSchema(fields);
     }
 
     @Override
@@ -75,22 +117,22 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
      */
         Map<Class, Class> validatorParamType = new HashMap<>();
 
-        int nulls = 1;
+        int nulls = hasProcessingDttm ? 1 : 0;
 
         // Create placeholder for the new values plus one columns for reject_reason
-        Object[] newValues = new Object[schema.length + 1];
+        Object[] newValues = new Object[dataTypes.length + 1];
         boolean rowValid = true;
         String sbRejectReason;
         List<ValidationResult> results = null;
-        boolean[] columnsValid = new boolean[schema.length];
+        boolean[] columnsValid = new boolean[dataTypes.length];
 
         Map<Integer, Object> originalValues = new HashMap<>();
 
         // Iterate through columns to cleanse and validate
-        for (int idx = 0; idx < schema.length; idx++) {
+        for (int idx = 0; idx < dataTypes.length; idx++) {
             ValidationResult result;
             FieldPolicy fieldPolicy = policies[idx];
-            HCatDataType dataType = schema[idx];
+            HCatDataType dataType = dataTypes[idx];
             boolean columnValid = true;
             boolean isBinaryType = dataType.getConvertibleType().equals(byte[].class);
 
@@ -146,16 +188,16 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
             columnsValid[idx] = columnValid;
         }
         // Return success unless all values were null.  That would indicate a blank line in the file.
-        if (nulls >= schema.length) {
+        if (nulls >= dataTypes.length) {
             rowValid = false;
             results = (results == null ? new Vector<ValidationResult>() : results);
             results.add(ValidationResult.failRow("empty", "Row is empty"));
         }
 
         if (!rowValid) {
-            for (int idx = 0; idx < schema.length; idx++) {
-                //if the value is not able to match the invalid schema and the datatype has changed then replace with original value
-                //the _invalid table schema matches the source, not the destination
+            for (int idx = 0; idx < dataTypes.length; idx++) {
+                //if the value is not able to match the invalid dataTypes and the datatype has changed then replace with original value
+                //the _invalid table dataTypes matches the source, not the destination
                 if (newValues[idx] == null || originalValues.get(idx) == null || newValues[idx].getClass() != originalValues.get(idx).getClass()) {
                     newValues[idx] = originalValues.get(idx);
                 }
@@ -168,11 +210,22 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
         sbRejectReason = toJSONArray(results);
 
         // Record the results in the appended columns, move processing partition value last
-        newValues[schema.length] = newValues[schema.length - 1]; //PROCESSING_DTTM_COL
-        newValues[schema.length - 1] = sbRejectReason;   //REJECT_REASON_COL
-        //   newValues[schema.length - 1] = (rowValid ? "1" : "0");  //VALID_INVALID_COL
+        if (hasProcessingDttm) {
+            newValues[dataTypes.length] = newValues[dataTypes.length - 1]; //PROCESSING_DTTM_COL
+            newValues[dataTypes.length - 1] = sbRejectReason;   //REJECT_REASON_COL
+        } else {
+            newValues[dataTypes.length] = sbRejectReason;
+        }
 
         return new CleansedRowResult(RowFactory.create(newValues), columnsValid, rowValid);
+    }
+
+    /**
+     * Gets the schema for the output rows.
+     */
+    @Nonnull
+    public StructType getSchema() {
+        return schema;
     }
 
     StandardizationAndValidationResult standardizeAndValidateField(FieldPolicy fieldPolicy, Object value, HCatDataType dataType, Map<Class, Class> validatorParamType) {
@@ -259,7 +312,7 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
     }
 
     /**
-     * Perform validation using both schema validation the validation policies
+     * Perform validation using both dataTypes validation the validation policies
      */
     private ValidationResult finalValidationCheck(FieldPolicy fieldPolicy, HCatDataType fieldDataType, Object fieldValue) {
 
@@ -271,6 +324,74 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
         }
 
         return VALID_RESULT;
+    }
+
+    /**
+     * List of all the feedFieldNames that are part of the policyMap
+     */
+    @Nonnull
+    private List<String> getPolicyMapFeedFieldNames() {
+        return FluentIterable.of(policies)
+            .filter(new Predicate<FieldPolicy>() {
+                @Override
+                public boolean apply(@Nullable FieldPolicy input) {
+                    return (input != null && input.getFeedField() != null);
+                }
+            })
+            .transform(new com.google.common.base.Function<FieldPolicy, String>() {
+                @Override
+                public String apply(@Nullable FieldPolicy input) {
+                    assert input != null;
+                    return input.getFeedField().toLowerCase();
+                }
+            })
+            .toList();
+    }
+
+    /**
+     * Gets the output schema for the specified target fields.
+     */
+    @Nonnull
+    private StructType getSchema(@Nonnull final StructField[] feedFields) {
+        final List<StructField> feedFieldsList = new ArrayList<>(feedFields.length);
+        final List<String> policyMapFeedFieldNames = getPolicyMapFeedFieldNames();
+
+        for (final StructField feedField : feedFields) {
+            final String lowerFieldName = feedField.name().toLowerCase();
+            if (policyMapFeedFieldNames.contains(lowerFieldName)) {
+                if (!feedField.name().equalsIgnoreCase(PROCESSING_DTTM_COL) && !feedField.name().equalsIgnoreCase(REJECT_REASON_COL)) {
+                    feedFieldsList.add(feedField);
+                }
+            } else {
+                log.warn("Feed table field {} is not present in policy map", lowerFieldName);
+            }
+
+        }
+
+        // Insert the two custom fields before the processing partition column
+        if (hasProcessingDttm) {
+            feedFieldsList.add(new StructField(PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
+            feedFieldsList.add(feedFieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
+        } else {
+            feedFieldsList.add(new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
+        }
+
+        return new StructType(feedFieldsList.toArray(new StructField[0]));
+    }
+
+    /**
+     * Converts the table schema into the corresponding data type structures
+     */
+    @Nonnull
+    private HCatDataType[] resolveDataTypes(StructField[] fields) {
+        List<HCatDataType> cols = new ArrayList<>(fields.length);
+
+        for (StructField field : fields) {
+            String colName = field.name();
+            String dataType = field.dataType().simpleString();
+            cols.add(HCatDataType.createFromDataType(colName, dataType));
+        }
+        return cols.toArray(new HCatDataType[0]);
     }
 
     /* Resolve the type of param required by the validator. A cache is used to avoid cost of reflection */

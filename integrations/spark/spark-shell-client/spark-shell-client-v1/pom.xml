@@ -25,17 +25,17 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-scala-${scala.binary.version}</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-spark-${spark.binary.version}</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-scala-${scala.binary.version}</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-spark-shell-client-app</artifactId>
+      <artifactId>kylo-commons-spark-shell-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -49,14 +49,31 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-spark-shell-v1</artifactId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-job-profiler-spark-v1</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+          <artifactId>kylo-spark-job-profiler-app</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-shell-client-app</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-spark-job-profiler-core</artifactId>
+      <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+          <artifactId>kylo-spark-validate-cleanse-app</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Scala dependencies -->
@@ -68,26 +85,6 @@
     </dependency>
 
     <!-- Spark dependencies -->
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <!-- Avro -->
     <dependency>
       <groupId>com.databricks</groupId>
       <artifactId>spark-avro_${scala.binary.version}</artifactId>
@@ -102,6 +99,24 @@
           <artifactId>avro</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

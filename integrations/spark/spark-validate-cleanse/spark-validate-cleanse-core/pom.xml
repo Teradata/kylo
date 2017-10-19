@@ -41,6 +41,11 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-job-profiler-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-validate-cleanse-api</artifactId>
       <version>${project.version}</version>
     </dependency>

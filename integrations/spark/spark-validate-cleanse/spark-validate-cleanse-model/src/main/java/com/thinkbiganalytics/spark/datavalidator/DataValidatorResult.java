@@ -23,11 +23,14 @@ package com.thinkbiganalytics.spark.datavalidator;
 import com.thinkbiganalytics.policy.FieldPolicy;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import org.apache.spark.storage.StorageLevel;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Contains the result of validating a dataset.
+ */
 public class DataValidatorResult {
 
     @Nonnull
@@ -37,33 +40,48 @@ public class DataValidatorResult {
     private final FieldPolicy[] policies;
 
     @Nonnull
-    private final StructField[] schema;
+    private final StructType schema;
 
-    public DataValidatorResult(@Nonnull final JavaRDD<CleansedRowResult> cleansedRowResultRDD, @Nonnull final FieldPolicy[] policies, @Nonnull final StructField[] schema) {
+    public DataValidatorResult(@Nonnull final JavaRDD<CleansedRowResult> cleansedRowResultRDD, @Nonnull final FieldPolicy[] policies, @Nonnull final StructType schema) {
         this.cleansedRowResultRDD = cleansedRowResultRDD;
         this.policies = policies;
         this.schema = schema;
     }
 
+    /**
+     * Gets the standardized and validated rows.
+     */
     @Nonnull
     public JavaRDD<CleansedRowResult> getCleansedRowResultRDD() {
         return cleansedRowResultRDD;
     }
 
+    /**
+     * Gets the field policies applied to the input.
+     */
     @Nonnull
     public FieldPolicy[] getPolicies() {
         return policies;
     }
 
+    /**
+     * Gets the schema of the cleansed rows.
+     */
     @Nonnull
-    public StructField[] getSchema() {
+    public StructType getSchema() {
         return schema;
     }
 
+    /**
+     * Persists the cleansed rows with the specified storage level.
+     */
     public void persist(@Nonnull final StorageLevel newLevel) {
         cleansedRowResultRDD.persist(newLevel);
     }
 
+    /**
+     * Removes all blocks of the cleansed rows from memory and disk.
+     */
     public void unpersist() {
         cleansedRowResultRDD.unpersist();
     }

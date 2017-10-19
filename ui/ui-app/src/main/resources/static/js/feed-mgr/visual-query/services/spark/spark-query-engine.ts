@@ -1,21 +1,21 @@
-import {QueryEngine} from "../query-engine";
-import {UserDatasource} from "../../../model/user-datasource";
-import {SparkConstants} from "./spark-constants";
-import {SparkScriptBuilder} from "./spark-script-builder";
-import {SparkQueryParser} from "./spark-query-parser";
+import * as angular from "angular";
 import {Program} from "estree";
-import {UnderscoreStatic} from "underscore";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
+import * as _ from "underscore";
+
+import {QueryResultColumn} from "../../../model/query-result-column";
+import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
+import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
-import {QueryResultColumn} from "../../../model/query-result-column";
+import {TransformResponse} from "../../model/transform-response";
+import {QueryEngine} from "../query-engine";
 import {registerQueryEngine} from "../query-engine-factory.service";
-import {SchemaField} from "../../../model/schema-field";
-
-declare const _: UnderscoreStatic;
-declare const angular: angular.IAngularStatic;
+import {SparkConstants} from "./spark-constants";
+import {SparkQueryParser} from "./spark-query-parser";
+import {SparkScriptBuilder} from "./spark-script-builder";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -58,7 +58,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
     /**
      * Gets the sample formulas.
      */
-    get sampleFormulas(): {name: string; formula: string}[] {
+    get sampleFormulas(): { name: string; formula: string }[] {
         return [
             {name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))"},
             {name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)"},
@@ -239,7 +239,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     transform(): Observable<any> {
         // Build the request body
-        let body = {};
+        let body = {
+            "policies": this.getState().fieldPolicies
+        };
         let index = this.states_.length - 1;
 
         if (index > 0) {
@@ -270,13 +272,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
         let self = this;
         let deferred = new Subject();
 
-        let successCallback = function (response: any) {
+        let successCallback = function (response: angular.IHttpResponse<TransformResponse>) {
             // Check status
             if (response.data.status === "PENDING") {
                 deferred.next(response.data.progress);
 
                 self.$timeout(function () {
-                    self.$http({
+                    self.$http<TransformResponse>({
                         method: "GET",
                         url: self.apiUrl + "/transform/" + response.data.table,
                         headers: {"Content-Type": "application/json"},
@@ -308,14 +310,43 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 state.rows = [];
                 deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
             } else {
+                // Update state
                 state.columns = response.data.results.columns;
                 state.profile = response.data.profile;
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
+                state.validationResults = response.data.results.validationResults;
+
+                // Update field policies
+                if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
+                    const policyMap = {};
+                    state.fieldPolicies.forEach(policy => {
+                        policyMap[policy.fieldName] = policy;
+                    });
+
+                    state.fieldPolicies = state.columns.map(column => {
+                        if (policyMap[column.hiveColumnLabel]) {
+                            return policyMap[column.hiveColumnLabel];
+                        } else {
+                            return {
+                                name: column.hiveColumnLabel,
+                                fieldName: column.hiveColumnLabel,
+                                feedFieldName: column.hiveColumnLabel,
+                                domainTypeId: null,
+                                partition: null,
+                                profile: true,
+                                standardization: null,
+                                validation: null
+                            };
+                        }
+                    });
+                }
+
+                // Indicate observable is complete
                 deferred.complete();
             }
         };
-        let errorCallback = function (response: any) {
+        let errorCallback = function (response: angular.IHttpResponse<TransformResponse>) {
             // Update state
             let state = self.states_[index];
             state.columns = [];
@@ -334,7 +365,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         };
 
         // Send the request
-        self.$http({
+        self.$http<TransformResponse>({
             method: "POST",
             url: this.apiUrl + "/transform",
             data: JSON.stringify(body),

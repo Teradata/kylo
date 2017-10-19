@@ -138,6 +138,12 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
             return this.getScript(null, null, false);
         };
         /**
+         * Gets the field policies for the current transformation.
+         */
+        QueryEngine.prototype.getFieldPolicies = function () {
+            return this.getState().fieldPolicies;
+        };
+        /**
          * Gets the schema fields for the the current transformation.
          *
          * @returns the schema fields or {@code null} if the transformation has not been applied
@@ -204,7 +210,29 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
         QueryEngine.prototype.getProfile = function () {
             var profile = [];
             var state = this.getState();
-            profile.push({ columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0 }, { columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length }, { columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0 });
+            // Add total counts
+            var hasInvalidCount = false;
+            var hasTotalCount = false;
+            var hasValidCount = false;
+            if (state.profile) {
+                state.profile.forEach(function (row) {
+                    if (row.columnName === "(ALL)") {
+                        hasInvalidCount = hasInvalidCount || (row.metricType === "INVALID_COUNT");
+                        hasTotalCount = hasTotalCount || (row.metricType === "TOTAL_COUNT");
+                        hasValidCount = hasValidCount || (row.metricType === "VALID_COUNT");
+                    }
+                });
+            }
+            if (!hasInvalidCount) {
+                profile.push({ columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0 });
+            }
+            if (!hasTotalCount) {
+                profile.push({ columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length });
+            }
+            if (!hasValidCount) {
+                profile.push({ columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0 });
+            }
+            // Add state profile
             if (state.profile) {
                 profile = profile.concat(state.profile);
             }
@@ -239,6 +267,12 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
             return new Promise(function (resolve, reject) { return self.DatasourcesService.getTableSchema(datasourceId, table, schema).then(resolve, reject); });
         };
         /**
+         * Gets the validation results from the current transformation.
+         */
+        QueryEngine.prototype.getValidationResults = function () {
+            return this.getState().validationResults;
+        };
+        /**
          * The number of rows to select in the initial query.
          *
          * @param value - the new value
@@ -271,6 +305,7 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
             // Add new state
             var state = this.newState();
             state.context = context;
+            state.fieldPolicies = this.getState().fieldPolicies;
             state.script = this.parseAcornTree(tree);
             this.states_.push(state);
             // Clear redo states
@@ -326,6 +361,12 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
         QueryEngine.prototype.searchTableNames = function (query, datasourceId) {
             var tables = this.DatasourcesService.listTables(datasourceId, query);
             return new Promise(function (resolve, reject) { return tables.then(resolve, reject); });
+        };
+        /**
+         * Sets the field policies to use for the current transformation.
+         */
+        QueryEngine.prototype.setFieldPolicies = function (policies) {
+            this.getState().fieldPolicies = policies;
         };
         /**
          * Sets the function definitions to use.
@@ -436,7 +477,7 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
          * @returns a new script state
          */
         QueryEngine.prototype.newState = function () {
-            return { columns: null, context: {}, profile: null, rows: null, script: null, table: null };
+            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null };
         };
         return QueryEngine;
     }());

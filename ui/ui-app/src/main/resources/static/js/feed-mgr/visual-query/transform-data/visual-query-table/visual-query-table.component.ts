@@ -1,14 +1,15 @@
-import {IAngularStatic, IAugmentedJQuery, ICompileService, IScope, ITemplateCacheService, ITemplateRequestService, ITimeoutService} from "angular";
+import * as angular from "angular";
 import "fattable";
-import {UnderscoreStatic} from "underscore";
-import {WranglerTableService} from "../services/wrangler-table.service";
-import {WranglerEventType} from "../services/wrangler-event-type";
-import {WranglerDataService} from "../services/wrangler-data.service";
-import {WranglerTableModel} from "./wrangler-table-model";
+import * as $ from "jquery";
+import * as _ from "underscore";
 
-declare const _: UnderscoreStatic;
-declare const $: JQueryStatic;
-declare const angular: IAngularStatic;
+import {DomainType} from "../../../services/DomainTypesService";
+import {TransformValidationResult} from "../../model/transform-validation-result";
+import {WranglerDataService} from "../services/wrangler-data.service";
+import {WranglerEventType} from "../services/wrangler-event-type";
+import {WranglerTableService} from "../services/wrangler-table.service";
+import {VisualQueryPainterService} from "./visual-query-painter.service";
+import {WranglerTableModel} from "./wrangler-table-model";
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
@@ -26,16 +27,6 @@ export interface VisualQueryTableHeader {
 }
 
 /**
- * Left and right padding for normal columns.
- */
-const COLUMN_PADDING = 28;
-
-/**
- * Left padding for the first column.
- */
-const COLUMN_PADDING_FIRST = 24;
-
-/**
  * Maximum width of a column including padding.
  */
 const COLUMN_WIDTH_MAX = 300;
@@ -46,34 +37,14 @@ const COLUMN_WIDTH_MAX = 300;
 const COLUMN_WIDTH_MIN = 150;
 
 /**
- * Default font.
+ * Width of the domain type icon.
  */
-const DEFAULT_FONT = "10px sans-serif";
-
-/**
- * Height of header row.
- */
-const HEADER_HEIGHT = 56;
-
-/**
- * HTML template for header cells.
- */
-const HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html";
+const DOMAIN_TYPE_WIDTH = 30;
 
 /**
  * Width of the menu element in the header.
  */
 const MENU_WIDTH = 52;
-
-/**
- * Pixel unit.
- */
-const PIXELS = "px";
-
-/**
- * Height of data rows.
- */
-const ROW_HEIGHT = 48;
 
 /**
  * Manages a data table for viewing the results of transformations.
@@ -88,6 +59,8 @@ const ROW_HEIGHT = 48;
  * @param uiGridConstants the ui-grid constants
  */
 export class VisualQueryTable {
+
+    static readonly $inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
 
     /**
      * Indicates a column should be sorted in ascending order.
@@ -106,17 +79,27 @@ export class VisualQueryTable {
     columns: object[];
 
     /**
+     * List of the available domain types.
+     */
+    domainTypes: DomainType[];
+
+    /**
      * The table options.
      * @type {Object} options
      * @type {string} [options.headerFont] the font for the header row
      * @type {string} [options.rowFont] the font for the data rows
      */
-    options: {headerFont?: string, rowFont?: string};
+    options: { headerFont?: string, rowFont?: string };
 
     /**
      * The data rows in this table.
      */
     rows: object[];
+
+    /**
+     * Validation results for the data.
+     */
+    validationResults: TransformValidationResult[][];
 
     /**
      * 2D rending context
@@ -132,43 +115,48 @@ export class VisualQueryTable {
      * The table view.
      * @type {fattable.TableView}
      */
-    private table_: any = null;
+    private table_: fattable.TableView = null;
 
-    constructor (private $scope_: IScope, private $compile_: ICompileService, private $element: any, private $templateCache_: ITemplateCacheService, private $templateRequest_: ITemplateRequestService,
-                 private $timeout_: ITimeoutService, private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any) {
-        const self = this;
+    constructor(private $scope_: angular.IScope, private $element: angular.IAugmentedJQuery, private $timeout_: angular.ITimeoutService, private painter: VisualQueryPainterService,
+                private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any) {
+        this.painter.delegate = this;
 
         // Refresh table when model changes
-        const onColumnsChange = angular.bind(this, this.onColumnsChange);
-        const onRowsChange = angular.bind(this, this.onRowsChange);
-        const refresh: any = angular.bind(this, this.refresh);
-
         tableService.registerTable((event) => {
             if (event.type === WranglerEventType.REFRESH) {
-                self.refresh();
+                this.refresh();
             }
         });
 
-        $scope_.$watch(function () {
-            return self.columns;
-        }, function () {
-            onColumnsChange();
-            refresh();
+        $scope_.$watch(() => this.columns, () => {
+            this.onColumnsChange();
+            this.refresh();
         });
 
-        $scope_.$watch(function () {
-            return self.rows
-        }, function () {
-            onRowsChange();
-            refresh();
+        $scope_.$watch(() => this.domainTypes, () => {
+            this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
+            this.refresh()
+        });
+
+        $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
+        $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
+
+        $scope_.$watch(() => this.rows, () => {
+            this.onRowsChange();
+            this.refresh();
+        });
+
+        $scope_.$watch(() => this.validationResults, () => {
+            this.onValidationResultsChange();
+            this.refresh();
         });
 
         // Refresh table on resize
-        $scope_.$watch(() => $element.height(), refresh);
-        $scope_.$watch(() => $element.width(), refresh);
+        $scope_.$watch(() => $element.height(), () => this.refresh());
+        $scope_.$watch(() => $element.width(), () => this.refresh());
 
         // Listen for destroy event
-        $scope_.$on("destroy", () => self.$onDestroy());
+        $scope_.$on("destroy", () => this.$onDestroy());
     }
 
     $onDestroy() {
@@ -182,44 +170,22 @@ export class VisualQueryTable {
     }
 
     /**
-     * Gets the font for the header row.
-     *
-     * @returns {string}
-     */
-    getHeaderFont() {
-        return (angular.isObject(this.options) && angular.isString(this.options.headerFont)) ? this.options.headerFont : DEFAULT_FONT;
-    }
-
-    /**
-     * Gets the font for the data rows.
-     *
-     * @returns {string}
-     */
-    getRowFont() {
-        return (angular.isObject(this.options) && angular.isString(this.options.rowFont)) ? this.options.rowFont : DEFAULT_FONT;
-    }
-
-    /**
      * Initializes the table.
      *
      * @param {jQuery} element the table element
      */
-    init(element: JQueryStatic) {
-        const self = this;
-        this.$templateRequest_(HEADER_TEMPLATE)
-            .then(function () {
-                self.table_ = fattable({
-                    container: element.get(0),
-                    model: new WranglerTableModel(self.dataService),
-                    nbRows: 0,
-                    rowHeight: ROW_HEIGHT,
-                    headerHeight: HEADER_HEIGHT,
-                    painter: self,
-                    columnWidths: [0]
-                });
+    init(element: angular.IAugmentedJQuery) {
+        this.table_ = fattable({
+            container: element.get(0),
+            model: new WranglerTableModel(this.dataService),
+            nbRows: 0,
+            rowHeight: VisualQueryPainterService.ROW_HEIGHT,
+            headerHeight: VisualQueryPainterService.HEADER_HEIGHT,
+            painter: this.painter,
+            columnWidths: [0]
+        });
 
-                self.$timeout_(angular.bind(self, self.refresh) as any, 500);
-            });
+        this.$timeout_(this.refresh.bind(this), 500);
     }
 
     /**
@@ -232,27 +198,28 @@ export class VisualQueryTable {
         }
 
         // Re-calculate column widths
-        const widthDiff = Math.abs(this.lastTableWidth_ - $(this.table_.container).width());
+        const widthDiff = Math.abs(this.lastTableWidth_ - $((this.table_ as any).container).width());
 
         if (widthDiff > 1) {
             const columnWidths: number[] = this.getColumnWidths();
-            this.table_.columnWidths = columnWidths;
-            this.table_.nbCols = columnWidths.length;
+            (this.table_ as any).columnWidths = columnWidths;
+            (this.table_ as any).nbCols = columnWidths.length;
 
             const columnOffset = _.reduce(columnWidths, function (memo, width) {
                 memo.push(memo[memo.length - 1] + width);
                 return memo;
             }, [0]);
-            this.table_.columnOffset = columnOffset;
-            this.table_.W = columnOffset[columnOffset.length - 1];
+            (this.table_ as any).columnOffset = columnOffset;
+            (this.table_ as any).W = columnOffset[columnOffset.length - 1];
         }
 
         // Update table properties
         const rowCount = angular.isArray(this.dataService.rows_) ? this.dataService.rows_.length : 0;
-        this.table_.nbRows = rowCount;
-        this.table_.H = ROW_HEIGHT * rowCount;
+        (this.table_ as any).nbRows = rowCount;
+        (this.table_ as any).H = VisualQueryPainterService.ROW_HEIGHT * rowCount;
 
         // Rebuild table
+        this.painter.hideTooltip();
         this.table_.setup();
     }
 
@@ -287,10 +254,9 @@ export class VisualQueryTable {
     /**
      * Gets a 2D rending context for calculating text width.
      *
-     * @private
      * @returns {CanvasRenderingContext2D} a 2D rendering context
      */
-    get2dContext() {
+    private get2dContext() {
         if (this.canvasContext_ === null) {
             const canvas = document.createElement("canvas");
             document.createDocumentFragment().appendChild(canvas);
@@ -306,10 +272,9 @@ export class VisualQueryTable {
     /**
      * Calculates the width for every column.
      *
-     * @private
      * @returns {Array.<number>} the column widths
      */
-    getColumnWidths(): number[] {
+    private getColumnWidths(): number[] {
         // Skip if no columns
         if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
             return [];
@@ -317,20 +282,21 @@ export class VisualQueryTable {
 
         // Determine column widths based on header size
         const context = this.get2dContext();
-        context.font = this.getHeaderFont();
+        context.font = this.painter.headerFont;
 
-        const headerWidths = _.map(this.dataService.columns_, function (column: any, index) {
-            const textWidth = context.measureText(column.displayName).width;
-            const padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
-            return Math.ceil(textWidth + padding + MENU_WIDTH);
+        const headerWidths = this.dataService.columns_.map((column: any, index) => {
+            const textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
+            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 2;
+            const menuWidth = (this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
+            return Math.ceil(textWidth + padding + menuWidth);
         });
 
         // Determine column widths based on row sampling
-        context.font = this.getRowFont();
+        context.font = this.painter.rowFont;
 
         const rowWidths = _.map(this.dataService.columns_, function (column: any, index) {
             const textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
-            const padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
+            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 2;
             return Math.ceil(textWidth + padding);
         });
 
@@ -345,7 +311,7 @@ export class VisualQueryTable {
         }
 
         // Fit column widths to viewable width
-        const padding = Math.max($(this.table_.container).width() - totalWidth, 0);
+        const padding = Math.max($((this.table_ as any).container).width() - totalWidth, 0);
 
         return _.map(columnWidths, function (width) {
             return Math.floor(width + padding * width / totalWidth);
@@ -355,7 +321,7 @@ export class VisualQueryTable {
     /**
      * Applies filters to columns.
      */
-    onColumnsChange() {
+    private onColumnsChange() {
         // Update properties
         _.each(this.columns, function (column: any) {
             column.visible = (column.visible !== false);
@@ -373,7 +339,7 @@ export class VisualQueryTable {
     /**
      * Sorts and applies filters to rows.
      */
-    onRowsChange() {
+    private onRowsChange() {
         const self = this;
 
         // Filter rows
@@ -418,122 +384,22 @@ export class VisualQueryTable {
             });
         }
     }
-}
 
-angular.extend(VisualQueryTable.prototype, fattable.Painter.prototype, fattable.SyncTableModel.prototype, {
-    /**
-     * Will be called whenever a cell is put out of the DOM.
-     *
-     * @param {HTMLElement} cellDiv the cell <div> element
-     */
-    cleanUpCell(cellDiv: HTMLElement) {
-
-    },
-
-    /**
-     * Will be called whenever a column is put out of the DOM.
-     *
-     * @param {HTMLElement} headerDiv the header <div> element
-     */
-    cleanUpHeader(headerDiv: HTMLElement) {
-
-    },
-
-    /**
-     * Fills and style a cell div.
-     *
-     * @param {HTMLElement} cellDiv the cell <div> element
-     * @param {VisualQueryTableCell|null} cell the cell object
-     */
-    fillCell(cellDiv: HTMLElement, cell: any) {
-        // Adjust padding based on column number
-        if (cell !== null && cell.column === 0) {
-            cellDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
-            cellDiv.style.paddingRight = 0 + PIXELS;
-        } else {
-            cellDiv.style.paddingLeft = COLUMN_PADDING + PIXELS;
-            cellDiv.style.paddingRight = COLUMN_PADDING + PIXELS;
-        }
-
-        // Set contents
-        if (cell === null) {
-            cellDiv.textContent = "";
-            cellDiv.title = "";
-        } else if (cell.value !== null && cell.value.sqltypeName && cell.value.sqltypeName.startsWith("PERIOD")) {
-            const value = "(" + cell.value.attributes.join(", ") + ")";
-            cellDiv.textContent = value;
-            cellDiv.title = value;
-        } else {
-            cellDiv.textContent = cell.value;
-            cellDiv.title = cell.value;
-        }
-    },
-
-    /**
-     * Fills and style a column div.
-     *
-     * @param {HTMLElement} headerDiv the header <div> element
-     * @param {VisualQueryTableHeader|null} header the column header
-     */
-    fillHeader(headerDiv: HTMLElement, header: any) {
-        // Adjust padding based on column number
-        if (header !== null && header.index === 0) {
-            headerDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
-            headerDiv.style.paddingRight = 0 + PIXELS;
-        } else {
-            headerDiv.style.paddingLeft = COLUMN_PADDING + PIXELS;
-            headerDiv.style.paddingRight = COLUMN_PADDING + PIXELS;
-        }
-
-        // Update scope in a separate thread
-        const $scope: any = angular.element(headerDiv).scope();
-        const self = this;
-
-        if ($scope.header !== header) {
-            $scope.header = header;
-            $scope.header.unsort = this.unsort.bind(this);
-            $scope.table = self;
-        }
-    },
-
-    /**
-     * Setup method are called at the creation of the cells. That is during initialization and for all window resize event.
-     *
-     * Cells are recycled.
-     *
-     * @param {HTMLElement} cellDiv the cell <div> element
-     */
-    setupCell(cellDiv: HTMLElement) {
-        cellDiv.style.font = this.getRowFont();
-        cellDiv.style.lineHeight = ROW_HEIGHT + PIXELS;
-    },
-
-    /**
-     * Setup method are called at the creation of the column header. That is during initialization and for all window resize event.
-     *
-     * Columns are recycled.
-     *
-     * @param {HTMLElement} headerDiv the header <div> element
-     */
-    setupHeader(headerDiv: HTMLElement) {
-        // Set style attributes
-        headerDiv.style.font = this.getHeaderFont();
-        headerDiv.style.lineHeight = HEADER_HEIGHT + PIXELS;
-
-        // Load template
-        headerDiv.innerHTML = this.$templateCache_.get(HEADER_TEMPLATE) as string;
-        this.$compile_(headerDiv)(this.$scope_.$new(true));
+    private onValidationResultsChange() {
+        this.dataService.validationResults = this.validationResults;
     }
-});
+}
 
 angular.module(moduleName).directive("visualQueryTable", function () {
     return {
         bindToController: {
             columns: "=*tableColumns",
+            domainTypes: "=*tableDomainTypes",
             options: "=*tableOptions",
-            rows: "=*tableRows"
+            rows: "=*tableRows",
+            validationResults: "=*tableValidation"
         },
-        controller: ["$scope", "$compile", "$element", "$templateCache", "$templateRequest", "$timeout", "WranglerDataService", "WranglerTableService", "uiGridConstants", VisualQueryTable],
+        controller: VisualQueryTable,
         restrict: "E",
         link: function ($scope, element, attrs, controller) {
             (controller as VisualQueryTable).$onInit();

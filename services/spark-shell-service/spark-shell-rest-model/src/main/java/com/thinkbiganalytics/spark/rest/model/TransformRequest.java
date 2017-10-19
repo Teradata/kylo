@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
+
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -38,6 +40,11 @@ public class TransformRequest {
      * Previous transformation result
      */
     private Parent parent;
+
+    /**
+     * Field validation policies
+     */
+    private List<FieldPolicy> policies;
 
     /**
      * Scala script with transformation
@@ -78,6 +85,17 @@ public class TransformRequest {
      */
     public void setParent(@Nonnull final Parent parent) {
         this.parent = parent;
+    }
+
+    /**
+     * Gets the standardizers and validators for each field.
+     */
+    public List<FieldPolicy> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(List<FieldPolicy> policies) {
+        this.policies = policies;
     }
 
     /**

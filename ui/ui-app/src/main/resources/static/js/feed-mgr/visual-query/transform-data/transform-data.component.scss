@@ -1,3 +1,5 @@
+@import "../../../../../../../../node_modules/@angular/material/theming";
+
 thinkbig-visual-query-transform {
   // Sidebar
   md-sidenav.md-locked-open:not(.collapsed) {
@@ -63,10 +65,18 @@ thinkbig-visual-query-transform {
     position: absolute;
     top: 0;
 
-    .fattable-viewport > div {
-      border-bottom: 1px solid rgba(0, 0, 0, .24);
-      padding: 0 28px;
-      vertical-align: middle;
+    .fattable-viewport {
+      > div {
+        border-bottom: 1px solid rgba(0, 0, 0, .24);
+        padding: 0 28px;
+        vertical-align: middle;
+      }
+      > div.invalid {
+        background-color: map_get($mat-red, 100);
+      }
+      > div.null {
+        background-color: map_get($mat-grey, 100);
+      }
     }
 
     .fattable-header-container .fattable-viewport {
@@ -84,5 +94,126 @@ thinkbig-visual-query-transform {
     .fattable-body-container .fattable-viewport > div {
       letter-spacing: .01em;
     }
+
+    .kylo-visual-query-table-domain-type {
+      line-height: inherit;
+      position: absolute;
+      right: 46px;
+      top: 1px;
+    }
+
+    .kylo-visual-query-table-menu-content {
+      max-height: 352px;
+    }
+  }
+}
+
+/* Column headers */
+.ui-grid-header-cell-label {
+  color: grey;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-grid-header-cell-title {
+  color: black;
+}
+
+/* Column menu button */
+.ui-grid-column-menu-button {
+  padding: 0;
+}
+
+.ui-grid-column-menu-button > .md-button.md-icon-button {
+  height: inherit;
+  line-height: inherit;
+  padding: 0 6px;
+}
+
+.ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  display: inline-block;
+  height: 23px;
+  margin: auto;
+}
+
+/* Column sub-menus */
+md-menu-item > .md-menu {
+  height: 100%;
+  padding: 0;
+  width: 173px;
+}
+
+md-menu-item > .md-menu > .md-button {
+  border-radius: 0;
+  margin: auto 0;
+  font-size: 15px;
+  text-transform: none;
+  font-weight: 400;
+  text-align: left;
+  text-align: start;
+  height: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: inline-block;
+  -webkit-align-items: baseline;
+  -ms-flex-align: baseline;
+  align-items: baseline;
+  -webkit-align-content: flex-start;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+  width: 100%;
+}
+
+md-menu-item > .md-menu > .md-button:after {
+  display: block;
+  content: '\25BC';
+  position: absolute;
+  top: 7px;
+  speak: none;
+  -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+  transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+  right: 28px;
+}
+
+md-menu-item > .md-menu > .md-button md-icon {
+  margin: auto 16px auto 0;
+}
+
+md-menu-item > .md-menu > .md-button span {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/** Column menu item buttons */
+.visual-query-column-menu {
+  max-height: 352px;
+
+  .material-icons {
+    font-size: 20px;
+    vertical-align: sub;
+
+    &.custom-icon {
+      font-weight: bold;
+      text-align: right;
+      vertical-align: super;
+    }
+  }
+}
+
+/** Column menu text inputs */
+md-menu-item > div > md-input-container {
+  margin: 0;
+}
+
+/** Tooltip */
+.md-tooltip.visual-query-tooltip {
+  height: auto;
+  overflow: visible;
+
+  ul {
+    color: map_get($mat-red, 100);
+    margin: 0;
+    padding-left: 20px;
   }
 }

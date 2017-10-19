@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../query-engine", "./spark-constants", "./spark-script-builder", "./spark-query-parser", "rxjs/Subject", "../../../services/VisualQueryService", "../query-engine-factory.service"], function (require, exports, query_engine_1, spark_constants_1, spark_script_builder_1, spark_query_parser_1, Subject_1, VisualQueryService_1, query_engine_factory_service_1) {
+define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../query-engine", "../query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder"], function (require, exports, angular, Subject_1, _, VisualQueryService_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -243,7 +243,9 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
          */
         SparkQueryEngine.prototype.transform = function () {
             // Build the request body
-            var body = {};
+            var body = {
+                "policies": this.getState().fieldPolicies
+            };
             var index = this.states_.length - 1;
             if (index > 0) {
                 // Find last cached state
@@ -306,10 +308,37 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
                     deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
                 }
                 else {
+                    // Update state
                     state.columns = response.data.results.columns;
                     state.profile = response.data.profile;
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
+                    state.validationResults = response.data.results.validationResults;
+                    // Update field policies
+                    if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
+                        var policyMap_1 = {};
+                        state.fieldPolicies.forEach(function (policy) {
+                            policyMap_1[policy.fieldName] = policy;
+                        });
+                        state.fieldPolicies = state.columns.map(function (column) {
+                            if (policyMap_1[column.hiveColumnLabel]) {
+                                return policyMap_1[column.hiveColumnLabel];
+                            }
+                            else {
+                                return {
+                                    name: column.hiveColumnLabel,
+                                    fieldName: column.hiveColumnLabel,
+                                    feedFieldName: column.hiveColumnLabel,
+                                    domainTypeId: null,
+                                    partition: null,
+                                    profile: true,
+                                    standardization: null,
+                                    validation: null
+                                };
+                            }
+                        });
+                    }
+                    // Indicate observable is complete
                     deferred.complete();
                 }
             };

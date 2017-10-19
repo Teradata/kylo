@@ -12,5 +12,6 @@ define(['angular',
         'feed-mgr/visual-query/transform-data/services/wrangler-data.service',
         'feed-mgr/visual-query/transform-data/services/wrangler-table.service',
         'feed-mgr/visual-query/transform-data/profile-stats/VisualQueryProfileStats',
+        'feed-mgr/visual-query/transform-data/visual-query-table/visual-query-painter.service',
         'feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table.component'], function () {
 });

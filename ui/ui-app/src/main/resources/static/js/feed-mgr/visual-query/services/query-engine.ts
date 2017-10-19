@@ -8,6 +8,7 @@ import {UserDatasource} from "../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../services/VisualQueryService";
 import {ScriptState} from "../model/script-state";
+import {TransformValidationResult} from "../model/transform-validation-result";
 import {TransformDataComponent} from "../transform-data/transform-data.component";
 import {ColumnDelegate} from "./column-delegate";
 import {QueryEngineConstants} from "./query-engine-constants";
@@ -188,6 +189,13 @@ export abstract class QueryEngine<T> {
     }
 
     /**
+     * Gets the field policies for the current transformation.
+     */
+    getFieldPolicies(): any[] | null {
+        return this.getState().fieldPolicies;
+    }
+
+    /**
      * Gets the schema fields for the the current transformation.
      *
      * @returns the schema fields or {@code null} if the transformation has not been applied
@@ -258,9 +266,32 @@ export abstract class QueryEngine<T> {
         let profile: ProfileOutputRow[] = [];
         const state = this.getState();
 
-        profile.push({columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0} as ProfileOutputRow,
-            {columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length} as ProfileOutputRow,
-            {columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0} as ProfileOutputRow);
+        // Add total counts
+        let hasInvalidCount = false;
+        let hasTotalCount = false;
+        let hasValidCount = false;
+
+        if (state.profile) {
+            state.profile.forEach(row => {
+                if (row.columnName === "(ALL)") {
+                    hasInvalidCount = hasInvalidCount || (row.metricType === "INVALID_COUNT");
+                    hasTotalCount = hasTotalCount || (row.metricType === "TOTAL_COUNT");
+                    hasValidCount = hasValidCount || (row.metricType === "VALID_COUNT");
+                }
+            });
+        }
+
+        if (!hasInvalidCount) {
+            profile.push({columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0});
+        }
+        if (!hasTotalCount) {
+            profile.push({columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length});
+        }
+        if (!hasValidCount) {
+            profile.push({columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0});
+        }
+
+        // Add state profile
         if (state.profile) {
             profile = profile.concat(state.profile);
         }
@@ -315,6 +346,13 @@ export abstract class QueryEngine<T> {
     abstract getTernjsDefinitions(): Promise<any>;
 
     /**
+     * Gets the validation results from the current transformation.
+     */
+    getValidationResults(): TransformValidationResult[][] {
+        return this.getState().validationResults;
+    }
+
+    /**
      * The number of rows to select in the initial query.
      *
      * @param value - the new value
@@ -349,6 +387,7 @@ export abstract class QueryEngine<T> {
         // Add new state
         let state = this.newState();
         state.context = context;
+        state.fieldPolicies = this.getState().fieldPolicies;
         state.script = this.parseAcornTree(tree);
         this.states_.push(state);
 
@@ -408,6 +447,13 @@ export abstract class QueryEngine<T> {
     searchTableNames(query: string, datasourceId: string): DatasourcesServiceStatic.TableReference[] | Promise<DatasourcesServiceStatic.TableReference[]> {
         const tables = this.DatasourcesService.listTables(datasourceId, query);
         return new Promise((resolve, reject) => tables.then(resolve, reject));
+    }
+
+    /**
+     * Sets the field policies to use for the current transformation.
+     */
+    setFieldPolicies(policies: any[]): void {
+        this.getState().fieldPolicies = policies;
     }
 
     /**
@@ -544,6 +590,6 @@ export abstract class QueryEngine<T> {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, profile: null, rows: null, script: null, table: null} as ScriptState<T>;
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null};
     }
 }

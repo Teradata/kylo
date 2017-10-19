@@ -54,7 +54,7 @@ public class TransformResponse {
     /**
      * Result of a transformation
      */
-    @JsonDeserialize(as = DefaultQueryResult.class)
+    @JsonDeserialize(as = TransformQueryResult.class)
     private QueryResult results;
 
     /**

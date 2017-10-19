@@ -1,5 +1,6 @@
-import {QueryResultColumn} from "../../model/query-result-column";
 import {ProfileOutputRow} from "../../model/profile-output-row";
+import {QueryResultColumn} from "../../model/query-result-column";
+import {TransformValidationResult} from "./transform-validation-result";
 
 /**
  * Maintains the state of a Spark script for a single transformation.
@@ -15,6 +16,11 @@ export interface ScriptState<T> {
      * UI context for this script state.
      */
     context: any;
+
+    /**
+     * Policies to apply during transformation.
+     */
+    fieldPolicies: any[];
 
     /**
      * Data profile
@@ -35,4 +41,9 @@ export interface ScriptState<T> {
      * Table containing the results.
      */
     table: string;
+
+    /**
+     * Results of applying field policies.
+     */
+    validationResults: TransformValidationResult[][];
 }

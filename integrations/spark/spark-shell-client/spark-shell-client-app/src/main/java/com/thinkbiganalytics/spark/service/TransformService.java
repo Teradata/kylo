@@ -20,8 +20,10 @@ package com.thinkbiganalytics.spark.service;
  * #L%
  */
 
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
+import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
@@ -96,6 +98,12 @@ public class TransformService {
     private final Class<? extends TransformScript> transformScriptClass;
 
     /**
+     * Runs standardizers and validators on rows.
+     */
+    @Nullable
+    private DataValidator validator;
+
+    /**
      * Constructs a {@code TransformService} using the specified engine to execute scripts.
      *
      * @param transformScriptClass the parent class for Scala transform scripts
@@ -148,9 +156,11 @@ public class TransformService {
 
         // Build bindings list
         final List<NamedParam> bindings = new ArrayList<>();
+        bindings.add(new NamedParamClass("policies", "Array[" + FieldPolicy.class.getName() + "]", getPolicies(request)));
         bindings.add(new NamedParamClass("profiler", Profiler.class.getName(), profiler));
         bindings.add(new NamedParamClass("sparkContextService", SparkContextService.class.getName(), sparkContextService));
         bindings.add(new NamedParamClass("tableName", "String", table));
+        bindings.add(new NamedParamClass("validator", DataValidator.class.getName(), validator));
 
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
             if (datasourceProviderFactory != null) {
@@ -240,6 +250,21 @@ public class TransformService {
     }
 
     /**
+     * Gets the data validator for cleansing rows.
+     */
+    @Nullable
+    public DataValidator getValidator() {
+        return validator;
+    }
+
+    /**
+     * Sets the data validator for cleansing rows.
+     */
+    public void setValidator(@Nullable DataValidator validator) {
+        this.validator = validator;
+    }
+
+    /**
      * Converts the specified transformation request to a Scala script that can be executed by the script engine.
      *
      * @param request the transformation request
@@ -248,10 +273,11 @@ public class TransformService {
     @Nonnull
     String toScript(@Nonnull final TransformRequest request) {
         final StringBuilder script = new StringBuilder();
-        script.append(
-            "class Transform (destination: String, profiler: com.thinkbiganalytics.spark.dataprofiler.Profiler, sqlContext: org.apache.spark.sql.SQLContext, sparkContextService: com.thinkbiganalytics.spark.SparkContextService) extends ");
+        script.append("class Transform (destination: String, policies: Array[com.thinkbiganalytics.policy.rest.model.FieldPolicy], validator: com.thinkbiganalytics.spark.datavalidator.DataValidator,"
+                      + " profiler: com.thinkbiganalytics.spark.dataprofiler.Profiler, sqlContext: org.apache.spark.sql.SQLContext,"
+                      + " sparkContextService: com.thinkbiganalytics.spark.SparkContextService) extends ");
         script.append(transformScriptClass.getName());
-        script.append("(destination, profiler, sqlContext, sparkContextService) {\n");
+        script.append("(destination, policies, validator, profiler, sqlContext, sparkContextService) {\n");
 
         script.append("override def dataFrame: org.apache.spark.sql.DataFrame = {");
         script.append(request.getScript());
@@ -267,9 +293,17 @@ public class TransformService {
         }
 
         script.append("}\n");
-        script.append("new Transform(tableName, profiler, sqlContext, sparkContextService).run()\n");
+        script.append("new Transform(tableName, policies, validator, profiler, sqlContext, sparkContextService).run()\n");
 
         return script.toString();
+    }
+
+    /**
+     * Gets the field policies from the specified transform request.
+     */
+    @Nullable
+    private FieldPolicy[] getPolicies(@Nonnull final TransformRequest request) {
+        return (request.getPolicies() != null) ? request.getPolicies().toArray(new FieldPolicy[request.getPolicies().size()]) : null;
     }
 
     /**

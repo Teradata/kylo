@@ -74,6 +74,7 @@ define(["require", "exports"], function (require, exports) {
             column.visible = false;
             var formula = "drop(\"" + StringUtils.quote(column.headerTooltip) + "\")";
             this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column) });
+            this.controller.fieldPolicies = this.controller.fieldPolicies.filter(function (value, index) { return index == column.index; });
             grid.onColumnsChange();
             grid.refresh();
         };
@@ -103,6 +104,15 @@ define(["require", "exports"], function (require, exports) {
                 cancel: "Cancel"
             });
             this.$mdDialog.show(prompt).then(function (name) {
+                // Update field policy
+                if (column.index < self.controller.fieldPolicies.length) {
+                    var name_1 = self.getColumnFieldName(column);
+                    var policy = self.controller.fieldPolicies[column.index];
+                    policy.name = name_1;
+                    policy.fieldName = name_1;
+                    policy.feedFieldName = name_1;
+                }
+                // Add rename function
                 var script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.quote(name) + "\")";
                 var formula = self.toFormula(script, column, grid);
                 self.controller.addFunction(formula, {
@@ -110,6 +120,12 @@ define(["require", "exports"], function (require, exports) {
                     name: "Rename " + self.getColumnDisplayName(column) + " to " + name
                 });
             });
+        };
+        /**
+         * Sets the domain type for the specified column.
+         */
+        ColumnDelegate.prototype.setDomainType = function (column, domainTypeId) {
+            this.controller.setDomainType(column.index, domainTypeId);
         };
         /**
          * Sorts the specified column.

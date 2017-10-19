@@ -27,23 +27,20 @@ import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndValidateRow;
 import com.thinkbiganalytics.spark.datavalidator.functions.SumPartitionLevelCounts;
-import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.hive.HiveContext;
-import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -52,11 +49,13 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import static com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndValidateRow.PROCESSING_DTTM_COL;
+import static com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndValidateRow.REJECT_REASON_COL;
+
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
  */
-@Component
 @SuppressWarnings("serial")
 public class StandardDataValidator implements DataValidator, Serializable {
 
@@ -66,8 +65,26 @@ public class StandardDataValidator implements DataValidator, Serializable {
     Valid validation result
      */
     public static final ValidationResult VALID_RESULT = new ValidationResult();
-    static final String REJECT_REASON_COL = "dlp_reject_reason";
-    static final String PROCESSING_DTTM_COL = "processing_dttm";
+
+    /**
+     * Column name indicate all columns.
+     */
+    private static final String ALL_COLUMNS = "(ALL)";
+
+    /**
+     * Metric type for invalid row count.
+     */
+    private static final String INVALID_COUNT = "INVALID_COUNT";
+
+    /**
+     * Metric type for total row count.
+     */
+    private static final String TOTAL_COUNT = "TOTAL_COUNT";
+
+    /**
+     * Metric type for valid row count.
+     */
+    private static final String VALID_COUNT = "VALID_COUNT";
 
     private final SparkContextService scs;
 
@@ -79,6 +96,29 @@ public class StandardDataValidator implements DataValidator, Serializable {
     public StandardDataValidator(@Nonnull final IValidatorStrategy validatorStrategy, @Nonnull final SparkContextService scs) {
         this.validatorStrategy = validatorStrategy;
         this.scs = scs;
+    }
+
+    @Override
+    public List<OutputRow> getProfileStats(@Nonnull final DataValidatorResult result) {
+        final List<OutputRow> stats = new ArrayList<>();
+        final long[] validationCounts = cleansedRowResultsValidationCounts(result.getCleansedRowResultRDD(), result.getSchema().length() - 1);
+
+        // Calculate global stats
+        final long validCount = validationCounts[result.getSchema().length() - 1];
+        final long invalidCount = validationCounts[result.getSchema().length()];
+        log.info("Valid count {} invalid count {}", validCount, invalidCount);
+
+        stats.add(new OutputRow(ALL_COLUMNS, TOTAL_COUNT, Long.toString(validCount + invalidCount)));
+        stats.add(new OutputRow(ALL_COLUMNS, VALID_COUNT, Long.toString(validCount)));
+        stats.add(new OutputRow(ALL_COLUMNS, INVALID_COUNT, Long.toString(invalidCount)));
+
+        // Calculate column stats
+        final StructField[] fields = result.getSchema().fields();
+        for (int i = 0; i < validationCounts.length && i < fields.length - 1; i++) {
+            stats.add(new OutputRow(fields[i].name(), INVALID_COUNT, Long.toString(validationCounts[i])));
+        }
+
+        return stats;
     }
 
     @Nonnull
@@ -112,7 +152,7 @@ public class StandardDataValidator implements DataValidator, Serializable {
     }
 
     @Override
-    public void saveInvalidToTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext) {
+    public void saveInvalidToTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final DataValidatorResult result, @Nonnull final HiveContext hiveContext) {
         // Return a new rdd based for Invalid Results
         //noinspection serial
         JavaRDD<CleansedRowResult> invalidResultRDD = result.getCleansedRowResultRDD().filter(new Function<CleansedRowResult, Boolean>() {
@@ -122,26 +162,38 @@ public class StandardDataValidator implements DataValidator, Serializable {
             }
         });
 
-        DataSet invalidDataFrame = getRows(invalidResultRDD, ModifiedSchema.getInvalidTableSchema(result.getSchema(), result.getPolicies()), hiveContext);
+        DataSet invalidDataFrame = getRows(invalidResultRDD, result.getSchema(), hiveContext);
         writeToTargetTable(invalidDataFrame, databaseName, tableName, hiveContext);
 
         log.info("wrote values to the invalid Table  {}", tableName);
     }
 
     @Override
-    public void saveProfileToTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull String partition, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext) {
-        // Counts of invalid columns, total valid rows and total invalid rows
-        long[] fieldInvalidCounts = cleansedRowResultsValidationCounts(result.getCleansedRowResultRDD(), result.getSchema().length);
-        long validCount = fieldInvalidCounts[result.getSchema().length];
-        long invalidCount = fieldInvalidCounts[result.getSchema().length + 1];
+    public void saveProfileToTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final String partition, @Nonnull final DataValidatorResult result,
+                                   @Nonnull final HiveContext hiveContext) {
+        try {
+            // Create a temporary table that can be used to copy data from. Writing directly to the partition from a spark dataframe doesn't work.
+            final String tempTable = tableName + "_" + System.currentTimeMillis();
 
-        // Record the validation stats
-        log.info("Valid count {} invalid count {}", validCount, invalidCount);
-        writeStatsToProfileTable(databaseName, tableName, partition, validCount, invalidCount, fieldInvalidCounts, result.getSchema(), hiveContext);
+            // Refactor this into something common with profile table
+            @SuppressWarnings("squid:S2095") final JavaRDD<OutputRow> statsRDD = JavaSparkContext.fromSparkContext(hiveContext.sparkContext()).parallelize(getProfileStats(result));
+            final DataSet df = scs.toDataSet(hiveContext, statsRDD, OutputRow.class);
+            df.registerTempTable(tempTable);
+
+            final String insertSQL = "INSERT OVERWRITE TABLE " + HiveUtils.quoteIdentifier(databaseName, tableName)
+                                     + " PARTITION (processing_dttm='" + partition + "')"
+                                     + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
+
+            log.info("Writing profile stats {}", insertSQL);
+            scs.sql(hiveContext, insertSQL);
+        } catch (final Exception e) {
+            log.error("Failed to insert validation stats", e);
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
-    public void saveValidToTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext) {
+    public void saveValidToTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final DataValidatorResult result, @Nonnull final HiveContext hiveContext) {
         // Return a new rdd based for Valid Results
         //noinspection serial
         JavaRDD<CleansedRowResult> validResultRDD = result.getCleansedRowResultRDD().filter(new Function<CleansedRowResult, Boolean>() {
@@ -153,7 +205,7 @@ public class StandardDataValidator implements DataValidator, Serializable {
 
         // Write out the valid records (dropping the two columns)
         StructType validTableSchema = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, tableName)).schema();
-        DataSet validDataFrame = getRows(validResultRDD, ModifiedSchema.getValidTableSchema(result.getSchema(), validTableSchema.fields(), result.getPolicies()), hiveContext);
+        DataSet validDataFrame = getRows(validResultRDD, ModifiedSchema.getValidTableSchema(result.getSchema().fields(), validTableSchema.fields(), result.getPolicies()), hiveContext);
         validDataFrame = validDataFrame.drop(REJECT_REASON_COL).toDF();
         //Remove the columns from _valid that dont exist in the validTableName
 
@@ -170,9 +222,9 @@ public class StandardDataValidator implements DataValidator, Serializable {
      */
     @Nonnull
     private DataValidatorResult validate(@Nonnull final DataSet dataset, @Nonnull final FieldPolicy[] policies, @Nonnull final StructField[] fields) {
-        final HCatDataType[] schema = resolveDataTypes(fields);
-        final JavaRDD<CleansedRowResult> cleansedRowResultRDD = dataset.javaRDD().map(new CleanseAndValidateRow(policies, schema));
-        return new DataValidatorResult(cleansedRowResultRDD, policies, fields);
+        final CleanseAndValidateRow function = new CleanseAndValidateRow(policies, fields);
+        final JavaRDD<CleansedRowResult> cleansedRowResultRDD = dataset.javaRDD().map(function);
+        return new DataValidatorResult(cleansedRowResultRDD, policies, function.getSchema());
     }
 
     private DataSet getRows(@Nonnull final JavaRDD<CleansedRowResult> results, @Nonnull final StructType schema, @Nonnull final HiveContext hiveContext) {
@@ -199,58 +251,6 @@ public class StandardDataValidator implements DataValidator, Serializable {
         return StringUtils.join(fields.toArray(new String[0]), ",");
     }
 
-    private void writeStatsToProfileTable(String databaseName, String tableName, String partition, long validCount, long invalidCount, long[] fieldInvalidCounts, StructField[] schema,
-                                          HiveContext hiveContext) {
-
-        try {
-            // Create a temporary table that can be used to copy data from. Writing directly to the partition from a spark dataframe doesn't work.
-            String tempTable = tableName + "_" + System.currentTimeMillis();
-
-            // Refactor this into something common with profile table
-            List<StructField> fields = new ArrayList<>();
-            fields.add(DataTypes.createStructField("columnname", DataTypes.StringType, true));
-            fields.add(DataTypes.createStructField("metrictype", DataTypes.StringType, true));
-            fields.add(DataTypes.createStructField("metricvalue", DataTypes.StringType, true));
-
-            StructType statsSchema = DataTypes.createStructType(fields);
-
-            final ArrayList<String> csvRows = new ArrayList<>();
-            csvRows.add("(ALL),TOTAL_COUNT," + Long.toString(validCount + invalidCount));
-            csvRows.add("(ALL),VALID_COUNT," + Long.toString(validCount));
-            csvRows.add("(ALL),INVALID_COUNT," + Long.toString(invalidCount));
-
-            // Write csv row for each columns
-            for (int i = 0; i < fieldInvalidCounts.length; i++) {
-                if (i < schema.length) {
-                    String csvRow = schema[i].name() + ",INVALID_COUNT," + Long.toString(fieldInvalidCounts[i]);
-                    csvRows.add(csvRow);
-                }
-            }
-
-            JavaSparkContext jsc = new JavaSparkContext(hiveContext.sparkContext());
-            JavaRDD<Row> statsRDD = jsc.parallelize(csvRows)
-                .map(new Function<String, Row>() {
-                    @Override
-                    public Row call(String s) throws Exception {
-                        return RowFactory.create((Object[]) s.split("\\,"));
-                    }
-                });
-
-            DataSet df = scs.toDataSet(hiveContext, statsRDD, statsSchema);
-            df.registerTempTable(tempTable);
-
-            String insertSQL = "INSERT OVERWRITE TABLE " + HiveUtils.quoteIdentifier(databaseName, tableName)
-                               + " PARTITION (processing_dttm='" + partition + "')"
-                               + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
-
-            log.info("Writing profile stats {}", insertSQL);
-            scs.sql(hiveContext, insertSQL);
-        } catch (Exception e) {
-            log.error("Failed to insert validation stats", e);
-            throw Throwables.propagate(e);
-        }
-    }
-
     private void writeToTargetTable(DataSet sourceDF, String databaseName, String targetTable, HiveContext hiveContext) {
         final String qualifiedTable = HiveUtils.quoteIdentifier(databaseName, targetTable);
 
@@ -273,20 +273,6 @@ public class StandardDataValidator implements DataValidator, Serializable {
 
         // Sums up all partitions validation counts into one long[]
         return partitionCounts.reduce(new SumPartitionLevelCounts());
-    }
-
-    /**
-     * Converts the table schema into the corresponding data type structures
-     */
-    private HCatDataType[] resolveDataTypes(StructField[] fields) {
-        List<HCatDataType> cols = new ArrayList<>(fields.length);
-
-        for (StructField field : fields) {
-            String colName = field.name();
-            String dataType = field.dataType().simpleString();
-            cols.add(HCatDataType.createFromDataType(colName, dataType));
-        }
-        return cols.toArray(new HCatDataType[0]);
     }
 
     @Nonnull

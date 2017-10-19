@@ -34,6 +34,7 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+import com.thinkbiganalytics.spark.shell.SparkShellTransformException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -151,10 +153,14 @@ public class SparkShellProxyController {
         }
 
         // Return response
-        if (response.isPresent()) {
-            return Response.ok(response.get()).build();
-        } else {
-            throw error(Response.Status.NOT_FOUND, "getTable.unknownTable", null);
+        try {
+            final TransformResponse transformResponse = response.orElseThrow(() -> error(Response.Status.NOT_FOUND, "getTable.unknownTable", null));
+            return Response.ok(transformResponse).build();
+        } catch (final SparkShellTransformException e) {
+            final String message = (e.getMessage() != null) ? e.getMessage() : "transform.error";
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
         }
     }
 
@@ -291,6 +297,9 @@ public class SparkShellProxyController {
         try {
             final TransformResponse response = restClient.transform(process, request);
             return Response.ok(response).build();
+        } catch (final SparkShellTransformException e) {
+            final String message = (e.getMessage() != null) ? e.getMessage() : "transform.error";
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
         } catch (final Exception e) {
             throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
         }

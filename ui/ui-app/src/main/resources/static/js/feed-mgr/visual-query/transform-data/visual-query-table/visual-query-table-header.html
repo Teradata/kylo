@@ -7,6 +7,10 @@
     <i ng-class="{'ui-grid-icon-up-dir': header.sort.direction == 'asc', 'ui-grid-icon-down-dir': header.sort.direction == 'desc', 'ui-grid-icon-blank': header.sort.direction == null}"></i>
   </span>
 </div>
+<span ng-if="domainType" class="kylo-visual-query-table-domain-type">
+  <ng-md-icon icon="{{ domainType.icon }}" ng-style="{'fill': domainType.iconColor}"></ng-md-icon>
+  <md-tooltip>{{ domainType.title }}</md-tooltip>
+</span>
 <md-menu class="ui-grid-column-menu-button" md-position-mode="target-right target" md-offset="0 42">
   <md-button ng-click="$mdOpenMenu()" class="md-icon-button" style="line-height: 24px;">
     <i class="ui-grid-icon-angle-down">&nbsp;</i>
@@ -36,6 +40,23 @@
       <md-button ng-click="header.delegate.renameColumn(header, table)">
         <i class="material-icons">mode_edit</i> Rename Column
       </md-button>
+    </md-menu-item>
+    <md-menu-item ng-if="availableDomainTypes != null && availableDomainTypes.length > 0">
+      <md-menu>
+        <md-button ng-click="$mdOpenMenu()">
+          <i class="material-icons">local_offer</i> Domain Type
+        </md-button>
+        <md-menu-content class="visual-query-column-menu">
+          <md-menu-item>
+            <md-button ng-click="header.delegate.setDomainType(header, null)"><em>None</em></md-button>
+          </md-menu-item>
+          <md-menu-item ng-repeat="domainType in availableDomainTypes">
+            <md-button ng-click="header.delegate.setDomainType(header, domainType.id)">
+              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
+            </md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
     </md-menu-item>
     <md-menu-item ng-if="header.delegate.filters.length !== 0">
       <md-menu>
